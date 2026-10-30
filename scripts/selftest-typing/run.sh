@@ -33,8 +33,10 @@ export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Develope
 BIN="$ROOT/build/selftest"
 LOG=/usr/bin/log
 
-KEYS='tooi yeeu tieengs Vieetj, windows Sunrise carr '
-EXPECT='tôi yêu tiếng Việt, windows Sunrise car '
+# "carr" comes first: after Vietnamese text, macOS 27.2 autocorrect turns a typed "car"
+# into "cả" (D4, known limit), which would hide what Dấu did.
+KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
+EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 APPS=()
 while [[ $# -gt 0 ]]; do
