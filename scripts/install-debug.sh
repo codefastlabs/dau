@@ -73,6 +73,9 @@ echo "==> Cài vào $DEST_DIR"
 mkdir -p "$DEST_DIR"
 rm -rf "${DEST_DIR:?}/$BUNDLE_NAME"
 ditto "$BUILT" "$DEST_DIR/$BUNDLE_NAME"
+# ditto keeps the build's dates; a new date makes Finder drop the icon it cached for
+# this path (an older build had no app icon).
+touch "$DEST_DIR/$BUNDLE_NAME"
 
 echo "==> Dừng tiến trình bộ gõ cũ (nếu đang chạy)"
 if killall "$PROCESS_NAME" 2>/dev/null; then

@@ -1,4 +1,5 @@
 import AppKit
+import os
 
 /// Finds the host app (Dấu, the Settings app) for the input menu's "Cài đặt Dấu…".
 ///
@@ -14,6 +15,9 @@ import AppKit
 ///    CFBundleShortVersionString and CFBundleVersion equal the input method's, preferring
 ///    one in an Applications folder. No match: nothing is opened (logged by the caller),
 ///    rather than an older or newer app.
+///    The input method's sandbox can read Info.plist of copies in /Applications but not
+///    in a home folder (measured 02/11/2026: `deny file-read-data` for a DerivedData
+///    copy), so a build that is neither running nor in /Applications is never chosen.
 ///
 /// TODO(M5): the installer can record the host app's path in the shared settings; use it
 /// first once it exists.
@@ -49,6 +53,33 @@ enum HostApp {
             return (url, .sameVersion)
         }
         return nil
+    }
+
+    /// Opens and activates the host app found by `url`, logging under `logger` (D8:
+    /// reason and path only). `completion` runs on the main thread with whether the
+    /// app opened (false if none fits or opening failed).
+    @MainActor
+    static func open(logger: Logger, completion: (@MainActor @Sendable (Bool) -> Void)? = nil) {
+        guard let (url, reason) = url() else {
+            let known = (Bundle.main.object(forInfoDictionaryKey: bundleIDInfoKey) as? String)
+                .map { NSWorkspace.shared.urlsForApplications(withBundleIdentifier: $0) } ?? []
+            let readable = known.filter { Version(bundle: Bundle(url: $0)).short != nil }.count
+            logger.error("event=host-app-not-found known=\(known.count, privacy: .public) readable=\(readable, privacy: .public)")
+            completion?(false)
+            return
+        }
+        logger.notice("event=host-app-open reason=\(reason.rawValue, privacy: .public) path=\(url.path, privacy: .public)")
+        let configuration = NSWorkspace.OpenConfiguration()
+        configuration.activates = true
+        NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, error in
+            if let error {
+                logger.error("event=host-app-open-failed error=\(String(describing: error), privacy: .public)")
+            } else {
+                logger.notice("event=host-app-opened")
+            }
+            let opened = error == nil
+            DispatchQueue.main.async { MainActor.assumeIsolated { completion?(opened) } }
+        }
     }
 
     /// `X.app` for `X.app/Contents/Library/Input Methods/<bundle>`, else nil.

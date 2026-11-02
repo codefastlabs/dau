@@ -190,6 +190,8 @@ final class DauInputController: IMKInputController {
 
     override func activateServer(_ sender: Any!) {
         super.activateServer(sender)
+        // A client uses this process: a user launch must not quit it (main.swift).
+        NotificationCenter.default.post(name: .dauClientActivated, object: nil)
         resetComposition(client: sender)
         activatedAt = ProcessInfo.processInfo.systemUptime
         inPlace.activate()
@@ -416,22 +418,7 @@ final class DauInputController: IMKInputController {
 
     /// "Cài đặt Dấu…": opens the host app, whose main window is Settings (UI.md).
     @objc func openHostApp(_ sender: Any?) {
-        guard let (url, reason) = HostApp.url() else {
-            settingsLogger.error("event=host-app-not-found")
-            return
-        }
-        settingsLogger.notice("event=host-app-open reason=\(reason.rawValue, privacy: .public) path=\(url.path, privacy: .public)")
-        _ = onMain {
-            let configuration = NSWorkspace.OpenConfiguration()
-            configuration.activates = true
-            NSWorkspace.shared.openApplication(at: url, configuration: configuration) { _, error in
-                if let error {
-                    settingsLogger.error("event=host-app-open-failed error=\(String(describing: error), privacy: .public)")
-                } else {
-                    settingsLogger.notice("event=host-app-opened")
-                }
-            }
-        }
+        _ = onMain { HostApp.open(logger: settingsLogger) }
     }
 
     @objc func openKeyboardSettings(_ sender: Any?) {
@@ -527,4 +514,7 @@ extension Notification.Name {
     /// Posted on the main thread just before the process exits at the host app's
     /// request (main.swift).
     static let dauQuitRequested = Notification.Name("DauQuitRequested")
+    /// Posted on the main thread when IMK activates any controller
+    /// (`InputMethodAppDelegate`: a user launch quits only if none was activated).
+    static let dauClientActivated = Notification.Name("DauClientActivated")
 }

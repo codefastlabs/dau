@@ -44,6 +44,12 @@ if quitObserver == nil {
     logger.error("event=quit-observe-failed (the host app falls back to terminating the process)")
 }
 
-withExtendedLifetime((server, settingsReloadLog, quitObserver)) {
+// Launched by the user (Finder double-click) rather than by the system to serve typing:
+// open the host app and quit; reopened while running: open the host app
+// (InputMethodAppDelegate, LaunchPolicy). NSApplication keeps the delegate weakly.
+let appDelegate = InputMethodAppDelegate()
+NSApplication.shared.delegate = appDelegate
+
+withExtendedLifetime((server, settingsReloadLog, quitObserver, appDelegate)) {
     NSApplication.shared.run()
 }
