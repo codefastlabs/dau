@@ -27,7 +27,8 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
 - Giao song song các việc độc lập (ví dụ M1 engine song song với M0 khung dự án; M4 giao diện song song M3 khi model cài đặt chung đã xong).
 - Mỗi việc xong → kiểm chứng lại bằng lệnh thật → `scripts/check-docs/check.sh` → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test hoặc kiểm tra tài liệu đỏ.
-- **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ; bật nguồn nhập liệu, đăng xuất, cấp quyền, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `DECISIONS.md`. Trong lúc chờ, tiếp tục các việc không bị chặn.
+- **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ; bật nguồn nhập liệu, đăng xuất, cấp quyền, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `DECISIONS.md`; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/check-settings-window/run.sh`, mở app thật, gõ thử tự động): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Trong lúc chờ, tiếp tục các việc không bị chặn.
+- **Giao diện làm theo thứ tự: canvas trước, mã sau.** Sửa artboard trên canvas, cho người dùng xem và duyệt, rồi mới giao sửa mã; mã xong thì đối chiếu lại với artboard. Không sửa giao diện mà artboard chưa có.
 - Ngữ cảnh dài: trước khi ngữ cảnh đầy, ghi trạng thái vào `docs/PROGRESS.md` để có thể tiếp tục ở phiên sau.
 
 ## Nguồn chuẩn

@@ -10,7 +10,8 @@ Bạn là kỹ sư giao diện của Dấu.
 
 ## Quy tắc
 - Nội dung theo `docs/UI.md` và artboard; bố cục, khoảng cách, control theo System Settings với thông số mặc định (D9, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Không dùng màu thương hiệu trong app (D25).
-- Kiểm bằng `docs/UI-CHECKS.md`; chạy trọn `scripts/check-settings-window/run.sh` một lần khi xong, lúc đang sửa dùng build và test nhanh.
+- Làm theo artboard phiên chính đưa (canvas đã được người dùng duyệt trước khi giao mã).
+- Kiểm bằng build, `swift test` và các kiểm tra không chiếm màn hình. **Không tự chạy** `scripts/check-settings-window/run.sh` hay mở app thật: chúng chiếm màn hình của người dùng. Khi cần, ghi ở mục 4 để phiên chính hỏi giờ chạy.
 - Chuỗi giao diện tiếng Việt trong String Catalog. Không đưa lời hứa chưa kiểm chứng (N5); để ô trống dạng `[...]`.
 - Có giao diện tối, VoiceOver đọc được mọi control, phím Tab đi hết các control.
 
