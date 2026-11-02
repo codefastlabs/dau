@@ -17,7 +17,10 @@ import os
 ///    rather than an older or newer app.
 ///    The input method's sandbox can read Info.plist of copies in /Applications but not
 ///    in a home folder (measured 02/11/2026: `deny file-read-data` for a DerivedData
-///    copy), so a build that is neither running nor in /Applications is never chosen.
+///    copy), so a build that is neither running nor in /Applications never matches.
+/// 4. LaunchServices knows exactly one copy: open it even though its Info.plist cannot
+///    be read (a development build in the home folder). With one copy there is nothing to
+///    pick wrong; opening goes through LaunchServices and needs no read access.
 ///
 /// TODO(M5): the installer can record the host app's path in the shared settings; use it
 /// first once it exists.
@@ -31,6 +34,7 @@ enum HostApp {
         case running
         case enclosing
         case sameVersion = "same-version"
+        case onlyKnown = "only-known"
     }
 
     /// The host app to open and why, or nil if none fits.
@@ -47,10 +51,13 @@ enum HostApp {
            Bundle(url: parent)?.bundleIdentifier == hostID {
             return (parent, .enclosing)
         }
-        let candidates = workspace.urlsForApplications(withBundleIdentifier: hostID)
-            .filter { Version(bundle: Bundle(url: $0)) == Version(bundle: bundle) }
+        let known = workspace.urlsForApplications(withBundleIdentifier: hostID)
+        let candidates = known.filter { Version(bundle: Bundle(url: $0)) == Version(bundle: bundle) }
         if let url = preferred(candidates) {
             return (url, .sameVersion)
+        }
+        if known.count == 1, let only = known.first {
+            return (only, .onlyKnown)
         }
         return nil
     }
