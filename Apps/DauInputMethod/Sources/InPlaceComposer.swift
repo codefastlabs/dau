@@ -277,8 +277,11 @@ struct InPlaceComposer {
                                           client: some InPlaceClient) -> Outcome? {
         checkedLockedWord = true
         let selection = client.selectedRange()
+        // A selection here is the app's: an autocomplete after the cursor, or text the user
+        // selected with a shortcut the input method never saw (⌘A); the word before it is
+        // what counts, the key replaces the selection either way.
         guard selection.location != NSNotFound, selection.length != NSNotFound,
-              selection.location >= 0, selection.length == 0 else { return nil }
+              selection.location >= 0, selection.length >= 0 else { return nil }
         let count = min(selection.location, Self.readLength)
         var read: String?
         let real: [Unicode.Scalar]
@@ -297,7 +300,8 @@ struct InPlaceComposer {
         // Not the engine's word: forget it, keep the "checked" mark for the new word only
         // if it stays locked, and seed from the real text.
         reset(engine: &engine)
-        if let seeded = seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read),
+        if let seeded = seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read,
+                                 allowSelection: true),
            seeded.kind == .seed || seeded.kind == .seedPass {
             var resynced = seeded
             resynced.kind = seeded.kind == .seed ? .resync : .resyncPass
@@ -334,14 +338,17 @@ struct InPlaceComposer {
 
     /// The seeded path, or nil when nothing could be seeded.
     /// `alreadyRead`: the text of the same range, when the caller read it already (one
-    /// read per key, N3).
+    /// read per key, N3). `allowSelection`: a selection after the word is an app's
+    /// suggestion (D11), replaced with the word; D20 itself never seeds with a selection
+    /// (the user selected text the key will replace).
     private mutating func seedWord(_ scalar: Unicode.Scalar, selection: NSRange, engine: inout VietEngine,
-                                   client: some InPlaceClient, alreadyRead: String? = nil) -> Outcome? {
+                                   client: some InPlaceClient, alreadyRead: String? = nil,
+                                   allowSelection: Bool = false) -> Outcome? {
         if selection.location == NSNotFound || selection.length == NSNotFound {
             readUnavailable = true  // no document access: replacing could not work either
             return nil
         }
-        guard selection.location >= 0, selection.length == 0 else { return nil }
+        guard selection.location >= 0, selection.length == 0 || allowSelection else { return nil }
         let location = selection.location
         if location == 0 {
             before = .noWord

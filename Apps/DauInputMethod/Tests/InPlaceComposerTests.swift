@@ -225,6 +225,29 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
+    @Test("D11: ⌘A unseen, then the app autocompletes after t — toots → tốt")
+    func selectAllThenAutocomplete() {
+        var s = Session()
+        s.type("toots")
+        s.doc.text = ""
+        s.doc.cursor = 0
+        s.type("t")
+        // Chrome's address bar selects a suggestion after the t ("t|witter.com"); the
+        // fake reports a selection that ends at its cursor.
+        s.doc.text = "twitter.com"
+        s.doc.cursor = 11
+        s.doc.selectionLength = 10
+        s.type("o")
+        #expect(s.kinds.last == .resyncPass)
+        // Chrome typed the o over its suggestion (the fake cannot): "to", no selection.
+        s.doc.text = "to"
+        s.doc.cursor = 2
+        s.doc.selectionLength = 0
+        s.type("ots")
+        #expect(s.doc.text == "tốt")
+        #expect(s.overCalls == 0)
+    }
+
     @Test("D11: a real English word is checked once and left as typed")
     func englishWordCheckedOnce() {
         var s = Session()
