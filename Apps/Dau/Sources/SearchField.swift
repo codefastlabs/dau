@@ -1,9 +1,10 @@
 import AppKit
 import SwiftUI
 
-/// The system search field (NSSearchField) at a fixed width. SwiftUI's `.searchable`
-/// only places one field per column and sizes it itself; the mockup has a 180 pt field
-/// beside the + button in the Apps header and one inside the add-rule sheet.
+/// The system search field (NSSearchField), for the add-rule sheet only: `.searchable`
+/// puts its field in a toolbar or navigation container, and the sheet has neither.
+/// The Settings window itself uses `.searchable` (sidebar, Apps toolbar). Not yet
+/// replaced in the sheet: not measured against a native alternative (open item).
 struct SearchField: NSViewRepresentable {
     @Binding var text: String
     let prompt: String

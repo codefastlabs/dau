@@ -36,7 +36,9 @@ enum DebugCapture {
             guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
                 print("no window"); exit(1)
             }
-            window.setFrame(NSRect(x: -9000, y: -9000, width: 820, height: 600), display: false)
+            var size = SettingsScene.defaultSize
+            if let width = captureWidth { size.width = width }
+            window.setFrame(NSRect(origin: NSPoint(x: -9000, y: -9000), size: size), display: false)
             // `--active`: make the window key so controls draw their active look
             // (accent colors). Takes focus from the frontmost app for a few seconds.
             if CommandLine.arguments.contains("--active") {
@@ -74,9 +76,20 @@ enum DebugCapture {
                         }
                     }
                     entry.merge(scrollInfo) { a, _ in a }
+                    // The toolbar's system search field (Apps), not a SwiftUI view.
+                    if let field = headerSearchField(in: window) {
+                        let r = field.convert(field.bounds, to: nil)
+                        entry["headerSearch"] = [Double(r.minX), Double(window.frame.height - r.maxY), Double(r.width), Double(r.height)]
+                    }
                     report["\(section.rawValue)-\(mode)"] = entry
                 }
                 report["colors-\(mode)"] = colors(window.effectiveAppearance)
+                // The window's size limits (frame sizes), as SwiftUI set them from the
+                // content's min and max frame.
+                // An unbounded height is reported as -1 (JSON has no infinity).
+                func finite(_ v: CGFloat) -> Double { v.isFinite && v < 100_000 ? Double(v) : -1 }
+                report["limits-\(mode)"] = ["min": [finite(window.minSize.width), finite(window.minSize.height)],
+                                            "max": [finite(window.maxSize.width), finite(window.maxSize.height)]]
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
                 try? data.write(to: directory.appendingPathComponent("frames.json"))
@@ -236,7 +249,7 @@ enum DebugCapture {
             guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
                 print("no window"); exit(1)
             }
-            window.setFrame(NSRect(x: -9000, y: -9000, width: 820, height: 600), display: false)
+            window.setFrame(NSRect(origin: NSPoint(x: -9000, y: -9000), size: SettingsScene.defaultSize), display: false)
             NotificationCenter.default.post(name: selectSection, object: SettingsSection.updates.rawValue)
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
@@ -320,6 +333,32 @@ enum DebugCapture {
         walk(window, depth: 0)
         return lines.joined(separator: "\n") + "\n"
     }
+
+    /// The search field in the detail column's toolbar, if the page has one (the
+    /// sidebar's field starts left of the sidebar's edge).
+    private static func headerSearchField(in window: NSWindow) -> NSSearchField? {
+        var found: NSSearchField?
+        func walk(_ view: NSView) {
+            if found == nil, let field = view as? NSSearchField, !field.isHiddenOrHasHiddenAncestor,
+               field.convert(field.bounds, to: nil).minX > SettingsScene.sidebarWidth {
+                found = field
+            }
+            view.subviews.forEach(walk)
+        }
+        if let root = window.contentView?.superview { walk(root) }
+        return found
+    }
+
+    /// `--settings-window`: open the Settings window at launch, never the onboarding,
+    /// and leave the installed input method alone (real-window checks).
+    static let settingsWindowOnly = CommandLine.arguments.contains("--settings-window")
+
+    /// `--width <pt>`: capture at this window width instead of the default.
+    static let captureWidth: CGFloat? = {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--width"), i + 1 < args.count, let v = Double(args[i + 1]) else { return nil }
+        return CGFloat(v)
+    }()
 
     /// `--scroll <pt>`.
     static let scrollOffset: CGFloat? = {

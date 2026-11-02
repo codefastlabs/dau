@@ -66,17 +66,20 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
     }
 }
 
-/// Sidebar icon, drawn after the mockup's SVG (canvas artboards "Settings…"): a 22 pt
-/// tile with radius 6 in a system color, and a 14 pt line glyph (viewBox 24, white
-/// stroke 2, round caps and joins, no fill). Drawn into a non-template image so the
-/// sidebar's vibrancy does not wash it out. Decorative; the label beside it carries
-/// the meaning.
+/// Sidebar icon: a tile at System Settings' sidebar icon size (20 pt, measured; see
+/// docs/research/SYSTEM-SETTINGS-REFERENCE.md) in a system color, with the mockup's
+/// line glyph (canvas artboards "Settings…": viewBox 24, white stroke, round caps and
+/// joins, no fill) scaled with the tile as in the mockup (glyph 14 in a 22 tile).
+/// Drawn into a non-template image so the sidebar's vibrancy does not wash it out.
+/// Decorative; the label beside it carries the meaning.
 struct SectionIcon: View {
     let section: SettingsSection
 
+    static let size: CGFloat = 20
+
     var body: some View {
         Image(nsImage: SectionIcon.tile(section))
-            .frame(width: 22, height: 22)
+            .frame(width: Self.size, height: Self.size)
             .accessibilityHidden(true)
     }
 
@@ -84,14 +87,19 @@ struct SectionIcon: View {
 
     @MainActor static func tile(_ section: SettingsSection) -> NSImage {
         if let image = cache[section] { return image }
-        let image = NSImage(size: NSSize(width: 22, height: 22), flipped: true) { rect in
+        let size = Self.size
+        let image = NSImage(size: NSSize(width: size, height: size), flipped: true) { rect in
             section.tileColor.setFill()
-            NSBezierPath(roundedRect: rect, xRadius: 6, yRadius: 6).fill()
-            // The 24-unit glyph scaled to 14 pt, centered.
-            let k = 14.0 / 24.0
+            // Mockup proportions: radius 6 and glyph 14 in a 22 tile.
+            let radius = size * 6 / 22
+            NSBezierPath(roundedRect: rect, xRadius: radius, yRadius: radius).fill()
+            // The 24-unit glyph scaled to the glyph size, centered.
+            let glyphSize = size * 14 / 22
+            let k = glyphSize / 24
+            let inset = (size - glyphSize) / 2
             let glyph = section.glyph
-            glyph.transform(using: AffineTransform(m11: k, m12: 0, m21: 0, m22: k, tX: 4, tY: 4))
-            glyph.lineWidth = 2 * 14.0 / 24.0
+            glyph.transform(using: AffineTransform(m11: k, m12: 0, m21: 0, m22: k, tX: inset, tY: inset))
+            glyph.lineWidth = 2 * k
             glyph.lineCapStyle = .round
             glyph.lineJoinStyle = .round
             NSColor.white.setStroke()

@@ -38,7 +38,7 @@ struct DauApp: App {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.directory != nil || DebugCapture.onboardingDirectory != nil
-            || DebugCapture.uninstallDirectory != nil { return }
+            || DebugCapture.uninstallDirectory != nil || DebugCapture.settingsWindowOnly { return }
         #endif
         Task { @MainActor in
             do {
@@ -56,7 +56,8 @@ struct DauApp: App {
         var flow = OnboardingFlow(detector: WorkspaceInputMethodDetector(), installer: installer)
         var opens = LaunchRouter.opensOnboarding(installer.status())
         #if DEBUG
-        if DebugCapture.directory != nil || DebugCapture.uninstallDirectory != nil { opens = false }
+        if DebugCapture.directory != nil || DebugCapture.uninstallDirectory != nil
+            || DebugCapture.settingsWindowOnly { opens = false }
         if let step = DebugCapture.onboardingStep {
             // `--onboarding <1|2|3>`: open onboarding at that step.
             flow.forcedStartStep = step
@@ -99,8 +100,9 @@ struct DauApp: App {
                 #endif
                 .modifier(LaunchRouting(opens: opensOnboarding))
         }
-        .defaultSize(width: 820, height: 600)
-        .windowResizability(.contentMinSize)
+        .defaultSize(SettingsScene.defaultSize)
+        // The content's min and max frame bound the window (`SettingsWindow`).
+        .windowResizability(.contentSize)
         .commands {
             SettingsCommands()
         }
@@ -137,10 +139,6 @@ struct LaunchRouting: ViewModifier {
             dismissWindow(id: SettingsScene.id)
         }
     }
-}
-
-enum SettingsScene {
-    static let id = "settings"
 }
 
 /// Replaces the standard "Settings…" item so ⌘, opens the Settings window.

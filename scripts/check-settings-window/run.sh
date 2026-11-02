@@ -10,7 +10,13 @@
 # (0, 60 pt). Each run captures the 4 sections in light and dark mode off screen.
 # Then it captures the onboarding window (onboarding/, onboarding-no-shortcut/) and the
 # uninstall alerts (uninstall/).
-# check.swift checks the captures and frames (a)–(g) and writes a summary grid.
+# check.swift checks the captures and frames (a)–(h) and writes a summary grid.
+# Last, the real window: the Debug app itself is launched normally (no off-screen
+# capture code runs; `--settings-window` only keeps the onboarding closed and the
+# installed input method untouched), and ax-check.swift reads its frames through the
+# Accessibility API on every display and compares them with System Settings (real/),
+# once more with the "Dấu chưa được bật" banner (real-banner/). Needs the
+# Accessibility permission of the terminal. The window is put back at 740 × 560.
 # Exit status 0 only if every check passes.
 #
 # The window is moved off screen but exists for a few seconds per run.
@@ -38,6 +44,11 @@ for style in WhenScrolling Always Automatic; do
   done
 done
 
+# The widest window the Settings scene allows (sidebar 232 + 744): the cards must
+# still span the column (docs/UI-CHECKS.md item 1).
+"$work/Dau.app/Contents/MacOS/Dau" --capture-window "$out/wide" --width 976 \
+  -AppleShowScrollBars WhenScrolling >/dev/null 2>&1
+
 # The onboarding window (steps 1, 2, 2 with Dấu still off, 2 not listed (logout),
 # 2 after "Bật Dấu", 3; light and dark), on fixed
 # services; once with the real input-source shortcut, once as if none were set.
@@ -50,4 +61,33 @@ done
 "$work/Dau.app/Contents/MacOS/Dau" --capture-uninstall "$out/uninstall" >/dev/null 2>&1
 
 swiftc -O -o "$work/check" "$here/check.swift"
-"$work/check" "$out"
+result=0
+"$work/check" "$out" || result=1
+
+# The real window (docs/UI-CHECKS.md, "Cửa sổ thật").
+swiftc -O -o "$work/ax-check" "$here/ax-check.swift"
+real_window() {   # <output-dir> [--banner]
+  local dir=$1 banner=${2:-}
+  local before=$(pgrep -f "$app/Contents/MacOS/Dau" | sort)
+  if [[ -n $banner ]]; then
+    open -n "$app" --args --settings-window --not-enabled
+  else
+    open -n "$app" --args --settings-window
+  fi
+  local pid=""
+  for i in {1..50}; do
+    pid=$(comm -13 <(echo "$before") <(pgrep -f "$app/Contents/MacOS/Dau" | sort) | tail -1)
+    [[ -n $pid ]] && break
+    sleep 0.2
+  done
+  [[ -z $pid ]] && { echo "FAIL real window: app did not start"; return 1; }
+  local rc=0
+  "$work/ax-check" "$pid" "$dir" $banner > "$dir.txt" || rc=1
+  tail -3 "$dir.txt"
+  kill "$pid" 2>/dev/null
+  return $rc
+}
+mkdir -p "$out/real" "$out/real-banner"
+real_window "$out/real" || result=1
+real_window "$out/real-banner" --banner || result=1
+exit $result

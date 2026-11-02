@@ -53,7 +53,7 @@ let failed: Bool = MainActor.assumeIsolated {
     let model = SettingsModel(store: store, compatibility: Snapshot.sampleList)
     let enabled = InputSourceStatus(fixed: true)
     let notEnabled = InputSourceStatus(fixed: false)
-    let window820 = CGSize(width: 820, height: 600)
+    let windowSize = SettingsScene.defaultSize
 
     @MainActor func window(_ section: SettingsSection, _ status: InputSourceStatus) -> some View {
         SettingsWindow(initialSection: section).environment(model).environment(status)
@@ -70,17 +70,19 @@ let failed: Bool = MainActor.assumeIsolated {
     for (mode, appearance) in appearances {
         func file(_ name: String) -> URL { outDir.appendingPathComponent("\(name)-\(mode).png") }
         for section in SettingsSection.allCases {
-            let result = Snapshot.render(window(section, enabled), to: file(section.rawValue), appearance: appearance)
+            let result = Snapshot.render(window(section, enabled), to: file(section.rawValue), appearance: appearance,
+                                         size: windowSize)
             if let result {
                 app["\(section.rawValue)-\(mode)"] = result
                 if mode == "light" { measured.append((section.rawValue, result.frames)) }
             }
         }
         app["not-enabled-\(mode)"] = Snapshot.render(window(.typing, notEnabled), to: file("typing-not-enabled"),
-                                                       appearance: appearance)
+                                                       appearance: appearance, size: windowSize)
         app["smart-advanced-\(mode)"] = Snapshot.render(
             window(.smart, enabled).environment(\.smartAdvancedExpanded, true),
-            to: file("smart-advanced"), appearance: appearance, size: CGSize(width: 820, height: 680))
+            to: file("smart-advanced"), appearance: appearance,
+            size: CGSize(width: windowSize.width, height: windowSize.height + 80))
     }
 
     Snapshot.grid(SettingsSection.allCases.map { outDir.appendingPathComponent("\($0.rawValue)-light.png") },
@@ -94,10 +96,10 @@ let failed: Bool = MainActor.assumeIsolated {
         return String(format: "%.0f,%.0f %.0f×%.0f", r.minX, r.minY, r.width, r.height)
     }
     let same = ["window", "sidebar", "close", "zoom"]
-    print("\nLayout (points, top-left origin, window 820×600, light):")
-    print((["section"] + same + ["title", "firstCard"]).joined(separator: " | "))
+    print("\nLayout (points, top-left origin, window \(Int(windowSize.width))×\(Int(windowSize.height)), light):")
+    print((["section"] + same + ["title", "firstRow"]).joined(separator: " | "))
     for (section, frames) in measured {
-        print(([section] + (same + ["title", "firstCard"]).map { f(frames[$0]) }).joined(separator: " | "))
+        print(([section] + (same + ["title", "firstRow"]).map { f(frames[$0]) }).joined(separator: " | "))
     }
     var moved = false
     func check(_ key: String, _ value: (CGRect) -> String) {
@@ -122,7 +124,7 @@ let failed: Bool = MainActor.assumeIsolated {
     }
     checkWidth("content", y: true)                         // height is the page's
     check("title") { "\($0.minX),\($0.minY)" }            // width is the text's
-    checkWidth("firstCard", y: false)                      // y depends on a group title
+    checkWidth("firstRow", y: false)                       // y depends on a section header
     print(moved ? "Layout: MOVES between sections" : "Layout: identical in all sections")
 
     // Mockup against app.
@@ -158,7 +160,7 @@ let failed: Bool = MainActor.assumeIsolated {
             let real = realCapture("\(board.page)-\(board.mode)")
             if board.page == "apps", let realShot = real?.0 {
                 // The Apps header (title, search field, +), 3×, against the real window.
-                let header = CGRect(x: 220, y: 0, width: 600, height: 56)
+                let header = CGRect(x: 220, y: 0, width: 520, height: 56)
                 if let a = Snapshot.crop(mock.image, header, scale: 3), let b = Snapshot.crop(realShot, header, scale: 3) {
                     Snapshot.sideBySide([a, b], to: outDir.appendingPathComponent("apps-header-compare-\(board.mode).png"))
                 }
@@ -174,7 +176,7 @@ let failed: Bool = MainActor.assumeIsolated {
             if board.page == "typing" {
                 // Sidebar only, 4×: the real-window capture does not draw the sidebar's
                 // vibrant content, so the app side is this tool's window.
-                let area = CGRect(x: 0, y: 0, width: 220, height: 280)
+                let area = CGRect(x: 0, y: 0, width: 232, height: 280)
                 if let a = Snapshot.crop(mock.image, area, scale: 4), let b = Snapshot.crop(shot.rep, area, scale: 4) {
                     Snapshot.sideBySide([a, b], to: outDir.appendingPathComponent("sidebar-compare-\(board.mode).png"))
                 }
@@ -186,8 +188,11 @@ let failed: Bool = MainActor.assumeIsolated {
             }
             Snapshot.sideBySide([mock.image, real?.0 ?? shot.rep],
                                 to: outDir.appendingPathComponent("\(board.page)-compare-\(board.mode).png"))
+            // The mockup's first card against the app's first row (the card inset by
+            // the Form's 10 pt row margins).
             for key in ["close", "title", "firstCard", "segmented", "switch", "button"] {
-                rows.append("\(board.page)-\(board.mode) | \(key) | \(f(mock.frames[key])) | \(f((real?.1 ?? shot.frames)[key]))")
+                let appKey = key == "firstCard" ? "firstRow" : key
+                rows.append("\(board.page)-\(board.mode) | \(key) | \(f(mock.frames[key])) | \(f((real?.1 ?? shot.frames)[appKey]))")
             }
         }
         // The add-rule sheet: the dialog only.
@@ -241,7 +246,6 @@ let failed: Bool = MainActor.assumeIsolated {
         print("page | element | mockup | app" + (realDir == nil ? " (snapshot window)" : " (real window)"))
         rows.forEach { print($0) }
     }
-    _ = window820
     return moved
 }
 exit(failed ? 1 : 0)

@@ -2,16 +2,17 @@ import AppKit
 import SwiftUI
 import DauShared
 
-// Layout primitives for the Settings pages, sized after the mockup's CSS (docs/UI.md,
-// canvas artboards "Settings…"): content inset 20 top / 28 sides, 18 between sections,
-// section titles 13 semibold outside the card and 8 above it, cards with radius 14 and
-// a 1 pt separator border, rows at least 48 tall with 16/10 padding, 13 pt labels,
-// 12 pt secondary hints, separators inset 16. Controls are standard SwiftUI controls
-// (D9); backgrounds use system colors only.
+// Pieces shared by the Settings pages, the add-rule sheet and the onboarding window.
+// The Settings pages are grouped `Form`s with the system's metrics (D9, System
+// Settings as the reference); the custom pieces here are content from the mockup
+// that has no system equivalent (preview, example chips, "Mới", the banner). The
+// card and row primitives (`SettingsCard`, `SettingsRow`) remain for the onboarding
+// window and the add-rule sheet only. Colors are system colors only.
 
-/// Page and card backgrounds, chosen among system colors (no blending, no opacity) so
-/// the card is lighter than the page in both appearances, as in the mockup. Resolved
-/// in the real Settings window on macOS 27 (`--capture-window`):
+/// Page and card backgrounds of the onboarding window and the add-rule sheet (the
+/// Settings pages use the grouped Form's own colors), chosen among system colors (no
+/// blending, no opacity) so the card is lighter than the page in both appearances, as
+/// in the mockup. Resolved on macOS 27 (`--capture-window`):
 /// - light: page `underPageBackgroundColor` (light gray), card `controlBackgroundColor`
 ///   (white), as the mockup's light gray page and white cards;
 /// - dark: page `controlBackgroundColor` (near black), card `underPageBackgroundColor`
@@ -33,88 +34,61 @@ extension NSAppearance {
     var isDark: Bool { bestMatch(from: [.aqua, .darkAqua]) == .darkAqua }
 }
 
-/// Search field and + button on the trailing side of a page header (mockup
-/// "SettingsApps": a 180 pt search pill, 10 pt gap, a separate 30 pt round + button).
-struct HeaderActions {
-    var query: Binding<String>
-    var prompt: String
-    var addLabel: String
-    var onAdd: () -> Void
+/// The "+" of the Apps page: a toolbar button beside the page's search field.
+struct HeaderAdd {
+    var label: String
+    var action: () -> Void
 }
 
-/// A Settings page. Its title is a toolbar item on the leading edge of the window's
-/// toolbar, in the title-bar row next to the traffic lights (mockup header, 15 bold);
-/// `actions` go on the trailing edge. Every page has the title item, so the toolbar
-/// keeps the same height and the title the same place in every section.
-/// Scrolling: the content scrolls under the toolbar, which covers it with the
-/// system's hard scroll-edge effect on macOS 26+ (a solid material edge, so the title
-/// stays readable) and with the toolbar's own material and separator on macOS 14–15.
-/// The scroll view fills the detail column up to the window's right edge; its content
-/// fills the scroll view's width. Scroll indicators follow the system setting: overlay
-/// scroll bars take no room; a legacy scroll bar appears, and takes its width, only on
-/// a page that scrolls (`.scrollIndicators(.visible)` does not keep it on pages that
-/// fit — measured, see docs/UI-CHECKS.md).
+/// A Settings page: a grouped `Form` whose sections are the page's content, after the
+/// "Dấu chưa được bật" banner when it shows. The Form brings System Settings' metrics:
+/// 20 pt margins, cards, section headers, row heights, separators, and it scrolls
+/// under the toolbar with the system's scroll edge.
 ///
-/// On macOS 26 and later the toolbar groups adjacent items on one glass background; a
-/// fixed spacer splits the search field and the + button into two controls, as in
-/// the mockup. Their shapes are the system's (D9). macOS 14–15 have no glass: the
-/// two controls sit 10 pt apart in the toolbar.
+/// The title is a leading toolbar item (`PageTitle`, see `SettingsWindow`). `search`
+/// and `add`: the Apps page's header controls, as toolbar items: the system search
+/// field (`searchable`) and a "+" button.
 struct SettingsPage<Content: View>: View {
     let title: String
-    var actions: HeaderActions?
+    var search: Binding<String>?
+    var searchPrompt: Text?
+    var add: HeaderAdd?
     @ViewBuilder var content: Content
 
-    init(_ title: String, actions: HeaderActions? = nil, @ViewBuilder content: () -> Content) {
+    init(_ title: String, search: Binding<String>? = nil, searchPrompt: Text? = nil,
+         add: HeaderAdd? = nil, @ViewBuilder content: () -> Content) {
         self.title = title
-        self.actions = actions
+        self.search = search
+        self.searchPrompt = searchPrompt
+        self.add = add
         self.content = content()
     }
 
     var body: some View {
-        ScrollView(.vertical) {
-            VStack(alignment: .leading, spacing: 18) {
-                NotEnabledBanner()
-                content
-            }
-            .padding(.top, 20)
-            .padding(.horizontal, 28)
-            .padding(.bottom, 24)
-            // Fill the scroll view's width; the system leaves out a legacy scroll bar
-            // when it shows one. No width is computed here.
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .layoutProbe("content")
+        Form {
+            NotEnabledBanner()
+            content
         }
-        .scrollIndicators(.visible)
+        .formStyle(.grouped)
+        // Content scrolled under the toolbar must not show through the title (UI-CHECKS
+        // item 9): the system's hard scroll edge on macOS 26+.
         .modifier(HardTopScrollEdge())
-        .background(SettingsColors.page)
+        .layoutProbe("content")
         .toolbar {
             if #available(macOS 26, *) {
                 ToolbarItem(placement: .navigation) { PageTitle(title: title) }
                     .sharedBackgroundVisibility(.hidden)
-                if let actions {
-                    // Two items with a fixed spacer: the toolbar draws them as two
-                    // separate controls instead of one shared glass group.
-                    ToolbarItem(placement: .primaryAction) { HeaderSearchField(actions: actions) }
-                    ToolbarSpacer(.fixed, placement: .primaryAction)
-                    ToolbarItem(placement: .primaryAction) { HeaderAddButton(actions: actions) }
-                }
             } else {
                 ToolbarItem(placement: .navigation) { PageTitle(title: title) }
-                if let actions {
-                    ToolbarItem(placement: .primaryAction) {
-                        HStack(spacing: 10) {
-                            HeaderSearchField(actions: actions)
-                            HeaderAddButton(actions: actions)
-                        }
-                    }
-                }
             }
         }
+        .modifier(PageSearch(text: search, prompt: searchPrompt, add: add))
     }
 }
 
-/// macOS 26+: the hard scroll-edge effect under the toolbar (system material and
-/// edge), so content scrolled under the header never shows through the title.
+/// macOS 26+: the system's hard scroll-edge effect under the toolbar (solid material
+/// and edge) instead of the soft fade, so content scrolled under the header never
+/// shows through the title. A system style, not a custom metric.
 struct HardTopScrollEdge: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 26, *) {
@@ -125,39 +99,9 @@ struct HardTopScrollEdge: ViewModifier {
     }
 }
 
-/// The header search field: the system search field, 200 pt wide (the mockup's 180 pt
-/// field plus its 10 pt padding on each side).
-struct HeaderSearchField: View {
-    let actions: HeaderActions
-
-    var body: some View {
-        SearchField(text: actions.query, prompt: actions.prompt)
-            .frame(width: 200)
-            .layoutProbe("headerSearch")
-    }
-}
-
-/// The header + button: a system button with a 15 pt +.
-struct HeaderAddButton: View {
-    let actions: HeaderActions
-
-    var body: some View {
-        Button(action: actions.onAdd) {
-            Image(systemName: "plus")
-                .font(.system(size: 15, weight: .regular))
-                // The toolbar fixes the bezel height; widen the label so the bezel
-                // comes out as wide as it is tall (a circle, not an oval).
-                .frame(width: 26, height: 18)
-        }
-        .controlSize(.large)
-        .buttonBorderShape(.circle)
-        .help(Text(verbatim: actions.addLabel))
-        .accessibilityLabel(Text(verbatim: actions.addLabel))
-        .layoutProbe("headerAdd")
-    }
-}
-
-/// The page title in the toolbar: 15 pt bold, primary.
+/// The page title in the toolbar, as System Settings draws it: 15 pt bold, primary,
+/// starting 20 pt from the sidebar (the detail column's margin, where the system's
+/// own navigation title sits; measured 252.5 with the 232 pt sidebar).
 struct PageTitle: View {
     let title: String
 
@@ -168,42 +112,96 @@ struct PageTitle: View {
             .fixedSize()
             .accessibilityAddTraits(.isHeader)
             .layoutProbe("title")
-            // Fixed item width: the item, and so the title, never moves with the text.
-            // The leading inset puts the title 24 pt from the sidebar, as in the mockup.
-            .padding(.leading, 17)
-            .frame(width: 320, alignment: .leading)
+            // The toolbar item starts 4 pt right of the sidebar.
+            .padding(.leading, 16)
+            // A fixed item width: with the text's own width the toolbar placed the
+            // title half a point apart on some pages (measured 251.5 vs 252).
+            .frame(width: 200, alignment: .leading)
     }
 }
 
-/// Section title (13 semibold, outside the card) and its content, 8 apart.
-struct SettingsGroup<Content: View, Footer: View>: View {
-    let title: Text?
-    @ViewBuilder var content: Content
-    @ViewBuilder var footer: Footer
+/// The page's toolbar search field and "+" (Apps), on the trailing side of the
+/// toolbar. The system puts the search field of `searchable` last, after the "+"
+/// (macOS 27.2: a `DefaultToolbarItem(kind: .search)` placed before the "+" does not
+/// move it); the mockup header has them the other way round, the system order wins
+/// (D9).
+private struct PageSearch: ViewModifier {
+    let text: Binding<String>?
+    let prompt: Text?
+    let add: HeaderAdd?
 
-    init(_ title: Text? = nil, @ViewBuilder content: () -> Content,
-         @ViewBuilder footer: () -> Footer = { EmptyView() }) {
-        self.title = title
-        self.content = content()
-        self.footer = footer()
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let title {
-                title
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.primary)
-                    .padding(.horizontal, 4)
-                    .accessibilityAddTraits(.isHeader)
+    func body(content: Content) -> some View {
+        if let text {
+            if #available(macOS 26, *) {
+                content
+                    .toolbar {
+                        // Pushes the "+" and the search field to the trailing edge.
+                        ToolbarSpacer(.flexible)
+                        if let add {
+                            ToolbarItem(placement: .primaryAction) { HeaderAddButton(add: add) }
+                        }
+                    }
+                    .searchable(text: text, placement: .toolbar, prompt: prompt)
+            } else {
+                content
+                    .toolbar {
+                        if let add {
+                            ToolbarItem(placement: .primaryAction) { HeaderAddButton(add: add) }
+                        }
+                    }
+                    .searchable(text: text, placement: .toolbar, prompt: prompt)
             }
+        } else {
             content
-            footer
         }
     }
 }
 
-/// A rounded card holding rows: radius 14, 1 pt separator border.
+/// The toolbar "+": a system toolbar button with the "plus" symbol.
+struct HeaderAddButton: View {
+    let add: HeaderAdd
+
+    var body: some View {
+        Button(action: add.action) {
+            Label { Text(verbatim: add.label) } icon: { Image(systemName: "plus") }
+        }
+        .help(Text(verbatim: add.label))
+        .layoutProbe("headerAdd")
+    }
+}
+
+/// Secondary text in a Form row or section header: System Settings' subtitle, 11 pt
+/// regular, secondary color.
+struct Subtitle: View {
+    let text: Text
+    init(_ text: Text) { self.text = text }
+
+    var body: some View {
+        text
+            .font(.subheadline)
+            .foregroundStyle(.secondary)
+            .multilineTextAlignment(.leading)
+            .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// A section header with a description under the title, above the card, as System
+/// Settings does (Notifications pane).
+struct SectionHeader: View {
+    let title: Text
+    let description: Text
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            title
+            Subtitle(description)
+                .fontWeight(.regular)
+        }
+    }
+}
+
+/// A rounded card holding rows (onboarding, add-rule sheet): radius 14, 1 pt
+/// separator border.
 struct SettingsCard<Content: View>: View {
     var padding: CGFloat = 0
     @ViewBuilder var content: Content
@@ -222,14 +220,8 @@ struct SettingsCard<Content: View>: View {
     }
 }
 
-/// Separator between rows, inset 16 from the leading edge.
-struct RowDivider: View {
-    var body: some View {
-        Divider().padding(.leading, 16)
-    }
-}
-
-/// A row: label with an optional hint below it, and trailing controls.
+/// A row of a `SettingsCard` (add-rule sheet): label with an optional hint below it,
+/// and trailing controls.
 struct SettingsRow<Label: View, Trailing: View>: View {
     var minHeight: CGFloat = 48
     @ViewBuilder var label: Label
@@ -281,19 +273,6 @@ struct Hint: View {
             .foregroundStyle(.secondary)
             .multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
-    }
-}
-
-/// A switch whose label is only read by VoiceOver (the row shows the visible label).
-struct RowSwitch: View {
-    let label: Text
-    @Binding var isOn: Bool
-
-    var body: some View {
-        Toggle(isOn: $isOn) { label }
-            .toggleStyle(.switch)
-            .labelsHidden()
-            .layoutProbe("switch")
     }
 }
 
@@ -411,7 +390,7 @@ struct WrappingHStack: Layout {
 /// "Dấu chưa được bật" banner (docs/UI.md, "Các trạng thái bổ sung", mockup
 /// "SettingsNotEnabled"), first on every page while Dấu is not among the enabled
 /// input sources: orange tile with a white warning symbol, title, subtitle,
-/// prominent button, on a system-orange tint.
+/// prominent button.
 ///
 /// "Bật lại" enables Dấu (N4: the user's click, read back from Text Input Sources) and
 /// the banner then turns into a green confirmation with "Hoàn tác". When macOS keeps
@@ -429,17 +408,17 @@ struct NotEnabledBanner: View {
                    title: Text("Đã bật Dấu trong Nguồn nhập liệu"),
                    hint: Text("Bấm Hoàn tác nếu bạn đổi ý.")) {
                 Button("Hoàn tác") { Task { await actions?.undoBannerEnable() } }
-                    .settingsButton()
             }
         } else if status.isEnabled == false {
             banner(tint: .orange, symbol: "exclamationmark.triangle.fill",
                    title: Text("Dấu chưa được bật trong Nguồn nhập liệu"), hint: hint(state)) {
                 if state == .notEnabled || state == .failed {
-                    OpenKeyboardSettingsButton()
+                    // The onboarding's button at the Form's control size.
+                    Button("Mở Cài đặt Bàn phím…") { SystemSettings.openKeyboard() }
+                        .fixedSize()
                 } else {
                     Button("Bật lại") { enable() }
                         .buttonStyle(.borderedProminent)
-                        .settingsButton()
                         .disabled(state == .working)
                 }
             }
@@ -471,34 +450,34 @@ struct NotEnabledBanner: View {
         }
     }
 
+    /// The banner as the first section of the page's Form: one row with the tile, the
+    /// title and its subtitle, and the buttons, on the Form's card like System
+    /// Settings' own notices (a grouped Form on macOS draws no row background set with
+    /// `listRowBackground`, measured on macOS 27.2); the tile carries the color.
     private func banner<Buttons: View>(tint: Color, symbol: String, title: Text, hint: Text,
                                        @ViewBuilder buttons: () -> Buttons) -> some View {
-        HStack(alignment: .center, spacing: 12) {
-            // Mockup "SettingsNotEnabled": a 28 pt tile, radius 8, white symbol, on a
-            // tinted banner. System colors only (D9).
-            Image(systemName: symbol)
-                .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(tint, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-                .accessibilityHidden(true)
-            VStack(alignment: .leading, spacing: 2) {
-                title
+        Section {
+            HStack(alignment: .center, spacing: 10) {
+                // Mockup "SettingsNotEnabled": a tile in a system color with a white
+                // symbol, at the size of the app icons in Form rows. System colors only
+                // (D9).
+                Image(systemName: symbol)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.primary)
-                Hint(hint)
+                    .foregroundStyle(.white)
+                    .frame(width: 28, height: 28)
+                    .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    title
+                        .fontWeight(.semibold)
+                        .foregroundStyle(.primary)
+                    Subtitle(hint)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                buttons()
             }
-            .frame(maxWidth: .infinity, alignment: .leading)
-            buttons()
+            .accessibilityElement(children: .contain)
         }
-        .padding(.vertical, 12)
-        .padding(.horizontal, 14)
-        .background(tint.quaternary, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay {
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(tint.tertiary, lineWidth: 1)
-        }
-        .accessibilityElement(children: .contain)
     }
 }
 
@@ -518,9 +497,9 @@ enum AppVersion {
 
 // MARK: - Layout probe (tests only)
 
-/// Reports a view's frame in window coordinates. Nil in the app, so probes cost
-/// nothing; `scripts/snapshot-settings` sets it to check that the layout does not move
-/// between sections.
+/// Reports a view's frame in window coordinates. Nil in the app; the window captures
+/// (`DebugCapture`) and `scripts/snapshot-settings` set it to check that the layout
+/// does not move between sections.
 struct LayoutProbeKey: EnvironmentKey {
     static let defaultValue: (@MainActor @Sendable (String, CGRect) -> Void)? = nil
 }
@@ -532,17 +511,17 @@ extension EnvironmentValues {
     }
 }
 
+/// Always the same view structure, probe or not: a probe that changed the structure
+/// (an `if` around the modifier) once made the off-screen captures lay out a sidebar
+/// row 8 pt away from the real window. Put probes on a row's content or on a whole
+/// control, never outside list-row modifiers (`listRowInsets`, `listRowBackground`).
 struct LayoutProbeModifier: ViewModifier {
     @Environment(\.layoutProbe) private var probe
     let name: String
 
     func body(content: Content) -> some View {
-        if let probe {
-            content.onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
-                probe(name, frame)
-            }
-        } else {
-            content
+        content.onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+            probe?(name, frame)
         }
     }
 }

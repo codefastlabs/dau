@@ -1,8 +1,10 @@
 import SwiftUI
 
-/// The Settings window (mockup "SettingsTyping" and siblings): a 220 pt sidebar with
-/// search, the four sections and "Dấu <version>" at the bottom; each page's title is
-/// in the toolbar row, next to the traffic lights.
+/// The Settings window, built like System Settings (D9: native components with their
+/// default metrics; numbers in docs/research/SYSTEM-SETTINGS-REFERENCE.md): a
+/// `NavigationSplitView` whose sidebar is a plain `List` with the system's sidebar
+/// search field, 232 pt wide, and whose detail is a grouped `Form` per section. The
+/// mockup only sets the content (sections, rows, copy, order, icons).
 struct SettingsWindow: View {
     @State private var selection: SettingsSection?
     @State private var query = ""
@@ -18,24 +20,12 @@ struct SettingsWindow: View {
     var body: some View {
         NavigationSplitView {
             List(visibleSections, selection: $selection) { section in
-                // Mockup row: 32 tall (the list adds 4 above and below the content),
-                // 8 from the selection's edges, tile then text 9 apart, 13 pt, medium
-                // when selected. The list adds 6 inside the selection on top of the
-                // row insets (measured in the real window), hence 2.
-                HStack(spacing: 9) {
-                    SectionIcon(section: section)
+                Label {
                     Text(section.title)
-                        .font(.system(size: 13, weight: selection == section ? .medium : .regular))
-                        .lineLimit(1)
+                } icon: {
+                    SectionIcon(section: section)
                 }
-                .frame(height: 24)
-                // Probe the content, not the row: a probe outside the row insets
-                // hides them from the list in captures (the row then sat 8 pt left
-                // of the real window).
-                .layoutProbe("sidebarRow-\(section.rawValue)")
-                .listRowInsets(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
                 .tag(section)
-                .accessibilityElement(children: .combine)
             }
             .searchable(text: $query, placement: .sidebar, prompt: Text("Tìm kiếm"))
             .onChange(of: query) {
@@ -45,8 +35,9 @@ struct SettingsWindow: View {
                 }
             }
             .safeAreaInset(edge: .bottom, alignment: .leading) {
+                // Mockup content: the app name and version under the sections.
                 Text(verbatim: AppVersion.nameAndVersion)
-                    .font(.system(size: 12))
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal, 20)
                     .padding(.bottom, 14)
@@ -54,15 +45,23 @@ struct SettingsWindow: View {
             .toolbar(removing: .sidebarToggle)
             .layoutProbe("sidebar")
             // Must stay the last modifier of the column to take effect.
-            .navigationSplitViewColumnWidth(220)
+            .navigationSplitViewColumnWidth(SettingsScene.sidebarWidth)
         } detail: {
             SettingsDetail(section: selection ?? .typing)
         }
-        // The window title text is hidden; each page puts its title as a leading
-        // toolbar item instead, so it sits in the title-bar row next to the traffic
-        // lights and at the same place in every section.
+        // Without the sidebar toggle the toolbar holds no item on most pages, and
+        // AppKit then shrinks it to a 32 pt title bar with the small window title
+        // (measured on macOS 27.2, 1x display). Each page puts its title as a
+        // leading toolbar item instead (`PageTitle`), so the toolbar keeps System
+        // Settings' 52 pt and 15 pt bold title on every page; the window's own title
+        // text is hidden.
         .background(HiddenWindowTitle())
-        .frame(minWidth: 760, minHeight: 520)
+        // System Settings opens at 740 × 560. A grouped Form caps its cards at 704 pt
+        // and centers them once the detail column is wider than 744 pt (measured), so
+        // the window never gets wider than the sidebar plus 744: the cards always
+        // span the column with the Form's own 20 pt margins.
+        .frame(minWidth: SettingsScene.minSize.width, maxWidth: SettingsScene.maxWidth,
+               minHeight: SettingsScene.minSize.height, maxHeight: .infinity)
         .layoutProbe("window")
         #if DEBUG
         .onReceive(NotificationCenter.default.publisher(for: DebugCapture.selectSection)) { note in
@@ -90,8 +89,9 @@ struct SettingsDetail: View {
     }
 }
 
-/// The page title is a toolbar item already (`SettingsPage`); remove the system title
-/// so it is not drawn twice. The navigation title still names the window.
+/// The page title is a toolbar item already (`PageTitle`); remove the system title so
+/// it is not drawn twice. The navigation title still names the window (Window menu,
+/// Mission Control, VoiceOver).
 struct RemoveToolbarTitle: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 15, *) {
@@ -100,4 +100,20 @@ struct RemoveToolbarTitle: ViewModifier {
             content
         }
     }
+}
+
+enum SettingsScene {
+    static let id = "settings"
+    /// System Settings' window (docs/research/SYSTEM-SETTINGS-REFERENCE.md).
+    static let defaultSize = CGSize(width: 740, height: 560)
+    /// System Settings' sidebar column.
+    static let sidebarWidth: CGFloat = 232
+    /// A grouped Form keeps its cards at most 704 pt wide and centers them once the
+    /// detail column is wider than 744 pt (measured on macOS 27.2): the window stops
+    /// there, so the cards always span the column.
+    static let maxWidth: CGFloat = sidebarWidth + 744
+    /// The content's minimum: System Settings' width (narrower would wrap or squeeze
+    /// the rows with a label and a segmented control) and 400 pt under the 52 pt
+    /// toolbar, so the window is at least 740 × 452.
+    static let minSize = CGSize(width: 740, height: 400)
 }
