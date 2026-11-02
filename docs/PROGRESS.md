@@ -2,6 +2,8 @@
 
 Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị nén) tiếp tục đúng chỗ. Phiên chính cập nhật file này sau mỗi bước.
 
+> Từ 02/11/2026 repo ở https://github.com/codefastlabs/dau và lịch sử đã được viết lại: các mã commit ghi trước ngày này là mã cũ, tra `docs/history/COMMIT-MAP.md` để ra mã mới.
+
 ## Trạng thái hiện tại
 - Mốc đang làm: M5 (chưa bắt đầu). M0–M4 đã đóng; M3 đóng 30/10/2026 (kiểm toán lần 3 ĐẠT). Việc hoãn: ma trận tương thích còn lại → M6; biểu tượng V, danh sách "+" bằng mắt, VoiceOver đọc đúng tên, VoiceOver/Tab trong Cài đặt, máy tiếng Anh hẳn, sheet tối, gợi ý UpdatesSupportView:56 → M7. Test hiện tại: engine 77, DauShared 32, IMK 70, snapshot-settings 10.
 - Việc đang chờ người dùng: bật nguồn nhập liệu mới `com.codefastlabs.dau.inputmethod.Dau.vi` sau khi đổi Bundle ID. Team ID: Personal Team miễn phí `M58DANM3ZP` (30/10/2026), ký tự động "Apple Development"; bản phát hành dùng Developer ID ở M7.
@@ -158,3 +160,4 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 | T5 | Kiểm toán M5 | auditor | cuối |
 - 30/10/2026 — M5 T2 onboarding 3 bước (deddc49), T3 cài/bật/nâng cấp/gỡ thật, app chủ bỏ sandbox (D37), bộ gõ thoát khi nhận thông báo quitRequested (d1b74f8) — app-ui-dev, imk-dev; test engine 77, DauShared 34, snapshot 45, IMK 70; selftest-app-group PASS với app không sandbox. Thay từ mẫu cũ bằng "Sunrise" ở repo và canvas (7b3f815, 3378b6e). Chờ T4 trên máy cùng người dùng — phiên chính
 - 30/10/2026 — canvas: vẽ lại biểu tượng nguồn nhập liệu theo hình thật (ô 22 × 16 pt, V khoét rỗng) ở menu nguồn nhập liệu, thanh menu và ô chỉ báo dưới con trỏ (Main), chỉ báo "A" khi gõ tiếng Anh bằng ABC (TypingStates); bỏ nội dung đã lỗi thời theo D2/D5 (thẻ "Theo từng ứng dụng: Terminal luôn tiếng Anh…" trên trang tải về, nay là "Gạch chân khi cần"; dòng chế độ E ở TypingStates). T4 hẹn người dùng thứ hai tuần sau — phiên chính
+- 02/11/2026 — chuyển repo sang https://github.com/codefastlabs/dau (người dùng là admin tổ chức); viết lại lịch sử bằng `git filter-repo --replace-text` để bỏ từ mẫu cũ khỏi mọi phiên bản (người dùng yêu cầu): 159 → 157 commit (2 commit chỉ thay từ đó thành rỗng, bị bỏ), cây thư mục HEAD giữ nguyên, quét mọi blob không còn chữ đó; thêm `docs/history/COMMIT-MAP.md`. Bản sao lưu bundle trước khi viết lại nằm trong thư mục tạm của phiên. Repo cũ `thevuong/dau` chờ người dùng xoá — phiên chính
