@@ -6,13 +6,20 @@ import os
 /// D8: only numbers, a fixed event kind and the client's bundle ID are logged. Never the
 /// characters typed, the engine output or any text read from the client.
 ///
-/// Signposts are always emitted (near free unless Instruments records them). The per-key
-/// `os.Logger` line is on in Debug builds and, in Release, only when the defaults key
-/// `DauPerfLog` is true. `scripts/perf-report.sh` reads these lines with `log show`.
+/// Debug builds only (D8): Release builds log nothing per key and emit no signposts,
+/// whatever the defaults say. Even without text, per-key times and apps are typing
+/// metadata, and anyone running code as the user could switch them on with
+/// `defaults write` and read them with `log show`, without the Input Monitoring
+/// permission a keylogger needs. In Debug, the per-key `os.Logger` line is on only while
+/// `DauPerfLog` is set; `scripts/perf-report.sh` reads it with `log show`.
 struct PerfLog {
     static let subsystem = Bundle.main.bundleIdentifier ?? "DauInputMethod"
     static let logger = Logger(subsystem: subsystem, category: "perf")
+    #if DEBUG
     static let signposter = OSSignposter(subsystem: subsystem, category: "perf")
+    #else
+    static let signposter = OSSignposter.disabled
+    #endif
 
     /// Event kinds. Raw values are parsed by scripts/perf-report.sh.
     enum Kind: String {
@@ -59,7 +66,11 @@ struct PerfLog {
     let enabled: Bool
 
     init() {
+        #if DEBUG
         enabled = UserDefaults.standard.bool(forKey: Self.defaultsKey)
+        #else
+        enabled = false
+        #endif
     }
 
     @inline(__always) static func now() -> UInt64 {
@@ -73,15 +84,19 @@ struct PerfLog {
     ///   - readNs: duration of the `attributedSubstring` call (D20), or -1 if not called.
     func record(_ kind: Kind, handleNs: UInt64, selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, app: String) {
+        #if DEBUG
         guard enabled else { return }
         PerfLog.logger.notice(
             "key kind=\(kind.rawValue, privacy: .public) handle_ns=\(handleNs, privacy: .public) sel_ns=\(selectedRangeNs, privacy: .public) ins_ns=\(insertTextNs, privacy: .public) read_ns=\(readNs, privacy: .public) app=\(app, privacy: .public)"
         )
+        #endif
     }
 
     /// Non-key events worth counting while testing (client changed, mode changed…).
     func note(_ event: StaticString, app: String) {
+        #if DEBUG
         guard enabled else { return }
         PerfLog.logger.notice("event name=\(String(describing: event), privacy: .public) app=\(app, privacy: .public)")
+        #endif
     }
 }

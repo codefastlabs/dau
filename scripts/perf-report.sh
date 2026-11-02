@@ -3,7 +3,8 @@
 # p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole
 # `handle`, plus event counts.
 #
-# The input method logs one line per key only while the global defaults key DauPerfLog
+# Debug builds only (Release logs nothing per key, D8). The input method logs one line
+# per key only while the global defaults key DauPerfLog
 # is set (`defaults write -g DauPerfLog -bool true`, then `defaults delete -g DauPerfLog`
 # when done; it applies to text fields opened after it is set), category "perf": event
 # kind, durations in ns and the client app's bundle ID. Never the text typed (D8).

@@ -123,5 +123,5 @@ dau/
 ## Đo lường
 
 - `os_signpost` quanh `engine.handle` và quanh lệnh gọi client; xem bằng Instruments.
-- Nhật ký từng phím (category `perf`, và `diag` ở bản Debug) chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain, ở cả bản Debug (02/11/2026): dù không có chữ, giờ và app của từng phím là siêu dữ liệu về cách gõ (D8). `scripts/selftest-typing/run.sh` tự bật lúc chạy và xoá khi xong; đo tay thì bật, đo, rồi xoá (`scripts/perf-report.sh`).
+- Nhật ký từng phím (category `perf`, `diag`) và signpost chỉ có ở bản Debug, bị loại khỏi bản Release lúc build (D8); ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain (02/11/2026): dù không có chữ, giờ và app của từng phím là siêu dữ liệu về cách gõ (D8). `scripts/selftest-typing/run.sh` tự bật lúc chạy và xoá khi xong; đo tay thì bật, đo, rồi xoá (`scripts/perf-report.sh`).
 - Test hiệu năng engine trong CI. Bài test tải nặng: xem mốc M6 trong `ROADMAP.md`.
