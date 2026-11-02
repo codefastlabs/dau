@@ -45,7 +45,7 @@ Sidebar có icon màu: Gõ phím (xanh dương), Thông minh (tím), Ứng dụn
 **Cập nhật & hỗ trợ**
 - Thẻ đầu: icon app (32, như thẻ đầu trang của System Settings), phiên bản, trạng thái kiểm tra, nút "Kiểm tra ngay".
 - Cập nhật: tự kiểm tra, tự tải và cài (cài lúc không gõ), kênh Ổn định | Beta.
-- Hỗ trợ: Báo lỗi…, Quay về…, Gỡ cài đặt… (nút `role: .destructive` của hệ thống; macOS 27.2 vẽ nút này như nút thường, chữ không đỏ, đo 02/11/2026 — theo hệ thống, D9; mockup vẽ chữ đỏ).
+- Hỗ trợ: Báo lỗi…, Quay về…, Gỡ cài đặt… (nút `role: .destructive` của hệ thống; macOS 27.2 vẽ nút này như nút thường, chữ không đỏ, đo 02/11/2026 — người dùng chốt theo hệ thống 02/11/2026, D9).
 - Chú thích quyền riêng tư (giữ đúng nội dung): "Dấu không gửi chữ bạn gõ ra khỏi máy. Bộ gõ không có quyền truy cập mạng; chỉ phần cập nhật kết nối để tải bản mới và danh sách ứng dụng tương thích. Mã nguồn mở theo giấy phép GPLv3."
 
 ## Các trạng thái bổ sung
