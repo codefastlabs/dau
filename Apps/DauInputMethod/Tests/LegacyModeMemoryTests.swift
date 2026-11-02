@@ -5,8 +5,10 @@ import Testing
 struct LegacyModeMemoryTests {
     @Test("the old key is removed once; other keys are untouched")
     func removesOldKey() throws {
-        let name = "dau.tests.legacy.\(UUID().uuidString)"
+        // A fixed name per test: an emptied suite still leaves its plist behind.
+        let name = "dau.tests.legacy.removesOldKey"
         let defaults = try #require(UserDefaults(suiteName: name))
+        defaults.removePersistentDomain(forName: name)
         defer { defaults.removePersistentDomain(forName: name) }
         defaults.set([["com.apple.Safari", "english"]], forKey: LegacyModeMemory.defaultsKey)
         defaults.set(true, forKey: "other")
@@ -20,8 +22,9 @@ struct LegacyModeMemoryTests {
 
     @Test("a malformed old value is removed too (D18)")
     func removesGarbage() throws {
-        let name = "dau.tests.legacy.\(UUID().uuidString)"
+        let name = "dau.tests.legacy.removesGarbage"
         let defaults = try #require(UserDefaults(suiteName: name))
+        defaults.removePersistentDomain(forName: name)
         defer { defaults.removePersistentDomain(forName: name) }
         defaults.set("garbage", forKey: LegacyModeMemory.defaultsKey)
         #expect(LegacyModeMemory.removeIfPresent(from: defaults))

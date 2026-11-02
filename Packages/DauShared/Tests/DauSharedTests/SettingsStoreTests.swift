@@ -2,13 +2,17 @@ import Foundation
 import Testing
 @testable import DauShared
 
-/// Each test uses its own throwaway suite so tests never touch real settings.
+/// Each test uses its own suite so tests never touch real settings. The name is fixed
+/// per test (not a UUID): an emptied suite still leaves its plist in
+/// ~/Library/Preferences, so UUID names left a new file on every run.
 final class TemporarySuite {
-    let name = "dau.tests." + UUID().uuidString
+    let name: String
     let defaults: UserDefaults
 
-    init() {
+    init(_ test: String = #function) {
+        name = "dau.tests." + test.filter { $0.isLetter || $0.isNumber }
         defaults = UserDefaults(suiteName: name)!
+        defaults.removePersistentDomain(forName: name)
     }
 
     deinit {
