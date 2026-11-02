@@ -31,7 +31,14 @@ here=${0:A:h}
 out=${1:?output dir}
 app=${2:-${here:h:h}/build/DerivedData/Build/Products/Debug/Dau.app}
 work=$(mktemp -d)
-trap 'rm -rf "$work"' EXIT
+lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+# Running the copy registers it with LaunchServices; unregister it before deleting it,
+# or Spotlight and "Open With" keep listing a second Dấu.app with a blank icon.
+cleanup() {
+  [[ -d "$work/Dau.app" ]] && "$lsregister" -u "$work/Dau.app" >/dev/null 2>&1
+  rm -rf "$work"
+}
+trap cleanup EXIT
 mkdir -p "$out"
 
 cp -R "$app" "$work/Dau.app"
