@@ -64,5 +64,6 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
 - `scripts/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
+- `scripts/clean-dau.sh` — liệt kê mọi dấu vết của Dấu trên tài khoản; `--yes` (người dùng tự chạy) xoá hết để thử cài từ máy sạch, rồi đăng xuất.
 - `swift test --package-path Packages/DauEngine` — test engine.
 - `scripts/check-docs/check.sh` — kiểm tài liệu lệch (đường dẫn, số dòng, số D/N, cách nói đã bị thay).
