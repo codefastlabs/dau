@@ -457,9 +457,20 @@ enum AppVersion {
         return v
     }
 
-    /// "Dấu 1.0.0", or "Dấu" without a version.
+    /// The git commit of this build (Resources/BuildCommit.txt, written by
+    /// scripts/stamp-build-commit.sh), "+" when built with uncommitted changes; nil when
+    /// the build had no git.
+    static let commit: String? = {
+        guard let url = Bundle.main.url(forResource: "BuildCommit", withExtension: "txt"),
+              let c = try? String(contentsOf: url, encoding: .utf8),
+              !c.isEmpty, c.count <= 12 else { return nil }
+        return c
+    }()
+
+    /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0" without a commit, or "Dấu" without a version.
     static var nameAndVersion: String {
-        marketing.map { "Dấu \($0)" } ?? "Dấu"
+        guard let marketing else { return "Dấu" }
+        return commit.map { "Dấu \(marketing) (\($0))" } ?? "Dấu \(marketing)"
     }
 }
 

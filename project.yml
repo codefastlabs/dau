@@ -21,6 +21,9 @@ options:
   createIntermediateGroups: true
   generateEmptyDirectories: true
   groupSortPosition: top
+  # build/generated/BuildCommit.txt must exist when the project is generated, or the
+  # optional resource below is left out of both targets.
+  preGenCommand: scripts/stamp-build-commit.sh
 
 packages:
   DauEngine:
@@ -71,6 +74,9 @@ targets:
     sources:
       - path: Apps/Dau/Sources
       - path: Apps/Dau/Resources
+      - path: build/generated/BuildCommit.txt
+        optional: true
+        buildPhase: resources
     settings:
       base:
         PRODUCT_NAME: Dau
@@ -84,6 +90,8 @@ targets:
         # shares this asset catalog for its Finder icon. TODO(M7): Icon Composer icon
         # (docs/BRAND.md).
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+    # build/generated/BuildCommit.txt is written by the input method's "Stamp build
+    # commit" phase; this target builds after it (dependency below).
     dependencies:
       - package: DauShared
       # The input method bundle ships inside the host app and is copied to
@@ -109,6 +117,9 @@ targets:
       # stay the template TIFF named in Info.plist (tsInputMethodIconFileKey, mode keys,
       # TISIconIsTemplate; docs/COMPATIBILITY.md 6.6, 6.7).
       - path: Apps/Dau/Resources/Assets.xcassets
+      - path: build/generated/BuildCommit.txt
+        optional: true
+        buildPhase: resources
     settings:
       base:
         PRODUCT_NAME: DauInputMethod
@@ -118,6 +129,16 @@ targets:
         INFOPLIST_FILE: Apps/DauInputMethod/Info.plist
         # N2: the input method has no network entitlement. Never add network.client here.
         CODE_SIGN_ENTITLEMENTS: Apps/DauInputMethod/DauInputMethod.entitlements
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    preBuildScripts:
+      # build/generated/BuildCommit.txt (scripts/stamp-build-commit.sh), copied into
+      # Resources below (here and in Dau, which builds after this target): every build,
+      # so the commit never goes stale. It reads .git, hence no user script sandbox.
+      - name: Stamp build commit
+        script: '"$SRCROOT/scripts/stamp-build-commit.sh"'
+        basedOnDependencyAnalysis: false
+        outputFiles:
+          - $(SRCROOT)/build/generated/BuildCommit.txt
     dependencies:
       - package: DauEngine
       - package: DauShared

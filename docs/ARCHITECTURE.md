@@ -105,6 +105,7 @@ dau/
 ## Build
 - Debug lệnh trơn chỉ build arm64 (Xcode build package local theo kiến trúc máy); Debug universal dùng `-destination 'generic/platform=macOS'`, Release luôn universal. CI phải dùng destination này.
 - ID input mode viết cứng trong `Apps/DauInputMethod/Info.plist` và `Apps/DauInputMethod/Resources/InfoPlist.xcstrings` (Xcode không thay biến trong khoá plist, đã thử 30/10/2026): đổi Bundle ID phải sửa cả hai (D37: không đổi giữa các bản).
+- Mã commit của bản build: `scripts/stamp-build-commit.sh` ghi `build/generated/BuildCommit.txt` (thêm "+" khi còn thay đổi chưa commit), chạy lúc `xcodegen generate` (preGenCommand) và ở mỗi lần build bộ gõ; cả Dấu.app và bộ gõ chép file này vào Resources nên bản build được ký lại khi mã đổi. App hiện "Dấu x.y.z (mã)" ở đáy sidebar và thẻ đầu Cập nhật & hỗ trợ; `scripts/dau-version.sh` so mã của bộ gõ đã cài, Dấu.app và repo, và cho biết tiến trình bộ gõ đang chạy có phải bản đã cài không.
 
 ## Luồng một phím (chế độ Tiếng Việt)
 

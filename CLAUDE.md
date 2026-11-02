@@ -63,5 +63,6 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 ## Lệnh thường dùng (cập nhật khi dự án có thật)
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
+- `scripts/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
 - `swift test --package-path Packages/DauEngine` — test engine.
 - `scripts/check-docs/check.sh` — kiểm tài liệu lệch (đường dẫn, số dòng, số D/N, cách nói đã bị thay).
