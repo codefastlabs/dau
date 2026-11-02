@@ -85,6 +85,8 @@ Lưu ý khi đọc số: máy đo đang hiện thanh cuộn kiểu cũ (luôn hi
 | Ô tìm | Không có | Không có | Dưới trái, 226 × 26 (kiểu cũ) | `searchable` trong sheet: trên phải, 183 × 24, cách mép trên và phải 20 |
 | Tiêu đề | Không có | Không có | Một dòng chữ 13 ở trên trái | `navigationTitle` không hiện (không có NavigationStack); có NavigationStack thì tiêu đề nằm hàng riêng dưới ô tìm, x 48 |
 
+Sheet thêm quy tắc của Dấu (đo 02/11/2026, macOS 27.2): `List` đặt trong `Form(.grouped)` bị tắt cuộn (vùng cuộn bên trong không có thanh cuộn, lăn chuột không đổi hàng nào, `scrollDisabled(false)` và `\.isScrollEnabled` không bật lại), nên danh sách đặt ngoài Form, trong `GroupBox` (thẻ hệ thống), chỉ hàng "Khi đang gõ" còn trong Form. `searchable` luôn tạo thanh riêng ở đầu sheet và `ToolbarItem(.navigation / .principal)` không hiện trong sheet, nên không đặt được tiêu đề cùng hàng; dùng `NSSearchField` (control hệ thống) cùng hàng với tiêu đề, 183 × 24 như `searchable`, cách mép trên và phải 20.
+
 Kết luận cho sheet của Dấu: `Form(.grouped)` + `searchable` + nút trên `toolbar` cho ra đúng khoảng cách và nút của sheet System Settings (dựng SwiftUI). Sheet của System Settings không có tiêu đề; nội dung của mockup có tiêu đề nên đặt làm tiêu đề nhóm đầu của Form.
 
 ### Độ rộng tối đa của Form dạng nhóm (lỗi "cột hẹp ở giữa")

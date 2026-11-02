@@ -135,6 +135,9 @@ enum Reference {
     /// first item below the Form's top, all 20 from the edge.
     static let sheetMargin: CGFloat = 20
     /// Buttons are at least 64 wide (a pt of slack is `tolerance`).
+    /// The app list's card (the mockup's list card); it scrolls inside, so "Khi đang gõ"
+    /// stays in view.
+    static let sheetListHeight: CGFloat = 188
     static let sheetButtonMinWidth: CGFloat = 64
     static let sheetButtonHeight: CGFloat = controlHeight
     static let sheetSearchHeight: CGFloat = controlHeight

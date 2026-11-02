@@ -127,7 +127,14 @@ func windowNumber(_ bounds: CGRect) -> Int? {
 }
 
 func screenshot(_ name: String, _ bounds: CGRect) -> NSBitmapImageRep? {
-    guard let n = windowNumber(bounds) else { return nil }
+    // The window can be briefly off the on-screen list (for example while another app
+    // takes the front): look again a few times.
+    var found = windowNumber(bounds)
+    for _ in 0..<5 where found == nil {
+        wait(0.4)
+        found = windowNumber(bounds)
+    }
+    guard let n = found else { return nil }
     let url = outDir.appendingPathComponent("\(name).png")
     let task = Process()
     task.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
@@ -351,46 +358,51 @@ func measureSheet(display: String) {
 
     check(display, page, "sheet width", s.width, Reference.sheetWidth)
 
-    // The system search field of the sheet, at its top trailing edge.
+    // The header row: the title left and the system search field right, on one line.
     let searchField = all(sheet, where: { subrole($0) == "AXSearchField" }).first
+    let heading = all(sheet, where: { role($0) == "AXHeading" }).first
+    var headerBottom = Reference.sheetMargin
     if let field = searchField {
         let r = rel(frame(field))
+        headerBottom = r.maxY
         check(display, page, "search height", r.height, Reference.sheetSearchHeight)
         check(display, page, "search top", r.minY, Reference.sheetMargin)
         check(display, page, "search right margin", s.width - r.maxX, Reference.sheetMargin)
         let prompt = string(field, "AXPlaceholderValue") ?? label(field)
         record(display, page, "search prompt", expected: "Tìm trong Ứng dụng", got: prompt, ok: prompt == "Tìm trong Ứng dụng")
+        if let heading {
+            let h = rel(frame(heading))
+            record(display, page, "header", expected: "Thêm quy tắc cho ứng dụng", got: label(heading), ok: label(heading) == "Thêm quy tắc cho ứng dụng")
+            check(display, page, "header x", h.minX, Reference.sheetMargin)
+            check(display, page, "header centered on search", h.midY, r.midY)
+            record(display, page, "header left of search", expected: "title ends before the field", got: "\(fmt(h.maxX)) / \(fmt(r.minX))", ok: h.maxX < r.minX)
+        } else {
+            record(display, page, "header", expected: "heading", got: "missing", ok: false)
+        }
     } else {
         record(display, page, "search", expected: "search field", got: "missing", ok: false)
     }
 
-    // The grouped Form: header, the list card, the "Khi đang gõ" card.
-    guard let area = all(sheet, where: { role($0) == "AXScrollArea" && near(frame($0).width, s.width) }).first else {
-        record(display, page, "form", expected: "scroll area", got: "missing", ok: false); return
+    // The list card (a scroll area of its own, outside the Form), then the Form with the
+    // "Khi đang gõ" card.
+    let listArea = all(sheet, where: { role($0) == "AXScrollArea" && !all($0, where: { role($0) == "AXOutline" }).isEmpty }).first
+    guard let area = all(sheet, where: { role($0) == "AXScrollArea" && near(frame($0).width, s.width) && all($0, where: { role($0) == "AXOutline" }).isEmpty }).first,
+          let listArea, let listElement = list() else {
+        record(display, page, "form", expected: "list and Form scroll areas", got: "missing", ok: false); return
     }
     let form = rel(frame(area))
-    let items = children(area).map { (role($0), rel(frame($0)), $0) }
-        .filter { ["AXGroup", "AXHeading", "AXStaticText", "AXScrollArea"].contains($0.0) }
-    if let first = items.first {
-        check(display, page, "first item y", first.1.minY - form.minY, Reference.sheetMargin)
-    }
-    let cards = items.filter { $0.0 == "AXGroup" || $0.0 == "AXScrollArea" }
-    for (i, card) in cards.enumerated() {
-        check(display, page, "card \(i)", card.1, CGRect(x: Reference.sheetMargin, y: card.1.minY, width: s.width - 2 * Reference.sheetMargin, height: card.1.height))
-        if i > 0 { check(display, page, "card \(i - 1) → card \(i)", card.1.minY - cards[i - 1].1.maxY, Reference.cardGap) }
-    }
-    for (i, item) in items.enumerated() where item.0 == "AXHeading" {
-        record(display, page, "header", expected: "Thêm quy tắc cho ứng dụng", got: label(item.2), ok: label(item.2) == "Thêm quy tắc cho ứng dụng")
-        check(display, page, "header x", item.1.minX, Reference.sheetMargin + Reference.cardInset)
-        if i + 1 < items.count { check(display, page, "header → card", items[i + 1].1.minY - item.1.maxY, Reference.headerToCard) }
-    }
-    if let list = list(), let card = cards.first {
-        let r = rel(frame(list))
-        record(display, page, "list fills card", expected: fmt(card.1), got: fmt(r),
-               ok: near(r.minX, card.1.minX) && near(r.width, card.1.width) && near(r.minY, card.1.minY) && near(r.height, card.1.height))
-        record(display, page, "list label", expected: "Ứng dụng", got: label(list), ok: label(list) == "Ứng dụng")
+    let listCard = rel(frame(listElement))
+    check(display, page, "list card", listCard,
+          CGRect(x: Reference.sheetMargin, y: headerBottom + Reference.headerToCard,
+                 width: s.width - 2 * Reference.sheetMargin, height: Reference.sheetListHeight))
+    record(display, page, "list label", expected: "Ứng dụng", got: label(listElement), ok: label(listElement) == "Ứng dụng")
+    let groups = children(area).filter { role($0) == "AXGroup" }.map { rel(frame($0)) }
+    if let card = groups.first {
+        check(display, page, "Khi đang gõ card", card,
+              CGRect(x: Reference.sheetMargin, y: card.minY, width: s.width - 2 * Reference.sheetMargin, height: card.height))
+        check(display, page, "list card → Khi đang gõ card", card.minY - listCard.maxY, Reference.cardGap)
     } else {
-        record(display, page, "list", expected: "app list", got: "missing", ok: false)
+        record(display, page, "Khi đang gõ card", expected: "group", got: "missing", ok: false)
     }
     let segmented = all(sheet, where: { role($0) == "AXRadioGroup" }).first
     if let segmented {
@@ -425,6 +437,65 @@ func measureSheet(display: String) {
     }
     if screenshot("apps-add-sheet-\(display)", w) == nil {
         record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
+    }
+
+    // The list scrolls inside its card (the bug: a List nested in a grouped Form has its
+    // scroller switched off). First a real mouse wheel over the list, then the scroll
+    // bar to the end: the last app must come into the card and "Khi đang gõ" stay in
+    // view; then back to the top.
+    func scrollBar() -> AXUIElement? { children(listArea).first { role($0) == "AXScrollBar" } }
+    func barValue() -> CGFloat { (scrollBar().flatMap { attr($0, kAXValueAttribute) as? NSNumber }).map { CGFloat(truncating: $0) } ?? -1 }
+    if scrollBar() == nil {
+        record(display, page, "list scroll bar", expected: "vertical scroll bar", got: "missing", ok: false)
+    } else {
+        let before = barValue()
+        let area = frame(listArea)
+        let point = CGPoint(x: area.midX, y: area.midY)
+        // The first wheel after the sheet opens can land before the window is under the
+        // pointer: try up to 5 times.
+        for _ in 0..<5 where barValue() <= before + 0.01 {
+            AXUIElementSetAttributeValue(app, kAXFrontmostAttribute as CFString, kCFBooleanTrue)
+            CGWarpMouseCursorPosition(point)
+            CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
+            wait(0.5)
+            for _ in 0..<10 {
+                let wheel = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 1, wheel1: -40, wheel2: 0, wheel3: 0)
+                wheel?.location = point
+                wheel?.post(tap: .cghidEventTap)
+                wait(0.05)
+            }
+            wait(0.5)
+        }
+        record(display, page, "list scrolls with the wheel", expected: "scroll bar value above \(fmt(before))", got: String(format: "%.2f", barValue()),
+               ok: barValue() > before + 0.01)
+        if let bar = scrollBar() {
+            // Rows are sized as they appear, so the end moves: push to the end until the
+            // last app is in view (at most 15 pushes).
+            let area = rel(frame(listArea))
+            func lastInView() -> Bool {
+                guard let last = listRows().last else { return false }
+                let r = rel(frame(last))
+                return r.minY >= area.minY - Reference.tolerance && r.maxY <= area.maxY + Reference.tolerance
+            }
+            for _ in 0..<15 {
+                AXUIElementSetAttributeValue(bar, kAXValueAttribute as CFString, NSNumber(value: 1.0))
+                wait(0.4)
+                if lastInView() { break }
+            }
+            if let last = listRows().last {
+                let r = rel(frame(last))
+                record(display, page, "last app visible at the end", expected: "inside \(fmt(area))", got: fmt(r),
+                       ok: r.minY >= area.minY - Reference.tolerance && r.maxY <= area.maxY + Reference.tolerance)
+            }
+            let typing = all(sheet, where: { role($0) == "AXRadioGroup" }).first.map { rel(frame($0)) }
+            record(display, page, "Khi đang gõ in view while scrolled", expected: "inside the sheet", got: typing.map(fmt) ?? "missing",
+                   ok: typing.map { $0.minY > area.maxY && $0.maxY < s.height } ?? false)
+            if screenshot("apps-add-sheet-bottom-\(display)", w) == nil {
+                record(display, page, "screenshot bottom", expected: "captured", got: "failed", ok: false)
+            }
+            AXUIElementSetAttributeValue(bar, kAXValueAttribute as CFString, NSNumber(value: 0.0))
+            wait(0.5)
+        }
     }
 
     // The search field filters the list (value set through accessibility, then cleared).

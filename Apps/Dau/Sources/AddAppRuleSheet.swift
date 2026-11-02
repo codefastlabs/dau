@@ -8,13 +8,16 @@ import DauShared
 /// "Đề xuất" chip), "Khi đang gõ" (the rule's only setting, D5), Huỷ / Thêm).
 ///
 /// Built from system parts as System Settings builds its sheets (D9; measured on macOS
-/// 27.2, Displays › Advanced… and Keyboard › Input Sources › Edit…): a grouped `Form`
-/// (cards 20 pt from the sheet's edges) and the sheet's own button bar under a divider,
-/// from the toolbar's cancellation and confirmation placements (64 × 24 buttons, 20 pt
-/// from the right and bottom edges). The search field is the system one of
-/// `searchable`, which a sheet puts at its top trailing edge. "Chọn ứng dụng khác…"
-/// (an automatic toolbar item, at the leading end of the button bar) opens the system
-/// open panel for apps stored elsewhere.
+/// 27.2, Displays › Advanced… and Keyboard › Input Sources › Edit…): a header row
+/// (title left, the system search field right), the app list in a `GroupBox` card, the
+/// "Khi đang gõ" card of a grouped `Form` (cards 20 pt from the sheet's edges, 10 pt
+/// apart) and the sheet's own button bar under a divider, from the toolbar's
+/// cancellation and confirmation placements (64 × 24 buttons, 20 pt from the right and
+/// bottom edges). The list is outside the Form because a `List` nested in a grouped
+/// Form cannot scroll. `searchable` would put the field in a toolbar band of its own,
+/// apart from the title (and a sheet shows no toolbar title), so the header row holds
+/// an `NSSearchField` instead. "Chọn ứng dụng khác…" (an automatic toolbar item, at the
+/// leading end of the button bar) opens the system open panel for apps stored elsewhere.
 struct AddAppRuleSheet: View {
     @Environment(SettingsModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -28,6 +31,12 @@ struct AddAppRuleSheet: View {
     static let width: CGFloat = 470
     /// Height of the app list: the mockup's list card.
     static let listHeight: CGFloat = 188
+    /// The sheet's margin, and the search field's size, as `searchable` has it in a sheet.
+    static let margin: CGFloat = 20
+    static let headerToCard: CGFloat = 10
+    static let cardGap: CGFloat = 10
+    static let searchWidth: CGFloat = 183
+    static let searchHeight: CGFloat = 24
 
     private var visibleCandidates: [AppCandidate] {
         AppCandidate.matching(candidates, query: query)
@@ -39,44 +48,48 @@ struct AddAppRuleSheet: View {
     }
 
     var body: some View {
-        Form {
-            Section {
+        VStack(spacing: 0) {
+            // One header row, title left and the system search field right.
+            HStack {
+                Text("Thêm quy tắc cho ứng dụng")
+                    .font(.headline)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer()
+                SheetSearchField(text: $query, prompt: String(localized: "Tìm trong Ứng dụng"))
+                    .frame(width: Self.searchWidth, height: Self.searchHeight)
+            }
+            .padding([.horizontal, .top], Self.margin)
+            // Outside the Form: a List nested in a grouped Form has its scrolling
+            // switched off, so the list sits in its own card and scrolls there.
+            GroupBox {
                 List(visibleCandidates, selection: $selection) { candidate in
-                    HStack {
-                        // System Settings' app list rows (Privacy & Security ›
-                        // Accessibility): a 24 pt icon (`AppIcon.singleLine`).
-                        Image(nsImage: candidate.icon)
-                            .resizable()
-                            .frame(width: AppIcon.singleLine, height: AppIcon.singleLine)
-                            .accessibilityHidden(true)
-                        Text(verbatim: candidate.name)
-                            .lineLimit(1)
-                        if candidate.suggested {
-                            Chip(Text("Đề xuất"), height: 20, fontSize: 11)
-                        }
-                    }
-                    .tag(candidate.id)
+                    row(candidate)
                 }
-                // The list scrolls inside its card, so "Khi đang gõ" stays in view.
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .frame(height: Self.listHeight)
                 .accessibilityLabel(Text("Ứng dụng"))
-            } header: {
-                Text("Thêm quy tắc cho ứng dụng")
             }
-
-            Section {
-                Picker("Khi đang gõ", selection: $underline) {
-                    Text("Không gạch chân").tag(false)
-                    Text("Có gạch chân").tag(true)
+            .frame(height: Self.listHeight)
+            .padding(.horizontal, Self.margin)
+            .padding(.top, Self.headerToCard)
+            Form {
+                Section {
+                    Picker("Khi đang gõ", selection: $underline) {
+                        Text("Không gạch chân").tag(false)
+                        Text("Có gạch chân").tag(true)
+                    }
+                    .pickerStyle(.segmented)
                 }
-                .pickerStyle(.segmented)
             }
+            .formStyle(.grouped)
+            .scrollDisabled(true)
+            // The grouped Form starts its card 20 below its top (SwiftUI's default);
+            // pull it up so the two cards are `cardGap` apart. If macOS changes that
+            // margin, ax-check's "list card → Khi đang gõ card" fails.
+            .contentMargins(.top, Self.cardGap - 20, for: .scrollContent)
+            .fixedSize(horizontal: false, vertical: true)
         }
-        .formStyle(.grouped)
         .frame(width: Self.width)
-        .searchable(text: $query, prompt: Text("Tìm trong Ứng dụng"))
         // A query that hides the selected app clears the selection.
         .onChange(of: query) { selection = visibleSelection }
         .toolbar {
@@ -94,6 +107,23 @@ struct AddAppRuleSheet: View {
             }
         }
         .task { await loadApps() }
+    }
+
+    private func row(_ candidate: AppCandidate) -> some View {
+        HStack {
+            // System Settings' app list rows (Privacy & Security › Accessibility): a
+            // 24 pt icon (`AppIcon.singleLine`).
+            Image(nsImage: candidate.icon)
+                .resizable()
+                .frame(width: AppIcon.singleLine, height: AppIcon.singleLine)
+                .accessibilityHidden(true)
+            Text(verbatim: candidate.name)
+                .lineLimit(1)
+            if candidate.suggested {
+                Chip(Text("Đề xuất"), height: 20, fontSize: 11)
+            }
+        }
+        .tag(candidate.id)
     }
 
     /// Apps in the Applications folders plus running apps, without the ones that
@@ -198,5 +228,38 @@ struct AppListing: Sendable {
             }
         }
         return result
+    }
+}
+
+/// The system search field (`NSSearchField`), the one `searchable` shows, placed in the
+/// sheet's header row: `searchable` itself puts it in a toolbar band of its own, apart
+/// from the title. Focused when the sheet opens, as `searchable` does.
+struct SheetSearchField: NSViewRepresentable {
+    @Binding var text: String
+    let prompt: String
+
+    func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
+
+    func makeNSView(context: Context) -> NSSearchField {
+        let field = NSSearchField()
+        field.placeholderString = prompt
+        field.delegate = context.coordinator
+        field.setAccessibilityLabel(prompt)
+        DispatchQueue.main.async { field.window?.makeFirstResponder(field) }
+        return field
+    }
+
+    func updateNSView(_ field: NSSearchField, context: Context) {
+        if field.stringValue != text { field.stringValue = text }
+    }
+
+    final class Coordinator: NSObject, NSSearchFieldDelegate {
+        var text: Binding<String>
+        init(text: Binding<String>) { self.text = text }
+
+        func controlTextDidChange(_ notification: Notification) {
+            guard let field = notification.object as? NSSearchField else { return }
+            text.wrappedValue = field.stringValue
+        }
     }
 }
