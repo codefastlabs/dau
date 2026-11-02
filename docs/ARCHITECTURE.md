@@ -87,8 +87,8 @@ dau/
   - Trên macOS 26+, nội dung cuộn dưới header được che bằng `scrollEdgeEffectStyle(.hard, for: .top)`.
   - Thanh cuộn theo cài đặt hệ thống. Kiểu overlay không chiếm chỗ. Kiểu legacy chỉ hiện ở mục cần cuộn; mục đó hẹp hơn đúng độ rộng thanh cuộn, còn vị trí mọi thứ giữ nguyên (xem `docs/UI-CHECKS.md`).
 - **Control hệ thống được bọc:**
-  - `SegmentedPicker` bọc `NSSegmentedControl`: `Picker(.segmented)` trên macOS giữ độ rộng nội tại và căn giữa, không trải theo khung như mockup (ví dụ "Kiểu gõ" trải hết card).
-  - `SearchField` bọc `NSSearchField`: cần ô tìm có độ rộng cố định trong toolbar và trong sheet, mà `.searchable` không cho đặt.
+  - `SegmentedPicker` bọc `NSSegmentedControl`, chỉ còn ở cửa sổ onboarding: `Picker(.segmented)` trên macOS 14–15 giữ độ rộng nội tại và căn giữa, không trải theo khung như mockup. Cửa sổ Cài đặt dùng `Picker(.segmented)` (macOS 26+: `buttonSizing(.flexible)`).
+- **Sheet thêm quy tắc** (`AddAppRuleSheet`): `Form(.grouped)` + `searchable` (ô tìm hệ thống ở trên phải sheet) + nút trên `toolbar` (`cancellationAction`, `confirmationAction`; "Chọn ứng dụng khác…" là `.automatic`, nằm đầu trái thanh nút), như sheet của System Settings (D9, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`, mục Sheet). Danh sách ứng dụng là `List(selection:)` cao cố định trong thẻ đầu, để "Khi đang gõ" luôn trong tầm nhìn.
 - Bản Debug có cờ chạy không mở cửa sổ (`--print-…`) và `--capture-window` để chụp cửa sổ thật; `scripts/check-settings-window` dùng cờ này để kiểm giao diện.
 - **Không sandbox (D37).** Entitlement chỉ còn App Group; hardened runtime bật. Các ngoại lệ chỉ có nghĩa trong sandbox đã bỏ: `temporary-exception.shared-preference.read-only` (`com.apple.symbolichotkeys`, `com.apple.HIToolbox`, để đọc phím tắt nguồn nhập liệu và tuỳ chọn "Tự động chuyển…") và `files.user-selected.read-only` (bảng chọn app). App vẫn chỉ **đọc** các tuỳ chọn hệ thống đó (N4). Bộ gõ giữ sandbox, App Group, không mạng (N2). `scripts/selftest-app-group.sh` PASS với app không sandbox (30/10/2026).
 - Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M7 (xem `docs/UI.md`).

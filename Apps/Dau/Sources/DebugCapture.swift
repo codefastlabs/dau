@@ -353,6 +353,20 @@ enum DebugCapture {
     /// and leave the installed input method alone (real-window checks).
     static let settingsWindowOnly = CommandLine.arguments.contains("--settings-window")
 
+    /// `--appearance light|dark`: this app only draws in that appearance (the real-window
+    /// checks capture the sheet in the appearance the system is not in). The system
+    /// appearance is not changed (N4); `-AppleInterfaceStyle` as an argument does not
+    /// change the windows' appearance (measured on macOS 27.2).
+    static func applyAppearanceOverride() {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--appearance"), i + 1 < args.count else { return }
+        switch args[i + 1] {
+        case "light": NSApp.appearance = NSAppearance(named: .aqua)
+        case "dark": NSApp.appearance = NSAppearance(named: .darkAqua)
+        default: break
+        }
+    }
+
     /// `--width <pt>`: capture at this window width instead of the default.
     static let captureWidth: CGFloat? = {
         let args = CommandLine.arguments

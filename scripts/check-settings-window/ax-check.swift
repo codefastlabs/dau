@@ -1,6 +1,6 @@
 // Real-window check of the Settings window (docs/UI-CHECKS.md, "Cửa sổ thật").
 //
-// Usage: ax-check <pid> <output-dir> [--banner]
+// Usage: ax-check <pid> <output-dir> [--banner | --sheet-only]
 //
 // Reads the frames of the running app's Settings window through the Accessibility API
 // (the launching terminal needs the Accessibility permission) and compares them with
@@ -11,7 +11,12 @@
 // accessibility (no clicks), measured and captured with `screencapture -l`
 // (<section>-<scale>x.png). Then the window's size limits are tried and the window is
 // put back at 740 × 560. `--banner`: the app runs with `--not-enabled`; also checks
-// that the banner is the first card. Exit status 0 only if every check passes.
+// that the banner is the first card. Without `--banner`, each pass also opens the
+// add-rule sheet ("+" on Ứng dụng, pressed through accessibility), measures it against
+// System Settings' sheets, captures it empty and with a row selected, and closes it
+// with Huỷ (nothing is added). `--sheet-only`: only the sheet, on the first display
+// (run.sh uses it for the appearance the system is not in). Exit status 0 only if
+// every check passes.
 //
 // Expected values (pt, origin at the window's top-left):
 // - toolbar 52 tall; close button 18,18 16×16; page title starting at the detail
@@ -24,6 +29,16 @@
 // - switches 36×16; buttons, pop-ups and segmented controls 24 tall;
 // - window limits: 740 × 452 at least, 976 wide at most (sidebar + 744, beyond which
 //   a grouped Form centers its 704 pt cards: UI-CHECKS item 1).
+// - add-rule sheet, as System Settings' sheets (Displays › Advanced…: 470 wide; it and
+//   Keyboard › Input Sources › Edit…: grouped Form with cards 20 from the sheet's
+//   edges and 20 below its top, cards 10 apart; button bar under the Form, buttons
+//   64 × 24 at least, 21 below the Form, 20 from the right and bottom edges): sheet
+//   470 wide; search field (the sheet's `searchable`) 24 tall, 20 from the top and
+//   right edges; first item 20 below the Form's top; cards x 20, width = sheet − 40;
+//   header x = card + 10, header → card 10, card → card 10; the app list fills its
+//   card; segmented 24 tall; Huỷ and Thêm 24 tall, ≥ 64 wide, Thêm 20 from the right
+//   and bottom edges, "Chọn ứng dụng khác…" at x 20 on the same line; Thêm disabled
+//   until a row is selected; the search field filters the list.
 import AppKit
 
 let args = CommandLine.arguments
@@ -32,6 +47,7 @@ guard args.count >= 3, let pid = pid_t(args[1]) else {
 }
 let outDir = URL(fileURLWithPath: args[2], isDirectory: true)
 let bannerRun = args.contains("--banner")
+let sheetOnly = args.contains("--sheet-only")
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
 guard AXIsProcessTrusted() else {
@@ -277,6 +293,157 @@ func measure(display: String) {
     }
 }
 
+// MARK: Add-rule sheet
+
+/// The sheet attached to the Settings window, if any.
+func attachedSheet() -> AXUIElement? { children(window).first { role($0) == "AXSheet" } }
+
+/// Opens the add-rule sheet from the Ứng dụng page through accessibility (no clicks),
+/// checks it, captures it empty and with a row selected, and closes it with Huỷ.
+func measureSheet(display: String) {
+    let page = "add-sheet"
+    guard let outline = all(window, where: { role($0) == "AXOutline" }).first,
+          let sidebarRows = attr(outline, kAXRowsAttribute) as? [AXUIElement], sidebarRows.count == sections.count else {
+        record(display, page, "sidebar", expected: "outline", got: "missing", ok: false); return
+    }
+    AXUIElementSetAttributeValue(outline, kAXSelectedRowsAttribute as CFString, [sidebarRows[2]] as CFArray)
+    wait(1.0)
+    let toolbarItems = all(window, where: { role($0) == "AXToolbar" }).first.map { children($0) } ?? []
+    guard let add = toolbarItems.first(where: { role($0) == "AXButton" && label($0) == "Thêm ứng dụng" }) else {
+        record(display, page, "toolbar +", expected: "button", got: "missing", ok: false); return
+    }
+    AXUIElementPerformAction(add, kAXPressAction as CFString)
+    var found: AXUIElement?
+    for _ in 0..<25 where found == nil {
+        found = attachedSheet()
+        if found == nil { wait(0.2) }
+    }
+    guard let sheet = found else {
+        record(display, page, "sheet", expected: "opened by +", got: "missing", ok: false); return
+    }
+    // Screenshots of an active window, as the user sees it.
+    AXUIElementSetAttributeValue(app, kAXFrontmostAttribute as CFString, kCFBooleanTrue)
+    let w = frame(window)
+    let s = frame(sheet)
+    func rel(_ r: CGRect) -> CGRect { r.offsetBy(dx: -s.minX, dy: -s.minY) }
+    func list() -> AXUIElement? { all(sheet, where: { role($0) == "AXOutline" }).first }
+    func listRows() -> [AXUIElement] { list().flatMap { attr($0, kAXRowsAttribute) as? [AXUIElement] } ?? [] }
+    // The app list is read off the main thread: wait for it.
+    for _ in 0..<50 where listRows().isEmpty { wait(0.2) }
+    wait(0.5)
+
+    check(display, page, "sheet width", s.width, 470)
+
+    // The system search field of the sheet, at its top trailing edge.
+    let searchField = all(sheet, where: { subrole($0) == "AXSearchField" }).first
+    if let field = searchField {
+        let r = rel(frame(field))
+        check(display, page, "search height", r.height, 24)
+        check(display, page, "search top", r.minY, 20)
+        check(display, page, "search right margin", s.width - r.maxX, 20)
+        let prompt = string(field, "AXPlaceholderValue") ?? label(field)
+        record(display, page, "search prompt", expected: "Tìm trong Ứng dụng", got: prompt, ok: prompt == "Tìm trong Ứng dụng")
+    } else {
+        record(display, page, "search", expected: "search field", got: "missing", ok: false)
+    }
+
+    // The grouped Form: header, the list card, the "Khi đang gõ" card.
+    guard let area = all(sheet, where: { role($0) == "AXScrollArea" && near(frame($0).width, s.width) }).first else {
+        record(display, page, "form", expected: "scroll area", got: "missing", ok: false); return
+    }
+    let form = rel(frame(area))
+    let items = children(area).map { (role($0), rel(frame($0)), $0) }
+        .filter { ["AXGroup", "AXHeading", "AXStaticText", "AXScrollArea"].contains($0.0) }
+    if let first = items.first {
+        check(display, page, "first item y", first.1.minY - form.minY, formMargin)
+    }
+    let cards = items.filter { $0.0 == "AXGroup" || $0.0 == "AXScrollArea" }
+    for (i, card) in cards.enumerated() {
+        check(display, page, "card \(i)", card.1, CGRect(x: formMargin, y: card.1.minY, width: s.width - 2 * formMargin, height: card.1.height))
+        if i > 0 { check(display, page, "card \(i - 1) → card \(i)", card.1.minY - cards[i - 1].1.maxY, 10) }
+    }
+    for (i, item) in items.enumerated() where item.0 == "AXHeading" {
+        record(display, page, "header", expected: "Thêm quy tắc cho ứng dụng", got: label(item.2), ok: label(item.2) == "Thêm quy tắc cho ứng dụng")
+        check(display, page, "header x", item.1.minX, formMargin + 10)
+        if i + 1 < items.count { check(display, page, "header → card", items[i + 1].1.minY - item.1.maxY, 10) }
+    }
+    if let list = list(), let card = cards.first {
+        let r = rel(frame(list))
+        record(display, page, "list fills card", expected: fmt(card.1), got: fmt(r),
+               ok: near(r.minX, card.1.minX) && near(r.width, card.1.width) && near(r.minY, card.1.minY) && near(r.height, card.1.height))
+        record(display, page, "list label", expected: "Ứng dụng", got: label(list), ok: label(list) == "Ứng dụng")
+    } else {
+        record(display, page, "list", expected: "app list", got: "missing", ok: false)
+    }
+    let segmented = all(sheet, where: { role($0) == "AXRadioGroup" }).first
+    if let segmented {
+        check(display, page, "segmented \"\(label(segmented))\" height", rel(frame(segmented)).height, 24)
+        record(display, page, "segmented label", expected: "Khi đang gõ", got: label(segmented), ok: label(segmented) == "Khi đang gõ")
+    } else {
+        record(display, page, "segmented", expected: "Khi đang gõ", got: "missing", ok: false)
+    }
+
+    // The button bar.
+    func button(_ title: String) -> AXUIElement? { all(sheet, where: { role($0) == "AXButton" && label($0) == title }).first }
+    func enabled(_ e: AXUIElement?) -> Bool { e.flatMap { attr($0, kAXEnabledAttribute) as? Bool } ?? false }
+    let cancel = button("Huỷ"), confirm = button("Thêm"), other = button("Chọn ứng dụng khác…")
+    if let cancel, let confirm, let other {
+        let c = rel(frame(cancel)), a = rel(frame(confirm)), o = rel(frame(other))
+        check(display, page, "Thêm height", a.height, 24)
+        record(display, page, "Thêm width", expected: "≥ 64", got: fmt(a.width), ok: a.width >= 63)
+        check(display, page, "Thêm right margin", s.width - a.maxX, 20)
+        check(display, page, "Thêm bottom margin", s.height - a.maxY, 20)
+        check(display, page, "Form → buttons", a.minY - form.maxY, 21)
+        check(display, page, "Huỷ height", c.height, 24)
+        record(display, page, "Huỷ width", expected: "≥ 64", got: fmt(c.width), ok: c.width >= 63)
+        record(display, page, "Huỷ before Thêm", expected: "same line, left of Thêm", got: "\(fmt(c)) / \(fmt(a))",
+               ok: near(c.minY, a.minY) && c.maxX < a.minX)
+        check(display, page, "Chọn ứng dụng khác… x", o.minX, 20)
+        check(display, page, "Chọn ứng dụng khác… y", o.minY, a.minY)
+        record(display, page, "Thêm without selection", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
+    } else {
+        record(display, page, "buttons", expected: "Chọn ứng dụng khác… / Huỷ / Thêm",
+               got: "\(other == nil ? "-" : "ok") / \(cancel == nil ? "-" : "ok") / \(confirm == nil ? "-" : "ok")", ok: false)
+    }
+    if screenshot("apps-add-sheet-\(display)", w) == nil {
+        record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
+    }
+
+    // The search field filters the list (value set through accessibility, then cleared).
+    let total = listRows().count
+    if let field = searchField, let firstRow = listRows().first,
+       let name = all(firstRow, where: { role($0) == "AXStaticText" }).first.map(label) {
+        AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, name as CFString)
+        wait(0.8)
+        let filtered = listRows().count
+        record(display, page, "search filters", expected: "1…\(total - 1) rows for \"\(name)\"", got: "\(filtered)",
+               ok: filtered >= 1 && filtered < total)
+        AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "" as CFString)
+        wait(0.8)
+        check(display, page, "search cleared rows", CGFloat(listRows().count), CGFloat(total), tolerance: 0)
+    }
+
+    // A selection enables Thêm.
+    if let list = list(), let row = listRows().first {
+        AXUIElementSetAttributeValue(list, kAXSelectedRowsAttribute as CFString, [row] as CFArray)
+        wait(0.8)
+        record(display, page, "Thêm with selection", expected: "enabled", got: enabled(button("Thêm")) ? "enabled" : "disabled",
+               ok: enabled(button("Thêm")))
+        if screenshot("apps-add-sheet-selected-\(display)", w) == nil {
+            record(display, page, "screenshot selected", expected: "captured", got: "failed", ok: false)
+        }
+    }
+
+    // Huỷ closes the sheet; nothing is added.
+    if let cancel = button("Huỷ") { AXUIElementPerformAction(cancel, kAXPressAction as CFString) }
+    var closed = false
+    for _ in 0..<25 where !closed {
+        closed = attachedSheet() == nil
+        if !closed { wait(0.2) }
+    }
+    record(display, page, "Huỷ closes", expected: "closed", got: closed ? "closed" : "open", ok: closed)
+}
+
 // One pass per display scale: the user has a Retina and a 1x display.
 let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
 var seenScales = Set<CGFloat>()
@@ -285,11 +452,13 @@ for screen in NSScreen.screens where seenScales.insert(screen.backingScaleFactor
     let visible = screen.visibleFrame
     let origin = CGPoint(x: visible.minX + 40, y: primaryHeight - visible.maxY + 40)
     setFrame(window, origin: origin, size: size)
-    measure(display: display)
+    if !sheetOnly { measure(display: display) }
+    if !bannerRun { measureSheet(display: display) }
+    if sheetOnly { break }
 }
 
 // Window limits.
-if !bannerRun {
+if !bannerRun && !sheetOnly {
     setFrame(window, size: CGSize(width: 1400, height: 700))
     check("-", "-", "max window width", frame(window).width, 976)
     setFrame(window, size: CGSize(width: 600, height: 300))

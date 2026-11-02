@@ -73,6 +73,20 @@ Lưu ý khi đọc số: máy đo đang hiện thanh cuộn kiểu cũ (luôn hi
 | Nút bấm | Cao 24, nền phẳng, góc ≈ 5, không viền; ví dụ "Đặt…" 55 × 24 | Cao 24, cùng hình dáng; "Đổi…" 55 × 24 | Khớp. |
 | Segmented | Cao 24, góc ≈ 5, ô chọn nền màu nhấn | Cao 24, ô bằng nhau | Khớp về cao. |
 
+### Sheet
+
+Đo 02/11/2026, cùng máy, giao diện Tối. Sheet mở bằng AXPress trên nút của pane (mở bằng URL), đóng bằng "Xong"/"Huỷ"; không đổi cài đặt nào. Toạ độ tính từ góc trên trái sheet.
+
+| Thông số | Màn hình › Nâng cao… | Bàn phím › Nguồn đầu vào › Sửa… | Bàn phím › Sửa… › + (AppKit cũ) | SwiftUI (`Form(.grouped)` + `searchable` + `toolbar` trong sheet) |
+|---|---|---|---|---|
+| Kích thước | 470 × 454 | 640 × 468 (sidebar 200 + Form) | 564 × 392 | Rộng theo `frame(width:)`, cao theo nội dung Form + thanh tìm 44 + thanh nút 65 |
+| Thẻ của Form | x 20, rộng = sheet − 40, cách mép trên 20, thẻ cách thẻ 10, tiêu đề nhóm → thẻ 10 | Như cột trái (cách mép cột 20) | — (bảng có viền) | Như System Settings; có ô tìm thì Form bắt đầu dưới thanh tìm (y 44) và thẻ/tiêu đề đầu cách 20 |
+| Thanh nút | Vạch ngăn dưới Form; "Xong" 64 × 24, nền màu nhấn, cách mép phải và mép dưới 20, cách đáy Form 21 | Như bên trái | "Huỷ", "Thêm" 72 × 26 (kiểu cũ), cách mép 19–20 | `ToolbarItem(.cancellationAction / .confirmationAction)`: vạch ngăn, nút tối thiểu 64 × 24, cách mép phải và dưới 20, cách đáy Form 21, hai nút cách nhau 8; `.automatic` đặt ở đầu trái thanh nút (x 20) |
+| Ô tìm | Không có | Không có | Dưới trái, 226 × 26 (kiểu cũ) | `searchable` trong sheet: trên phải, 183 × 24, cách mép trên và phải 20 |
+| Tiêu đề | Không có | Không có | Một dòng chữ 13 ở trên trái | `navigationTitle` không hiện (không có NavigationStack); có NavigationStack thì tiêu đề nằm hàng riêng dưới ô tìm, x 48 |
+
+Kết luận cho sheet của Dấu: `Form(.grouped)` + `searchable` + nút trên `toolbar` cho ra đúng khoảng cách và nút của sheet System Settings (dựng SwiftUI). Sheet của System Settings không có tiêu đề; nội dung của mockup có tiêu đề nên đặt làm tiêu đề nhóm đầu của Form.
+
 ### Độ rộng tối đa của Form dạng nhóm (lỗi "cột hẹp ở giữa")
 
 - `Form.formStyle(.grouped)` giới hạn thẻ ở **704 pt** và đặt giữa pane. Ở cột chi tiết rộng ≤ 744 (thẻ = pane − 40) không thấy giới hạn; rộng hơn thì hai bên lề to dần. Đo được: pane 676 → thẻ 636; pane 856 → thẻ 704 (lề 76); pane 1256 → thẻ 704 (lề 276).

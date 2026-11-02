@@ -10,6 +10,7 @@ Bố cục, khoảng cách, cỡ chữ và hình dáng control theo System Setti
 - Sidebar rộng 232, ô tìm (10, 61) 212 × 28; hàng 32, vệt chọn cách mép 10, bo ≈ 7; ô icon 20 tại x 19, chữ tại x ≈ 46, 13 thường; nhóm cách nhau 13.
 - Form dạng nhóm: thẻ cách mép cột 20, bo ≈ 11, thẻ cách nhau 10; tiêu đề nhóm 13 semibold, cách thẻ 10; mô tả nhóm 11 phụ, nằm dưới tiêu đề.
 - Hàng: lề 10; cao 37,5 (nhãn + công tắc/pop-up), 55,5 (nhãn + một dòng phụ), 40–44 (có nút); vạch ngăn 1, thụt 10; công tắc 36 × 16, pop-up/nút/segmented cao 24.
+- Sheet (Màn hình › Nâng cao…): rộng 470, `Form(.grouped)` thẻ cách mép 20; thanh nút dưới vạch ngăn, nút 64 × 24 cách mép phải và dưới 20 — đúng như nút `cancellationAction`/`confirmationAction` trên `toolbar` của sheet SwiftUI.
 - Mặc định SwiftUI (`NavigationSplitView` + `List` sidebar + `Form(.grouped)`) đã khớp gần hết khi cột sidebar 232 và cửa sổ ≤ 976 rộng (Form giới hạn thẻ 704 và căn giữa khi cột chi tiết rộng hơn 744).
 
 ## Menu nguồn nhập liệu (hệ thống vẽ)

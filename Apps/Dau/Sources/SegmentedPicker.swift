@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// The system segmented control (NSSegmentedControl), with segments of equal width
-/// filling the width it is given, for the onboarding window and the add-rule sheet.
+/// filling the width it is given, for the onboarding window.
 /// SwiftUI's segmented `Picker` keeps its intrinsic width on macOS 14–15; on macOS 26+
 /// `buttonSizing(.flexible)` makes it fill (measured on 27.2: "Kiểu gõ" in Settings
 /// spans the row, 528 pt), which the Settings window uses. Its look (selection color,

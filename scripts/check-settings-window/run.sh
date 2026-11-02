@@ -15,8 +15,13 @@
 # capture code runs; `--settings-window` only keeps the onboarding closed and the
 # installed input method untouched), and ax-check.swift reads its frames through the
 # Accessibility API on every display and compares them with System Settings (real/),
-# once more with the "Dấu chưa được bật" banner (real-banner/). Needs the
-# Accessibility permission of the terminal. The window is put back at 740 × 560.
+# opens the add-rule sheet ("+" on Ứng dụng) through accessibility, checks it,
+# captures it empty and with a row selected and closes it with Huỷ (nothing is added);
+# once more with the "Dấu chưa được bật" banner (real-banner/), and once with the app
+# alone in the appearance the system is not in (`--appearance`, Debug only: sets this
+# app's appearance; the system appearance is not changed) for the sheet only
+# (real-sheet-light/ or real-sheet-dark/). Needs the Accessibility permission of the
+# terminal. The window is put back at 740 × 560.
 # Exit status 0 only if every check passes.
 #
 # The window is moved off screen but exists for a few seconds per run.
@@ -66,14 +71,11 @@ result=0
 
 # The real window (docs/UI-CHECKS.md, "Cửa sổ thật").
 swiftc -O -o "$work/ax-check" "$here/ax-check.swift"
-real_window() {   # <output-dir> [--banner]
-  local dir=$1 banner=${2:-}
+real_window() {   # <output-dir> <ax-check flag or ""> [app arguments…]
+  local dir=$1 flag=$2
+  shift 2
   local before=$(pgrep -f "$app/Contents/MacOS/Dau" | sort)
-  if [[ -n $banner ]]; then
-    open -n "$app" --args --settings-window --not-enabled
-  else
-    open -n "$app" --args --settings-window
-  fi
+  open -n "$app" --args --settings-window "$@"
   local pid=""
   for i in {1..50}; do
     pid=$(comm -13 <(echo "$before") <(pgrep -f "$app/Contents/MacOS/Dau" | sort) | tail -1)
@@ -82,12 +84,20 @@ real_window() {   # <output-dir> [--banner]
   done
   [[ -z $pid ]] && { echo "FAIL real window: app did not start"; return 1; }
   local rc=0
-  "$work/ax-check" "$pid" "$dir" $banner > "$dir.txt" || rc=1
+  "$work/ax-check" "$pid" "$dir" ${flag:+$flag} > "$dir.txt" || rc=1
   tail -3 "$dir.txt"
   kill "$pid" 2>/dev/null
   return $rc
 }
-mkdir -p "$out/real" "$out/real-banner"
-real_window "$out/real" || result=1
-real_window "$out/real-banner" --banner || result=1
+# The appearance the system is not in, for the sheet pass of this app only.
+if [[ $(defaults read -g AppleInterfaceStyle 2>/dev/null) == Dark ]]; then
+  other=light
+else
+  other=dark
+fi
+other_dir=real-sheet-$other
+mkdir -p "$out/real" "$out/real-banner" "$out/$other_dir"
+real_window "$out/real" "" || result=1
+real_window "$out/real-banner" --banner --not-enabled || result=1
+real_window "$out/$other_dir" --sheet-only --appearance "$other" || result=1
 exit $result

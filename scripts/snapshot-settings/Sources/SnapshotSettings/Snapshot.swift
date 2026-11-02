@@ -78,6 +78,43 @@ enum Snapshot {
         return Result(rep: rep, frames: frames, scale: CGFloat(rep.pixelsWide) / size.width)
     }
 
+    /// Presents `sheet` with SwiftUI's `.sheet` on an off-screen window of `parentSize`
+    /// and renders the sheet window alone (its toolbar search field and button bar
+    /// included; no vibrancy). Nil when no sheet attached.
+    @discardableResult
+    static func renderSheet<V: View>(_ sheet: V, to url: URL?, appearance: NSAppearance.Name,
+                                     parentSize: CGSize = CGSize(width: 740, height: 560),
+                                     settle: Int = 60) -> NSBitmapImageRep? {
+        let window = ActiveLookWindow(contentRect: CGRect(origin: CGPoint(x: -6000, y: -6000), size: parentSize),
+                                      styleMask: [.titled, .closable, .fullSizeContentView],
+                                      backing: .buffered, defer: false)
+        window.appearance = NSAppearance(named: appearance)
+        let host = NSHostingView(rootView: Color.clear.sheet(isPresented: .constant(true)) { sheet })
+        host.frame = CGRect(origin: .zero, size: parentSize)
+        window.contentView = host
+        window.orderFrontRegardless()
+        for _ in 0..<settle {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.05))
+        }
+        defer { window.orderOut(nil) }
+        guard let sheetWindow = window.attachedSheet, let content = sheetWindow.contentView else { return nil }
+        content.layoutSubtreeIfNeeded()
+        let frameView = content.superview ?? content
+        frameView.display()
+        guard let rep = frameView.bitmapImageRepForCachingDisplay(in: frameView.bounds) else { return nil }
+        frameView.cacheDisplay(in: frameView.bounds, to: rep)
+        if let url, let data = rep.representation(using: .png, properties: [:]) {
+            do {
+                try data.write(to: url)
+                print(url.path)
+            } catch {
+                print("cannot write \(url.path): \(error)")
+            }
+        }
+        sheetWindow.sheetParent?.endSheet(sheetWindow)
+        return rep
+    }
+
     /// Raw sRGB bytes of one pixel (the capture's bytes are sRGB values even though the
     /// bitmap is tagged Display P3; converting would shift mid-grays).
     static func pixel(_ result: Result, at point: CGPoint) -> (r: Double, g: Double, b: Double) {

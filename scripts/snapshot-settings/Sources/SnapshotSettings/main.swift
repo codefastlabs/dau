@@ -195,21 +195,21 @@ let failed: Bool = MainActor.assumeIsolated {
                 rows.append("\(board.page)-\(board.mode) | \(key) | \(f(mock.frames[key])) | \(f((real?.1 ?? shot.frames)[appKey]))")
             }
         }
-        // The add-rule sheet: the dialog only.
+        // The add-rule sheet: the dialog only, against the sheet presented off screen.
         if let full = Mockup.render(artboards.appendingPathComponent("SettingsAppsAdd.dc.html"),
                                     size: CGSize(width: 900, height: 680), crop: .zero,
                                     measure: ["dialog": "document.querySelector('[role=dialog]').getBoundingClientRect()"]),
            let dialog = full.frames["dialog"] {
             let crop = dialog.integral
             for (mode, appearance) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-                let sheet = Snapshot.render(AddAppRuleSheet().environment(model).fixedSize(),
-                                            to: outDir.appendingPathComponent("apps-add-sheet-\(mode).png"),
-                                            appearance: appearance, size: CGSize(width: 460, height: crop.height),
-                                            settle: 60)
+                let sheet = Snapshot.renderSheet(AddAppRuleSheet().environment(model),
+                                                 to: outDir.appendingPathComponent("apps-add-sheet-\(mode).png"),
+                                                 appearance: appearance)
+                if sheet == nil { print("cannot present the add-rule sheet (\(mode))") }
                 if mode == "light", let mock = Mockup.render(
                     artboards.appendingPathComponent("SettingsAppsAdd.dc.html"),
                     size: CGSize(width: 900, height: 680), crop: crop, measure: [:]), let sheet {
-                    Snapshot.sideBySide([mock.image, sheet.rep],
+                    Snapshot.sideBySide([mock.image, sheet],
                                         to: outDir.appendingPathComponent("apps-add-compare-light.png"))
                 }
             }

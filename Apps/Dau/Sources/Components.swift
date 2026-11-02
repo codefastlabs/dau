@@ -3,14 +3,14 @@ import SwiftUI
 import DauShared
 
 // Pieces shared by the Settings pages, the add-rule sheet and the onboarding window.
-// The Settings pages are grouped `Form`s with the system's metrics (D9, System
-// Settings as the reference); the custom pieces here are content from the mockup
-// that has no system equivalent (preview, example chips, "Mới", the banner). The
-// card and row primitives (`SettingsCard`, `SettingsRow`) remain for the onboarding
-// window and the add-rule sheet only. Colors are system colors only.
+// The Settings pages and the add-rule sheet are grouped `Form`s with the system's
+// metrics (D9, System Settings as the reference); the custom pieces here are content
+// from the mockup that has no system equivalent (preview, example chips, "Mới", the
+// banner). The card primitive (`SettingsCard`), `SettingsColors` and `settingsButton`
+// remain for the onboarding window only. Colors are system colors only.
 
-/// Page and card backgrounds of the onboarding window and the add-rule sheet (the
-/// Settings pages use the grouped Form's own colors), chosen among system colors (no
+/// Page and card backgrounds of the onboarding window (the Settings pages and the
+/// add-rule sheet use the grouped Form's own colors), chosen among system colors (no
 /// blending, no opacity) so the card is lighter than the page in both appearances, as
 /// in the mockup. Resolved on macOS 27 (`--capture-window`):
 /// - light: page `underPageBackgroundColor` (light gray), card `controlBackgroundColor`
@@ -200,8 +200,7 @@ struct SectionHeader: View {
     }
 }
 
-/// A rounded card holding rows (onboarding, add-rule sheet): radius 14, 1 pt
-/// separator border.
+/// A rounded card holding rows (onboarding): radius 14, 1 pt separator border.
 struct SettingsCard<Content: View>: View {
     var padding: CGFloat = 0
     @ViewBuilder var content: Content
@@ -216,48 +215,6 @@ struct SettingsCard<Content: View>: View {
         .overlay {
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .strokeBorder(SettingsColors.separator, lineWidth: 1)
-        }
-    }
-}
-
-/// A row of a `SettingsCard` (add-rule sheet): label with an optional hint below it,
-/// and trailing controls.
-struct SettingsRow<Label: View, Trailing: View>: View {
-    var minHeight: CGFloat = 48
-    @ViewBuilder var label: Label
-    @ViewBuilder var trailing: Trailing
-
-    var body: some View {
-        HStack(alignment: .center, spacing: 12) {
-            VStack(alignment: .leading, spacing: 2) { label }
-                .frame(maxWidth: .infinity, alignment: .leading)
-            trailing
-        }
-        .font(.system(size: 13))
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .frame(minHeight: minHeight)
-    }
-}
-
-extension SettingsRow where Label == RowLabel {
-    init(_ title: Text, hint: Text? = nil, minHeight: CGFloat = 48,
-         @ViewBuilder trailing: () -> Trailing) {
-        self.minHeight = minHeight
-        self.label = RowLabel(title: title, hint: hint)
-        self.trailing = trailing()
-    }
-}
-
-/// Row title (13, primary) and hint (12, secondary).
-struct RowLabel: View {
-    let title: Text
-    let hint: Text?
-
-    var body: some View {
-        title.foregroundStyle(.primary)
-        if let hint {
-            Hint(hint)
         }
     }
 }
@@ -277,7 +234,7 @@ struct Hint: View {
 }
 
 extension View {
-    /// Buttons as in the mockup: capsule, about 30 pt tall.
+    /// Onboarding buttons as in the mockup: capsule, about 30 pt tall.
     func settingsButton() -> some View {
         self.controlSize(.large).buttonBorderShape(.capsule)
     }

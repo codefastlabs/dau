@@ -3,11 +3,18 @@ import SwiftUI
 import UniformTypeIdentifiers
 import DauShared
 
-/// "Thêm quy tắc cho ứng dụng" sheet (mockup "SettingsAppsAdd"), 460 wide: search,
-/// a card listing the apps in the Applications folders and the running apps without a
-/// stored rule (apps of the compatibility list carry the "Đề xuất" chip), a card with
-/// "Khi đang gõ" (the rule's only setting, D5), then Huỷ / Thêm. "Chọn ứng dụng khác…"
-/// opens the system open panel for apps stored elsewhere.
+/// "Thêm quy tắc cho ứng dụng" sheet (mockup "SettingsAppsAdd" for the content: title,
+/// search, the apps without a stored rule (apps of the compatibility list carry the
+/// "Đề xuất" chip), "Khi đang gõ" (the rule's only setting, D5), Huỷ / Thêm).
+///
+/// Built from system parts as System Settings builds its sheets (D9; measured on macOS
+/// 27.2, Displays › Advanced… and Keyboard › Input Sources › Edit…): a grouped `Form`
+/// (cards 20 pt from the sheet's edges) and the sheet's own button bar under a divider,
+/// from the toolbar's cancellation and confirmation placements (64 × 24 buttons, 20 pt
+/// from the right and bottom edges). The search field is the system one of
+/// `searchable`, which a sheet puts at its top trailing edge. "Chọn ứng dụng khác…"
+/// (an automatic toolbar item, at the leading end of the button bar) opens the system
+/// open panel for apps stored elsewhere.
 struct AddAppRuleSheet: View {
     @Environment(SettingsModel.self) private var model
     @Environment(\.dismiss) private var dismiss
@@ -16,6 +23,11 @@ struct AddAppRuleSheet: View {
     @State private var candidates: [AppCandidate] = []
     @State private var selection: AppCandidate.ID?
     @State private var underline = false
+
+    /// System Settings' grouped-Form sheet (Displays › Advanced…) is 470 wide.
+    static let width: CGFloat = 470
+    /// Height of the app list: the mockup's list card.
+    static let listHeight: CGFloat = 188
 
     private var visibleCandidates: [AppCandidate] {
         let query = query.trimmingCharacters(in: .whitespaces)
@@ -26,65 +38,56 @@ struct AddAppRuleSheet: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            Text("Thêm quy tắc cho ứng dụng")
-                .font(.system(size: 15, weight: .bold))
-                .accessibilityAddTraits(.isHeader)
-
-            SearchField(text: $query, prompt: String(localized: "Tìm trong Ứng dụng"))
-
-            SettingsCard {
+        Form {
+            Section {
                 List(visibleCandidates, selection: $selection) { candidate in
-                    HStack(spacing: 10) {
+                    HStack {
                         Image(nsImage: candidate.icon)
                             .resizable()
                             .frame(width: 24, height: 24)
                             .accessibilityHidden(true)
                         Text(verbatim: candidate.name)
-                            .font(.system(size: 13))
                             .lineLimit(1)
                         if candidate.suggested {
                             Chip(Text("Đề xuất"), height: 20, fontSize: 11)
                         }
                     }
-                    .frame(height: 40)
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 1, leading: 4, bottom: 1, trailing: 4))
                     .tag(candidate.id)
                 }
+                // The list scrolls inside its card, so "Khi đang gõ" stays in view.
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
-                .frame(height: 188)
-                .padding(6)
+                .frame(height: Self.listHeight)
                 .accessibilityLabel(Text("Ứng dụng"))
+            } header: {
+                Text("Thêm quy tắc cho ứng dụng")
             }
 
-            SettingsCard {
-                SettingsRow(Text("Khi đang gõ")) {
-                    SegmentedPicker(String(localized: "Khi đang gõ"), selection: $underline,
-                                    options: [(false, String(localized: "Không gạch chân")),
-                                              (true, String(localized: "Có gạch chân"))])
-                        .frame(width: 240)
+            Section {
+                Picker("Khi đang gõ", selection: $underline) {
+                    Text("Không gạch chân").tag(false)
+                    Text("Có gạch chân").tag(true)
                 }
+                .pickerStyle(.segmented)
             }
-
-            HStack(spacing: 8) {
+        }
+        .formStyle(.grouped)
+        .frame(width: Self.width)
+        .searchable(text: $query, prompt: Text("Tìm trong Ứng dụng"))
+        .toolbar {
+            ToolbarItem(placement: .automatic) {
                 Button("Chọn ứng dụng khác…", action: chooseApp)
-                    .buttonStyle(.link)
-                    .font(.system(size: 12))
-                Spacer()
+            }
+            ToolbarItem(placement: .cancellationAction) {
                 Button("Huỷ", role: .cancel) { dismiss() }
-                    .settingsButton()
                     .keyboardShortcut(.cancelAction)
+            }
+            ToolbarItem(placement: .confirmationAction) {
                 Button("Thêm", action: add)
-                    .settingsButton()
                     .keyboardShortcut(.defaultAction)
                     .disabled(selection == nil)
             }
         }
-        .padding(22)
-        .frame(width: 460)
-        .background(SettingsColors.page)
         .task { await loadApps() }
     }
 
