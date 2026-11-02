@@ -50,7 +50,7 @@ Tài liệu tham khảo cho mốc M1. Viết bằng lời của Dấu, **không 
 | 20 | Tạm tắt chính tả bằng nhấn-nhả ⌃ (`vTempOffSpelling`) | Không làm (kiểm tra chính tả luôn chạy, D30) | D30, mục "Đã cân nhắc và loại bỏ" |
 | 21 | Tạm tắt bộ gõ cho từ hiện tại bằng nhấn-nhả ⌘ (`vTempOffOpenKey`) | Không làm | D2, mục "Đã cân nhắc và loại bỏ" |
 | 22 | Tắt tiếng Việt khi bàn phím hệ thống không phải tiếng Anh (`vOtherLanguage`) | Không cần: Dấu tự là nguồn nhập liệu (suy luận) | D2 |
-| 23 | Sửa gợi ý tự hoàn thành của trình duyệt (`vFixRecommendBrowser`), gửi từng phím (`vSendKeyStepByStep`) | Không làm: đây là mẹo riêng của event tap. Dùng marked text theo danh sách tương thích | D13, mục loại bỏ |
+| 23 | Sửa gợi ý tự hoàn thành của trình duyệt (`vFixRecommendBrowser`), gửi từng phím (`vSendKeyStepByStep`) | Không làm mẹo gửi từng phím của event tap. Gợi ý bôi đen ngay sau con trỏ thì thay cả từ lẫn phần gợi ý trong cùng một `insertText` | D11 |
 | 24 | Phím `[` → ơ, `]` → ư (chỉ Telex) | Không làm; `[ ]` luôn là dấu câu, kết thúc từ | D27 |
 | 25 | Lịch sử từ: Backspace qua dấu cách để sửa tiếp từ trước | Không làm; trường hợp này do D20 phủ | D20, D32 |
 | 26 | "Thêm dấu cho từ đã gõ" (đọc chữ trong ứng dụng) | OpenKey **không có**. Dấu làm, cho cả phím dấu thanh lẫn phím biến đổi | D11, D20 |

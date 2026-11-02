@@ -21,8 +21,8 @@ struct CursorTracker: Equatable {
         /// The client does not support document access (selectedRange is NSNotFound):
         /// `replacementRange` would be ignored, so in-place replacement cannot work.
         case unsupported
-        /// The cursor is not where this word left it, there is a selection, or there is
-        /// not enough text before the cursor. The engine state no longer matches the app.
+        /// The cursor (or the start of the selection) is not where this word left it, or
+        /// there is not enough text before the cursor. The engine state no longer matches the app.
         case mismatch
     }
 
@@ -31,10 +31,14 @@ struct CursorTracker: Equatable {
     func plan(selection: NSRange, deleteCount: Int) -> Plan {
         if selection.location == NSNotFound || selection.length == NSNotFound { return .unsupported }
         if selection.location < 0 || selection.length < 0 || deleteCount < 0 { return .mismatch }
-        if selection.length != 0 { return .mismatch }
         if let expected, expected != selection.location { return .mismatch }
         if selection.location < deleteCount { return .mismatch }
-        return .replace(NSRange(location: selection.location - deleteCount, length: deleteCount))
+        // A selection that starts at the cursor while the engine holds a word is an app's
+        // inline autocomplete (browser address bars, Spotlight): every way the user selects
+        // text (mouse, ⇧ + arrows, ⌘A) resets the engine first. Replace the suggestion
+        // with the word, as any typed key replaces a selection (D11).
+        return .replace(NSRange(location: selection.location - deleteCount,
+                                length: deleteCount + selection.length))
     }
 
     /// The input method replaced `range` with `insertedLength` UTF-16 units.

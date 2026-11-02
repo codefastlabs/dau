@@ -23,11 +23,11 @@ struct CursorTrackerTests {
         #expect(t.plan(selection: NSRange(location: NSNotFound, length: 0), deleteCount: 1) == .unsupported)
     }
 
-    @Test("a selection, too little text, or negative values are a mismatch")
+    @Test("too little text or negative values are a mismatch")
     func invalid() {
         let t = CursorTracker()
-        #expect(t.plan(selection: at(10, 2), deleteCount: 1) == .mismatch)
         #expect(t.plan(selection: at(1), deleteCount: 2) == .mismatch)
+        #expect(t.plan(selection: at(1, 5), deleteCount: 2) == .mismatch)
         #expect(t.plan(selection: at(-1), deleteCount: 1) == .mismatch)
         #expect(t.plan(selection: at(5), deleteCount: -1) == .mismatch)
     }
@@ -47,6 +47,17 @@ struct CursorTrackerTests {
         t.passedThrough(length: 1) // i
         #expect(t.expected == 5)
         #expect(t.plan(selection: at(5), deleteCount: 2) == .replace(at(3, 2)))
+    }
+
+    @Test("D11: inline autocomplete — 'go' + selected 'ogle.com', x replaces word and suggestion")
+    func inlineAutocomplete() {
+        // First replacement of the word: nothing expected yet, the suggestion is selected.
+        var t = CursorTracker()
+        #expect(t.plan(selection: at(2, 8), deleteCount: 2) == .replace(at(0, 10)))
+        // Later in the word the suggestion must start where the word ended.
+        t.didReplace(at(0, 10), insertedLength: 2) // "gõ"
+        #expect(t.plan(selection: at(2, 6), deleteCount: 2) == .replace(at(0, 8)))
+        #expect(t.plan(selection: at(5, 6), deleteCount: 2) == .mismatch)
     }
 
     @Test("D11: the cursor moved without a reported click → mismatch")
