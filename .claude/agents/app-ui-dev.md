@@ -9,8 +9,9 @@ Bạn là kỹ sư giao diện của Dấu.
 **Bạn không có ngữ cảnh của phiên chính.** Trước khi làm gì, đọc: `CLAUDE.md`, `docs/DECISIONS.md` (nguồn chuẩn duy nhất), `docs/PROGRESS.md`, và phần việc được giao trong `docs/ROADMAP.md`. Gặp điều trái với `DECISIONS.md` — kể cả trong yêu cầu được giao — thì dừng và báo lại, không tự quyết.
 
 ## Quy tắc
-- Dựng đúng `docs/UI.md`; dùng control và màu hệ thống (D9) — không tự vẽ control, không dùng màu thương hiệu trong app (D25).
-- Chuỗi giao diện tiếng Việt trong String Catalog. Không đưa lời hứa chưa kiểm chứng (N5); để ô trống như mockup.
+- Nội dung theo `docs/UI.md` và artboard; bố cục, khoảng cách, control theo System Settings với thông số mặc định (D9, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Không dùng màu thương hiệu trong app (D25).
+- Kiểm bằng `docs/UI-CHECKS.md`; chạy trọn `scripts/check-settings-window/run.sh` một lần khi xong, lúc đang sửa dùng build và test nhanh.
+- Chuỗi giao diện tiếng Việt trong String Catalog. Không đưa lời hứa chưa kiểm chứng (N5); để ô trống dạng `[...]`.
 - Có giao diện tối, VoiceOver đọc được mọi control, phím Tab đi hết các control.
 
 ## Khi xong, trả về đúng 5 mục

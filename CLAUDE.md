@@ -26,19 +26,20 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - Lệnh `/milestone M#` chạy trọn một mốc; `/audit` kiểm tra toàn repo.
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
 - Giao song song các việc độc lập (ví dụ M1 engine song song với M0 khung dự án; M4 giao diện song song M3 khi model cài đặt chung đã xong).
-- Mỗi việc xong → kiểm chứng lại bằng lệnh thật → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test đỏ.
+- Mỗi việc xong → kiểm chứng lại bằng lệnh thật → `scripts/check-docs/check.sh` → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test hoặc kiểm tra tài liệu đỏ.
 - **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ; bật nguồn nhập liệu, đăng xuất, cấp quyền, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `DECISIONS.md`. Trong lúc chờ, tiếp tục các việc không bị chặn.
 - Ngữ cảnh dài: trước khi ngữ cảnh đầy, ghi trạng thái vào `docs/PROGRESS.md` để có thể tiếp tục ở phiên sau.
 
 ## Nguồn chuẩn
 
 - `docs/DECISIONS.md` là nguồn chuẩn **duy nhất** cho quyết định. Canvas mockup có một ghi chú tóm tắt sổ quyết định, và lịch sử trò chuyện trên claude.ai có nhiều đề xuất đã bị thay thế (Rust/WASM, nhúng UniKey, từ điển tiếng Anh, `NSSpellChecker`, phím chuyển nhấn-nhả ⇧, chạy OpenKey làm đáp án test…). Gặp thông tin trái với `DECISIONS.md` ở bất kỳ đâu thì theo `DECISIONS.md`, và sửa hoặc báo chỗ lệch.
-- Khi một quyết định thay đổi: sửa `DECISIONS.md` trước, rồi cập nhật ghi chú trên canvas và các tài liệu khác cho khớp trong cùng lượt làm việc.
+- Khi một quyết định thay đổi: sửa `DECISIONS.md` trước, thêm cách nói cũ vào `scripts/check-docs/superseded.txt`, rồi cập nhật ghi chú trên canvas và các tài liệu khác cho khớp trong cùng lượt làm việc (chạy `check.sh` để tìm chỗ còn sót).
+- **Mỗi sự kiện chỉ ghi ở một chỗ.** Quyết định ở `DECISIONS.md` (nơi khác dẫn số D/N, không chép lại nội dung); số đo giao diện ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md` và script kiểm; số test và số đo theo ngày ở nhật ký `PROGRESS.md`; kiến trúc ở `ARCHITECTURE.md` tả cấu trúc, không chép số. Dẫn mã bằng tên kiểu/hàm, không bằng số dòng. File agent trong `.claude/agents/` chỉ nêu vai trò và nơi đọc, không chép sự kiện.
 
 ## Quy tắc làm việc
 
 - **Đối chiếu sổ quyết định trước mọi đề xuất hay thay đổi.** Nếu một thay đổi mâu thuẫn với một nguyên tắc (N1–N5) hoặc quyết định (D1–D…) thì dừng lại và nêu mâu thuẫn, không tự ý làm. Nếu một quyết định cần đổi, cập nhật `docs/DECISIONS.md` trong cùng commit, ghi lý do.
-- **Sau mỗi mốc, tự rà soát cơ học:** grep code, chuỗi giao diện và tài liệu để tìm chỗ trái với sổ quyết định (ví dụ: lời hứa về mạng, tính năng đã bỏ, phím tắt riêng).
+- **Sau mỗi mốc, tự rà soát cơ học:** `scripts/check-docs/check.sh`, rồi grep code và chuỗi giao diện tìm chỗ trái với sổ quyết định (ví dụ: lời hứa về mạng, tính năng đã bỏ, phím tắt riêng).
 - **Kiểm tra chéo các tính năng cùng tác động lên một đầu vào.** Với mỗi cặp tính năng như vậy, liệt kê các đầu vào mà chúng cho kết quả trái nhau và quyết định bên nào thắng, ghi vào `DECISIONS.md` (bài học từ D4).
 - **Đo trước khi tối ưu.** Mọi khẳng định về hiệu năng phải có số đo (os_signpost / Instruments / test hiệu năng).
 - **Không ghi lời hứa chưa kiểm chứng vào giao diện** (N5). Dùng ô trống dạng `[Kết quả bài test tải nặng]`.
@@ -62,3 +63,4 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
 - `swift test --package-path Packages/DauEngine` — test engine.
+- `scripts/check-docs/check.sh` — kiểm tài liệu lệch (đường dẫn, số dòng, số D/N, cách nói đã bị thay).

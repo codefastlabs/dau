@@ -1,0 +1,10 @@
+# Wording that a decision replaced. One extended regex per line, then a tab, then why.
+# check.sh fails if a living doc still uses it. Add a line whenever a decision changes.
+hai input mode	D2: Dấu chỉ có một input mode Tiếng Việt (30/10/2026)
+mode Tiếng Anh	D2: gõ tiếng Anh bằng ABC/U.S. của macOS
+câu hỏi mở A/B	N3/D11: đã chốt cách A (29/10/2026)
+820 ?× ?600	D9: cửa sổ Cài đặt theo System Settings (02/11/2026)
+sidebar (cố định )?220	D9: sidebar theo System Settings
+SettingsGroup|SettingsRow|RowSwitch|RowDivider|`SearchField`	D9: Cài đặt dựng bằng Form của hệ thống (d446a09, 11a276f)
+ToolbarSpacer\(\.fixed\)	mã dùng ToolbarSpacer(.flexible) và thứ tự của hệ thống
+Không dùng `Form`	D9: trang Cài đặt là Form(.grouped)

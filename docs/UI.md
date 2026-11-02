@@ -4,15 +4,7 @@ Mockup gốc: https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln — xem trực t
 
 ## Chuẩn đối chiếu: System Settings (D9)
 
-Bố cục, khoảng cách, cỡ chữ và hình dáng control theo System Settings của macOS hiện hành; mockup chỉ quy định nội dung (mục, chữ, thứ tự, icon, màu hệ thống). Số đo đầy đủ (macOS 27.2, kèm so với mặc định SwiftUI): `docs/research/SYSTEM-SETTINGS-REFERENCE.md`. Tóm tắt (pt):
-
-- Cửa sổ 740 × 560, thanh tiêu đề 52, tiêu đề trang 15 đậm.
-- Sidebar rộng 232, ô tìm (10, 61) 212 × 28; hàng 32, vệt chọn cách mép 10, bo ≈ 7; ô icon 20 tại x 19, chữ tại x ≈ 46, 13 thường; nhóm cách nhau 13.
-- Form dạng nhóm: thẻ cách mép cột 20, bo ≈ 11, thẻ cách nhau 10; tiêu đề nhóm 13 semibold, cách thẻ 10; mô tả nhóm 11 phụ, nằm dưới tiêu đề.
-- Hàng: lề 10; cao 37,5 (nhãn + công tắc/pop-up), 55,5 (nhãn + một dòng phụ), 40–44 (có nút); vạch ngăn 1, thụt 10; công tắc 36 × 16, pop-up/nút/segmented cao 24.
-- Icon app trong hàng: 24 ở hàng một dòng (Quyền riêng tư & Bảo mật › Trợ năng, macOS 27.2 hiện tiêu đề “Device Control and Data Access”), 32 ở hàng có dòng phụ và thẻ đầu trang (Mục đăng nhập › Hoạt động nền, Thông báo); icon chiếm ≈ 80% khung nên nét vẽ 20 và 26.
-- Sheet (Màn hình › Nâng cao…): rộng 470, `Form(.grouped)` thẻ cách mép 20; thanh nút dưới vạch ngăn, nút 64 × 24 cách mép phải và dưới 20 — đúng như nút `cancellationAction`/`confirmationAction` trên `toolbar` của sheet SwiftUI.
-- Mặc định SwiftUI (`NavigationSplitView` + `List` sidebar + `Form(.grouped)`) đã khớp gần hết khi cột sidebar 232 và cửa sổ ≤ 976 rộng (Form giới hạn thẻ 704 và căn giữa khi cột chi tiết rộng hơn 744).
+Bố cục, khoảng cách, cỡ chữ và hình dáng control theo System Settings của macOS hiện hành; mockup chỉ quy định nội dung (mục, chữ, thứ tự, icon, màu hệ thống). Số đo chỉ ghi ở một chỗ: `docs/research/SYSTEM-SETTINGS-REFERENCE.md` (System Settings) và `scripts/check-settings-window/ax-check.swift` (mức đạt của app). File này không chép lại số đo.
 
 ## Menu nguồn nhập liệu (hệ thống vẽ)
 Không có status item riêng. Dấu có một input mode (D2): menu của hệ thống liệt kê "Dấu – Tiếng Việt" cùng các nguồn khác của người dùng (ví dụ "ABC" để gõ tiếng Anh); bộ gõ bổ sung qua `menu()` của IMK: nhóm "Kiểu gõ" (Telex ✓ / VNI / Telex đơn giản), "Cài đặt Dấu…", "Mở cài đặt Bàn phím…". Không icon trên từng mục.

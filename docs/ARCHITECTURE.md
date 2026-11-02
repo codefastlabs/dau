@@ -78,8 +78,8 @@ dau/
 - Khoá Info.plist đang dùng (chạy được trên macOS 27 ở M2): `InputMethodConnectionName`, `InputMethodServerControllerClass`, `LSBackgroundOnly`, `TISInputSourceID`, `TISIntendedLanguage`, `ComponentInputModeDict` (một mode `.vi`, icon template V), `tsInputMethodIconFileKey`, `TISIconIsTemplate`; `CFBundleIconName` do actool thêm từ catalog chung; thêm `DauHostAppBundleIdentifier`, `DauAppGroupIdentifier` của riêng Dấu.
 
 ### Dau (app chủ)
-- **Cửa sổ Cài đặt:** scene SwiftUI `Window` (không dùng scene `Settings`), là cửa sổ chính của app. ⌘, mở lại cửa sổ. Cỡ mặc định 740×560 như System Settings; rộng 740–976 (cột chi tiết không quá 744, để `Form(.grouped)` không giới hạn thẻ 704 rồi căn giữa), cao tối thiểu 452. Điểm vào là `main.swift`: nó ghim bản địa hoá `vi` trước khi AppKit chạy.
-  - Bố cục: `NavigationSplitView`; sidebar là `List` mặc định rộng 232 với `.searchable(placement: .sidebar)` và 4 mục `Label`. Ô icon 20 pt vẽ theo SVG của mockup, màu hệ thống.
+- **Cửa sổ Cài đặt:** scene SwiftUI `Window` (không dùng scene `Settings`), là cửa sổ chính của app. ⌘, mở lại cửa sổ. Cỡ và giới hạn cỡ theo System Settings, đặt trong `SettingsScene` (`SettingsWindow.swift`); chiều rộng tối đa giữ cột chi tiết dưới ngưỡng `Form(.grouped)` bắt đầu giới hạn thẻ và căn giữa (số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Điểm vào là `main.swift`: nó ghim bản địa hoá `vi` trước khi AppKit chạy.
+  - Bố cục: `NavigationSplitView`; sidebar là `List` mặc định, rộng như System Settings, với `.searchable(placement: .sidebar)` và 4 mục `Label`. Ô icon vẽ theo SVG của mockup, màu hệ thống.
   - Mỗi trang là `SettingsPage` = `Form(.grouped)` với `Section`, control hệ thống và thông số mặc định (D9: theo System Settings, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Mảnh nội dung riêng của mockup (thẻ xem trước, chip, nhãn "Mới", phím, ô banner) nằm trong các section.
 - **Header:** tiêu đề mục là một ToolbarItem `.navigation` (macOS 26+ tắt nền glass của item này). Tiêu đề hệ thống bị gỡ, nên mọi mục có cùng toolbar và tiêu đề không đổi chỗ. Mục Ứng dụng có nút "+" rồi ô tìm (`.searchable(placement: .toolbar)`, thứ tự do macOS đặt), ngăn bằng `ToolbarSpacer(.flexible)`. Nút ẩn/hiện sidebar bị gỡ vì System Settings không có nút này; gỡ nút thì tiêu đề hệ thống co (thanh 32, chữ nhỏ), nên tiêu đề trang là `PageTitle` 15 đậm.
 - **Cuộn:**
@@ -101,6 +101,10 @@ dau/
   - *Gỡ* (D16, "Gỡ cài đặt…" + alert xác nhận): Dấu đang được chọn → chọn bàn phím ASCII đang bật (dùng gần nhất, không thì cái đầu tiên); tắt mọi nguồn của Dấu, mode trước cha; dừng bộ gõ; chuyển `~/Library/Input Methods/DauInputMethod.app` vào Thùng rác; nếu tick ô thì xoá suite App Group (`removePersistentDomain`) và phát thông báo đổi cài đặt; đọc lại để báo kết quả (bàn phím hiện tại chỉ được nêu tên khi đọc lại đúng là nó). Không đụng container riêng của bộ gõ (`~/Library/Containers/com.codefastlabs.dau.inputmethod.Dau`): app khác đụng container có thể làm macOS hỏi quyền. App không tự xoá chính nó, chỉ hướng dẫn rồi thoát.
 - Danh sách tương thích có sẵn trong app (`Resources/CompatibilityList.json`, xem DauShared); M7: Sparkle 2 + tải danh sách có chữ ký (D7).
 - Phát hiện bộ gõ cũ (D14): bộ gõ chặn phím đang chạy trong phiên người dùng (`NSWorkspace.shared.runningApplications`, so bundle ID trong `KnownInputMethods`) là xung đột, hiện bước 1. Nguồn tiếng Việt kiểu IMK khác đang bật (Telex/VNI của Apple, XKeyIM; đọc TIS, ngôn ngữ `vi`, khác Dấu) chỉ được nhắc nhẹ ở bước 2.
+
+## Build
+- Debug lệnh trơn chỉ build arm64 (Xcode build package local theo kiến trúc máy); Debug universal dùng `-destination 'generic/platform=macOS'`, Release luôn universal. CI phải dùng destination này.
+- ID input mode viết cứng trong `Apps/DauInputMethod/Info.plist` và `Apps/DauInputMethod/Resources/InfoPlist.xcstrings` (Xcode không thay biến trong khoá plist, đã thử 30/10/2026): đổi Bundle ID phải sửa cả hai (D37: không đổi giữa các bản).
 
 ## Luồng một phím (chế độ Tiếng Việt)
 

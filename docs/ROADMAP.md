@@ -16,7 +16,7 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 ## M2 — Bộ gõ tối thiểu
 - `DauInputMethod` với Telex, một input mode Tiếng Việt (D2; tiếng Anh gõ bằng ABC của macOS), thay chữ tại chỗ.
 - Script cài bản Debug vào `~/Library/Input Methods` và hướng dẫn người dùng bật thử.
-- **Giải quyết câu hỏi mở A/B** (vị trí thay chữ): đo chi phí `selectedRange` trên TextEdit, Safari, Chrome, Telegram (thay Slack, 30/10/2026), VS Code, Terminal; cập nhật `DECISIONS.md`.
+- **Giải quyết câu hỏi A/B** (đã chốt cách A, D11) (vị trí thay chữ): đo chi phí `selectedRange` trên TextEdit, Safari, Chrome, Telegram (thay Slack, 30/10/2026), VS Code, Terminal; cập nhật `DECISIONS.md`.
 - Xong khi: người dùng gõ được tiếng Việt trong TextEdit và Safari không gạch chân.
 
 ## M3 — Độ tin cậy
