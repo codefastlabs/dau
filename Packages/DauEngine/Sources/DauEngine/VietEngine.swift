@@ -49,6 +49,16 @@ public struct VietEngine: Sendable {
         return screen[screen.count - 1]
     }
 
+    /// D30: the word is no longer a prefix of a valid syllable, so keys pass through
+    /// until it ends (not D33's overflow). The IMK layer checks the app's text then
+    /// (D11): a word that stopped being Vietnamese may be one the app replaced.
+    public var isSpellingLocked: Bool { lockedBySpelling && !overflow }
+
+    /// The word as the engine believes it is shown (empty when no word is tracked).
+    public var shown: [Unicode.Scalar] {
+        (0..<screen.count).map { screen[$0] }
+    }
+
     /// Forget the current word without restoring anything (D4): arrows, Esc, mouse
     /// clicks, ⌘/⌃/⌥ shortcuts, focus changes.
     public mutating func reset() {

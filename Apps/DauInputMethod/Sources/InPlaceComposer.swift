@@ -48,6 +48,8 @@ struct InPlaceComposer {
     /// The client gave no text (or no position) for a D20 read: do not ask again until
     /// the next activation (`activate`), N3.
     private(set) var readUnavailable = false
+    /// The current word was already checked against the app's text (D11, once per word).
+    private var checkedLockedWord = false
     /// Time of the previous key or click on this client (`NSEvent.timestamp`, seconds).
     private var lastEventTime: TimeInterval?
 
@@ -90,6 +92,7 @@ struct InPlaceComposer {
         engine.reset()
         tracker.invalidate()
         before = .unknown
+        checkedLockedWord = false
     }
 
     /// A click (or any non-key event that moves the cursor) at `time`.
@@ -158,6 +161,7 @@ struct InPlaceComposer {
             if !engine.isComposing {
                 tracker.invalidate()
                 before = .unknown
+                checkedLockedWord = false
             }
             return result
 
@@ -177,6 +181,11 @@ struct InPlaceComposer {
             if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable, settled,
                Self.isMarkKey(scalar, method: engine.options.inputMethod) {
                 return addMarks(scalar, engine: &engine, client: client)
+            }
+            if engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
+               Self.isMarkKey(scalar, method: engine.options.inputMethod),
+               let outcome = checkLockedWord(scalar, engine: &engine, client: client) {
+                return outcome
             }
             return character(scalar, selection: nil, settled: settled, engine: &engine, client: client)
         }
@@ -249,8 +258,56 @@ struct InPlaceComposer {
             // The key ended a word (or was punctuation with no word): it is now right
             // before the cursor. After a failed replacement, nothing is known.
             before = (result.kind == .mismatch || result.kind == .unsupported) ? .unknown : .noWord
+            checkedLockedWord = false
         }
         return result
+    }
+
+    // MARK: - D11: a word that stopped being Vietnamese
+
+    /// The engine's word is no longer a valid prefix (D30), so its keys pass through and
+    /// nothing asks where the cursor is. That is also what a word looks like when the app
+    /// replaced the text without telling the input method (⌘A in Chrome's address bar is
+    /// a menu shortcut the input method never sees; a click it does not report): "tốt",
+    /// ⌘A, "toots" grew "tốttoo…" and stayed "toots". On the first mark key of such a
+    /// word, read the word before the cursor once: if it is not the engine's word, start
+    /// over from the real text (as D20 seeds it) and apply the key. nil: the word is what
+    /// the engine thinks, handle the key as usual.
+    private mutating func checkLockedWord(_ scalar: Unicode.Scalar, engine: inout VietEngine,
+                                          client: some InPlaceClient) -> Outcome? {
+        checkedLockedWord = true
+        let selection = client.selectedRange()
+        guard selection.location != NSNotFound, selection.length != NSNotFound,
+              selection.location >= 0, selection.length == 0 else { return nil }
+        let count = min(selection.location, Self.readLength)
+        var read: String?
+        let real: [Unicode.Scalar]
+        if count == 0 {
+            real = []
+        } else {
+            guard let text = client.text(in: NSRange(location: selection.location - count, length: count)),
+                  text.utf16.count == count else {
+                readUnavailable = true
+                return nil
+            }
+            read = text
+            real = Self.trailingWord(text.precomposedStringWithCanonicalMapping)
+        }
+        if real == engine.shown { return nil }
+        // Not the engine's word: forget it, keep the "checked" mark for the new word only
+        // if it stays locked, and seed from the real text.
+        reset(engine: &engine)
+        if let seeded = seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read),
+           seeded.kind == .seed || seeded.kind == .seedPass {
+            var resynced = seeded
+            resynced.kind = seeded.kind == .seed ? .resync : .resyncPass
+            return resynced
+        }
+        // Nothing to seed (no word, or one the engine cannot track): the key starts a word.
+        engine.reset()
+        var outcome = character(scalar, selection: selection, engine: &engine, client: client)
+        if outcome.kind == .pass { outcome.kind = .resyncPass }
+        return outcome
     }
 
     // MARK: - D20 "Thêm dấu cho từ đã gõ"
@@ -276,8 +333,10 @@ struct InPlaceComposer {
     }
 
     /// The seeded path, or nil when nothing could be seeded.
+    /// `alreadyRead`: the text of the same range, when the caller read it already (one
+    /// read per key, N3).
     private mutating func seedWord(_ scalar: Unicode.Scalar, selection: NSRange, engine: inout VietEngine,
-                                   client: some InPlaceClient) -> Outcome? {
+                                   client: some InPlaceClient, alreadyRead: String? = nil) -> Outcome? {
         if selection.location == NSNotFound || selection.length == NSNotFound {
             readUnavailable = true  // no document access: replacing could not work either
             return nil
@@ -290,7 +349,7 @@ struct InPlaceComposer {
         }
         let count = min(location, Self.readLength)
         let range = NSRange(location: location - count, length: count)
-        guard let text = client.text(in: range) else {
+        guard let text = alreadyRead ?? client.text(in: range) else {
             readUnavailable = true
             return nil
         }

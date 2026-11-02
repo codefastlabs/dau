@@ -172,8 +172,10 @@ struct InPlaceComposerTests {
         s.type("windows carr tooi yeeu tieengs Vieetj, Sunrise ")
         #expect(s.doc.text == "windows car tôi yêu tiếng Việt, Sunrise ")
         #expect(s.overCalls == 0)
-        // Words start after a Space typed here: no D20 read at all.
-        #expect(s.reads == 0)
+        // Words start after a Space typed here: no D20 read. The words that stop being
+        // Vietnamese (windows, carr, Sunrise) are checked once each against the app's
+        // text (D11).
+        #expect(s.reads <= 3)
     }
 
     @Test("an app that moves the text under the word is caught (D11 mismatch)")
@@ -206,6 +208,29 @@ struct InPlaceComposerTests {
         // then the real word "i" is read and the key applies to it.
         #expect(s.doc.text == "í")
         #expect(s.kinds.last == .resync)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("D11: ⌘A the input method never sees — tốt, select all, toots → tốt")
+    func selectAllUnseen() {
+        var s = Session()
+        s.type("toots")
+        #expect(s.doc.text == "tốt")
+        // Chrome's address bar: ⌘A is a menu shortcut, the input method never gets it;
+        // the next key replaces the selection.
+        s.doc.text = ""
+        s.doc.cursor = 0
+        s.type("toots")
+        #expect(s.doc.text == "tốt")
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("D11: a real English word is checked once and left as typed")
+    func englishWordCheckedOnce() {
+        var s = Session()
+        s.type("windows ")
+        #expect(s.doc.text == "windows ")
+        #expect(s.reads <= 1)
         #expect(s.overCalls == 0)
     }
 
