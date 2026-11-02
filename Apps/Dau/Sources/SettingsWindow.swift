@@ -19,7 +19,9 @@ struct SettingsWindow: View {
         NavigationSplitView {
             List(visibleSections, selection: $selection) { section in
                 // Mockup row: 32 tall (the list adds 4 above and below the content),
-                // tile then text 9 apart, 13 pt, medium when selected.
+                // 8 from the selection's edges, tile then text 9 apart, 13 pt, medium
+                // when selected. The list adds 6 inside the selection on top of the
+                // row insets (measured in the real window), hence 2.
                 HStack(spacing: 9) {
                     SectionIcon(section: section)
                     Text(section.title)
@@ -27,8 +29,11 @@ struct SettingsWindow: View {
                         .lineLimit(1)
                 }
                 .frame(height: 24)
-                .listRowInsets(EdgeInsets(top: 0, leading: 8, bottom: 0, trailing: 8))
+                // Probe the content, not the row: a probe outside the row insets
+                // hides them from the list in captures (the row then sat 8 pt left
+                // of the real window).
                 .layoutProbe("sidebarRow-\(section.rawValue)")
+                .listRowInsets(EdgeInsets(top: 0, leading: 2, bottom: 0, trailing: 2))
                 .tag(section)
                 .accessibilityElement(children: .combine)
             }
