@@ -19,7 +19,9 @@
 #   - LaunchServices registrations of any Dau.app / DauInputMethod.app copy;
 #   - the global debug defaults keys DauPerfLog and DauDebugForceUnderline.
 #
-# Run it yourself: it changes input source settings and deletes app data, which the
+# macOS lets only its input source service write com.apple.inputsources (System Policy
+# denies `defaults`, measured 02/11/2026); the script reads back and says when an entry
+# stays. Run it yourself: it changes input source settings and deletes app data, which the
 # assistant does not do on its own. Then log out and back in: macOS keeps a catalog of
 # input sources per login session and forgets Dấu only at the next login.
 set -u
@@ -131,13 +133,23 @@ import plistlib, re, sys
 data = plistlib.loads(sys.stdin.buffer.read())
 key, pattern = sys.argv[1], sys.argv[2]
 data[key] = [e for e in data.get(key, []) if not (isinstance(e, dict) and re.match(pattern, str(e.get("Bundle ID", ""))))]
-sys.stdout.buffer.write(plistlib.dumps(data))' "$key" "$ID_PATTERN" > "$tmp" && defaults import "$domain" "$tmp" \
-    && print -r -- "  đã bỏ các mục của Dấu: $domain › $key"
+sys.stdout.buffer.write(plistlib.dumps(data))' "$key" "$ID_PATTERN" > "$tmp" && defaults import "$domain" "$tmp" 2>/dev/null
   rm -f "$tmp"
+  # `defaults import` exits 0 even when the write is refused: read back.
+  left=$(inputsource_entries "$domain" "$key")
+  if [[ $left == 0 ]]; then
+    print -r -- "  đã bỏ các mục của Dấu: $domain › $key"
+  else
+    print -r -- "  KHÔNG bỏ được ($left mục còn lại): macOS chỉ cho dịch vụ nguồn nhập liệu ghi $domain."
+    print -r -- "    Gỡ trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào nếu Dấu còn trong danh sách;"
+    print -r -- "    muốn thử cài lần đầu thật sạch thì dùng một tài khoản macOS mới."
+    unremoved=1
+  fi
 done
 for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
 for k in $keys; do defaults delete -g "$k" && print -r -- "  đã xoá khoá: -g $k"; done
 
+(( ${unremoved:-0} )) && print "\nMột số mục nguồn nhập liệu còn lại (xem trên)."
 print "\nXong. Còn hai việc:"
 print "  1. Dọn Thùng rác nếu muốn (Dau.app, DauInputMethod.app vừa được chuyển vào)."
 print "  2. Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."

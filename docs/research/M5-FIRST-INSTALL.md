@@ -171,3 +171,7 @@ Mẫu ghi một dòng cho mỗi bước: `bước | biến thể | mã trả v�
 - tabulador, PR #9: https://github.com/glrodasz/tabulador/pull/9
 - logcg, kích hoạt bộ gõ không cần khởi động lại (Mojave): https://www.logcg.com/en/archives/3263.html
 - vChewing, commit "Fix IME activation issues on macOS 12" (bản sao): https://testgitea.trustie.net/floraachy/vChewing-macOS/commit/883dc6144662b19f11ca0838a37ba258af5114d1 (không đọc được nội dung vì trang yêu cầu đăng nhập; chỉ dùng tóm tắt từ kết quả tìm kiếm cho ý "cờ enabled có thể báo sai trên macOS 12", đã có mã tương ứng trong McBopomofo)
+
+## Đính chính (02/11/2026, sau khi dọn máy)
+
+Hai mục Dấu trong `com.apple.inputsources` có từ 30/10 (thời điểm sửa file), trước lần T4 hôm nay; macOS từ chối mọi tiến trình khác ghi miền này. Vì vậy máy của lần T4 thứ nhất chưa sạch, và kết luận "`TISEnableInputSource` đã ghi được, chỉ danh mục giao diện chưa cập nhật" ở mục 3 chưa có bằng chứng. Thử lại trên một tài khoản macOS mới.
