@@ -185,10 +185,40 @@ struct InPlaceComposerTests {
         s.doc.text = "xx" + s.doc.text
         s.doc.cursor += 2
         s.type("s")
-        #expect(s.kinds.last == .mismatch)
-        // Nothing replaced at the old position; the key goes in as typed.
+        // Re-synced from the text before the cursor ("xxtôi", not a syllable): nothing
+        // replaced at the old position, the key goes in as typed.
+        #expect(s.kinds.last == .resyncPass)
         #expect(s.doc.text == "xxtôis")
         #expect(s.overCalls == 0)
+    }
+
+    @Test("D11: a click the app did not report — the word is re-read and the key applies")
+    func resyncAfterUnreportedClick() {
+        var s = Session()
+        s.type("oo")
+        #expect(s.doc.text == "ô")
+        // Chrome's address bar: a click selects everything and the next key replaces it,
+        // but the input method is not told; the engine still holds "ô".
+        s.doc.text = ""
+        s.doc.cursor = 0
+        s.type("is")
+        // "ôi" + s would replace two letters at a cursor that is not there: mismatch,
+        // then the real word "i" is read and the key applies to it.
+        #expect(s.doc.text == "í")
+        #expect(s.kinds.last == .resync)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("D11: keys faster than settleInterval do not re-sync (stale snapshot)")
+    func noResyncWhenFast() {
+        var s = Session()
+        s.interval = 0.01
+        s.type("oo")
+        s.doc.text = ""
+        s.doc.cursor = 0
+        s.type("is")
+        #expect(s.kinds.last == .mismatch)
+        #expect(s.doc.text == "is")
     }
 
     // MARK: D20 examples (DECISIONS.md)

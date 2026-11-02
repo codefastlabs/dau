@@ -42,6 +42,12 @@ struct PerfLog {
         /// D20: selectedRange (and attributedSubstring if there was text before the
         /// cursor) found no word to seed; the key was handled as the first of a word.
         case seedNone = "seed_none"
+        /// D11: a mismatch, then the word before the cursor was read and seeded, and the
+        /// key replaced it (one more attributedSubstring than a plain mismatch).
+        case resync
+        /// D11: re-synced as above, but the key does not apply to the word read: it went
+        /// to the app unchanged.
+        case resyncPass = "resync_pass"
     }
 
     let enabled: Bool

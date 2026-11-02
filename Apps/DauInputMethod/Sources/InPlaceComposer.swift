@@ -178,7 +178,7 @@ struct InPlaceComposer {
                Self.isMarkKey(scalar, method: engine.options.inputMethod) {
                 return addMarks(scalar, engine: &engine, client: client)
             }
-            return character(scalar, selection: nil, engine: &engine, client: client)
+            return character(scalar, selection: nil, settled: settled, engine: &engine, client: client)
         }
     }
 
@@ -202,7 +202,9 @@ struct InPlaceComposer {
     }
 
     /// A character with the engine's word (if any).
-    private mutating func character(_ scalar: Unicode.Scalar, selection: NSRange?,
+    /// `settled`: the previous key or click is old enough to read the client's text
+    /// (`settleInterval`); a mismatch may then re-sync from the text (D11).
+    private mutating func character(_ scalar: Unicode.Scalar, selection: NSRange?, settled: Bool = false,
                                     engine: inout VietEngine, client: some InPlaceClient) -> Outcome {
         var result: Outcome
         switch engine.handle(scalar) {
@@ -211,6 +213,21 @@ struct InPlaceComposer {
             result = Outcome()
         case .replace(let deleteCount, let insert):
             result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client)
+            if result.kind == .mismatch, settled, !readUnavailable, let seen = result.attempt?.selection {
+                // D11: the text changed behind the engine's back (a click the app did not
+                // report, an autocomplete, an app edit). Read the word that is really
+                // before the cursor and apply the key to it, as D20 does; same snapshot
+                // as the selectedRange just asked, one more call, only on a mismatch.
+                reset(engine: &engine)
+                if let synced = seedWord(scalar, selection: seen, engine: &engine, client: client),
+                   synced.kind == .seed || synced.kind == .seedPass {
+                    var resynced = synced
+                    resynced.kind = synced.kind == .seed ? .resync : .resyncPass
+                    resynced.attempt = result.attempt
+                    return resynced
+                }
+                engine.reset()
+            }
             if result.kind == .mismatch || result.kind == .unsupported {
                 // D11: the app's text is not what the engine thinks. Start over from
                 // this key alone, so it still does the most it can on its own.
