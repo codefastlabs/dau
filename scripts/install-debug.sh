@@ -99,7 +99,9 @@ cat <<'EOF'
   5. Chọn "Dấu – Tiếng Việt" trên menu nguồn nhập liệu ở thanh menu, hoặc bằng phím tắt
      chuyển nguồn nhập liệu của macOS.
   6. Tắt các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…) trước khi thử.
-  7. Gõ thử theo docs/M2-TESTING.md, rồi chạy scripts/perf-report.sh để lấy số đo.
+  7. Gõ thử theo docs/M2-TESTING.md. Muốn lấy số đo: bật nhật ký từng phím bằng
+     `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf-report.sh, rồi tắt
+     bằng `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
 
 Gỡ bản thử: xoá ~/Library/Input Methods/DauInputMethod.app, bỏ "Dấu" khỏi Nguồn đầu vào,
 rồi đăng xuất.

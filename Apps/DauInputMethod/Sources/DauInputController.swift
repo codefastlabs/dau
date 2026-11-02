@@ -106,7 +106,7 @@ final class DauInputController: IMKInputController {
         record(result, start: start)
         #if DEBUG
         // After the timing is recorded, so the extra selectedRange is not measured.
-        if let diag = result.diag { ReplaceDiag.log(diag, kind: result.kind, client: client, app: clientApp) }
+        if perf.enabled, let diag = result.diag { ReplaceDiag.log(diag, kind: result.kind, client: client, app: clientApp) }
         #endif
         return result.consumed
     }

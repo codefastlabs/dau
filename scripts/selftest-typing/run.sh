@@ -33,7 +33,8 @@
 # For each app: opens a new, empty window, selects the Dấu input source (which must be
 # enabled already; nothing is enabled or disabled, N4), types, reads the text back,
 # closes the window without saving, prints the text, PASS/FAIL and the input method's
-# counts and timings for that app (scripts/perf-report.sh). The input source selected
+# counts and timings for that app (scripts/perf-report.sh; the script sets the global
+# defaults key DauPerfLog for the run and removes it at exit, D8). The input source selected
 # before and the clipboard (read through ⌘C in browsers, VS Code, Notes, Mail) are
 # restored; the clipboard is emptied before each ⌘C so a failed copy cannot pass. A new
 # document whose first letter the app capitalized by itself counts as PASS (noted).
@@ -118,8 +119,13 @@ SWITCH_CMD="$(printf '%q select %q; sleep 0.3; %q select %q; sleep 0.3' \
 WORK="$(mktemp -d)"
 ORIGINAL_SOURCE="$("$INPUT_SOURCE" current)"
 "$CLIPBOARD" save "$WORK/clipboard.plist" || exit 1
+# The per-key log is off unless DauPerfLog is set (D8); turn it on for this run only.
+PERF_KEY=DauPerfLog
+PERF_WAS_SET="$(defaults read -g "$PERF_KEY" 2>/dev/null || true)"
+defaults write -g "$PERF_KEY" -bool true
 cleanup() {
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
+  [[ -z "$PERF_WAS_SET" ]] && defaults delete -g "$PERF_KEY" >/dev/null 2>&1
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || echo "CẢNH BÁO: không khôi phục được clipboard" >&2
   if [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
     "$INPUT_SOURCE" select "$ORIGINAL_SOURCE" || true

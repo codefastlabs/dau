@@ -50,14 +50,16 @@ struct PerfLog {
         case resyncPass = "resync_pass"
     }
 
+    /// Off unless `DauPerfLog` is set, in Debug builds too: even without text, one line
+    /// per key with its time and app is typing metadata (D8). Set in the global domain,
+    /// which a shell can write and the sandboxed input method reads
+    /// (`defaults write -g DauPerfLog -bool true`); read when a client session starts,
+    /// so it applies to the next text field. The measuring scripts set it and remove it.
+    static let defaultsKey = "DauPerfLog"
     let enabled: Bool
 
     init() {
-        #if DEBUG
-        enabled = true
-        #else
-        enabled = UserDefaults.standard.bool(forKey: "DauPerfLog")
-        #endif
+        enabled = UserDefaults.standard.bool(forKey: Self.defaultsKey)
     }
 
     @inline(__always) static func now() -> UInt64 {
