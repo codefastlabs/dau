@@ -9,6 +9,8 @@
 # Usage:
 #   scripts/install-debug.sh               build, install, stop the old process
 #   scripts/install-debug.sh --build-only  build and check only, touch nothing outside the repo
+#   scripts/install-debug.sh --release     Release instead of Debug: for day-to-day typing
+#                                          (no get-task-allow, no per-key log, D8)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -19,12 +21,17 @@ BUNDLE_NAME="$PROCESS_NAME.app"
 DEST_DIR="$HOME/Library/Input Methods"
 
 BUILD_ONLY=0
-case "${1:-}" in
-  "") ;;
-  --build-only) BUILD_ONLY=1 ;;
-  -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
-  *) echo "Tham số không hợp lệ: $1 (dùng --build-only hoặc không có tham số)" >&2; exit 2 ;;
-esac
+CONFIG=Debug
+for arg in "$@"; do
+  case "$arg" in
+    --build-only) BUILD_ONLY=1 ;;
+    # Day-to-day typing: Release has no get-task-allow (no debugger can attach) and no
+    # per-key log or debug defaults keys (D8). Debug only while testing.
+    --release) CONFIG=Release ;;
+    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
+    *) echo "Tham số không hợp lệ: $arg (dùng --release, --build-only hoặc không có tham số)" >&2; exit 2 ;;
+  esac
+done
 
 if ! command -v xcodegen >/dev/null 2>&1; then
   echo "Cần XcodeGen: brew install xcodegen" >&2
@@ -34,17 +41,17 @@ fi
 echo "==> Sinh Dau.xcodeproj"
 (cd "$ROOT" && xcodegen generate --quiet)
 
-echo "==> Build Debug universal (scheme DauInputMethod)"
+echo "==> Build $CONFIG universal (scheme DauInputMethod)"
 xcodebuild \
   -project "$ROOT/Dau.xcodeproj" \
   -scheme DauInputMethod \
-  -configuration Debug \
+  -configuration "$CONFIG" \
   -destination 'generic/platform=macOS' \
   -derivedDataPath "$DERIVED" \
   -quiet \
   build
 
-BUILT="$DERIVED/Build/Products/Debug/$BUNDLE_NAME"
+BUILT="$DERIVED/Build/Products/$CONFIG/$BUNDLE_NAME"
 if [[ ! -d "$BUILT" ]]; then
   echo "Không tìm thấy $BUILT sau khi build." >&2
   exit 1
@@ -63,6 +70,10 @@ if codesign -d --entitlements - --xml "$BUILT" 2>/dev/null | grep -q "com.apple.
   exit 1
 fi
 echo "    chữ ký hợp lệ, không có quyền mạng (N2)"
+if [[ "$CONFIG" == Release ]] && codesign -d --entitlements - --xml "$BUILT" 2>/dev/null | grep -q "get-task-allow"; then
+  echo "Bản Release còn get-task-allow (cho phép gắn debugger). Dừng." >&2
+  exit 1
+fi
 
 if [[ "$BUILD_ONLY" == 1 ]]; then
   echo "==> --build-only: không cài. Bản build: $BUILT"

@@ -27,4 +27,27 @@ struct InputMethodLifecycleTests {
         #expect(other.wait(timeout: .now() + 0.3) == .timedOut)
         withExtendedLifetime((observer, otherObserver)) {}
     }
+
+    @Test("quit only when the bundle on disk is not the one launched (anyone can post)")
+    func quitOnlyWhenBundleChanged() throws {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent("dau-tests-" + UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let exe = dir.appendingPathComponent("DauInputMethod").path
+        try Data("old".utf8).write(to: URL(fileURLWithPath: exe))
+        let launch = InputMethodLifecycle.BundleFile.at(exe)
+        #expect(launch != nil)
+        // A request out of the blue: same file, ignored.
+        #expect(!InputMethodLifecycle.shouldQuit(launchedFrom: launch, now: InputMethodLifecycle.BundleFile.at(exe)))
+        // Upgrade: a new file renamed over the old one.
+        let staged = dir.appendingPathComponent("staged").path
+        try Data("new".utf8).write(to: URL(fileURLWithPath: staged))
+        #expect(rename(staged, exe) == 0)
+        #expect(InputMethodLifecycle.shouldQuit(launchedFrom: launch, now: InputMethodLifecycle.BundleFile.at(exe)))
+        // Uninstall: gone from disk.
+        try FileManager.default.removeItem(atPath: exe)
+        #expect(InputMethodLifecycle.shouldQuit(launchedFrom: launch, now: InputMethodLifecycle.BundleFile.at(exe)))
+        // Unknown at launch: honour the request.
+        #expect(InputMethodLifecycle.shouldQuit(launchedFrom: nil, now: nil))
+    }
 }

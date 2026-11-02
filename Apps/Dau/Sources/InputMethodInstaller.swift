@@ -233,12 +233,14 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
         enabledHere = []
 
-        // 3. Stop the input method, 4. move it to the Trash.
-        await stopInputMethod(bundleID)
+        // 3. Move it to the Trash, 4. stop it: the input method quits only once its
+        // bundle is gone from disk (InputMethodLifecycle), the running process keeps its
+        // code mapped meanwhile.
         if files.isInstalled {
             try files.moveInstalledToTrash()
             report.movedToTrash = true
         }
+        await stopInputMethod(bundleID)
 
         // 5. The App Group data, only when asked.
         if deleteSettings {

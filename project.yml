@@ -66,6 +66,10 @@ settings:
       ONLY_ACTIVE_ARCH: YES
     Release:
       ONLY_ACTIVE_ARCH: NO
+      # No com.apple.security.get-task-allow (Xcode adds it to every "Apple Development"
+      # signature): a debuggable input method lets another process of the user attach
+      # and read the word being typed. Release builds are the ones used day to day.
+      CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO
 
 targets:
   Dau:

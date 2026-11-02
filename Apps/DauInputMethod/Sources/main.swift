@@ -31,9 +31,18 @@ let settingsReloadLog: SettingsChangeObserver? = nil
 // (upgrade) or before moving it to the Trash (uninstall). Every live controller first
 // ends its word (underline mode commits the marked text as shown, `quitRequested`), then
 // the process exits; macOS launches the bundle on disk at the next key.
+let executablePath = Bundle.main.executablePath ?? ""
+let launchedFrom = InputMethodLifecycle.BundleFile.at(executablePath)
 let quitObserver = InputMethodLifecycle.observeQuitRequests(
     inputMethodBundleID: Bundle.main.bundleIdentifier ?? "DauInputMethod", on: .main) {
     MainActor.assumeIsolated {
+        // Anyone can post this notification: quit only after an upgrade or uninstall
+        // really changed the bundle on disk (InputMethodLifecycle).
+        guard InputMethodLifecycle.shouldQuit(launchedFrom: launchedFrom,
+                                              now: InputMethodLifecycle.BundleFile.at(executablePath)) else {
+            logger.notice("event=quit-ignored reason=bundle-unchanged")
+            return
+        }
         logger.notice("event=quit-requested")
         NotificationCenter.default.post(name: .dauQuitRequested, object: nil)
         // Next turn of the run loop, so the commits above reach the clients first.
