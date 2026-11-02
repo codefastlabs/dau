@@ -11,7 +11,7 @@
 set -u
 root=${0:A:h:h}
 im="$HOME/Library/Input Methods/DauInputMethod.app"
-app="$root/build/DerivedData/Build/Products/Debug/Dau.app"
+app="$root/build/DerivedData.noindex/Build/Products/Debug/Dau.app"
 
 commit_of() { # bundle
   local f="$1/Contents/Resources/BuildCommit.txt"

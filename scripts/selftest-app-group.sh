@@ -2,7 +2,7 @@
 # Self test, without typing: does a setting saved by the host app reach the input method
 # through the App Group suite and the Darwin notification?
 #
-#   1. Builds Debug (universal) into build/DerivedData and installs the input method
+#   1. Builds Debug (universal) into build/DerivedData.noindex and installs the input method
 #      (scripts/install-debug.sh, which also stops the old input method process).
 #   2. Makes sure the input method runs. macOS launches it on demand, when a client
 #      activates it; if it is not running, the helper reselects the Dấu input source,
@@ -34,7 +34,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-DERIVED="$ROOT/build/DerivedData"
+DERIVED="$ROOT/build/DerivedData.noindex"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
 IM_APP="$HOME/Library/Input Methods/DauInputMethod.app"

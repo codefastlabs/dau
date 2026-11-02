@@ -15,7 +15,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-DERIVED="$ROOT/build/DerivedData"
+DERIVED="$ROOT/build/DerivedData.noindex"
 PROCESS_NAME="DauInputMethod"            # CFBundleExecutable of the input method
 BUNDLE_NAME="$PROCESS_NAME.app"
 DEST_DIR="$HOME/Library/Input Methods"

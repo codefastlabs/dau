@@ -29,7 +29,7 @@
 set -euo pipefail
 here=${0:A:h}
 out=${1:?output dir}
-app=${2:-${here:h:h}/build/DerivedData/Build/Products/Debug/Dau.app}
+app=${2:-${here:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}
 work=$(mktemp -d)
 lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 # Running the copy registers it with LaunchServices; unregister it before deleting it,
