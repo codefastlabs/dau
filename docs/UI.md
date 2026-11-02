@@ -1,6 +1,6 @@
 # Giao diện
 
-Mockup gốc: https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln — xem trực tiếp canvas để đối chiếu bố cục và các trạng thái; nếu phiên làm việc không mở được link thì mô tả dưới đây đủ để dựng. Mockup vẽ theo macOS 27, nhưng app thật dùng control SwiftUI hệ thống nên tự theo phiên bản macOS đang chạy (D9). Chuỗi giao diện tiếng Việt, đặt trong String Catalog. Khi canvas và tài liệu này lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho khớp.
+Mockup gốc: https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln — xem trực tiếp canvas để đối chiếu nội dung và các trạng thái (bố cục theo System Settings, D9); nếu phiên làm việc không mở được link thì mô tả dưới đây đủ để dựng. Mockup vẽ theo macOS 27, nhưng app thật dùng control SwiftUI hệ thống nên tự theo phiên bản macOS đang chạy (D9). Chuỗi giao diện tiếng Việt, đặt trong String Catalog. Khi canvas và tài liệu này lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho khớp.
 
 ## Chuẩn đối chiếu: System Settings (D9)
 
@@ -23,7 +23,7 @@ Sidebar: icon app, tên, 3 bước có trạng thái (xong / đang làm / chưa)
 3. **Chọn kiểu gõ và gõ thử** — segmented Telex | VNI | Telex đơn giản, ô gõ thử, gợi ý "tooi yeeu tieengs Vieetj". Nút: Quay lại / Bắt đầu gõ.
 
 ## Cửa sổ Cài đặt (sidebar + ô tìm kiếm)
-Sidebar có icon màu: Gõ phím (xanh dương), Thông minh (tím), Ứng dụng (cam), Cập nhật & hỗ trợ (xanh lá). Thanh tiêu đề hiện tên mục.
+Sidebar có icon màu: Gõ phím (xanh dương), Thông minh (tím), Ứng dụng (cam), Cập nhật & hỗ trợ (xanh lá); đáy sidebar có nhãn "Dấu x.y.z". Thanh tiêu đề hiện tên mục. Mô tả của một nhóm nằm dưới tiêu đề nhóm, trên thẻ (như System Settings).
 
 **Gõ phím**
 - Thẻ "Xem trước": chuỗi gõ → kết quả, cập nhật ngay theo kiểu gõ và vị trí dấu; chip hiện cấu hình hiện tại.
@@ -50,7 +50,7 @@ Sidebar có icon màu: Gõ phím (xanh dương), Thông minh (tím), Ứng dụn
 ## Các trạng thái bổ sung
 - **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt (thẻ thường của Form, ô biểu tượng cảnh báo màu cam hệ thống), "Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt.", nút "Bật lại". Bấm "Bật lại" thì bật Dấu và đọc lại trạng thái (N4): bật được → banner xanh "Đã bật Dấu trong Nguồn nhập liệu" kèm nút "Hoàn tác"; macOS vẫn để tắt → mở Cài đặt Bàn phím, banner hiện các bước tự thêm; chưa cài hoặc macOS chưa liệt kê Dấu → mở cửa sổ thiết lập.
 - **Chế độ tối:** toàn bộ Cài đặt và onboarding phải có giao diện tối (dùng màu hệ thống của SwiftUI là tự có).
-- **Thêm quy tắc ứng dụng** (nút +): sheet với ô tìm, danh sách ứng dụng chưa có quy tắc đã lưu (app trong danh sách tương thích có nhãn "Đề xuất" và khi thêm thì giữ nhãn đó), một segmented "Khi đang gõ" (Không gạch chân | Có gạch chân), nút Huỷ / Thêm.
+- **Thêm quy tắc ứng dụng** (nút +): sheet với ô tìm (trên phải), tiêu đề nhóm "Thêm quy tắc cho ứng dụng", danh sách ứng dụng chưa có quy tắc đã lưu (app trong danh sách tương thích có nhãn "Đề xuất" và khi thêm thì giữ nhãn đó), một segmented "Khi đang gõ" (Không gạch chân | Có gạch chân), nút "Chọn ứng dụng khác…" bên trái, Huỷ / Thêm bên phải.
 - **Thẻ cập nhật** có 6 trạng thái: đã mới nhất; đang kiểm tra; đang tải (thanh tiến trình, "Bạn vẫn gõ bình thường", nút Huỷ); chờ cài ("Sẽ cài khi bạn ngừng gõ", nút Cài ngay); không có mạng (nút Thử lại, "Dấu vẫn gõ bình thường"); chữ ký không hợp lệ ("Đã huỷ bản cập nhật", nút Báo lỗi…).
 - **Xác nhận quay về bản trước** (D19) và **xác nhận gỡ cài đặt** (alert hệ thống: "Gỡ Dấu khỏi máy?", nút đỏ "Gỡ cài đặt", "Huỷ", checkbox "Xoá cả cài đặt và quy tắc ứng dụng"). Câu "Bàn phím đang dùng trước đó được giữ nguyên" để ô trống `[…]` cho tới khi M5 T4 kiểm chứng (N5). macOS 27 vẽ alert căn trái, hai nút nằm ngang, nút "Gỡ cài đặt" chữ đỏ trên nền đỏ nhạt; mockup vẽ căn giữa, nút xếp dọc, nền đỏ chữ trắng — theo hệ thống (D9). Gỡ xong: alert "Đã gỡ bộ gõ Dấu" nêu những gì đã làm (đọc lại từ hệ thống) và nút "Thoát Dấu"; app không tự xoá chính nó, chỉ hướng dẫn kéo Dấu vào Thùng rác.
 - **Khi gõ trong ứng dụng:** không gạch chân (mặc định), có gạch chân (từ đang gõ được gạch, chốt khi Space), gõ tiếng Anh bằng ABC (chỉ báo của hệ thống), thêm dấu cho từ đã gõ.

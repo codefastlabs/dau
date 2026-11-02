@@ -78,12 +78,12 @@ dau/
 - Khoá Info.plist đang dùng (chạy được trên macOS 27 ở M2): `InputMethodConnectionName`, `InputMethodServerControllerClass`, `LSBackgroundOnly`, `TISInputSourceID`, `TISIntendedLanguage`, `ComponentInputModeDict` (một mode `.vi`, icon template V), `tsInputMethodIconFileKey`, `TISIconIsTemplate`; `CFBundleIconName` do actool thêm từ catalog chung; thêm `DauHostAppBundleIdentifier`, `DauAppGroupIdentifier` của riêng Dấu.
 
 ### Dau (app chủ)
-- **Cửa sổ Cài đặt:** scene SwiftUI `Window` (không dùng scene `Settings`), là cửa sổ chính của app. ⌘, mở lại cửa sổ. Cỡ mặc định 820×600, tối thiểu 760×520. Điểm vào là `main.swift`: nó ghim bản địa hoá `vi` trước khi AppKit chạy.
-  - Bố cục: `NavigationSplitView`, sidebar cố định 220 pt, có ô tìm và 4 mục. Ô icon ở sidebar là ảnh vẽ theo SVG của mockup.
-  - Mỗi trang là `SettingsPage`: `ScrollView` gồm các card tự xếp theo mockup. Nền chọn trong các màu hệ thống, control đều là control hệ thống (D9). Không dùng `Form`, vì `Form(.grouped)` tự giới hạn độ rộng nội dung.
-- **Header:** tiêu đề mục là một ToolbarItem `.navigation` (macOS 26+ tắt nền glass của item này). Tiêu đề hệ thống bị gỡ, nên mọi mục có cùng toolbar và tiêu đề không đổi chỗ. Mục Ứng dụng có thêm ô tìm và nút "+": hai item riêng, ngăn bằng `ToolbarSpacer(.fixed)` để macOS 26+ không gộp thành một khối glass.
+- **Cửa sổ Cài đặt:** scene SwiftUI `Window` (không dùng scene `Settings`), là cửa sổ chính của app. ⌘, mở lại cửa sổ. Cỡ mặc định 740×560 như System Settings; rộng 740–976 (cột chi tiết không quá 744, để `Form(.grouped)` không giới hạn thẻ 704 rồi căn giữa), cao tối thiểu 452. Điểm vào là `main.swift`: nó ghim bản địa hoá `vi` trước khi AppKit chạy.
+  - Bố cục: `NavigationSplitView`; sidebar là `List` mặc định rộng 232 với `.searchable(placement: .sidebar)` và 4 mục `Label`. Ô icon 20 pt vẽ theo SVG của mockup, màu hệ thống.
+  - Mỗi trang là `SettingsPage` = `Form(.grouped)` với `Section`, control hệ thống và thông số mặc định (D9: theo System Settings, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Mảnh nội dung riêng của mockup (thẻ xem trước, chip, nhãn "Mới", phím, ô banner) nằm trong các section.
+- **Header:** tiêu đề mục là một ToolbarItem `.navigation` (macOS 26+ tắt nền glass của item này). Tiêu đề hệ thống bị gỡ, nên mọi mục có cùng toolbar và tiêu đề không đổi chỗ. Mục Ứng dụng có nút "+" rồi ô tìm (`.searchable(placement: .toolbar)`, thứ tự do macOS đặt), ngăn bằng `ToolbarSpacer(.flexible)`. Nút ẩn/hiện sidebar bị gỡ vì System Settings không có nút này; gỡ nút thì tiêu đề hệ thống co (thanh 32, chữ nhỏ), nên tiêu đề trang là `PageTitle` 15 đậm.
 - **Cuộn:**
-  - Scroll view lấp cột chi tiết tới mép phải cửa sổ. Nội dung lấp độ rộng scroll view, không tính độ rộng bằng tay.
+  - Form tự cuộn và lấp cột chi tiết; không tính độ rộng bằng tay.
   - Trên macOS 26+, nội dung cuộn dưới header được che bằng `scrollEdgeEffectStyle(.hard, for: .top)`.
   - Thanh cuộn theo cài đặt hệ thống. Kiểu overlay không chiếm chỗ. Kiểu legacy chỉ hiện ở mục cần cuộn; mục đó hẹp hơn đúng độ rộng thanh cuộn, còn vị trí mọi thứ giữ nguyên (xem `docs/UI-CHECKS.md`).
 - **Control hệ thống được bọc:**

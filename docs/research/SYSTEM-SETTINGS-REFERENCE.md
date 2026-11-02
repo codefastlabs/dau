@@ -105,6 +105,8 @@ Kết luận cho sheet của Dấu: `Form(.grouped)` + `searchable` + nút trên
 
 ### Cần chỉnh / không khớp
 
+Đã giải quyết trong app (02/11/2026, d446a09): sidebar 232 + ô tìm `.searchable(.sidebar)`; lề trên giữ 20 (D9: không đè thông số hệ thống); nút sidebar bị gỡ như System Settings, tiêu đề trang là `PageTitle` 15 đậm vì tiêu đề hệ thống co khi gỡ nút; cửa sổ 740–976 để không chạm giới hạn 704; nút trong hàng chỉ có nút căn phải.
+
 - **Độ rộng sidebar**: mặc định 144, System Settings 232. Mặc định làm cụt chữ "Cập nhật & hỗ trợ". Cách gần nhất: `navigationSplitViewColumnWidth(232)`; đặt rồi thì mọi số đo sidebar và lề form trùng System Settings.
 - **Ô tìm ở sidebar**: mặc định không có; dùng `.searchable(placement: .sidebar)` là ra đúng khung của System Settings.
 - **Lề trên form**: 20 so với 12. Chưa tìm được cách giảm bằng API công khai (`contentMargins` chỉ cộng thêm). Theo D9 thì không tự chỉnh thông số hệ thống; giữ 20 hay tìm cách khớp 12 cần người dùng quyết.
