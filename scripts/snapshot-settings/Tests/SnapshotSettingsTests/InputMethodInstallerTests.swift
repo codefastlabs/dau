@@ -26,6 +26,18 @@ final class FakeTextInputSources: TextInputSources {
     /// Read-backs left before an enable that did not take effect turns on by itself
     /// (the user clicked "Cho phép" a bit later). nil: never.
     var turnsOnAfterReads: Int?
+    /// What macOS has stored as enabled (`com.apple.inputsources`). nil: follows the
+    /// enabled flags. Set to model the T4 bug: TIS says off, the stored entries stay.
+    var stored: Set<String>?
+    /// The stored entries ignore disable entirely (the uninstall reports them).
+    var storedSticky = false
+
+    func storedEnabledIDs(bundleID: String) -> Set<String> {
+        guard let stored else {
+            return Set(all.filter { $0.entry.bundleID == bundleID && $0.enabled }.map(\.entry.id))
+        }
+        return stored
+    }
 
     static func dau(enabled: Bool = false) -> [Source] {
         [Source(entry: InputSourceEntry(id: imID, bundleID: imID, isMode: false, name: "Dấu"), enabled: enabled),
@@ -60,6 +72,7 @@ final class FakeTextInputSources: TextInputSources {
 
     func disable(_ id: String) -> OSStatus {
         log.append("disable \(id)")
+        if !storedSticky { stored?.remove(id) }
         guard let i = all.firstIndex(where: { $0.entry.id == id }) else { return -50 }
         all[i].enabled = false
         if currentID == id { currentID = nil }
@@ -372,6 +385,26 @@ struct InputMethodInstallerTests {
         #expect(rig.files.log.isEmpty)
         #expect(!report.movedToTrash)
         #expect(!report.stillEnabled)
+    }
+
+    @Test("uninstall: stored entries TIS no longer lists are disabled too")
+    func uninstallStoredOnly() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: false))
+        rig.tis.stored = [modeID, imID]
+        let report = try await rig.installer.uninstall(deleteSettings: false)
+        #expect(rig.tis.log == ["disable \(modeID)", "disable \(imID)"])
+        #expect(!report.stillEnabled)
+    }
+
+    @Test("uninstall: stored entries that ignore disable are retried once and reported")
+    func uninstallStoredSticky() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.tis.stored = [modeID, imID]
+        rig.tis.storedSticky = true
+        let report = try await rig.installer.uninstall(deleteSettings: false)
+        #expect(rig.tis.log.filter { $0 == "disable \(modeID)" }.count == 2)
+        #expect(report.stillEnabled)
+        #expect(report.movedToTrash)
     }
 
     // MARK: Files (temp folder)
