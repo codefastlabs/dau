@@ -101,4 +101,19 @@ struct SidebarSearchTests {
         #expect(!SettingsSection.updates.matches("telex"))
         #expect(SettingsSection.allCases.allSatisfy { $0.matches("") })
     }
+
+    @Test("the visible row titles of Ứng dụng and Cập nhật & hỗ trợ are found")
+    func rowTitles() {
+        for query in ["Đề xuất", "Bật gạch chân", "Thêm ứng dụng", "gạch chân", "de xuat", "co gach chan"] {
+            #expect(SettingsSection.apps.matches(query), "\(query)")
+        }
+        for query in ["Ổn định", "Gặp ứng dụng gõ bị lỗi", "Gỡ Dấu khỏi máy"] {
+            #expect(SettingsSection.updates.matches(query), "\(query)")
+        }
+    }
+
+    @Test("a query no section matches leaves the sidebar empty (system empty state shown)")
+    func noMatch() {
+        #expect(SettingsSection.allCases.filter { $0.matches("xyzzy") }.isEmpty)
+    }
 }

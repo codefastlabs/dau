@@ -12,9 +12,12 @@ struct UpdatesSupportView: View {
         SettingsPage(SettingsSection.updates.title) {
             Section {
                 HStack(spacing: 12) {
+                    // System Settings' pane header card (Notifications, Siri: icon,
+                    // title, description) shows its icon 26 pt; Dấu's app icon fills
+                    // about 80% of its frame, so 32 draws it at that size.
                     Image(nsImage: NSApp.applicationIconImage)
                         .resizable()
-                        .frame(width: 48, height: 48)
+                        .frame(width: AppIcon.twoLine, height: AppIcon.twoLine)
                         .accessibilityHidden(true)
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: AppVersion.nameAndVersion)
@@ -28,7 +31,6 @@ struct UpdatesSupportView: View {
                     Button("Kiểm tra ngay") {}
                         .disabled(true)
                 }
-                .padding(.vertical, 2)
                 .layoutProbe("firstRow")
             }
 
@@ -65,11 +67,11 @@ struct UpdatesSupportView: View {
                 }
                 .disabled(true)
                 LabeledContent("Gỡ Dấu khỏi máy") {
-                    // docs/UI.md: red, in the system red (D9).
-                    Button(role: .destructive) {
+                    // The system's destructive button, enabled and disabled look
+                    // included (D9). macOS 27.2 draws it as a plain push button, text
+                    // not red (measured 02/11/2026); docs/UI.md follows the system.
+                    Button("Gỡ cài đặt…", role: .destructive) {
                         actions?.confirmUninstall(in: NSApp.keyWindow)
-                    } label: {
-                        Text("Gỡ cài đặt…").foregroundStyle(actions == nil ? AnyShapeStyle(.tertiary) : AnyShapeStyle(Color.red))
                     }
                     .disabled(actions == nil || actions?.isUninstalling == true)
                 }

@@ -30,11 +30,12 @@ struct AddAppRuleSheet: View {
     static let listHeight: CGFloat = 188
 
     private var visibleCandidates: [AppCandidate] {
-        let query = query.trimmingCharacters(in: .whitespaces)
-        guard !query.isEmpty else { return candidates }
-        return candidates.filter {
-            $0.name.localizedStandardContains(query) || $0.bundleID.localizedStandardContains(query)
-        }
+        AppCandidate.matching(candidates, query: query)
+    }
+
+    /// The selection while it is on screen: "Thêm" and Return add only a visible app.
+    private var visibleSelection: AppCandidate.ID? {
+        AppCandidate.selection(selection, among: visibleCandidates)
     }
 
     var body: some View {
@@ -42,9 +43,11 @@ struct AddAppRuleSheet: View {
             Section {
                 List(visibleCandidates, selection: $selection) { candidate in
                     HStack {
+                        // System Settings' app list rows (Privacy & Security ›
+                        // Accessibility): a 24 pt icon (`AppIcon.singleLine`).
                         Image(nsImage: candidate.icon)
                             .resizable()
-                            .frame(width: 24, height: 24)
+                            .frame(width: AppIcon.singleLine, height: AppIcon.singleLine)
                             .accessibilityHidden(true)
                         Text(verbatim: candidate.name)
                             .lineLimit(1)
@@ -74,6 +77,8 @@ struct AddAppRuleSheet: View {
         .formStyle(.grouped)
         .frame(width: Self.width)
         .searchable(text: $query, prompt: Text("Tìm trong Ứng dụng"))
+        // A query that hides the selected app clears the selection.
+        .onChange(of: query) { selection = visibleSelection }
         .toolbar {
             ToolbarItem(placement: .automatic) {
                 Button("Chọn ứng dụng khác…", action: chooseApp)
@@ -85,7 +90,7 @@ struct AddAppRuleSheet: View {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Thêm", action: add)
                     .keyboardShortcut(.defaultAction)
-                    .disabled(selection == nil)
+                    .disabled(visibleSelection == nil)
             }
         }
         .task { await loadApps() }
@@ -138,7 +143,7 @@ struct AddAppRuleSheet: View {
     /// Stores the rule. An app of the compatibility list keeps its "Đề xuất" chip in
     /// "Quy tắc riêng" (source `.suggested`), as when it is accepted from "Đề xuất".
     private func add() {
-        guard let id = selection, let candidate = candidates.first(where: { $0.id == id }) else { return }
+        guard let id = visibleSelection, let candidate = candidates.first(where: { $0.id == id }) else { return }
         model.settings.upsert(AppRule(
             bundleID: candidate.bundleID, displayName: candidate.name,
             underline: underline, source: candidate.suggested ? .suggested : .user))
@@ -153,6 +158,21 @@ struct AppCandidate: Identifiable {
     /// In the compatibility list: shown with the "Đề xuất" chip.
     var suggested = false
     var id: String { bundleID }
+
+    /// The candidates whose name or bundle ID contains `query`, ignoring case and
+    /// diacritics (`searchContains`); all of them for an empty query.
+    static func matching(_ candidates: [AppCandidate], query: String) -> [AppCandidate] {
+        let query = query.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return candidates }
+        return candidates.filter { $0.name.searchContains(query) || $0.bundleID.searchContains(query) }
+    }
+
+    /// `selection` if it is among `visible`, else nil: a selected app hidden by the
+    /// search is no longer selected, so "Thêm" turns off.
+    static func selection(_ selection: ID?, among visible: [AppCandidate]) -> ID? {
+        guard let selection, visible.contains(where: { $0.id == selection }) else { return nil }
+        return selection
+    }
 }
 
 /// An app found on disk (Sendable, built off the main thread).

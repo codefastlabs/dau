@@ -28,8 +28,9 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         }
     }
 
-    /// Words the sidebar search matches, besides the title: the labels of the settings
-    /// in the section.
+    /// Words the sidebar search matches, besides the title: the visible row titles,
+    /// section headers, choices and buttons of the section ("gạch chân" in any case
+    /// matches "Gạch chân": the match ignores case and diacritics).
     var keywords: [String] {
         switch self {
         case .typing:
@@ -48,13 +49,18 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
             [String(localized: "Việt/Anh theo cửa sổ"),
              String(localized: "Nhớ nguồn nhập liệu theo từng cửa sổ"),
              String(localized: "Tự động chuyển sang nguồn đầu vào của tài liệu"),
-             String(localized: "Quy tắc riêng"), String(localized: "Gạch chân")]
+             String(localized: "Quy tắc riêng"), String(localized: "Thêm ứng dụng"),
+             String(localized: "Gạch chân"), String(localized: "Có gạch chân"),
+             String(localized: "Không gạch chân"), String(localized: "Đề xuất"),
+             String(localized: "Bật gạch chân")]
         case .updates:
             [String(localized: "Phiên bản"), String(localized: "Kiểm tra ngay"),
              String(localized: "Tự động kiểm tra bản mới"), String(localized: "Tự động tải và cài"),
-             String(localized: "Kênh phát hành"), String(localized: "Beta"),
+             String(localized: "Kênh phát hành"), String(localized: "Ổn định"),
+             String(localized: "Beta"), String(localized: "Gặp ứng dụng gõ bị lỗi?"),
              String(localized: "Báo lỗi…"), String(localized: "Quay về bản trước"),
-             String(localized: "Gỡ cài đặt…"), String(localized: "Quyền riêng tư")]
+             String(localized: "Gỡ Dấu khỏi máy"), String(localized: "Gỡ cài đặt…"),
+             String(localized: "Quyền riêng tư")]
         }
     }
 
@@ -62,7 +68,20 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
     func matches(_ query: String) -> Bool {
         let query = query.trimmingCharacters(in: .whitespaces)
         guard !query.isEmpty else { return true }
-        return ([title] + keywords).contains { $0.localizedStandardContains(query) }
+        return ([title] + keywords).contains { $0.searchContains(query) }
+    }
+}
+
+extension String {
+    /// Whether `query` occurs in the string, ignoring case and diacritics, with "đ" read
+    /// as "d" too (it is a letter of its own, not a "d" with a mark, so diacritic folding
+    /// keeps it): "de xuat" finds "Đề xuất", as people type without marks.
+    func searchContains(_ query: String) -> Bool {
+        func fold(_ s: String) -> String {
+            s.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil)
+                .replacingOccurrences(of: "đ", with: "d")
+        }
+        return fold(self).contains(fold(query))
     }
 }
 

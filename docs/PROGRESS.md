@@ -5,7 +5,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 > Từ 02/11/2026 repo ở https://github.com/codefastlabs/dau và lịch sử đã được viết lại: các mã commit ghi trước ngày này là mã cũ, tra `docs/history/COMMIT-MAP.md` để ra mã mới.
 
 ## Trạng thái hiện tại
-- Mốc đang làm: M5 (T1–T3 xong, chờ T4 trên máy với người dùng). M0–M4 đã đóng; M3 đóng 30/10/2026 (kiểm toán lần 3 ĐẠT). Việc hoãn: ma trận tương thích còn lại → M6; biểu tượng V, danh sách "+" bằng mắt, VoiceOver đọc đúng tên, VoiceOver/Tab trong Cài đặt, máy tiếng Anh hẳn, sheet tối, gợi ý UpdatesSupportView:56 → M7. Test hiện tại: engine 77, DauShared 34, IMK 75, snapshot-settings 45.
+- Mốc đang làm: M5 (T1–T3 xong, chờ T4 trên máy với người dùng). M0–M4 đã đóng; M3 đóng 30/10/2026 (kiểm toán lần 3 ĐẠT). Việc hoãn: ma trận tương thích còn lại → M6; biểu tượng V, danh sách "+" bằng mắt, VoiceOver đọc đúng tên, VoiceOver/Tab trong Cài đặt, máy tiếng Anh hẳn, sheet tối, gợi ý UpdatesSupportView:56 → M7. Test hiện tại: engine 77, DauShared 34, IMK 75, snapshot-settings 49.
 - Việc đang chờ người dùng: bật nguồn nhập liệu mới `com.codefastlabs.dau.inputmethod.Dau.vi` sau khi đổi Bundle ID. Team ID: Personal Team miễn phí `M58DANM3ZP` (30/10/2026), ký tự động "Apple Development"; bản phát hành dùng Developer ID ở M7.
 - M1a xong: `docs/OPENKEY-NOTES.md` (commit b0739c7).
 - M0: khung xong (commit b2a331d, 06f0dcb, 6fe660b), phiên chính đã kiểm chứng lại: xcodegen + build Debug 2 target với `-destination 'generic/platform=macOS'` ra `x86_64 arm64`, swift test 2 package xanh, bộ gõ không có network.client. Tên hiển thị "Dấu" cho locale `en` đã sửa (0b188dd). **Kiểm toán M0: ĐẠT.**

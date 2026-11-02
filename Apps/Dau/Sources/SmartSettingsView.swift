@@ -27,7 +27,6 @@ struct SmartSettingsView: View {
                     let keep = SettingsSamples.keepOriginal(method)
                     Subtitle(Text("Từ trùng với tiếng Việt thì tiếng Việt được ưu tiên: “\(wins.keys)” ra “\(wins.result)”. Muốn giữ chữ gốc, gõ đúp phím dấu: “\(keep.keys)” ra “\(keep.result)”."))
                 }
-                .padding(.vertical, 4)
             }
 
             Section(header: Text("Sửa từ đã gõ")) {
@@ -45,7 +44,6 @@ struct SmartSettingsView: View {
                 WrappingHStack {
                     ExampleChips(example: SettingsSamples.addMarks(method))
                 }
-                .padding(.vertical, 4)
             }
 
             Section {

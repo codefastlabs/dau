@@ -10,7 +10,7 @@ Lưu ý khi đọc số: máy đo đang hiện thanh cuộn kiểu cũ (luôn hi
 
 | Thông số | System Settings | SwiftUI mặc định | Ghi chú |
 |---|---|---|---|
-| Kích thước cửa sổ | 740 × 560, mọi pane đều vậy | Theo `.defaultSize` của app | Không thấy khung cửa sổ lưu trong cài đặt của System Settings nên coi là mặc định (suy luận, cần kiểm chứng). Không đổi kích thước cửa sổ khi đo. |
+| Kích thước cửa sổ | 740 × 560, mọi pane đều vậy | Theo `.defaultSize` của app | Không thấy khung cửa sổ lưu trong cài đặt của System Settings nên coi là mặc định (suy luận, cần kiểm chứng). Không đổi kích thước cửa sổ khi đo. Đổi được kích thước hay không: xem "Cửa sổ có đổi rộng được không". |
 | Chiều cao thanh tiêu đề + công cụ | 52 | 52 | Khớp. |
 | Nút đèn giao thông | x 18 / 41 / 64, y 18, 16×16 | Như hệ thống | Khớp. |
 | Nút trên thanh công cụ | Lùi/Tiến (cụm 73×36 ở x 240, y 8) | Nút "Hide Sidebar" 44×52 ở mép phải cột sidebar | Khác. App thử bỏ nút này bằng `.toolbar(removing: .sidebarToggle)` đặt trên cột sidebar thì thanh công cụ co còn 32 và tiêu đề thành chữ tiêu đề cửa sổ nhỏ (đo ở màn 1x). |
@@ -92,7 +92,48 @@ Kết luận cho sheet của Dấu: `Form(.grouped)` + `searchable` + nút trên
 - `Form.formStyle(.grouped)` giới hạn thẻ ở **704 pt** và đặt giữa pane. Ở cột chi tiết rộng ≤ 744 (thẻ = pane − 40) không thấy giới hạn; rộng hơn thì hai bên lề to dần. Đo được: pane 676 → thẻ 636; pane 856 → thẻ 704 (lề 76); pane 1256 → thẻ 704 (lề 276).
 - `.frame(maxWidth: .infinity)` trên Form **không** gỡ giới hạn này; `.contentMargins(.horizontal, 20, for: .scrollContent)` cũng không.
 - Với sidebar 232, cửa sổ rộng ≤ 976 thì không chạm giới hạn. Cửa sổ 740 như System Settings cho thẻ 468, trùng System Settings.
-- System Settings có giới hạn tương tự hay không thì chưa biết vì không đổi kích thước cửa sổ khi đo.
+- System Settings có giới hạn tương tự hay không thì chưa biết vì không đổi kích thước cửa sổ khi đo (xem mục dưới).
+
+### Icon ứng dụng trong hàng
+
+Đo 02/11/2026, macOS 27.2, giao diện Tối, cửa sổ System Settings nằm trên màn **1x** (không di chuyển cửa sổ khi đo, nên số làm tròn tới 1 pt). Chỉ mở pane bằng URL, không bấm gì. Khung hàng đọc bằng Accessibility API; icon ứng dụng không phải phần tử trợ năng nên đo theo điểm ảnh: khung bao các điểm khác màu nền thẻ ("nét vẽ"). Icon ứng dụng macOS chỉ vẽ ≈ 80% khung (lưới icon 824/1024; icon của Dấu cũng vậy: 412/512), nên khung = nét vẽ ÷ 0,805.
+
+| Pane (URL) | Loại hàng | Hàng | Nét vẽ icon | Khung suy ra | Chữ bắt đầu |
+|---|---|---|---|---|---|
+| Cài đặt chung › Mục đăng nhập & tiện ích mở rộng › Hoạt động nền (`com.apple.LoginItems-Settings.extension`) | Icon, tên + dòng phụ, công tắc | 57 | 26 × 26 từ x 265 | **32**, từ x 262 (mép thẻ + 10) | x 304 (sau khung 10) |
+| Thông báo › Thông báo của ứng dụng (`com.apple.Notifications-Settings.extension`) | Icon, tên + dòng phụ, chevron | 56 | 26 × 26 từ x 264 | **32** | x 302 |
+| Quyền riêng tư & Bảo mật › Trợ năng (`com.apple.preference.security?Privacy_Accessibility`; tiêu đề trên máy đo: "Device Control and Data Access") | Danh sách trong thẻ có +/−: icon, tên một dòng, công tắc | 42 | 20 × 20 từ x 263 (một app 22) | **24**, từ x 261 (nhãn cao 24) | x 294 |
+| Mục đăng nhập › Mở khi đăng nhập (cùng pane) | Bảng có cột "Item / Kind" | 26 | 14 × 14 | 16 | — |
+| Thẻ đầu pane: Thông báo, Siri (`com.apple.Siri-Settings.extension`) | Icon pane, tên + mô tả | thẻ 72 | 26 × 26 từ x 264 | Icon pane (ô vuông bo góc, vẽ kín khung): 26 | x 302 |
+
+Không gặp hàng nào hiện icon ứng dụng 28 hay 48. Áp dụng cho Dấu (`AppIcon`): hàng "Quy tắc riêng" và danh sách của sheet thêm quy tắc (một dòng, kèm control) 24 như Trợ năng; hàng "Đề xuất" (có dòng phụ) 32 như Hoạt động nền và Thông báo; thẻ đầu "Cập nhật & hỗ trợ" 32 để nét vẽ icon app bằng 26 như icon ở thẻ đầu pane. Khoảng icon → chữ của Dấu giữ 8 (`HStack` mặc định); System Settings 9–10. Kiểm lại trên cửa sổ thật của Dấu (màn Retina, cùng ngày): nét vẽ icon hàng "Đề xuất" và thẻ đầu "Cập nhật & hỗ trợ" 26 × 26 từ x 265, trùng System Settings.
+
+### Cửa sổ có đổi rộng được không
+
+Đo 02/11/2026 trên cửa sổ System Settings đang mở (740 × 560), chỉ đọc, không đổi kích thước:
+
+| Cách đọc | Kết quả |
+|---|---|
+| `AXUIElementIsAttributeSettable(window, kAXSizeAttribute)` | `true` (vị trí cũng `true`) |
+| Nút phóng to (`AXZoomButton`) | Có, bật (`AXEnabled` = true), 64,18 16 × 16; không có `AXFullScreenButton` riêng |
+| Vùng kéo (`AXGrowArea`) | Tên thuộc tính có trong danh sách nhưng không có giá trị (cửa sổ macOS hiện đại không có vùng kéo riêng) |
+| Style mask qua `CGWindowListCopyWindowInfo` | Không đọc được: thông tin cửa sổ chỉ có `Alpha, Bounds, IsOnscreen, Layer, MemoryUsage, Name, Number, OwnerName, OwnerPID, SharingState, StoreType` |
+| Khung lưu trong cài đặt (`defaults read com.apple.systempreferences`, container) | Không có khoá khung cửa sổ |
+
+Kết luận: AppKit báo cửa sổ **đổi được kích thước** (kích thước ghi được, nút phóng to bật), nhưng các cách đọc trên không tách được chiều ngang với chiều dọc: một cửa sổ chỉ đổi được chiều cao cũng cho đúng các kết quả này. Chưa kiểm chứng được độ rộng có cố định ở 740 hay không mà không kéo thử cửa sổ. Dấu giữ 740–976 (thẻ không chạm giới hạn 704 của Form), chờ người dùng kéo thử mép phải cửa sổ System Settings để chốt.
+
+### Nút mở/thu kiểu "Nâng cao"
+
+Rà 02/11/2026 bằng Accessibility API ở các pane Wi-Fi, Mạng, Bàn phím, Bàn di chuột, Chia sẻ, Desktop & Dock, Thanh menu, Màn hình khoá, Màn hình, Spotlight, Trợ năng, Âm thanh, Pin (mở bằng URL, không bấm): **không pane nào có hàng mở/thu** (`AXDisclosureTriangle` hay nút chevron xoay). Tuỳ chọn nâng cao của System Settings nằm ở nhóm riêng có tiêu đề (Chia sẻ › "Advanced"), hoặc sau nút mở sheet ("Nâng cao…" ở Màn hình, "Chi tiết…" ở Wi-Fi), hoặc nút "Show Detail" (i) ở cuối hàng. Thử `DisclosureGroup(isExpanded:)` (nhãn `LabeledContent("Nâng cao") { tóm tắt }`, nội dung là hai công tắc) trong `Section` của Form dạng nhóm, cửa sổ thật 740 × 560 trên màn Retina, so với nút hệ thống + chevron đang dùng (D9). Bản thử build riêng, không đưa vào mã:
+
+| | `DisclosureGroup` | Nút + chevron (hiện tại) |
+|---|---|---|
+| Thu gọn | Thẻ cao 45,5; chevron ở mép thẻ + 10, chữ "Nâng cao" từ x 273,5 (lùi 11,5 so với nhãn hàng khác ở x 262); tóm tắt bên phải | Gần như giống hệt: chevron x 262, chữ sau chevron 8 |
+| Mở ra: thụt lề hàng con | **Không thụt**: nhãn "Gõ tắt phụ âm" x 262 như hàng thường | Không thụt (x 262) |
+| Mở ra: hàng mở → hàng con đầu | **Không có vạch ngăn**; chữ "Nâng cao" kết thúc y 497,5, nhãn hàng con bắt đầu y 501,5 (sát 4 pt) | Có vạch ngăn của Form; nhãn hàng con y 513 (cách 21, lề 10 của hàng) |
+| Trợ năng | `AXDisclosureTriangle` **không có action nào**; `AXDisclosing` không ghi được: không mở được qua Accessibility API (chưa thử bằng VoiceOver thật) | `AXButton` "Nâng cao" có `AXPress`, giá trị là tóm tắt, gợi ý "Mở rộng/Thu gọn" |
+
+Kết luận: trên macOS 27.2 lý do cũ trong D9 ("DisclosureGroup làm thụt lề sai bố cục") không còn đúng, nhưng `DisclosureGroup` trong Form vẫn lệch cách System Settings vẽ hàng (không vạch ngăn, hàng con dính vào hàng mở) và không mở được qua trợ năng; System Settings cũng không có hàng mở/thu để làm mẫu. Giữ nút + chevron; đổi câu lý do trong D9 cần người dùng quyết.
 
 ### Mặc định SwiftUI đã khớp
 

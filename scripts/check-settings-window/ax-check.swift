@@ -14,7 +14,8 @@
 // that the banner is the first card. Without `--banner`, each pass also opens the
 // add-rule sheet ("+" on Ứng dụng, pressed through accessibility), measures it against
 // System Settings' sheets, captures it empty and with a row selected, and closes it
-// with Huỷ (nothing is added). `--sheet-only`: only the sheet, on the first display
+// with Huỷ (nothing is added), and types a query no section matches into the sidebar
+// search (system empty state, toolbar kept), then clears it. `--sheet-only`: only the sheet, on the first display
 // (run.sh uses it for the appearance the system is not in). Exit status 0 only if
 // every check passes.
 //
@@ -38,7 +39,8 @@
 //   header x = card + 10, header → card 10, card → card 10; the app list fills its
 //   card; segmented 24 tall; Huỷ and Thêm 24 tall, ≥ 64 wide, Thêm 20 from the right
 //   and bottom edges, "Chọn ứng dụng khác…" at x 20 on the same line; Thêm disabled
-//   until a row is selected; the search field filters the list.
+//   until a row is selected; the search field filters the list; a query that hides
+//   the selected row turns Thêm off again.
 import AppKit
 
 let args = CommandLine.arguments
@@ -293,6 +295,41 @@ func measure(display: String) {
     }
 }
 
+// MARK: Sidebar search without a match
+
+/// A query no section matches: the sidebar shows the system's empty state (text in the
+/// sidebar, no rows), the open page and its 52 pt toolbar stay; clearing the query
+/// brings the four rows back.
+func measureSidebarSearch(display: String) {
+    let page = "sidebar-search"
+    guard let field = all(window, where: { subrole($0) == "AXSearchField" }).first(where: {
+        frame($0).minX - frame(window).minX < sidebarWidth }),
+          let outline = all(window, where: { role($0) == "AXOutline" }).first else {
+        record(display, page, "search field", expected: "sidebar search", got: "missing", ok: false); return
+    }
+    // SwiftUI reads the sidebar field's value only while it has focus (measured: a
+    // value set without focus shows in the field but filters nothing).
+    AXUIElementSetAttributeValue(field, kAXFocusedAttribute as CFString, kCFBooleanTrue)
+    AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "zzzz-no-such-setting" as CFString)
+    wait(1.0)
+    let w = frame(window)
+    func rel(_ r: CGRect) -> CGRect { r.offsetBy(dx: -w.minX, dy: -w.minY) }
+    let rows = (attr(outline, kAXRowsAttribute) as? [AXUIElement]) ?? []
+    check(display, page, "rows without a match", CGFloat(rows.count), 0, tolerance: 0)
+    let texts = all(window, where: { role($0) == "AXStaticText" }).map { (label($0), rel(frame($0))) }
+        .filter { $0.1.maxX <= sidebarWidth && $0.1.minY > 98 && $0.0.contains("zzzz-no-such-setting") }
+    record(display, page, "empty state", expected: "text naming the query in the sidebar", got: texts.first?.0 ?? "none", ok: !texts.isEmpty)
+    let toolbar = all(window, where: { role($0) == "AXToolbar" }).first.map { rel(frame($0)) }
+    check(display, page, "toolbar height", toolbar?.height ?? 0, toolbarHeight)
+    if screenshot("sidebar-search-empty-\(display)", w) == nil {
+        record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
+    }
+    AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "" as CFString)
+    wait(1.0)
+    let back = (attr(outline, kAXRowsAttribute) as? [AXUIElement]) ?? []
+    check(display, page, "rows after clearing", CGFloat(back.count), CGFloat(sections.count), tolerance: 0)
+}
+
 // MARK: Add-rule sheet
 
 /// The sheet attached to the Settings window, if any.
@@ -432,6 +469,18 @@ func measureSheet(display: String) {
         if screenshot("apps-add-sheet-selected-\(display)", w) == nil {
             record(display, page, "screenshot selected", expected: "captured", got: "failed", ok: false)
         }
+        // A query that hides the selected app clears the selection: Thêm turns off and
+        // stays off once the query is cleared (Return cannot add an app off screen).
+        if let field = searchField {
+            AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "zzzz-no-such-app" as CFString)
+            wait(0.8)
+            record(display, page, "Thêm after search hides selection", expected: "disabled",
+                   got: enabled(button("Thêm")) ? "enabled" : "disabled", ok: !enabled(button("Thêm")))
+            AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "" as CFString)
+            wait(0.8)
+            record(display, page, "Thêm after search cleared", expected: "disabled",
+                   got: enabled(button("Thêm")) ? "enabled" : "disabled", ok: !enabled(button("Thêm")))
+        }
     }
 
     // Huỷ closes the sheet; nothing is added.
@@ -453,6 +502,7 @@ for screen in NSScreen.screens where seenScales.insert(screen.backingScaleFactor
     let origin = CGPoint(x: visible.minX + 40, y: primaryHeight - visible.maxY + 40)
     setFrame(window, origin: origin, size: size)
     if !sheetOnly { measure(display: display) }
+    if !sheetOnly && !bannerRun { measureSidebarSearch(display: display) }
     if !bannerRun { measureSheet(display: display) }
     if sheetOnly { break }
 }

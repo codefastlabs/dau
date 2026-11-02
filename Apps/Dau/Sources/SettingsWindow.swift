@@ -27,6 +27,15 @@ struct SettingsWindow: View {
                 }
                 .tag(section)
             }
+            .overlay {
+                // No section matches: the system's search empty state in the sidebar.
+                // The detail keeps the open page, so its toolbar title stays (a
+                // detail without a page title would shrink the toolbar, see
+                // `PageTitle`).
+                if visibleSections.isEmpty {
+                    ContentUnavailableView.search(text: query.trimmingCharacters(in: .whitespaces))
+                }
+            }
             .searchable(text: $query, placement: .sidebar, prompt: Text("Tìm kiếm"))
             .onChange(of: query) {
                 // Jump to the first match so the result is visible right away.
@@ -42,6 +51,11 @@ struct SettingsWindow: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 14)
             }
+            // System Settings has no sidebar toggle (Back/Forward sit there instead),
+            // so the window has none either. Removing it makes the system title
+            // shrink: the toolbar collapses to a 32 pt title bar with the small window
+            // title (measured on macOS 27.2, 1x display). Hence `PageTitle`,
+            // `HiddenWindowTitle` and `RemoveToolbarTitle` below.
             .toolbar(removing: .sidebarToggle)
             .layoutProbe("sidebar")
             // Must stay the last modifier of the column to take effect.
@@ -91,7 +105,9 @@ struct SettingsDetail: View {
 
 /// The page title is a toolbar item already (`PageTitle`); remove the system title so
 /// it is not drawn twice. The navigation title still names the window (Window menu,
-/// Mission Control, VoiceOver).
+/// Mission Control, VoiceOver). Why not the system title: without the sidebar toggle
+/// (removed as System Settings has none) it shrinks to the small window title in a
+/// 32 pt title bar (measured on macOS 27.2, 1x display).
 struct RemoveToolbarTitle: ViewModifier {
     func body(content: Content) -> some View {
         if #available(macOS 15, *) {

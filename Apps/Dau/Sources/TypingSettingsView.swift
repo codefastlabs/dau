@@ -108,7 +108,6 @@ struct PreviewCard: View {
             .accessibilityElement(children: .ignore)
             .accessibilityLabel(Text("\(example.keys) thành \(example.result)"))
         }
-        .padding(.vertical, 4)
         .layoutProbe("firstRow")
     }
 }
@@ -143,8 +142,8 @@ struct ShortcutKeycaps: View {
                 }
                 if shortcut.globeKey {
                     if !shortcut.keys.isEmpty {
+                        // System Settings' value text: 13 pt, secondary.
                         Text("hoặc")
-                            .font(.system(size: 12))
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 2)
                     }
@@ -157,8 +156,8 @@ struct ShortcutKeycaps: View {
             .accessibilityValue(Text(verbatim: spokenValue(shortcut)))
         } else {
             // Not readable: keep the placeholder rather than guess (N5).
+            // System Settings' value text: 13 pt, secondary.
             Text("[Phím tắt hệ thống]")
-                .font(.system(size: 12))
                 .foregroundStyle(.secondary)
         }
     }
@@ -170,7 +169,9 @@ struct ShortcutKeycaps: View {
     }
 }
 
-/// A key cap: radius 6, height 24, 12 pt text; system fill and separator.
+/// A key cap: radius 6, height 24, 12 pt text; system fill and separator. Mockup
+/// content (System Settings shows shortcuts as text, not keycaps): kept as drawn in
+/// the mockup, see the header of Components.swift.
 struct Keycap: View {
     let key: String
     init(_ key: String) { self.key = key }

@@ -25,8 +25,7 @@ struct AppRulesView: View {
         let query = query.trimmingCharacters(in: .whitespaces)
         guard !query.isEmpty else { return rules }
         return rules.filter {
-            AppDirectory.name(for: $0).localizedStandardContains(query)
-                || $0.bundleID.localizedStandardContains(query)
+            AppDirectory.name(for: $0).searchContains(query) || $0.bundleID.searchContains(query)
         }
     }
 
@@ -118,7 +117,7 @@ struct AppRulesView: View {
     }
 }
 
-/// One stored rule: icon 28, name, "Đề xuất" chip when it came from the compatibility
+/// One stored rule: icon 24, name, "Đề xuất" chip when it came from the compatibility
 /// list, underline popup (D5). Removed with the context menu or the Delete key while
 /// focused (the system draws the focus ring).
 struct AppRuleRow: View {
@@ -139,7 +138,7 @@ struct AppRuleRow: View {
             .fixedSize()
         } label: {
             HStack(spacing: 8) {
-                AppIcon(bundleID: rule.bundleID)
+                AppIcon(bundleID: rule.bundleID, size: AppIcon.singleLine)
                 Text(verbatim: name)
                     .lineLimit(1)
                 if rule.source == .suggested {
@@ -162,7 +161,7 @@ struct AppRuleRow: View {
     }
 }
 
-/// One suggestion: icon 28, name, a secondary line, and "Bật gạch chân", which stores
+/// One suggestion: icon 32, name, a secondary line, and "Bật gạch chân", which stores
 /// the rule. The list's per-app notes are for maintainers and are not shown (N5);
 /// every row says the same, as the section description does.
 struct SuggestionRow: View {
@@ -176,7 +175,7 @@ struct SuggestionRow: View {
                 .accessibilityLabel(Text("Bật gạch chân cho \(name)"))
         } label: {
             HStack(spacing: 8) {
-                AppIcon(bundleID: suggestion.bundleID)
+                AppIcon(bundleID: suggestion.bundleID, size: AppIcon.twoLine)
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: name)
                         .lineLimit(1)
@@ -189,14 +188,25 @@ struct SuggestionRow: View {
     }
 }
 
-/// An app's icon, 28 pt, hidden from VoiceOver (the row reads the name).
+/// An app's icon, hidden from VoiceOver (the row reads the name). Sizes as System
+/// Settings shows app icons in its rows (measured on macOS 27.2, 1x display; the icon
+/// art fills about 80% of its frame, Dấu's own icon included):
+/// - `singleLine` 24: a one-line row of an app list with a control, Privacy & Security
+///   › Accessibility (art 20 pt, rows 42 tall);
+/// - `twoLine` 32: an app with a secondary line, General › Login Items & Extensions ›
+///   Background App Activity and Notifications › Application Notifications (art 26 pt,
+///   frame from the card's edge + 10, text 10 after it).
 struct AppIcon: View {
+    static let singleLine: CGFloat = 24
+    static let twoLine: CGFloat = 32
+
     let bundleID: String
+    let size: CGFloat
 
     var body: some View {
         Image(nsImage: AppDirectory.icon(for: bundleID))
             .resizable()
-            .frame(width: 28, height: 28)
+            .frame(width: size, height: size)
             .accessibilityHidden(true)
     }
 }

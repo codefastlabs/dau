@@ -4,10 +4,13 @@ import DauShared
 
 // Pieces shared by the Settings pages, the add-rule sheet and the onboarding window.
 // The Settings pages and the add-rule sheet are grouped `Form`s with the system's
-// metrics (D9, System Settings as the reference); the custom pieces here are content
-// from the mockup that has no system equivalent (preview, example chips, "Mới", the
-// banner). The card primitive (`SettingsCard`), `SettingsColors` and `settingsButton`
-// remain for the onboarding window only. Colors are system colors only.
+// metrics (D9, System Settings as the reference); the custom pieces are content from
+// the mockup that has no system equivalent, kept as the mockup draws them: the preview
+// (`PreviewCard`, `PreviewBox`), example chips (`Chip`, `ExampleChips`), "Mới"
+// (`NewBadge`), the shortcut keycaps (`Keycap`, TypingSettingsView.swift; System
+// Settings writes shortcuts as text) and the "Dấu chưa được bật" banner. The card
+// primitive (`SettingsCard`), `SettingsColors` and `settingsButton` remain for the
+// onboarding window only. Colors are system colors only.
 
 /// Page and card backgrounds of the onboarding window (the Settings pages and the
 /// add-rule sheet use the grouped Form's own colors), chosen among system colors (no
@@ -102,6 +105,14 @@ struct HardTopScrollEdge: ViewModifier {
 /// The page title in the toolbar, as System Settings draws it: 15 pt bold, primary,
 /// starting 20 pt from the sidebar (the detail column's margin, where the system's
 /// own navigation title sits; measured 252.5 with the 232 pt sidebar).
+///
+/// Why not the system's navigation title: System Settings has no sidebar toggle, so
+/// the window removes it (`.toolbar(removing: .sidebarToggle)`, `SettingsWindow`).
+/// Without the toggle the toolbar holds no item on most pages and the system title
+/// shrinks: AppKit collapses the toolbar to a 32 pt title bar with the small window
+/// title (measured on macOS 27.2, 1x display). This item keeps the toolbar at System
+/// Settings' 52 pt with its 15 pt bold title on every page; `HiddenWindowTitle` and
+/// `RemoveToolbarTitle` keep the system title from being drawn a second time.
 struct PageTitle: View {
     let title: String
 
