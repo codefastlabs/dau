@@ -69,6 +69,7 @@ struct SettingsPage<Content: View>: View {
 
     var body: some View {
         Form {
+            TamperedBanner()
             NotEnabledBanner()
             content
         }
@@ -418,34 +419,62 @@ struct NotEnabledBanner: View {
         }
     }
 
-    /// The banner as the first section of the page's Form: one row with the tile, the
-    /// title and its subtitle, and the buttons, on the Form's card like System
-    /// Settings' own notices (a grouped Form on macOS draws no row background set with
-    /// `listRowBackground`, measured on macOS 27.2); the tile carries the color.
     private func banner<Buttons: View>(tint: Color, symbol: String, title: Text, hint: Text,
                                        @ViewBuilder buttons: () -> Buttons) -> some View {
-        Section {
-            HStack(alignment: .center, spacing: 10) {
-                // Mockup "SettingsNotEnabled": a tile in a system color with a white
-                // symbol, at the size of the app icons in Form rows. System colors only
-                // (D9).
-                Image(systemName: symbol)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.white)
-                    .frame(width: 28, height: 28)
-                    .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-                    .accessibilityHidden(true)
-                VStack(alignment: .leading, spacing: 2) {
-                    title
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
-                    Subtitle(hint)
-                }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                buttons()
+        noticeBanner(tint: tint, symbol: symbol, title: title, hint: hint, buttons: buttons)
+    }
+}
+
+/// "Bộ gõ trên máy không phải bản Dấu đã cài" (mockup "SettingsTampered"): the input
+/// method in ~/Library/Input Methods does not carry this app's signature, so whatever
+/// replaced it gets every key typed with the enabled "Dấu – Tiếng Việt". "Cài lại"
+/// installs the app's own copy.
+struct TamperedBanner: View {
+    @Environment(\.inputMethodActions) private var actions
+
+    var body: some View {
+        if let actions, actions.installedTampered {
+            noticeBanner(tint: .red, symbol: "exclamationmark.triangle.fill",
+                         title: Text("Bộ gõ trên máy không phải bản Dấu đã cài"),
+                         hint: actions.reinstall == .failed
+                            ? Text("Chưa cài lại được. Hãy gỡ cài đặt Dấu rồi cài lại từ bản tải về.")
+                            : Text("Tệp bộ gõ đã bị thay hoặc sửa sau khi cài. Cài lại để gõ bằng đúng bản của Dấu.")) {
+                Button("Cài lại") { Task { await actions.reinstallInputMethod() } }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(actions.reinstall == .working)
             }
-            .accessibilityElement(children: .contain)
         }
+    }
+}
+
+/// A notice as the first section of the page's Form: one row with the tile, the
+/// title and its subtitle, and the buttons, on the Form's card like System
+/// Settings' own notices (a grouped Form on macOS draws no row background set with
+/// `listRowBackground`, measured on macOS 27.2); the tile carries the color.
+@MainActor @ViewBuilder
+private func noticeBanner<Buttons: View>(tint: Color, symbol: String, title: Text, hint: Text,
+                                         @ViewBuilder buttons: () -> Buttons) -> some View {
+    Section {
+        HStack(alignment: .center, spacing: 10) {
+            // Mockup "SettingsNotEnabled": a tile in a system color with a white
+            // symbol, at the size of the app icons in Form rows. System colors only
+            // (D9).
+            Image(systemName: symbol)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 28, height: 28)
+                .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                .accessibilityHidden(true)
+            VStack(alignment: .leading, spacing: 2) {
+                title
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.primary)
+                Subtitle(hint)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            buttons()
+        }
+        .accessibilityElement(children: .contain)
     }
 }
 

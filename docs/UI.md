@@ -57,6 +57,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
   - bật được → banner xác nhận kèm "Hoàn tác";
   - macOS vẫn để tắt → mở Cài đặt Bàn phím, banner hiện các bước tự thêm;
   - chưa cài hoặc macOS chưa liệt kê Dấu → mở cửa sổ thiết lập.
+- **Bộ gõ trên máy đã bị thay** (chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước): banner đỏ đầu mọi mục Cài đặt, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên; cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
 - **Chế độ tối:** Cài đặt và onboarding đều có (màu hệ thống).
 - **Xác nhận gỡ cài đặt:** alert hệ thống, có tuỳ chọn xoá cả cài đặt và quy tắc. Câu về bàn phím trước đó để ô trống cho tới M5 T4 (N5). Gỡ xong: alert nêu những gì đã làm (đọc lại từ hệ thống); app không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác.
 - **Xác nhận quay về bản trước:** D19.

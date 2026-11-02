@@ -105,6 +105,8 @@ final class FakeFiles: InputMethodFiles {
     var installed: InputMethodBundleInfo?
     var installedURL = URL(fileURLWithPath: "/tmp/does-not-matter/DauInputMethod.app")
     var isInstalled: Bool { installed != nil }
+    var genuine = true
+    var installedIsGenuine: Bool { !isInstalled || genuine }
     var installError: InputMethodInstallerError?
     var trashError: InputMethodInstallerError?
     var log: [String] = []
@@ -113,6 +115,7 @@ final class FakeFiles: InputMethodFiles {
         log.append("copy")
         if let installError { throw installError }
         installed = embedded
+        genuine = true
     }
 
     func moveInstalledToTrash() throws {
@@ -432,5 +435,42 @@ struct InputMethodInstallerTests {
         let missing = InputMethodBundleFiles(embeddedURL: root.appendingPathComponent("nope.app"), directory: dir)
         #expect(missing.embedded == nil)
         #expect(throws: InputMethodInstallerError.unavailable) { try missing.installEmbedded() }
+    }
+}
+
+@MainActor
+@Suite("Tampered input method (D37, security review 02/11/2026)")
+struct TamperedInputMethodTests {
+    @Test("a copy without this app's signature shows the banner; Cài lại installs ours")
+    func reinstall() async {
+        let installer = FakeInputMethodInstaller(.enabled)
+        installer.genuine = false
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.checkInstalled()
+        #expect(actions.installedTampered)
+        await actions.reinstallInputMethod()
+        #expect(installer.calls == ["install"])
+        #expect(!actions.installedTampered)
+        #expect(actions.reinstall == .idle)
+    }
+
+    @Test("a failed reinstall keeps the banner with the failure hint")
+    func reinstallFails() async {
+        let installer = FakeInputMethodInstaller(.enabled, failure: .invalidSignature)
+        installer.genuine = false
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.checkInstalled()
+        await actions.reinstallInputMethod()
+        #expect(actions.installedTampered)
+        #expect(actions.reinstall == .failed)
+    }
+
+    @Test("the real files check: nothing installed counts as genuine")
+    func notInstalled() {
+        let files = FakeFiles()
+        #expect(files.installedIsGenuine)
+        files.installed = files.embedded
+        files.genuine = false
+        #expect(!files.installedIsGenuine)
     }
 }

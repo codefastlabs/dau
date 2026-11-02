@@ -211,6 +211,16 @@
         }
       }
     },
+    "Bộ gõ trên máy không phải bản Dấu đã cài" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ gõ trên máy không phải bản Dấu đã cài"
+          }
+        }
+      }
+    },
     "Bộ gõ đã được chuyển vào Thùng rác." : {
       "localizations" : {
         "vi" : {
@@ -247,6 +257,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chưa bật được Dấu. Bạn có thể tự thêm “Dấu – Tiếng Việt” trong Cài đặt Bàn phím › Nguồn đầu vào."
+          }
+        }
+      }
+    },
+    "Chưa cài lại được. Hãy gỡ cài đặt Dấu rồi cài lại từ bản tải về." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa cài lại được. Hãy gỡ cài đặt Dấu rồi cài lại từ bản tải về."
           }
         }
       }
@@ -347,6 +367,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chọn “Thoát XKey” trong menu của XKey"
+          }
+        }
+      }
+    },
+    "Cài lại" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cài lại"
           }
         }
       }
@@ -1327,6 +1357,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tắt bộ gõ cũ trước đã"
+          }
+        }
+      }
+    },
+    "Tệp bộ gõ đã bị thay hoặc sửa sau khi cài. Cài lại để gõ bằng đúng bản của Dấu." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tệp bộ gõ đã bị thay hoặc sửa sau khi cài. Cài lại để gõ bằng đúng bản của Dấu."
           }
         }
       }

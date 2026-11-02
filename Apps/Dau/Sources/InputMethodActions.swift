@@ -22,6 +22,11 @@ final class InputMethodActions {
     private(set) var banner: BannerState = .idle
     private(set) var isUninstalling = false
 
+    /// The installed input method is not the one this app installs (`installedIsGenuine`).
+    private(set) var installedTampered = false
+    enum ReinstallState: Equatable { case idle, working, failed }
+    private(set) var reinstall: ReinstallState = .idle
+
     @ObservationIgnored let installer: InputMethodInstaller
     @ObservationIgnored private let openKeyboardSettings: () -> Void
 
@@ -66,6 +71,34 @@ final class InputMethodActions {
         }
         return false
     }
+
+    /// Checks the installed input method's signature (at launch and whenever the app
+    /// becomes active).
+    func checkInstalled() {
+        guard reinstall != .working else { return }
+        installedTampered = !installer.installedIsGenuine()
+        if !installedTampered { reinstall = .idle }
+    }
+
+    /// "Cài lại" on the tampered banner: installs the app's own copy (signature checked
+    /// before it is swapped in); the replaced one quits, its bundle on disk having changed.
+    func reinstallInputMethod() async {
+        guard reinstall != .working else { return }
+        reinstall = .working
+        do {
+            try await installer.install()
+            reinstall = .idle
+        } catch {
+            reinstall = .failed
+        }
+        installedTampered = !installer.installedIsGenuine()
+        if installedTampered { reinstall = .failed }
+    }
+
+    #if DEBUG
+    /// Captures (`--tampered`): show the banner without touching the installed copy.
+    func forceTampered() { installedTampered = true }
+    #endif
 
     /// "Hoàn tác" on the banner after "Bật lại".
     func undoBannerEnable() async {

@@ -25,9 +25,22 @@ struct DauApp: App {
         let installer = SystemInputMethodInstaller.standard()
         let (flow, opens) = DauApp.makeOnboarding(installer)
         _onboarding = State(initialValue: flow)
-        _actions = State(initialValue: InputMethodActions(installer: installer))
+        let actions = InputMethodActions(installer: installer)
+        _actions = State(initialValue: actions)
         opensOnboarding = opens
         DauApp.upgradeAtLaunch(installer)
+        DauApp.checkInstalled(actions)
+    }
+
+    @MainActor
+    private static func checkInstalled(_ actions: InputMethodActions) {
+        #if DEBUG
+        if CommandLine.arguments.contains("--tampered") { actions.forceTampered(); return }
+        // Captures run a re-signed copy: its team does not match the installed one.
+        if DebugCapture.directory != nil || DebugCapture.onboardingDirectory != nil
+            || DebugCapture.uninstallDirectory != nil { return }
+        #endif
+        actions.checkInstalled()
     }
 
     /// D7: replace an older installed input method. The user just opened Dấu (or the
@@ -99,6 +112,11 @@ struct DauApp: App {
                 .environment(\.layoutProbe, DebugCapture.probe)
                 #endif
                 .modifier(LaunchRouting(opens: opensOnboarding))
+                // The installed input method's signature, whenever Dấu comes to the
+                // front (TamperedBanner): any process of the user can replace it.
+                .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+                    DauApp.checkInstalled(actions)
+                }
         }
         .defaultSize(SettingsScene.defaultSize)
         // The content's min and max frame bound the window (`SettingsWindow`).

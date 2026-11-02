@@ -45,6 +45,9 @@ protocol InputMethodFiles {
     var isInstalled: Bool { get }
     /// The installed copy's Info.plist, read fresh from disk (no Bundle cache).
     var installed: InputMethodBundleInfo? { get }
+    /// False when an installed copy is there but its signature is invalid or not by this
+    /// app's team: replaced or modified after install. True when nothing is installed.
+    var installedIsGenuine: Bool { get }
     /// Copies the embedded bundle to a staging folder next to the destination, clears
     /// quarantine, checks the signature, then swaps it in place in one rename.
     func installEmbedded() throws
@@ -196,6 +199,12 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
     }
 
+    func installedIsGenuine() -> Bool {
+        let genuine = files.installedIsGenuine
+        if !genuine { installLogger.error("event=installed-not-genuine") }
+        return genuine
+    }
+
     func upgradeIfNeeded() async throws -> UpgradeOutcome {
         guard let embedded = files.embedded, files.isInstalled else { return .notInstalled }
         guard let installed = files.installed else {
@@ -325,6 +334,7 @@ struct InputMethodBundleFiles: InputMethodFiles {
     var isInstalled: Bool {
         (try? installedURL.checkResourceIsReachable()) == true
     }
+    var installedIsGenuine: Bool { !isInstalled || verify(installedURL) }
 
     nonisolated static func info(at url: URL) -> InputMethodBundleInfo? {
         let plist = url.appendingPathComponent("Contents/Info.plist")

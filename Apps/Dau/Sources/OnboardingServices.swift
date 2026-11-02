@@ -202,6 +202,11 @@ protocol InputMethodInstaller: AnyObject {
     func enable() async throws -> EnableOutcome
     /// Disables what `enable()` turned on.
     func undoEnable() async throws
+    /// Whether the installed input method is the one this app installs (valid signature
+    /// by the same team); true when none is installed. ~/Library/Input Methods is
+    /// writable by any process of the user, and macOS keeps feeding keys to an enabled
+    /// input source whatever bundle sits there.
+    func installedIsGenuine() -> Bool
     /// Replaces an older installed input method with the one in the app (D7).
     func upgradeIfNeeded() async throws -> UpgradeOutcome
     /// Removes the input method (D16); `deleteSettings` also deletes the App Group data.
@@ -216,6 +221,7 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     /// What the next `enable()` reports.
     var enableOutcome: EnableOutcome = .enabled
     var uninstallReport = UninstallReport()
+    var genuine = true
     private(set) var calls: [String] = []
 
     init(_ status: InputMethodStatus = .notInstalled, failure: InputMethodInstallerError? = nil) {
@@ -228,6 +234,7 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     func install() async throws {
         calls.append("install")
         if let failure { throw failure }
+        genuine = true
         if current == .notInstalled || current == .unknown { current = .installed(version: nil) }
     }
 
@@ -244,6 +251,8 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         if let failure { throw failure }
         current = .installed(version: nil)
     }
+
+    func installedIsGenuine() -> Bool { genuine }
 
     func upgradeIfNeeded() async throws -> UpgradeOutcome {
         calls.append("upgrade")
