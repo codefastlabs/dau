@@ -1,17 +1,16 @@
 // Checks the captures written by `Dau --capture-window` (see run.sh, docs/UI-CHECKS.md).
-// Window 740×560 pt (System Settings' size), captures @2x, frames in top-left window
-// points. Reference numbers: docs/research/SYSTEM-SETTINGS-REFERENCE.md. The real
-// window is checked separately by ax-check.swift.
+// Captures @2x, frames in top-left window points. Every pass value is in Reference.swift
+// (compiled together by run.sh). The real window is checked separately by ax-check.swift.
 import AppKit
 
 let root = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
-let sections = ["typing", "smart", "apps", "updates"]
+let sections = Reference.sections
 let modes = ["light", "dark"]
 let styles = ["WhenScrolling", "Always", "Automatic"]
-let scrolls = ["0", "60"]
-let W: CGFloat = 740, H: CGFloat = 560
-/// System Settings' sidebar column, and the grouped Form's margins.
-let sidebar: CGFloat = 232, formMargin: CGFloat = 20, rowInset: CGFloat = 10
+let scrolls = Reference.scrolls
+let W = Reference.windowWidth, H = Reference.windowHeight
+let sidebar = Reference.sidebarWidth, formMargin = Reference.formMargin, rowInset = Reference.cardInset
+let colorTol = Reference.colorTolerance, subPoint = Reference.subPoint
 
 typealias Frames = [String: CGRect]
 struct Pixel { var r, g, b: Double
@@ -65,7 +64,7 @@ for style in styles {
                 return sv.width - clip.width
             }
             for section in sections {
-                if let r = room(section), abs(r) > 0.5, abs(r - legacyWidth) > 0.5 {
+                if let r = room(section), abs(r) > subPoint, abs(r - legacyWidth) > subPoint {
                     bad("a", "\(section) scroll bar takes \(r) pt, not the legacy width \(legacyWidth)")
                 }
             }
@@ -93,31 +92,35 @@ for style in styles {
                 }
                 let scroller = f["scroller"].flatMap { $0.width > 0 ? $0 : nil }
                 // Page color: the Form's left margin, between the sidebar and the cards.
-                let low = H - 40
-                let page = pixel(rep, sidebar + formMargin / 2, low)
+                let low = H - Reference.pageSampleBottomInset
+                let page = pixel(rep, Reference.pageSampleX, low)
 
                 // (b) Page background reaches the right edge (or the system scroll bar,
                 // which then sits at the edge), and the toolbar band is one color from
                 // the middle to the right edge.
-                let edgeX = (scroller.map { $0.minX <= W - 10 && $0.maxY > low } ?? false) ? scroller!.minX - 2 : W - 2
-                if page.distance(pixel(rep, edgeX, low)) > 6 {
+                let edgeX = (scroller.map { $0.minX <= W - Reference.scrollerEdgeBand && $0.maxY > low } ?? false)
+                    ? scroller!.minX - Reference.scrollerPageColorGap : W - Reference.rightEdgeInset
+                if page.distance(pixel(rep, edgeX, low)) > colorTol {
                     bad("b", "\(key) page color stops before the right edge (x \(edgeX))")
                 }
-                if let s = scroller, s.maxX < W - 0.5 {
+                if let s = scroller, s.maxX < W - subPoint {
                     bad("b", "\(key) scroll bar ends at \(s.maxX), not at the window edge")
                 }
                 if section != "apps" {   // the Apps toolbar holds the search field there
-                    let mid = pixel(rep, (sidebar + W) / 2 + 60, 44), edge = pixel(rep, W - 3, 44)
-                    if mid.distance(edge) > 6 { bad("b", "\(key) toolbar color differs at the right edge") }
+                    let y = Reference.toolbarSampleY
+                    let mid = pixel(rep, (sidebar + W) / 2 + Reference.toolbarSampleMidOffset, y)
+                    let edge = pixel(rep, W - Reference.toolbarSampleEdgeInset, y)
+                    if mid.distance(edge) > colorTol { bad("b", "\(key) toolbar color differs at the right edge") }
                 }
 
                 // (c) No strip of another color in the Form's right margin, except the
                 // scroll bar.
                 var stray = 0
-                for x in stride(from: W - formMargin + 2, to: W, by: 1) {
-                    for y in stride(from: 64, to: H - 40, by: 16) {
-                        if let s = scroller, s.insetBy(dx: -1, dy: -1).contains(CGPoint(x: x, y: y)) { continue }
-                        if pixel(rep, x, y).distance(page) > 6 { stray += 1 }
+                let slack = Reference.scrollerSlack
+                for x in stride(from: W - formMargin + Reference.strayStripInset, to: W, by: 1) {
+                    for y in stride(from: Reference.straySampleTop, to: low, by: Reference.straySampleStep) {
+                        if let s = scroller, s.insetBy(dx: -slack, dy: -slack).contains(CGPoint(x: x, y: y)) { continue }
+                        if pixel(rep, x, y).distance(page) > colorTol { stray += 1 }
                     }
                 }
                 if stray > 0 { bad("c", "\(key) \(stray) right-margin samples differ from the page color") }
@@ -127,35 +130,38 @@ for style in styles {
                 if scroll != "0", section == "updates" {
                     if let base = image(root.appendingPathComponent("\(style)-0/\(key).png")) {
                         var diff = 0.0, n = 0.0
-                        // Right of the page title ("Cập nhật & hỗ trợ" ends near x 380): the
-                        // off-screen window sometimes lays the whole toolbar out half a
-                        // point apart between runs, which moves the title's pixels.
-                        for x in stride(from: CGFloat(400), to: W - 24, by: 6) {
-                            for y in stride(from: CGFloat(6), to: 46, by: 4) {
+                        // Right of the page title: the off-screen window sometimes lays the
+                        // whole toolbar out half a point apart between runs, which moves
+                        // the title's pixels.
+                        for x in stride(from: Reference.scrolledProbeStartX, to: W - Reference.scrolledProbeRightInset,
+                                        by: Reference.scrolledProbeStepX) {
+                            for y in stride(from: Reference.scrolledProbeY.lowerBound, to: Reference.scrolledProbeY.upperBound,
+                                            by: Reference.scrolledProbeStepY) {
                                 diff += pixel(rep, x, y).distance(pixel(base, x, y)); n += 1
                             }
                         }
-                        if diff / n > 4 { bad("d", "\(key) content shows through the header (mean diff \(Int(diff / n)))") }
+                        if diff / n > Reference.scrolledHeaderMeanDiff { bad("d", "\(key) content shows through the header (mean diff \(Int(diff / n)))") }
                     }
                     if let s = scroller {
-                        if s.maxX > W + 0.5 || s.minX < W - 20 || s.minY < 51 { bad("d", "\(key) scroll bar at \(s)") }
+                        if s.maxX > W + subPoint || s.minX < W - Reference.scrollerLane || s.minY < Reference.scrollerMinY { bad("d", "\(key) scroll bar at \(s)") }
                     } else {
                         bad("d", "\(key) no scroll bar")
                     }
                 }
 
                 // (e) Traffic lights, title, first row, Apps search field and + button.
-                // System Settings: lights at 18,18 16×16 (AX), i.e. 19,19 14×14 drawn;
-                // title text from the detail column's margin (232 + 20), centered in
-                // the 52 pt toolbar.
-                if f["close"] != CGRect(x: 19, y: 19, width: 14, height: 14) { bad("e", "\(key) close at \(String(describing: f["close"]))") }
-                if let t = f["title"], abs(t.minX - (sidebar + formMargin)) > 1 || abs(t.midY - 26) > 1 { bad("e", "\(key) title at \(t)") }
+                // The lights are compared as drawn (the AX frame inset by 1); the title
+                // starts at the detail column's margin and is centered in the toolbar.
+                if f["close"] != Reference.closeDrawnFrame { bad("e", "\(key) close at \(String(describing: f["close"]))") }
+                if let t = f["title"], abs(t.minX - Reference.titleX) > Reference.tolerance
+                    || abs(t.midY - Reference.titleCenterY) > Reference.tolerance { bad("e", "\(key) title at \(t)") }
                 if f["title"] == nil { bad("e", "\(key) title missing") }
                 // Item 1: the cards span the column with the Form's margins (no narrow
-                // centered column): first row = card inset by the row's 10 pt.
+                // centered column): first row = card inset by the row's inset.
                 if let r = f["firstRow"], let c = f["content"] {
                     let card = c.width - 2 * formMargin
-                    if abs(r.minX - (c.minX + formMargin + rowInset)) > 0.5 || abs(r.width - (card - 2 * rowInset)) > 0.5 {
+                    if abs(r.minX - (c.minX + formMargin + rowInset)) > subPoint
+                        || abs(r.width - (card - 2 * rowInset)) > subPoint {
                         bad("e", "\(key) first row at \(r), content \(c)")
                     }
                 }
@@ -163,9 +169,10 @@ for style in styles {
                     // Native toolbar controls: the "+" (round) then the system search
                     // field at the trailing edge, both right of the title.
                     guard let s = f["headerSearch"], let a = f["headerAdd"] else { bad("e", "\(key) header controls missing"); continue }
-                    if abs(a.width - a.height) > 0.5 { bad("e", "\(key) + not round: \(a)") }
-                    if a.minX < (f["title"]?.maxX ?? W) + 8 || a.maxX > s.minX { bad("e", "\(key) + at \(a), search at \(s)") }
-                    if s.maxX > W - 4 || s.maxX < W - 24 || s.height < 24 { bad("e", "\(key) search at \(s)") }
+                    if abs(a.width - a.height) > subPoint { bad("e", "\(key) + not round: \(a)") }
+                    if a.minX < (f["title"]?.maxX ?? W) + Reference.appsAddGapToTitle || a.maxX > s.minX { bad("e", "\(key) + at \(a), search at \(s)") }
+                    let inset = Reference.appsSearchRightInset
+                    if s.maxX > W - inset.lowerBound || s.maxX < W - inset.upperBound || s.height < Reference.controlHeight { bad("e", "\(key) search at \(s)") }
                 }
             }
             results.append((run, mode, checks))
@@ -191,11 +198,12 @@ if let grid = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: cellW * cols, 
     try? grid.representation(using: .png, properties: [:])?.write(to: root.appendingPathComponent("matrix-grid.png"))
 }
 
-// (h) Item 1 at the window's limits: the window stops at sidebar + 744 pt wide (a
-// grouped Form caps its cards at 704 pt and centers them in a wider column) and does
-// not get narrower than System Settings' 740; at the widest the first row still starts
-// at the Form's margin and spans the column (Dau --capture-window --width 976).
-let maxWidth = sidebar + 744, minWidth: CGFloat = 740
+// (h) Item 1 at the window's limits: the window stops where a grouped Form would start
+// centering its cards in a wider column and does not get narrower than System Settings'
+// width; at the widest the first row still starts at the Form's margin and spans the
+// column (Dau --capture-window --width, run.sh).
+let maxWidth = Reference.maxWindowWidth, minWidth = Reference.minWindowWidth
+let columnMax = Reference.formColumnMaxWidth
 var limitResults: [(String, Bool)] = []
 do {
     let dir = root.appendingPathComponent("wide")
@@ -206,8 +214,8 @@ do {
         var ok = true
         func bad(_ message: String) { ok = false; fail("wide \(mode) (h) \(message)") }
         if let limits = json["limits-\(mode)"] as? [String: [Double]], let mn = limits["min"], let mx = limits["max"] {
-            if abs(mx[0] - maxWidth) > 0.5 { bad("max width \(mx[0]), not \(maxWidth)") }
-            if abs(mn[0] - minWidth) > 0.5 { bad("min width \(mn[0]), not \(minWidth)") }
+            if abs(mx[0] - maxWidth) > subPoint { bad("max width \(mx[0]), not \(maxWidth)") }
+            if abs(mn[0] - minWidth) > subPoint { bad("min width \(mn[0]), not \(minWidth)") }
         } else {
             bad("no window limits")
         }
@@ -215,8 +223,9 @@ do {
             guard let r = frames["\(section)-\(mode)"]?["firstRow"], let c = frames["\(section)-\(mode)"]?["content"] else {
                 bad("\(section) frames missing"); continue
             }
-            if abs(c.width - 744) > 0.5 { bad("\(section) content \(c), not 744 wide") }
-            if abs(r.minX - (sidebar + formMargin + rowInset)) > 0.5 || abs(r.width - (744 - 2 * formMargin - 2 * rowInset)) > 0.5 {
+            if abs(c.width - columnMax) > subPoint { bad("\(section) content \(c), not \(columnMax) wide") }
+            if abs(r.minX - (sidebar + formMargin + rowInset)) > subPoint
+                || abs(r.width - (columnMax - 2 * formMargin - 2 * rowInset)) > subPoint {
                 bad("\(section) first row at \(r)")
             }
         }
@@ -224,7 +233,7 @@ do {
     }
 }
 
-// (f) Onboarding window (Dau --capture-onboarding, run.sh): 720×500, mockup positions
+// (f) Onboarding window (Dau --capture-onboarding, run.sh): mockup positions
 // ("OnboardingConflict", "OnboardingEnable", "Onboarding"; window at 50,40 in the
 // artboard), the same in every step and both modes.
 var onboardingResults: [(String, Bool)] = []
@@ -235,25 +244,28 @@ for dirName in ["onboarding", "onboarding-no-shortcut"] {
         let f = frames[key]!
         var ok = true
         func bad(_ message: String) { ok = false; fail("\(dirName)/\(key) (f) \(message)") }
-        func near(_ a: CGFloat?, _ b: CGFloat, _ tolerance: CGFloat = 1) -> Bool { a.map { abs($0 - b) <= tolerance } ?? false }
-        if f["window"]?.size != CGSize(width: 720, height: 500) { bad("window \(String(describing: f["window"]))") }
-        if !near(f["onbAppName"]?.minX, 20) || !near(f["onbAppName"]?.minY, 50) { bad("app name at \(String(describing: f["onbAppName"]))") }
-        if !near(f["onbTitle"]?.minX, 266) || !near(f["onbTitle"]?.minY, 40, 2) { bad("title at \(String(describing: f["onbTitle"]))") }
-        if !near(f["onbCard"]?.minX, 266) || !near(f["onbCard"]?.width, 418) { bad("card at \(String(describing: f["onbCard"]))") }
-        if !near(f["onbButtons"]?.maxX, 684) || !near(f["onbButtons"]?.maxY, 472) { bad("buttons at \(String(describing: f["onbButtons"]))") }
+        func near(_ a: CGFloat?, _ b: CGFloat, _ tolerance: CGFloat = Reference.tolerance) -> Bool { a.map { abs($0 - b) <= tolerance } ?? false }
+        if f["window"]?.size != Reference.onboardingSize { bad("window \(String(describing: f["window"]))") }
+        if !near(f["onbAppName"]?.minX, Reference.onboardingAppNameOrigin.x)
+            || !near(f["onbAppName"]?.minY, Reference.onboardingAppNameOrigin.y) { bad("app name at \(String(describing: f["onbAppName"]))") }
+        if !near(f["onbTitle"]?.minX, Reference.onboardingTitleOrigin.x)
+            || !near(f["onbTitle"]?.minY, Reference.onboardingTitleOrigin.y, Reference.onboardingTitleYTolerance) { bad("title at \(String(describing: f["onbTitle"]))") }
+        if !near(f["onbCard"]?.minX, Reference.onboardingCardX) || !near(f["onbCard"]?.width, Reference.onboardingCardWidth) { bad("card at \(String(describing: f["onbCard"]))") }
+        if !near(f["onbButtons"]?.maxX, Reference.onboardingButtonsMaxX)
+            || !near(f["onbButtons"]?.maxY, Reference.onboardingButtonsMaxY) { bad("buttons at \(String(describing: f["onbButtons"]))") }
         onboardingResults.append(("\(dirName)/\(key)", ok))
     }
 }
 
 // (g) Uninstall alerts (Dau --capture-uninstall): both alerts captured as sheets in
-// both modes, at an alert's size.
+// both modes, at least an alert's size.
 var uninstallResults: [(String, Bool)] = []
 do {
     let dir = root.appendingPathComponent("uninstall")
     let frames = loadFrames(dir)
     for key in ["confirm", "done"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
         var ok = true
-        if let sheet = frames[key]?["sheet"], sheet.width >= 200, sheet.height >= 120,
+        if let sheet = frames[key]?["sheet"], sheet.width >= Reference.alertMinSize.width, sheet.height >= Reference.alertMinSize.height,
            image(dir.appendingPathComponent("\(key).png")) != nil {
         } else {
             ok = false

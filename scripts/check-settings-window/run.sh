@@ -10,7 +10,8 @@
 # (0, 60 pt). Each run captures the 4 sections in light and dark mode off screen.
 # Then it captures the onboarding window (onboarding/, onboarding-no-shortcut/) and the
 # uninstall alerts (uninstall/).
-# check.swift checks the captures and frames (a)–(h) and writes a summary grid.
+# check.swift checks the captures and frames (a)–(h) and writes a summary grid. Both
+# scripts are compiled with Reference.swift, which holds every pass value.
 # Last, the real window: the Debug app itself is launched normally (no off-screen
 # capture code runs; `--settings-window` only keeps the onboarding closed and the
 # installed input method untouched), and ax-check.swift reads its frames through the
@@ -21,7 +22,7 @@
 # alone in the appearance the system is not in (`--appearance`, Debug only: sets this
 # app's appearance; the system appearance is not changed) for the sheet only
 # (real-sheet-light/ or real-sheet-dark/). Needs the Accessibility permission of the
-# terminal. The window is put back at 740 × 560.
+# terminal. The window is put back at its starting size.
 # Exit status 0 only if every check passes.
 #
 # The window is moved off screen but exists for a few seconds per run.
@@ -49,8 +50,9 @@ for style in WhenScrolling Always Automatic; do
   done
 done
 
-# The widest window the Settings scene allows (sidebar 232 + 744): the cards must
-# still span the column (docs/UI-CHECKS.md item 1).
+# The widest window the Settings scene allows (Reference.maxWindowWidth, which check
+# (h) verifies against this width): the cards must still span the column
+# (docs/UI-CHECKS.md item 1).
 "$work/Dau.app/Contents/MacOS/Dau" --capture-window "$out/wide" --width 976 \
   -AppleShowScrollBars WhenScrolling >/dev/null 2>&1
 
@@ -65,12 +67,19 @@ done
 # window, captured, dismissed; nothing is uninstalled.
 "$work/Dau.app/Contents/MacOS/Dau" --capture-uninstall "$out/uninstall" >/dev/null 2>&1
 
-swiftc -O -o "$work/check" "$here/check.swift"
+# A multi-file build takes top-level code only from a file named main.swift, so the
+# script is copied to that name next to Reference.swift's compile.
+build() {   # <script> <output>
+  mkdir -p "$work/src-$2"
+  cp "$here/$1" "$work/src-$2/main.swift"
+  swiftc -O -o "$work/$2" "$here/Reference.swift" "$work/src-$2/main.swift"
+}
+build check.swift check
 result=0
 "$work/check" "$out" || result=1
 
 # The real window (docs/UI-CHECKS.md, "Cửa sổ thật").
-swiftc -O -o "$work/ax-check" "$here/ax-check.swift"
+build ax-check.swift ax-check
 real_window() {   # <output-dir> <ax-check flag or ""> [app arguments…]
   local dir=$1 flag=$2
   shift 2

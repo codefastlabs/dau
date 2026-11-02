@@ -4,13 +4,13 @@
 //
 // Reads the frames of the running app's Settings window through the Accessibility API
 // (the launching terminal needs the Accessibility permission) and compares them with
-// System Settings, measured on macOS 27.2 (docs/research/SYSTEM-SETTINGS-REFERENCE.md),
-// ±1 pt. Unlike `Dau --capture-window`, nothing here runs inside the app: the window
+// System Settings (Reference.swift, from docs/research/SYSTEM-SETTINGS-REFERENCE.md),
+// within a tolerance. Unlike `Dau --capture-window`, nothing here runs inside the app: the window
 // is the one the user gets. On every display (one pass per backing scale) the window
-// is moved there at 740 × 560, each section is selected through the sidebar's
+// is moved there at System Settings' size, each section is selected through the sidebar's
 // accessibility (no clicks), measured and captured with `screencapture -l`
 // (<section>-<scale>x.png). Then the window's size limits are tried and the window is
-// put back at 740 × 560. `--banner`: the app runs with `--not-enabled`; also checks
+// put back at System Settings' size. `--banner`: the app runs with `--not-enabled`; also checks
 // that the banner is the first card. Without `--banner`, each pass also opens the
 // add-rule sheet ("+" on Ứng dụng, pressed through accessibility), measures it against
 // System Settings' sheets, captures it empty and with a row selected, and closes it
@@ -19,28 +19,8 @@
 // (run.sh uses it for the appearance the system is not in). Exit status 0 only if
 // every check passes.
 //
-// Expected values (pt, origin at the window's top-left):
-// - toolbar 52 tall; close button 18,18 16×16; page title starting at the detail
-//   column's margin (232 + 20) and centered in the toolbar (y center 26);
-// - sidebar search field 10,61 212×28; rows 32 tall from y 98, selection cell x 10
-//   width 212; icon tile from x 19, 20 tall; text from x 46 (pixels);
-// - first card or section header at y 72 (52 + SwiftUI's 20 pt top margin: kept on
-//   purpose, System Settings has 12 → 64); cards x 252, width = column − 40;
-//   header x = card + 10, header → card 10, card → next header 30;
-// - switches 36×16; buttons, pop-ups and segmented controls 24 tall;
-// - window limits: 740 × 452 at least, 976 wide at most (sidebar + 744, beyond which
-//   a grouped Form centers its 704 pt cards: UI-CHECKS item 1).
-// - add-rule sheet, as System Settings' sheets (Displays › Advanced…: 470 wide; it and
-//   Keyboard › Input Sources › Edit…: grouped Form with cards 20 from the sheet's
-//   edges and 20 below its top, cards 10 apart; button bar under the Form, buttons
-//   64 × 24 at least, 21 below the Form, 20 from the right and bottom edges): sheet
-//   470 wide; search field (the sheet's `searchable`) 24 tall, 20 from the top and
-//   right edges; first item 20 below the Form's top; cards x 20, width = sheet − 40;
-//   header x = card + 10, header → card 10, card → card 10; the app list fills its
-//   card; segmented 24 tall; Huỷ and Thêm 24 tall, ≥ 64 wide, Thêm 20 from the right
-//   and bottom edges, "Chọn ứng dụng khác…" at x 20 on the same line; Thêm disabled
-//   until a row is selected; the search field filters the list; a query that hides
-//   the selected row turns Thêm off again.
+// Every expected value (pt, origin at the window's top-left) is in Reference.swift,
+// compiled together with this file by run.sh.
 import AppKit
 
 let args = CommandLine.arguments
@@ -124,8 +104,8 @@ func record(_ display: String, _ page: String, _ metric: String, expected: Strin
 }
 func fmt(_ v: CGFloat) -> String { v == v.rounded() ? String(Int(v)) : String(format: "%.1f", v) }
 func fmt(_ r: CGRect) -> String { "\(fmt(r.minX)),\(fmt(r.minY)) \(fmt(r.width))×\(fmt(r.height))" }
-func near(_ a: CGFloat, _ b: CGFloat, _ tolerance: CGFloat = 1) -> Bool { abs(a - b) <= tolerance }
-func check(_ d: String, _ p: String, _ metric: String, _ got: CGFloat, _ expected: CGFloat, tolerance: CGFloat = 1) {
+func near(_ a: CGFloat, _ b: CGFloat, _ tolerance: CGFloat = Reference.tolerance) -> Bool { abs(a - b) <= tolerance }
+func check(_ d: String, _ p: String, _ metric: String, _ got: CGFloat, _ expected: CGFloat, tolerance: CGFloat = Reference.tolerance) {
     record(d, p, metric, expected: fmt(expected), got: fmt(got), ok: near(got, expected, tolerance))
 }
 func check(_ d: String, _ p: String, _ metric: String, _ got: CGRect?, _ expected: CGRect) {
@@ -167,16 +147,15 @@ func inkStart(_ rep: NSBitmapImageRep, width: CGFloat, xs: ClosedRange<CGFloat>,
     for x in Int(xs.lowerBound * scale)...Int(xs.upperBound * scale) {
         for y in y0...y1 {
             let p = px(x, y)
-            if (0..<3).map({ abs(p[$0] - background[$0]) }).max()! > 60 { return CGFloat(x) / scale }
+            if (0..<3).map({ abs(p[$0] - background[$0]) }).max()! > Reference.sidebarInkThreshold { return CGFloat(x) / scale }
         }
     }
     return nil
 }
 
-let sections = ["typing", "smart", "apps", "updates"]
-let sidebarWidth: CGFloat = 232, toolbarHeight: CGFloat = 52, formMargin: CGFloat = 20
-let topMargin: CGFloat = 20   // SwiftUI's grouped Form; System Settings: 12 (kept on purpose)
-let size = CGSize(width: 740, height: 560)
+let sections = Reference.sections
+let sidebarWidth = Reference.sidebarWidth, toolbarHeight = Reference.toolbarHeight, formMargin = Reference.formMargin
+let size = Reference.windowSize
 
 /// One pass on one display.
 func measure(display: String) {
@@ -197,37 +176,37 @@ func measure(display: String) {
         let toolbar = all(window, where: { role($0) == "AXToolbar" }).first.map { rel(frame($0)) }
         check(display, page, "toolbar", toolbar, CGRect(x: 0, y: 0, width: w.width, height: toolbarHeight))
         let close = all(window, where: { subrole($0) == "AXCloseButton" }).first.map { rel(frame($0)) }
-        check(display, page, "close button", close, CGRect(x: 18, y: 18, width: 16, height: 16))
+        check(display, page, "close button", close, Reference.closeFrame)
         let heading = all(window, where: { role($0) == "AXToolbar" }).first
             .flatMap { all($0, where: { role($0) == "AXHeading" }).first }.map { rel(frame($0)) }
         if let heading {
-            check(display, page, "title x", heading.minX, sidebarWidth + formMargin)
-            check(display, page, "title center y", heading.midY, toolbarHeight / 2)
+            check(display, page, "title x", heading.minX, Reference.titleX)
+            check(display, page, "title center y", heading.midY, Reference.titleCenterY)
         } else {
             record(display, page, "title", expected: "toolbar heading", got: "missing", ok: false)
         }
 
         // Sidebar: search field, rows, icon tile.
         let search = all(window, where: { subrole($0) == "AXSearchField" }).map { rel(frame($0)) }
-        check(display, page, "sidebar search", search.first { $0.minX < sidebarWidth }, CGRect(x: 10, y: 61, width: 212, height: 28))
+        check(display, page, "sidebar search", search.first { $0.minX < sidebarWidth }, Reference.sidebarSearchFrame)
         for (i, row) in sidebarRows.enumerated() {
             let cell = children(row).first.map { rel(frame($0)) }
-            check(display, page, "sidebar row \(i)", cell, CGRect(x: 10, y: 98 + 32 * CGFloat(i), width: 212, height: 32))
+            check(display, page, "sidebar row \(i)", cell, Reference.sidebarRowFrame(i))
             if i == 0, let text = all(row, where: { role($0) == "AXStaticText" }).first.map({ rel(frame($0)) }) {
-                check(display, page, "sidebar icon x", text.minX, 19)
-                check(display, page, "sidebar icon height", text.height, 20)
+                check(display, page, "sidebar icon x", text.minX, Reference.sidebarIconX)
+                check(display, page, "sidebar icon height", text.height, Reference.sidebarIconSize)
             }
         }
 
         // Detail: cards and section headers in the Form's scroll area.
-        guard let area = all(window, where: { role($0) == "AXScrollArea" && rel(frame($0)).minX >= sidebarWidth - 1 }).first else {
+        guard let area = all(window, where: { role($0) == "AXScrollArea" && rel(frame($0)).minX >= sidebarWidth - Reference.tolerance }).first else {
             record(display, page, "form", expected: "scroll area", got: "missing", ok: false); continue
         }
         let column = rel(frame(area))
         let items = children(area).map { (role($0), rel(frame($0)), $0) }
             .filter { $0.0 == "AXGroup" || $0.0 == "AXHeading" || $0.0 == "AXStaticText" }
         if let first = items.first {
-            check(display, page, "first item y", first.1.minY, toolbarHeight + topMargin)
+            check(display, page, "first item y", first.1.minY, Reference.formFirstItemY)
         }
         let cards = items.filter { $0.0 == "AXGroup" }
         if let card = cards.first {
@@ -239,12 +218,12 @@ func measure(display: String) {
             }
         }
         for (i, item) in items.enumerated() where item.0 == "AXHeading" {
-            check(display, page, "header \"\(label(item.2))\" x", item.1.minX, column.minX + formMargin + 10)
+            check(display, page, "header \"\(label(item.2))\" x", item.1.minX, column.minX + formMargin + Reference.cardInset)
             if i + 1 < items.count, items[i + 1].0 == "AXGroup" {
-                check(display, page, "header \"\(label(item.2))\" → card", items[i + 1].1.minY - item.1.maxY, 10)
+                check(display, page, "header \"\(label(item.2))\" → card", items[i + 1].1.minY - item.1.maxY, Reference.headerToCard)
             }
             if i > 0, items[i - 1].0 == "AXGroup" {
-                check(display, page, "card → header \"\(label(item.2))\"", item.1.minY - items[i - 1].1.maxY, 30)
+                check(display, page, "card → header \"\(label(item.2))\"", item.1.minY - items[i - 1].1.maxY, Reference.cardToHeader)
             }
         }
 
@@ -256,13 +235,13 @@ func measure(display: String) {
                 guard visible.contains(r) else { continue }
                 switch (role(e), subrole(e)) {
                 case ("AXCheckBox", "AXSwitch"):
-                    check(display, page, "switch \"\(label(e).prefix(24))\"", r, CGRect(x: r.minX, y: r.minY, width: 36, height: 16))
+                    check(display, page, "switch \"\(label(e).prefix(24))\"", r, CGRect(origin: r.origin, size: Reference.switchSize))
                 case ("AXButton", _) where label(e) == "Nâng cao":
                     // The "Nâng cao" disclosure row: a plain button with a chevron (D9),
                     // as tall as its text, not a bezel button.
                     break
                 case ("AXButton", _), ("AXPopUpButton", _), ("AXRadioGroup", _):
-                    check(display, page, "\(role(e).dropFirst(2)) \"\(label(e).prefix(24))\" height", r.height, 24)
+                    check(display, page, "\(role(e).dropFirst(2)) \"\(label(e).prefix(24))\" height", r.height, Reference.controlHeight)
                 default: break
                 }
             }
@@ -282,11 +261,12 @@ func measure(display: String) {
         // Pixels: where the text of an unselected sidebar row begins.
         if let rep = screenshot("\(page)-\(display)", w) {
             let other = index == 1 ? 2 : 1
-            let y = 98 + 32 * CGFloat(other)
-            if let x = inkStart(rep, width: w.width, xs: 40...70, ys: (y + 9)...(y + 23)) {
-                check(display, page, "sidebar text x", x, 46)
+            let y = Reference.sidebarRowFrame(other).minY
+            let band = Reference.sidebarTextProbeY
+            if let x = inkStart(rep, width: w.width, xs: Reference.sidebarTextProbeX, ys: (y + band.lowerBound)...(y + band.upperBound)) {
+                check(display, page, "sidebar text x", x, Reference.sidebarTextX)
             } else {
-                record(display, page, "sidebar text x", expected: "46", got: "no ink", ok: false)
+                record(display, page, "sidebar text x", expected: fmt(Reference.sidebarTextX), got: "no ink", ok: false)
             }
         } else {
             record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
@@ -298,7 +278,7 @@ func measure(display: String) {
 // MARK: Sidebar search without a match
 
 /// A query no section matches: the sidebar shows the system's empty state (text in the
-/// sidebar, no rows), the open page and its 52 pt toolbar stay; clearing the query
+/// sidebar, no rows), the open page and its toolbar stay; clearing the query
 /// brings the four rows back.
 func measureSidebarSearch(display: String) {
     let page = "sidebar-search"
@@ -315,9 +295,9 @@ func measureSidebarSearch(display: String) {
     let w = frame(window)
     func rel(_ r: CGRect) -> CGRect { r.offsetBy(dx: -w.minX, dy: -w.minY) }
     let rows = (attr(outline, kAXRowsAttribute) as? [AXUIElement]) ?? []
-    check(display, page, "rows without a match", CGFloat(rows.count), 0, tolerance: 0)
+    check(display, page, "rows without a match", CGFloat(rows.count), 0, tolerance: Reference.exact)
     let texts = all(window, where: { role($0) == "AXStaticText" }).map { (label($0), rel(frame($0))) }
-        .filter { $0.1.maxX <= sidebarWidth && $0.1.minY > 98 && $0.0.contains("zzzz-no-such-setting") }
+        .filter { $0.1.maxX <= sidebarWidth && $0.1.minY > Reference.sidebarFirstRowY && $0.0.contains("zzzz-no-such-setting") }
     record(display, page, "empty state", expected: "text naming the query in the sidebar", got: texts.first?.0 ?? "none", ok: !texts.isEmpty)
     let toolbar = all(window, where: { role($0) == "AXToolbar" }).first.map { rel(frame($0)) }
     check(display, page, "toolbar height", toolbar?.height ?? 0, toolbarHeight)
@@ -327,7 +307,7 @@ func measureSidebarSearch(display: String) {
     AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "" as CFString)
     wait(1.0)
     let back = (attr(outline, kAXRowsAttribute) as? [AXUIElement]) ?? []
-    check(display, page, "rows after clearing", CGFloat(back.count), CGFloat(sections.count), tolerance: 0)
+    check(display, page, "rows after clearing", CGFloat(back.count), CGFloat(sections.count), tolerance: Reference.exact)
 }
 
 // MARK: Add-rule sheet
@@ -369,15 +349,15 @@ func measureSheet(display: String) {
     for _ in 0..<50 where listRows().isEmpty { wait(0.2) }
     wait(0.5)
 
-    check(display, page, "sheet width", s.width, 470)
+    check(display, page, "sheet width", s.width, Reference.sheetWidth)
 
     // The system search field of the sheet, at its top trailing edge.
     let searchField = all(sheet, where: { subrole($0) == "AXSearchField" }).first
     if let field = searchField {
         let r = rel(frame(field))
-        check(display, page, "search height", r.height, 24)
-        check(display, page, "search top", r.minY, 20)
-        check(display, page, "search right margin", s.width - r.maxX, 20)
+        check(display, page, "search height", r.height, Reference.sheetSearchHeight)
+        check(display, page, "search top", r.minY, Reference.sheetMargin)
+        check(display, page, "search right margin", s.width - r.maxX, Reference.sheetMargin)
         let prompt = string(field, "AXPlaceholderValue") ?? label(field)
         record(display, page, "search prompt", expected: "Tìm trong Ứng dụng", got: prompt, ok: prompt == "Tìm trong Ứng dụng")
     } else {
@@ -392,17 +372,17 @@ func measureSheet(display: String) {
     let items = children(area).map { (role($0), rel(frame($0)), $0) }
         .filter { ["AXGroup", "AXHeading", "AXStaticText", "AXScrollArea"].contains($0.0) }
     if let first = items.first {
-        check(display, page, "first item y", first.1.minY - form.minY, formMargin)
+        check(display, page, "first item y", first.1.minY - form.minY, Reference.sheetMargin)
     }
     let cards = items.filter { $0.0 == "AXGroup" || $0.0 == "AXScrollArea" }
     for (i, card) in cards.enumerated() {
-        check(display, page, "card \(i)", card.1, CGRect(x: formMargin, y: card.1.minY, width: s.width - 2 * formMargin, height: card.1.height))
-        if i > 0 { check(display, page, "card \(i - 1) → card \(i)", card.1.minY - cards[i - 1].1.maxY, 10) }
+        check(display, page, "card \(i)", card.1, CGRect(x: Reference.sheetMargin, y: card.1.minY, width: s.width - 2 * Reference.sheetMargin, height: card.1.height))
+        if i > 0 { check(display, page, "card \(i - 1) → card \(i)", card.1.minY - cards[i - 1].1.maxY, Reference.cardGap) }
     }
     for (i, item) in items.enumerated() where item.0 == "AXHeading" {
         record(display, page, "header", expected: "Thêm quy tắc cho ứng dụng", got: label(item.2), ok: label(item.2) == "Thêm quy tắc cho ứng dụng")
-        check(display, page, "header x", item.1.minX, formMargin + 10)
-        if i + 1 < items.count { check(display, page, "header → card", items[i + 1].1.minY - item.1.maxY, 10) }
+        check(display, page, "header x", item.1.minX, Reference.sheetMargin + Reference.cardInset)
+        if i + 1 < items.count { check(display, page, "header → card", items[i + 1].1.minY - item.1.maxY, Reference.headerToCard) }
     }
     if let list = list(), let card = cards.first {
         let r = rel(frame(list))
@@ -414,7 +394,7 @@ func measureSheet(display: String) {
     }
     let segmented = all(sheet, where: { role($0) == "AXRadioGroup" }).first
     if let segmented {
-        check(display, page, "segmented \"\(label(segmented))\" height", rel(frame(segmented)).height, 24)
+        check(display, page, "segmented \"\(label(segmented))\" height", rel(frame(segmented)).height, Reference.controlHeight)
         record(display, page, "segmented label", expected: "Khi đang gõ", got: label(segmented), ok: label(segmented) == "Khi đang gõ")
     } else {
         record(display, page, "segmented", expected: "Khi đang gõ", got: "missing", ok: false)
@@ -426,16 +406,17 @@ func measureSheet(display: String) {
     let cancel = button("Huỷ"), confirm = button("Thêm"), other = button("Chọn ứng dụng khác…")
     if let cancel, let confirm, let other {
         let c = rel(frame(cancel)), a = rel(frame(confirm)), o = rel(frame(other))
-        check(display, page, "Thêm height", a.height, 24)
-        record(display, page, "Thêm width", expected: "≥ 64", got: fmt(a.width), ok: a.width >= 63)
-        check(display, page, "Thêm right margin", s.width - a.maxX, 20)
-        check(display, page, "Thêm bottom margin", s.height - a.maxY, 20)
-        check(display, page, "Form → buttons", a.minY - form.maxY, 21)
-        check(display, page, "Huỷ height", c.height, 24)
-        record(display, page, "Huỷ width", expected: "≥ 64", got: fmt(c.width), ok: c.width >= 63)
+        let minWidth = Reference.sheetButtonMinWidth
+        check(display, page, "Thêm height", a.height, Reference.sheetButtonHeight)
+        record(display, page, "Thêm width", expected: "≥ \(fmt(minWidth))", got: fmt(a.width), ok: a.width >= minWidth - Reference.tolerance)
+        check(display, page, "Thêm right margin", s.width - a.maxX, Reference.sheetMargin)
+        check(display, page, "Thêm bottom margin", s.height - a.maxY, Reference.sheetMargin)
+        check(display, page, "Form → buttons", a.minY - form.maxY, Reference.sheetFormToButtons)
+        check(display, page, "Huỷ height", c.height, Reference.sheetButtonHeight)
+        record(display, page, "Huỷ width", expected: "≥ \(fmt(minWidth))", got: fmt(c.width), ok: c.width >= minWidth - Reference.tolerance)
         record(display, page, "Huỷ before Thêm", expected: "same line, left of Thêm", got: "\(fmt(c)) / \(fmt(a))",
                ok: near(c.minY, a.minY) && c.maxX < a.minX)
-        check(display, page, "Chọn ứng dụng khác… x", o.minX, 20)
+        check(display, page, "Chọn ứng dụng khác… x", o.minX, Reference.sheetMargin)
         check(display, page, "Chọn ứng dụng khác… y", o.minY, a.minY)
         record(display, page, "Thêm without selection", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
     } else {
@@ -457,7 +438,7 @@ func measureSheet(display: String) {
                ok: filtered >= 1 && filtered < total)
         AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "" as CFString)
         wait(0.8)
-        check(display, page, "search cleared rows", CGFloat(listRows().count), CGFloat(total), tolerance: 0)
+        check(display, page, "search cleared rows", CGFloat(listRows().count), CGFloat(total), tolerance: Reference.exact)
     }
 
     // A selection enables Thêm.
@@ -509,12 +490,12 @@ for screen in NSScreen.screens where seenScales.insert(screen.backingScaleFactor
 
 // Window limits.
 if !bannerRun && !sheetOnly {
-    setFrame(window, size: CGSize(width: 1400, height: 700))
-    check("-", "-", "max window width", frame(window).width, 976)
-    setFrame(window, size: CGSize(width: 600, height: 300))
-    check("-", "-", "min window width", frame(window).width, 740)
-    // The content's minimum (400) plus the 52 pt toolbar.
-    check("-", "-", "min window height", frame(window).height, 452)
+    setFrame(window, size: Reference.probeLargeSize)
+    check("-", "-", "max window width", frame(window).width, Reference.maxWindowWidth)
+    setFrame(window, size: Reference.probeSmallSize)
+    check("-", "-", "min window width", frame(window).width, Reference.minWindowWidth)
+    // The content's minimum plus the toolbar.
+    check("-", "-", "min window height", frame(window).height, Reference.minWindowHeight)
     setFrame(window, size: size)
 }
 

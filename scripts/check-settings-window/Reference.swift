@@ -1,0 +1,199 @@
+// Every pass value of the Settings window UI checks, in one place. Compiled together
+// with check.swift (captures) and ax-check.swift (real window) by run.sh; docs/UI-CHECKS.md
+// holds no numbers, it points here. Unit: pt, origin at the window's (or sheet's)
+// top-left, unless a name says otherwise.
+//
+// Where a number comes from:
+// - System Settings: measured on macOS 27.2 with the Accessibility API and pixels
+//   (docs/research/SYSTEM-SETTINGS-REFERENCE.md); D9 makes it the layout reference.
+// - Deliberate: Dấu's own choice, noted where it differs from System Settings.
+// - System: a value the system or SwiftUI fixes (measured, not chosen).
+// - Mockup: the artboards in docs/UI.md (onboarding window only).
+// - Probe: how the check looks, not a property of the window; changing it changes what
+//   is sampled, not what is expected.
+import CoreGraphics
+
+enum Reference {
+    // MARK: Pages
+
+    /// The four sections of the Settings window, in sidebar order.
+    static let sections = ["typing", "smart", "apps", "updates"]
+
+    // MARK: Tolerance
+
+    /// Frames read through accessibility are compared to System Settings within ±1 pt.
+    static let tolerance: CGFloat = 1
+    /// Frames from the in-app capture are exact layout values: half a point at most.
+    static let subPoint: CGFloat = 0.5
+    /// Counts and rows (no tolerance).
+    static let exact: CGFloat = 0
+
+    // MARK: Window size and limits (System Settings; the minimum height is deliberate)
+
+    /// System Settings opens every pane at 740 × 560.
+    static let windowWidth: CGFloat = 740
+    static let windowHeight: CGFloat = 560
+    static var windowSize: CGSize { CGSize(width: windowWidth, height: windowHeight) }
+    /// Narrowest window: System Settings' width.
+    static let minWindowWidth: CGFloat = windowWidth
+    /// The content column's minimum height (deliberate); the window adds the toolbar.
+    static let contentMinHeight: CGFloat = 400
+    static let minWindowHeight: CGFloat = contentMinHeight + toolbarHeight
+    /// SwiftUI caps a grouped Form's cards at 704 and centers them beyond that (System:
+    /// UI-CHECKS item 1), so the widest useful column is 704 + two margins.
+    static let formCardMaxWidth: CGFloat = 704
+    static let formColumnMaxWidth: CGFloat = formCardMaxWidth + 2 * formMargin
+    /// Widest window: sidebar + the widest column.
+    static let maxWindowWidth: CGFloat = sidebarWidth + formColumnMaxWidth
+    /// Probe: sizes the real window is asked for to read its limits.
+    static let probeLargeSize = CGSize(width: 1400, height: 700)
+    static let probeSmallSize = CGSize(width: 600, height: 300)
+
+    // MARK: Toolbar (System Settings)
+
+    /// Title bar + toolbar height.
+    static let toolbarHeight: CGFloat = 52
+    /// Apps toolbar: the "+" is at least this far right of the title.
+    static let appsAddGapToTitle: CGFloat = 8
+    /// Apps toolbar: the search field's right edge is this far from the window's edge
+    /// (lower to upper bound).
+    static let appsSearchRightInset: ClosedRange<CGFloat> = 4...24
+
+    // MARK: Title (System Settings)
+
+    /// The page title starts at the detail column's margin (sidebar + form margin)...
+    static let titleX: CGFloat = sidebarWidth + formMargin
+    /// ... and is centered in the toolbar.
+    static let titleCenterY: CGFloat = toolbarHeight / 2
+
+    // MARK: Close button (System Settings)
+
+    /// Traffic light as the Accessibility API reports it.
+    static let closeFrame = CGRect(x: 18, y: 18, width: 16, height: 16)
+    /// The same light as drawn (the capture reports the drawn frame): inset by 1.
+    static let closeDrawnFrame = closeFrame.insetBy(dx: 1, dy: 1)
+
+    // MARK: Sidebar (System Settings)
+
+    static let sidebarWidth: CGFloat = 232
+    /// Inset of the search field and the selection cell from the column's edges.
+    static let sidebarInset: CGFloat = 10
+    /// Search pill: x 10, y 61, 212 × 28.
+    static let sidebarSearchY: CGFloat = 61
+    static let sidebarSearchHeight: CGFloat = 28
+    static var sidebarSearchFrame: CGRect {
+        CGRect(x: sidebarInset, y: sidebarSearchY, width: sidebarWidth - 2 * sidebarInset, height: sidebarSearchHeight)
+    }
+    static let sidebarRowHeight: CGFloat = 32
+    /// First row's y (below the search field).
+    static let sidebarFirstRowY: CGFloat = 98
+    /// Selection cell of row `i`: x 10, as wide as the column minus both insets.
+    static func sidebarRowFrame(_ i: Int) -> CGRect {
+        CGRect(x: sidebarInset, y: sidebarFirstRowY + sidebarRowHeight * CGFloat(i),
+               width: sidebarWidth - 2 * sidebarInset, height: sidebarRowHeight)
+    }
+    /// Icon tile: x 19, 20 tall.
+    static let sidebarIconX: CGFloat = 19
+    static let sidebarIconSize: CGFloat = 20
+    /// Where an unselected row's text begins (pixels, so the pixel probe below).
+    static let sidebarTextX: CGFloat = 46
+    /// Probe: ink search for the text start, x range and y band inside a row.
+    static let sidebarTextProbeX: ClosedRange<CGFloat> = 40...70
+    static let sidebarTextProbeY: ClosedRange<CGFloat> = 9...23
+    /// Probe: a pixel counts as ink when a channel is this far from the background (of 255).
+    static let sidebarInkThreshold = 60
+
+    // MARK: Form (System Settings, one deliberate difference)
+
+    /// Margin of the cards to the column's edges, left and right.
+    static let formMargin: CGFloat = 20
+    /// Toolbar to the first card or header. Deliberate: SwiftUI's grouped Form gives 20,
+    /// System Settings has 12 (`.contentMargins` adds to it instead of replacing it).
+    static let formTopMargin: CGFloat = 20
+    /// First card or section header's y.
+    static let formFirstItemY: CGFloat = toolbarHeight + formTopMargin
+    /// Inside a card: a row's left and right inset, which is also a section header's
+    /// offset from the card's edge.
+    static let cardInset: CGFloat = 10
+    /// Section header to its card.
+    static let headerToCard: CGFloat = 10
+    /// A card to the next section header.
+    static let cardToHeader: CGFloat = 30
+    /// Card to card (no header between).
+    static let cardGap: CGFloat = 10
+
+    // MARK: Controls (System Settings)
+
+    static let switchSize = CGSize(width: 36, height: 16)
+    /// Buttons, pop-ups, segmented controls (also the sheet's search field and buttons).
+    static let controlHeight: CGFloat = 24
+
+    // MARK: Add-rule sheet (System Settings' Displays › Advanced… sheet)
+
+    static let sheetWidth: CGFloat = 470
+    /// Cards, the search field's top and right, the buttons' right and bottom, and the
+    /// first item below the Form's top, all 20 from the edge.
+    static let sheetMargin: CGFloat = 20
+    /// Buttons are at least 64 wide (a pt of slack is `tolerance`).
+    static let sheetButtonMinWidth: CGFloat = 64
+    static let sheetButtonHeight: CGFloat = controlHeight
+    static let sheetSearchHeight: CGFloat = controlHeight
+    /// Bottom of the Form to the top of the buttons.
+    static let sheetFormToButtons: CGFloat = 21
+    /// Capture check (g): the uninstall alerts' sheets are at least this big (deliberate
+    /// floor, not a System Settings number).
+    static let alertMinSize = CGSize(width: 200, height: 120)
+
+    // MARK: Onboarding window, check (f) (Mockup: "OnboardingConflict", "OnboardingEnable", "Onboarding")
+
+    static let onboardingSize = CGSize(width: 720, height: 500)
+    static let onboardingAppNameOrigin = CGPoint(x: 20, y: 50)
+    static let onboardingTitleOrigin = CGPoint(x: 266, y: 40)
+    /// The title's y moves with the text's line height.
+    static let onboardingTitleYTolerance: CGFloat = 2
+    static let onboardingCardX: CGFloat = 266
+    static let onboardingCardWidth: CGFloat = 418
+    static let onboardingButtonsMaxX: CGFloat = 684
+    static let onboardingButtonsMaxY: CGFloat = 472
+
+    // MARK: Scroll and background checks, (a)–(e) (System for the scroller; the rest deliberate or probe)
+
+    /// A color differs when a channel is more than 6 of 255 away (page, toolbar band).
+    static let colorTolerance = 6.0
+    /// Mean per-sample color difference allowed in the header once scrolled (of 255).
+    static let scrolledHeaderMeanDiff = 4.0
+    /// The scroll bar's lane: it sits in the right margin, at most `formMargin` wide
+    /// from the window's edge (System: legacy bar), and starts no higher than the
+    /// toolbar's bottom edge minus 1.
+    static let scrollerLane: CGFloat = formMargin
+    static let scrollerMinY: CGFloat = toolbarHeight - 1
+    /// Probe: a scroller within 10 pt of the right edge, and low enough, counts as sitting there.
+    static let scrollerEdgeBand: CGFloat = 10
+    /// Probe: slack around the scroller when looking for strays, and left of it when
+    /// reading the page color.
+    static let scrollerSlack: CGFloat = 1
+    static let scrollerPageColorGap: CGFloat = 2
+    /// Probe: the page color is read this far above the window's bottom, in the Form's
+    /// left margin (x = sidebar + half a margin).
+    static let pageSampleBottomInset: CGFloat = 40
+    static let pageSampleX: CGFloat = sidebarWidth + formMargin / 2
+    /// Probe: toolbar band samples at y 44, from the middle (+ 60) and 3 from the edge.
+    static let toolbarSampleY: CGFloat = 44
+    static let toolbarSampleMidOffset: CGFloat = 60
+    static let toolbarSampleEdgeInset: CGFloat = 3
+    static let rightEdgeInset: CGFloat = 2
+    /// Probe: right-margin strip, sampled from `formMargin - strayStripInset` pt left of
+    /// the edge, y 64 down to `pageSampleBottomInset` above the bottom, every 16.
+    static let strayStripInset: CGFloat = 2
+    static let straySampleTop: CGFloat = 64
+    static let straySampleStep: CGFloat = 16
+    /// Probe: header region compared when scrolled; x from just right of the page title
+    /// ("Cập nhật & hỗ trợ" ends near 380) to 24 from the edge every 6; y 6...46 every 4.
+    static let scrolledProbeStartX: CGFloat = 400
+    static let scrolledProbeRightInset: CGFloat = 24
+    static let scrolledProbeStepX: CGFloat = 6
+    static let scrolledProbeY: Range<CGFloat> = 6..<46
+    static let scrolledProbeStepY: CGFloat = 4
+    /// Probe: scroll offsets (pt) of the runs run.sh makes (0 and 60), as directory suffixes.
+    static let scrolls = ["0", "60"]
+}
