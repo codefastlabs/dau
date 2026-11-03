@@ -17,7 +17,10 @@
 // with Huỷ (nothing is added), and types a query no section matches into the sidebar
 // search (system empty state, toolbar kept), then clears it. `--sheet-only`: only the sheet, on the first display
 // (run.sh uses it for the appearance the system is not in). Exit status 0 only if
-// every check passes.
+// every check passes. A check the checker cannot run because it could not find or wait for an
+// element is a HARNESS problem, reported and counted apart from a UI FAIL (measured value
+// against Reference); the exit status is non-zero for either. Every row's display column is
+// "<scale>x pass <n>": a failure that only shows on pass 1 is a cold-app failure.
 //
 // Every expected value (pt, origin at the window's top-left) is in Reference.swift,
 // compiled together with this file by run.sh.
@@ -33,8 +36,8 @@ let sheetOnly = args.contains("--sheet-only")
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
 guard AXIsProcessTrusted() else {
-    print("FAIL no Accessibility permission for this terminal (System Settings › Privacy & Security › Accessibility)")
-    exit(1)
+    harnessAbort("Accessibility permission", expected: "granted to this terminal",
+                 got: "missing (System Settings › Privacy & Security › Accessibility)")
 }
 
 nonisolated(unsafe) let app = AXUIElementCreateApplication(pid)
@@ -71,11 +74,66 @@ func all(_ e: AXUIElement, depth: Int = 0, where match: (AXUIElement) -> Bool) -
 func role(_ e: AXUIElement) -> String { string(e, kAXRoleAttribute) ?? "" }
 func subrole(_ e: AXUIElement) -> String { string(e, kAXSubroleAttribute) ?? "" }
 
-/// The Settings window: the standard window holding the sidebar outline.
+/// A problem before any row exists (no permission, no window): the same HARNESS wording and exit status.
+func harnessAbort(_ metric: String, expected: String, got: String) -> Never {
+    print("HARNESS - - \(metric): \(expected) / \(got)")
+    print("1 harness problem(s): the checker could not reach an element; not a UI result.")
+    exit(1)
+}
+
+// Declared here, not with the checks: the window lookup below needs them.
+let sections = Reference.sections
+let sidebarWidth = Reference.sidebarWidth, toolbarHeight = Reference.toolbarHeight, formMargin = Reference.formMargin
+let size = Reference.windowSize
+
+/// Lookups by identity, not by order: an element is picked by a label it is known to carry,
+/// or (for elements with no stable label) by where it lies, never by its place in the
+/// children list. Each lookup says which.
+func rowCount(_ e: AXUIElement) -> Int { (attr(e, kAXRowsAttribute) as? [AXUIElement])?.count ?? 0 }
+
+/// Outlines in the window's sidebar column (minX within the sidebar width from the window's
+/// left), sheets left out: the add-rule sheet has outlines of its own and can be centered
+/// over the column. The sidebar outline has no label of its own, hence geometry.
+func sidebarOutlines(_ window: AXUIElement) -> [AXUIElement] {
+    let left = frame(window).minX
+    return children(window).filter { role($0) != "AXSheet" }
+        .flatMap { all($0, where: { role($0) == "AXOutline" }) }
+        .filter { let x = frame($0).minX - left; return x >= -Reference.tolerance && x < sidebarWidth }
+}
+/// The sidebar outline: in the sidebar column, with one row per section.
+func sidebarOutline(_ window: AXUIElement) -> AXUIElement? { sidebarOutlines(window).first { rowCount($0) == sections.count } }
+
+/// The sidebar's search field: the search field in the sidebar column (no stable label known).
+func sidebarSearchField(_ window: AXUIElement) -> AXUIElement? {
+    let left = frame(window).minX
+    return all(window, where: { subrole($0) == "AXSearchField" })
+        .first { let x = frame($0).minX - left; return x >= -Reference.tolerance && x < sidebarWidth }
+}
+
+/// The window's toolbar: toolbars have no label, so the widest one in the window's upper half
+/// (the window can hold a second, narrower one); the highest wins a tie.
+func toolbar(of window: AXUIElement) -> AXUIElement? {
+    let w = frame(window)
+    return all(window, where: { role($0) == "AXToolbar" })
+        .filter { frame($0).midY - w.minY < w.height / 2 }
+        .max { a, b in
+            let fa = frame(a), fb = frame(b)
+            return fa.width != fb.width ? fa.width < fb.width : fa.minY > fb.minY
+        }
+}
+
+/// The element carrying `wanted`; if none does, the topmost candidate, so that a wrong label
+/// still shows as a UI FAIL at the label check, not as a missing element.
+func intended(_ candidates: [AXUIElement], text wanted: String, _ text: (AXUIElement) -> String) -> AXUIElement? {
+    candidates.first { text($0) == wanted } ?? candidates.min { frame($0).minY < frame($1).minY }
+}
+
+/// The Settings window: the standard window holding an outline in its sidebar column (its
+/// title is the page's, so it is no identity; the sidebar is).
 func settingsWindow() -> AXUIElement? {
     let windows = (attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? []
     return windows.first { role($0) == "AXWindow" && subrole($0) == "AXStandardWindow"
-        && !all($0, where: { role($0) == "AXOutline" }).isEmpty }
+        && !sidebarOutlines($0).isEmpty }
 }
 
 func setFrame(_ window: AXUIElement, origin: CGPoint? = nil, size: CGSize? = nil) {
@@ -97,17 +155,27 @@ guard let window else {
     // (03/11/2026: once, the sheet-only run found no Settings window in 15 s).
     let shown = ((attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? [])
         .map { "\(subrole($0)) \"\(string($0, kAXTitleAttribute) ?? "")\" \(fmt(frame($0)))" }
-    print("FAIL no Settings window for pid \(pid) after 15 s; windows: \(shown.isEmpty ? "none" : shown.joined(separator: "; "))")
-    exit(1)
+    harnessAbort("Settings window", expected: "window for pid \(pid) within 15 s",
+                 got: "none; windows: \(shown.isEmpty ? "none" : shown.joined(separator: "; "))")
 }
 
 // MARK: Checks
 
 nonisolated(unsafe) var failures: [String] = []
+nonisolated(unsafe) var harnessProblems: [String] = []
 nonisolated(unsafe) var rows: [String] = []
-func record(_ display: String, _ page: String, _ metric: String, expected: String, got: String, ok: Bool) {
-    rows.append("\(display) | \(page) | \(metric) | \(expected) | \(got) | \(ok ? "ok" : "FAIL")")
-    if !ok { failures.append("\(display) \(page) \(metric): expected \(expected), got \(got)") }
+/// File names of the captures stay "<scale>x" (the display label carries the pass too).
+nonisolated(unsafe) var fileTag = ""
+/// `harness`: the checker could not reach the element (not a UI result; `ok` is ignored).
+/// `skip`: the check does not apply (counted as passed, marked "skip").
+func record(_ display: String, _ page: String, _ metric: String, expected: String, got: String, ok: Bool,
+            harness: Bool = false, skip: Bool = false) {
+    rows.append("\(display) | \(page) | \(metric) | \(expected) | \(got) | \(harness ? "HARNESS" : skip ? "skip" : ok ? "ok" : "FAIL")")
+    if harness { harnessProblems.append("\(display) \(page) \(metric): \(expected) / \(got)") }
+    else if !ok && !skip { failures.append("\(display) \(page) \(metric): expected \(expected), got \(got)") }
+}
+func harnessProblem(_ d: String, _ p: String, _ metric: String, expected: String, got: String = "missing") {
+    record(d, p, metric, expected: expected, got: got, ok: false, harness: true)
 }
 func fmt(_ v: CGFloat) -> String { v == v.rounded() ? String(Int(v)) : String(format: "%.1f", v) }
 func fmt(_ r: CGRect) -> String { "\(fmt(r.minX)),\(fmt(r.minY)) \(fmt(r.width))×\(fmt(r.height))" }
@@ -116,10 +184,32 @@ func check(_ d: String, _ p: String, _ metric: String, _ got: CGFloat, _ expecte
     record(d, p, metric, expected: fmt(expected), got: fmt(got), ok: near(got, expected, tolerance))
 }
 func check(_ d: String, _ p: String, _ metric: String, _ got: CGRect?, _ expected: CGRect) {
-    guard let got else { record(d, p, metric, expected: fmt(expected), got: "missing", ok: false); return }
+    guard let got else { harnessProblem(d, p, metric, expected: fmt(expected)); return }
     let ok = near(got.minX, expected.minX) && near(got.minY, expected.minY)
         && near(got.width, expected.width) && near(got.height, expected.height)
     record(d, p, metric, expected: fmt(expected), got: fmt(got), ok: ok)
+}
+
+/// The sidebar outline, waiting up to 3 s for its rows. Not found: a harness problem when no
+/// outline lies in the sidebar column; a UI FAIL when one does but its row count is wrong.
+func findSidebarOutline(_ display: String, _ page: String) -> AXUIElement? {
+    let start = Date()
+    var found = sidebarOutline(window)
+    while found == nil && Date().timeIntervalSince(start) < 3 { wait(0.2); found = sidebarOutline(window) }
+    if let found { return found }
+    let candidates = sidebarOutlines(window).map { rowCount($0) }
+    if candidates.isEmpty {
+        harnessProblem(display, page, "sidebar", expected: "outline in the sidebar column")
+    } else {
+        record(display, page, "sidebar rows", expected: "\(sections.count)", got: candidates.map(String.init).joined(separator: ", "), ok: false)
+    }
+    return nil
+}
+
+/// The "+" in the toolbar, by its label.
+func toolbarAddButton() -> AXUIElement? {
+    all(window, where: { role($0) == "AXToolbar" }).flatMap { children($0) }
+        .first { role($0) == "AXButton" && label($0) == "Thêm ứng dụng" }
 }
 
 /// The window's number for `screencapture -l`.
@@ -167,58 +257,59 @@ func inkStart(_ rep: NSBitmapImageRep, width: CGFloat, xs: ClosedRange<CGFloat>,
     return nil
 }
 
-let sections = Reference.sections
-let sidebarWidth = Reference.sidebarWidth, toolbarHeight = Reference.toolbarHeight, formMargin = Reference.formMargin
-let size = Reference.windowSize
-
 /// One pass on one display.
 func measure(display: String) {
     for (index, page) in sections.enumerated() {
-        guard let outline = all(window, where: { role($0) == "AXOutline" }).first else {
-            record(display, page, "sidebar", expected: "outline", got: "missing", ok: false); continue
-        }
+        guard let outline = findSidebarOutline(display, page) else { continue }
         let sidebarRows = (attr(outline, kAXRowsAttribute) as? [AXUIElement]) ?? []
-        guard sidebarRows.count == sections.count else {
-            record(display, page, "sidebar rows", expected: "\(sections.count)", got: "\(sidebarRows.count)", ok: false); continue
-        }
         AXUIElementSetAttributeValue(outline, kAXSelectedRowsAttribute as CFString, [sidebarRows[index]] as CFArray)
         wait(1.0)
         let w = frame(window)
         func rel(_ r: CGRect) -> CGRect { r.offsetBy(dx: -w.minX, dy: -w.minY) }
 
         check(display, page, "window", CGRect(origin: .zero, size: w.size), CGRect(origin: .zero, size: size))
-        let toolbar = all(window, where: { role($0) == "AXToolbar" }).first.map { rel(frame($0)) }
-        check(display, page, "toolbar", toolbar, CGRect(x: 0, y: 0, width: w.width, height: toolbarHeight))
+        let toolbarElement = toolbar(of: window)
+        check(display, page, "toolbar", toolbarElement.map { rel(frame($0)) }, CGRect(x: 0, y: 0, width: w.width, height: toolbarHeight))
+        // One close button per window (the sheet has none): the subrole is the identity.
         let close = all(window, where: { subrole($0) == "AXCloseButton" }).first.map { rel(frame($0)) }
         check(display, page, "close button", close, Reference.closeFrame)
-        let heading = all(window, where: { role($0) == "AXToolbar" }).first
-            .flatMap { all($0, where: { role($0) == "AXHeading" }).first }.map { rel(frame($0)) }
+        // The page title has no known label here (it is the page's): the toolbar heading in
+        // the detail column, leftmost.
+        let heading = toolbarElement
+            .flatMap { all($0, where: { role($0) == "AXHeading" && rel(frame($0)).minX >= sidebarWidth - Reference.tolerance })
+                .min { frame($0).minX < frame($1).minX } }.map { rel(frame($0)) }
         if let heading {
             check(display, page, "title x", heading.minX, Reference.titleX)
             check(display, page, "title center y", heading.midY, Reference.titleCenterY)
         } else {
-            record(display, page, "title", expected: "toolbar heading", got: "missing", ok: false)
+            harnessProblem(display, page, "title", expected: "toolbar heading")
         }
 
         // Sidebar: search field, rows, icon tile.
         let search = all(window, where: { subrole($0) == "AXSearchField" }).map { rel(frame($0)) }
-        check(display, page, "sidebar search", search.first { $0.minX < sidebarWidth }, Reference.sidebarSearchFrame)
+        check(display, page, "sidebar search", sidebarSearchField(window).map { rel(frame($0)) }, Reference.sidebarSearchFrame)
         for (i, row) in sidebarRows.enumerated() {
+            // A sidebar row has a single cell.
             let cell = children(row).first.map { rel(frame($0)) }
             check(display, page, "sidebar row \(i)", cell, Reference.sidebarRowFrame(i))
-            if i == 0, let text = all(row, where: { role($0) == "AXStaticText" }).first.map({ rel(frame($0)) }) {
+            // The row's texts have no label to tell them apart: the leftmost is the icon tile.
+            if i == 0, let text = all(row, where: { role($0) == "AXStaticText" }).min(by: { frame($0).minX < frame($1).minX }).map({ rel(frame($0)) }) {
                 check(display, page, "sidebar icon x", text.minX, Reference.sidebarIconX)
                 check(display, page, "sidebar icon height", text.height, Reference.sidebarIconSize)
             }
         }
 
         // Detail: cards and section headers in the Form's scroll area.
-        guard let area = all(window, where: { role($0) == "AXScrollArea" && rel(frame($0)).minX >= sidebarWidth - Reference.tolerance }).first else {
-            record(display, page, "form", expected: "scroll area", got: "missing", ok: false); continue
+        // Scroll areas have no label: the largest one in the detail column (inner ones are smaller).
+        guard let area = all(window, where: { role($0) == "AXScrollArea" && rel(frame($0)).minX >= sidebarWidth - Reference.tolerance })
+            .max(by: { frame($0).width * frame($0).height < frame($1).width * frame($1).height }) else {
+            harnessProblem(display, page, "form", expected: "scroll area"); continue
         }
         let column = rel(frame(area))
+        // Top to bottom, whatever order the children come in.
         let items = children(area).map { (role($0), rel(frame($0)), $0) }
             .filter { $0.0 == "AXGroup" || $0.0 == "AXHeading" || $0.0 == "AXStaticText" }
+            .sorted { $0.1.minY < $1.1.minY }
         if let first = items.first {
             check(display, page, "first item y", first.1.minY, Reference.formFirstItemY)
         }
@@ -263,17 +354,17 @@ func measure(display: String) {
 
         // Apps: the toolbar's "+" and search field, right of the title.
         if page == "apps" {
-            let items = all(window, where: { role($0) == "AXToolbar" }).first.map { children($0) } ?? []
-            let add = items.first { role($0) == "AXButton" && label($0) == "Thêm ứng dụng" }.map { rel(frame($0)) }
-            let field = search.first { $0.minX >= sidebarWidth }
+            let add = toolbarAddButton().map { rel(frame($0)) }   // by its label
+            let field = search.first { $0.minX >= sidebarWidth }   // the toolbar's: right of the sidebar (no stable label known)
             let ok = add != nil && field != nil && (heading.map { add!.minX > $0.maxX } ?? false)
                 && add!.maxX <= field!.minX && field!.maxX <= w.width
             record(display, page, "toolbar + and search", expected: "title < + < search ≤ edge",
-                   got: "\(add.map(fmt) ?? "no +") / \(field.map(fmt) ?? "no search")", ok: ok)
+                   got: "\(add.map(fmt) ?? "no +") / \(field.map(fmt) ?? "no search")", ok: ok,
+                   harness: add == nil || field == nil || heading == nil)
         }
 
         // Pixels: where the text of an unselected sidebar row begins.
-        if let rep = screenshot("\(page)-\(display)", w) {
+        if let rep = screenshot("\(page)-\(fileTag)", w) {
             let other = index == 1 ? 2 : 1
             let y = Reference.sidebarRowFrame(other).minY
             let band = Reference.sidebarTextProbeY
@@ -283,7 +374,7 @@ func measure(display: String) {
                 record(display, page, "sidebar text x", expected: fmt(Reference.sidebarTextX), got: "no ink", ok: false)
             }
         } else {
-            record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
+            harnessProblem(display, page, "screenshot", expected: "captured", got: "failed")
         }
         if bannerRun { break }
     }
@@ -296,11 +387,10 @@ func measure(display: String) {
 /// brings the four rows back.
 func measureSidebarSearch(display: String) {
     let page = "sidebar-search"
-    guard let field = all(window, where: { subrole($0) == "AXSearchField" }).first(where: {
-        frame($0).minX - frame(window).minX < sidebarWidth }),
-          let outline = all(window, where: { role($0) == "AXOutline" }).first else {
-        record(display, page, "search field", expected: "sidebar search", got: "missing", ok: false); return
+    guard let field = sidebarSearchField(window) else {
+        harnessProblem(display, page, "search field", expected: "sidebar search"); return
     }
+    guard let outline = findSidebarOutline(display, page) else { return }
     // SwiftUI reads the sidebar field's value only while it has focus (measured: a
     // value set without focus shows in the field but filters nothing).
     AXUIElementSetAttributeValue(field, kAXFocusedAttribute as CFString, kCFBooleanTrue)
@@ -313,10 +403,13 @@ func measureSidebarSearch(display: String) {
     let texts = all(window, where: { role($0) == "AXStaticText" }).map { (label($0), rel(frame($0))) }
         .filter { $0.1.maxX <= sidebarWidth && $0.1.minY > Reference.sidebarFirstRowY && $0.0.contains("zzzz-no-such-setting") }
     record(display, page, "empty state", expected: "text naming the query in the sidebar", got: texts.first?.0 ?? "none", ok: !texts.isEmpty)
-    let toolbar = all(window, where: { role($0) == "AXToolbar" }).first.map { rel(frame($0)) }
-    check(display, page, "toolbar height", toolbar?.height ?? 0, toolbarHeight)
-    if screenshot("sidebar-search-empty-\(display)", w) == nil {
-        record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
+    if let bar = toolbar(of: window) {
+        check(display, page, "toolbar height", frame(bar).height, toolbarHeight)
+    } else {
+        harnessProblem(display, page, "toolbar height", expected: fmt(toolbarHeight))
+    }
+    if screenshot("sidebar-search-empty-\(fileTag)", w) == nil {
+        harnessProblem(display, page, "screenshot", expected: "captured", got: "failed")
     }
     AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, "" as CFString)
     wait(1.0)
@@ -326,22 +419,20 @@ func measureSidebarSearch(display: String) {
 
 // MARK: Add-rule sheet
 
-/// The sheet attached to the Settings window, if any.
+/// The sheet attached to the Settings window, if any. A window has at most one sheet, so
+/// the role is the identity.
 func attachedSheet() -> AXUIElement? { children(window).first { role($0) == "AXSheet" } }
 
 /// Opens the add-rule sheet from the Ứng dụng page through accessibility (no clicks),
 /// checks it, captures it empty and with a row selected, and closes it with Huỷ.
 func measureSheet(display: String) {
     let page = "add-sheet"
-    guard let outline = all(window, where: { role($0) == "AXOutline" }).first,
-          let sidebarRows = attr(outline, kAXRowsAttribute) as? [AXUIElement], sidebarRows.count == sections.count else {
-        record(display, page, "sidebar", expected: "outline", got: "missing", ok: false); return
-    }
+    guard let outline = findSidebarOutline(display, page),
+          let sidebarRows = attr(outline, kAXRowsAttribute) as? [AXUIElement] else { return }
     AXUIElementSetAttributeValue(outline, kAXSelectedRowsAttribute as CFString, [sidebarRows[2]] as CFArray)
     wait(1.0)
-    let toolbarItems = all(window, where: { role($0) == "AXToolbar" }).first.map { children($0) } ?? []
-    guard let add = toolbarItems.first(where: { role($0) == "AXButton" && label($0) == "Thêm ứng dụng" }) else {
-        record(display, page, "toolbar +", expected: "button", got: "missing", ok: false); return
+    guard let add = toolbarAddButton() else {
+        harnessProblem(display, page, "toolbar +", expected: "button"); return
     }
     AXUIElementPerformAction(add, kAXPressAction as CFString)
     var found: AXUIElement?
@@ -350,7 +441,7 @@ func measureSheet(display: String) {
         if found == nil { wait(0.2) }
     }
     guard let sheet = found else {
-        record(display, page, "sheet", expected: "opened by +", got: "missing", ok: false); return
+        harnessProblem(display, page, "sheet", expected: "opened by +"); return
     }
     // Screenshots of an active window, as the user sees it.
     AXUIElementSetAttributeValue(app, kAXFrontmostAttribute as CFString, kCFBooleanTrue)
@@ -376,15 +467,20 @@ func measureSheet(display: String) {
         lastCount = count
         wait(0.2)
     }
+    // Without a stable list the list checks below would measure a half-loaded one.
+    let listReady = lastCount > 0 && sameReads >= 3
     record(display, page, "app list loaded", expected: "rows, stable",
            got: "\(lastCount) rows after \(String(format: "%.1f", Date().timeIntervalSince(loadStart))) s; outlines at open: \(outlines.joined(separator: ", "))",
-           ok: lastCount > 0 && sameReads >= 3)
+           ok: listReady, harness: !listReady)
 
     check(display, page, "sheet width", s.width, Reference.sheetWidth)
 
     // The header row: the title left and the system search field right, on one line.
-    let searchField = all(sheet, where: { subrole($0) == "AXSearchField" }).first
-    let heading = all(sheet, where: { role($0) == "AXHeading" }).first
+    // Preferring the placeholder / title it is known to carry, else the topmost (the Form's
+    // section headings lie below): a wrong text is then a FAIL at the text check below.
+    let searchField = intended(all(sheet, where: { subrole($0) == "AXSearchField" }), text: "Tìm trong Ứng dụng") {
+        string($0, "AXPlaceholderValue") ?? label($0) }
+    let heading = intended(all(sheet, where: { role($0) == "AXHeading" }), text: "Thêm quy tắc cho ứng dụng", label)
     var headerBottom = Reference.sheetMargin
     if let field = searchField {
         let r = rel(frame(field))
@@ -401,18 +497,22 @@ func measureSheet(display: String) {
             check(display, page, "header centered on search", h.midY, r.midY)
             record(display, page, "header left of search", expected: "title ends before the field", got: "\(fmt(h.maxX)) / \(fmt(r.minX))", ok: h.maxX < r.minX)
         } else {
-            record(display, page, "header", expected: "heading", got: "missing", ok: false)
+            harnessProblem(display, page, "header", expected: "heading")
         }
     } else {
-        record(display, page, "search", expected: "search field", got: "missing", ok: false)
+        harnessProblem(display, page, "search", expected: "search field")
     }
 
     // The list card (a scroll area of its own, outside the Form), then the Form with the
     // "Khi đang gõ" card.
-    let listArea = all(sheet, where: { role($0) == "AXScrollArea" && !all($0, where: { role($0) == "AXOutline" }).isEmpty }).first
-    guard let area = all(sheet, where: { role($0) == "AXScrollArea" && near(frame($0).width, s.width) && all($0, where: { role($0) == "AXOutline" }).isEmpty }).first,
+    // The list's scroll area: the smallest one that holds the list outline (by its label).
+    // The Form's: the tallest one as wide as the sheet that holds no outline (no label).
+    let listArea = all(sheet, where: { role($0) == "AXScrollArea" && !all($0, where: { role($0) == "AXOutline" && string($0, kAXDescriptionAttribute) == "Ứng dụng" }).isEmpty })
+        .min { frame($0).width * frame($0).height < frame($1).width * frame($1).height }
+    guard let area = all(sheet, where: { role($0) == "AXScrollArea" && near(frame($0).width, s.width) && all($0, where: { role($0) == "AXOutline" }).isEmpty })
+            .max(by: { frame($0).height < frame($1).height }),
           let listArea, let listElement = list() else {
-        record(display, page, "form", expected: "list and Form scroll areas", got: "missing", ok: false); return
+        harnessProblem(display, page, "form", expected: "list and Form scroll areas"); return
     }
     let form = rel(frame(area))
     let listCard = rel(frame(listElement))
@@ -421,23 +521,26 @@ func measureSheet(display: String) {
                  width: s.width - 2 * Reference.sheetMargin, height: Reference.sheetListHeight))
     record(display, page, "list label", expected: "Ứng dụng", got: label(listElement), ok: label(listElement) == "Ứng dụng")
     let groups = children(area).filter { role($0) == "AXGroup" }.map { rel(frame($0)) }
-    if let card = groups.first {
+    if let card = groups.min(by: { $0.minY < $1.minY }) {   // the topmost: "Khi đang gõ" (groups have no label)
         check(display, page, "Khi đang gõ card", card,
               CGRect(x: Reference.sheetMargin, y: card.minY, width: s.width - 2 * Reference.sheetMargin, height: card.height))
         check(display, page, "list card → Khi đang gõ card", card.minY - listCard.maxY, Reference.cardGap)
     } else {
-        record(display, page, "Khi đang gõ card", expected: "group", got: "missing", ok: false)
+        harnessProblem(display, page, "Khi đang gõ card", expected: "group")
     }
-    let segmented = all(sheet, where: { role($0) == "AXRadioGroup" }).first
+    let segmented = intended(all(sheet, where: { role($0) == "AXRadioGroup" }), text: "Khi đang gõ", label)
     if let segmented {
         check(display, page, "segmented \"\(label(segmented))\" height", rel(frame(segmented)).height, Reference.controlHeight)
         record(display, page, "segmented label", expected: "Khi đang gõ", got: label(segmented), ok: label(segmented) == "Khi đang gõ")
     } else {
-        record(display, page, "segmented", expected: "Khi đang gõ", got: "missing", ok: false)
+        harnessProblem(display, page, "segmented", expected: "Khi đang gõ")
     }
 
     // The button bar.
-    func button(_ title: String) -> AXUIElement? { all(sheet, where: { role($0) == "AXButton" && label($0) == title }).first }
+    // By label; if two carry it, the lower one (the button bar is the sheet's bottom row).
+    func button(_ title: String) -> AXUIElement? {
+        all(sheet, where: { role($0) == "AXButton" && label($0) == title }).max { frame($0).minY < frame($1).minY }
+    }
     func enabled(_ e: AXUIElement?) -> Bool { e.flatMap { attr($0, kAXEnabledAttribute) as? Bool } ?? false }
     let cancel = button("Huỷ"), confirm = button("Thêm"), other = button("Chọn ứng dụng khác…")
     if let cancel, let confirm, let other {
@@ -456,22 +559,38 @@ func measureSheet(display: String) {
         check(display, page, "Chọn ứng dụng khác… y", o.minY, a.minY)
         record(display, page, "Thêm without selection", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
     } else {
-        record(display, page, "buttons", expected: "Chọn ứng dụng khác… / Huỷ / Thêm",
-               got: "\(other == nil ? "-" : "ok") / \(cancel == nil ? "-" : "ok") / \(confirm == nil ? "-" : "ok")", ok: false)
+        harnessProblem(display, page, "buttons", expected: "Chọn ứng dụng khác… / Huỷ / Thêm",
+                       got: "\(other == nil ? "-" : "ok") / \(cancel == nil ? "-" : "ok") / \(confirm == nil ? "-" : "ok")")
     }
-    if screenshot("apps-add-sheet-\(display)", w) == nil {
-        record(display, page, "screenshot", expected: "captured", got: "failed", ok: false)
+    if screenshot("apps-add-sheet-\(fileTag)", w) == nil {
+        harnessProblem(display, page, "screenshot", expected: "captured", got: "failed")
     }
 
     // The list scrolls inside its card (the bug: a List nested in a grouped Form has its
     // scroller switched off). First a real mouse wheel over the list, then the scroll
     // bar to the end: the last app must come into the card and "Khi đang gõ" stay in
     // view; then back to the top.
-    func scrollBar() -> AXUIElement? { children(listArea).first { role($0) == "AXScrollBar" } }
+    // The vertical one (the scroller can have a horizontal bar too): by its orientation.
+    func scrollBar() -> AXUIElement? {
+        children(listArea).first { role($0) == "AXScrollBar" && string($0, kAXOrientationAttribute) == "AXVerticalOrientation" }
+    }
     func barValue() -> CGFloat { (scrollBar().flatMap { attr($0, kAXValueAttribute) as? NSNumber }).map { CGFloat(truncating: $0) } ?? -1 }
-    if scrollBar() == nil {
-        record(display, page, "list scroll bar", expected: "vertical scroll bar", got: "missing", ok: false)
-    } else {
+    // A list that fits its card has no scroll bar: require one only if the rows (count × the
+    // tallest row's frame) are taller than the visible list area.
+    func waitForScrollBar() -> AXUIElement? {
+        for _ in 0..<10 where scrollBar() == nil { wait(0.2) }
+        return scrollBar()
+    }
+    let listRowsNow = listRows()
+    let rowHeight = listRowsNow.map { frame($0).height }.max() ?? 0
+    let overflows = CGFloat(listRowsNow.count) * rowHeight > frame(listArea).height
+    if listReady && !overflows {
+        record(display, page, "list scroll bar", expected: "vertical scroll bar",
+               got: "skip: list does not overflow (\(listRowsNow.count) rows)", ok: true, skip: true)
+    } else if listReady && waitForScrollBar() == nil {
+        harnessProblem(display, page, "list scroll bar", expected: "vertical scroll bar",
+                       got: "missing (list overflows: \(listRowsNow.count) rows × \(fmt(rowHeight)) > \(fmt(frame(listArea).height)))")
+    } else if listReady {
         let before = barValue()
         let area = frame(listArea)
         let point = CGPoint(x: area.midX, y: area.midY)
@@ -511,11 +630,11 @@ func measureSheet(display: String) {
                 record(display, page, "last app visible at the end", expected: "inside \(fmt(area))", got: fmt(r),
                        ok: r.minY >= area.minY - Reference.tolerance && r.maxY <= area.maxY + Reference.tolerance)
             }
-            let typing = all(sheet, where: { role($0) == "AXRadioGroup" }).first.map { rel(frame($0)) }
+            let typing = segmented.map { rel(frame($0)) }
             record(display, page, "Khi đang gõ in view while scrolled", expected: "inside the sheet", got: typing.map(fmt) ?? "missing",
-                   ok: typing.map { $0.minY > area.maxY && $0.maxY < s.height } ?? false)
-            if screenshot("apps-add-sheet-bottom-\(display)", w) == nil {
-                record(display, page, "screenshot bottom", expected: "captured", got: "failed", ok: false)
+                   ok: typing.map { $0.minY > area.maxY && $0.maxY < s.height } ?? false, harness: typing == nil)
+            if screenshot("apps-add-sheet-bottom-\(fileTag)", w) == nil {
+                harnessProblem(display, page, "screenshot bottom", expected: "captured", got: "failed")
             }
             AXUIElementSetAttributeValue(bar, kAXValueAttribute as CFString, NSNumber(value: 0.0))
             wait(0.5)
@@ -524,8 +643,9 @@ func measureSheet(display: String) {
 
     // The search field filters the list (value set through accessibility, then cleared).
     let total = listRows().count
-    if let field = searchField, let firstRow = listRows().first,
-       let name = all(firstRow, where: { role($0) == "AXStaticText" }).first.map(label) {
+    // The row's name: its topmost text (the texts have no label to tell them apart).
+    if listReady, let field = searchField, let firstRow = listRows().first,
+       let name = all(firstRow, where: { role($0) == "AXStaticText" }).min(by: { frame($0).minY < frame($1).minY }).map(label) {
         AXUIElementSetAttributeValue(field, kAXValueAttribute as CFString, name as CFString)
         wait(0.8)
         let filtered = listRows().count
@@ -537,13 +657,13 @@ func measureSheet(display: String) {
     }
 
     // A selection enables Thêm.
-    if let list = list(), let row = listRows().first {
+    if listReady, let list = list(), let row = listRows().first {
         AXUIElementSetAttributeValue(list, kAXSelectedRowsAttribute as CFString, [row] as CFArray)
         wait(0.8)
         record(display, page, "Thêm with selection", expected: "enabled", got: enabled(button("Thêm")) ? "enabled" : "disabled",
                ok: enabled(button("Thêm")))
-        if screenshot("apps-add-sheet-selected-\(display)", w) == nil {
-            record(display, page, "screenshot selected", expected: "captured", got: "failed", ok: false)
+        if screenshot("apps-add-sheet-selected-\(fileTag)", w) == nil {
+            harnessProblem(display, page, "screenshot selected", expected: "captured", got: "failed")
         }
         // A query that hides the selected app clears the selection: Thêm turns off and
         // stays off once the query is cleared (Return cannot add an app off screen).
@@ -560,20 +680,27 @@ func measureSheet(display: String) {
     }
 
     // Huỷ closes the sheet; nothing is added.
-    if let cancel = button("Huỷ") { AXUIElementPerformAction(cancel, kAXPressAction as CFString) }
+    let cancelNow = button("Huỷ")
+    if let cancelNow { AXUIElementPerformAction(cancelNow, kAXPressAction as CFString) }
     var closed = false
     for _ in 0..<25 where !closed {
         closed = attachedSheet() == nil
         if !closed { wait(0.2) }
     }
-    record(display, page, "Huỷ closes", expected: "closed", got: closed ? "closed" : "open", ok: closed)
+    // Without the button nothing was pressed: the checker, not the sheet, failed to close it.
+    record(display, page, "Huỷ closes", expected: "closed", got: closed ? "closed" : "open", ok: closed,
+           harness: !closed && cancelNow == nil)
 }
 
 // One pass per display scale: the user has a Retina and a 1x display.
 let primaryHeight = NSScreen.screens.first?.frame.height ?? 0
 var seenScales = Set<CGFloat>()
+var pass = 0
 for screen in NSScreen.screens where seenScales.insert(screen.backingScaleFactor).inserted {
-    let display = "\(fmt(screen.backingScaleFactor))x"
+    // The pass number tells a cold-app failure (pass 1) from one that needs a given display.
+    pass += 1
+    fileTag = "\(fmt(screen.backingScaleFactor))x"
+    let display = "\(fileTag) pass \(pass)"
     let visible = screen.visibleFrame
     let origin = CGPoint(x: visible.minX + 40, y: primaryHeight - visible.maxY + 40)
     setFrame(window, origin: origin, size: size)
@@ -597,5 +724,10 @@ if !bannerRun && !sheetOnly {
 print("display | page | metric | System Settings | Dấu | result")
 rows.forEach { print($0) }
 failures.forEach { print("FAIL", $0) }
-print(failures.isEmpty ? "Real-window checks passed (\(rows.count))." : "\(failures.count) real-window check(s) failed.")
-exit(failures.isEmpty ? 0 : 1)
+harnessProblems.forEach { print("HARNESS", $0) }
+if !harnessProblems.isEmpty {
+    print("\(harnessProblems.count) harness problem(s): the checker could not reach an element; not a UI result.")
+}
+if !failures.isEmpty { print("\(failures.count) real-window check(s) failed.") }
+if failures.isEmpty && harnessProblems.isEmpty { print("Real-window checks passed (\(rows.count)).") }
+exit(failures.isEmpty && harnessProblems.isEmpty ? 0 : 1)
