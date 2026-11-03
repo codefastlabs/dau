@@ -132,7 +132,10 @@ real_window() {   # <output-dir> <ax-check flag or ""> [app arguments…]
   local dir=$1 flag=$2
   shift 2
   local before=$(pgrep -f "$app/Contents/MacOS/Dau" | sort)
-  open -n "$app" --args --settings-window "$@"
+  # --settings-window goes last: launched as `--settings-window --appearance light`
+  # (or any flag-value pair after it) the app opened no window at all, while
+  # `--appearance light --settings-window` does (measured 03/11/2026; cause unknown).
+  open -n "$app" --args "$@" --settings-window
   local pid=""
   for i in {1..50}; do
     pid=$(comm -13 <(echo "$before") <(pgrep -f "$app/Contents/MacOS/Dau" | sort) | tail -1)
