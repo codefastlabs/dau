@@ -42,7 +42,8 @@ func pixel(_ rep: NSBitmapImageRep, _ x: CGFloat, _ y: CGFloat) -> Pixel {
     return Pixel(r: Double(p[0]), g: Double(p[1]), b: Double(p[2]))
 }
 
-var failures: [String] = []
+// Top-level code is single-threaded; Swift 6 would isolate globals to the main actor.
+nonisolated(unsafe) var failures: [String] = []
 var results: [(String, String, [String: Bool])] = []   // run, mode, check → pass
 func fail(_ s: String) { failures.append(s) }
 

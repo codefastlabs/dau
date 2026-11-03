@@ -34,7 +34,8 @@
 # enabled already; nothing is enabled or disabled, N4), types, reads the text back,
 # closes the window without saving, prints the text, PASS/FAIL and the input method's
 # counts and timings for that app (scripts/perf-report.sh; the script sets the global
-# defaults key DauPerfLog for the run and removes it at exit, D8). The input source selected
+# defaults key DauPerfLog for the run and at exit puts back what was there: the same value
+# and type, or deletes the key if it was absent, D8). The input source selected
 # before and the clipboard (read through ⌘C in browsers, VS Code, Notes, Mail) are
 # restored; the clipboard is emptied before each ⌘C so a failed copy cannot pass. A new
 # document whose first letter the app capitalized by itself counts as PASS (noted).
@@ -53,7 +54,12 @@
 # Safety: keys and shortcuts (⌘A ⌘C ⌘W ⌃U) are only sent while the app under test is
 # frontmost (browsers: with the test page in front; VS Code: an Untitled editor; Mail:
 # the New Message window). If another app comes to the front, the script stops sending
-# keys and exits with status 3.
+# keys and exits with status 3, also when that happens during the last app.
+#
+# After selecting the Dấu input source the script checks that Dấu is the current source
+# (TIS is trusted for the current source only); if not, it stops and exits with status 4.
+# The "Dấu is enabled" check is cross-checked against com.apple.inputsources ›
+# AppleEnabledThirdPartyInputSources (input-source.swift).
 #
 # Exit status 0 only if every app gives the expected text.
 set -uo pipefail
@@ -72,19 +78,21 @@ DELAY_MS=30
 UNDERLINE=0
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
+# Prints the whole leading comment block.
+usage() { awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --delay) DELAY_MS="${2:?--delay cần số ms}"; shift 2 ;;
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
-    -h|--help) sed -n '2,57p' "$0"; exit 0 ;;
+    -h|--help) usage; exit 0 ;;
     all) APPS+=(textedit safari chrome vscode terminal); shift ;;
     textedit|safari|chrome|vscode|terminal|edge|firefox|notes|mail) APPS+=("$1"); shift ;;
     *) echo "Tham số không hợp lệ: $1" >&2; exit 2 ;;
   esac
 done
-[[ ${#APPS[@]} -gt 0 ]] || { sed -n '2,57p' "$0"; exit 2; }
+[[ ${#APPS[@]} -gt 0 ]] || { usage; exit 2; }
 US_SOURCE=com.apple.keylayout.US
 if [[ "$KEYS" == *$'\n'* || "$KEYS" == *$'\r'* ]]; then
   echo "Phím gõ không được có xuống dòng (không bao giờ nhấn Return trong Terminal)." >&2
@@ -107,7 +115,13 @@ IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
 [[ -f "$IM_PLIST" ]] || { echo "Chưa cài bộ gõ (scripts/install-debug.sh)." >&2; exit 1; }
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_PLIST")"
 DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
-[[ -n "$DAU_SOURCE" ]] || { echo "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật." >&2; exit 1; }
+# The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
+# disagree (TIS alone has been wrong on macOS 27.2).
+[[ -n "$DAU_SOURCE" ]] || {
+  echo "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)." >&2
+  echo "Thêm bằng \"+\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào (scripts/install-debug.sh nói rõ các bước)." >&2
+  exit 1
+}
 if [[ "$KEYS" == *"⇄"* ]] && ! "$INPUT_SOURCE" enabled "$US_SOURCE" | grep -qx "$US_SOURCE"; then
   echo "⇄ cần nguồn $US_SOURCE đã bật (script không tự bật, N4)." >&2
   exit 1
@@ -121,11 +135,31 @@ ORIGINAL_SOURCE="$("$INPUT_SOURCE" current)"
 "$CLIPBOARD" save "$WORK/clipboard.plist" || exit 1
 # The per-key log is off unless DauPerfLog is set (D8); turn it on for this run only.
 PERF_KEY=DauPerfLog
-PERF_WAS_SET="$(defaults read -g "$PERF_KEY" 2>/dev/null || true)"
+# Remember the key exactly: absent, or its type and value, so cleanup can put it back.
+PERF_TYPE=""; PERF_VALUE=""
+if PERF_TYPE="$(defaults read-type -g "$PERF_KEY" 2>/dev/null)"; then
+  PERF_TYPE="${PERF_TYPE#Type is }"
+  PERF_VALUE="$(defaults read -g "$PERF_KEY")"
+  case "$PERF_TYPE" in
+    boolean|integer|float|string) ;;
+    *) echo "$PERF_KEY có kiểu $PERF_TYPE: script không khôi phục được kiểu này. Xoá hoặc đổi tay (defaults delete -g $PERF_KEY) rồi chạy lại." >&2; exit 1 ;;
+  esac
+else
+  PERF_TYPE=""
+fi
+restore_perf_key() {
+  case "$PERF_TYPE" in
+    "") defaults delete -g "$PERF_KEY" >/dev/null 2>&1 ;;
+    boolean) defaults write -g "$PERF_KEY" -bool "$([[ "$PERF_VALUE" == 1 ]] && echo true || echo false)" ;;
+    integer) defaults write -g "$PERF_KEY" -int "$PERF_VALUE" ;;
+    float) defaults write -g "$PERF_KEY" -float "$PERF_VALUE" ;;
+    string) defaults write -g "$PERF_KEY" -string "$PERF_VALUE" ;;
+  esac
+}
 defaults write -g "$PERF_KEY" -bool true
 cleanup() {
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
-  [[ -z "$PERF_WAS_SET" ]] && defaults delete -g "$PERF_KEY" >/dev/null 2>&1
+  restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || echo "CẢNH BÁO: không khôi phục được clipboard" >&2
   if [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
     "$INPUT_SOURCE" select "$ORIGINAL_SOURCE" || true
@@ -137,14 +171,32 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 PAGE="$WORK/dau-selftest.html"
-cat > "$PAGE" <<'HTML'
-<!doctype html><meta charset="utf-8"><title>Dau self test</title>
+# The window title the guards look for; also the page's <title>.
+PAGE_TITLE="Dấu self test"
+cat > "$PAGE" <<HTML
+<!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
 <textarea autofocus spellcheck="false" autocomplete="off" style="width:90%;height:8em"></textarea>
 HTML
 
 [[ "$DELAY_MS" =~ ^[0-9]+$ ]] || { echo "--delay phải là số nguyên ms" >&2; exit 2; }
 
-select_dau() { "$INPUT_SOURCE" select "$DAU_SOURCE"; sleep 0.3; }
+# Selects Dấu and checks it is the current source (TIS is trusted for the current source
+# only). Stops the run (status 4) with a message if not. Prints nothing on stdout: it runs
+# inside the command substitution that collects an app's text.
+select_dau() {
+  stopped && return 1
+  "$INPUT_SOURCE" select "$DAU_SOURCE" >&2
+  sleep 0.3
+  local now="" _
+  for _ in 1 2 3 4 5; do
+    now="$("$INPUT_SOURCE" current 2>/dev/null)"
+    [[ "$now" == "$DAU_SOURCE" ]] && return 0
+    sleep 0.2
+  done
+  echo "DỪNG: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì. Kiểm tra Dấu có trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào." >&2
+  echo source > "$STOP_FILE"
+  return 1
+}
 
 # Every keystroke goes through a check that the app under test is frontmost (and, for
 # browsers, that the test page is the front tab of its focused window), in the same osascript as the keys: if
@@ -181,7 +233,7 @@ guarded() {
   done
   if ! out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)"; then
     echo "DỪNG: $out — không gửi phím nào nữa" >&2
-    : > "$STOP_FILE"
+    echo front > "$STOP_FILE"
     return 1
   fi
   printf '%s' "$out"
@@ -193,7 +245,7 @@ type_keys() { # process [window-title-substring]
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" <<'OSA' || { echo "DỪNG: app đổi giữa chừng" >&2; : > "$STOP_FILE"; return 1; }
+  osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" <<'OSA' || { echo "DỪNG: app đổi giữa chừng" >&2; echo front > "$STOP_FILE"; return 1; }
 on run argv
   set s to item 1 of argv
   set d to ((item 2 of argv) as integer) / 1000
@@ -253,7 +305,6 @@ run_textedit() {
 
 # Safari and Chrome are driven with `open` and System Events keystrokes only: scripting
 # them directly needs a separate Automation permission per browser.
-PAGE_TITLE="Dau self test"
 # Names of the windows of process $1 (System Events; the window name is the tab title).
 window_names() {
   osascript -e 'on run argv' -e 'tell application "System Events" to get name of every window of process (item 1 of argv)' \
@@ -424,13 +475,19 @@ bundle_id() {
 [[ $UNDERLINE == 1 ]] && echo "Chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app."
 STOP_FILE="$WORK/stop"
 for app in "${APPS[@]}"; do
-  if stopped; then echo "Đã dừng: app đang thử không còn ở trước (người dùng đang dùng máy?)."; FAILED=3; break; fi
+  if stopped; then break; fi
   if [[ $UNDERLINE == 1 ]]; then
     defaults write -g "$FORCE_KEY" -array "$(bundle_id "$app")"
   fi
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   got="$("run_$app")"
   sleep 0.3
+  if stopped; then
+    # Another app came to the front, or Dấu could not be selected: no verdict for this app.
+    echo
+    echo "DỪNG $app: không có kết quả (xem thông báo DỪNG ở trên)."
+    break
+  fi
   got_trimmed="$(printf '%s' "$got" | trim_right)"
   if [[ "$app" == terminal ]]; then
     ok=0; [[ "$got_trimmed" == *"$EXPECT_TRIMMED" ]] && ok=1
@@ -466,5 +523,13 @@ for app in "${APPS[@]}"; do
   fi
 done
 echo
+if stopped; then
+  # Not overwritten by an earlier FAIL: the run did not finish.
+  if [[ "$(cat "$STOP_FILE")" == source ]]; then
+    echo "Đã dừng: không chọn được Dấu (mã thoát 4)."; FAILED=4
+  else
+    echo "Đã dừng: app đang thử không còn ở trước (người dùng đang dùng máy?) (mã thoát 3)."; FAILED=3
+  fi
+fi
 if [[ $FAILED == 0 ]]; then echo "PASS"; else echo "FAIL"; fi
 exit $FAILED

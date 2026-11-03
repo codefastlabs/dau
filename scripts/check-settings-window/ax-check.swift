@@ -37,7 +37,7 @@ guard AXIsProcessTrusted() else {
     exit(1)
 }
 
-let app = AXUIElementCreateApplication(pid)
+nonisolated(unsafe) let app = AXUIElementCreateApplication(pid)
 AXUIElementSetMessagingTimeout(app, 5)
 
 func attr(_ e: AXUIElement, _ name: String) -> CFTypeRef? {
@@ -96,8 +96,8 @@ guard let window else { print("FAIL no Settings window for pid \(pid)"); exit(1)
 
 // MARK: Checks
 
-var failures: [String] = []
-var rows: [String] = []
+nonisolated(unsafe) var failures: [String] = []
+nonisolated(unsafe) var rows: [String] = []
 func record(_ display: String, _ page: String, _ metric: String, expected: String, got: String, ok: Bool) {
     rows.append("\(display) | \(page) | \(metric) | \(expected) | \(got) | \(ok ? "ok" : "FAIL")")
     if !ok { failures.append("\(display) \(page) \(metric): expected \(expected), got \(got)") }

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Builds the Debug input method (universal) and installs it for the current user in
-# ~/Library/Input Methods, then stops the old input method process so macOS loads the
-# new one on the next key press.
+# Builds the input method (universal, Debug unless --release) and installs it for the
+# current user in ~/Library/Input Methods, then stops the old input method process so
+# macOS loads the new one on the next key press.
 #
 # It does NOT register or enable the input source: that is the user's action in
 # System Settings (N4). The steps are printed at the end.
@@ -9,6 +9,9 @@
 # Usage:
 #   scripts/install-debug.sh               build, install, stop the old process
 #   scripts/install-debug.sh --build-only  build and check only, touch nothing outside the repo
+#   scripts/install-debug.sh --no-build    skip xcodegen and xcodebuild: check and install the
+#                                          build already in build/DerivedData.noindex (for a
+#                                          caller that has just built it, e.g. selftest-app-group.sh)
 #   scripts/install-debug.sh --release     Release instead of Debug: for day-to-day typing
 #                                          (no get-task-allow, no per-key log, D8)
 set -euo pipefail
@@ -21,35 +24,45 @@ BUNDLE_NAME="$PROCESS_NAME.app"
 DEST_DIR="$HOME/Library/Input Methods"
 
 BUILD_ONLY=0
+SKIP_BUILD=0
 CONFIG=Debug
 for arg in "$@"; do
   case "$arg" in
     --build-only) BUILD_ONLY=1 ;;
+    --no-build) SKIP_BUILD=1 ;;
     # Day-to-day typing: Release has no get-task-allow (no debugger can attach) and no
     # per-key log or debug defaults keys (D8). Debug only while testing.
     --release) CONFIG=Release ;;
-    -h|--help) sed -n '2,12p' "$0"; exit 0 ;;
-    *) echo "Tham số không hợp lệ: $arg (dùng --release, --build-only hoặc không có tham số)" >&2; exit 2 ;;
+    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+    *) echo "Tham số không hợp lệ: $arg (dùng --release, --build-only, --no-build hoặc không có tham số)" >&2; exit 2 ;;
   esac
 done
 
-if ! command -v xcodegen >/dev/null 2>&1; then
-  echo "Cần XcodeGen: brew install xcodegen" >&2
-  exit 1
+if [[ "$SKIP_BUILD" == 1 && "$BUILD_ONLY" == 1 ]]; then
+  echo "--no-build và --build-only không đi cùng nhau." >&2
+  exit 2
 fi
+if [[ "$SKIP_BUILD" == 0 ]]; then
+  if ! command -v xcodegen >/dev/null 2>&1; then
+    echo "Cần XcodeGen: brew install xcodegen" >&2
+    exit 1
+  fi
 
-echo "==> Sinh Dau.xcodeproj"
-(cd "$ROOT" && xcodegen generate --quiet)
+  echo "==> Sinh Dau.xcodeproj"
+  (cd "$ROOT" && xcodegen generate --quiet)
 
-echo "==> Build $CONFIG universal (scheme DauInputMethod)"
-xcodebuild \
-  -project "$ROOT/Dau.xcodeproj" \
-  -scheme DauInputMethod \
-  -configuration "$CONFIG" \
-  -destination 'generic/platform=macOS' \
-  -derivedDataPath "$DERIVED" \
-  -quiet \
-  build
+  echo "==> Build $CONFIG universal (scheme DauInputMethod)"
+  xcodebuild \
+    -project "$ROOT/Dau.xcodeproj" \
+    -scheme DauInputMethod \
+    -configuration "$CONFIG" \
+    -destination 'generic/platform=macOS' \
+    -derivedDataPath "$DERIVED" \
+    -quiet \
+    build
+else
+  echo "==> --no-build: dùng bản build có sẵn trong build/DerivedData.noindex"
+fi
 
 BUILT="$DERIVED/Build/Products/$CONFIG/$BUNDLE_NAME"
 if [[ ! -d "$BUILT" ]]; then
@@ -95,9 +108,9 @@ else
   echo "    không có tiến trình $PROCESS_NAME đang chạy"
 fi
 
+echo
+echo "Đã cài bản $CONFIG của Dấu. Các bước còn lại do bạn làm trên máy:"
 cat <<'EOF'
-
-Đã cài bản Debug của Dấu. Các bước còn lại do bạn làm trên máy:
 
   1. Mở Cài đặt hệ thống › Bàn phím. Ở mục "Nguồn đầu vào" (Input Sources),
      bấm "Sửa…" (Edit…).
@@ -105,14 +118,24 @@ cat <<'EOF'
   3. Chọn ngôn ngữ "Tiếng Việt" (Vietnamese), chọn "Dấu – Tiếng Việt", bấm "Thêm".
      Dấu chỉ có nguồn này (D2). Gõ tiếng Anh bằng ABC/U.S. sẵn có của macOS; nếu
      danh sách còn "Dấu – Tiếng Anh" từ bản cũ thì bấm "–" để bỏ nó.
+     Trên macOS 27.2, nút "Bật Dấu" trong app có thể không bật được nguồn: cứ thêm
+     bằng "+" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào như trên.
   4. Nếu không thấy "Dấu" trong danh sách: đăng xuất rồi đăng nhập lại, sau đó làm lại
      từ bước 1 (lần cài đầu, hệ thống có thể chưa quét thư mục ~/Library/Input Methods).
   5. Chọn "Dấu – Tiếng Việt" trên menu nguồn nhập liệu ở thanh menu, hoặc bằng phím tắt
      chuyển nguồn nhập liệu của macOS.
   6. Tắt các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…) trước khi thử.
+EOF
+if [[ "$CONFIG" == Debug ]]; then
+  cat <<'EOF'
   7. Gõ thử theo docs/M2-TESTING.md. Muốn lấy số đo: bật nhật ký từng phím bằng
      `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf-report.sh, rồi tắt
      bằng `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
+EOF
+else
+  echo "  7. Gõ thử theo docs/M2-TESTING.md. Bản Release không ghi nhật ký từng phím (D8)."
+fi
+cat <<'EOF'
 
 Gỡ bản thử: xoá ~/Library/Input Methods/DauInputMethod.app, bỏ "Dấu" khỏi Nguồn đầu vào,
 rồi đăng xuất.

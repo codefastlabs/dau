@@ -10,3 +10,7 @@ ToolbarSpacer\(\.fixed\)	mã dùng ToolbarSpacer(.flexible) và thứ tự của
 Không dùng `Form`	D9: trang Cài đặt là Form(.grouped)
 cập nhật mockup theo app thật	D9: canvas trước, người dùng duyệt, rồi mới sửa mã (02/11/2026)
 macOS 27\.2 có hộp thoại hệ thống	câu hỏi TIS trong DECISIONS: hộp thoại "Cho phép" chưa ai thấy hiện; Cài đặt báo lỗi (03/11/2026)
+open question A/B	N3/D11: approach A decided (29/10/2026)
+Lần cài đầu (cần|bắt buộc) đăng xuất	D37: "có thể"; whether the first install needs a logout is an open question
+[Bb]ấm ("|“|‘|')?Cho phép	the "Cho phép … bật …?" dialog has not been seen; open question (DECISIONS.md)
+số đo trong `docs/UI\.md`	D9: UI measurements live in docs/research/SYSTEM-SETTINGS-REFERENCE.md

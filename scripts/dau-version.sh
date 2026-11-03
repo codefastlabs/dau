@@ -35,7 +35,10 @@ if [[ -z $pid ]]; then
 elif [[ -d $im ]]; then
   started=$(date -j -f "%a %b %d %T %Y" "$(ps -o lstart= -p $pid | sed 's/  */ /g; s/^ //; s/ $//')" +%s 2>/dev/null)
   written=$(stat -f %m "$im/Contents/MacOS/DauInputMethod")
-  if [[ -n $started && $started -ge $written ]]; then
+  if [[ -z $started ]]; then
+    # Never claim an old build runs when the start time could not be parsed.
+    print -r -- "Tiến trình bộ gõ:  pid $pid, không xác định bản nào (không đọc được giờ khởi động)"
+  elif (( started >= written )); then
     print -r -- "Tiến trình bộ gõ:  pid $pid, chạy bản đã cài"
   else
     print -r -- "Tiến trình bộ gõ:  pid $pid, đang chạy bản CŨ — chuyển nguồn nhập liệu ra rồi vào lại Dấu"

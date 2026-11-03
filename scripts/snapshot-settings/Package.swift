@@ -2,8 +2,9 @@
 // Renders the Settings window of the host app to PNG, light and dark, without any
 // interaction, and checks every "keys → result" sample the window shows.
 //
-//   swift run --package-path scripts/snapshot-settings snapshot-settings <output-dir>
-//   swift test --package-path scripts/snapshot-settings
+//   swift run --package-path scripts/snapshot-settings SnapshotSettings <output-dir>
+//   swift test --package-path scripts/snapshot-settings   (DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
+//   when xcode-select points at the Command Line Tools)
 //
 // The app's view code is compiled straight from Apps/Dau/Sources (symlink "App"),
 // minus its entry point. Not sandboxed, so it reads the real input-source shortcut;

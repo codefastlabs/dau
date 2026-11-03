@@ -10,8 +10,9 @@ Danh sách việc người dùng làm trên máy để kiểm chứng mốc M2. 
 4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu. Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng/cửa sổ nhớ nguồn riêng: phải chọn lại "Dấu – Tiếng Việt" **sau khi** chuyển sang từng ứng dụng thử, và nhìn biểu tượng V trên thanh menu trước khi gõ.
 5. (Tuỳ chọn, để xem lỗi nếu bộ gõ không chạy) mở một cửa sổ Terminal riêng:
    `/usr/bin/log stream --predicate 'process == "DauInputMethod"'` (trong zsh, `log` là lệnh có sẵn khác, phải gõ đường dẫn đầy đủ)
+6. Bật nhật ký từng phím **trước khi gõ** (chỉ bản Debug; bản Release không có nhật ký này, D8): `defaults write -g DauPerfLog -bool true`. Không bật thì không có dòng nào để `perf-report.sh` đọc. Nhớ tắt sau khi đo (mục 3).
 
-Bản Debug ghi một dòng log cho mỗi phím, category `perf`, chỉ gồm loại sự kiện, thời gian (ns) và bundle ID của ứng dụng đang gõ. **Không** ghi chữ bạn gõ (D8). Có thể tự kiểm: `/usr/bin/log show --last 5m --predicate 'category == "perf"' --style compact`.
+Khi khoá bật, bản Debug ghi một dòng log cho mỗi phím, category `perf`, chỉ gồm loại sự kiện, thời gian (ns) và bundle ID của ứng dụng đang gõ. **Không** ghi chữ bạn gõ (D8). Có thể tự kiểm: `/usr/bin/log show --last 5m --predicate 'category == "perf"' --style compact`.
 
 ## 1. Câu mẫu
 
@@ -61,13 +62,15 @@ Bundle ID thật mà bộ gõ nhận được có thể khác cột trên (ví d
 
 ## 3. Lấy số đo
 
-Ngay sau khi gõ xong ở một ứng dụng:
+Ngay sau khi gõ xong ở một ứng dụng (khoá `DauPerfLog` phải đã bật từ lúc gõ, mục 0 bước 6):
 
 ```
 scripts/perf-report.sh --last 5m --app com.apple.TextEdit
 ```
 
 Các dòng cần chép vào bảng: `selectedRange_us` (chi phí của cách A), `handle_replace_us` (tổng thời gian xử lý một phím có thay chữ), `insertText_us`, và các dòng `count_…`. Muốn có p99 đáng tin hơn, gõ thêm vài đoạn văn tiếng Việt dài (tối thiểu vài trăm phím có dấu) trong cùng ứng dụng rồi chạy lại.
+
+Đo xong thì tắt nhật ký từng phím: `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
 
 **Tuỳ chọn — máy đang tải nặng** (bài test đầy đủ ở M6): mở Terminal và chạy
 `for i in $(seq $(sysctl -n hw.ncpu)); do yes > /dev/null & done`, gõ lại câu mẫu trong TextEdit và Chrome, chạy `perf-report.sh`, rồi dừng tải bằng `killall yes`.
@@ -89,11 +92,11 @@ Kết quả (30/10/2026): agent tự gõ qua System Events. 9, 10 ĐẠT sau khi
 | 7 | Chọn một đoạn chữ bằng chuột, gõ `tooi` | đoạn chọn bị thay bằng "tôi" | ĐẠT |
 | 8 | Gõ `tooi`, nhấn ⌘Z | ứng dụng hoàn tác bình thường, không lỗi | ĐẠT (⌘Z hoàn tác bình thường) |
 | 9 | Chuyển sang ABC (hoặc U.S.) bằng phím tắt nguồn nhập liệu của macOS, gõ `tooi` | "tooi" (D2: tiếng Anh dùng nguồn của hệ thống) | ĐẠT (30/10, ⌃Space, 2/2 lần): "tôi" → U.S. → "tooi" giữ nguyên |
-| 10 | Chuyển lại "Dấu – Tiếng Việt", gõ `tooi` | "tôi". Đổi nguồn giữa chừng một từ chỉ xoá bộ đệm (D4), không chặn D20: D20 bật (mặc định) thì `to`, đổi nguồn đi rồi về, `o` → "tô" (D20 đọc lại "to", D4 × D20); D20 tắt thì ra "too" | ĐẠT ở M2 với ⌃Space theo mong đợi cũ (trước khi có D20): `to`, đổi nguồn đi rồi về, `o` ra "too" (đã reset). Chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì không reset ("tô"); M3 đã sửa (8ab965e, nghe `kTISNotifySelectedKeyboardInputSourceChanged`) và kiểm bằng `to⇄cj␣` → "tocj" (ARCHITECTURE.md), vì "tô" nay là hành vi của D20 |
+| 10 | Chuyển lại "Dấu – Tiếng Việt", gõ `tooi` | "tôi". Đổi nguồn giữa chừng một từ chỉ xoá bộ đệm (D4), không chặn D20: D20 bật (mặc định) thì `to`, đổi nguồn đi rồi về, `o` → "tô" (D20 đọc lại "to", D4 × D20); D20 tắt thì ra "too" | ĐẠT ở M2 với ⌃Space theo mong đợi cũ (trước khi có D20): `to`, đổi nguồn đi rồi về, `o` ra "too" (đã reset). Chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì không reset ("tô"); M3 đã sửa (6c1c055, nghe `kTISNotifySelectedKeyboardInputSourceChanged`) và kiểm bằng `to⇄cj␣` → "tocj" (ARCHITECTURE.md), vì "tô" nay là hành vi của D20 |
 | 11 | Menu nguồn nhập liệu: có nhóm "Kiểu gõ" với Telex ✓ / VNI / Telex đơn giản và mục "Mở cài đặt Bàn phím…" | đúng như mô tả, chữ có dấu, tên "Dấu" | ĐẠT: Kiểu gõ Telex ✓ / VNI / Telex đơn giản, "Cài đặt Dấu…", "Mở cài đặt Bàn phím…"; chữ có dấu đúng |
 | 12 | Chọn VNI trong menu, gõ `to6i` | "tôi"; mở menu lại thấy VNI ✓. Chọn lại Telex sau khi thử | ĐẠT: `to6i` → "tôi", menu VNI ✓, đã chọn lại Telex |
 | 13 | Bấm "Mở cài đặt Bàn phím…" | Cài đặt hệ thống mở đúng mục Bàn phím (N4) | ĐẠT |
-| 14 | Biểu tượng trên thanh menu khi chọn Dấu; danh sách "+" của Nguồn đầu vào | "V" đơn sắc, đổi màu theo nền sáng/tối. Dấu chỉ có "Dấu – Tiếng Việt" trong nhóm Tiếng Việt, không có "Dấu – Tiếng Anh" ở nhóm Tiếng Anh (D2) | Một phần: không chụp được thanh menu; bundle khai báo biểu tượng V. Danh sách "+": TIS sau khi cài bản 9680c68/3b8864b chỉ còn nguồn `….Dau.vi` (30/10/2026, imk-dev đọc bằng `TISCreateInputSourceList`); xem bằng mắt hoãn sang M7. Phần xem biểu tượng V hoãn sang M7 (người dùng chốt 30/10/2026) |
+| 14 | Biểu tượng trên thanh menu khi chọn Dấu; danh sách "+" của Nguồn đầu vào | "V" đơn sắc, đổi màu theo nền sáng/tối. Dấu chỉ có "Dấu – Tiếng Việt" trong nhóm Tiếng Việt, không có "Dấu – Tiếng Anh" ở nhóm Tiếng Anh (D2) | Một phần: không chụp được thanh menu; bundle khai báo biểu tượng V. Danh sách "+": TIS sau khi cài bản 72dc03c/1da2cfe chỉ còn nguồn `….Dau.vi` (30/10/2026, imk-dev đọc bằng `TISCreateInputSourceList`); xem bằng mắt hoãn sang M7. Phần xem biểu tượng V hoãn sang M7 (người dùng chốt 30/10/2026) |
 | 15 | Mở bảng Emoji (fn/🌐 E hoặc ⌃⌘Space), chèn một emoji, gõ tiếp `tooi` | không treo, không mất chữ (D18) | ĐẠT: "❤️ tôi", không treo |
 | 16 | Bật VoiceOver (⌘F5), chuyển "Dấu – Tiếng Việt" ↔ ABC bằng phím tắt nguồn nhập liệu | hệ thống tự đọc tên nguồn; Dấu không đọc thêm (D17). Hệ thống không đọc thì ghi lại để xét lại D17 | ĐẠT phần chính (người dùng, 30/10/2026): mỗi lần chuyển nguồn bằng ⌃Space hệ thống có đọc, Dấu không đọc thêm (đúng D17). Chưa xác nhận đọc đúng tên "Dấu – Tiếng Việt" (người dùng không nghe rõ): kiểm ở M7 |
 | 17 | Gõ ở ô mật khẩu (ví dụ ô mật khẩu trong Safari) | ghi lại hành vi (macOS thường tự chuyển bàn phím ASCII ở ô bảo mật) | Ghi lại: ở ô bảo mật macOS giữ `com.apple.keylayout.US`, Dấu không nhận phím nào |

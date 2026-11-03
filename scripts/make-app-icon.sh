@@ -33,5 +33,19 @@ if [[ ! -f "$ROOT/Apps/Dau/Resources/Assets.xcassets/Contents.json" ]]; then
   printf '{\n  "info" : {\n    "author" : "xcode",\n    "version" : 1\n  }\n}\n' \
     > "$ROOT/Apps/Dau/Resources/Assets.xcassets/Contents.json"
 fi
+
+# Render into a temp dir first; the repo's SVGs and iconset are replaced only when the
+# render succeeded, so a failed run never leaves the iconset empty or half written.
+TMP="$(mktemp -d)"
+trap 'rm -rf "$TMP"' EXIT
+mkdir -p "$TMP/svg" "$TMP/iconset"
+xcrun swift "$ROOT/scripts/make-app-icon.swift" render "$GLYPHS" "$TMP/svg" "$TMP/iconset" ${1:+"$1"}
+if ! ls "$TMP"/iconset/*.png >/dev/null 2>&1 || [[ ! -f "$TMP/iconset/Contents.json" ]]; then
+  echo "Render không ra đủ file (không có PNG hoặc Contents.json): giữ nguyên $ICONSET" >&2
+  exit 1
+fi
+mkdir -p "$ICONSET" "$BRAND"
 rm -f "$ICONSET"/*.png
-xcrun swift "$ROOT/scripts/make-app-icon.swift" render "$GLYPHS" "$BRAND" "$ICONSET" ${1:+"$1"}
+cp "$TMP"/iconset/* "$ICONSET"/
+cp "$TMP"/svg/* "$BRAND"/
+echo "Đã cập nhật $ICONSET và các SVG trong $BRAND"

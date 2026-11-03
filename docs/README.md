@@ -42,3 +42,4 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | `docs/history/PLANS.md` | kế hoạch của các mốc đã đóng |
 | `docs/history/M4-TESTING.md` | cách thử M4 trên máy thật |
 | `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
+| `docs/history/KICKOFF.md` | brief khởi động M0–M8 lúc bắt đầu dự án |

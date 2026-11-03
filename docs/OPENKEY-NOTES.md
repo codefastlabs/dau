@@ -6,7 +6,7 @@ Tài liệu tham khảo cho mốc M1. Viết bằng lời của Dấu, **không 
 - Phạm vi đọc: `Sources/OpenKey/engine/` (`Engine.cpp`, `Engine.h`, `Vietnamese.cpp`, `DataType.h`, `Macro.cpp`, `SmartSwitchKey.cpp`, `ConvertTool.cpp`, `platforms/mac.h`), thêm `macOS/ModernKey/OpenKey.mm` để biết engine được gọi thế nào.
 - **OpenKey chưa được chạy.** Mọi hành vi dưới đây có được bằng cách lần theo mã. Chỗ nào chỉ là suy luận, chưa chạy thử để xác nhận, sẽ ghi "(suy luận)". Ta cũng cố ý không chạy để kiểm chứng, vì D10 cấm dùng OpenKey làm đáp án.
 - Quy ước: `␣` là phím Space. "Bộ đệm" là từ đang gõ.
-- Cập nhật 29/10/2026 theo DECISIONS.md (commit `495544d`): các điểm mơ hồ M1–M17 đã được chốt thành D4 (ranh giới từ), D20–D23 (sửa) và D26–D33. Mục 2, 3, 6, 7 đã đổi nhãn tương ứng.
+- Cập nhật 29/10/2026 theo DECISIONS.md (commit `22f3e4d`): các điểm mơ hồ M1–M17 đã được chốt thành D4 (ranh giới từ), D20–D23 (sửa) và D26–D33. Mục 2, 3, 6, 7 đã đổi nhãn tương ứng.
 
 ---
 
@@ -526,7 +526,7 @@ Người dùng đã duyệt câu chữ DECISIONS cho các ca này (D4 mốc khô
 
 ## 7. Mâu thuẫn và điểm mơ hồ với DECISIONS.md
 
-Ban đầu chỉ liệt kê. Đến 29/10/2026 (commit `495544d`) M1–M17 đã được chốt, trừ M7 và M18 là ghi chú. Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
+Ban đầu chỉ liệt kê. Đến 29/10/2026 (commit `22f3e4d`) M1–M17 đã được chốt, trừ M7 và M18 là ghi chú. Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
 
 - **M1. Ranh giới từ kích hoạt khôi phục và gõ tắt phụ âm.** D4 và D21 ghi "khi nhấn Space", còn ARCHITECTURE (luồng một phím, bước 4) ghi "Space/dấu câu". OpenKey: Space cùng một tập dấu câu và Enter/Tab/Esc/mũi tên, nhưng không có ! ( ) (3.16, B10). Đề xuất ở 3.16: mọi phím kết thúc từ có in ra ký tự, gồm Space, Return, Tab và mọi dấu câu; không khôi phục khi mũi tên, Esc, chuột hoặc tổ hợp phím. Cần sửa D4/D21 hoặc ARCHITECTURE cho khớp.
   - **Đã chốt: D4 (phần "Ranh giới từ") và D21.** Mọi ký tự kết thúc từ có in ra (Space, Enter, Tab, mọi dấu câu) kích hoạt khôi phục và gõ tắt; mũi tên, Esc, chuột, tổ hợp phím chỉ reset.

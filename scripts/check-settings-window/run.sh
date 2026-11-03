@@ -23,13 +23,19 @@
 # app's appearance; the system appearance is not changed) for the sheet only
 # (real-sheet-light/ or real-sheet-dark/). Needs the Accessibility permission of the
 # terminal. The window is put back at its starting size.
-# Exit status 0 only if every check passes.
+# A --capture step that fails is named on the screen (with the end of its output) and the
+# exit status is 1; the later steps still run. Exit status 0 only if every check passes.
 #
 # The window is moved off screen but exists for a few seconds per run.
 set -euo pipefail
 here=${0:A:h}
 out=${1:?output dir}
+export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+# Absolute: the copy is made from it and pgrep matches its full path (a relative argument
+# never matched the launched process).
 app=${2:-${here:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}
+app=${app:A}
+[[ -d $app ]] || { echo "Không thấy $app (build Debug trước, hoặc truyền đường dẫn Dau.app)" >&2; exit 2; }
 work=$(mktemp -d)
 lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 # Running the copy registers it with LaunchServices; unregister it before deleting it,
@@ -49,40 +55,53 @@ cat > "$work/ent.plist" <<'PLIST'
 PLIST
 codesign --force --sign - --entitlements "$work/ent.plist" "$work/Dau.app" >/dev/null 2>&1
 
+result=0
+# Runs the copy with the given arguments; a failure names the step and shows the end of
+# the app's output instead of ending the script silently.
+capture() {   # <step name> <Dau arguments…>
+  local step=$1 rc=0
+  shift
+  "$work/Dau.app/Contents/MacOS/Dau" "$@" >"$work/capture.log" 2>&1 || rc=$?
+  if (( rc != 0 )); then
+    echo "FAIL capture ($step): Dau $* — exit status $rc"
+    tail -5 "$work/capture.log" | sed 's/^/    /'
+    result=1
+  fi
+}
+
 for style in WhenScrolling Always Automatic; do
   for scroll in 0 60; do
     dir="$out/$style-$scroll"
-    "$work/Dau.app/Contents/MacOS/Dau" --capture-window "$dir" --scroll "$scroll" \
-      -AppleShowScrollBars "$style" >/dev/null 2>&1
+    capture "window $style scroll $scroll" --capture-window "$dir" --scroll "$scroll" \
+      -AppleShowScrollBars "$style"
   done
 done
 
 # The widest window the Settings scene allows (Reference.maxWindowWidth, which check
 # (h) verifies against this width): the cards must still span the column
 # (docs/UI-CHECKS.md item 1).
-"$work/Dau.app/Contents/MacOS/Dau" --capture-window "$out/wide" --width 976 \
-  -AppleShowScrollBars WhenScrolling >/dev/null 2>&1
+capture "window wide" --capture-window "$out/wide" --width 976 \
+  -AppleShowScrollBars WhenScrolling
 
 # The onboarding window (steps 1, 2, 2 with Dấu still off, 2 not listed (logout),
 # 2 after "Bật Dấu", 3; light and dark), on fixed
 # services; once with the real input-source shortcut, once as if none were set.
-"$work/Dau.app/Contents/MacOS/Dau" --capture-onboarding "$out/onboarding" >/dev/null 2>&1
-"$work/Dau.app/Contents/MacOS/Dau" --capture-onboarding "$out/onboarding-no-shortcut" \
-  --shortcut none >/dev/null 2>&1
+capture "onboarding" --capture-onboarding "$out/onboarding"
+capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-shortcut" \
+  --shortcut none
 
 # The uninstall alerts (D16, mockup "ConfirmDialogs"): shown as sheets on the Settings
 # window, captured, dismissed; nothing is uninstalled.
-"$work/Dau.app/Contents/MacOS/Dau" --capture-uninstall "$out/uninstall" >/dev/null 2>&1
+capture "uninstall alerts" --capture-uninstall "$out/uninstall"
 
 # A multi-file build takes top-level code only from a file named main.swift, so the
 # script is copied to that name next to Reference.swift's compile.
 build() {   # <script> <output>
   mkdir -p "$work/src-$2"
   cp "$here/$1" "$work/src-$2/main.swift"
-  swiftc -O -o "$work/$2" "$here/Reference.swift" "$work/src-$2/main.swift"
+  swiftc -swift-version 6 -O -o "$work/$2" "$here/Reference.swift" "$work/src-$2/main.swift"
 }
 build check.swift check
-result=0
 "$work/check" "$out" || result=1
 
 # The real window (docs/UI-CHECKS.md, "Cửa sổ thật").

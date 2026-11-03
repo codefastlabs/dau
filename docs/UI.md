@@ -14,6 +14,8 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - Bộ gõ chỉ bổ sung qua `menu()` của IMK: đổi kiểu gõ, mở Cài đặt Dấu, mở Cài đặt Bàn phím.
 
 ## Onboarding
+> Ghi chú (03/11/2026): phần này mô tả mã hiện tại và sẽ được thiết kế lại sau M5 T4 (xem `docs/PROGRESS.md` "Trạng thái hiện tại" và `docs/research/M5-INSTALL.md` mục 0). Câu về đăng xuất, đường "tự thêm" và "Hoàn tác" chưa kiểm chứng trên macOS 27.2 (N5).
+
 - Ba bước, thanh bước bên trái có trạng thái xong / đang làm / chưa. Dòng về quyền cần cấp để ô trống cho tới khi kiểm chứng (N5).
 - **Bước 1, tắt bộ gõ cũ:** chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/M5-INSTALL.md` mục 5). Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng; app chưa kiểm thì ghi chung "Thoát <tên>" và đường dẫn Mục đăng nhập (N5). Tự kiểm tra lại khi cửa sổ được kích hoạt; cho phép bỏ qua.
 - **Bước 2, bật Dấu:** chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu", có Hoàn tác (N4, D37). Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5):
@@ -40,7 +42,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 **Ứng dụng**
 - "Nhớ nguồn nhập liệu theo từng cửa sổ" là tuỳ chọn của macOS: Dấu chỉ đọc trạng thái, không ghi; không đọc được thì không hiện chữ (N5); nút "Đổi…" mở Cài đặt Bàn phím (D5, N4).
 - "Quy tắc riêng": chỉ các quy tắc đã lưu. Đặt về "Không gạch chân" vẫn giữ quy tắc; xoá quy tắc (menu chuột phải hoặc Delete) thì app đề xuất trở lại "Đề xuất".
-- "Đề xuất": chỉ hiện khi có app trong danh sách tương thích (cờ `suggestUnderline`) đã cài mà chưa có quy tắc. Bấm "Bật gạch chân" mới lưu quy tắc (nguồn đề xuất, giữ nhãn "Đề xuất"); trước đó không lưu gì (D13). Dòng phụ giống nhau ở mọi hàng; ghi chú trong danh sách tương thích là cho người bảo trì, không hiện (N5). Ghi chú của mục chỉ nói khi nào nên chọn gạch chân, không hứa sửa được (M3 đo: thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms; gạch chân sửa được Chrome, VS Code, không sửa được Terminal).
+- "Đề xuất": chỉ hiện khi có app trong danh sách tương thích (cờ `suggestUnderline`) đã cài mà chưa có quy tắc. Bấm "Bật gạch chân" mới lưu quy tắc (nguồn đề xuất, giữ nhãn "Đề xuất"); trước đó không lưu gì (D13). Dòng phụ giống nhau ở mọi hàng; ghi chú trong danh sách tương thích là cho người bảo trì, không hiện (N5). Ghi chú của mục chỉ nói khi nào nên chọn gạch chân, không hứa sửa được (số đo: D13).
 - Ô tìm của trang lọc cả hai mục.
 
 **Cập nhật & hỗ trợ**
@@ -53,6 +55,8 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - "Thêm" chỉ bật khi ứng dụng đang chọn còn trong danh sách đang lọc; gõ tìm làm ẩn ứng dụng đang chọn thì bỏ chọn.
 
 ## Trạng thái bổ sung
+> Ghi chú (03/11/2026): các mô tả "Dấu chưa được bật" và "Xác nhận gỡ cài đặt" dưới đây là của mã hiện tại và sẽ được thiết kế lại sau M5 T4 (xem `docs/PROGRESS.md` "Trạng thái hiện tại" và `docs/research/M5-INSTALL.md` mục 0). Câu về đăng xuất, đường "tự thêm" và "Hoàn tác" chưa kiểm chứng trên macOS 27.2 (N5).
+
 - **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4):
   - bật được → banner xác nhận kèm "Hoàn tác";
   - macOS vẫn để tắt → mở Cài đặt Bàn phím, banner hiện các bước tự thêm;

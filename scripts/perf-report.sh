@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Prints per-app timing of the input method from the unified log (open question A/B):
+# Prints per-app timing of the input method from the unified log (approach A, N3/D11):
 # p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole
 # `handle`, plus event counts.
 #
@@ -28,7 +28,7 @@ while [[ $# -gt 0 ]]; do
     --last) LAST="${2:?--last cần giá trị, ví dụ 10m}"; shift 2 ;;
     --app) APP_FILTER="${2:?--app cần tên app hoặc bundle ID}"; shift 2 ;;
     --input) INPUT="${2:?--input cần đường dẫn file}"; shift 2 ;;
-    -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
+    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
     *) echo "Tham số không hợp lệ: $1" >&2; exit 2 ;;
   esac
 done
