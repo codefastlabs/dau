@@ -43,11 +43,6 @@ if CommandLine.arguments.contains("--print-input-shortcut") {
     }
     exit(0)
 }
-if CommandLine.arguments.contains("--print-installed-apps") {
-    // Apps the add-rule sheet can list from the Applications folders.
-    print(AppListing.installed().count)
-    exit(0)
-}
 #endif
 
 DauApp.main()

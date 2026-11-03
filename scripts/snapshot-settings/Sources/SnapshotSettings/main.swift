@@ -2,17 +2,18 @@ import AppKit
 import SwiftUI
 import DauShared
 
-// Usage: SnapshotSettings <output-dir> [<artboard-dir> [<real-capture-dir> [<onboarding-capture-dir>]]]
-// - Renders every page in light, dark and high-contrast appearance, the 2×2 grids of
-//   the four sections, and checks that the layout does not move between sections
-//   (exit 1 if it does).
+// Usage: SnapshotSettings <output-dir> [<artboard-dir> [<real-window-dir> [<onboarding-capture-dir>]]]
+// - Renders every page in light, dark and high-contrast appearance and the 2×2 grids of
+//   the four sections. No pass criteria: the layout is checked on the real window
+//   (scripts/selftest/settings-window).
 // - With <artboard-dir> (the canvas export holding Settings*.dc.html), also renders
 //   each artboard and writes "<page>-compare-<mode>.png" (mockup | app) plus a table
 //   of measurements, mockup against app.
-// - With <real-capture-dir> (written by the Debug app: Dau --capture-window <dir>),
-//   the app side of the comparisons uses those captures of the real SwiftUI scene and
-//   its frames.json: this hand-made window does not reproduce the scene's chrome,
-//   system colors and control sizes exactly.
+// - With <real-window-dir> (the real/ directory of scripts/selftest/settings-window/run.sh:
+//   ax-check's screenshots of the real window and their frames.json), the app side of the
+//   comparisons in the appearance those screenshots were taken in uses them: this
+//   hand-made window does not reproduce the scene's chrome, system colors and control
+//   sizes exactly. The other appearance uses this tool's window.
 // - With <onboarding-capture-dir> (Dau --capture-onboarding <dir>), also writes
 //   "onboarding-<step>-compare-<mode>.png" (mockup | real window) for the three
 //   onboarding artboards and their element frames. There is no dark artboard: the
@@ -30,21 +31,34 @@ let artboards = arguments.count > 1 ? URL(fileURLWithPath: arguments[1], isDirec
 let realDir = arguments.count > 2 ? URL(fileURLWithPath: arguments[2], isDirectory: true) : nil
 let onboardingDir = arguments.count > 3 ? URL(fileURLWithPath: arguments[3], isDirectory: true) : nil
 
-/// A real-window capture and its probe frames, if present.
-func realCapture(_ key: String, in dir: URL? = realDir) -> (NSBitmapImageRep, [String: CGRect])? {
-    guard let realDir = dir,
-          let rep = NSBitmapImageRep(data: (try? Data(contentsOf: realDir.appendingPathComponent("\(key).png"))) ?? Data()),
-          let json = try? JSONSerialization.jsonObject(with: Data(contentsOf: realDir.appendingPathComponent("frames.json"))) as? [String: [String: [Double]]]
+/// A capture `<key>.png` in `dir` and its frames under `key` in the directory's
+/// frames.json, if present.
+func capture(_ key: String, in dir: URL?) -> (NSBitmapImageRep, [String: CGRect])? {
+    guard let dir,
+          let rep = NSBitmapImageRep(data: (try? Data(contentsOf: dir.appendingPathComponent("\(key).png"))) ?? Data()),
+          let json = try? JSONSerialization.jsonObject(with: Data(contentsOf: dir.appendingPathComponent("frames.json"))) as? [String: [String: [Double]]]
     else { return nil }
     var frames: [String: CGRect] = [:]
     for (name, v) in json[key] ?? [:] where v.count == 4 { frames[name] = CGRect(x: v[0], y: v[1], width: v[2], height: v[3]) }
     return (rep, frames)
 }
+
+/// The real window's screenshot of `page` on the primary display and its frames (ax-check
+/// names: close, title, firstCard, segmented, switch, button, headerAdd, headerSearch), if
+/// the real window was captured in `mode`.
+func realCapture(_ page: String, _ mode: String) -> (NSBitmapImageRep, [String: CGRect])? {
+    guard let realDir,
+          let json = try? JSONSerialization.jsonObject(with: Data(contentsOf: realDir.appendingPathComponent("frames.json"))) as? [String: [String: [Double]]],
+          let scale = json["meta"]?["primaryScale"]?.first, let dark = json["meta"]?["dark"]?.first,
+          (dark == 1 ? "dark" : "light") == mode
+    else { return nil }
+    return capture("\(page)-\(Int(scale))x", in: realDir)
+}
 try? FileManager.default.createDirectory(at: outDir, withIntermediateDirectories: true)
 
 NSApplication.shared.setActivationPolicy(.accessory)
 
-let failed: Bool = MainActor.assumeIsolated {
+MainActor.assumeIsolated {
     // A throwaway suite so snapshots never touch real settings.
     let suite = "dau.snapshot-settings"
     UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
@@ -64,7 +78,6 @@ let failed: Bool = MainActor.assumeIsolated {
         ("light-high-contrast", .accessibilityHighContrastAqua),
         ("dark-high-contrast", .accessibilityHighContrastDarkAqua),
     ]
-    var measured: [(String, [String: CGRect])] = []
     var app: [String: Snapshot.Result] = [:]
 
     for (mode, appearance) in appearances {
@@ -72,10 +85,7 @@ let failed: Bool = MainActor.assumeIsolated {
         for section in SettingsSection.allCases {
             let result = Snapshot.render(window(section, enabled), to: file(section.rawValue), appearance: appearance,
                                          size: windowSize)
-            if let result {
-                app["\(section.rawValue)-\(mode)"] = result
-                if mode == "light" { measured.append((section.rawValue, result.frames)) }
-            }
+            if let result { app["\(section.rawValue)-\(mode)"] = result }
         }
         app["not-enabled-\(mode)"] = Snapshot.render(window(.typing, notEnabled), to: file("typing-not-enabled"),
                                                        appearance: appearance, size: windowSize)
@@ -90,42 +100,10 @@ let failed: Bool = MainActor.assumeIsolated {
     Snapshot.grid(SettingsSection.allCases.map { outDir.appendingPathComponent("\($0.rawValue)-dark.png") },
                   columns: 2, to: outDir.appendingPathComponent("sections-grid-dark.png"))
 
-    // Layout: the same in every section, to the point.
     func f(_ r: CGRect?) -> String {
         guard let r else { return "—" }
         return String(format: "%.0f,%.0f %.0f×%.0f", r.minX, r.minY, r.width, r.height)
     }
-    let same = ["window", "sidebar", "close", "zoom"]
-    print("\nLayout (points, top-left origin, window \(Int(windowSize.width))×\(Int(windowSize.height)), light):")
-    print((["section"] + same + ["title", "firstRow"]).joined(separator: " | "))
-    for (section, frames) in measured {
-        print(([section] + (same + ["title", "firstRow"]).map { f(frames[$0]) }).joined(separator: " | "))
-    }
-    var moved = false
-    func check(_ key: String, _ value: (CGRect) -> String) {
-        let values = Set(measured.compactMap { $0.1[key] }.map(value))
-        if values.count > 1 { moved = true; print("MOVED: \(key) \(values.sorted())") }
-        if measured.contains(where: { $0.1[key] == nil }) { moved = true; print("MISSING: \(key)") }
-    }
-    for key in same { check(key) { "\($0)" } }
-    // Positions must match; widths may differ only by a legacy scroll bar, and only on
-    // a page that shows one.
-    let legacyWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
-    for (section, frames) in measured {
-        let r = frames["scrollRoom"]?.width ?? 0
-        if abs(r) > 0.5 && abs(r - legacyWidth) > 0.5 { moved = true; print("SCROLL BAR: \(section) takes \(r) pt") }
-    }
-    func checkWidth(_ key: String, y: Bool) {
-        let values = Set(measured.compactMap { item -> String? in
-            guard let r = item.1[key] else { return nil }
-            return "\(r.minX),\(y ? r.minY : 0),\(r.width + (item.1["scrollRoom"]?.width ?? 0))"
-        })
-        if values.count > 1 { moved = true; print("MOVED: \(key) \(values.sorted())") }
-    }
-    checkWidth("content", y: true)                         // height is the page's
-    check("title") { "\($0.minX),\($0.minY)" }            // width is the text's
-    checkWidth("firstRow", y: false)                       // y depends on a section header
-    print(moved ? "Layout: MOVES between sections" : "Layout: identical in all sections")
 
     // Mockup against app.
     if let artboards {
@@ -157,7 +135,7 @@ let failed: Bool = MainActor.assumeIsolated {
             guard let mock = Mockup.render(artboards.appendingPathComponent("\(board.file).dc.html"),
                                            size: board.size, crop: crop, measure: measure),
                   let shot = app["\(board.page)-\(board.mode)"] else { print("cannot render \(board.file)"); continue }
-            let real = realCapture("\(board.page)-\(board.mode)")
+            let real = realCapture(board.page, board.mode)
             if board.page == "apps", let realShot = real?.0 {
                 // The Apps header (title, search field, +), 3×, against the real window.
                 let header = CGRect(x: 220, y: 0, width: 520, height: 56)
@@ -165,7 +143,7 @@ let failed: Bool = MainActor.assumeIsolated {
                     Snapshot.sideBySide([a, b], to: outDir.appendingPathComponent("apps-header-compare-\(board.mode).png"))
                 }
                 // No dark artboard exists for this page: the light mockup beside the dark app.
-                if let dark = realCapture("apps-dark")?.0,
+                if let dark = realCapture("apps", "dark")?.0,
                    let a = Snapshot.crop(mock.image, header, scale: 3), let b = Snapshot.crop(dark, header, scale: 3) {
                     Snapshot.sideBySide([a, b], to: outDir.appendingPathComponent("apps-header-compare-dark.png"))
                 }
@@ -188,10 +166,10 @@ let failed: Bool = MainActor.assumeIsolated {
             }
             Snapshot.sideBySide([mock.image, real?.0 ?? shot.rep],
                                 to: outDir.appendingPathComponent("\(board.page)-compare-\(board.mode).png"))
-            // The mockup's first card against the app's first row (the card inset by
-            // the Form's 10 pt row margins).
+            // The mockup's first card against the real window's first card, or this tool's
+            // first row (the card inset by the Form's 10 pt row margins).
             for key in ["close", "title", "firstCard", "segmented", "switch", "button"] {
-                let appKey = key == "firstCard" ? "firstRow" : key
+                let appKey = key == "firstCard" && real == nil ? "firstRow" : key
                 rows.append("\(board.page)-\(board.mode) | \(key) | \(f(mock.frames[key])) | \(f((real?.1 ?? shot.frames)[appKey]))")
             }
         }
@@ -231,7 +209,7 @@ let failed: Bool = MainActor.assumeIsolated {
                                                size: CGSize(width: 820, height: 580), crop: crop, measure: measure)
                 else { print("cannot render \(file)"); continue }
                 for mode in ["light", "dark"] {
-                    guard let real = realCapture("onboarding-\(step)-\(mode)", in: onboardingDir) else { continue }
+                    guard let real = capture("onboarding-\(step)-\(mode)", in: onboardingDir) else { continue }
                     Snapshot.sideBySide([mock.image, real.0],
                                         to: outDir.appendingPathComponent("onboarding-\(step)-compare-\(mode).png"))
                     if mode == "light" {
@@ -243,9 +221,7 @@ let failed: Bool = MainActor.assumeIsolated {
             }
         }
         print("\nMockup | app (points, window origin top-left):")
-        print("page | element | mockup | app" + (realDir == nil ? " (snapshot window)" : " (real window)"))
+        print("page | element | mockup | app" + (realDir == nil ? " (snapshot window)" : " (real window where captured)"))
         rows.forEach { print($0) }
     }
-    return moved
 }
-exit(failed ? 1 : 0)

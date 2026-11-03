@@ -15,7 +15,7 @@ import DauShared
 /// Page and card backgrounds of the onboarding window (the Settings pages and the
 /// add-rule sheet use the grouped Form's own colors), chosen among system colors (no
 /// blending, no opacity) so the card is lighter than the page in both appearances, as
-/// in the mockup. Resolved on macOS 27 (`--capture-window`):
+/// in the mockup. Resolved on macOS 27:
 /// - light: page `underPageBackgroundColor` (light gray), card `controlBackgroundColor`
 ///   (white), as the mockup's light gray page and white cards;
 /// - dark: page `controlBackgroundColor` (near black), card `underPageBackgroundColor`
@@ -77,7 +77,6 @@ struct SettingsPage<Content: View>: View {
         // Content scrolled under the toolbar must not show through the title (UI-CHECKS
         // item 9): the system's hard scroll edge on macOS 26+.
         .modifier(HardTopScrollEdge())
-        .layoutProbe("content")
         .toolbar {
             if #available(macOS 26, *) {
                 ToolbarItem(placement: .navigation) { PageTitle(title: title) }
@@ -178,7 +177,6 @@ struct HeaderAddButton: View {
             Label { Text(verbatim: add.label) } icon: { Image(systemName: "plus") }
         }
         .help(Text(verbatim: add.label))
-        .layoutProbe("headerAdd")
     }
 }
 
@@ -505,9 +503,10 @@ enum AppVersion {
 
 // MARK: - Layout probe (tests only)
 
-/// Reports a view's frame in window coordinates. Nil in the app; the window captures
-/// (`DebugCapture`) and `scripts/snapshot-settings` set it to check that the layout
-/// does not move between sections.
+/// Reports a view's frame in window coordinates, and `.null` when the view disappears.
+/// Nil in the app; the onboarding captures (`DebugCapture`, check (f) of
+/// scripts/selftest/settings-window) and `scripts/snapshot-settings` (its mockup
+/// comparison table) set it.
 struct LayoutProbeKey: EnvironmentKey {
     static let defaultValue: (@MainActor @Sendable (String, CGRect) -> Void)? = nil
 }
@@ -528,9 +527,12 @@ struct LayoutProbeModifier: ViewModifier {
     let name: String
 
     func body(content: Content) -> some View {
-        content.onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
-            probe?(name, frame)
-        }
+        content
+            .onGeometryChange(for: CGRect.self) { $0.frame(in: .global) } action: { frame in
+                probe?(name, frame)
+            }
+            // A view that is gone must not keep reporting its last frame (check (f)).
+            .onDisappear { probe?(name, .null) }
     }
 }
 

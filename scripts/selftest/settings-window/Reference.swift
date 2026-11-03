@@ -1,14 +1,17 @@
 // Every pass value of the Settings window UI checks, in one place. Compiled together
-// with check.swift (captures) and ax-check.swift (real window) by run.sh; docs/UI-CHECKS.md
-// holds no numbers, it points here. Unit: pt, origin at the window's (or sheet's)
-// top-left, unless a name says otherwise.
+// with ax-check.swift (the real window, through the Accessibility API) and check.swift
+// (pixels of its screenshots, and the in-app onboarding and uninstall captures) by
+// run.sh; docs/UI-CHECKS.md holds no numbers, it points here. Unit: pt, origin at the
+// window's (or sheet's) top-left, unless a name says otherwise.
 //
 // Where a number comes from:
 // - System Settings: measured on macOS 27.2 with the Accessibility API and pixels
 //   (docs/research/SYSTEM-SETTINGS-REFERENCE.md); D9 makes it the layout reference.
 // - Deliberate: Dấu's own choice, noted where it differs from System Settings.
 // - System: a value the system or SwiftUI fixes (measured, not chosen).
-// - Mockup: the artboards in docs/UI.md (onboarding window only).
+// - Mockup: the artboards in docs/UI.md (content only under D9; noted where a size
+//   still comes from one).
+// - Content: follows from what a page holds (docs/UI.md), not from a metric.
 // - Probe: how the check looks, not a property of the window; changing it changes what
 //   is sampled, not what is expected.
 import CoreGraphics
@@ -21,16 +24,15 @@ enum Reference {
 
     // MARK: Tolerance
 
-    /// Frames read through accessibility are compared to System Settings within ±1 pt.
+    /// Frames read through accessibility are compared within ±1 pt.
     static let tolerance: CGFloat = 1
-    /// Frames from the in-app capture are exact layout values: half a point at most.
-    static let subPoint: CGFloat = 0.5
     /// Counts and rows (no tolerance).
     static let exact: CGFloat = 0
 
     // MARK: Window size and limits (System Settings; the minimum height is deliberate)
 
-    /// System Settings opens every pane at 740 × 560.
+    /// System Settings opens every pane at 740 × 560; Dấu's window opens at this size
+    /// when it has no saved frame (run.sh deletes the saved one before launching).
     static let windowWidth: CGFloat = 740
     static let windowHeight: CGFloat = 560
     static var windowSize: CGSize { CGSize(width: windowWidth, height: windowHeight) }
@@ -39,8 +41,10 @@ enum Reference {
     /// The content column's minimum height (deliberate); the window adds the toolbar.
     static let contentMinHeight: CGFloat = 400
     static let minWindowHeight: CGFloat = contentMinHeight + toolbarHeight
-    /// SwiftUI caps a grouped Form's cards at 704 and centers them beyond that (System:
-    /// UI-CHECKS item 1), so the widest useful column is 704 + two margins.
+    /// System (SwiftUI, measured on macOS 27.2): a grouped Form keeps its cards at most
+    /// 704 wide and centers them in a wider column (SYSTEM-SETTINGS-REFERENCE.md, "Độ rộng
+    /// tối đa của Form dạng nhóm"; UI-CHECKS item 1). So the widest useful column is 704
+    /// plus two margins, and at the widest window the first card is exactly 704.
     static let formCardMaxWidth: CGFloat = 704
     static let formColumnMaxWidth: CGFloat = formCardMaxWidth + 2 * formMargin
     /// Widest window: sidebar + the widest column.
@@ -58,6 +62,13 @@ enum Reference {
     /// Apps toolbar: the search field's right edge is this far from the window's edge
     /// (lower to upper bound).
     static let appsSearchRightInset: ClosedRange<CGFloat> = 4...24
+    /// Apps toolbar "+": the drawn button is as wide as tall within this (its
+    /// accessibility frame is the toolbar item's, taller than wide, so the round shape
+    /// is read from pixels; check.swift (e)).
+    static let addButtonRoundTolerance: CGFloat = 2
+    /// Probe: a pixel belongs to the "+" button when a channel is this far (of 255) from
+    /// the toolbar color at the top of the button's frame.
+    static let addButtonInkThreshold = 8
 
     // MARK: Title (System Settings)
 
@@ -70,8 +81,6 @@ enum Reference {
 
     /// Traffic light as the Accessibility API reports it.
     static let closeFrame = CGRect(x: 18, y: 18, width: 16, height: 16)
-    /// The same light as drawn (the capture reports the drawn frame): inset by 1.
-    static let closeDrawnFrame = closeFrame.insetBy(dx: 1, dy: 1)
 
     // MARK: Sidebar (System Settings)
 
@@ -128,21 +137,29 @@ enum Reference {
     /// Buttons, pop-ups, segmented controls (also the sheet's search field and buttons).
     static let controlHeight: CGFloat = 24
 
-    // MARK: Add-rule sheet (System Settings' Displays › Advanced… sheet)
+    // MARK: Add-rule sheet (System Settings' Displays › Advanced… sheet, except where noted)
 
     static let sheetWidth: CGFloat = 470
     /// Cards, the search field's top and right, the buttons' right and bottom, and the
     /// first item below the Form's top, all 20 from the edge.
     static let sheetMargin: CGFloat = 20
-    /// Buttons are at least 64 wide (a pt of slack is `tolerance`).
-    /// The app list's card (the mockup's list card); it scrolls inside, so "Khi đang gõ"
-    /// stays in view.
+    /// Mockup, not System Settings: the app list card's height is the list card of the
+    /// "SettingsAppsAdd" artboard (`AddAppRuleSheet.listHeight`); System Settings' sheets
+    /// have no such list to measure. Whether it stays is an open question for the user
+    /// (D9: System Settings is the layout reference). The list scrolls inside it, so
+    /// "Khi đang gõ" stays in view.
     static let sheetListHeight: CGFloat = 188
+    /// Buttons are at least 64 wide (a pt of slack is `tolerance`).
     static let sheetButtonMinWidth: CGFloat = 64
     static let sheetButtonHeight: CGFloat = controlHeight
     static let sheetSearchHeight: CGFloat = controlHeight
     /// Bottom of the Form to the top of the buttons.
     static let sheetFormToButtons: CGFloat = 21
+    /// Content: apps every macOS install has in /System/Applications and its Utilities
+    /// folder, whose visible names are the same in English and Vietnamese (the sheet
+    /// shows localized names; checked on macOS 27.2, 03/11/2026). The sheet must list
+    /// them unless the user stored a rule for one.
+    static let alwaysInstalledApps = ["TextEdit", "FaceTime", "QuickTime Player", "Terminal"]
     /// Capture check (g): the uninstall alerts' sheets are at least this big (deliberate
     /// floor, not a System Settings number).
     static let alertMinSize = CGSize(width: 200, height: 120)
@@ -159,22 +176,34 @@ enum Reference {
     static let onboardingButtonsMaxX: CGFloat = 684
     static let onboardingButtonsMaxY: CGFloat = 472
 
-    // MARK: Scroll and background checks, (a)–(e) (System for the scroller; the rest deliberate or probe)
+    // MARK: Scroll and background checks, (a)–(d) (System for the scroller; the rest deliberate, content or probe)
 
+    /// Content: a section taller than the default window, so check (d) has a scroll bar to
+    /// drive. The last in-app captures (03/11/2026, since removed) measured every section
+    /// taller than the default window; this is the one the earlier check (d) scrolled, and
+    /// `scrolledProbeStartX` starts right of its title.
+    static let scrollingSection = "updates"
+    /// Probe: how far check (d) scrolls the page (through the scroll bar's value), and the
+    /// least that counts: past the Form's top margin, content is under the toolbar.
+    static let scrollProbeOffset: CGFloat = 60
+    static let scrollProbeMinOffset: CGFloat = formTopMargin
     /// A color differs when a channel is more than 6 of 255 away (page, toolbar band).
     static let colorTolerance = 6.0
-    /// Mean per-sample color difference allowed in the header once scrolled (of 255).
-    static let scrolledHeaderMeanDiff = 4.0
+    /// Mean per-sample color difference allowed in the header once scrolled (of 255). The
+    /// system's scroll edge blurs content under the toolbar, it does not hide it. Measured
+    /// 03/11/2026 on Cập nhật & hỗ trợ with the banner, legacy bars, 2x: Dấu 6.8 dark / 5.2
+    /// light; a build without `HardTopScrollEdge` (content sharp over the title, item 9)
+    /// 31.8 / 31.2. System Settings (Appearance, General; 1x, dark, same sampling) 18–20.
+    /// The limit lies halfway between Dấu and the broken build.
+    static let scrolledHeaderMeanDiff = 19.0
     /// The scroll bar's lane: it sits in the right margin, at most `formMargin` wide
     /// from the window's edge (System: legacy bar), and starts no higher than the
     /// toolbar's bottom edge minus 1.
     static let scrollerLane: CGFloat = formMargin
     static let scrollerMinY: CGFloat = toolbarHeight - 1
-    /// Probe: a scroller within 10 pt of the right edge, and low enough, counts as sitting there.
+    /// Probe: a scroller that reaches at least 10 pt in from the right edge (and below the
+    /// page sample) covers the edge: (b) then reads the page color 2 pt left of it.
     static let scrollerEdgeBand: CGFloat = 10
-    /// Probe: slack around the scroller when looking for strays, and left of it when
-    /// reading the page color.
-    static let scrollerSlack: CGFloat = 1
     static let scrollerPageColorGap: CGFloat = 2
     /// Probe: the page color is read this far above the window's bottom, in the Form's
     /// left margin (x = sidebar + half a margin).
@@ -197,6 +226,4 @@ enum Reference {
     static let scrolledProbeStepX: CGFloat = 6
     static let scrolledProbeY: Range<CGFloat> = 6..<46
     static let scrolledProbeStepY: CGFloat = 4
-    /// Probe: scroll offsets (pt) of the runs run.sh makes (0 and 60), as directory suffixes.
-    static let scrolls = ["0", "60"]
 }

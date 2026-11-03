@@ -1,34 +1,33 @@
 #!/bin/zsh
-# UI checks of the real Settings window (docs/UI-CHECKS.md).
-# Side effects: builds, takes the screen, kills processes
+# UI checks of the Settings window, onboarding and uninstall alerts (docs/UI-CHECKS.md).
+# Side effects: builds, takes the screen, kills processes, changes user settings
 #
 # Usage: scripts/selftest/settings-window/run.sh <output-dir> [Dau.app]
 #
-# Copies the Debug build of Dau.app, re-signs the copy ad hoc without entitlements
-# (the build is not sandboxed since D37; the copy also drops the App Group, as before),
-# and runs it with --capture-window for every combination of
-# scroll bar style (overlay, legacy "Always", system "Automatic") and scroll offset
-# (0, 60 pt). Each run captures the 4 sections in light and dark mode, in a window
-# put in the middle of the main screen (visible while it runs; do not click it).
-# Then it captures the onboarding window (onboarding/, onboarding-no-shortcut/) and the
-# uninstall alerts (uninstall/).
-# check.swift checks the captures and frames (a)–(h) and writes a summary grid. Both
-# scripts are compiled with Reference.swift, which holds every pass value.
-# Last, the real window: the Debug app itself is launched normally (no capture
-# code runs; `--settings-window` only keeps the onboarding closed and the
-# installed input method untouched), and ax-check.swift reads its frames through the
-# Accessibility API on every display and compares them with System Settings (real/),
-# opens the add-rule sheet ("+" on Ứng dụng) through accessibility, checks it,
-# captures it empty and with a row selected and closes it with Huỷ (nothing is added);
-# once more with the "Dấu chưa được bật" banner (real-banner/), and once with the app
-# alone in the appearance the system is not in (`--appearance`, Debug only: sets this
-# app's appearance; the system appearance is not changed) for the sheet only
-# (real-sheet-light/ or real-sheet-dark/). Needs the Accessibility permission of the
-# terminal. The window is put back at its starting size.
-# A --capture step that fails is named on the screen (with the end of its output) and the
-# exit status is 1; the later steps still run. Exit status 0 only if every check passes.
+# Seven app launches, one after the other; each shows a window on screen for a while
+# (do not click while it runs). Needs the Accessibility and Screen Recording permissions
+# of the terminal. Changes no system setting: the scroll bar style and the appearance
+# are arguments of that one launch (`-AppleShowScrollBars` lands in the app's argument
+# domain; `--appearance` is a Debug flag of Dấu), never the global defaults.
 #
-# The capture windows show in the middle of the main screen for a few seconds per run.
+# In-app captures, on a copy of the Debug app re-signed ad hoc without entitlements (so
+# the copy has no App Group and its fake services cannot touch the user's settings):
+#   1. --capture-onboarding                    onboarding/
+#   2. --capture-onboarding --shortcut none    onboarding-no-shortcut/
+#   3. --capture-uninstall                     uninstall/ (alerts laid out, nothing removed)
+# The real Debug app, opened as the user opens it (`open -n`), measured from outside by
+# ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
+# Settings window only:
+#   4. overlay scroll bars                     real/                  ax-check --geometry
+#   5. legacy scroll bars                      legacy/                ax-check --pixels
+#   6. --not-enabled                           banner/                ax-check --banner
+#   7. the other appearance, legacy bars       legacy-<light|dark>/   ax-check --pixels --sheet-shots
+# Then check.swift checks the screenshots' pixels and the in-app captures.
+# Tables: <dir>.txt per launch, check.txt. Exit status 0 only if every row is ok.
+#
+# Before each real launch the saved "NSWindow Frame settings" of com.codefastlabs.dau is
+# deleted, so the window opens at the scene's default size (ax-check reads it before it
+# moves anything); both saved frames are put back as they were at the end.
 set -euo pipefail
 here=${0:A:h}
 out=${1:?output dir}
@@ -42,10 +41,10 @@ work=$(mktemp -d)
 lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 # Running the copy registers it with LaunchServices; unregister it before deleting it,
 # or Spotlight and "Open With" keep listing a second Dấu.app with a blank icon.
-# The copy shares Dấu's bundle ID, so AppKit saves the frames of the windows it moves off
-# screen (and the real-window part moves) into Dấu's own preferences; the next normal
-# launch then opened onboarding squeezed into a screen corner. Keep the saved frames
-# as they were before the run and put them back at the end.
+# The copy and the real app share Dấu's bundle ID, so AppKit saves the frames of the
+# windows they show and the checker moves into Dấu's own preferences; a later normal
+# launch then opened onboarding squeezed into a screen corner. Keep the saved frames as
+# they were before the run and put them back at the end.
 frames_domain=com.codefastlabs.dau
 frame_keys=("NSWindow Frame onboarding" "NSWindow Frame settings")
 typeset -A saved_frames
@@ -69,6 +68,20 @@ cleanup() {
 trap cleanup EXIT
 mkdir -p "$out"
 
+result=0
+
+# A multi-file build takes top-level code only from a file named main.swift, so the
+# script is copied to that name next to Reference.swift's compile.
+build() {   # <script> <output>
+  mkdir -p "$work/src-$2"
+  cp "$here/$1" "$work/src-$2/main.swift"
+  swiftc -swift-version 6 -O -o "$work/$2" "$here/Reference.swift" "$work/src-$2/main.swift"
+}
+build ax-check.swift ax-check
+build check.swift check
+
+# --- Launches 1–3: in-app captures ----------------------------------------------------
+
 cp -R "$app" "$work/Dau.app"
 cat > "$work/ent.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -77,7 +90,6 @@ cat > "$work/ent.plist" <<'PLIST'
 PLIST
 codesign --force --sign - --entitlements "$work/ent.plist" "$work/Dau.app" >/dev/null 2>&1
 
-result=0
 # Runs the copy with the given arguments; a failure names the step and shows the end of
 # the app's output instead of ending the script silently.
 capture() {   # <step name> <Dau arguments…>
@@ -91,46 +103,34 @@ capture() {   # <step name> <Dau arguments…>
   fi
 }
 
-for style in WhenScrolling Always Automatic; do
-  for scroll in 0 60; do
-    dir="$out/$style-$scroll"
-    capture "window $style scroll $scroll" --capture-window "$dir" --scroll "$scroll" \
-      -AppleShowScrollBars "$style"
-  done
-done
-
-# The widest window the Settings scene allows (Reference.maxWindowWidth, which check
-# (h) verifies against this width): the cards must still span the column
-# (docs/UI-CHECKS.md item 1).
-capture "window wide" --capture-window "$out/wide" --width 976 \
-  -AppleShowScrollBars WhenScrolling
-
 # The onboarding window (steps 1, 2, 2 with Dấu still off, 2 not listed (logout),
-# 2 after "Bật Dấu", 3; light and dark), on fixed
-# services; once with the real input-source shortcut, once as if none were set.
+# 2 after "Bật Dấu", 3; light and dark), on fixed services; once with the real
+# input-source shortcut, once as if none were set.
 capture "onboarding" --capture-onboarding "$out/onboarding"
 capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-shortcut" \
   --shortcut none
-
-# The uninstall alerts (D16, mockup "ConfirmDialogs"): shown as sheets on the Settings
-# window, captured, dismissed; nothing is uninstalled.
+# The uninstall alerts (D16, mockup "ConfirmDialogs"): laid out, captured, dismissed;
+# nothing is uninstalled.
 capture "uninstall alerts" --capture-uninstall "$out/uninstall"
 
-# A multi-file build takes top-level code only from a file named main.swift, so the
-# script is copied to that name next to Reference.swift's compile.
-build() {   # <script> <output>
-  mkdir -p "$work/src-$2"
-  cp "$here/$1" "$work/src-$2/main.swift"
-  swiftc -swift-version 6 -O -o "$work/$2" "$here/Reference.swift" "$work/src-$2/main.swift"
-}
-build check.swift check
-"$work/check" "$out" || result=1
+# --- Launches 4–7: the real window ----------------------------------------------------
 
-# The real window (docs/UI-CHECKS.md, "Cửa sổ thật").
-build ax-check.swift ax-check
-real_window() {   # <output-dir> <ax-check flag or ""> [app arguments…]
-  local dir=$1 flag=$2
+if [[ $(defaults read -g AppleInterfaceStyle 2>/dev/null) == Dark ]]; then
+  current=dark other=light
+else
+  current=light other=dark
+fi
+
+real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app arguments…>
+  local name=$1 look=$2
   shift 2
+  local modes=()
+  while [[ $1 != -- ]]; do modes+=($1); shift; done
+  shift
+  local dir="$out/$name"
+  mkdir -p "$dir"
+  # The window opens at the scene's default size only without a saved frame.
+  defaults delete $frames_domain "NSWindow Frame settings" >/dev/null 2>&1 || true
   local before=$(pgrep -f "$app/Contents/MacOS/Dau" | sort)
   # --settings-window goes last: launched as `--settings-window --appearance light`
   # (or any flag-value pair after it) the app opened no window at all, while
@@ -139,7 +139,7 @@ real_window() {   # <output-dir> <ax-check flag or ""> [app arguments…]
   # `--appearance` and `light` is left alone; a windowless test app was handed that
   # leftover as a file to open (`application(_:openFiles:)`). The 8 argument sets measured
   # on Dấu fit this; that SwiftUI then opens no window is not measured. Put every app
-  # flag that takes a value before --settings-window.
+  # flag that takes a value (`-AppleShowScrollBars`, `--appearance`) before --settings-window.
   open -n "$app" --args "$@" --settings-window
   local pid=""
   for i in {1..50}; do
@@ -147,22 +147,29 @@ real_window() {   # <output-dir> <ax-check flag or ""> [app arguments…]
     [[ -n $pid ]] && break
     sleep 0.2
   done
-  [[ -z $pid ]] && { echo "FAIL real window: app did not start"; return 1; }
+  if [[ -z $pid ]]; then
+    echo "HARNESS real window ($name): the app did not start; not a UI result" | tee "$dir.txt"
+    return 1
+  fi
   local rc=0
-  "$work/ax-check" "$pid" "$dir" ${flag:+$flag} > "$dir.txt" || rc=1
-  tail -3 "$dir.txt"
+  "$work/ax-check" "$pid" "$dir" "$look" $modes > "$dir.txt" || rc=1
+  echo "$name:"
+  tail -3 "$dir.txt" | sed 's/^/    /'
   kill "$pid" 2>/dev/null
+  # Let it quit before the next launch deletes the saved frame again.
+  for i in {1..25}; do kill -0 "$pid" 2>/dev/null || break; sleep 0.2; done
   return $rc
 }
-# The appearance the system is not in, for the sheet pass of this app only.
-if [[ $(defaults read -g AppleInterfaceStyle 2>/dev/null) == Dark ]]; then
-  other=light
-else
-  other=dark
-fi
-other_dir=real-sheet-$other
-mkdir -p "$out/real" "$out/real-banner" "$out/$other_dir"
-real_window "$out/real" "" || result=1
-real_window "$out/real-banner" --banner --not-enabled || result=1
-real_window "$out/$other_dir" --sheet-only --appearance "$other" || result=1
+
+real_window real $current --geometry -- -AppleShowScrollBars WhenScrolling || result=1
+real_window legacy $current --pixels -- -AppleShowScrollBars Always || result=1
+real_window banner $current --banner -- -AppleShowScrollBars WhenScrolling --not-enabled || result=1
+real_window legacy-$other $other --pixels --sheet-shots -- \
+  -AppleShowScrollBars Always --appearance $other || result=1
+
+# --- Pixels of the screenshots, in-app captures ----------------------------------------
+
+"$work/check" "$out" overlay:real legacy:legacy legacy:legacy-$other > "$out/check.txt" || result=1
+echo "check:"
+tail -3 "$out/check.txt" | sed 's/^/    /'
 exit $result

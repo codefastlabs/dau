@@ -37,8 +37,7 @@ struct DauApp: App {
         #if DEBUG
         if CommandLine.arguments.contains("--tampered") { actions.forceTampered(); return }
         // Captures run a re-signed copy: its team does not match the installed one.
-        if DebugCapture.directory != nil || DebugCapture.onboardingDirectory != nil
-            || DebugCapture.uninstallDirectory != nil { return }
+        if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil { return }
         #endif
         actions.checkInstalled()
     }
@@ -50,8 +49,8 @@ struct DauApp: App {
     private static func upgradeAtLaunch(_ installer: InputMethodInstaller) {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
-        if DebugCapture.directory != nil || DebugCapture.onboardingDirectory != nil
-            || DebugCapture.uninstallDirectory != nil || DebugCapture.settingsWindowOnly { return }
+        if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
+            || DebugCapture.settingsWindowOnly { return }
         #endif
         Task { @MainActor in
             do {
@@ -69,8 +68,7 @@ struct DauApp: App {
         var flow = OnboardingFlow(detector: WorkspaceInputMethodDetector(), installer: installer)
         var opens = LaunchRouter.opensOnboarding(installer.status())
         #if DEBUG
-        if DebugCapture.directory != nil || DebugCapture.uninstallDirectory != nil
-            || DebugCapture.settingsWindowOnly { opens = false }
+        if DebugCapture.uninstallDirectory != nil || DebugCapture.settingsWindowOnly { opens = false }
         if let step = DebugCapture.onboardingStep {
             // `--onboarding <1|2|3>`: open onboarding at that step.
             flow.forcedStartStep = step
@@ -96,7 +94,7 @@ struct DauApp: App {
 
     private static func makeInputSourceStatus() -> InputSourceStatus {
         #if DEBUG
-        // `--not-enabled`: show the "Dấu chưa được bật" banner (window captures).
+        // `--not-enabled`: show the "Dấu chưa được bật" banner (real-window checks).
         if CommandLine.arguments.contains("--not-enabled") { return InputSourceStatus(fixed: false) }
         #endif
         return InputSourceStatus()
@@ -108,9 +106,6 @@ struct DauApp: App {
                 .environment(model)
                 .environment(inputSource)
                 .environment(\.inputMethodActions, actions)
-                #if DEBUG
-                .environment(\.layoutProbe, DebugCapture.probe)
-                #endif
                 .modifier(LaunchRouting(opens: opensOnboarding))
                 // The installed input method's signature, whenever Dấu comes to the
                 // front (TamperedBanner): any process of the user can replace it.
@@ -179,7 +174,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         #if DEBUG
         DebugCapture.applyAppearanceOverride()
-        DebugCapture.start()
         DebugCapture.startOnboarding()
         DebugCapture.startUninstall()
         #endif

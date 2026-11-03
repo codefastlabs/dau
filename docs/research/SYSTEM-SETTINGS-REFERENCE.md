@@ -87,7 +87,7 @@ Lưu ý khi đọc số: máy đo đang hiện thanh cuộn kiểu cũ (luôn hi
 
 Sheet thêm quy tắc của Dấu (đo 02/11/2026, macOS 27.2): `List` đặt trong `Form(.grouped)` bị tắt cuộn (vùng cuộn bên trong không có thanh cuộn, lăn chuột không đổi hàng nào, `scrollDisabled(false)` và `\.isScrollEnabled` không bật lại), nên danh sách đặt ngoài Form, trong `GroupBox` (thẻ hệ thống), chỉ hàng "Khi đang gõ" còn trong Form. `searchable` luôn tạo thanh riêng ở đầu sheet và `ToolbarItem(.navigation / .principal)` không hiện trong sheet, nên không đặt được tiêu đề cùng hàng; dùng `NSSearchField` (control hệ thống) cùng hàng với tiêu đề, 183 × 24 như `searchable`, cách mép trên và phải 20.
 
-Kết luận cho sheet của Dấu: `Form(.grouped)` + `searchable` + nút trên `toolbar` cho ra đúng khoảng cách và nút của sheet System Settings (dựng SwiftUI). Sheet của System Settings không có tiêu đề; nội dung của mockup có tiêu đề nên đặt làm tiêu đề nhóm đầu của Form.
+Kết luận cho sheet của Dấu (sửa 03/11/2026 cho khớp mã; bản trước mô tả thiết kế `Form` + `searchable` đã bỏ): nút trên `toolbar` cho ra đúng thanh nút của sheet System Settings, thẻ `Form(.grouped)` cho ra đúng lề và khoảng cách thẻ. Sheet của System Settings không có tiêu đề; nội dung của mockup có tiêu đề, nên `AddAppRuleSheet` đặt một hàng đầu gồm tiêu đề bên trái và `NSSearchField` bên phải (183 × 24, cách mép trên và phải 20, cỡ của `searchable` trong sheet), rồi danh sách trong `GroupBox`, rồi `Form(.grouped)` chỉ có thẻ "Khi đang gõ", rồi thanh nút. Chiều cao thẻ danh sách (188) lấy từ mockup, không có số System Settings tương ứng; giữ hay đổi là câu hỏi mở cho người dùng (D9).
 
 ### Độ rộng tối đa của Form dạng nhóm (lỗi "cột hẹp ở giữa")
 

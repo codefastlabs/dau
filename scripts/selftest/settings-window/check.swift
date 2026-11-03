@@ -1,291 +1,270 @@
-// Checks the captures written by `Dau --capture-window` (see run.sh, docs/UI-CHECKS.md).
-// Captures @2x, frames in top-left window points. Every pass value is in Reference.swift
-// (compiled together by run.sh). The real window is checked separately by ax-check.swift.
+// Pixel checks of the real Settings window's screenshots, and frame checks of the in-app
+// onboarding and uninstall captures (docs/UI-CHECKS.md). run.sh compiles this file with
+// Reference.swift (every pass value) and runs it after the app launches.
+//
+// Usage: check <out-dir> overlay:<dir> legacy:<dir>…
+//   overlay:<dir>  ax-check --geometry output (overlay scroll bars): (b), (c), (e)
+//   legacy:<dir>   ax-check --pixels output (legacy scroll bars): (b), (c), (d), (e)
+// Each <dir> holds the screenshots and frames.json written by ax-check (window points,
+// origin at the window's top-left; "meta": the primary display's scale and the
+// appearance). Only the primary display's screenshots are checked. Sample positions are
+// in points, so the checks follow the image's scale; the probe offsets in Reference.swift
+// were set on a 2x display, which the output says when the primary display is 1x.
+//   (b) The page color reaches the right edge (or the scroll bar sitting there), the
+//       toolbar band is one color from the middle to the right edge.
+//   (c) No strip of another color in the Form's right margin: every overlay screenshot,
+//       and a legacy one only on a page without a scroll bar (a legacy bar fills the strip).
+//   (d) Scrolled (Reference.scrollingSection, legacy): the header looks as when not scrolled.
+//   (e) The Ứng dụng toolbar "+" is drawn round.
+//   (f) onboarding/, onboarding-no-shortcut/ (Dau --capture-onboarding): every shot has
+//       the app name, title, card and buttons where the mockup puts them; a view missing
+//       from a shot is FAIL (the app drops a view's frame when it disappears).
+//   (g) uninstall/ (Dau --capture-uninstall): both alerts in both appearances, not cut.
+// Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
+// check needs is missing (the step that writes it says why in its own table); no skip.
+// Exit status 0 only when every row is ok.
 import AppKit
 
-let root = URL(fileURLWithPath: CommandLine.arguments[1], isDirectory: true)
-let sections = Reference.sections
-let modes = ["light", "dark"]
-let styles = ["WhenScrolling", "Always", "Automatic"]
-let scrolls = Reference.scrolls
-let W = Reference.windowWidth, H = Reference.windowHeight
-let sidebar = Reference.sidebarWidth, formMargin = Reference.formMargin, rowInset = Reference.cardInset
-let colorTol = Reference.colorTolerance, subPoint = Reference.subPoint
+let args = Array(CommandLine.arguments.dropFirst())
+guard let rootArg = args.first else { print("usage: check <out-dir> overlay:<dir> legacy:<dir>…"); exit(2) }
+let root = URL(fileURLWithPath: rootArg, isDirectory: true)
+let windowDirs: [(style: String, dir: String)] = args.dropFirst().compactMap {
+    let parts = $0.split(separator: ":", maxSplits: 1).map(String.init)
+    return parts.count == 2 && ["overlay", "legacy"].contains(parts[0]) ? (parts[0], parts[1]) : nil
+}
+guard windowDirs.count == args.count - 1 else { print("usage: check <out-dir> overlay:<dir> legacy:<dir>…"); exit(2) }
+
+// MARK: - Results
+
+nonisolated(unsafe) var rows: [String] = []
+nonisolated(unsafe) var failures: [String] = []
+nonisolated(unsafe) var harnessProblems: [String] = []
+func record(_ where_: String, _ metric: String, expected: String, got: String, ok: Bool) {
+    rows.append("\(where_) | \(metric) | \(expected) | \(got) | \(ok ? "ok" : "FAIL")")
+    if !ok { failures.append("\(where_) \(metric): expected \(expected), got \(got)") }
+}
+func harness(_ where_: String, _ metric: String, _ missing: String) {
+    rows.append("\(where_) | \(metric) | input | \(missing) | HARNESS")
+    harnessProblems.append("\(where_) \(metric): \(missing)")
+}
+func fmt(_ v: CGFloat) -> String { v == v.rounded() ? String(Int(v)) : String(format: "%.1f", v) }
+func fmt(_ r: CGRect) -> String { "\(fmt(r.minX)),\(fmt(r.minY)) \(fmt(r.width))×\(fmt(r.height))" }
+func near(_ a: CGFloat?, _ b: CGFloat, _ tolerance: CGFloat = Reference.tolerance) -> Bool { a.map { abs($0 - b) <= tolerance } ?? false }
+
+// MARK: - Inputs
 
 typealias Frames = [String: CGRect]
-struct Pixel { var r, g, b: Double
-    func distance(_ o: Pixel) -> Double { max(abs(r - o.r), abs(g - o.g), abs(b - o.b)) }
-}
-
-func loadFrames(_ dir: URL) -> [String: Frames] {
+/// frames.json of a directory: frames by shot, plus the raw "meta" entry.
+func loadFrames(_ dir: URL) -> (shots: [String: Frames], meta: [String: [Double]])? {
     guard let data = try? Data(contentsOf: dir.appendingPathComponent("frames.json")),
-          let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String: [Double]]] else { return [:] }
-    var out: [String: Frames] = [:]
-    for (key, entries) in json where !key.hasPrefix("colors") && !key.hasPrefix("limits") {
+          let json = try? JSONSerialization.jsonObject(with: data) as? [String: [String: [Double]]] else { return nil }
+    var shots: [String: Frames] = [:]
+    for (key, entries) in json where key != "meta" {
         var frames: Frames = [:]
         for (name, v) in entries where v.count == 4 { frames[name] = CGRect(x: v[0], y: v[1], width: v[2], height: v[3]) }
-        out[key] = frames
+        shots[key] = frames
     }
-    return out
+    return (shots, json["meta"] ?? [:])
+}
+func image(_ url: URL) -> NSBitmapImageRep? { (try? Data(contentsOf: url)).flatMap(NSBitmapImageRep.init(data:)) }
+
+struct Pixel {
+    var r, g, b: Double
+    func distance(_ o: Pixel) -> Double { max(abs(r - o.r), abs(g - o.g), abs(b - o.b)) }
+}
+/// A screenshot with its window size in points: samples are taken in points, whatever the scale.
+struct Shot {
+    let rep: NSBitmapImageRep
+    let width: CGFloat, height: CGFloat
+    var scale: CGFloat { CGFloat(rep.pixelsWide) / width }
+    func pixel(_ x: CGFloat, _ y: CGFloat) -> Pixel {
+        var p = [Int](repeating: 0, count: 4)
+        rep.getPixel(&p, atX: min(max(Int(x * scale), 0), rep.pixelsWide - 1),
+                     y: min(max(Int(y * scale), 0), rep.pixelsHigh - 1))
+        return Pixel(r: Double(p[0]), g: Double(p[1]), b: Double(p[2]))
+    }
 }
 
-func image(_ url: URL) -> NSBitmapImageRep? {
-    guard let data = try? Data(contentsOf: url) else { return nil }
-    return NSBitmapImageRep(data: data)
-}
+let colorTol = Reference.colorTolerance
 
-func pixel(_ rep: NSBitmapImageRep, _ x: CGFloat, _ y: CGFloat) -> Pixel {
-    let scale = CGFloat(rep.pixelsWide) / W
-    var p = [Int](repeating: 0, count: 4)
-    rep.getPixel(&p, atX: min(max(Int(x * scale), 0), rep.pixelsWide - 1),
-                 y: min(max(Int(y * scale), 0), rep.pixelsHigh - 1))
-    return Pixel(r: Double(p[0]), g: Double(p[1]), b: Double(p[2]))
-}
+// MARK: - Settings window: (b)–(e)
 
-// Top-level code is single-threaded; Swift 6 would isolate globals to the main actor.
-nonisolated(unsafe) var failures: [String] = []
-var results: [(String, String, [String: Bool])] = []   // run, mode, check → pass
-func fail(_ s: String) { failures.append(s) }
+for (style, dirName) in windowDirs {
+    let dir = root.appendingPathComponent(dirName)
+    guard let (shots, meta) = loadFrames(dir) else {
+        harness(dirName, "frames.json", "missing (see \(dirName).txt)")
+        continue
+    }
+    guard let scale = meta["primaryScale"]?.first, let dark = meta["dark"]?.first else {
+        harness(dirName, "frames.json meta", "no primary display scale or appearance (see \(dirName).txt)")
+        continue
+    }
+    let tag = "\(fmt(CGFloat(scale)))x"
+    let mode = dark == 1 ? "dark" : "light"
+    if scale == 1 {
+        print("note: \(dirName): the primary display is 1x, so one pixel per point; the probe offsets in Reference.swift were set on a 2x display.")
+    }
+    /// The screenshot `key` and its frames; nil (HARNESS) when ax-check did not write them.
+    func load(_ key: String, _ metric: String) -> (Shot, Frames)? {
+        guard let frames = shots[key], let window = frames["window"],
+              let rep = image(dir.appendingPathComponent("\(key).png")) else {
+            harness("\(dirName)/\(key)", metric, "no screenshot (see \(dirName).txt)")
+            return nil
+        }
+        return (Shot(rep: rep, width: window.width, height: window.height), frames)
+    }
 
-for style in styles {
-    for scroll in scrolls {
-        let run = "\(style)-\(scroll)"
-        let dir = root.appendingPathComponent(run)
-        let frames = loadFrames(dir)
-        for mode in modes {
-            var checks: [String: Bool] = ["a": true, "b": true, "c": true, "d": true, "e": true]
-            func bad(_ check: String, _ message: String) { checks[check] = false; fail("\(run) \(mode) (\(check)) \(message)") }
+    for section in Reference.sections {
+        let key = "\(section)-\(tag)"
+        let at = "\(dirName)/\(key) \(mode)"
+        guard let (shot, f) = load(key, "(b)–(c) \(style)") else { continue }
+        let W = shot.width, H = shot.height
+        let scroller = f["scroller"].flatMap { $0.width > 0 ? $0 : nil }
+        // Page color: the Form's left margin, between the sidebar and the cards.
+        let low = H - Reference.pageSampleBottomInset
+        let page = shot.pixel(Reference.pageSampleX, low)
 
-            // (a) Same frames in every section. Positions (x, y) must be equal; widths
-            // may differ only by the legacy scroll bar's width, and only on a section
-            // that shows one (its clip view is narrower than its scroll view).
-            let legacyWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
-            func room(_ section: String) -> CGFloat? {
-                guard let f = frames["\(section)-\(mode)"], let sv = f["scrollView"], let clip = f["clip"] else { return nil }
-                return sv.width - clip.width
-            }
-            for section in sections {
-                if let r = room(section), abs(r) > subPoint, abs(r - legacyWidth) > subPoint {
-                    bad("a", "\(section) scroll bar takes \(r) pt, not the legacy width \(legacyWidth)")
-                }
-            }
-            func same(_ name: String, width: Bool, y: Bool = true) {
-                var values: [String] = []
-                for section in sections {
-                    guard let r = frames["\(section)-\(mode)"]?[name] else { continue }
-                    let w = width ? r.width + (room(section) ?? 0) : 0
-                    values.append("\(r.minX),\(y ? r.minY : 0),\(w)")
-                }
-                if values.count != sections.count { bad("a", "\(name) missing"); return }
-                if Set(values).count > 1 { bad("a", "\(name) differs (x, y, width + scroll bar): \(values)") }
-            }
-            same("content", width: true)
-            // The first row's y depends on whether the page starts with a section header.
-            same("firstRow", width: true, y: false)
-            same("title", width: false)
-            same("close", width: false)
-            if Set(sections.compactMap { frames["\($0)-\(mode)"]?["close"] }).count > 1 { bad("a", "close size differs") }
+        // (b) Page background reaches the right edge (or the system scroll bar, which then
+        // sits at the edge); the toolbar band is one color from the middle to the edge.
+        let atEdge = scroller.map { $0.minX <= W - Reference.scrollerEdgeBand && $0.maxY > low } ?? false
+        let edgeX = atEdge ? scroller!.minX - Reference.scrollerPageColorGap : W - Reference.rightEdgeInset
+        let edge = shot.pixel(edgeX, low)
+        record(at, "(b) page color at the right edge", expected: "within \(Int(colorTol)) of the left margin (x \(fmt(edgeX)))",
+               got: "\(Int(page.distance(edge)))", ok: page.distance(edge) <= colorTol)
+        if atEdge, let s = scroller {
+            record(at, "(b) scroll bar ends at the window edge", expected: fmt(W), got: fmt(s.maxX), ok: near(s.maxX, W))
+        }
+        if section != "apps" {   // the Ứng dụng toolbar holds "+" and the search field there
+            let y = Reference.toolbarSampleY
+            let mid = shot.pixel((Reference.sidebarWidth + W) / 2 + Reference.toolbarSampleMidOffset, y)
+            let edge = shot.pixel(W - Reference.toolbarSampleEdgeInset, y)
+            record(at, "(b) toolbar color at the right edge", expected: "within \(Int(colorTol)) of its middle",
+                   got: "\(Int(mid.distance(edge)))", ok: mid.distance(edge) <= colorTol)
+        }
 
-            for section in sections {
-                let key = "\(section)-\(mode)"
-                guard let f = frames[key], let rep = image(dir.appendingPathComponent("\(key).png")) else {
-                    bad("a", "\(key) capture missing"); continue
-                }
-                let scroller = f["scroller"].flatMap { $0.width > 0 ? $0 : nil }
-                // Page color: the Form's left margin, between the sidebar and the cards.
-                let low = H - Reference.pageSampleBottomInset
-                let page = pixel(rep, Reference.pageSampleX, low)
-
-                // (b) Page background reaches the right edge (or the system scroll bar,
-                // which then sits at the edge), and the toolbar band is one color from
-                // the middle to the right edge.
-                let edgeX = (scroller.map { $0.minX <= W - Reference.scrollerEdgeBand && $0.maxY > low } ?? false)
-                    ? scroller!.minX - Reference.scrollerPageColorGap : W - Reference.rightEdgeInset
-                if page.distance(pixel(rep, edgeX, low)) > colorTol {
-                    bad("b", "\(key) page color stops before the right edge (x \(edgeX))")
-                }
-                if let s = scroller, s.maxX < W - subPoint {
-                    bad("b", "\(key) scroll bar ends at \(s.maxX), not at the window edge")
-                }
-                if section != "apps" {   // the Apps toolbar holds the search field there
-                    let y = Reference.toolbarSampleY
-                    let mid = pixel(rep, (sidebar + W) / 2 + Reference.toolbarSampleMidOffset, y)
-                    let edge = pixel(rep, W - Reference.toolbarSampleEdgeInset, y)
-                    if mid.distance(edge) > colorTol { bad("b", "\(key) toolbar color differs at the right edge") }
-                }
-
-                // (c) No strip of another color in the Form's right margin, except the
-                // scroll bar.
-                var stray = 0
-                let slack = Reference.scrollerSlack
-                for x in stride(from: W - formMargin + Reference.strayStripInset, to: W, by: 1) {
-                    for y in stride(from: Reference.straySampleTop, to: low, by: Reference.straySampleStep) {
-                        if let s = scroller, s.insetBy(dx: -slack, dy: -slack).contains(CGPoint(x: x, y: y)) { continue }
-                        if pixel(rep, x, y).distance(page) > colorTol { stray += 1 }
-                    }
-                }
-                if stray > 0 { bad("c", "\(key) \(stray) right-margin samples differ from the page color") }
-
-                // (d) Scrolled: the header looks as when not scrolled; scroll bar inside
-                // the window right below the header.
-                if scroll != "0", section == "updates" {
-                    if let base = image(root.appendingPathComponent("\(style)-0/\(key).png")) {
-                        var diff = 0.0, n = 0.0
-                        // Right of the page title: the off-screen window sometimes lays the
-                        // whole toolbar out half a point apart between runs, which moves
-                        // the title's pixels.
-                        for x in stride(from: Reference.scrolledProbeStartX, to: W - Reference.scrolledProbeRightInset,
-                                        by: Reference.scrolledProbeStepX) {
-                            for y in stride(from: Reference.scrolledProbeY.lowerBound, to: Reference.scrolledProbeY.upperBound,
-                                            by: Reference.scrolledProbeStepY) {
-                                diff += pixel(rep, x, y).distance(pixel(base, x, y)); n += 1
-                            }
-                        }
-                        if diff / n > Reference.scrolledHeaderMeanDiff { bad("d", "\(key) content shows through the header (mean diff \(Int(diff / n)))") }
-                    }
-                    if let s = scroller {
-                        if s.maxX > W + subPoint || s.minX < W - Reference.scrollerLane || s.minY < Reference.scrollerMinY { bad("d", "\(key) scroll bar at \(s)") }
-                    } else {
-                        bad("d", "\(key) no scroll bar")
-                    }
-                }
-
-                // (e) Traffic lights, title, first row, Apps search field and + button.
-                // The lights are compared as drawn (the AX frame inset by 1); the title
-                // starts at the detail column's margin and is centered in the toolbar.
-                if f["close"] != Reference.closeDrawnFrame { bad("e", "\(key) close at \(String(describing: f["close"]))") }
-                if let t = f["title"], abs(t.minX - Reference.titleX) > Reference.tolerance
-                    || abs(t.midY - Reference.titleCenterY) > Reference.tolerance { bad("e", "\(key) title at \(t)") }
-                if f["title"] == nil { bad("e", "\(key) title missing") }
-                // Item 1: the cards span the column with the Form's margins (no narrow
-                // centered column): first row = card inset by the row's inset.
-                if let r = f["firstRow"], let c = f["content"] {
-                    let card = c.width - 2 * formMargin
-                    if abs(r.minX - (c.minX + formMargin + rowInset)) > subPoint
-                        || abs(r.width - (card - 2 * rowInset)) > subPoint {
-                        bad("e", "\(key) first row at \(r), content \(c)")
-                    }
-                }
-                if section == "apps" {
-                    // Native toolbar controls: the "+" (round) then the system search
-                    // field at the trailing edge, both right of the title.
-                    guard let s = f["headerSearch"], let a = f["headerAdd"] else { bad("e", "\(key) header controls missing"); continue }
-                    if abs(a.width - a.height) > subPoint { bad("e", "\(key) + not round: \(a)") }
-                    if a.minX < (f["title"]?.maxX ?? W) + Reference.appsAddGapToTitle || a.maxX > s.minX { bad("e", "\(key) + at \(a), search at \(s)") }
-                    let inset = Reference.appsSearchRightInset
-                    if s.maxX > W - inset.lowerBound || s.maxX < W - inset.upperBound || s.height < Reference.controlHeight { bad("e", "\(key) search at \(s)") }
+        // (c) No strip of another color in the Form's right margin (item 11). Overlay bars
+        // are not drawn at rest, so the whole strip is sampled. A legacy bar fills the
+        // strip (it lies in the margin), so (c) runs only on a page without one; on a page
+        // with one, (a) in ax-check holds the lane to the bar's width and (b) reads the page
+        // color left of it.
+        if style == "overlay" || scroller == nil {
+            var stray = 0, samples = 0
+            for x in stride(from: W - Reference.formMargin + Reference.strayStripInset, to: W, by: 1) {
+                for y in stride(from: Reference.straySampleTop, to: low, by: Reference.straySampleStep) {
+                    samples += 1
+                    if shot.pixel(x, y).distance(page) > colorTol { stray += 1 }
                 }
             }
-            results.append((run, mode, checks))
+            record(at, "(c) right margin is page color", expected: "0 of \(samples) samples differ", got: "\(stray)", ok: stray == 0 && samples > 0)
+        }
+
+        // (e) Item 8: the toolbar "+" is drawn round. Its accessibility frame is the toolbar
+        // item's (taller than wide), so the drawn button is found in pixels: the box of the
+        // pixels that differ from the toolbar at the top of the frame, scanning a little to
+        // its left (the drawn button starts at or before the frame) and not past it to the
+        // right (the search field follows).
+        // The toolbar does not depend on the scroll-bar style: (e) runs on the geometry
+        // launch's captures (overlay), the only ones that record the "+" frame.
+        if section == "apps" && style == "overlay" {
+            guard let add = f["headerAdd"] else {
+                harness(at, "(e) + drawn round", "no \"+\" frame (see \(dirName).txt)")
+                continue
+            }
+            let background = shot.pixel(add.minX + 1, add.minY + 1)
+            var box = CGRect.null
+            var x = add.minX - 4
+            while x < add.maxX {
+                var y = add.minY
+                while y < add.maxY {
+                    let p = shot.pixel(x, y)
+                    if max(abs(p.r - background.r), abs(p.g - background.g), abs(p.b - background.b)) > Double(Reference.addButtonInkThreshold) {
+                        box = box.union(CGRect(x: x, y: y, width: 1 / shot.scale, height: 1 / shot.scale))
+                    }
+                    y += 1 / shot.scale
+                }
+                x += 1 / shot.scale
+            }
+            record(at, "(e) + drawn round", expected: "width = height ± \(fmt(Reference.addButtonRoundTolerance))",
+                   got: box.isNull ? "nothing drawn in \(fmt(add))" : "\(fmt(box.width))×\(fmt(box.height))",
+                   ok: !box.isNull && abs(box.width - box.height) <= Reference.addButtonRoundTolerance)
+        }
+    }
+
+    // (d) Scrolled through the bar: the header right of the title looks as when not
+    // scrolled (the system's hard scroll edge, item 9).
+    if style == "legacy" {
+        let section = Reference.scrollingSection
+        let at = "\(dirName)/\(section)-scrolled-\(tag) \(mode)"
+        if let (base, _) = load("\(section)-\(tag)", "(d) header when scrolled"),
+           let (scrolled, _) = load("\(section)-scrolled-\(tag)", "(d) header when scrolled") {
+            var diff = 0.0, n = 0.0
+            for x in stride(from: Reference.scrolledProbeStartX, to: scrolled.width - Reference.scrolledProbeRightInset, by: Reference.scrolledProbeStepX) {
+                for y in stride(from: Reference.scrolledProbeY.lowerBound, to: Reference.scrolledProbeY.upperBound, by: Reference.scrolledProbeStepY) {
+                    diff += scrolled.pixel(x, y).distance(base.pixel(x, y))
+                    n += 1
+                }
+            }
+            let mean = n > 0 ? diff / n : .infinity
+            record(at, "(d) header when scrolled", expected: "mean difference ≤ \(fmt(CGFloat(Reference.scrolledHeaderMeanDiff)))",
+                   got: String(format: "%.1f", mean), ok: mean <= Reference.scrolledHeaderMeanDiff)
         }
     }
 }
 
-// Summary grid: one row per run, light then dark of each section, quarter size.
-let cellW = Int(W / 2), cellH = Int(H / 2)
-let rows = styles.count * scrolls.count, cols = sections.count * modes.count
-if let grid = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: cellW * cols, pixelsHigh: cellH * rows,
-                               bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
-                               colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0) {
-    NSGraphicsContext.saveGraphicsState()
-    NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: grid)
-    for (r, run) in styles.flatMap({ s in scrolls.map { "\(s)-\($0)" } }).enumerated() {
-        for (c, item) in modes.flatMap({ m in sections.map { ($0, m) } }).enumerated() {
-            let url = root.appendingPathComponent("\(run)/\(item.0)-\(item.1).png")
-            NSImage(contentsOf: url)?.draw(in: CGRect(x: c * cellW, y: (rows - 1 - r) * cellH, width: cellW, height: cellH))
-        }
-    }
-    NSGraphicsContext.restoreGraphicsState()
-    try? grid.representation(using: .png, properties: [:])?.write(to: root.appendingPathComponent("matrix-grid.png"))
-}
+// MARK: - Onboarding (f)
 
-// (h) Item 1 at the window's limits: the window stops where a grouped Form would start
-// centering its cards in a wider column and does not get narrower than System Settings'
-// width; at the widest the first row still starts at the Form's margin and spans the
-// column (Dau --capture-window --width, run.sh).
-let maxWidth = Reference.maxWindowWidth, minWidth = Reference.minWindowWidth
-let columnMax = Reference.formColumnMaxWidth
-var limitResults: [(String, Bool)] = []
-do {
-    let dir = root.appendingPathComponent("wide")
-    let frames = loadFrames(dir)
-    let json = (try? Data(contentsOf: dir.appendingPathComponent("frames.json")))
-        .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: Any] } ?? [:]
-    for mode in modes {
-        var ok = true
-        func bad(_ message: String) { ok = false; fail("wide \(mode) (h) \(message)") }
-        if let limits = json["limits-\(mode)"] as? [String: [Double]], let mn = limits["min"], let mx = limits["max"] {
-            if abs(mx[0] - maxWidth) > subPoint { bad("max width \(mx[0]), not \(maxWidth)") }
-            if abs(mn[0] - minWidth) > subPoint { bad("min width \(mn[0]), not \(minWidth)") }
-        } else {
-            bad("no window limits")
-        }
-        for section in sections {
-            guard let r = frames["\(section)-\(mode)"]?["firstRow"], let c = frames["\(section)-\(mode)"]?["content"] else {
-                bad("\(section) frames missing"); continue
-            }
-            if abs(c.width - columnMax) > subPoint { bad("\(section) content \(c), not \(columnMax) wide") }
-            if abs(r.minX - (sidebar + formMargin + rowInset)) > subPoint
-                || abs(r.width - (columnMax - 2 * formMargin - 2 * rowInset)) > subPoint {
-                bad("\(section) first row at \(r)")
-            }
-        }
-        limitResults.append((mode, ok))
-    }
-}
-
-// (f) Onboarding window (Dau --capture-onboarding, run.sh): mockup positions
-// ("OnboardingConflict", "OnboardingEnable", "Onboarding"; window at 50,40 in the
-// artboard), the same in every step and both modes.
-var onboardingResults: [(String, Bool)] = []
+// Mockup positions ("OnboardingConflict", "OnboardingEnable", "Onboarding"; window at
+// 50,40 in the artboard), the same in every step and both appearances.
+let onboardingShots = ["1", "2", "2-not-enabled", "2-logout", "2-enabled", "3"]
+    .flatMap { step in ["light", "dark"].map { "onboarding-\(step)-\($0)" } }
 for dirName in ["onboarding", "onboarding-no-shortcut"] {
-    let frames = loadFrames(root.appendingPathComponent(dirName))
-    if frames.isEmpty { fail("\(dirName): no frames.json"); continue }
-    for key in frames.keys.sorted() {
-        let f = frames[key]!
-        var ok = true
-        func bad(_ message: String) { ok = false; fail("\(dirName)/\(key) (f) \(message)") }
-        func near(_ a: CGFloat?, _ b: CGFloat, _ tolerance: CGFloat = Reference.tolerance) -> Bool { a.map { abs($0 - b) <= tolerance } ?? false }
-        if f["window"]?.size != Reference.onboardingSize { bad("window \(String(describing: f["window"]))") }
-        if !near(f["onbAppName"]?.minX, Reference.onboardingAppNameOrigin.x)
-            || !near(f["onbAppName"]?.minY, Reference.onboardingAppNameOrigin.y) { bad("app name at \(String(describing: f["onbAppName"]))") }
-        if !near(f["onbTitle"]?.minX, Reference.onboardingTitleOrigin.x)
-            || !near(f["onbTitle"]?.minY, Reference.onboardingTitleOrigin.y, Reference.onboardingTitleYTolerance) { bad("title at \(String(describing: f["onbTitle"]))") }
-        if !near(f["onbCard"]?.minX, Reference.onboardingCardX) || !near(f["onbCard"]?.width, Reference.onboardingCardWidth) { bad("card at \(String(describing: f["onbCard"]))") }
-        if !near(f["onbButtons"]?.maxX, Reference.onboardingButtonsMaxX)
-            || !near(f["onbButtons"]?.maxY, Reference.onboardingButtonsMaxY) { bad("buttons at \(String(describing: f["onbButtons"]))") }
-        onboardingResults.append(("\(dirName)/\(key)", ok))
+    guard let (shots, _) = loadFrames(root.appendingPathComponent(dirName)) else {
+        harness(dirName, "(f)", "no frames.json (see the capture step in run.sh's output)")
+        continue
     }
-}
-
-// (g) Uninstall alerts (Dau --capture-uninstall): both alerts captured as sheets in
-// both modes, at least an alert's size.
-var uninstallResults: [(String, Bool)] = []
-do {
-    let dir = root.appendingPathComponent("uninstall")
-    let frames = loadFrames(dir)
-    for key in ["confirm", "done"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
-        var ok = true
-        if let sheet = frames[key]?["sheet"], sheet.width >= Reference.alertMinSize.width, sheet.height >= Reference.alertMinSize.height,
-           image(dir.appendingPathComponent("\(key).png")) != nil {
-        } else {
-            ok = false
-            fail("uninstall/\(key) (g) missing or sheet too small: \(String(describing: frames[key]?["sheet"]))")
+    for key in onboardingShots {
+        let at = "\(dirName)/\(key)"
+        guard let f = shots[key] else { harness(at, "(f)", "no capture (see the capture step in run.sh's output)"); continue }
+        func place(_ name: String, _ ok: (CGRect) -> Bool, expected: String) {
+            guard let r = f[name] else {
+                record(at, "(f) \(name)", expected: expected, got: "missing (view not shown)", ok: false)
+                return
+            }
+            record(at, "(f) \(name)", expected: expected, got: fmt(r), ok: ok(r))
         }
-        uninstallResults.append((key, ok))
+        place("window", { near($0.width, Reference.onboardingSize.width) && near($0.height, Reference.onboardingSize.height) },
+              expected: "\(fmt(Reference.onboardingSize.width))×\(fmt(Reference.onboardingSize.height))")
+        let name = Reference.onboardingAppNameOrigin, title = Reference.onboardingTitleOrigin
+        place("onbAppName", { near($0.minX, name.x) && near($0.minY, name.y) }, expected: "at \(fmt(name.x)),\(fmt(name.y))")
+        place("onbTitle", { near($0.minX, title.x) && near($0.minY, title.y, Reference.onboardingTitleYTolerance) },
+              expected: "at \(fmt(title.x)),\(fmt(title.y)) (y ± \(fmt(Reference.onboardingTitleYTolerance)))")
+        place("onbCard", { near($0.minX, Reference.onboardingCardX) && near($0.width, Reference.onboardingCardWidth) },
+              expected: "x \(fmt(Reference.onboardingCardX)), width \(fmt(Reference.onboardingCardWidth))")
+        place("onbButtons", { near($0.maxX, Reference.onboardingButtonsMaxX) && near($0.maxY, Reference.onboardingButtonsMaxY) },
+              expected: "ending at \(fmt(Reference.onboardingButtonsMaxX)),\(fmt(Reference.onboardingButtonsMaxY))")
     }
 }
 
-print("run | mode | a frames | b to edge | c no strip | d scrolled | e positions")
-for (run, mode, c) in results {
-    print(([run, mode] + ["a", "b", "c", "d", "e"].map { c[$0]! ? "ok" : "FAIL" }).joined(separator: " | "))
+// MARK: - Uninstall alerts (g)
+
+let uninstallDir = root.appendingPathComponent("uninstall")
+let uninstallShots = loadFrames(uninstallDir)?.shots
+for key in ["confirm", "done"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
+    let at = "uninstall/\(key)"
+    guard let sheet = uninstallShots?[key]?["sheet"], image(uninstallDir.appendingPathComponent("\(key).png")) != nil else {
+        harness(at, "(g)", "no capture (see the capture step in run.sh's output)")
+        continue
+    }
+    let min = Reference.alertMinSize
+    record(at, "(g) alert not cut", expected: "≥ \(fmt(min.width))×\(fmt(min.height))", got: "\(fmt(sheet.width))×\(fmt(sheet.height))",
+           ok: sheet.width >= min.width && sheet.height >= min.height)
 }
-print("window limits | h wide")
-for (mode, ok) in limitResults { print("wide \(mode) | \(ok ? "ok" : "FAIL")") }
-print("onboarding | f positions")
-for (key, ok) in onboardingResults { print("\(key) | \(ok ? "ok" : "FAIL")") }
-print("uninstall | g captured")
-for (key, ok) in uninstallResults { print("\(key) | \(ok ? "ok" : "FAIL")") }
+
+print("where | check | expected | got | result")
+rows.forEach { print($0) }
 failures.forEach { print("FAIL", $0) }
-print(failures.isEmpty ? "All UI checks passed." : "\(failures.count) check(s) failed.")
-exit(failures.isEmpty ? 0 : 1)
+harnessProblems.forEach { print("HARNESS", $0) }
+if !harnessProblems.isEmpty { print("\(harnessProblems.count) harness problem(s): an input was missing; not a UI result.") }
+if !failures.isEmpty { print("\(failures.count) check(s) failed.") }
+if failures.isEmpty && harnessProblems.isEmpty { print("Pixel and capture checks passed (\(rows.count)).") }
+exit(failures.isEmpty && harnessProblems.isEmpty ? 0 : 1)

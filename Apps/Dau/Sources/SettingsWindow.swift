@@ -57,7 +57,6 @@ struct SettingsWindow: View {
             // title (measured on macOS 27.2, 1x display). Hence `PageTitle`,
             // `HiddenWindowTitle` and `RemoveToolbarTitle` below.
             .toolbar(removing: .sidebarToggle)
-            .layoutProbe("sidebar")
             // Must stay the last modifier of the column to take effect.
             .navigationSplitViewColumnWidth(SettingsScene.sidebarWidth)
         } detail: {
@@ -76,12 +75,6 @@ struct SettingsWindow: View {
         // span the column with the Form's own 20 pt margins.
         .frame(minWidth: SettingsScene.minSize.width, maxWidth: SettingsScene.maxWidth,
                minHeight: SettingsScene.minSize.height, maxHeight: .infinity)
-        .layoutProbe("window")
-        #if DEBUG
-        .onReceive(NotificationCenter.default.publisher(for: DebugCapture.selectSection)) { note in
-            if let raw = note.object as? String { selection = SettingsSection(rawValue: raw) }
-        }
-        #endif
     }
 }
 
