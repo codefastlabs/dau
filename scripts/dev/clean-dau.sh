@@ -174,6 +174,13 @@ for b in $bundles; do
     print -r -- "    Kéo $b vào Thùng rác bằng tay."
   fi
 done
+# A bundle that was never registered gets registered once it lands in the Trash
+# (measured 03/11/2026): unregister every copy there too.
+if (( ${#bundles} )); then
+  sleep 1
+  trashed=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E "^path: +$HOME/\.Trash/.*(Dau|DauInputMethod)\.app \(0x" | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
+  for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
+fi
 for d in $data; do
   rm -rf -- "$d"
   if [[ -e $d ]]; then
