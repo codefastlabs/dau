@@ -175,3 +175,13 @@ Mẫu ghi một dòng cho mỗi bước: `bước | biến thể | mã trả v�
 ## Đính chính (02/11/2026, sau khi dọn máy)
 
 Hai mục Dấu trong `com.apple.inputsources` có từ 30/10 (thời điểm sửa file), trước lần T4 hôm nay; macOS từ chối mọi tiến trình khác ghi miền này. Vì vậy máy của lần T4 thứ nhất chưa sạch, và kết luận "`TISEnableInputSource` đã ghi được, chỉ danh mục giao diện chưa cập nhật" ở mục 3 chưa có bằng chứng. Thử lại trên một tài khoản macOS mới.
+
+## Thử bằng bản thử (03/11/2026): không phải Dấu, không kết luận
+
+Bản thử là bản sao `DauInputMethod.app` Release, đổi bundle ID, ID mode, tên kết nối và tên hiển thị, ký Apple Development. Chưa kiểm bản thử có tái hiện đúng hành vi của Dấu không. Trạng thái đọc bằng `TISCreateInputSourceList` trong một tiến trình dòng lệnh mới (cách đọc này đã từng sai, mục 3), trừ chỗ ghi "người dùng xem". Máy macOS 27.2, mỗi biến thể một bản ở `/Library/Input Methods` và một bản ở `~/Library/Input Methods`.
+
+- ID không chứa `.inputmethod.` (`com.codefastlabs.dau.probe.…`): TIS không liệt kê, trước và sau một lần đăng nhập; danh sách "+" không có (người dùng xem).
+- ID `com.codefastlabs.dau.inputmethod.Probe…`: TIS liệt kê ngay sau `TISRegisterInputSource`. Danh sách "+" chưa xem.
+- `TISEnableInputSource` cho bản thử trả 0, mục cha vẫn tắt, `com.apple.inputsources` không đổi. Gọi từ công cụ dòng lệnh hay từ một app thử có bundle (không sandbox) đều không có hộp thoại xin phép; với app thử, Cài đặt hệ thống tự mở mục Bàn phím (người dùng xem).
+
+Các quan sát này không trả lời câu hỏi của tài liệu: lần cài đầu có phải đăng xuất không vẫn mở, trả lời bằng Dấu thật theo mục 5, xem cả danh sách "+". Đã gỡ hết bản thử khỏi máy.
