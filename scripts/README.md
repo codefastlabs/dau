@@ -4,7 +4,7 @@ Mỗi script có dòng `# Side effects:` ở đầu file (ngay sau dòng chú th
 
 | Đường dẫn | Làm gì | Tác dụng phụ | Ai chạy | Gọi từ |
 |---|---|---|---|---|
-| `scripts/check-docs/check.sh` | Kiểm tài liệu lệch (đường dẫn, số D/N, cách nói đã bị thay, cỡ file, ghi chú nghiên cứu, danh sách script). | none | agent | CLAUDE.md, `.claude/commands/milestone.md`, `.claude/agents/auditor.md` |
+| `scripts/check-docs/check.sh` | Kiểm tài liệu lệch (đường dẫn, số D/N, cách nói đã bị thay, mã commit, ghi chú nghiên cứu, danh sách script). | none | agent | CLAUDE.md, `.claude/commands/milestone.md`, `.claude/agents/auditor.md` |
 | `scripts/dau-version.sh` | Bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không. | none | agent | CLAUDE.md, docs/ARCHITECTURE.md |
 | `scripts/perf-report.sh` | Đọc nhật ký hệ thống, in p50/p99 từng thao tác của bộ gõ theo app. | none | agent | docs/COMPATIBILITY.md, `scripts/selftest-typing/run.sh` |
 | `scripts/stamp-build-commit.sh` | Ghi mã commit vào `build/generated/BuildCommit.txt` cho bản build. | builds | agent | `project.yml` (preGenCommand và build phase) |

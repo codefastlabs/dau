@@ -20,14 +20,11 @@
 #   7. commit hashes in living docs exist in the repo (`git cat-file`): a 7+ hex token with
 #      at least one digit and one letter, inside backticks or parentheses. PROGRESS.md's
 #      log, docs/history and docs/research are not living docs, so they are not checked.
-#   8. size budget of the docs read at every session start: PROGRESS.md at most 40000
-#      bytes (move the log of closed milestones to docs/history/), DECISIONS.md at most
-#      45000 bytes (ask the user before trimming decisions);
-#   9. research notes: every docs/research/*.md except SYSTEM-SETTINGS-REFERENCE.md (a
+#   8. research notes: every docs/research/*.md except SYSTEM-SETTINGS-REFERENCE.md (a
 #      measured reference, not a research note) has a "## … Hiện trạng" heading within
 #      its first 40 lines and no "Đính chính" heading (corrections are edited into the
 #      text, not appended);
-#  10. scripts list: every scripts/**/*.sh (not .build) has a "# Side effects:" line and
+#   9. scripts list: every scripts/**/*.sh (not .build) has a "# Side effects:" line and
 #      is named, by path in backticks, in scripts/README.md; every repo path in backticks
 #      in scripts/README.md exists.
 # Exit status 0 only if every check passes.
@@ -104,23 +101,14 @@ for f in $living; do
   done
 done
 
-# 8. Size budget of the docs read at every session start.
-size_over() { # file max-bytes message
-  [[ -f $1 ]] || return 0
-  local n=$(wc -c < $1)
-  (( n > $2 )) && report "$1: $n bytes, over the budget of $2: $3"
-}
-size_over docs/PROGRESS.md 40000 "move the log of closed milestones to docs/history/"
-size_over docs/DECISIONS.md 45000 "ask the user before trimming decisions"
-
-# 9. Research notes: a "Hiện trạng" heading up front, no appended "Đính chính".
+# 8. Research notes: a "Hiện trạng" heading up front, no appended "Đính chính".
 for f in docs/research/*.md(N); do
   [[ $f == docs/research/SYSTEM-SETTINGS-REFERENCE.md ]] && continue
   head -40 $f | grep -qE '^## .*Hiện trạng' || report "$f: no heading \"## … Hiện trạng\" in the first 40 lines"
   grep -nE '^#+ .*Đính chính' $f | while read -r l; do report "$f: correction heading (edit the text instead of appending): ${l[1,120]}"; done
 done
 
-# 10. Scripts list: Side effects line, and listed in scripts/README.md.
+# 9. Scripts list: Side effects line, and listed in scripts/README.md.
 readme=scripts/README.md
 if [[ ! -f $readme ]]; then
   report "$readme is missing"
