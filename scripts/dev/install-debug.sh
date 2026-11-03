@@ -113,14 +113,13 @@ echo
 echo "Đã cài bản $CONFIG của Dấu. Các bước còn lại do bạn làm trên máy:"
 cat <<'EOF'
 
-  1. Mở Cài đặt hệ thống › Bàn phím. Ở mục "Nguồn đầu vào" (Input Sources),
-     bấm "Sửa…" (Edit…).
-  2. Bấm nút "+" ở góc dưới bên trái danh sách.
-  3. Chọn ngôn ngữ "Tiếng Việt" (Vietnamese), chọn "Dấu – Tiếng Việt", bấm "Thêm".
+  1. Mở System Settings › Keyboard, mở danh sách nguồn nhập liệu (sheet "All Input
+     Sources", có nút "+" và "–" ở góc trái dưới).
+  2. Bấm "+", chọn "Vietnamese" ở cột trái, chọn "Dấu – Tiếng Việt", bấm "Add".
      Dấu chỉ có nguồn này (D2). Gõ tiếng Anh bằng ABC/U.S. sẵn có của macOS; nếu
-     danh sách còn "Dấu – Tiếng Anh" từ bản cũ thì bấm "–" để bỏ nó.
-     Trên macOS 27.2, nút "Bật Dấu" trong app có thể không bật được nguồn: cứ thêm
-     bằng "+" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào như trên.
+     danh sách còn "Dấu – Tiếng Anh" từ bản cũ thì chọn nó và bấm "–".
+  3. Trên macOS 27.2, nút "Bật Dấu" trong app có thể không bật được nguồn: cứ thêm bằng
+     "+" như bước 2.
   4. Nếu không thấy "Dấu" trong danh sách: đăng xuất rồi đăng nhập lại, sau đó làm lại
      từ bước 1 (lần cài đầu, hệ thống có thể chưa quét thư mục ~/Library/Input Methods).
   5. Chọn "Dấu – Tiếng Việt" trên menu nguồn nhập liệu ở thanh menu, hoặc bằng phím tắt
@@ -138,6 +137,6 @@ else
 fi
 cat <<'EOF'
 
-Gỡ bản thử: xoá ~/Library/Input Methods/DauInputMethod.app, bỏ "Dấu" khỏi Nguồn đầu vào,
+Gỡ bản thử: xoá ~/Library/Input Methods/DauInputMethod.app, bỏ "Dấu" bằng "–" trong System Settings › Keyboard › "All Input Sources" (trước khi xoá),
 rồi đăng xuất.
 EOF

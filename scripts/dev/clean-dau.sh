@@ -26,7 +26,7 @@
 #         third-party sources that are enabled): only reported. macOS lets only its input
 #         source service write it (System Policy denies `defaults import`, which still
 #         exits 0, measured 02/11/2026), so the script does not try; remove Dấu with "–"
-#         in System Settings › Bàn phím › Nguồn đầu vào.
+#         in System Settings › Keyboard › "All Input Sources" (before --yes).
 #   - LaunchServices registrations of any Dau.app / DauInputMethod.app copy;
 #   - the global debug defaults keys DauPerfLog and DauDebugForceUnderline.
 #
@@ -126,12 +126,22 @@ fi
 if (( ! DO )); then
   print "\nChưa xoá gì. Chạy lại với --yes để xoá những gì xoá được trong danh sách trên."
   if (( ${prefs[(I)com.apple.inputsources *]} )); then
-    print "Các mục trong com.apple.inputsources không xoá được bằng script (macOS từ chối ghi): bỏ Dấu bằng \"–\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào."
+    print "Các mục trong com.apple.inputsources không xoá được bằng script (macOS từ chối ghi): bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources") TRƯỚC khi chạy --yes."
   fi
   exit 0
 fi
 if [[ $selected == True ]]; then
   print -u2 "\nDấu đang được chọn: chuyển sang bàn phím khác rồi chạy lại."
+  exit 1
+fi
+# Order matters: once the bundle is gone System Settings no longer lists Dấu, so its
+# entries in com.apple.inputsources can no longer be removed with "–" and stay behind
+# (measured 03/11/2026). Stop before touching anything while those entries exist and the
+# bundle is still installed.
+if (( ${prefs[(I)com.apple.inputsources *]} )) && (( ${#bundles} )); then
+  print -u2 "\nDấu còn trong danh sách nguồn nhập liệu đang bật. Bỏ nó trước, rồi chạy lại:"
+  print -u2 "  System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources"): chọn dòng của Dấu, bấm \"–\", bấm Done."
+  print -u2 "Chưa xoá gì: xoá bộ gõ trước thì System Settings không còn hiện Dấu để bỏ."
   exit 1
 fi
 
@@ -193,7 +203,7 @@ for spec in $prefs; do
     # changes nothing): do not try, report what remains.
     left=$(inputsource_entries "$domain" "$key")
     notremoved "KHÔNG xoá được ($left mục của Dấu còn trong $domain › $key): macOS chỉ cho dịch vụ nguồn nhập liệu ghi domain này."
-    print -r -- "    Bỏ Dấu bằng \"–\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào."
+    print -r -- "    Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources")."
     continue
   fi
   if ! backup_domain "$domain"; then
@@ -214,7 +224,7 @@ sys.stdout.buffer.write(plistlib.dumps(data))' "$key" "$ID_PATTERN" > "$tmp" && 
     print -r -- "  đã bỏ các mục của Dấu: $domain › $key"
   else
     notremoved "KHÔNG bỏ được ($left mục còn lại): $domain › $key. Bản sao lưu: $backup_dir/$domain.plist"
-    print -r -- "    Gỡ trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào nếu Dấu còn trong danh sách;"
+    print -r -- "    Gỡ bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources") nếu Dấu còn trong danh sách;"
     print -r -- "    muốn thử cài lần đầu thật sạch thì dùng một tài khoản macOS mới."
   fi
 done

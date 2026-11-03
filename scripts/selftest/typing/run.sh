@@ -120,7 +120,7 @@ DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # disagree (TIS alone has been wrong on macOS 27.2).
 [[ -n "$DAU_SOURCE" ]] || {
   echo "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)." >&2
-  echo "Thêm bằng \"+\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào (scripts/dev/install-debug.sh nói rõ các bước)." >&2
+  echo "Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (scripts/dev/install-debug.sh nói rõ các bước)." >&2
   exit 1
 }
 if [[ "$KEYS" == *"⇄"* ]] && ! "$INPUT_SOURCE" enabled "$US_SOURCE" | grep -qx "$US_SOURCE"; then
@@ -194,7 +194,7 @@ select_dau() {
     [[ "$now" == "$DAU_SOURCE" ]] && return 0
     sleep 0.2
   done
-  echo "DỪNG: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì. Kiểm tra Dấu có trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào." >&2
+  echo "DỪNG: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì. Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"." >&2
   echo source > "$STOP_FILE"
   return 1
 }

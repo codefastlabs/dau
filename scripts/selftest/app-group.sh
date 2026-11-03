@@ -140,7 +140,7 @@ if ! im_running; then
   DAU_SOURCE="$(echo "$enabled_ids" | grep '\.vi$' | head -1)"
   [[ -n "$DAU_SOURCE" ]] || DAU_SOURCE="$(echo "$enabled_ids" | head -1)"
   if [[ -z "$DAU_SOURCE" ]]; then
-    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Thêm bằng \"+\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào (xem install-debug.sh), rồi chạy lại."
+    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (xem install-debug.sh), rồi chạy lại."
   fi
   # Measured (macOS 27.0.1): reselecting the already selected Dấu source launched the
   # input method once and did nothing the next time (TIS treats it as no change). The
