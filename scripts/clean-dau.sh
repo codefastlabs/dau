@@ -1,6 +1,7 @@
 #!/bin/zsh
-# Removes every trace of Dấu from this user account, so an install test (M5 T4) starts
-# from a machine that never had it.
+# Removes every trace of Dấu from this user account.
+# Side effects: none without --yes (only lists); with --yes: kills processes, deletes data, changes user settings, changes input source
+# It lets an install test (M5 T4) start from a machine that never had Dấu.
 #
 # Usage:
 #   scripts/clean-dau.sh         list what would be removed; changes nothing

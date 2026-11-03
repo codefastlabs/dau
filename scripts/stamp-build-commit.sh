@@ -1,6 +1,7 @@
 #!/bin/zsh
-# Xcode build phase (project.yml, Dau and DauInputMethod, before the other phases):
-# writes the git commit the build comes from to build/generated/BuildCommit.txt, short
+# Xcode build phase (project.yml, Dau and DauInputMethod, before the other phases).
+# Side effects: builds
+# It writes the git commit the build comes from to build/generated/BuildCommit.txt, short
 # hash, with "+" when tracked files had uncommitted changes ("6d7bf97+"). Both targets
 # copy the file into their Resources, so a new commit is copied and the bundle signed
 # again like any changed resource (stamping the built Info.plist after the fact broke

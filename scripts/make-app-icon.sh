@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 # Regenerates the temporary app icon (docs/BRAND.md "Biểu tượng", D25).
+# Side effects: writes repo files
 #
 #   scripts/make-app-icon.sh [<preview-dir>]
 #       Render Resources/Brand/AppIcon*.svg and

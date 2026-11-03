@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Builds the input method (universal, Debug unless --release) and installs it for the
-# current user in ~/Library/Input Methods, then stops the old input method process so
-# macOS loads the new one on the next key press.
+# Builds the input method and installs it for the current user.
+# Side effects: builds; unless --build-only: installs input method, kills processes
+# Universal, Debug unless --release, into ~/Library/Input Methods; then it stops the old
+# input method process so macOS loads the new one on the next key press.
 #
 # It does NOT register or enable the input source: that is the user's action in
 # System Settings (N4). The steps are printed at the end.
@@ -128,12 +129,12 @@ cat <<'EOF'
 EOF
 if [[ "$CONFIG" == Debug ]]; then
   cat <<'EOF'
-  7. Gõ thử theo docs/M2-TESTING.md. Muốn lấy số đo: bật nhật ký từng phím bằng
+  7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Muốn lấy số đo: bật nhật ký từng phím bằng
      `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf-report.sh, rồi tắt
      bằng `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
 EOF
 else
-  echo "  7. Gõ thử theo docs/M2-TESTING.md. Bản Release không ghi nhật ký từng phím (D8)."
+  echo "  7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Bản Release không ghi nhật ký từng phím (D8)."
 fi
 cat <<'EOF'
 

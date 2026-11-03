@@ -8,5 +8,5 @@ argument-hint: <M0..M8>
 2. Chia mốc thành việc nhỏ, ghi kế hoạch vào `docs/PROGRESS.md` (việc, agent phụ trách, việc nào chạy song song được).
 3. Giao việc cho subagent phù hợp. Việc độc lập thì giao song song. Mỗi lần giao: nêu rõ phạm vi, file được sửa, tiêu chí xong.
 4. Sau mỗi kết quả: đọc 5 mục báo cáo, chạy lại lệnh kiểm chứng và `scripts/check-docs/check.sh`, commit nếu xanh. Mâu thuẫn hoặc câu hỏi mở thì ghi vào `docs/PROGRESS.md`.
-5. Gọi `auditor` một lần khi mốc xong. CHƯA ĐẠT thì giao sửa các mục "chặn", rồi kiểm toán lại chỉ trên danh sách đó; mục "ghi chú" vào `docs/PROGRESS.md`.
-6. Đóng mốc: cập nhật `docs/PROGRESS.md` (đã làm, số đo, câu hỏi mở), tóm tắt cho người dùng, liệt kê việc người dùng cần làm. Chỉ chuyển mốc tiếp khi không còn việc chờ người dùng chặn đường.
+5. Gọi `auditor` một lần khi mốc xong, rà cả **nội dung** `docs/` và `scripts/` (mâu thuẫn giữa các file, giả thiết ghi như sự thật, nhật ký có kết luận đã bị bác mà chưa đánh dấu), không chỉ `check.sh`. CHƯA ĐẠT thì giao sửa các mục "chặn", rồi kiểm toán lại chỉ trên danh sách đó; mục "ghi chú" vào `docs/PROGRESS.md`.
+6. Đóng mốc: cập nhật `docs/PROGRESS.md` (đã làm, số đo, câu hỏi mở), chuyển nhật ký và ghi nhớ của mốc sang `docs/history/` (thêm vào mục lục `docs/README.md`), tóm tắt cho người dùng, liệt kê việc người dùng cần làm. Chỉ chuyển mốc tiếp khi không còn việc chờ người dùng chặn đường.

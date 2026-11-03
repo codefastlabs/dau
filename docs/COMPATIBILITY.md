@@ -17,7 +17,7 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 
 - Header `IMKInputSession.h` (HIToolbox, SDK macOS 27.0) ghi: nếu client không hỗ trợ TSMDocumentAccess thì `selectedRange` trả `NSNotFound` và `replacementRange` bị bỏ qua; header cũng ghi client như vậy "cực kỳ hiếm" và hệ thống văn bản Cocoa có hỗ trợ. Bộ gõ đếm trường hợp này là `unsupported`. Trang tài liệu web của `IMKTextInput` trả 404 (đã ghi ở `docs/OPENKEY-NOTES.md` mục 5); phía ứng dụng: https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange() và https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
 - Lỗi đã đo được ở M2 không phải `unsupported` mà là **ứng dụng áp phím bất đồng bộ**: Chrome, VS Code, Terminal trả một vị trí cũ khi phím đến dồn (mục 6.2). Vì vậy công nghệ giao diện là dấu hiệu dự đoán tốt nhất trước khi thử: Chromium/Electron và terminal dễ gặp lỗi này; AppKit/WebKit (TextEdit, Safari) thì chưa thấy. Đây là suy luận từ 5 ứng dụng, cần kiểm chứng trên từng ứng dụng.
-- Gạch chân dùng `setMarkedText(_:selectionRange:replacementRange:)`; theo cùng header, chuỗi thường sẽ được gạch chân mặc định. Gạch chân có giải được lỗi bất đồng bộ không: T1 đã đo (30/10/2026, D13, `docs/PROGRESS.md` nhật ký 30/10): sửa được Chrome và VS Code ở 0 ms; Terminal ở 0 ms vẫn lỗi (còn vẽ marked text cũ). Kết quả từng app ở mục 5.
+- Gạch chân dùng `setMarkedText(_:selectionRange:replacementRange:)`; theo cùng header, chuỗi thường sẽ được gạch chân mặc định. Gạch chân có giải được lỗi bất đồng bộ không: T1 đã đo (30/10/2026, D13, `docs/history/LOG-M0-M4.md` nhật ký 30/10): sửa được Chrome và VS Code ở 0 ms; Terminal ở 0 ms vẫn lỗi (còn vẽ marked text cũ). Kết quả từng app ở mục 5.
 
 Cách ghi công nghệ ở mục 3: đọc từ bundle trên máy này (thư mục `Contents/Frameworks`, `otool -L` của file chạy; chỉ đọc, không mở app) khi app có trên máy; app không có trên máy thì ghi theo hiểu biết chung và đánh dấu "suy luận".
 
@@ -80,9 +80,14 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 
 ### 4.1 Chuẩn bị
 
-1. Làm theo `docs/M2-TESTING.md` mục 0: thoát bộ gõ tiếng Việt khác, `scripts/install-debug.sh`, bật và chọn "Dấu – Tiếng Việt". Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu", chọn lại Dấu **sau khi** chuyển sang ứng dụng cần thử.
-2. Ghi lại: ngày, commit của Dấu, phiên bản ứng dụng, phiên bản macOS, chế độ gạch chân của ứng dụng đó (Không / Có).
-3. Chỉ gõ vào ô nháp: tài liệu mới không lưu, Saved Messages của Telegram, ô soạn tin không gửi. Không gửi tin nhắn, không lưu tệp nếu người dùng chưa cho phép (như M2).
+1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
+2. Trong Terminal, ở thư mục repo, chạy `scripts/install-debug.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
+3. Làm theo các bước script in ra: Cài đặt hệ thống › Bàn phím › Nguồn đầu vào › Sửa… › "+" › Tiếng Việt › "Dấu – Tiếng Việt" › Thêm. Dấu chỉ có nguồn này (D2); gõ tiếng Anh bằng ABC/U.S. của macOS, nên giữ ABC (hoặc U.S.) trong danh sách. Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó. Không thấy "Dấu" thì đăng xuất, đăng nhập lại rồi làm lại (lần cài đầu có bắt buộc đăng xuất hay không còn mở: `docs/research/M5-INSTALL.md`).
+4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu. Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng hoặc cửa sổ nhớ nguồn riêng: chọn lại Dấu **sau khi** chuyển sang ứng dụng cần thử, và nhìn biểu tượng V trên thanh menu trước khi gõ.
+5. (Tuỳ chọn, để xem lỗi nếu bộ gõ không chạy) mở một cửa sổ Terminal riêng: `/usr/bin/log stream --predicate 'process == "DauInputMethod"'`. Trong zsh, `log` là một lệnh có sẵn khác, nên phải gõ đường dẫn đầy đủ.
+6. Muốn có số đo (mục 4.4): bật nhật ký từng phím **trước khi gõ** bằng `defaults write -g DauPerfLog -bool true`. Chỉ bản Debug có nhật ký này, bản Release không có (D8). Không bật thì `perf-report.sh` không có dòng nào để đọc. Khi bật, bản Debug ghi một dòng log cho mỗi phím, category `perf`, chỉ gồm loại sự kiện, thời gian (ns) và bundle ID của ứng dụng đang gõ, **không** ghi chữ bạn gõ (D8). Tự kiểm: `/usr/bin/log show --last 5m --predicate 'category == "perf"' --style compact`. Nhớ tắt sau khi đo (mục 4.4).
+7. Ghi lại: ngày, commit của Dấu, phiên bản ứng dụng, phiên bản macOS, chế độ gạch chân của ứng dụng đó (Không / Có).
+8. Chỉ gõ vào ô nháp: tài liệu mới không lưu, Saved Messages của Telegram, ô soạn tin không gửi. Không gửi tin nhắn, không lưu tệp nếu người dùng chưa cho phép (như M2).
 
 ### 4.2 Gõ câu mẫu
 
@@ -125,36 +130,38 @@ scripts/perf-report.sh --last 5m --app <tên app hoặc một phần bundle ID>
 - `selectedRange_us` p50 / p99 (chi phí cách A).
 - `insertText_us`, `handle_replace_us` p50 / p99 (ghi ở cột Ghi chú nếu có).
 - `count_mismatch` (vị trí con trỏ khác dự đoán), `count_unsupported` (ứng dụng trả `NSNotFound`, dấu hiệu cần gạch chân), `count_replace`, `count_pass`.
-- `event_client-changed`, `event_client-not-text-input`: khác 0 thì báo lại ngay (xem `docs/M2-TESTING.md` mục 2).
+- `event_client-changed`: số lần client đổi dưới cùng một controller. Tăng theo từng phím thì là lỗi (bộ gõ sẽ không bỏ dấu được).
+- `event_client-not-text-input`: client không trả lời được giao thức nhập văn bản.
+- Hai dòng `event_client-…` khác 0 thì báo lại ngay.
 
-Số đo lấy từ bản Debug, có thêm một lần hỏi chẩn đoán sau mỗi lần thay (`ReplaceDiag.swift`), nên không phải số của bản Release. Cần p99 đáng tin thì gõ thêm vài trăm phím có dấu trong cùng ứng dụng rồi chạy lại.
+Số đo lấy từ bản Debug, có thêm một lần hỏi chẩn đoán sau mỗi lần thay (`ReplaceDiag.swift`), nên không phải số của bản Release. Cần p99 đáng tin thì gõ thêm vài trăm phím có dấu trong cùng ứng dụng rồi chạy lại. Đo xong thì tắt nhật ký từng phím: `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
 
 ## 5. Kết quả
 
-"30 ms", "0 ms": tự gõ bằng `scripts/selftest-typing/run.sh` hoặc System Events. Số µs là `selectedRange` ở 30 ms/phím, phím có thay chữ, trừ khi ghi khác. "—": chưa đo mục đó. Gạch chân ở 0 ms của Chrome, VS Code, Terminal, TextEdit, Safari: lượt T1 (30/10/2026, gạch chân ép bằng `DauDebugForceUnderline`, `docs/PROGRESS.md` nhật ký 30/10). K7 (D20): lượt T2 (30/10/2026, chuỗi K7 ở 120 ms, `docs/PROGRESS.md` "Số đo" 30/10) cho TextEdit, Safari, Chrome, VS Code, Terminal; lượt T6 cho Firefox, Edge, Notes. Phiên bản ứng dụng lúc đo M2 không được ghi lại.
+"30 ms", "0 ms": tự gõ bằng `scripts/selftest-typing/run.sh` hoặc System Events. Số µs là `selectedRange` ở 30 ms/phím, phím có thay chữ, trừ khi ghi khác. "—": chưa đo mục đó. Gạch chân ở 0 ms của Chrome, VS Code, Terminal, TextEdit, Safari: lượt T1 (30/10/2026, gạch chân ép bằng `DauDebugForceUnderline`, `docs/history/LOG-M0-M4.md` nhật ký 30/10). K7 (D20): lượt T2 (30/10/2026, chuỗi K7 ở 120 ms, `docs/PROGRESS.md` "Số đo" 30/10) cho TextEdit, Safari, Chrome, VS Code, Terminal; lượt T6 cho Firefox, Edge, Notes. Phiên bản ứng dụng lúc đo M2 không được ghi lại.
 
 | Ứng dụng | Ngày | Cách thử | 30 ms | 0 ms | Gõ tay | Gạch chân / nhảy chữ (K2, K3) | K4–K6 | K7 (D20) | Tự sửa (K8) | `selectedRange` p50 / p99 µs | mismatch / unsupported | Cần gạch chân? | Nguồn |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| TextEdit | 29–30/10/2026 | script + gõ tay | đúng | đúng; gạch chân 0 và 30 ms: đúng (T1) | đúng | không / không | ĐẠT (K6 theo mong đợi cũ, xem dưới bảng) | ĐẠT (T2, 120 ms) | chưa ghi riêng | 327 / 606 | 0 / — | chưa thấy lỗi | PROGRESS "Số đo" 29/10; M2-TESTING mục 2, 4; PROGRESS nhật ký 30/10 (script PASS sau đổi bundle ID; T1, T2) |
-| Safari | 29/10/2026; K4 30/10/2026 | script + gõ tay | đúng | đúng; gạch chân 0 và 30 ms: đúng (T1) | đúng | không / không | K4 ĐẠT ("hò", 30 ms) | ĐẠT (T2, 120 ms) | — | 622 / 1.057 | 0 / — | chưa thấy lỗi | PROGRESS "Số đo" 29/10, 30/10; M2-TESTING mục 2 |
-| Chrome | 29/10/2026; K4, T1, T2 30/10/2026 | script + gõ tay | đúng | **sai** (mismatch 3–4, thay nhầm vùng ở lần thay đầu của từ); 5 và 10 ms đúng; 0 ms gạch chân: **đúng** (T1) | đúng | không / không ở 30 ms | K4 **SAI** ở cbb8179 ("h", 120 ms); đã sửa: ĐẠT ("hò" ở 120 ms và chạy lại ở 30 ms, mục 6.4) | ĐẠT (T2, 120 ms) | — | 415 / 694 | 0 / — (ở 30 ms) | có, đề xuất (D13: sai ở 0 ms, gạch chân sửa được) | PROGRESS "Số đo" 29/10, 30/10; PROGRESS nhật ký 30/10 (T1); M2-TESTING mục 2 |
+| TextEdit | 29–30/10/2026 | script + gõ tay | đúng | đúng; gạch chân 0 và 30 ms: đúng (T1) | đúng | không / không | ĐẠT (K6 theo mong đợi cũ, xem dưới bảng) | ĐẠT (T2, 120 ms) | chưa ghi riêng | 327 / 606 | 0 / — | chưa thấy lỗi | PROGRESS "Số đo" 29/10; `docs/history/M2-TESTING.md` mục 2, 4; `docs/history/LOG-M0-M4.md` nhật ký 30/10 (script PASS sau đổi bundle ID; T1, T2) |
+| Safari | 29/10/2026; K4 30/10/2026 | script + gõ tay | đúng | đúng; gạch chân 0 và 30 ms: đúng (T1) | đúng | không / không | K4 ĐẠT ("hò", 30 ms) | ĐẠT (T2, 120 ms) | — | 622 / 1.057 | 0 / — | chưa thấy lỗi | PROGRESS "Số đo" 29/10, 30/10; `docs/history/M2-TESTING.md` mục 2 |
+| Chrome | 29/10/2026; K4, T1, T2 30/10/2026 | script + gõ tay | đúng | **sai** (mismatch 3–4, thay nhầm vùng ở lần thay đầu của từ); 5 và 10 ms đúng; 0 ms gạch chân: **đúng** (T1) | đúng | không / không ở 30 ms | K4 **SAI** ở cbb8179 ("h", 120 ms); đã sửa: ĐẠT ("hò" ở 120 ms và chạy lại ở 30 ms, mục 6.4) | ĐẠT (T2, 120 ms) | — | 415 / 694 | 0 / — (ở 30 ms) | có, đề xuất (D13: sai ở 0 ms, gạch chân sửa được) | PROGRESS "Số đo" 29/10, 30/10; `docs/history/LOG-M0-M4.md` nhật ký 30/10 (T1); `docs/history/M2-TESTING.md` mục 2 |
 | Firefox | 30/10/2026 | script (158.0.1, trang thử cục bộ, `spellcheck=false`) | đúng | **sai**, chữ nhảy chỗ ("ar ấki tj, Hangs Vieu tiei yeoindows ca", mismatch 4); 5 ms sai (mismatch 1); 10 ms đúng; 0 ms gạch chân: **đúng** (mark 38) | — | — / **có nhảy chữ ở 0 ms** | K4 ĐẠT ("hò"); K5, K6 chưa thử | ĐẠT ("học", 120 ms) | không (trang thử tắt kiểm tra chính tả) | 265 / 1.174 | 0 / 0 (30 ms) | có, đề xuất (sai ở 0–5 ms, gạch chân sửa được; vào danh sách ở 61daeec) | T6 30/10/2026 (mục 5.1). `insertText` 752 / 3.365 µs; `handle` phím có thay 1.171 / 4.113 µs; replace 12, pass 33 |
 | Edge | 30/10/2026 | script (155.0, trang thử cục bộ, `spellcheck=false`) | đúng | **sai** ("ưấrndows ca toi yeu tiengs Vietj, Suni", mismatch 4); 5 ms sai (mismatch 1); 10 ms đúng; 0 ms gạch chân: **đúng** | — | không / không ở 30 ms | K4 **SAI** ở cbb8179 ("h": mất 2 chữ) ở 30 và 120 ms; đã sửa: ĐẠT ("hò", 120 ms, mục 6.4); gạch chân: ĐẠT. K5, K6 chưa thử | ĐẠT ("học", 120 ms) | không (trang thử tắt kiểm tra chính tả) | 369 / 6.828 | 0 / 0 (30 ms) | có (đã trong danh sách; nay có số đo) | T6 30/10/2026 (mục 5.1). `insertText` 1.184 / 8.661 µs; `handle` phím có thay 1.527 / 15.851 µs (n=12, p99 là một lần chậm); replace 12, pass 33 |
 | Arc | chưa thử | | | | | | | | | | | | |
 | Brave | chưa thử | | | | | | | | | | | | |
-| VS Code | 29/10/2026; K4, T1, T2 30/10/2026 | script | đúng | **sai**; 5 ms sai. 10 ms: M2 (29/10/2026) sai ("ôoi"), lượt T1 sau đó (30/10/2026, câu mẫu đã đổi) đúng; từ 20 ms đúng. Gạch chân 0 và 5 ms: **đúng** (T1) | — | không / không ở 30 ms | K4 **SAI** ở cbb8179 ("h", 30 ms); đã sửa: ĐẠT ("hò" ở 120 ms và chạy lại ở 30 ms, mục 6.4) | ĐẠT (T2, 120 ms) | — | 230 / 885 | 0 / — (ở 30 ms) | có, đề xuất (D13: sai ở 0 và 5 ms, gạch chân sửa được) | PROGRESS "Số đo" 29/10, 30/10, nhật ký chẩn đoán 29/10 và nhật ký 30/10 (T1) |
+| VS Code | 29/10/2026; K4, T1, T2 30/10/2026 | script | đúng | **sai**; 5 ms sai. 10 ms: M2 (29/10/2026) sai ("ôoi"), lượt T1 sau đó (30/10/2026, câu mẫu đã đổi) đúng; từ 20 ms đúng. Gạch chân 0 và 5 ms: **đúng** (T1) | — | không / không ở 30 ms | K4 **SAI** ở cbb8179 ("h", 30 ms); đã sửa: ĐẠT ("hò" ở 120 ms và chạy lại ở 30 ms, mục 6.4) | ĐẠT (T2, 120 ms) | — | 230 / 885 | 0 / — (ở 30 ms) | có, đề xuất (D13: sai ở 0 và 5 ms, gạch chân sửa được) | PROGRESS "Số đo" 29/10, 30/10; `docs/history/LOG-M0-M4.md` nhật ký chẩn đoán 29/10 và nhật ký 30/10 (T1) |
 | Cursor | chưa thử | | | | | | | | | | | | |
 | Zed | chưa thử | | | | | | | | | | | | |
 | Sublime Text | 29/10/2026 | gõ tay | — | — | có số đo; kết quả chữ không được ghi | — | — | — | — | 334 / 3.718 (gõ tay, n=35, sơ bộ) | — | chưa đủ dữ liệu | PROGRESS "Số đo" 29/10; DECISIONS câu hỏi A/B (selectedRange 17% thời gian phím) |
 | JetBrains IDE | chưa thử | | | | | | | | | | | | |
 | Xcode | chưa thử | | | | | | | | | | | | |
-| Terminal | 29/10/2026; T1, T2 30/10/2026 | script | đúng | **sai**; 5 và 10 ms đúng. Gạch chân 0 ms: **vẫn sai** (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau); gạch chân 5–30 ms đúng (T1) | — | không / không ở 30 ms | — | ra "hocj…" (T2: ⌫ không tới bộ gõ, mục 6.5) | — | 408 / 637 | 0 / — (ở 30 ms) | không đề xuất (D13: gạch chân không sửa được ở 0 ms) | PROGRESS "Số đo" 29/10, 30/10; PROGRESS nhật ký 30/10 (T1, T2) |
+| Terminal | 29/10/2026; T1, T2 30/10/2026 | script | đúng | **sai**; 5 và 10 ms đúng. Gạch chân 0 ms: **vẫn sai** (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau); gạch chân 5–30 ms đúng (T1) | — | không / không ở 30 ms | — | ra "hocj…" (T2: ⌫ không tới bộ gõ, mục 6.5) | — | 408 / 637 | 0 / — (ở 30 ms) | không đề xuất (D13: gạch chân không sửa được ở 0 ms) | PROGRESS "Số đo" 29/10, 30/10; `docs/history/LOG-M0-M4.md` nhật ký 30/10 (T1, T2) |
 | iTerm2 | chưa thử | | | | | | | | | | | | |
 | Warp | chưa thử | | | | | | | | | | | | |
 | Ghostty | chưa thử | | | | | | | | | | | | |
 | Zalo | chưa thử | | | | | | | | | | | | |
 | Messenger (web) | chưa thử | | | | | | | | | | | | |
-| Telegram | 30/10/2026 | System Events, 30 ms, Saved Messages, không gửi | đúng (câu mẫu cũ) | — | — | không / không | — | — | — | 240 / 1.670 | 0 / 0 | chưa thấy lỗi | PROGRESS "Số đo" 30/10; M2-TESTING mục 2. `insertText` p50 1.830 / p99 3.491 µs; cả phím có thay p50 2.171 / p99 5.313 µs; replace 12, pass 34. M2-TESTING mục 4 dòng 3 (Return ngay sau từ) bỏ qua vì không gửi tin |
+| Telegram | 30/10/2026 | System Events, 30 ms, Saved Messages, không gửi | đúng (câu mẫu cũ) | — | — | không / không | — | — | — | 240 / 1.670 | 0 / 0 | chưa thấy lỗi | PROGRESS "Số đo" 30/10; `docs/history/M2-TESTING.md` mục 2. `insertText` p50 1.830 / p99 3.491 µs; cả phím có thay p50 2.171 / p99 5.313 µs; replace 12, pass 34. `docs/history/M2-TESTING.md` mục 4 dòng 3 (Return ngay sau từ) bỏ qua vì không gửi tin |
 | Telegram Desktop | chưa thử | | | | | | | | | | | | |
 | Discord | chưa thử | | | | | | | | | | | | |
 | Slack | chưa thử | | | | | | | | | | | | |
@@ -178,7 +185,7 @@ Số đo lấy từ bản Debug, có thêm một lần hỏi chẩn đoán sau m
 | Raycast | chưa thử | | | | | | | | | | | | |
 | Alfred | chưa thử | | | | | | | | | | | | |
 
-K4–K6 của TextEdit: M2-TESTING mục 4 dòng 1, 4, 5, 6 (30/10/2026, agent tự gõ qua System Events); K4 chạy lại bằng script ngày 30/10/2026 (T6, 120 ms): ĐẠT. K6 ĐẠT theo mong đợi cũ (thêm "s", không bỏ dấu), trước khi có D20; mong đợi mới theo D4 × D20 ("tối" khi D20 bật) chưa chạy lại. Các app khác chưa chạy K5, K6: làm tiếp ở M6 (mục 7).
+K4–K6 của TextEdit: `docs/history/M2-TESTING.md` mục 4 dòng 1, 4, 5, 6 (30/10/2026, agent tự gõ qua System Events); K4 chạy lại bằng script ngày 30/10/2026 (T6, 120 ms): ĐẠT. K6 ĐẠT theo mong đợi cũ (thêm "s", không bỏ dấu), trước khi có D20; mong đợi mới theo D4 × D20 ("tối" khi D20 bật) chưa chạy lại. Các app khác chưa chạy K5, K6: làm tiếp ở M6 (mục 7).
 
 ### 5.1 Lượt T6 ngày 30/10/2026
 
@@ -193,7 +200,7 @@ K4–K6 của TextEdit: M2-TESTING mục 4 dòng 1, 4, 5, 6 (30/10/2026, agent t
 ### 6.1 Tự sửa chính tả của macOS đè lên chữ đã giữ (D4) — ghi ngày 30/10/2026
 
 - Hiện tượng: từ macOS 27.2, ở ứng dụng bật tự sửa chính tả, khi phía trước là câu tiếng Việt, hệ thống có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt ("…Sunrise car␣" → "cả"), **kể cả khi gõ bằng bàn phím U.S.**. Việc này xảy ra sau khi Dấu đã trả đúng "car", nên đè lên kết quả gõ đúp ("carr" → "car").
-- Bằng chứng: `docs/DECISIONS.md` D4 (đoạn "Giới hạn đã biết"); `docs/PROGRESS.md` nhật ký 30/10/2026 (câu mẫu `selftest-typing` đổi thành "windows carr tooi yeeu tieengs Vieetj, Sunrise " để né, 3/3 ĐẠT); chú thích đầu `scripts/selftest-typing/run.sh`. Nguồn không ghi ứng dụng cụ thể đã quan sát; T6 điền cột "Tự sửa" cho từng app bằng K8.
+- Bằng chứng: `docs/DECISIONS.md` D4 (đoạn "Giới hạn đã biết"); `docs/history/LOG-M0-M4.md` nhật ký 30/10/2026 (câu mẫu `selftest-typing` đổi thành "windows carr tooi yeeu tieengs Vieetj, Sunrise " để né, 3/3 ĐẠT); chú thích đầu `scripts/selftest-typing/run.sh`. Nguồn không ghi ứng dụng cụ thể đã quan sát; T6 điền cột "Tự sửa" cho từng app bằng K8.
 - Dấu không tắt tự sửa của hệ thống (N4). Người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa. Tự sửa là thuộc tính của từng ô soạn thảo do ứng dụng quyết định (ví dụ `NSTextView.isAutomaticSpellingCorrectionEnabled`, https://developer.apple.com/documentation/appkit/nstextview/isautomaticspellingcorrectionenabled), nên ứng dụng không dùng hệ thống văn bản của Apple có thể không bị (suy luận, cần kiểm chứng bằng K8).
 
 ### 6.2 Ứng dụng áp phím bất đồng bộ (câu hỏi A/B) — ghi ngày 29/10/2026
@@ -201,12 +208,12 @@ K4–K6 của TextEdit: M2-TESTING mục 4 dòng 1, 4, 5, 6 (30/10/2026, agent t
 - Hiện tượng: Chrome, VS Code, Terminal đúng khi phím cách nhau từ 20 ms, nhưng sai khi phím đến dồn: dưới khoảng 10 ms ở Chrome, Terminal; dưới khoảng 20 ms ở VS Code. Các app này áp phím bất đồng bộ (Chromium/Electron; Terminal chờ shell in lại chữ), nên `selectedRange` trả ảnh chụp cũ; bộ gõ thấy lệch (`mismatch`), reset từ đang gõ, chữ ra thiếu dấu hoặc thay nhầm vùng. Ảnh chụp không cập nhật trong lúc `handle` đang chạy (hỏi lại 10 lần, cách 2 ms, vẫn y nguyên).
 - Ví dụ lượt tự gõ đầu tiên ngày 29/10: VS Code ra "arroi yeu tiengs Vietj, ?indows Suni c", Terminal ra "tôi yêu tiêngs Viêtj, windows Sủnise car".
 - Không phải do thiếu quyền Trợ năng (bộ gõ không có quyền đó mà vẫn đúng ở 20 ms trở lên). Cách B (tự cộng dồn vị trí) cũng không cứu được, vì vị trí gốc cũng là ảnh chụp cũ và VS Code đổi gốc toạ độ. Đã thử và bỏ: chờ ứng dụng rồi hỏi lại; so chữ trước con trỏ bằng `attributedSubstring` (Safari trả chữ cũ nên hỏng cả Safari).
-- Bằng chứng: `docs/DECISIONS.md` câu hỏi A/B (đã chốt cách A) và câu hỏi Chrome/Terminal; `docs/PROGRESS.md` mục "Số đo" (dòng "Cách A theo tốc độ gõ") và nhật ký 29/10 (chẩn đoán VS Code/Terminal).
+- Bằng chứng: `docs/DECISIONS.md` câu hỏi A/B (đã chốt cách A) và câu hỏi Chrome/Terminal; `docs/PROGRESS.md` mục "Số đo" (dòng "Cách A theo tốc độ gõ") và `docs/history/LOG-M0-M4.md` nhật ký 29/10 (chẩn đoán VS Code/Terminal).
 - Hướng xử lý: M3 việc T1 thử gạch chân (D13) theo bundle ID, đo ở 0, 5, 10 ms rồi chốt. Đã làm (30/10/2026): kết quả ở D13 và mục 5; lượt T1 với câu mẫu mới, VS Code đúng từ 10 ms. Người gõ tay hiếm khi có hai phím cách nhau dưới 10 ms, nhưng phím lặp khi giữ phím, máy đang tải nặng hay ứng dụng tạm đứng có thể làm phím đến dồn (suy luận; M6 đo dưới tải).
 
 ### 6.3 Ô mật khẩu — ghi ngày 30/10/2026
 
-Ở ô nhập bảo mật (ví dụ ô mật khẩu trong Safari), macOS giữ bàn phím `com.apple.keylayout.US` và Dấu không nhận phím nào. Đây là hành vi của hệ thống, không phải lỗi. Nguồn: `docs/M2-TESTING.md` mục 4 dòng 17.
+Ở ô nhập bảo mật (ví dụ ô mật khẩu trong Safari), macOS giữ bàn phím `com.apple.keylayout.US` và Dấu không nhận phím nào. Đây là hành vi của hệ thống, không phải lỗi. Nguồn: `docs/history/M2-TESTING.md` mục 4 dòng 17.
 
 ### 6.4 Backspace thay chữ tại chỗ bị xoá hai lần trong Chromium/Electron (D32) — ghi ngày 30/10/2026, đã sửa cùng ngày
 
@@ -220,7 +227,7 @@ K4–K6 của TextEdit: M2-TESTING mục 4 dòng 1, 4, 5, 6 (30/10/2026, agent t
 
 ### 6.5 Terminal không gửi ⌫ cho bộ gõ (D32) — ghi ngày 30/10/2026
 
-Phát hiện ở M3 T2 (`docs/PROGRESS.md` nhật ký 30/10/2026): Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó (K7 ra "hocj", ARCHITECTURE.md). T6 chưa kiểm chứng lại bằng `hoaf⌫␣` vì lượt thử dừng sớm; làm ở M6 (mục 7).
+Phát hiện ở M3 T2 (`docs/history/LOG-M0-M4.md` nhật ký 30/10/2026): Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó (K7 ra "hocj", ARCHITECTURE.md). T6 chưa kiểm chứng lại bằng `hoaf⌫␣` vì lượt thử dừng sớm; làm ở M6 (mục 7).
 
 ### 6.6 Biểu tượng nguồn nhập liệu trên máy nhiều màn hình — ghi ngày 30/10/2026, đã sửa cùng ngày
 

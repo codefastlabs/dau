@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Types a sentence into real apps with the Dấu input method and checks the text that
-# comes out. Needs the Accessibility permission for the process running the script
+# Types a sentence into real apps with the Dấu input method and checks the text.
+# Side effects: builds, takes the screen, changes input source, changes user settings
+# Needs the Accessibility permission for the process running the script
 # (System Events keystrokes); the Debug input method must be installed, the Dấu input
 # source enabled (scripts/install-debug.sh), and the apps installed.
 #
@@ -106,7 +107,7 @@ build_helper() { # name source
     xcrun swiftc -O -o "$BIN/$1" "$2" || { echo "Không biên dịch được $2" >&2; exit 1; }
   fi
 }
-build_helper input-source "$ROOT/scripts/selftest-app-group/input-source.swift"
+build_helper input-source "$ROOT/scripts/lib/input-source.swift"
 build_helper clipboard "$HERE/clipboard.swift"
 INPUT_SOURCE="$BIN/input-source"
 CLIPBOARD="$BIN/clipboard"

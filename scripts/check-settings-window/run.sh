@@ -1,5 +1,6 @@
 #!/bin/zsh
 # UI checks of the real Settings window (docs/UI-CHECKS.md).
+# Side effects: builds, takes the screen, kills processes
 #
 # Usage: scripts/check-settings-window/run.sh <output-dir> [Dau.app]
 #

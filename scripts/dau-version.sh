@@ -1,5 +1,6 @@
 #!/bin/zsh
 # Which build of Dấu is installed and running, against the repo.
+# Side effects: none
 #
 # Usage: scripts/dau-version.sh
 #

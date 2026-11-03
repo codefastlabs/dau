@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Prints per-app timing of the input method from the unified log (approach A, N3/D11):
-# p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole
+# Prints per-app timing of the input method from the unified log.
+# Side effects: none
+# Approach A (N3/D11): p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole
 # `handle`, plus event counts.
 #
 # Debug builds only (Release logs nothing per key, D8). The input method logs one line

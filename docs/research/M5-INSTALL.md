@@ -13,7 +13,7 @@ Mỗi khẳng định mang một nhãn. Chỗ không có nguồn ghi đúng "kh�
 | **[Apple]** | tài liệu, header SDK, ghi chú phát hành hoặc bài diễn đàn của Apple (kể cả DTS) |
 | **[Ngoài]** | dự án hoặc diễn đàn khác: báo cáo, PR, README, hoặc mã nguồn của dự án đó (ghi "mã" nếu là mã) |
 | **[Máy/hệ thống]** | đọc file hệ thống hoặc nhật ký trên máy này; ghi lệnh hoặc ngày |
-| **[Máy/Dấu]** | đo bằng Dấu thật (nhật ký của `docs/PROGRESS.md`, dẫn theo ngày) |
+| **[Máy/Dấu]** | đo bằng Dấu thật (nhật ký của `docs/PROGRESS.md` và `docs/history/LOG-M0-M4.md`, dẫn theo ngày) |
 | **[Máy/bản thử]** | đo bằng bản thử, **không phải Dấu**; chỉ nằm ở mục 8, không rút kết luận |
 | **[Diễn giải mã máy]** | người nghiên cứu đọc mã máy hoặc mã nguồn dự án khác và tự diễn giải; không có tài liệu Apple xác nhận |
 | **[Suy luận, cần kiểm chứng]** | chưa ai đo |

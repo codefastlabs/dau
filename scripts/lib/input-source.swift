@@ -1,4 +1,4 @@
-// Small helper for scripts/selftest-app-group.sh.
+// Small helper for scripts/selftest-app-group.sh and scripts/selftest-typing/run.sh.
 //
 //   input-source current          prints the ID of the selected keyboard input source
 //   input-source select <ID>      selects an input source that is ALREADY enabled

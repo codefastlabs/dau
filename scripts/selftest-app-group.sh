@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Self test, without typing: does a setting saved by the host app reach the input method
-# through the App Group suite and the Darwin notification?
+# Self test, without typing, of the settings path from the host app to the input method.
+# Side effects: builds, changes input source, changes user settings; with --install also: installs input method, kills processes
+# Does a setting saved by the host app reach the input method through the App Group
+# suite and the Darwin notification?
 #
 #   1. Builds Debug (universal) into build/DerivedData.noindex (scheme Dau, which includes
 #      the input method). By default the input method already installed in
@@ -49,7 +51,7 @@ DERIVED="$ROOT/build/DerivedData.noindex"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
 IM_APP="$HOME/Library/Input Methods/DauInputMethod.app"
-HELPER_SRC="$ROOT/scripts/selftest-app-group/input-source.swift"
+HELPER_SRC="$ROOT/scripts/lib/input-source.swift"
 HELPER="$ROOT/build/selftest/input-source"
 WAIT_SECONDS=2
 LOG=/usr/bin/log            # zsh has a `log` builtin; always use the binary
