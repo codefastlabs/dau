@@ -10,6 +10,8 @@ Dấu là input method tiếng Việt **chỉ dành cho macOS**, dựng trên In
 5. `docs/BRAND.md` — biểu tượng, màu, chữ, danh sách file nhận diện cần xuất.
 6. `docs/PROGRESS.md` — đang ở đâu, việc đang chờ, số đo. **Đọc đầu tiên khi bắt đầu một phiên mới.**
 
+Mục lục mọi tài liệu khác (tra cứu, nghiên cứu, lưu trữ): `docs/README.md`.
+
 ## Điều phối
 
 Phiên chính là **người điều phối**: lập kế hoạch, giao việc cho subagent trong `.claude/agents/`, kiểm chứng kết quả, commit, cập nhật `docs/PROGRESS.md`. Phiên chính hạn chế tự viết mã lớn để giữ ngữ cảnh gọn.

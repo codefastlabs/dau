@@ -9,3 +9,4 @@ SettingsGroup|SettingsRow|RowSwitch|RowDivider|`SearchField`	D9: Cài đặt d�
 ToolbarSpacer\(\.fixed\)	mã dùng ToolbarSpacer(.flexible) và thứ tự của hệ thống
 Không dùng `Form`	D9: trang Cài đặt là Form(.grouped)
 cập nhật mockup theo app thật	D9: canvas trước, người dùng duyệt, rồi mới sửa mã (02/11/2026)
+macOS 27\.2 có hộp thoại hệ thống	câu hỏi TIS trong DECISIONS: hộp thoại "Cho phép" chưa ai thấy hiện; Cài đặt báo lỗi (03/11/2026)
