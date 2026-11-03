@@ -8,13 +8,14 @@
 # (the build is not sandboxed since D37; the copy also drops the App Group, as before),
 # and runs it with --capture-window for every combination of
 # scroll bar style (overlay, legacy "Always", system "Automatic") and scroll offset
-# (0, 60 pt). Each run captures the 4 sections in light and dark mode off screen.
+# (0, 60 pt). Each run captures the 4 sections in light and dark mode, in a window
+# put in the middle of the main screen (visible while it runs; do not click it).
 # Then it captures the onboarding window (onboarding/, onboarding-no-shortcut/) and the
 # uninstall alerts (uninstall/).
 # check.swift checks the captures and frames (a)–(h) and writes a summary grid. Both
 # scripts are compiled with Reference.swift, which holds every pass value.
-# Last, the real window: the Debug app itself is launched normally (no off-screen
-# capture code runs; `--settings-window` only keeps the onboarding closed and the
+# Last, the real window: the Debug app itself is launched normally (no capture
+# code runs; `--settings-window` only keeps the onboarding closed and the
 # installed input method untouched), and ax-check.swift reads its frames through the
 # Accessibility API on every display and compares them with System Settings (real/),
 # opens the add-rule sheet ("+" on Ứng dụng) through accessibility, checks it,
@@ -27,7 +28,7 @@
 # A --capture step that fails is named on the screen (with the end of its output) and the
 # exit status is 1; the later steps still run. Exit status 0 only if every check passes.
 #
-# The window is moved off screen but exists for a few seconds per run.
+# The capture windows show in the middle of the main screen for a few seconds per run.
 set -euo pipefail
 here=${0:A:h}
 out=${1:?output dir}

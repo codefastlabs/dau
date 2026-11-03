@@ -3,8 +3,46 @@ import AppKit
 import ApplicationServices
 import SwiftUI
 
-/// Debug only: `--capture-window <dir>` launches the real Settings scene, moves its
-/// window off screen, and for light and dark mode and every section writes
+/// Where the capture modes put a window: the middle of the primary display (the one with
+/// the menu bar), in view. They used to move it to (-9000, -9000); macOS pulled it back
+/// into a corner of the main screen, where it peeked out during the run, and AppKit saved
+/// that corner as the window's frame for the next normal launch (03/11/2026). Not
+/// `NSScreen.main`: that is the screen of the user's key window, which can be a 1x display
+/// and gave 1x captures that the pass values (made on the Retina display) do not fit.
+@MainActor func centeredFrame(size: NSSize) -> NSRect {
+    let visible = NSScreen.screens.first?.visibleFrame ?? NSRect(x: 0, y: 0, width: size.width, height: size.height)
+    return NSRect(x: (visible.midX - size.width / 2).rounded(), y: (visible.midY - size.height / 2).rounded(),
+                  width: size.width, height: size.height)
+}
+
+/// Puts a capture window in the middle of the primary display over a plain backdrop. The
+/// sidebar and toolbar materials blend what lies behind the window; the backdrop, one
+/// system color right below it, keeps that the same whatever the user has on screen.
+/// A precaution: its effect alone was not measured (the dark-mode failures of the first
+/// on-screen runs came from 1x captures, see `centeredFrame`).
+@MainActor func placeForCapture(_ window: NSWindow, size: NSSize) {
+    let frame = centeredFrame(size: size)
+    window.setFrame(frame, display: false)
+    let backdrop = CaptureBackdrop.window
+    backdrop.setFrame(frame.insetBy(dx: -40, dy: -40), display: true)
+    backdrop.order(.below, relativeTo: window.windowNumber)
+}
+
+@MainActor enum CaptureBackdrop {
+    static let window: NSWindow = {
+        let w = NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: false)
+        w.backgroundColor = .windowBackgroundColor
+        w.isOpaque = true
+        w.hasShadow = false
+        w.ignoresMouseEvents = true
+        w.isReleasedWhenClosed = false
+        return w
+    }()
+}
+
+/// Debug only: `--capture-window <dir>` launches the real Settings scene, puts its
+/// window in the middle of the primary display (`centeredFrame`), and for light and dark
+/// mode and every section writes
 /// `<section>-<mode>.png` (title bar included) plus `frames.json`: the layout probes,
 /// the traffic lights, and system colors resolved in that window. The hand-made window
 /// of `scripts/snapshot-settings` does not reproduce the SwiftUI scene's chrome and
@@ -38,7 +76,7 @@ enum DebugCapture {
             }
             var size = SettingsScene.defaultSize
             if let width = captureWidth { size.width = width }
-            window.setFrame(NSRect(origin: NSPoint(x: -9000, y: -9000), size: size), display: false)
+            placeForCapture(window, size: size)
             // `--active`: make the window key so controls draw their active look
             // (accent colors). Takes focus from the frontmost app for a few seconds.
             if CommandLine.arguments.contains("--active") {
@@ -152,7 +190,7 @@ enum DebugCapture {
                 print("no onboarding window:", NSApp.windows.map { "\($0.title) \($0.frame) visible=\($0.isVisible)" })
                 exit(1)
             }
-            window.setFrameOrigin(NSPoint(x: -9000, y: -9000))
+            placeForCapture(window, size: window.frame.size)
             if CommandLine.arguments.contains("--active") {
                 NSApp.setActivationPolicy(.regular)
                 NSApp.activate()
@@ -230,8 +268,8 @@ enum DebugCapture {
 
     // MARK: Uninstall alert
 
-    /// `--capture-uninstall <dir>`: opens the Settings window off screen, lays out the
-    /// "Gỡ Dấu khỏi máy?" alert and the result alert off screen without running
+    /// `--capture-uninstall <dir>`: opens the Settings window in the middle of the primary
+    /// display, lays out the "Gỡ Dấu khỏi máy?" alert and the result alert there without running
     /// anything, and writes `uninstall-confirm-<mode>.png`, `uninstall-done-<mode>.png`
     /// plus `frames.json` (sheet sizes).
     static let uninstallDirectory: URL? = {
@@ -249,7 +287,7 @@ enum DebugCapture {
             guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
                 print("no window"); exit(1)
             }
-            window.setFrame(NSRect(origin: NSPoint(x: -9000, y: -9000), size: SettingsScene.defaultSize), display: false)
+            placeForCapture(window, size: SettingsScene.defaultSize)
             NotificationCenter.default.post(name: selectSection, object: SettingsSection.updates.rawValue)
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
@@ -264,11 +302,11 @@ enum DebugCapture {
                     alert.layout()
                     let panel = alert.window
                     panel.appearance = NSAppearance(named: name)
-                    panel.setFrameOrigin(NSPoint(x: -9000, y: -9000))
                     panel.orderFront(nil)
+                    placeForCapture(panel, size: panel.frame.size)
                     try? await Task.sleep(for: .milliseconds(900))
-                    // The alert's glass is transparent off screen: put it on the
-                    // window background, roughly what it covers on screen.
+                    // The alert's glass shows whatever is behind it (the backdrop): put it
+                    // on the window background, roughly what it covers over the Settings window.
                     capture(panel, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
                             background: .windowBackgroundColor)
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(panel.frame.width), Double(panel.frame.height)]]
