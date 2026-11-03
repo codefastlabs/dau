@@ -92,7 +92,14 @@ for _ in 0..<75 where window == nil {
     window = settingsWindow()
     if window == nil { wait(0.2) }
 }
-guard let window else { print("FAIL no Settings window for pid \(pid)"); exit(1) }
+guard let window else {
+    // Say what the app does show, so a missing window can be told apart from a slow one
+    // (03/11/2026: once, the sheet-only run found no Settings window in 15 s).
+    let shown = ((attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? [])
+        .map { "\(subrole($0)) \"\(string($0, kAXTitleAttribute) ?? "")\" \(fmt(frame($0)))" }
+    print("FAIL no Settings window for pid \(pid) after 15 s; windows: \(shown.isEmpty ? "none" : shown.joined(separator: "; "))")
+    exit(1)
+}
 
 // MARK: Checks
 
@@ -350,11 +357,28 @@ func measureSheet(display: String) {
     let w = frame(window)
     let s = frame(sheet)
     func rel(_ r: CGRect) -> CGRect { r.offsetBy(dx: -s.minX, dy: -s.minY) }
-    func list() -> AXUIElement? { all(sheet, where: { role($0) == "AXOutline" }).first }
+    // The app list by its accessibility label: the sheet's grouped Form ("Khi đang gõ") can
+    // be an outline too, and taking the first outline measured the Form while the apps
+    // were still loading (03/11/2026: "3 rows, no scroll bar", then 106 after the search).
+    func list() -> AXUIElement? {
+        all(sheet, where: { role($0) == "AXOutline" && string($0, kAXDescriptionAttribute) == "Ứng dụng" }).first
+    }
     func listRows() -> [AXUIElement] { list().flatMap { attr($0, kAXRowsAttribute) as? [AXUIElement] } ?? [] }
-    // The app list is read off the main thread: wait for it.
-    for _ in 0..<50 where listRows().isEmpty { wait(0.2) }
-    wait(0.5)
+    // The app list is read off the main thread (slower on the first pass, right after the
+    // app starts): wait until the row count is the same on 3 reads in a row, not just > 0.
+    let outlines = all(sheet, where: { role($0) == "AXOutline" })
+        .map { "\(string($0, kAXDescriptionAttribute) ?? "-"):\((attr($0, kAXRowsAttribute) as? [AXUIElement])?.count ?? -1)" }
+    let loadStart = Date()
+    var lastCount = -1, sameReads = 0
+    while sameReads < 3 && Date().timeIntervalSince(loadStart) < 15 {
+        let count = listRows().count
+        if count > 0 && count == lastCount { sameReads += 1 } else { sameReads = 0 }
+        lastCount = count
+        wait(0.2)
+    }
+    record(display, page, "app list loaded", expected: "rows, stable",
+           got: "\(lastCount) rows after \(String(format: "%.1f", Date().timeIntervalSince(loadStart))) s; outlines at open: \(outlines.joined(separator: ", "))",
+           ok: lastCount > 0 && sameReads >= 3)
 
     check(display, page, "sheet width", s.width, Reference.sheetWidth)
 
