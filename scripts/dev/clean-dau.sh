@@ -152,6 +152,9 @@ if (( ${#procs} )); then
   still=(${(f)"$(pgrep -fl "$PROC_PATTERN" 2>/dev/null)"})
   for p in $still; do notremoved "KHÔNG dừng được tiến trình: $p"; done
 fi
+# Unregister before the bundles move: LaunchServices follows a bundle into the Trash and
+# keeps it registered there, so unregistering the old path afterwards misses it.
+for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
 for b in $bundles; do
   if osascript -e "tell application \"Finder\" to delete (POSIX file \"$b\" as alias)" >/dev/null 2>&1; then
     print -r -- "  vào Thùng rác: $b"
@@ -163,7 +166,14 @@ for b in $bundles; do
 done
 for d in $data; do
   rm -rf -- "$d"
-  if [[ -e $d ]]; then notremoved "KHÔNG xoá được: ${d#$HOME/}"; else print -r -- "  đã xoá: ${d#$HOME/}"; fi
+  if [[ -e $d ]]; then
+    notremoved "KHÔNG xoá được: ${d#$HOME/}"
+    # macOS protects an app's (group) container from other processes, Terminal included.
+    [[ $d == */Containers/* || $d == */"Group Containers"/* ]] &&
+      print -r -- "    macOS chặn tiến trình khác xoá container của app: mở Finder › Đi › Đi tới Thư mục… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
+  else
+    print -r -- "  đã xoá: ${d#$HOME/}"
+  fi
 done
 
 # `defaults import` replaces the whole domain: export it first, once per domain.
@@ -208,7 +218,6 @@ sys.stdout.buffer.write(plistlib.dumps(data))' "$key" "$ID_PATTERN" > "$tmp" && 
     print -r -- "    muốn thử cài lần đầu thật sạch thì dùng một tài khoản macOS mới."
   fi
 done
-for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
 for k in $keys; do
   if defaults delete -g "$k" 2>/dev/null; then print -r -- "  đã xoá khoá: -g $k"; else notremoved "KHÔNG xoá được khoá: -g $k"; fi
 done
