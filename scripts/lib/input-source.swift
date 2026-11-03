@@ -41,14 +41,21 @@ func enabledSources() -> [TISInputSource] {
 }
 
 /// IDs of the third-party sources macOS records as enabled: the "Input Mode" of an entry
-/// that has one, else its "Bundle ID" (the same IDs TIS uses for those sources).
+/// that has one, else its "Bundle ID" (the same IDs TIS uses for those sources). An input
+/// method that has modes is recorded twice, the method itself ("Keyboard Input Method",
+/// not select-capable) and each mode; only the modes are selectable, so the method entry
+/// is left out then (measured 03/11/2026: Dấu added with "+" records both).
 func recordedSourceIDs() -> Set<String> {
     let value = CFPreferencesCopyAppValue("AppleEnabledThirdPartyInputSources" as CFString,
                                           "com.apple.inputsources" as CFString)
+    let entries = (value as? [[String: Any]]) ?? []
+    let bundlesWithModes = Set(entries.compactMap { $0["Input Mode"] != nil ? $0["Bundle ID"] as? String : nil })
     var ids = Set<String>()
-    for entry in (value as? [[String: Any]]) ?? [] {
-        if let id = (entry["Input Mode"] as? String) ?? (entry["Bundle ID"] as? String) {
-            ids.insert(id)
+    for entry in entries {
+        if let mode = entry["Input Mode"] as? String {
+            ids.insert(mode)
+        } else if let bundle = entry["Bundle ID"] as? String, !bundlesWithModes.contains(bundle) {
+            ids.insert(bundle)
         }
     }
     return ids
