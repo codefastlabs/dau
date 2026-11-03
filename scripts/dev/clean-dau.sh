@@ -66,6 +66,7 @@ for p in $procs; do note "$p"; done
 
 print "Ứng dụng và bộ gõ:"
 bundles=()
+trashed_names=()
 for b in /Applications/Dau.app "/Applications/Dấu.app" "$LIB/Input Methods/DauInputMethod.app"; do
   [[ -e "$b" ]] && { bundles+=("$b"); note "$b"; }
 done
@@ -168,6 +169,7 @@ for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- " 
 for b in $bundles; do
   if osascript -e "tell application \"Finder\" to delete (POSIX file \"$b\" as alias)" >/dev/null 2>&1; then
     print -r -- "  vào Thùng rác: $b"
+    trashed_names+=("${b:t}")
   else
     # Never `rm -rf` a bundle: the user can take it back from the Trash, not from here.
     notremoved "KHÔNG chuyển được vào Thùng rác (Finder từ chối hoặc chưa được phép điều khiển): $b"
@@ -244,6 +246,6 @@ if (( unremoved )); then
   print "Sau khi xử lý xong, đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
   exit 1
 fi
-print "\nXong. Còn hai việc:"
-print "  1. Dọn Thùng rác nếu muốn (Dau.app, DauInputMethod.app vừa được chuyển vào)."
-print "  2. Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
+print "\nXong."
+(( ${#trashed_names} )) && print "  Dọn Thùng rác nếu muốn (vừa chuyển vào: ${(j:, :)trashed_names})."
+print "  Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
