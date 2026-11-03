@@ -419,6 +419,20 @@ func measureSidebarSearch(display: String) {
 
 // MARK: Add-rule sheet
 
+/// Distinct bundle IDs of the apps in the folders AddAppRuleSheet lists (AppListing.folders),
+/// Dấu's own left out, as the sheet does.
+func installedAppCount() -> Int {
+    let folders = ["/Applications", "/Applications/Utilities", "/System/Applications", "/System/Applications/Utilities"]
+    var ids = Set<String>()
+    for folder in folders {
+        for name in (try? FileManager.default.contentsOfDirectory(atPath: folder)) ?? [] where name.hasSuffix(".app") {
+            if let id = Bundle(url: URL(fileURLWithPath: folder).appendingPathComponent(name))?.bundleIdentifier { ids.insert(id) }
+        }
+    }
+    ids.remove("com.codefastlabs.dau")
+    return ids.count
+}
+
 /// The sheet attached to the Settings window, if any. A window has at most one sheet, so
 /// the role is the identity.
 func attachedSheet() -> AXUIElement? { children(window).first { role($0) == "AXSheet" } }
@@ -472,6 +486,17 @@ func measureSheet(display: String) {
     record(display, page, "app list loaded", expected: "rows, stable",
            got: "\(lastCount) rows after \(String(format: "%.1f", Date().timeIntervalSince(loadStart))) s; outlines at open: \(outlines.joined(separator: ", "))",
            ok: listReady, harness: !listReady)
+    // A stable list can still be short (the 03/11/2026 failure read 3 rows): compare it with
+    // the apps the sheet lists from disk (AddAppRuleSheet's four Applications folders), counted
+    // here the same way. Apps with a stored rule are left out of the sheet and the checker
+    // cannot read the rules (App Group container), so up to `ruleAllowance` fewer rows pass.
+    // Without this, a short list would only show as "skip" at the scroll bar below.
+    if listReady {
+        let ruleAllowance = 20
+        let onDisk = installedAppCount()
+        record(display, page, "app list complete", expected: "≥ \(onDisk - ruleAllowance) (\(onDisk) apps in the Applications folders, ≤ \(ruleAllowance) with a rule)",
+               got: "\(lastCount) rows", ok: lastCount >= onDisk - ruleAllowance)
+    }
 
     check(display, page, "sheet width", s.width, Reference.sheetWidth)
 
