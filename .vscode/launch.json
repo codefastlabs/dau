@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:dau}/scripts/snapshot-settings",
+            "name": "Debug SnapshotSettings (scripts/snapshot-settings)",
+            "target": "SnapshotSettings",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug SnapshotSettings (scripts/snapshot-settings)"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:dau}/scripts/snapshot-settings",
+            "name": "Release SnapshotSettings (scripts/snapshot-settings)",
+            "target": "SnapshotSettings",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release SnapshotSettings (scripts/snapshot-settings)"
+        }
+    ]
+}
