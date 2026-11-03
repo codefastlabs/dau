@@ -41,9 +41,29 @@ work=$(mktemp -d)
 lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 # Running the copy registers it with LaunchServices; unregister it before deleting it,
 # or Spotlight and "Open With" keep listing a second Dấu.app with a blank icon.
+# The copy shares Dấu's bundle ID, so AppKit saves the frames of the windows it moves off
+# screen (and the real-window part moves) into Dấu's own preferences; the next normal
+# launch then opened onboarding squeezed into a screen corner. Keep the saved frames
+# as they were before the run and put them back at the end.
+frames_domain=com.codefastlabs.dau
+frame_keys=("NSWindow Frame onboarding" "NSWindow Frame settings")
+typeset -A saved_frames
+for k in $frame_keys; do
+  v=$(defaults read $frames_domain "$k" 2>/dev/null) && saved_frames[$k]=$v
+done
+restore_frames() {
+  for k in $frame_keys; do
+    if (( ${+saved_frames[$k]} )); then
+      defaults write $frames_domain "$k" -string "${saved_frames[$k]}"
+    else
+      defaults delete $frames_domain "$k" >/dev/null 2>&1
+    fi
+  done
+}
 cleanup() {
   [[ -d "$work/Dau.app" ]] && "$lsregister" -u "$work/Dau.app" >/dev/null 2>&1
   rm -rf "$work"
+  restore_frames
 }
 trap cleanup EXIT
 mkdir -p "$out"
