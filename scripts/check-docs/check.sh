@@ -15,7 +15,7 @@
 #      scripts/check-docs, which holds the patterns);
 #   5. PROGRESS.md "Trạng thái hiện tại" holds no test counts;
 #   6. UI.md, UI-CHECKS.md and ARCHITECTURE.md hold no UI measurements (pt, W×H):
-#      they live in scripts/check-settings-window/Reference.swift and
+#      they live in scripts/selftest/settings-window/Reference.swift and
 #      docs/research/SYSTEM-SETTINGS-REFERENCE.md. Code spans in backticks are skipped.
 #   7. commit hashes in living docs exist in the repo (`git cat-file`): a 7+ hex token with
 #      at least one digit and one letter, inside backticks or parentheses. PROGRESS.md's

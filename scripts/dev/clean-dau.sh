@@ -4,8 +4,8 @@
 # It lets an install test (M5 T4) start from a machine that never had Dấu.
 #
 # Usage:
-#   scripts/clean-dau.sh         list what would be removed; changes nothing
-#   scripts/clean-dau.sh --yes   remove what it can of the list, then say to log out
+#   scripts/dev/clean-dau.sh         list what would be removed; changes nothing
+#   scripts/dev/clean-dau.sh --yes   remove what it can of the list, then say to log out
 #
 # Covers the bundle IDs of Dấu (com.codefastlabs.dau…) and of the M0 placeholder
 # (com.example.dau…), for both prefixes alike:

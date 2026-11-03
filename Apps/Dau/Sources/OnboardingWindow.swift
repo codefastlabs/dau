@@ -525,7 +525,7 @@ struct EnableResult: View {
     }
 }
 
-/// The input mode icon, drawn from the same geometry as `scripts/make-mode-icons.swift`
+/// The input mode icon, drawn from the same geometry as `scripts/assets/make-mode-icons.swift`
 /// (22 × 16 pt: a rounded badge with the V cut out). Fill it with even-odd so the V is
 /// a hole, like the template image the menu bar shows.
 struct InputModeBadge: Shape {

@@ -1,12 +1,12 @@
 # Kiểm tra giao diện
 
-Danh sách phải chạy hết trước khi báo xong bất kỳ thay đổi giao diện nào của app Dấu. Mỗi mục là một lỗi người dùng đã gặp, kèm cách kiểm và điều kiện đạt. **File này không ghi số.** Mọi số đạt nằm ở `scripts/check-settings-window/Reference.swift` (kèm nguồn của từng số); số đo System Settings gốc ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md` (D9).
+Danh sách phải chạy hết trước khi báo xong bất kỳ thay đổi giao diện nào của app Dấu. Mỗi mục là một lỗi người dùng đã gặp, kèm cách kiểm và điều kiện đạt. **File này không ghi số.** Mọi số đạt nằm ở `scripts/selftest/settings-window/Reference.swift` (kèm nguồn của từng số); số đo System Settings gốc ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md` (D9).
 
 ## Lệnh
 
 1. Build Debug:
    `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Dau.xcodeproj -scheme Dau -configuration Debug -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex build`
-2. Kiểm cửa sổ (`scripts/check-settings-window/run.sh <thư-mục-ra>`). Cần quyền Trợ năng cho Terminal; không đổi giao diện hay cài đặt hệ thống nào.
+2. Kiểm cửa sổ (`scripts/selftest/settings-window/run.sh <thư-mục-ra>`). Cần quyền Trợ năng cho Terminal; không đổi giao diện hay cài đặt hệ thống nào.
    - **Chụp ngoài màn hình.** Chép bản Debug và ký lại không sandbox để được ghi ảnh. Chạy `Dau --capture-window` với mọi tổ hợp: thanh cuộn {overlay `WhenScrolling`, `Always`, `Automatic`} × cuộn {`--scroll 0`, `--scroll 60`}, cửa sổ cỡ mặc định. Mỗi lần chụp 4 mục × {sáng, tối}. Thêm một lượt ở độ rộng tối đa (`--width`) vào `wide/`.
    - Ảnh lấy từ window server nên có material, vibrancy và hiệu ứng mép cuộn. Cửa sổ được đưa ra ngoài màn hình nhưng vẫn tồn tại vài giây mỗi lần chạy.
    - Kiểm (a)–(e), (h) bên dưới. Ghi `matrix-grid.png` (mỗi hàng một tổ hợp).

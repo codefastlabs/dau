@@ -2,15 +2,15 @@
 # Which build of Dấu is installed and running, against the repo.
 # Side effects: none
 #
-# Usage: scripts/dau-version.sh
+# Usage: scripts/dev/dau-version.sh
 #
-# Prints the commit (Resources/BuildCommit.txt, scripts/stamp-build-commit.sh) of the
+# Prints the commit (Resources/BuildCommit.txt, scripts/build/stamp-build-commit.sh) of the
 # installed input method and of the Debug Dấu.app, the repo's HEAD, and whether the
 # running input method process started after the installed bundle was written (if not,
 # switch input source away from Dấu and back, so macOS starts the new one).
 # Reads only; changes nothing.
 set -u
-root=${0:A:h:h}
+root=${0:A:h:h:h}
 im="$HOME/Library/Input Methods/DauInputMethod.app"
 app="$root/build/DerivedData.noindex/Build/Products/Debug/Dau.app"
 

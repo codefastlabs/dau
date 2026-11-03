@@ -74,14 +74,14 @@ Tổng (42 dòng): 26 có trên máy, 13 không có, 3 chỉ có bản web (Mess
 
 Ngoài danh sách chính, máy này còn các app Electron thử được nếu cần thêm mẫu: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`), Antigravity (`com.google.antigravity`), LM Studio (`ai.elementlabs.lmstudio`), Polypane (`com.firstversionist.polypane`); trình duyệt Blisk (`org.blisk.Blisk`); Zoom (`us.zoom.xos`).
 
-Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ tiến trình con của trình duyệt). Khi thử, lấy ID từ `scripts/perf-report.sh` (mục 4.4) và sửa cột nếu khác.
+Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ tiến trình con của trình duyệt). Khi thử, lấy ID từ `scripts/perf/perf-report.sh` (mục 4.4) và sửa cột nếu khác.
 
 ## 4. Cách thử một ứng dụng
 
 ### 4.1 Chuẩn bị
 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
-2. Trong Terminal, ở thư mục repo, chạy `scripts/install-debug.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
+2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-debug.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
 3. Làm theo các bước script in ra: Cài đặt hệ thống › Bàn phím › Nguồn đầu vào › Sửa… › "+" › Tiếng Việt › "Dấu – Tiếng Việt" › Thêm. Dấu chỉ có nguồn này (D2); gõ tiếng Anh bằng ABC/U.S. của macOS, nên giữ ABC (hoặc U.S.) trong danh sách. Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó. Không thấy "Dấu" thì đăng xuất, đăng nhập lại rồi làm lại (lần cài đầu có bắt buộc đăng xuất hay không còn mở: `docs/research/M5-INSTALL.md`).
 4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu. Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng hoặc cửa sổ nhớ nguồn riêng: chọn lại Dấu **sau khi** chuyển sang ứng dụng cần thử, và nhìn biểu tượng V trên thanh menu trước khi gõ.
 5. (Tuỳ chọn, để xem lỗi nếu bộ gõ không chạy) mở một cửa sổ Terminal riêng: `/usr/bin/log stream --predicate 'process == "DauInputMethod"'`. Trong zsh, `log` là một lệnh có sẵn khác, nên phải gõ đường dẫn đầy đủ.
@@ -100,7 +100,7 @@ windows carr tooi yeeu tieengs Vieetj, Sunrise␣
 Mong đợi: `windows car tôi yêu tiếng Việt, Sunrise␣` (D4, D26, D30). "carr" đứng trước câu tiếng Việt để tránh tự sửa chính tả của macOS (mục 6.1). Số đo ngày 29/10 dùng câu mẫu cũ `tooi yeeu tieengs Vieetj, windows Sunrise carr␣`.
 
 - **Ứng dụng có trong script** (`textedit`, `safari`, `chrome`, `vscode`, `terminal`; từ T6 thêm `edge`, `firefox`, `notes`, `mail`): chạy lần lượt
-  `scripts/selftest-typing/run.sh --delay 30 <app>` và `scripts/selftest-typing/run.sh --delay 0 <app>`.
+  `scripts/selftest/typing/run.sh --delay 30 <app>` và `scripts/selftest/typing/run.sh --delay 0 <app>`.
   Script cần quyền Trợ năng cho tiến trình chạy nó (gửi phím qua System Events), tự mở cửa sổ trống, gõ, đọc lại, đóng không lưu, in PASS/FAIL và số đo. `--delay 0` gửi cả chuỗi trong một lệnh (khoảng 1–2 ms/phím): đây là bài thử phím dồn, nhanh hơn người gõ. Có thể thêm `--delay 5`, `--delay 10`, `--delay 20` để tìm ngưỡng.
 - **Ứng dụng khác:** script chưa hỗ trợ. Gõ tay (tốc độ bình thường, rồi gõ nhanh hết sức), hoặc tự gõ qua System Events như cách đã làm với Telegram ngày 30/10. Ghi rõ cách thử vào cột "Cách thử".
 
@@ -122,7 +122,7 @@ Mong đợi: `windows car tôi yêu tiếng Việt, Sunrise␣` (D4, D26, D30). 
 Ngay sau khi gõ xong:
 
 ```
-scripts/perf-report.sh --last 5m --app <tên app hoặc một phần bundle ID>
+scripts/perf/perf-report.sh --last 5m --app <tên app hoặc một phần bundle ID>
 ```
 
 `--app` không phân biệt hoa thường, không nhận PID; không ra số thì script in danh sách app có số đo. Ghi vào bảng mục 5:
@@ -138,7 +138,7 @@ Số đo lấy từ bản Debug, có thêm một lần hỏi chẩn đoán sau m
 
 ## 5. Kết quả
 
-"30 ms", "0 ms": tự gõ bằng `scripts/selftest-typing/run.sh` hoặc System Events. Số µs là `selectedRange` ở 30 ms/phím, phím có thay chữ, trừ khi ghi khác. "—": chưa đo mục đó. Gạch chân ở 0 ms của Chrome, VS Code, Terminal, TextEdit, Safari: lượt T1 (30/10/2026, gạch chân ép bằng `DauDebugForceUnderline`, `docs/history/LOG-M0-M4.md` nhật ký 30/10). K7 (D20): lượt T2 (30/10/2026, chuỗi K7 ở 120 ms, `docs/PROGRESS.md` "Số đo" 30/10) cho TextEdit, Safari, Chrome, VS Code, Terminal; lượt T6 cho Firefox, Edge, Notes. Phiên bản ứng dụng lúc đo M2 không được ghi lại.
+"30 ms", "0 ms": tự gõ bằng `scripts/selftest/typing/run.sh` hoặc System Events. Số µs là `selectedRange` ở 30 ms/phím, phím có thay chữ, trừ khi ghi khác. "—": chưa đo mục đó. Gạch chân ở 0 ms của Chrome, VS Code, Terminal, TextEdit, Safari: lượt T1 (30/10/2026, gạch chân ép bằng `DauDebugForceUnderline`, `docs/history/LOG-M0-M4.md` nhật ký 30/10). K7 (D20): lượt T2 (30/10/2026, chuỗi K7 ở 120 ms, `docs/PROGRESS.md` "Số đo" 30/10) cho TextEdit, Safari, Chrome, VS Code, Terminal; lượt T6 cho Firefox, Edge, Notes. Phiên bản ứng dụng lúc đo M2 không được ghi lại.
 
 | Ứng dụng | Ngày | Cách thử | 30 ms | 0 ms | Gõ tay | Gạch chân / nhảy chữ (K2, K3) | K4–K6 | K7 (D20) | Tự sửa (K8) | `selectedRange` p50 / p99 µs | mismatch / unsupported | Cần gạch chân? | Nguồn |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -189,7 +189,7 @@ K4–K6 của TextEdit: `docs/history/M2-TESTING.md` mục 4 dòng 1, 4, 5, 6 (3
 
 ### 5.1 Lượt T6 ngày 30/10/2026
 
-- Máy: macOS 27.2, Apple M1 Pro; bộ gõ Debug đã cài ở HEAD 96a3e41. Tự gõ bằng `scripts/selftest-typing/run.sh` (thêm `edge`, `firefox`, `notes`, `mail` trong lượt này). Phím chỉ gửi khi app thử đứng trước; không nhấn Return ở đâu; không gửi thư hay tin nhắn.
+- Máy: macOS 27.2, Apple M1 Pro; bộ gõ Debug đã cài ở HEAD 96a3e41. Tự gõ bằng `scripts/selftest/typing/run.sh` (thêm `edge`, `firefox`, `notes`, `mail` trong lượt này). Phím chỉ gửi khi app thử đứng trước; không nhấn Return ở đâu; không gửi thư hay tin nhắn.
 - Mỗi app: K1 câu mẫu ở 30 ms và 0 ms; app sai ở 0 ms (hoặc trong danh sách đề xuất) thử thêm 0 ms với `--underline`, 5 và 10 ms. K4: `--keys "hoaf⌫ " --expect "hò "` (30 ms). K7: `--delay 120 --keys "hoc ⌫j " --expect "học "`. K8: `--keys "tooi yeeu tieengs Vieetj, Sunrise carr " --expect "tôi yêu tiếng Việt, Sunrise car "` (30 ms). Số µs lấy từ báo cáo `perf-report.sh` mà script in cho lượt 30 ms (p50 / p99).
 - Trình duyệt thử trên trang cục bộ có `spellcheck="false"`, nên K8 ở đây không nói gì về tự sửa của trình duyệt khi gõ trên web thật.
 - Người dùng dừng lượt thử sau Mail (K1 30 ms). Chưa thử trong lượt này: Mail (phần còn lại), Messages, Pages, Numbers, Zalo, Discord, Ghostty, Zed, Xcode, WebStorm; kiểm chứng lại Terminal không gửi ⌫ cho bộ gõ (mục 6.5) cũng chưa chạy. Các việc này làm tiếp ở M6 (người dùng chốt 30/10/2026, mục 7).
@@ -200,7 +200,7 @@ K4–K6 của TextEdit: `docs/history/M2-TESTING.md` mục 4 dòng 1, 4, 5, 6 (3
 ### 6.1 Tự sửa chính tả của macOS đè lên chữ đã giữ (D4) — ghi ngày 30/10/2026
 
 - Hiện tượng: từ macOS 27.2, ở ứng dụng bật tự sửa chính tả, khi phía trước là câu tiếng Việt, hệ thống có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt ("…Sunrise car␣" → "cả"), **kể cả khi gõ bằng bàn phím U.S.**. Việc này xảy ra sau khi Dấu đã trả đúng "car", nên đè lên kết quả gõ đúp ("carr" → "car").
-- Bằng chứng: `docs/DECISIONS.md` D4 (đoạn "Giới hạn đã biết"); `docs/history/LOG-M0-M4.md` nhật ký 30/10/2026 (câu mẫu `selftest-typing` đổi thành "windows carr tooi yeeu tieengs Vieetj, Sunrise " để né, 3/3 ĐẠT); chú thích đầu `scripts/selftest-typing/run.sh`. Nguồn không ghi ứng dụng cụ thể đã quan sát; T6 điền cột "Tự sửa" cho từng app bằng K8.
+- Bằng chứng: `docs/DECISIONS.md` D4 (đoạn "Giới hạn đã biết"); `docs/history/LOG-M0-M4.md` nhật ký 30/10/2026 (câu mẫu `scripts/selftest/typing/run.sh` đổi thành "windows carr tooi yeeu tieengs Vieetj, Sunrise " để né, 3/3 ĐẠT); chú thích đầu `scripts/selftest/typing/run.sh`. Nguồn không ghi ứng dụng cụ thể đã quan sát; T6 điền cột "Tự sửa" cho từng app bằng K8.
 - Dấu không tắt tự sửa của hệ thống (N4). Người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa. Tự sửa là thuộc tính của từng ô soạn thảo do ứng dụng quyết định (ví dụ `NSTextView.isAutomaticSpellingCorrectionEnabled`, https://developer.apple.com/documentation/appkit/nstextview/isautomaticspellingcorrectionenabled), nên ứng dụng không dùng hệ thống văn bản của Apple có thể không bị (suy luận, cần kiểm chứng bằng K8).
 
 ### 6.2 Ứng dụng áp phím bất đồng bộ (câu hỏi A/B) — ghi ngày 29/10/2026
@@ -246,5 +246,5 @@ Triệu chứng: trên máy hai màn hình, thanh menu tối ở màn hình ph�
 - Phần còn lại của ma trận làm tiếp ở M6 (người dùng chốt 30/10/2026): Zalo, Discord, Messages, Pages, Numbers, Ghostty, Zed, Xcode, WebStorm (và phần còn lại của Mail); kiểm chứng lại Terminal không gửi ⌫ cho bộ gõ (mục 6.5); K5, K6 cho phần lớn app (K6 theo mong đợi mới D4 × D20).
 - Đã xong: danh sách đề xuất theo số đo T6 — **thêm Firefox** (`org.mozilla.firefox`; sai ở 0 và 5 ms, chữ nhảy chỗ, gạch chân sửa được) vào `CompatibilityList.json` ở 61daeec; Edge giữ, nay có số đo (sai ở 0 và 5 ms, ⌫ xoá hai lần — nay đã sửa ở thay tại chỗ, mục 6.4 — gạch chân sửa cả hai); Notes không đề xuất (đúng ở 0 ms).
 - Đã xong: tiêu chí đưa một ứng dụng vào danh sách gạch chân đã chốt ở D13 (mục 1): chỉ đề xuất; thay tại chỗ chỉ sai dưới 10 ms.
-- `scripts/selftest-typing/run.sh` biết 9 ứng dụng (thêm Edge, Firefox, Notes, Mail ở T6). Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
+- `scripts/selftest/typing/run.sh` biết 9 ứng dụng (thêm Edge, Firefox, Notes, Mail ở T6). Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
 - Pages có hai bundle ID trên cùng máy (`com.apple.Pages` và `com.apple.iWork.Pages`); Numbers, Keynote bản mới đổi ID (`com.apple.Numbers`, `com.apple.Keynote`). Nếu các app này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

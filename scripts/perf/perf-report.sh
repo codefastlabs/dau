@@ -11,11 +11,11 @@
 # kind, durations in ns and the client app's bundle ID. Never the text typed (D8).
 #
 # Usage:
-#   scripts/perf-report.sh                      last 1 hour, all apps
-#   scripts/perf-report.sh --last 10m           any `log show --last` value
-#   scripts/perf-report.sh --app TextEdit       bundle ID or part of it, any case
+#   scripts/perf/perf-report.sh                      last 1 hour, all apps
+#   scripts/perf/perf-report.sh --last 10m           any `log show --last` value
+#   scripts/perf/perf-report.sh --app TextEdit       bundle ID or part of it, any case
 #                                               (TextEdit, com.apple.Safari, chrome, slack)
-#   scripts/perf-report.sh --input FILE         parse saved `log show --style compact` output
+#   scripts/perf/perf-report.sh --input FILE         parse saved `log show --style compact` output
 #
 # Subsystem = the input method's bundle ID, read from the installed bundle; override with
 # DAU_IM_BUNDLE_ID.

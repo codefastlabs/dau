@@ -236,7 +236,7 @@ enum UnderlineMode {
     /// global domain (`defaults write -g`): the input method's own sandbox container and
     /// the App Group container cannot be written from a shell (macOS app data
     /// protection), but a sandboxed process can read the global domain. Never written by
-    /// Dấu, never read by Release builds. See scripts/selftest-typing/run.sh `--underline`.
+    /// Dấu, never read by Release builds. See scripts/selftest/typing/run.sh `--underline`.
     static let debugForceKey = "DauDebugForceUnderline"
 
     static func isOn(settings: DauSettings, bundleID: String, debugForced: [String]) -> Bool {

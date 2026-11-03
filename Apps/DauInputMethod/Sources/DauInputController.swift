@@ -341,7 +341,7 @@ final class DauInputController: IMKInputController {
 
     /// Debug builds only: bundle IDs forced into underline mode for trials
     /// (`UnderlineMode.debugForceKey` in the global defaults domain; see
-    /// scripts/selftest-typing/run.sh `--underline`). Read at activation and on settings
+    /// scripts/selftest/typing/run.sh `--underline`). Read at activation and on settings
     /// changes, never per key. Release builds never read it.
     private static func debugForcedUnderline() -> [String] {
         #if DEBUG

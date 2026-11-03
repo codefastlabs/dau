@@ -7,7 +7,7 @@
 #   1. Builds Debug (universal) into build/DerivedData.noindex (scheme Dau, which includes
 #      the input method). By default the input method already installed in
 #      ~/Library/Input Methods is used as it is and the script says so; only with
-#      --install is the Debug build installed first (scripts/install-debug.sh --no-build,
+#      --install is the Debug build installed first (scripts/dev/install-debug.sh --no-build,
 #      which also stops the old input method process), so the build is not made twice.
 #   2. Makes sure the input method runs. macOS launches it on demand, when a client
 #      activates it; if it is not running, the helper reselects the Dấu input source,
@@ -36,7 +36,7 @@
 #
 # Prints PASS or FAIL; exit status 0 only on PASS.
 #
-# Usage: scripts/selftest-app-group.sh [--install] [--no-build]
+# Usage: scripts/selftest/app-group.sh [--install] [--no-build]
 #   --install    install the Debug input method before the test (default: use what is installed)
 #   --no-build   do not build; use build/DerivedData.noindex as it is (with --install, install
 #                that build)
@@ -45,7 +45,7 @@
 # script cannot answer it. Click "Allow" (Cho phép), then run the script again.
 set -uo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 DERIVED="$ROOT/build/DerivedData.noindex"
 PRODUCTS="$DERIVED/Build/Products/Debug"
@@ -107,10 +107,10 @@ fi
 [[ -x "$APP_BIN" ]] || fail "không thấy $APP_BIN (chạy không có --no-build)"
 if [[ "$INSTALL" == 1 ]]; then
   echo "==> Cài bộ gõ Debug (install-debug.sh --no-build; bản vừa build ở trên)"
-  install_log="$("$ROOT/scripts/install-debug.sh" --no-build 2>&1)" || { echo "$install_log"; fail "install-debug.sh"; }
+  install_log="$("$ROOT/scripts/dev/install-debug.sh" --no-build 2>&1)" || { echo "$install_log"; fail "install-debug.sh"; }
   echo "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed 's/^ */    /'
 fi
-[[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/install-debug.sh)"
+[[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/dev/install-debug.sh)"
 commit_of() { local f="$1/Contents/Resources/BuildCommit.txt"; [[ -f "$f" ]] && cat "$f" || echo "không có mã commit"; }
 if [[ "$INSTALL" == 1 ]]; then
   echo "==> Bộ gõ thử: bản vừa cài ($(commit_of "$IM_APP"))"

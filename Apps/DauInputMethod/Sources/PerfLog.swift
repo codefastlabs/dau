@@ -11,7 +11,7 @@ import os
 /// metadata, and anyone running code as the user could switch them on with
 /// `defaults write` and read them with `log show`, without the Input Monitoring
 /// permission a keylogger needs. In Debug, the per-key `os.Logger` line is on only while
-/// `DauPerfLog` is set; `scripts/perf-report.sh` reads it with `log show`.
+/// `DauPerfLog` is set; `scripts/perf/perf-report.sh` reads it with `log show`.
 struct PerfLog {
     static let subsystem = Bundle.main.bundleIdentifier ?? "DauInputMethod"
     static let logger = Logger(subsystem: subsystem, category: "perf")
@@ -21,7 +21,7 @@ struct PerfLog {
     static let signposter = OSSignposter.disabled
     #endif
 
-    /// Event kinds. Raw values are parsed by scripts/perf-report.sh.
+    /// Event kinds. Raw values are parsed by scripts/perf/perf-report.sh.
     enum Kind: String {
         /// Key went to the app unchanged, no client call.
         case pass

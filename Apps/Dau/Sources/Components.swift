@@ -487,7 +487,7 @@ enum AppVersion {
     }
 
     /// The git commit of this build (Resources/BuildCommit.txt, written by
-    /// scripts/stamp-build-commit.sh), "+" when built with uncommitted changes; nil when
+    /// scripts/build/stamp-build-commit.sh), "+" when built with uncommitted changes; nil when
     /// the build had no git.
     static let commit: String? = {
         guard let url = Bundle.main.url(forResource: "BuildCommit", withExtension: "txt"),

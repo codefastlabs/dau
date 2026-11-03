@@ -8,7 +8,7 @@ import SwiftUI
 /// `<section>-<mode>.png` (title bar included) plus `frames.json`: the layout probes,
 /// the traffic lights, and system colors resolved in that window. The hand-made window
 /// of `scripts/snapshot-settings` does not reproduce the SwiftUI scene's chrome and
-/// colors exactly, so this is the reference for the real app. scripts/check-settings-window
+/// colors exactly, so this is the reference for the real app. scripts/selftest/settings-window
 /// runs it on a copy re-signed ad hoc without entitlements.
 @MainActor
 enum DebugCapture {

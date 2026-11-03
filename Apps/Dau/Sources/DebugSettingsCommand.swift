@@ -4,7 +4,7 @@ import DauShared
 
 /// Debug only: `Dau --set-typing-method <telex|vni|simpleTelex>` saves the typing method
 /// through the same store the Settings window uses, posts the change notification, prints
-/// one line and exits without opening a window. Used by `scripts/selftest-app-group.sh`
+/// one line and exits without opening a window. Used by `scripts/selftest/app-group.sh`
 /// to check, without typing, that the input method hears the change.
 ///
 /// Run the built binary directly (not through `open`) so the line reaches the terminal;

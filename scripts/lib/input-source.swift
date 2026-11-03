@@ -1,4 +1,4 @@
-// Small helper for scripts/selftest-app-group.sh and scripts/selftest-typing/run.sh.
+// Small helper for scripts/selftest/app-group.sh and scripts/selftest/typing/run.sh.
 //
 //   input-source current          prints the ID of the selected keyboard input source
 //   input-source select <ID>      selects an input source that is ALREADY enabled
@@ -10,7 +10,7 @@
 // only trusted for the CURRENT source (`current`). For every third-party source (ID not
 // starting with com.apple.) `enabled` and `select` also require an entry in
 // com.apple.inputsources › AppleEnabledThirdPartyInputSources, the record System Settings
-// keeps (the same one scripts/clean-dau.sh reads). When the two disagree the command
+// keeps (the same one scripts/dev/clean-dau.sh reads). When the two disagree the command
 // prints a message on stderr, prints no source and exits with status 4.
 //
 // It never enables, disables, adds or removes an input source (N4): `select` refuses a

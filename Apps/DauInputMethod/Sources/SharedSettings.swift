@@ -44,7 +44,7 @@ extension SettingsStore {
 
 #if DEBUG
 /// Debug only: one log line per settings load done for the process, so
-/// `scripts/selftest-app-group.sh` can check without typing that a change saved by the
+/// `scripts/selftest/app-group.sh` can check without typing that a change saved by the
 /// Settings app reaches this process through the App Group and the Darwin notification.
 ///
 /// Process-wide on purpose: controllers only observe changes while a client is active,

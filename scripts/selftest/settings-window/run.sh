@@ -2,7 +2,7 @@
 # UI checks of the real Settings window (docs/UI-CHECKS.md).
 # Side effects: builds, takes the screen, kills processes
 #
-# Usage: scripts/check-settings-window/run.sh <output-dir> [Dau.app]
+# Usage: scripts/selftest/settings-window/run.sh <output-dir> [Dau.app]
 #
 # Copies the Debug build of Dau.app, re-signs the copy ad hoc without entitlements
 # (the build is not sandboxed since D37; the copy also drops the App Group, as before),
@@ -34,7 +34,7 @@ out=${1:?output dir}
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 # Absolute: the copy is made from it and pgrep matches its full path (a relative argument
 # never matched the launched process).
-app=${2:-${here:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}
+app=${2:-${here:h:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}
 app=${app:A}
 [[ -d $app ]] || { echo "Không thấy $app (build Debug trước, hoặc truyền đường dẫn Dau.app)" >&2; exit 2; }
 work=$(mktemp -d)

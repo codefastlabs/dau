@@ -37,7 +37,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 
 1. **30/10:** cài đè cùng đường dẫn `~/Library/Input Methods/DauInputMethod.app` với bundle ID khác làm bộ đệm TIS lệch (ID nguồn mới nhưng `kTISPropertyBundleID` vẫn là ID cũ; lần đối chiếu với miền `HIToolbox` ngày đó đọc nhầm miền, mục 2.6); thêm nguồn không kích hoạt được; đăng xuất rồi đăng nhập thì đúng ID mới. Đây là đổi ID tại chỗ, **không phải** cài lần đầu trên máy sạch. [Máy/Dấu] Mục 3.
 2. **30/10:** từ bộ gõ có sandbox, `TISSelectInputSource` đổi được nguồn nhưng bước báo cho app đang gõ bị chặn (`deny mach-lookup com.apple.tsm.portname`). [Máy/Dấu] Mục 1.2.
-3. **30/10:** `scripts/selftest-app-group.sh` đạt với app chủ không sandbox. [Máy/Dấu] Mục 1.3.
+3. **30/10:** `scripts/selftest/app-group.sh` đạt với app chủ không sandbox. [Máy/Dấu] Mục 1.3.
 4. **Máy không sạch từ 30/10:** hai mục Dấu (cha và mode `….Dau.vi`) trong `com.apple.inputsources` có từ ngày 30/10 (file sửa lần cuối 30/10 16:18, trùng ngày người dùng đăng xuất/đăng nhập và bật lại nguồn "Dấu – Tiếng Việt"), không phải do lần "Bật Dấu" 02/11; macOS từ chối `defaults import` của script ghi miền này (và `TISDisableInputSource` của Dấu, mục 4). Vì vậy ở T4 lần 1 (02/11) việc Dấu "tự có sẵn" sau đăng nhập không chứng minh điều gì về `TISEnableInputSource`. [Máy/Dấu, 02/11] Mục 2.6.
 5. **T4 lần 1 (02/11, Release 22948d9):** sau khi dọn tay và đăng xuất, "Bật Dấu" chép, đăng ký (`status=0`), bật mục cha (`status=0`); danh sách "+" và menu **không** có Dấu. Sau đăng xuất/đăng nhập Dấu có sẵn, đang được chọn, bộ gõ chạy. [Máy/Dấu] Mục 2.3.
 6. **02/11 16:41:23:** Cài đặt ghi lỗi "Invalid value on inputSourceToBeEnabled" 0,8 s sau khi Dấu ghi `event=enable … status=0`; theo mã thì khi đó không dựng hộp thoại. Cài đặt có hiện lên màn hình hay không: không ghi lại. [Máy/Dấu + Máy/hệ thống] Mục 2.2.
@@ -85,7 +85,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 
 Các bộ gõ khác: XKey (tiếng Việt) có app chủ **không sandbox** tự chép `XKeyIM.app` vào `~/Library/Input Methods`; khi chép lỗi, XKey chuyển sang hướng dẫn kéo-thả tay. Trình cài của McBopomofo và vChewing cũng không sandbox. **Không thấy dự án nào dùng phương án A.** [Ngoài, entitlements và mã nguồn]
 
-**Quyết định:** D37 chọn phương án D (app chủ không sandbox, Hardened Runtime, ký Developer ID, notarize); bộ gõ giữ sandbox, App Group, không mạng (N2). `scripts/selftest-app-group.sh` đạt với app chủ không sandbox (30/10/2026) [Máy/Dấu]. Phương án dự phòng nếu sau này muốn app chủ sandbox: C, không phải A.
+**Quyết định:** D37 chọn phương án D (app chủ không sandbox, Hardened Runtime, ký Developer ID, notarize); bộ gõ giữ sandbox, App Group, không mạng (N2). `scripts/selftest/app-group.sh` đạt với app chủ không sandbox (30/10/2026) [Máy/Dấu]. Phương án dự phòng nếu sau này muốn app chủ sandbox: C, không phải A.
 
 ### 1.4 Homebrew
 - `input_method`: "Relative path to an Input Method that should be moved into the `~/Library/Input Methods` folder on installation". `uninstall quit:` gửi Apple Event thoát. `signal:` chỉ dùng khi `quit` không có tác dụng. `zap` chỉ chạy khi gõ `--zap`. [Ngoài, Homebrew Cask Cookbook]
@@ -219,7 +219,7 @@ Trình tự đề xuất, ráp từ McBopomofo, vChewing, XKey và D7:
 3. Kiểm chữ ký bản trong app: Team ID đúng, chữ ký hợp lệ.
 4. Chép vào một thư mục tạm **trên cùng ổ đĩa** (trong `~/Library/Input Methods`, tên tạm không đuôi `.app` để TIS không quét), rồi **đổi chỗ cả khối** (`FileManager.replaceItemAt`, hoặc đổi tên cái cũ rồi đặt cái mới). Không ghi đè từng file lên bundle đang chạy: tiến trình cũ còn đang ánh xạ các trang mã của nó [Suy luận, cần kiểm chứng; vChewing làm đúng kiểu chép tạm rồi move].
 5. Gỡ quarantine của bản mới sau khi đã kiểm chữ ký (làm được vì app chủ không sandbox, D37).
-6. Dừng tiến trình cũ (`DauInputMethod`). Hệ thống sẽ chạy bản mới ở phím gõ kế tiếp (đã thấy với `scripts/install-debug.sh`). Cách hợp với cả hai phương án sandbox: app chủ phát thông báo Darwin, bộ gõ tự `exit(0)` khi không có từ đang gõ; quá thời hạn thì app chủ (không sandbox) mới `terminate`. macSKK làm tương tự bằng cách gửi "quit" qua `osascript`. Bộ gõ thoát khi nhận thông báo `quitRequested` đã làm ở 30/10/2026 (`docs/PROGRESS.md`).
+6. Dừng tiến trình cũ (`DauInputMethod`). Hệ thống sẽ chạy bản mới ở phím gõ kế tiếp (đã thấy với `scripts/dev/install-debug.sh`). Cách hợp với cả hai phương án sandbox: app chủ phát thông báo Darwin, bộ gõ tự `exit(0)` khi không có từ đang gõ; quá thời hạn thì app chủ (không sandbox) mới `terminate`. macSKK làm tương tự bằng cách gửi "quit" qua `osascript`. Bộ gõ thoát khi nhận thông báo `quitRequested` đã làm ở 30/10/2026 (`docs/PROGRESS.md`).
 7. Gọi lại `TISRegisterInputSource(url)` (Squirrel làm mỗi lần cài; vô hại). Không đụng tới trạng thái bật/chọn: ID giữ nguyên thì lựa chọn của người dùng còn nguyên.
 
 **Không làm:**
@@ -310,7 +310,7 @@ Thứ tự **đề xuất** (của người nghiên cứu, chờ người dùng 
 
 ### 7.2 Chuẩn bị (một lần)
 1. Tạo tài khoản macOS mới (chưa từng cài Dấu hay biến thể nào; `docs/PROGRESS.md` 02/11/2026: chỉ dịch vụ nguồn nhập liệu ghi được `com.apple.inputsources`, nên muốn máy sạch thật thì dùng tài khoản mới, mục 2.6), đăng nhập, chờ khoảng một phút cho phiên ổn định. Không cài gì vào `~/Library/Input Methods` trước.
-2. Chạy `scripts/clean-dau.sh` (không tham số, chỉ liệt kê) làm mốc "không có Dấu".
+2. Chạy `scripts/dev/clean-dau.sh` (không tham số, chỉ liệt kê) làm mốc "không có Dấu".
 3. Mở Terminal thứ hai chạy nhật ký liên tục, ghi vào file có giờ:
    `/usr/bin/log stream --info --debug --style compact --predicate 'process IN {"imklaunchagent","TextInputMenuAgent","TextInputSwitcher","keyboardservicesd","CursorUIViewService","cfprefsd","KeyboardSettings"} OR eventMessage CONTAINS[c] "inputsource" OR eventMessage CONTAINS[c] "codefastlabs.dau"' > ~/dau-t4-log.txt`
    (tên tiến trình và bộ lọc [Suy luận, cần kiểm chứng]: chỉnh khi chạy; dữ liệu `<private>` bị che nếu không cài hồ sơ ghi nhật ký. `KeyboardSettings` thêm vào để bắt dòng "Invalid value on inputSourceToBeEnabled", mục 2.2).
@@ -322,13 +322,13 @@ Các bước ở mục 7 đặt tên S0, S9 và ở mục 8.2 tên P1–P8, đ�
 | Bước | ID | Chuỗi gọi | Mục đích | Mức xâm lấn |
 |---|---|---|---|---|
 | S0 | **Dấu thật** | **Đối chứng**: đúng luồng "Bật Dấu" của app hiện tại (chép bằng đổi tên nguyên khối, `Register`, đợi 1 s, bật cha, đọc lại cùng tiến trình). **Nhìn "+" bằng mắt**, cả menu, danh sách trái, ⌃Space. Chụp `defaults export com.apple.inputsources -` trước và sau lệnh bật | Tái hiện ca T4 lần 1 trên máy sạch; trả lời d1 cho Dấu | Không |
-| S9 | (tất cả) | **Đăng xuất, đăng nhập lại (lần duy nhất).** Chạy `scripts/clean-dau.sh` (không tham số) ngay khi vào, rồi nhìn giao diện | Xác nhận đối chứng: ID nào hiện sau đăng nhập, ID nào đã được bật sẵn | Không |
+| S9 | (tất cả) | **Đăng xuất, đăng nhập lại (lần duy nhất).** Chạy `scripts/dev/clean-dau.sh` (không tham số) ngay khi vào, rồi nhìn giao diện | Xác nhận đối chứng: ID nào hiện sau đăng nhập, ID nào đã được bật sẵn | Không |
 
 ### 7.4 Bảng kiểm sau mỗi bước
 1. Cài đặt › Bàn phím › Nguồn nhập liệu › Sửa…: danh sách bên trái, và hộp thoại "+" (tìm "Dấu" ở nhóm tiếng Việt và ô tìm kiếm) (chụp ảnh). **Nhìn bằng mắt.**
 2. Menu nhập liệu trên thanh menu, và công tắc ⌃Space (hoặc phím chuyển nguồn): có "Dấu" không (chụp ảnh).
 3. Có hộp thoại "Cho phép … bật …?" của hệ thống hiện không; Cài đặt có tự mở không; hiện ở đâu; bấm gì (ghi lại cả khi không hiện).
-4. `scripts/clean-dau.sh` (không tham số): mục Dấu trong `com.apple.inputsources`, tiến trình, bundle, đăng ký LaunchServices. Ghi thêm `AppleInputSourceUpdateTime` từ `defaults export com.apple.inputsources -`.
+4. `scripts/dev/clean-dau.sh` (không tham số): mục Dấu trong `com.apple.inputsources`, tiến trình, bundle, đăng ký LaunchServices. Ghi thêm `AppleInputSourceUpdateTime` từ `defaults export com.apple.inputsources -`.
 5. Nhật ký `/usr/bin/log stream` trong khoảng giờ của bước: các dòng của `imklaunchagent`, `TextInputMenuAgent`, `cfprefsd`, `KeyboardSettings` (nhất là "Invalid value on inputSourceToBeEnabled") và nhật ký `com.codefastlabs.dau` của app (`event=register`, `event=enable`).
 
 Mẫu ghi một dòng cho mỗi bước: `bước | mã trả về Register/Enable | "+" | menu | ⌃Space | hộp thoại / Cài đặt tự mở | tuỳ chọn có (Y/N) | ghi chú`.
@@ -337,7 +337,7 @@ Mẫu ghi một dòng cho mỗi bước: `bước | mã trả về Register/Enab
 - **S0 đã HIỆN ngay (không đăng xuất):** câu trả lời d1 cho Dấu là "không cần" trên bản macOS đó; ghi bản macOS.
 - **Chỉ S9 làm hiện:** xác nhận kết luận của Apple DTS cho Dấu; đề xuất làm C + D (mục 7.1, chờ người dùng quyết) và đóng việc này.
 - **S0 hiện trong "+" nhưng nguồn vẫn không bật được** (bật từ app trả 0, mục cha còn `enabled=0`, hoặc người dùng thêm bằng "+" rồi vẫn không dùng được): đây là hành vi của Enable ở mục 2.2, không phải câu trả lời cho d1; ghi riêng hai kết quả ("có hiện trong '+'" và "bật được"), và nút "Bật Dấu" vẫn không được hứa bật được (mục 6.1 điểm 1).
-- **Máy vẫn còn mục Dấu cũ** (`scripts/clean-dau.sh` không tham số báo `AppleEnabledThirdPartyInputSources` còn mục Dấu, hoặc Dấu "tự có sẵn" ngay sau đăng nhập): kết quả không dùng được để trả lời d1, vì chỉ tài khoản macOS mới là sạch thật (mục 7.2, 2.6); làm lại trên tài khoản mới.
+- **Máy vẫn còn mục Dấu cũ** (`scripts/dev/clean-dau.sh` không tham số báo `AppleEnabledThirdPartyInputSources` còn mục Dấu, hoặc Dấu "tự có sẵn" ngay sau đăng nhập): kết quả không dùng được để trả lời d1, vì chỉ tài khoản macOS mới là sạch thật (mục 7.2, 2.6); làm lại trên tài khoản mới.
 
 ### 7.6 Việc còn lại ngoài vòng thử, và việc cần người dùng chốt
 - Gỡ bản Debug rồi chép lại, **cùng ID** và giữa phiên: TIS có thấy ngay không? Chưa đo.

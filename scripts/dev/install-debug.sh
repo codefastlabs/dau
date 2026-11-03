@@ -8,16 +8,16 @@
 # System Settings (N4). The steps are printed at the end.
 #
 # Usage:
-#   scripts/install-debug.sh               build, install, stop the old process
-#   scripts/install-debug.sh --build-only  build and check only, touch nothing outside the repo
-#   scripts/install-debug.sh --no-build    skip xcodegen and xcodebuild: check and install the
+#   scripts/dev/install-debug.sh               build, install, stop the old process
+#   scripts/dev/install-debug.sh --build-only  build and check only, touch nothing outside the repo
+#   scripts/dev/install-debug.sh --no-build    skip xcodegen and xcodebuild: check and install the
 #                                          build already in build/DerivedData.noindex (for a
-#                                          caller that has just built it, e.g. selftest-app-group.sh)
-#   scripts/install-debug.sh --release     Release instead of Debug: for day-to-day typing
+#                                          caller that has just built it, e.g. scripts/selftest/app-group.sh)
+#   scripts/dev/install-debug.sh --release     Release instead of Debug: for day-to-day typing
 #                                          (no get-task-allow, no per-key log, D8)
 set -euo pipefail
 
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 DERIVED="$ROOT/build/DerivedData.noindex"
 PROCESS_NAME="DauInputMethod"            # CFBundleExecutable of the input method
@@ -130,7 +130,7 @@ EOF
 if [[ "$CONFIG" == Debug ]]; then
   cat <<'EOF'
   7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Muốn lấy số đo: bật nhật ký từng phím bằng
-     `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf-report.sh, rồi tắt
+     `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf/perf-report.sh, rồi tắt
      bằng `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
 EOF
 else

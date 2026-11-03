@@ -3,10 +3,10 @@
 # Side effects: builds, takes the screen, changes input source, changes user settings
 # Needs the Accessibility permission for the process running the script
 # (System Events keystrokes); the Debug input method must be installed, the Dấu input
-# source enabled (scripts/install-debug.sh), and the apps installed.
+# source enabled (scripts/dev/install-debug.sh), and the apps installed.
 #
 # Usage:
-#   scripts/selftest-typing/run.sh [options] <app>...
+#   scripts/selftest/typing/run.sh [options] <app>...
 #     app:  textedit | safari | chrome | vscode | terminal | edge | firefox | notes | mail
 #           | all (= the first five)
 #   --delay MS        pause between keys in ms (default 30). 0 sends the whole string in
@@ -34,7 +34,7 @@
 # For each app: opens a new, empty window, selects the Dấu input source (which must be
 # enabled already; nothing is enabled or disabled, N4), types, reads the text back,
 # closes the window without saving, prints the text, PASS/FAIL and the input method's
-# counts and timings for that app (scripts/perf-report.sh; the script sets the global
+# counts and timings for that app (scripts/perf/perf-report.sh; the script sets the global
 # defaults key DauPerfLog for the run and at exit puts back what was there: the same value
 # and type, or deletes the key if it was absent, D8). The input source selected
 # before and the clipboard (read through ⌘C in browsers, VS Code, Notes, Mail) are
@@ -65,8 +65,8 @@
 # Exit status 0 only if every app gives the expected text.
 set -uo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-HERE="$ROOT/scripts/selftest-typing"
+ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+HERE="$ROOT/scripts/selftest/typing"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 BIN="$ROOT/build/selftest"
 LOG=/usr/bin/log
@@ -113,14 +113,14 @@ INPUT_SOURCE="$BIN/input-source"
 CLIPBOARD="$BIN/clipboard"
 
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
-[[ -f "$IM_PLIST" ]] || { echo "Chưa cài bộ gõ (scripts/install-debug.sh)." >&2; exit 1; }
+[[ -f "$IM_PLIST" ]] || { echo "Chưa cài bộ gõ (scripts/dev/install-debug.sh)." >&2; exit 1; }
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_PLIST")"
 DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
 # disagree (TIS alone has been wrong on macOS 27.2).
 [[ -n "$DAU_SOURCE" ]] || {
   echo "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)." >&2
-  echo "Thêm bằng \"+\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào (scripts/install-debug.sh nói rõ các bước)." >&2
+  echo "Thêm bằng \"+\" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào (scripts/dev/install-debug.sh nói rõ các bước)." >&2
   exit 1
 }
 if [[ "$KEYS" == *"⇄"* ]] && ! "$INPUT_SOURCE" enabled "$US_SOURCE" | grep -qx "$US_SOURCE"; then
@@ -511,7 +511,7 @@ for app in "${APPS[@]}"; do
     vscode) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac
-  "$ROOT/scripts/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
+  "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
     | grep -E 'count_|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
   if [[ $UNDERLINE == 1 ]]; then
     if "$LOG" show --start "$start" --style compact \

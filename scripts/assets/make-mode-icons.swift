@@ -10,8 +10,8 @@
 //
 // TODO(M7): replace with the official identity files (BRAND.md "File cần xuất").
 //
-// Usage: scripts/make-mode-icons.sh (wraps this script and tiffutil).
-//        swift scripts/make-mode-icons.swift <output-dir>  → V.png, V@2x.png
+// Usage: scripts/assets/make-mode-icons.sh (wraps this script and tiffutil).
+//        swift scripts/assets/make-mode-icons.swift <output-dir>  → V.png, V@2x.png
 
 import CoreGraphics
 import Foundation
