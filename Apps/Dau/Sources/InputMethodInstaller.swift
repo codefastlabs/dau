@@ -302,6 +302,13 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
         await stopInputMethod(bundleID)
 
+        // System Settings' input source cache still holds the removed bundle: the "+"
+        // list keeps a row without a name (and TIS keeps listing it) until the cache is
+        // rebuilt, which used to take a logout. Deleting it makes System Settings rebuild
+        // it at once (D37, docs/research/M5-INSTALL.md section 8.1b, rounds U).
+        let cache = settings.clearKeyboardCache()
+        installLogger.notice("event=uninstall-cache-cleared removed=\(cache.removed) failed=\(cache.failed)")
+
         // The App Group data, only when asked.
         if deleteSettings {
             report.dataDeleted = deleteSharedData()

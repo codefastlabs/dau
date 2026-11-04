@@ -432,6 +432,7 @@ struct InputMethodInstallerTests {
         #expect(rig.keyboardOpened.value == 1)
         #expect(rig.files.log.isEmpty)
         #expect(rig.processes.log.isEmpty)
+        #expect(rig.settings.log.isEmpty)
         #expect(rig.counter.value == 0)
     }
 
@@ -488,6 +489,7 @@ struct InputMethodInstallerTests {
         }
         #expect(rig.files.log.isEmpty)
         #expect(rig.processes.log.isEmpty)
+        #expect(rig.settings.log.isEmpty)
         #expect(rig.counter.value == 0)
         // Only the mode left over counts too.
         rig.tis.stored = [modeID]
@@ -505,6 +507,8 @@ struct InputMethodInstallerTests {
         let report = try await rig.installer.finishUninstall(deleteSettings: false)
         #expect(rig.processes.log == ["requestQuit"])
         #expect(rig.files.log == ["trash"])
+        // The cache goes after the bundle, so the "+" list drops the row without a name.
+        #expect(rig.settings.log == ["clearCache"])
         #expect(report == UninstallReport(switchedTo: nil, movedToTrash: true, stillEnabled: false, dataDeleted: false))
         #expect(rig.counter.value == 0)
         #expect(rig.installer.status() == .notInstalled)

@@ -394,6 +394,16 @@ Hộp thoại (ảnh của người dùng, macOS 27.2, giao diện tiếng Anh):
 
 Quan sát xuyên các vòng: mọi lần System Settings xử lý yêu cầu bật (`handleOpenParameter`, 10:20:51, 10:31:46, 10:40:35, 10:41:03) đều đi cùng một tiến trình extension `KeyboardSettings` có pid mới và dòng `TCCAccessLaunchDisclosurePromptIfNeeded` cùng lúc; mọi lần lệnh bật trả 0 mà không có dòng nào (Q4 10:29:28, Q5 10:36:59 và 10:39:30) đều là lúc trang Keyboard đang mở sẵn. Chưa thử: System Settings mở ở trang khác Keyboard.
 
+**Vòng U (04/11/2026), gỡ:** bỏ bundle khỏi `~/Library/Input Methods` (`lsregister -u` trước, rồi chuyển ra ngoài), có hoặc không có "–", rồi xoá `IntlDataCache.le*`; System Settings đang mở; "+" và các danh sách là người dùng xem, sheet đóng rồi mở lại.
+
+| Bước | Bản | Trước khi bỏ bundle | Ngay sau khi bỏ bundle | Sau khi xoá bộ đệm |
+|---|---|---|---|---|
+| U1 12:41 | A1 | đã cài, chưa bật | TIS tiến trình mới vẫn liệt kê A1; "+" › Vietnamese có một dòng không tên (ảnh của người dùng) | TIS không còn A1; bộ đệm dựng lại 12:43 khi mở "+", `.kbdx` 144.712 → 144.164 byte; dòng không tên mất |
+| U2 12:44 | B3 | đang bật; người dùng bỏ bằng "–" (`com.apple.inputsources` không còn B3) | TIS vẫn liệt kê B3 | vài giây sau TIS không còn B3; "+" và danh sách bên trái của Edit… sạch |
+| U3 12:50 | C1 | đang bật, **không** bấm "–" | — | TIS không còn C1; `com.apple.inputsources` **vẫn còn** hai mục của C1 (không ai ghi được miền này ngoài System Settings); menu nhập liệu, danh sách bên trái của Edit…, "+" › Vietnamese và ⌃Space đều không có C1 hay dòng trống |
+
+Tìm trong binary `KeyboardSettings` (macOS 27.2): chỉ có `inputSourceToBeEnabled`, không có đường nhận yêu cầu tắt/bỏ nguồn; HIToolbox có `TSMDisableInputSource` cạnh `TISDisableInputSource` (chưa thử, nhiều khả năng cùng đường ghi bị chặn ở mục 4). Chưa đo sau U3: mục ẩn của C1 có ảnh hưởng gì ở lần đăng nhập sau, và cài lại cùng ID thì macOS có tự bật lại không.
+
 Q3 (chỉ dừng extension) chưa chạy: Q2 đã đủ và nhẹ hơn. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
 
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật theo mục 7, xem cả danh sách "+".
