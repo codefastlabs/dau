@@ -20,7 +20,7 @@ Mỗi khẳng định mang một nhãn. Chỗ không có nguồn ghi đúng "kh�
 
 Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu), hai đợt đọc: 30/10: Squirrel 46962d2, McBopomofo 18e2060, vChewing 7c82f5f, macSKK 539cce3, fcitx5-macos 3466612, Gureum 46c62e5, XKey 398e78e, goxkey b197c57, OpenKey 89c2fd3. 02/11 (`/tmp/dau-research/`): Squirrel d220b92, McBopomofo 257da53, vChewing-macOS 8c1bb72, macSKK c812585, Gureum 46c62e5, fcitx5-macos 3466612, XKey 398e78e.
 
-## 0. Hiện trạng hiểu biết (03/11/2026, macOS 27.2)
+## 0. Hiện trạng hiểu biết (04/11/2026, macOS 27.2)
 
 ### (a) Có nguồn Apple, nguồn ngoài, hoặc file hệ thống
 
@@ -43,6 +43,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 6. **02/11 16:41:23:** Cài đặt ghi lỗi "Invalid value on inputSourceToBeEnabled" 0,8 s sau khi Dấu ghi `event=enable … status=0`; theo mã thì khi đó không dựng hộp thoại. Cài đặt có hiện lên màn hình hay không: không ghi lại. [Máy/Dấu + Máy/hệ thống] Mục 2.2.
 7. **02/11:** `TISDisableInputSource` từ app trả 0 cho mục con và mục cha, nhưng System Policy chặn ghi `com.apple.inputsources` (`Dau deny(1) user-preference-write com.apple.inputsources`; cfprefsd "rejecting write"), hai mục Dấu còn nguyên, TIS tiến trình mới vẫn báo `enabled=true`. Chỉ nút "–" trong Cài đặt gỡ được (file ghi lúc 18:07, mục rỗng). [Máy/Dấu] Mục 4.
 8. **Chưa có phép đo trên tài khoản macOS mới, nhìn danh sách "+" bằng mắt, với Dấu thật.** Mục 7.
+9. **04/11, "Bật Dấu" theo D37 mới (Debug, mã `83baa29`), tài khoản đã từng cài Dấu nhưng lúc đó không cài Dấu và `com.apple.inputsources` không có mục nào của Dấu:** chép, đăng ký (0), xoá 2 file `IntlDataCache.le*`, System Settings thoát, bật mục cha (0) lúc 10:49:57.214; `KeyboardSettings` `handleOpenParameter` 10:49:58.364; hộp thoại `Allow “Dấu” to enable “Dấu”?` (ảnh của người dùng; tên thứ hai là tên của mục cha, không phải "Dấu – Tiếng Việt"); người dùng bấm "Allow"; `com.apple.inputsources` có mục cha và mode `….Dau.vi` lúc 10:50:02 (`event=enable-stored waited=4s`); tiến trình bộ gõ chạy; menu nhập liệu có "Dấu – Tiếng Việt", gõ "vieetj" ra "việt" (người dùng xem). Không đăng xuất. [Máy/Dấu] Mục 8.1b (cùng cách, đo trước bằng bản thử).
 
 ### (c) Diễn giải mã/binary (của người nghiên cứu)
 
@@ -52,7 +53,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 
 ### (d) Câu hỏi mở
 
-1. **Lần cài đầu có phải đăng xuất để danh sách "+" thấy ID mới không.** Apple DTS nói cần; marinaMoji nói không; chưa ai tách được nguyên nhân khác biệt (thư mục cài, tiến trình gọi, thời điểm). Trả lời bằng Dấu thật trên tài khoản sạch, nhìn "+" bằng mắt (mục 7). D37 ghi "có thể". Mục 2.3.
+1. **Lần cài đầu có phải đăng xuất để danh sách "+" thấy ID mới không.** Trên macOS 27.2: không, nếu xoá bộ đệm `IntlDataCache.le*` của System Settings sau khi đăng ký (mục 8.1b bằng bản thử; (b)9 bằng Dấu thật trên tài khoản đã từng cài Dấu). Còn phải đo: tài khoản macOS mới (T4, mục 7), macOS 14–26, bản ký Developer ID. Lời khuyên đăng xuất của Apple DTS phù hợp với việc bộ đệm này chỉ được dựng lại khi đăng nhập [Suy luận, cần kiểm chứng]. Mục 2.3.
 2. **Vì sao Cài đặt không dựng lại được nguồn** ("Invalid value"), kể cả với Dấu thật. Không tìm thấy nguồn. Mục 2.2.
 3. **Hộp thoại "Allow … to enable …?" có hiện thật trên macOS 26/27 khi nào**, và bản ký Developer ID đã notarize có khác không. Chưa ai thấy hộp thoại trên máy này. Mục 2.2.
 4. **Luật `.inputmethod.` trong bundle ID có do Apple quy định không.** Không tìm thấy nguồn Apple. Mục 2.7.
@@ -160,6 +161,7 @@ Các nguồn Apple khác đã tra:
 - Bằng chứng gián tiếp: ở T4 lần 1 (02/11) "+" và menu không có Dấu sau "Bật Dấu", và có sau lần đăng xuất/đăng nhập kế tiếp, nhưng máy không sạch (mục 0 (b)4) nên chỉ là một quan sát phù hợp, không phải phép đo. [Máy/Dấu]
 
 **Bên "không cần / hiện ngay":**
+- Dấu thật (04/11/2026, macOS 27.2): xoá `IntlDataCache.le*` sau khi đăng ký thì "+" có Dấu và bật được qua hộp thoại xin phép, không đăng xuất (mục 0 (b)9, mục 8.1b). [Máy/Dấu]
 - marinaMoji (máy ảo sạch macOS 27.0.1, `.pkg` vào `/Library/Input Methods`; `postinstall` chạy dưới tên người dùng: `TISRegisterInputSource` → 0; `TISEnableInputSource` các mode → 0; `TISSelectInputSource` mode gốc → -50; cha vẫn `enabled=0`): nguồn **hiện ngay trong "+"**, người dùng tự thêm, dùng được, không đăng xuất. Bản v0.0.14 (có plugin kích hoạt) cho kết quả như nhau. Chỉ thử macOS 27. Có đính chính trong issue: lúc đầu đọc nhầm miền `HIToolbox`, giống Dấu. [Ngoài, issue #66, 15/10/2026]
 - Header: đăng ký "so that a TISInputSourceRef can immediately be obtained" (mục 2.1). Đây là tài liệu 2006–2008; quan sát của tabulador (dưới) và msime lệch với câu "immediately". [Apple]
 - McBopomofo: mã không đòi đăng xuất cho lần cài đầu (màn hình cuối "Installation Successful – ready to use"; chỉ cảnh báo đăng xuất khi **nâng cấp** mà bản cũ chưa thoát hẳn do translocation; README: kill tiến trình quá nhiều lần trong một phiên thì phải đăng xuất). vChewing: mã dừng `TextInputMenuAgent` rồi chờ 0,5 s với chú thích để "bộ gõ mới hiện trong menu mà không phải đăng xuất". **Cả hai không có số đo trên máy sạch macOS 27**; msime đo thấy cách của vChewing vô tác dụng với ID mới trên 27.0. [Ngoài, mã]
