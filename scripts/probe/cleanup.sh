@@ -1,9 +1,12 @@
 #!/bin/zsh
-# Lists, or with --yes removes, the DauProbe variants from this account.
-# Side effects: none without --yes (only lists); with --yes: kills processes, deletes data, needs admin password (only for a copy in /Library/Input Methods)
+# Lists, or with --yes removes, the DauProbe variants and the leftovers of the probe test apps from this account.
+# Side effects: none without --yes or --trash (only lists); with --yes: kills processes, deletes data, needs admin password (only for a copy in /Library/Input Methods); with --trash: deletes data (permanently, from the Trash)
 # Lists: DauProbe*.app in ~/Library/Input Methods and /Library/Input Methods, LaunchServices
 # registrations of DauProbe*.app, DauProbe entries in com.apple.inputsources ›
-# AppleEnabledThirdPartyInputSources, running DauProbe processes.
+# AppleEnabledThirdPartyInputSources, running DauProbe processes; the folders macOS made for the
+# sandboxed probe apps (DauProbe variants and the local.probe.* test apps of round E, M5-INSTALL.md
+# 8.1b): containers in ~/Library/Containers, ~/Library/Application Scripts, the per-app cache folders
+# in $(getconf DARWIN_USER_CACHE_DIR); and the probe copies in the Trash.
 #
 # Usage:
 #   scripts/probe/cleanup.sh         list; changes nothing
@@ -12,6 +15,13 @@
 #                                    DauProbe processes, `lsregister -u` every registered copy, move the bundles to
 #                                    the Trash (a copy in /Library needs sudo), and `lsregister -u` the copies that
 #                                    landed in the Trash too (same order and reason as scripts/dev/clean-dau.sh).
+#                                    Then remove the probe apps' folders: Application Scripts and cache folders are
+#                                    deleted; containers go to the Trash through Finder (macOS stops a shell from
+#                                    deleting a container's metadata).
+#   scripts/probe/cleanup.sh --trash delete for good, from the Trash, only DauProbe*.app, DauInputMethod*.app
+#                                    and local.probe.* / com.codefastlabs.dau.inputmethod.DauProbe* (containers moved
+#                                    there by --yes); nothing else in the Trash. The Trash is readable only with Full
+#                                    Disk Access for the terminal; without it the script says so and stops.
 #
 # It never touches the variants under build/probe.noindex (they are build output, not installed) and never
 # changes com.apple.inputsources (macOS lets only System Settings write it): the entries go with "–".
@@ -19,12 +29,48 @@ set -u
 setopt null_glob
 
 DO=0
+TRASH=0
 case "${1:-}" in
   "") ;;
   --yes) DO=1 ;;
+  --trash) TRASH=1 ;;
   -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-  *) print -u2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá)"; exit 2 ;;
+  *) print -u2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá, --trash để xoá hẳn khỏi Thùng rác)"; exit 2 ;;
 esac
+
+# Names macOS gives the folders of a sandboxed app: its bundle ID.
+PROBE_IDS=('local.probe.*' 'com.codefastlabs.dau.inputmethod.DauProbe*' 'com.codefastlabs.dau.probe.*')
+CACHE_ROOT=$(getconf DARWIN_USER_CACHE_DIR)
+probe_folders() { # $1: parent folder; prints matching subfolders
+  local id d
+  for id in $PROBE_IDS; do for d in "$1"/${~id}(N/); do print -r -- "$d"; done; done
+}
+
+if (( TRASH )); then
+  print "Bản thử trong Thùng rác:"
+  if ! ls "$HOME/.Trash" >/dev/null 2>&1; then
+    print -u2 "  Không đọc được Thùng rác: Terminal cần quyền Full Disk Access (System Settings › Privacy & Security › Full Disk Access)."
+    print -u2 "  Hoặc mở Thùng rác trong Finder, chọn các mục tên DauProbe…, DauInputMethod…, local.probe.… và chọn Delete Immediately."
+    exit 1
+  fi
+  items=()
+  for p in "$HOME/.Trash"/DauProbe*.app(N) "$HOME/.Trash"/DauInputMethod*.app(N) "$HOME/.Trash"/local.probe.*(N) "$HOME/.Trash"/com.codefastlabs.dau.inputmethod.DauProbe*(N); do
+    items+=("$p"); print -r -- "  $p"
+  done
+  (( ${#items} )) || { print "  (không có)"; exit 0 }
+  print -n "\nXoá hẳn ${#items} mục này, không lấy lại được? Gõ yes: "
+  read -r answer
+  [[ $answer == yes ]] || { print "Không xoá gì."; exit 0 }
+  LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
+  left=0
+  for p in $items; do
+    [[ $p == *.app ]] && "$LSREG" -u "$p" >/dev/null 2>&1
+    if rm -rf -- "$p"; then print -r -- "  đã xoá: ${p:t}"; else print -r -- "  KHÔNG xoá được: ${p:t}"; (( left++ )); fi
+  done
+  (( left )) && { print "\nCòn $left mục: xoá trong Finder (Delete Immediately)."; exit 1 }
+  print "\nXong."
+  exit 0
+fi
 
 LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 USER_DIR="$HOME/Library/Input Methods"
@@ -56,7 +102,20 @@ print "Tiến trình DauProbe đang chạy:"
 procs=(${(f)"$(pgrep -fl 'Contents/MacOS/DauProbe' 2>/dev/null)"})
 for p in $procs; do note "$p"; done
 
-if (( ! found )); then print "\nKhông còn biến thể nào."; exit 0; fi
+print "Thư mục macOS tạo cho app thử có sandbox:"
+containers=(${(f)"$(probe_folders "$HOME/Library/Containers")"})
+scripts_dirs=(${(f)"$(probe_folders "$HOME/Library/Application Scripts")"})
+cache_dirs=(${(f)"$([[ -n $CACHE_ROOT ]] && probe_folders "${CACHE_ROOT%/}")"})
+for d in $containers $scripts_dirs $cache_dirs; do note "$d"; done
+
+print "Bản thử trong Thùng rác (xoá hẳn bằng --trash):"
+if ls "$HOME/.Trash" >/dev/null 2>&1; then
+  for p in "$HOME/.Trash"/DauProbe*.app(N) "$HOME/.Trash"/DauInputMethod*.app(N) "$HOME/.Trash"/local.probe.*(N) "$HOME/.Trash"/com.codefastlabs.dau.inputmethod.DauProbe*(N); do print -r -- "  $p"; done
+else
+  print "  (không đọc được Thùng rác khi Terminal chưa có Full Disk Access)"
+fi
+
+if (( ! found )); then print "\nKhông còn biến thể hay thư mục nào của app thử."; exit 0; fi
 if (( ! DO )); then
   print "\nChưa xoá gì. Chạy lại với --yes để xoá."
   (( ${#entry_lines} )) && print "Các mục trong com.apple.inputsources không xoá được bằng script: bỏ bằng \"–\" trong System Settings › Keyboard › Input Sources › Edit… TRƯỚC khi chạy --yes."
@@ -104,5 +163,17 @@ if (( ${#bundles} )); then
   trashed=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E "^path: +$HOME/\.Trash/.*DauProbe[A-Za-z0-9 -]*\.app \(0x" | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
   for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký (Thùng rác): $r"; done
 fi
+# Folders of the sandboxed probe apps. Caches and Application Scripts are plain folders; a container's
+# metadata is protected, so the container goes to the Trash through Finder (the user's own action).
+for d in $scripts_dirs $cache_dirs; do
+  if rm -rf -- "$d"; then print -r -- "  đã xoá: $d"; else print -r -- "  KHÔNG xoá được: $d"; (( unremoved++ )); fi
+done
+for d in $containers; do
+  if osascript -e "tell application \"Finder\" to delete (POSIX file \"$d\" as alias)" >/dev/null 2>&1; then
+    print -r -- "  vào Thùng rác: $d"
+  else
+    print -r -- "  KHÔNG chuyển được vào Thùng rác (Finder từ chối): $d — kéo vào Thùng rác bằng tay."; (( unremoved++ ))
+  fi
+done
 if (( unremoved )); then print "\nCHƯA XOÁ HẾT ($unremoved mục). Xử lý tay rồi chạy lại để kiểm."; exit 1; fi
 print "\nXong. Mục còn trong com.apple.inputsources (nếu có) chỉ bỏ được bằng \"–\"; ID đã dùng chỉ \"mới\" lại sau khi dùng một vòng ID khác."
