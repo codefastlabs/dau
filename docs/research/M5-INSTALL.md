@@ -82,11 +82,18 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 7. **`TISDisableInputSource` lên mode đang được chọn:** hệ thống đổi sang nguồn nào khi Dấu bị tắt (đo ở T4). Mục 4.
 8. **Mục ẩn (bundle đã xoá, mục còn trong `AppleEnabledThirdPartyInputSources`)**: dọn được bằng cài lại đúng ID rồi bấm "–", không cần tiến trình bộ gõ chạy (K1, bản thử, 04/11, mục 4.1). Còn mở: mục ẩn có hiện lại ở đâu sau một lần đăng xuất/đăng nhập không (K4; mục ẩn của C1 đã bị dọn trong K1, nên cần tạo lại một mục ẩn để đo).
 9. **Vì sao ml-ime ghi được miền này bằng `defaults write` trên macOS 26.5.2/26.6.2** trong khi Arion (26.6.2) và máy này (27.2) bị chặn; Full Disk Access có mở khoá không. Chưa đo; kế hoạch K0, K2 ở mục 4.1, chỉ để chẩn đoán.
-10. **Bộ đệm `IntlDataCache.le*` riêng của từng app được dựng lại khi nào** ((b)10).
-    - Đã biết: mở lại app thì không dựng lại. Chưa biết: đăng xuất hay khởi động lại máy có dựng lại không.
-    - Có phải chỉ app có sandbox mới có bộ đệm riêng này không. Đã thấy ở Telegram, TextEdit và app thử; Finder và Sublime Text không bị.
-    - App đang chạy có nhận Dấu sau khi xoá bộ đệm mà không cần mở lại không.
-    - Nếu đúng như vậy, lần bật đầu theo D37 (không đăng xuất) có thể để Dấu không dùng được trong các app có sandbox đã mở trước khi cài, kể cả khi mở lại app. Gỡ cài đặt có thể để lại mục cũ trong bộ đệm của các app đó. [Suy luận, cần kiểm chứng]
+10. **Bộ đệm `IntlDataCache.le*` riêng của từng app có sandbox** ((b)10; vòng E ở mục 8.1b, bản thử).
+    - **Đã đo bằng bản thử:**
+      - Bộ đệm có sẵn thì được dùng mà không kiểm tra lại. Mở lại app hay nhận thông báo đổi nguồn đều không làm nó dựng lại.
+      - Xoá bộ đệm của app đã thoát thì lần mở sau dựng lại.
+      - Xoá bộ đệm của app đang chạy thì nó dựng lại ở lần đăng ký nguồn tiếp theo. Thứ tự "chép → xoá bộ đệm của app → đăng ký → bật" làm app đang chạy dùng được nguồn mới mà không cần mở lại.
+      - Tiến trình không sandbox dùng bộ đệm chung, và bộ đệm này tự dựng lại.
+    - **Còn mở:**
+      - Đo lại thứ tự trên bằng Dấu thật, với app thật có sandbox đang chạy (Telegram).
+      - Đăng xuất hay khởi động lại máy có dựng lại bộ đệm không.
+      - App bên thứ ba có thể không có quyền xoá một số thư mục trong `DARWIN_USER_CACHE_DIR` (có thư mục shell báo "Operation not permitted").
+      - Sau khi gỡ, các bộ đệm cũ còn `DauInputMethod.app` thì có hậu quả gì.
+    - **Hệ quả cho D37** [Suy luận, cần kiểm chứng]: luồng bật hiện chỉ xoá bộ đệm của System Settings. Trên máy đã từng mở các app có sandbox, Dấu có thể không dùng được trong các app đó cho tới khi bộ đệm của chúng được dựng lại.
 
 ## 1. App chủ có sandbox có chép được bộ gõ vào `~/Library/Input Methods` không?
 
@@ -513,6 +520,29 @@ Tìm trong binary `KeyboardSettings` (macOS 27.2): chỉ có `inputSourceToBeEna
 | 14:48:21 | bấm "Allow" | D1 vào `com.apple.inputsources` ngay (cả hai mục) |
 | 14:48:41 | System Settings đang mở sheet Input Sources, gọi `NSRunningApplication.terminate()` như app | System Settings thoát trong < 5 s dù sheet đang mở |
 | 14:48:51 | mở `?InputSources`, chọn D1, bấm "–", Done (qua trợ năng) | D1 ra khỏi danh sách; dọn bằng `cleanup.sh --yes` |
+
+**Vòng E (04/11/2026, 16:58–17:08): bộ đệm riêng của app có sandbox.** Mục đích: kiểm tra (b)10 với một nguồn mới, đo khi nào app thấy nguồn đó.
+
+Cách đo:
+- Công cụ: một app thử (ký ad-hoc, có sandbox, mỗi lần một bundle ID mới), in danh sách nguồn TIS mà nó thấy và giờ ghi bộ đệm `com.apple.IntlDataCache.le.kbdx` của nó. Có ba chế độ: in một lần, theo dõi khi đang chạy (đọc lại khi có thông báo TIS và mỗi 2 s), mở cửa sổ có ô nhập.
+- Bộ đệm của app có sandbox nằm ở `$(getconf DARWIN_USER_CACHE_DIR)<bundle ID>/`. Tiến trình không sandbox dùng bộ đệm chung ở gốc thư mục đó.
+- Biến thể E1–E4 bật theo bước Q5 (Allow bấm qua trợ năng), trừ khi ghi khác. Bỏ bằng "–" qua trợ năng rồi `cleanup.sh --yes`.
+
+| Giờ | Bước | Kết quả |
+|---|---|---|
+| 16:59:19 | E1 bật theo Q5, Allow | app đang chạy (bộ đệm 16:59:10) nhận `EnabledKeyboardInputSourcesChanged` nhưng **không thấy E1**; app mở lại có bộ đệm cũ (16:58:54) **không thấy E1**; app mới thấy E1; tiến trình không sandbox thấy E1 (bộ đệm chung tự dựng lại lúc 16:59:29) |
+| 17:00:03 | xoá bộ đệm của app đang chạy (E1 đã bật xong), rồi đổi nguồn đang chọn hai lần | app vẫn không thấy E1, không dựng lại bộ đệm (`cache=none`) |
+| 17:00:11 | xoá bộ đệm của app đã thoát, mở lại | thấy E1 |
+| 17:03:00 | app mới chạy với bộ đệm cũ chép từ app khác (không có E3, E3 đã cài) | dùng bộ đệm đó, không thấy E3: bộ đệm có sẵn thì được dùng, không bị kiểm tra lại |
+| 17:03:29 → 17:03:36 | xoá bộ đệm của app đó khi đang chạy; 7 s sau gọi `TISRegisterInputSource` cho một nguồn đã cài | sau khi xoá: không đọc lại. Sau khi đăng ký: dựng lại bộ đệm từ đĩa, **thấy E3 khi vẫn đang chạy** |
+| 17:04:24 | hai app có ô nhập, cùng bộ đệm cũ, cùng đang chạy; chép E4, xoá bộ đệm của **một** app, đăng ký E4, bật E4, Allow | app bị xoá bộ đệm: bộ đệm mới (17:04:27) có E4, chọn "Dấu thử E4" từ menu nhập liệu được, gõ từng phím ra đúng "việt". App giữ bộ đệm: chọn E4 từ menu không đổi (vẫn U.S.), gõ ra "vieetj", như Telegram ở (b)10 |
+
+Thêm:
+- **E2:** lượt đầu không hiện hộp thoại vì System Settings còn mở từ E1 (bước Q5 không thoát nó). Thoát rồi gửi lại thì hiện.
+- **Sai sót thiết kế ở lượt E3:** app thử tự đọc TIS mỗi 2 s nên dựng lại bộ đệm (vẫn cũ) ngay sau khi bị xoá, trước khi E3 được cài. Một app thật gọi TIS vào lúc bất kỳ, nên khoảng giữa lúc xoá bộ đệm và lúc đăng ký cần ngắn nhất có thể.
+- **Thông báo đổi nguồn lạ:** lúc 17:03:21 và 17:03:26 có hai thông báo đổi nguồn đang chọn không do lệnh nào của vòng thử.
+- **Bấm "–" qua trợ năng:** trong một lần mở trang Input Sources, chỉ lần "–" đầu tiên được ghi vào `com.apple.inputsources`. Các lần sau làm dòng biến mất nhưng không ghi. Mở lại System Settings cho từng mục thì ghi đủ. Chưa biết có xảy ra khi người dùng tự bấm hay không.
+- **Gõ nhanh khi chưa ổn định:** lần gõ nhanh đầu tiên ở app có ô nhập (chuỗi System Events) ra ô trống; gõ từng phím thì đúng.
 
 Q3 (chỉ dừng extension) chưa chạy: Q2 đã đủ và nhẹ hơn. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
 
