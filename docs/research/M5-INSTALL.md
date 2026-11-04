@@ -62,7 +62,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 5. **Bộ gõ đã notarize nhưng mang quarantine** (chép từ app sandbox) có chạy không, có bị translocate không; chỉ thử được ở M7. Mục 1.2. Chỉ liên quan tới các phương án sandbox (A đến C ở 1.3); D37 chọn D.
 6. **Ghi chú phát hành macOS 27.1 và ghi chú bản beta** chưa đọc được; tracker fcitx5-macos và aquaskk không rà được. Mục 2.1.
 7. **`TISDisableInputSource` lên mode đang được chọn:** hệ thống đổi sang nguồn nào khi Dấu bị tắt (đo ở T4). Mục 4.
-8. **Mục ẩn (bundle đã xoá, mục còn trong `AppleEnabledThirdPartyInputSources`) có dọn được bằng cách cài lại đúng ID rồi bấm "–" không**, và "–" có cần tiến trình bộ gõ đang chạy không. Chưa đo; kế hoạch K1 ở mục 4.1.
+8. **Mục ẩn (bundle đã xoá, mục còn trong `AppleEnabledThirdPartyInputSources`)**: dọn được bằng cài lại đúng ID rồi bấm "–", không cần tiến trình bộ gõ chạy (K1, bản thử, 04/11, mục 4.1). Còn mở: mục ẩn có hiện lại ở đâu sau một lần đăng xuất/đăng nhập không (K4; mục ẩn của C1 đã bị dọn trong K1, nên cần tạo lại một mục ẩn để đo).
 9. **Vì sao ml-ime ghi được miền này bằng `defaults write` trên macOS 26.5.2/26.6.2** trong khi Arion (26.6.2) và máy này (27.2) bị chặn; Full Disk Access có mở khoá không. Chưa đo; kế hoạch K0, K2 ở mục 4.1, chỉ để chẩn đoán.
 
 ## 1. App chủ có sandbox có chép được bộ gõ vào `~/Library/Input Methods` không?
@@ -317,6 +317,10 @@ Câu hỏi của người dùng: "xem được thì có lẽ xoá được?". Tr
   - Biến thể K2b (tuỳ chọn, hỏi mật khẩu quản trị): đường của qingjian, `osascript -e 'do shell script "launchctl asuser <uid> sudo -u <user> defaults write com.apple.inputsources DauK2Probe -bool YES" with administrator privileges'`, rồi đọc và xoá như trên.
   - Đọc kết quả: chỉ có Full Disk Access mới ghi được → giải thích ml-ime, R8 vẫn không đưa vào Dấu. Ghi được cả khi không có Full Disk Access → máy đã khác 02/11, phải đo lại R2 trước khi kết luận gì.
 - **K3, ghi thẳng file**: không khuyến nghị trên tài khoản này (file chứa mục thật của Dấu; cfprefsd có thể ghi đè). Nếu cần, chỉ trên tài khoản thử của T4 (mục 7.2), cũng với khoá giả, sao lưu như K2.
+**Kết quả (04/11/2026)** [Máy/bản thử]:
+- **K0:** Full Disk Access của Terminal.app đang **bật**; Ghostty.app có trong danh sách, **tắt** (ảnh của người dùng). Không biết `clean-dau.sh --yes` ngày 02/11 chạy trong ứng dụng nào, và `log show` không còn dòng từ chối của ngày đó, nên R8 chưa đóng được bằng K0.
+- **K1** (bỏ bước sao lưu 1 và 4 phần nhìn menu): 13:58:12 chép lại C1, `register` (0), xoá bộ đệm, mở Keyboard. TIS tiến trình mới báo ngay cha và mode `enabled`, mode chọn được (mục ẩn làm C1 "đang bật" lại, không có hộp thoại xin phép); không có tiến trình `DauProbeC1`. Người dùng bấm "–" ở "Dấu thử C1": `com.apple.inputsources` ghi lúc 14:02, không còn mục nào của C1 (cả cha và mode). → **R10 dùng được**, và "–" không cần tiến trình bộ gõ đang chạy. Sau đó người dùng bỏ C2 bằng "–", `scripts/probe/cleanup.sh --yes` dọn mọi bản thử (A2–A4, B1, B2, C1, C2) khỏi `~/Library/Input Methods`, bộ đệm xoá; `cleanup.sh` báo "Không còn biến thể nào", miền chỉ còn mục của Dấu.
+- Hệ quả: mục ẩn để lại vẫn dọn được về sau bằng cài lại cùng ID rồi "–"; cài lại cùng ID khi còn mục ẩn thì nguồn được bật ngay, không hỏi.
 - **K4** (không tốn gì): nếu K1 chưa chạy trước lần đăng xuất tự nhiên kế tiếp, sau khi đăng nhập lại đọc `defaults export com.apple.inputsources -` xem mục C1 còn không (msime và Shanjie cho thấy mục không tự mất, chưa đo trên máy này).
 
 ## 5. Bộ gõ tiếng Việt cũ cần phát hiện (D14 bước 1)
