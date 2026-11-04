@@ -204,8 +204,10 @@ struct OnboardingStepView: View {
             case .typing: TypingStep()
             }
         }
+        // No side margin here: `StepLayout` puts it inside the scroll area, so the scroll
+        // bar sits at the window's edge as in System Settings (D9; artboard
+        // OnboardingEnableNotes, canvas version 104).
         .padding(.top, OnboardingScene.belowTitleBar(40))
-        .padding(.horizontal, 36)
         .padding(.bottom, 28)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background { SettingsColors.page.ignoresSafeArea() }
@@ -251,12 +253,16 @@ struct StepLayout<Content: View, Buttons: View>: View {
                     }
                     content
                 }
+                // The side margin is inside the scroll area: the area reaches the window's
+                // edge and so does its scroll bar (System Settings, D9).
+                .padding(.horizontal, Self.sideMargin)
                 .frame(maxWidth: .infinity, alignment: .topLeading)
                 .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
             }
             .scrollBounceBehavior(.basedOnSize)
             .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { viewportHeight = $0 }
-            // The separator shows only when something is scrolled out of sight.
+            // The separator shows only when something is scrolled out of sight; it runs the
+            // full width, edge to edge, as in the artboard.
             if contentHeight > viewportHeight + 0.5 {
                 Divider()
                     .layoutProbe("onbDivider-\(step.rawValue)\(screen)")
@@ -268,9 +274,13 @@ struct StepLayout<Content: View, Buttons: View>: View {
             }
             .settingsButton()
             .layoutProbe("onbButtons-\(step.rawValue)\(screen)")
+            .padding(.horizontal, Self.sideMargin)
             .padding(.top, 18)
         }
     }
+
+    /// The detail pane's side margin (artboards: 36).
+    static var sideMargin: CGFloat { 36 }
 }
 
 /// A card as on the Settings pages, with 16 pt padding and 12 pt between items.
@@ -615,37 +625,43 @@ struct NumberedLine: View {
 
 /// A small picture of macOS's "Allow … to enable …?" dialog, so the user knows what to
 /// look for. Not a control: hidden from VoiceOver. System colors only (D9); the text is
-/// the dialog's own English wording.
+/// the dialog's own wording. Drawn like the real dialog at about 0.75 scale (measured on
+/// macOS 27.2, docs/research/M5-INSTALL.md section 8.1b; artboards OnboardingEnable*,
+/// canvas version 105): no icon, everything left-aligned, the whole body shown, two
+/// equal capsule buttons with "Allow" (the default) blue on the right.
 struct AllowDialogIllustration: View {
     /// The dialog's own words, in the system's language (D38).
     private let ui = SystemUINames.system()
 
     var body: some View {
-        VStack(spacing: 5) {
+        VStack(alignment: .leading, spacing: 6) {
             Text(verbatim: ui.allowDialogTitle(app: "Dấu"))
-                .font(.system(size: 8, weight: .bold))
-                .multilineTextAlignment(.center)
+                .font(.system(size: 10.5, weight: .bold))
+                .fixedSize(horizontal: false, vertical: true)
             Text(verbatim: ui.allowDialogBody)
-                .font(.system(size: 6.5))
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
-                .lineLimit(3)
-            HStack(spacing: 4) {
+                .font(.system(size: 9.5))
+                .fixedSize(horizontal: false, vertical: true)
+            HStack(spacing: 5) {
                 Text(verbatim: ui.dontAllow)
-                    .font(.system(size: 7))
-                    .frame(maxWidth: .infinity, minHeight: 14)
+                    .font(.system(size: 9.5, weight: .medium))
+                    .frame(maxWidth: .infinity, minHeight: 22)
                     .background(.fill.tertiary, in: Capsule())
                 Text(verbatim: ui.allow)
-                    .font(.system(size: 7, weight: .medium))
+                    .font(.system(size: 9.5, weight: .medium))
                     .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity, minHeight: 14)
-                    .background(Color.blue, in: Capsule())
+                    .frame(maxWidth: .infinity, minHeight: 22)
+                    .background(Color.accentColor, in: Capsule())
             }
+            .padding(.top, 4)
         }
-        .padding(8)
-        .frame(width: 196)
-        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(.separator))
+        .multilineTextAlignment(.leading)
+        .padding(.horizontal, 15)
+        .padding(.top, 14)
+        .padding(.bottom, 13)
+        .frame(width: 196, alignment: .leading)
+        .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.separator))
+        .shadow(color: .black.opacity(0.18), radius: 12, y: 8)
         .accessibilityHidden(true)
     }
 }
