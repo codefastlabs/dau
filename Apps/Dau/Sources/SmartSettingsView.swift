@@ -16,7 +16,7 @@ struct SmartSettingsView: View {
             Section(header: Text("Gõ lẫn từ nước ngoài")) {
                 Toggle(isOn: $model.settings.autoRestore) {
                     Text("Tự khôi phục từ không phải tiếng Việt")
-                    Text("Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải âm tiết tiếng Việt hợp lệ trở về đúng như bạn gõ")
+                    Text("Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải tiếng Việt được giữ nguyên như bạn gõ")
                 }
                 .layoutProbe("firstRow")
                 VStack(alignment: .leading, spacing: 8) {

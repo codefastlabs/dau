@@ -62,7 +62,8 @@ struct LayoutNames: Sendable {
         else { return [:] }
         var table: [String: [String: String]] = [:]
         for (language, value) in plist {
-            if let names = value as? [String: String] { table[language] = names }
+            // Some tables hold other kinds of values beside the strings (plural variants): keep the strings.
+            if let entries = value as? [String: Any] { table[language] = entries.compactMapValues { $0 as? String } }
         }
         return table
     }

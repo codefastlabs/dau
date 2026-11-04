@@ -220,7 +220,8 @@ final class InputMethodActions {
                 let poller = Task { @MainActor [weak self] in
                     while !Task.isCancelled {
                         try? await Task.sleep(for: poll)
-                        self?.refreshDauIsSelected()
+                        // Not after the sheet closed: a read in flight must not set the hint again.
+                        if self?.isShowingUninstallSheet == true { self?.refreshDauIsSelected() }
                     }
                 }
                 defer { poller.cancel() }
@@ -274,7 +275,8 @@ enum UninstallAlert {
         alert.messageText = String(localized: "Gỡ Dấu khỏi máy?")
         // macOS lets only the user remove an input source, so the alert says what happens
         // in order (docs/research/M5-INSTALL.md section 4).
-        alert.informativeText = String(localized: "Bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác.")
+        let ui = SystemUINames.system()   // macOS's own names (D38)
+        alert.informativeText = String(localized: "Bạn sẽ bỏ Dấu khỏi \(ui.inputSources) trong \(ui.systemSettings); sau đó Dấu được chuyển vào Thùng rác.")
         let remove = alert.addButton(withTitle: String(localized: "Tiếp tục gỡ"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
@@ -291,17 +293,18 @@ enum UninstallAlert {
     static func done(_ report: UninstallReport) -> NSAlert {
         let alert = NSAlert()
         alert.messageText = String(localized: "Đã gỡ bộ gõ Dấu")
+        let ui = SystemUINames.system()   // macOS's own names (D38)
         var lines: [String] = []
         if report.movedToTrash {
             lines.append(String(localized: "Bộ gõ đã được chuyển vào Thùng rác."))
         }
         if report.stillEnabled {
-            lines.append(String(localized: "macOS vẫn báo Dấu trong Nguồn nhập liệu; bạn có thể bỏ nó trong System Settings › Keyboard › Input Sources."))
+            lines.append(String(localized: "macOS vẫn báo Dấu trong nguồn đầu vào; bạn có thể bỏ nó trong \(ui.inputSourcesPath)."))
         }
         if report.dataDeleted {
             lines.append(String(localized: "Đã xoá cài đặt và quy tắc ứng dụng."))
         }
-        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Applications vào Thùng rác."))
+        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục \(ui.applications) vào Thùng rác."))
         alert.informativeText = lines.joined(separator: " ")
         alert.addButton(withTitle: String(localized: "Thoát Dấu"))
         return alert
@@ -311,7 +314,7 @@ enum UninstallAlert {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = String(localized: "Chưa gỡ được Dấu")
-        alert.informativeText = String(localized: "Bạn có thể bỏ “Dấu – Tiếng Việt” trong System Settings › Keyboard › Input Sources, rồi thử lại.")
+        alert.informativeText = String(localized: "Bạn có thể bỏ “Dấu – Tiếng Việt” trong \(SystemUINames.system().inputSourcesPath), rồi thử lại.")
         alert.addButton(withTitle: String(localized: "OK"))
         return alert
     }

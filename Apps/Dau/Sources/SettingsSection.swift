@@ -37,8 +37,8 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
             [String(localized: "Xem trước"), String(localized: "Kiểu gõ"), "Telex", "VNI",
              String(localized: "Telex đơn giản"), String(localized: "Vị trí dấu thanh"),
              String(localized: "Kiểu mới"), String(localized: "Kiểu cũ"),
-             String(localized: "Bỏ dấu tự do"), String(localized: "Phím tắt nguồn nhập liệu"),
-             String(localized: "Chuyển Tiếng Việt ↔ Tiếng Anh")]
+             String(localized: "Bỏ dấu tự do"), String(localized: "Phím tắt chuyển nguồn đầu vào"),
+             String(localized: "Chuyển tiếng Việt ↔ tiếng Anh")]
         case .smart:
             [String(localized: "Gõ lẫn từ nước ngoài"),
              String(localized: "Tự khôi phục từ không phải tiếng Việt"),
@@ -46,9 +46,9 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
              String(localized: "Nâng cao"), String(localized: "Gõ tắt phụ âm"),
              String(localized: "Cho phép phụ âm z, f, w, j")]
         case .apps:
-            [String(localized: "Việt/Anh theo cửa sổ"),
-             String(localized: "Nhớ nguồn nhập liệu theo từng cửa sổ"),
-             String(localized: "Tự động chuyển sang nguồn đầu vào của tài liệu"),
+            [String(localized: "Nguồn đầu vào theo cửa sổ"),
+             String(localized: "Nhớ nguồn đầu vào theo từng cửa sổ"),
+             SystemUINames.system().automaticallySwitchOption,
              String(localized: "Quy tắc riêng"), String(localized: "Thêm ứng dụng"),
              String(localized: "Gạch chân"), String(localized: "Có gạch chân"),
              String(localized: "Không gạch chân"), String(localized: "Đề xuất"),

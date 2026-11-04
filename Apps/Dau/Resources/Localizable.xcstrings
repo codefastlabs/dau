@@ -11,6 +11,16 @@
         }
       }
     },
+    "%@ sẽ đóng rồi mở lại và hỏi bạn có cho Dấu bật không. Bấm **%@**." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ sẽ đóng rồi mở lại và hỏi bạn có cho Dấu bật không. Bấm **%@**."
+          }
+        }
+      }
+    },
     "%@ thành %@" : {
       "localizations" : {
         "vi" : {
@@ -21,12 +31,12 @@
         }
       }
     },
-    "%@ đang chạy. Hai bộ gõ cùng chạy sẽ thêm dấu hai lần và ra chữ lỗi." : {
+    "%@ đang chạy. Khi hai bộ gõ cùng chạy, dấu bị thêm hai lần và chữ gõ ra bị sai." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ đang chạy. Hai bộ gõ cùng chạy sẽ thêm dấu hai lần và ra chữ lỗi."
+            "value" : "%@ đang chạy. Khi hai bộ gõ cùng chạy, dấu bị thêm hai lần và chữ gõ ra bị sai."
           }
         }
       }
@@ -71,16 +81,6 @@
         }
       }
     },
-    "Báo lại để bản sau xử lý đúng cho ứng dụng đó" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Báo lại để bản sau xử lý đúng cho ứng dụng đó"
-          }
-        }
-      }
-    },
     "Báo lỗi…" : {
       "localizations" : {
         "vi" : {
@@ -111,22 +111,32 @@
         }
       }
     },
-    "Bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác." : {
+    "Bạn có thể bỏ “Dấu – Tiếng Việt” trong %@, rồi thử lại." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác."
+            "value" : "Bạn có thể bỏ “Dấu – Tiếng Việt” trong %@, rồi thử lại."
           }
         }
       }
     },
-    "Bạn có thể bỏ “Dấu – Tiếng Việt” trong System Settings › Keyboard › Input Sources, rồi thử lại." : {
+    "Bạn có thể đổi bất cứ lúc nào trong Cài đặt Dấu." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn có thể bỏ “Dấu – Tiếng Việt” trong System Settings › Keyboard › Input Sources, rồi thử lại."
+            "value" : "Bạn có thể đổi bất cứ lúc nào trong Cài đặt Dấu."
+          }
+        }
+      }
+    },
+    "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào Thùng rác." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào Thùng rác."
           }
         }
       }
@@ -141,22 +151,22 @@
         }
       }
     },
-    "Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trong menu nhập liệu trước." : {
+    "Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trên menu nguồn đầu vào trước." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trong menu nhập liệu trước."
+            "value" : "Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trên menu nguồn đầu vào trước."
           }
         }
       }
     },
-    "Bấm **Thử lại**, rồi bấm **Allow** khi System Settings hỏi." : {
+    "Bấm **Thử lại**, rồi bấm **%@** khi %@ hỏi." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bấm **Thử lại**, rồi bấm **Allow** khi System Settings hỏi."
+            "value" : "Bấm **Thử lại**, rồi bấm **%@** khi %@ hỏi."
           }
         }
       }
@@ -171,12 +181,12 @@
         }
       }
     },
-    "Bấm Thử lại rồi Allow, hoặc tự thêm: System Settings › Keyboard › Input Sources › Edit… › + › Vietnamese › Dấu." : {
+    "Bấm Thử lại rồi %@, hoặc tự thêm: %@ › %@ › + › %@ › Dấu." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bấm Thử lại rồi Allow, hoặc tự thêm: System Settings › Keyboard › Input Sources › Edit… › + › Vietnamese › Dấu."
+            "value" : "Bấm Thử lại rồi %@, hoặc tự thêm: %@ › %@ › + › %@ › Dấu."
           }
         }
       }
@@ -241,12 +251,12 @@
         }
       }
     },
-    "Bỏ Dấu khỏi Nguồn nhập liệu" : {
+    "Bỏ Dấu khỏi nguồn đầu vào" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bỏ Dấu khỏi Nguồn nhập liệu"
+            "value" : "Bỏ Dấu khỏi nguồn đầu vào"
           }
         }
       }
@@ -271,22 +281,22 @@
         }
       }
     },
+    "Bộ gõ Dấu trên máy đã bị thay đổi" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ gõ Dấu trên máy đã bị thay đổi"
+          }
+        }
+      }
+    },
     "Bộ gõ chưa được chép vào máy." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bộ gõ chưa được chép vào máy."
-          }
-        }
-      }
-    },
-    "Bộ gõ trên máy không phải bản Dấu đã cài" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bộ gõ trên máy không phải bản Dấu đã cài"
           }
         }
       }
@@ -321,12 +331,12 @@
         }
       }
     },
-    "Chuyển Tiếng Việt ↔ Tiếng Anh" : {
+    "Chuyển tiếng Việt ↔ tiếng Anh" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chuyển Tiếng Việt ↔ Tiếng Anh"
+            "value" : "Chuyển tiếng Việt ↔ tiếng Anh"
           }
         }
       }
@@ -401,6 +411,16 @@
         }
       }
     },
+    "Chỉ bạn mới bỏ được một nguồn đầu vào khỏi macOS. %@ đã mở sẵn danh sách %@." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chỉ bạn mới bỏ được một nguồn đầu vào khỏi macOS. %@ đã mở sẵn danh sách %@."
+          }
+        }
+      }
+    },
     "Chọn" : {
       "localizations" : {
         "vi" : {
@@ -411,52 +431,52 @@
         }
       }
     },
-    "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**." : {
+    "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **%@**." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**."
+            "value" : "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **%@**."
           }
         }
       }
     },
-    "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và bàn phím tiếng Anh." : {
+    "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn %@ để chuyển giữa Dấu và bàn phím tiếng Anh." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và bàn phím tiếng Anh."
+            "value" : "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn %@ để chuyển giữa Dấu và bàn phím tiếng Anh."
           }
         }
       }
     },
-    "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và “%@”." : {
+    "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn %@ để chuyển giữa Dấu và “%@”." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và “%@”."
+            "value" : "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn %@ để chuyển giữa Dấu và “%@”."
           }
         }
       }
     },
-    "Chọn Dấu trong menu nhập liệu." : {
+    "Chọn Dấu trên menu nguồn đầu vào." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn Dấu trong menu nhập liệu."
+            "value" : "Chọn Dấu trên menu nguồn đầu vào."
           }
         }
       }
     },
-    "Chọn Dấu trong menu nhập liệu. macOS chưa có phím tắt để chuyển nhanh giữa Dấu và bàn phím tiếng Anh." : {
+    "Chọn Dấu trên menu nguồn đầu vào. macOS chưa có phím tắt để chuyển nhanh giữa Dấu và bàn phím tiếng Anh." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn Dấu trong menu nhập liệu. macOS chưa có phím tắt để chuyển nhanh giữa Dấu và bàn phím tiếng Anh."
+            "value" : "Chọn Dấu trên menu nguồn đầu vào. macOS chưa có phím tắt để chuyển nhanh giữa Dấu và bàn phím tiếng Anh."
           }
         }
       }
@@ -641,12 +661,12 @@
         }
       }
     },
-    "Dùng chung phím tắt của macOS, đổi trong System Settings › Keyboard" : {
+    "Dùng chung phím tắt của macOS, đổi trong %@" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dùng chung phím tắt của macOS, đổi trong System Settings › Keyboard"
+            "value" : "Dùng chung phím tắt của macOS, đổi trong %@"
           }
         }
       }
@@ -661,32 +681,32 @@
         }
       }
     },
-    "Dấu chưa phải nguồn nhập liệu đang dùng: chọn “Dấu – Tiếng Việt” trên thanh menu hoặc bấm %@ rồi gõ thử." : {
+    "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào hoặc nhấn %@ rồi gõ thử." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu chưa phải nguồn nhập liệu đang dùng: chọn “Dấu – Tiếng Việt” trên thanh menu hoặc bấm %@ rồi gõ thử."
+            "value" : "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào hoặc nhấn %@ rồi gõ thử."
           }
         }
       }
     },
-    "Dấu chưa phải nguồn nhập liệu đang dùng: chọn “Dấu – Tiếng Việt” trên thanh menu rồi gõ thử." : {
+    "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào rồi gõ thử." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu chưa phải nguồn nhập liệu đang dùng: chọn “Dấu – Tiếng Việt” trên thanh menu rồi gõ thử."
+            "value" : "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào rồi gõ thử."
           }
         }
       }
     },
-    "Dấu chưa được bật trong Nguồn nhập liệu" : {
+    "Dấu chưa được bật trong nguồn đầu vào" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu chưa được bật trong Nguồn nhập liệu"
+            "value" : "Dấu chưa được bật trong nguồn đầu vào"
           }
         }
       }
@@ -701,6 +721,16 @@
         }
       }
     },
+    "Dấu không cần quyền Trợ năng. macOS chỉ hỏi một lần khi bật." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu không cần quyền Trợ năng. macOS chỉ hỏi một lần khi bật."
+          }
+        }
+      }
+    },
     "Dấu không gửi chữ bạn gõ ra khỏi máy. Bộ gõ không có quyền truy cập mạng; chỉ phần cập nhật kết nối để tải bản mới và danh sách ứng dụng tương thích. Mã nguồn mở theo giấy phép GPLv3." : {
       "localizations" : {
         "vi" : {
@@ -711,12 +741,12 @@
         }
       }
     },
-    "Dấu sẽ được thêm vào Nguồn nhập liệu của macOS, cạnh bàn phím bạn đang dùng." : {
+    "Dấu sẽ được thêm vào nguồn đầu vào của macOS, cạnh bàn phím bạn đang dùng." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu sẽ được thêm vào Nguồn nhập liệu của macOS, cạnh bàn phím bạn đang dùng."
+            "value" : "Dấu sẽ được thêm vào nguồn đầu vào của macOS, cạnh bàn phím bạn đang dùng."
           }
         }
       }
@@ -731,12 +761,12 @@
         }
       }
     },
-    "Dấu vẫn còn trong Nguồn nhập liệu." : {
+    "Dấu vẫn còn trong nguồn đầu vào." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu vẫn còn trong Nguồn nhập liệu."
+            "value" : "Dấu vẫn còn trong nguồn đầu vào."
           }
         }
       }
@@ -777,6 +807,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gõ thử"
+          }
+        }
+      }
+    },
+    "Gõ thử ngay" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gõ thử ngay"
           }
         }
       }
@@ -871,12 +911,22 @@
         }
       }
     },
-    "Hoặc tự thêm: System Settings › Keyboard › Input Sources › **Edit…** › **+** › Vietnamese › **Dấu**, rồi bấm **Add**." : {
+    "Gửi mô tả lỗi để chúng tôi kiểm tra" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hoặc tự thêm: System Settings › Keyboard › Input Sources › **Edit…** › **+** › Vietnamese › **Dấu**, rồi bấm **Add**."
+            "value" : "Gửi mô tả lỗi để chúng tôi kiểm tra"
+          }
+        }
+      }
+    },
+    "Hoặc tự thêm: %@ › **%@** › **+** › %@ › **Dấu**, rồi bấm **%@**." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hoặc tự thêm: %@ › **%@** › **+** › %@ › **Dấu**, rồi bấm **%@**."
           }
         }
       }
@@ -921,22 +971,32 @@
         }
       }
     },
-    "Hộp thoại nằm trong cửa sổ System Settings. Bấm **Allow**, Dấu tự sang bước tiếp theo." : {
+    "Hộp thoại nằm trong cửa sổ %@. Bấm %@ để bật Dấu." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hộp thoại nằm trong cửa sổ System Settings. Bấm **Allow**, Dấu tự sang bước tiếp theo."
+            "value" : "Hộp thoại nằm trong cửa sổ %@. Bấm %@ để bật Dấu."
           }
         }
       }
     },
-    "Hộp thoại nằm trong cửa sổ System Settings. Bấm Allow để bật Dấu." : {
+    "Hộp thoại nằm trong cửa sổ %@. Bấm **%@**, Dấu tự sang bước tiếp theo." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Hộp thoại nằm trong cửa sổ System Settings. Bấm Allow để bật Dấu."
+            "value" : "Hộp thoại nằm trong cửa sổ %@. Bấm **%@**, Dấu tự sang bước tiếp theo."
+          }
+        }
+      }
+    },
+    "Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào Thùng rác." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào Thùng rác."
           }
         }
       }
@@ -951,12 +1011,12 @@
         }
       }
     },
-    "Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải âm tiết tiếng Việt hợp lệ trở về đúng như bạn gõ" : {
+    "Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải tiếng Việt được giữ nguyên như bạn gõ" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải âm tiết tiếng Việt hợp lệ trở về đúng như bạn gõ"
+            "value" : "Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải tiếng Việt được giữ nguyên như bạn gõ"
           }
         }
       }
@@ -991,22 +1051,22 @@
         }
       }
     },
-    "Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (menu Apple › **Log Out**), rồi mở lại Dấu." : {
+    "Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (menu Apple › **%@**), rồi mở lại Dấu." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (menu Apple › **Log Out**), rồi mở lại Dấu."
+            "value" : "Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (menu Apple › **%@**), rồi mở lại Dấu."
           }
         }
       }
     },
-    "Không thấy hộp thoại, hoặc đã lỡ bấm Don’t Allow? Bấm Thử lại." : {
+    "Không thấy hộp thoại, hoặc đã chọn %@? Bấm Thử lại." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Không thấy hộp thoại, hoặc đã lỡ bấm Don’t Allow? Bấm Thử lại."
+            "value" : "Không thấy hộp thoại, hoặc đã chọn %@? Bấm Thử lại."
           }
         }
       }
@@ -1021,12 +1081,12 @@
         }
       }
     },
-    "Không đọc được phím tắt chuyển nguồn nhập liệu." : {
+    "Không đọc được phím tắt chuyển nguồn đầu vào." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Không đọc được phím tắt chuyển nguồn nhập liệu."
+            "value" : "Không đọc được phím tắt chuyển nguồn đầu vào."
           }
         }
       }
@@ -1111,12 +1171,12 @@
         }
       }
     },
-    "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Applications vào Thùng rác." : {
+    "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào Thùng rác." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Applications vào Thùng rác."
+            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào Thùng rác."
           }
         }
       }
@@ -1131,12 +1191,12 @@
         }
       }
     },
-    "Mở System Settings" : {
+    "Mở %@" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Mở System Settings"
+            "value" : "Mở %@"
           }
         }
       }
@@ -1151,12 +1211,22 @@
         }
       }
     },
-    "Nhớ nguồn nhập liệu theo từng cửa sổ" : {
+    "Nguồn đầu vào theo cửa sổ" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nhớ nguồn nhập liệu theo từng cửa sổ"
+            "value" : "Nguồn đầu vào theo cửa sổ"
+          }
+        }
+      }
+    },
+    "Nhớ nguồn đầu vào theo từng cửa sổ" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nhớ nguồn đầu vào theo từng cửa sổ"
           }
         }
       }
@@ -1171,12 +1241,12 @@
         }
       }
     },
-    "Nếu %@ tự mở lại: System Settings › General › Login Items & Extensions, tắt %@" : {
+    "Nếu vẫn lỗi, tải lại Dấu, kéo vào thư mục **%@**, rồi mở lại." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Nếu %@ tự mở lại: System Settings › General › Login Items & Extensions, tắt %@"
+            "value" : "Nếu vẫn lỗi, tải lại Dấu, kéo vào thư mục **%@**, rồi mở lại."
           }
         }
       }
@@ -1201,42 +1271,42 @@
         }
       }
     },
+    "Phím tắt chuyển nguồn đầu vào" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phím tắt chuyển nguồn đầu vào"
+          }
+        }
+      }
+    },
+    "Phím tắt của macOS để chuyển sang bàn phím tiếng Anh" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phím tắt của macOS để chuyển sang bàn phím tiếng Anh"
+          }
+        }
+      }
+    },
+    "Phím tắt của macOS để chuyển sang “%@” khi gõ tiếng Anh" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Phím tắt của macOS để chuyển sang “%@” khi gõ tiếng Anh"
+          }
+        }
+      }
+    },
     "Phím tắt hiện tại" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Phím tắt hiện tại"
-          }
-        }
-      }
-    },
-    "Phím tắt nguồn nhập liệu" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Phím tắt nguồn nhập liệu"
-          }
-        }
-      }
-    },
-    "Phím tắt nguồn nhập liệu của macOS để chuyển sang bàn phím tiếng Anh" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Phím tắt nguồn nhập liệu của macOS để chuyển sang bàn phím tiếng Anh"
-          }
-        }
-      }
-    },
-    "Phím tắt nguồn nhập liệu của macOS để chuyển sang “%@” gõ tiếng Anh" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Phím tắt nguồn nhập liệu của macOS để chuyển sang “%@” gõ tiếng Anh"
           }
         }
       }
@@ -1297,16 +1367,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Sau khi bật, bạn sẽ thấy"
-          }
-        }
-      }
-    },
-    "System Settings sẽ đóng rồi mở lại và hỏi bạn có cho Dấu bật không. Bấm **Allow**." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "System Settings sẽ đóng rồi mở lại và hỏi bạn có cho Dấu bật không. Bấm **Allow**."
           }
         }
       }
@@ -1431,12 +1491,12 @@
         }
       }
     },
-    "Thêm vào nguồn nhập liệu" : {
+    "Thêm vào nguồn đầu vào" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Thêm vào nguồn nhập liệu"
+            "value" : "Thêm vào nguồn đầu vào"
           }
         }
       }
@@ -1501,6 +1561,16 @@
         }
       }
     },
+    "Trong %@, tắt %@" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trong %@, tắt %@"
+          }
+        }
+      }
+    },
     "Trong cài đặt của Gõ Nhanh, tắt “Launch at login”" : {
       "localizations" : {
         "vi" : {
@@ -1541,22 +1611,12 @@
         }
       }
     },
-    "Tránh gõ ra chữ lỗi" : {
+    "Tuỳ chọn “%@” của macOS" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tránh gõ ra chữ lỗi"
-          }
-        }
-      }
-    },
-    "Tuỳ chọn “Tự động chuyển sang nguồn đầu vào của tài liệu” của macOS" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuỳ chọn “Tự động chuyển sang nguồn đầu vào của tài liệu” của macOS"
+            "value" : "Tuỳ chọn “%@” của macOS"
           }
         }
       }
@@ -1591,12 +1651,12 @@
         }
       }
     },
-    "Tắt bộ gõ cũ trước đã" : {
+    "Tắt bộ gõ đang chạy" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Tắt bộ gõ cũ trước đã"
+            "value" : "Tắt bộ gõ đang chạy"
           }
         }
       }
@@ -1631,16 +1691,6 @@
         }
       }
     },
-    "Tự động chuyển sang nguồn đầu vào của tài liệu" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tự động chuyển sang nguồn đầu vào của tài liệu"
-          }
-        }
-      }
-    },
     "Tự động kiểm tra bản mới" : {
       "localizations" : {
         "vi" : {
@@ -1667,36 +1717,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "VNI"
-          }
-        }
-      }
-    },
-    "Việt/Anh theo cửa sổ" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Việt/Anh theo cửa sổ"
-          }
-        }
-      }
-    },
-    "Và gõ thử" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Và gõ thử"
-          }
-        }
-      }
-    },
-    "Vẫn lỗi: tải lại Dấu, kéo vào thư mục **Applications**, rồi mở lại." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Vẫn lỗi: tải lại Dấu, kéo vào thư mục **Applications**, rồi mở lại."
           }
         }
       }
@@ -1761,16 +1781,6 @@
         }
       }
     },
-    "[Quyền cần cấp — điền sau khi kiểm chứng ở M5]" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[Quyền cần cấp — điền sau khi kiểm chứng ở M5]"
-          }
-        }
-      }
-    },
     "[Trạng thái kiểm tra cập nhật]" : {
       "localizations" : {
         "vi" : {
@@ -1801,22 +1811,12 @@
         }
       }
     },
-    "macOS chưa thêm Dấu vào Nguồn nhập liệu. Có thể hộp thoại không hiện, hoặc bạn đã bấm Don’t Allow." : {
+    "macOS chưa thêm Dấu vào nguồn đầu vào. Có thể hộp thoại không hiện, hoặc yêu cầu đã bị từ chối." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS chưa thêm Dấu vào Nguồn nhập liệu. Có thể hộp thoại không hiện, hoặc bạn đã bấm Don’t Allow."
-          }
-        }
-      }
-    },
-    "macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn danh sách Input Sources." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn danh sách Input Sources."
+            "value" : "macOS chưa thêm Dấu vào nguồn đầu vào. Có thể hộp thoại không hiện, hoặc yêu cầu đã bị từ chối."
           }
         }
       }
@@ -1831,12 +1831,12 @@
         }
       }
     },
-    "macOS vẫn báo Dấu trong Nguồn nhập liệu; bạn có thể bỏ nó trong System Settings › Keyboard › Input Sources." : {
+    "macOS vẫn báo Dấu trong nguồn đầu vào; bạn có thể bỏ nó trong %@." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS vẫn báo Dấu trong Nguồn nhập liệu; bạn có thể bỏ nó trong System Settings › Keyboard › Input Sources."
+            "value" : "macOS vẫn báo Dấu trong nguồn đầu vào; bạn có thể bỏ nó trong %@."
           }
         }
       }
@@ -1851,12 +1851,12 @@
         }
       }
     },
-    "Đang bật nguồn nhập liệu tiếng Việt khác: %@. Bạn có thể bỏ bớt trong System Settings › Keyboard › Input Sources cho gọn danh sách." : {
+    "Đang bật nguồn đầu vào tiếng Việt khác: %@. Bạn có thể bỏ bớt trong %@ cho gọn danh sách." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đang bật nguồn nhập liệu tiếng Việt khác: %@. Bạn có thể bỏ bớt trong System Settings › Keyboard › Input Sources cho gọn danh sách."
+            "value" : "Đang bật nguồn đầu vào tiếng Việt khác: %@. Bạn có thể bỏ bớt trong %@ cho gọn danh sách."
           }
         }
       }
@@ -1871,22 +1871,12 @@
         }
       }
     },
-    "Đang chờ Dấu biến mất khỏi danh sách. Xong là Dấu tự chuyển vào Thùng rác." : {
+    "Đang chờ bạn bấm %@" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đang chờ Dấu biến mất khỏi danh sách. Xong là Dấu tự chuyển vào Thùng rác."
-          }
-        }
-      }
-    },
-    "Đang chờ bạn bấm Allow" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang chờ bạn bấm Allow"
+            "value" : "Đang chờ bạn bấm %@"
           }
         }
       }
@@ -1971,12 +1961,12 @@
         }
       }
     },
-    "Đặt phím tắt trong System Settings" : {
+    "Đặt phím tắt trong %@" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đặt phím tắt trong System Settings"
+            "value" : "Đặt phím tắt trong %@"
           }
         }
       }
@@ -1991,22 +1981,22 @@
         }
       }
     },
-    "Đổi lại bất cứ lúc nào trong Cài đặt." : {
+    "Để dấu không bị gõ hai lần" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đổi lại bất cứ lúc nào trong Cài đặt."
+            "value" : "Để dấu không bị gõ hai lần"
           }
         }
       }
     },
-    "Đổi tuỳ chọn nhớ nguồn nhập liệu theo từng cửa sổ" : {
+    "Đổi tuỳ chọn nhớ nguồn đầu vào theo từng cửa sổ" : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đổi tuỳ chọn nhớ nguồn nhập liệu theo từng cửa sổ"
+            "value" : "Đổi tuỳ chọn nhớ nguồn đầu vào theo từng cửa sổ"
           }
         }
       }
@@ -2051,22 +2041,22 @@
         }
       }
     },
-    "“Dấu – Tiếng Việt” đã có trong Nguồn nhập liệu của macOS." : {
+    "Ứng dụng có nhãn “Đề xuất” có thể gõ sai khi bạn gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Dấu – Tiếng Việt” đã có trong Nguồn nhập liệu của macOS."
+            "value" : "Ứng dụng có nhãn “Đề xuất” có thể gõ sai khi bạn gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ."
           }
         }
       }
     },
-    "“Đề xuất” đến từ danh sách tương thích: app có thể sai chữ khi gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một app bị lỗi chữ lúc gõ." : {
+    "“Dấu – Tiếng Việt” đã có trong nguồn đầu vào của macOS." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Đề xuất” đến từ danh sách tương thích: app có thể sai chữ khi gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một app bị lỗi chữ lúc gõ."
+            "value" : "“Dấu – Tiếng Việt” đã có trong nguồn đầu vào của macOS."
           }
         }
       }

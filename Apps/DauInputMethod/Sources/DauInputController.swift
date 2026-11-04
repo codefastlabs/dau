@@ -393,7 +393,7 @@ final class DauInputController: IMKInputController {
             menu.addItem(NSMenuItem(title: String(localized: "Cài đặt Dấu…", comment: "Input menu: opens the Dấu app (Settings window)."),
                                     action: #selector(openHostApp(_:)), keyEquivalent: ""))
             // N4: only open the right System Settings pane; never change settings.
-            menu.addItem(NSMenuItem(title: String(localized: "Mở cài đặt Bàn phím…", comment: "Input menu: opens System Settings › Keyboard."),
+            menu.addItem(NSMenuItem(title: String(localized: "Mở \(SystemUINames.system().systemSettings)…", comment: "Input menu: opens System Settings › Keyboard (the name is macOS's own, D38)."),
                                     action: #selector(openKeyboardSettings(_:)), keyEquivalent: ""))
             return menu
         }

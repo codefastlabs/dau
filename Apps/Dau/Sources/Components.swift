@@ -371,6 +371,7 @@ struct NotEnabledBanner: View {
     @Environment(\.openWindow) private var openWindow
 
     var body: some View {
+        let ui = SystemUINames.system()   // macOS's own names (D38)
         let state = actions?.banner ?? .idle
         switch state {
         case .enabled:
@@ -380,22 +381,22 @@ struct NotEnabledBanner: View {
             }
         case .working:
             noticeBanner(probe: "banner.working", leading: ProgressView().controlSize(.small).frame(width: 28, height: 28).accessibilityHidden(true),
-                         title: Text("Đang chờ bạn bấm Allow"),
-                         hint: Text("Hộp thoại nằm trong cửa sổ System Settings. Bấm Allow để bật Dấu.")) {
+                         title: Text("Đang chờ bạn bấm \(ui.allow)"),
+                         hint: Text("Hộp thoại nằm trong cửa sổ \(ui.systemSettings). Bấm \(ui.allow) để bật Dấu.")) {
                 Button("Thử lại") { enable() }
             }
             .accessibilityAddTraits(.updatesFrequently)
         case .notEnabled, .failed:
             noticeBanner(probe: "banner.notEnabled", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
                          title: Text("Chưa bật được Dấu"),
-                         hint: Text("Bấm Thử lại rồi Allow, hoặc tự thêm: System Settings › Keyboard › Input Sources › Edit… › + › Vietnamese › Dấu.")) {
+                         hint: Text("Bấm Thử lại rồi \(ui.allow), hoặc tự thêm: \(ui.inputSourcesPath) › \(ui.edit) › + › \(ui.vietnamese) › Dấu.")) {
                 Button("Thử lại") { enable() }
             }
             .onChange(of: status.isEnabled) { _, isEnabled in actions?.inputSourcesChanged(isEnabled: isEnabled) }
         case .idle:
             if status.isEnabled == false {
                 noticeBanner(probe: "banner.idle", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
-                             title: Text("Dấu chưa được bật trong Nguồn nhập liệu"),
+                             title: Text("Dấu chưa được bật trong nguồn đầu vào"),
                              hint: Text("Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt.")) {
                     Button("Bật lại") { enable() }
                         .buttonStyle(.borderedProminent)
@@ -407,14 +408,14 @@ struct NotEnabledBanner: View {
     /// "Chọn Dấu trong menu nhập liệu, hoặc bấm ⌃Space để chuyển giữa Dấu và U.S.": the
     /// real shortcut (N5); without a readable one, only the first half.
     private var enabledHint: Text {
-        guard let actions else { return Text("Chọn Dấu trong menu nhập liệu.") }
+        guard let actions else { return Text("Chọn Dấu trên menu nguồn đầu vào.") }
         switch (actions.shortcut.shortcut, actions.englishLayout) {
         case (let shortcut?, let layout?):
-            return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và “\(layout)”.")
+            return Text("Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn \(shortcut.inlineText) để chuyển giữa Dấu và “\(layout)”.")
         case (let shortcut?, nil):
-            return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và bàn phím tiếng Anh.")
+            return Text("Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn \(shortcut.inlineText) để chuyển giữa Dấu và bàn phím tiếng Anh.")
         default:
-            return Text("Chọn Dấu trong menu nhập liệu.")
+            return Text("Chọn Dấu trên menu nguồn đầu vào.")
         }
     }
 
@@ -458,7 +459,7 @@ struct TamperedBanner: View {
                             .frame(width: 28, height: 28)
                             .background(Color.red, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                             .accessibilityHidden(true),
-                         title: Text("Bộ gõ trên máy không phải bản Dấu đã cài"),
+                         title: Text("Bộ gõ Dấu trên máy đã bị thay đổi"),
                          hint: actions.reinstall == .failed
                             ? Text("Chưa cài lại được. Hãy gỡ cài đặt Dấu rồi cài lại từ bản tải về.")
                             : Text("Tệp bộ gõ đã bị thay hoặc sửa sau khi cài. Cài lại để gõ bằng đúng bản của Dấu.")) {

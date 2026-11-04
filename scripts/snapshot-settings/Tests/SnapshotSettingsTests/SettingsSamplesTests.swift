@@ -96,7 +96,7 @@ struct SidebarSearchTests {
         #expect(SettingsSection.typing.matches("go phim"))
         #expect(SettingsSection.smart.matches("khôi phục"))
         #expect(SettingsSection.apps.matches("GẠCH CHÂN"))
-        #expect(SettingsSection.apps.matches("nguon nhap lieu"))
+        #expect(SettingsSection.apps.matches("nguon dau vao"))
         #expect(!SettingsSection.apps.matches("tiếng anh"))
         #expect(!SettingsSection.updates.matches("telex"))
         #expect(SettingsSection.allCases.allSatisfy { $0.matches("") })

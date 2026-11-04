@@ -55,7 +55,7 @@ struct UpdatesSupportView: View {
                     Button("Báo lỗi…") {}
                 } label: {
                     Text("Gặp ứng dụng gõ bị lỗi?")
-                    Text("Báo lại để bản sau xử lý đúng cho ứng dụng đó")
+                    Text("Gửi mô tả lỗi để chúng tôi kiểm tra")
                 }
                 .disabled(true)
                 LabeledContent {

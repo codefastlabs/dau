@@ -35,7 +35,7 @@ struct AppRulesView: View {
         let visibleSuggestions = matching(suggestions)
         SettingsPage(SettingsSection.apps.title, search: $query, searchPrompt: Text("Tìm ứng dụng"),
                      add: HeaderAdd(label: String(localized: "Thêm ứng dụng"), action: { isAdding = true })) {
-            Section(header: Text("Việt/Anh theo cửa sổ")) {
+            Section(header: Text("Nguồn đầu vào theo cửa sổ")) {
                 LabeledContent {
                     HStack(spacing: 8) {
                         // Not readable: no value rather than a guess (N5).
@@ -45,12 +45,12 @@ struct AppRulesView: View {
                                 .fixedSize()
                         }
                         Button("Đổi…") { SystemSettings.openKeyboard() }
-                            .accessibilityLabel(Text("Đổi tuỳ chọn nhớ nguồn nhập liệu theo từng cửa sổ"))
-                            .accessibilityHint(Text("Mở System Settings"))
+                            .accessibilityLabel(Text("Đổi tuỳ chọn nhớ nguồn đầu vào theo từng cửa sổ"))
+                            .accessibilityHint(Text("Mở \(SystemUINames.system().systemSettings)"))
                     }
                 } label: {
-                    Text("Nhớ nguồn nhập liệu theo từng cửa sổ")
-                    Text("Tuỳ chọn “Tự động chuyển sang nguồn đầu vào của tài liệu” của macOS")
+                    Text("Nhớ nguồn đầu vào theo từng cửa sổ")
+                    Text("Tuỳ chọn “\(SystemUINames.system().automaticallySwitchOption)” của macOS")
                 }
                 .layoutProbe("firstRow")
             }
@@ -99,7 +99,7 @@ struct AppRulesView: View {
                     // by the user (30/10/2026).
                     SectionHeader(
                         title: Text("Đề xuất"),
-                        description: Text("“Đề xuất” đến từ danh sách tương thích: app có thể sai chữ khi gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một app bị lỗi chữ lúc gõ."))
+                        description: Text("Ứng dụng có nhãn “Đề xuất” có thể gõ sai khi bạn gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ."))
                 }
             }
         }

@@ -12,30 +12,32 @@ import SwiftUI
 struct UninstallRemoveSheet: View {
     let actions: InputMethodActions
     @Environment(\.controlActiveState) private var activeState
+    /// macOS's own names (D38), in the system's language.
+    private var ui: SystemUINames { SystemUINames.system() }
 
     static let width: CGFloat = 470
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Bỏ Dấu khỏi Nguồn nhập liệu")
+                Text("Bỏ Dấu khỏi nguồn đầu vào")
                     .font(.headline)
                     .accessibilityAddTraits(.isHeader)
-                Text("macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn danh sách Input Sources.")
+                Text("Chỉ bạn mới bỏ được một nguồn đầu vào khỏi macOS. \(ui.systemSettings) đã mở sẵn danh sách \(ui.inputSources).")
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
             OnboardingCard(spacing: 10) {
                 NumberedLine(number: 1,
-                             text: Text("Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**."),
+                             text: Text("Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **\(ui.done)**."),
                              isCurrent: true)
             }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
                 ProgressView()
                     .controlSize(.small)
                     .accessibilityHidden(true)
-                Text("Đang chờ Dấu biến mất khỏi danh sách. Xong là Dấu tự chuyển vào Thùng rác.")
+                Text("Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào Thùng rác.")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -49,7 +51,7 @@ struct UninstallRemoveSheet: View {
                     Image(systemName: "info.circle")
                         .foregroundStyle(.secondary)
                         .accessibilityHidden(true)
-                    Hint(Text("Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trong menu nhập liệu trước."))
+                    Hint(Text("Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trên menu nguồn đầu vào trước."))
                 }
                 .accessibilityElement(children: .combine)
             }
@@ -62,7 +64,7 @@ struct UninstallRemoveSheet: View {
                     .keyboardShortcut(.cancelAction)
             }
             ToolbarItem(placement: .primaryAction) {
-                Button("Mở System Settings") { actions.showInputSources() }
+                Button("Mở \(ui.systemSettings)") { actions.showInputSources() }
             }
         }
         // Read again when the sheet appears, when its window becomes key again and whenever

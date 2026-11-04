@@ -82,7 +82,7 @@ enum KnownInputMethods {
 
     /// System Settings path on macOS 27.2 (research section 2.5).
     static func loginItemsStep(_ name: String) -> String {
-        String(localized: "Nếu \(name) tự mở lại: System Settings › General › Login Items & Extensions, tắt \(name)")
+        String(localized: "Trong \(SystemUINames.system().loginItemsPath), tắt \(name)")
     }
 }
 
@@ -194,7 +194,7 @@ extension InputMethodInstallerError {
         case .failed:
             String(localized: "macOS báo lỗi khi chép hoặc đăng ký bộ gõ.")
         case .stillListed:
-            String(localized: "Dấu vẫn còn trong Nguồn nhập liệu.")
+            String(localized: "Dấu vẫn còn trong nguồn đầu vào.")
         }
     }
 }

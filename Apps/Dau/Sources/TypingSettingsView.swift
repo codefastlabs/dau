@@ -41,17 +41,17 @@ struct TypingSettingsView: View {
                 }
             }
 
-            Section(header: Text("Chuyển Tiếng Việt ↔ Tiếng Anh")) {
+            Section(header: Text("Chuyển tiếng Việt ↔ tiếng Anh")) {
                 LabeledContent {
                     HStack(spacing: 8) {
                         ShortcutKeycaps(shortcut: shortcut)
                         Button("Đổi…") { SystemSettings.openKeyboard() }
                             .layoutProbe("button")
-                            .accessibilityHint(Text("Mở System Settings"))
+                            .accessibilityHint(Text("Mở \(SystemUINames.system().systemSettings)"))
                     }
                 } label: {
-                    Text("Phím tắt nguồn nhập liệu")
-                    Text("Dùng chung phím tắt của macOS, đổi trong System Settings › Keyboard")
+                    Text("Phím tắt chuyển nguồn đầu vào")
+                    Text("Dùng chung phím tắt của macOS, đổi trong \(SystemUINames.system().keyboardPath)")
                 }
             }
         }

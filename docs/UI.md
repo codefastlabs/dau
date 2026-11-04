@@ -14,6 +14,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - Bộ gõ chỉ bổ sung qua `menu()` của IMK: đổi kiểu gõ, mở Cài đặt Dấu, mở Cài đặt Bàn phím.
 
 ## Onboarding
+- Mọi tên giao diện của macOS trong chữ của Dấu (System Settings, Keyboard, Input Sources, Edit…, Allow…) hiện đúng như macOS của người dùng, theo ngôn ngữ hệ thống (D38; `docs/ARCHITECTURE.md`, `SystemUINames`); câu tiếng Việt nói "nguồn đầu vào", không nói "nguồn nhập liệu", và không dùng chữ "app".
 - Tên bàn phím nào Dấu nêu (bàn phím tiếng Anh ở dòng phím tắt, bàn phím đã chuyển sang khi gỡ) viết như thanh menu của macOS, theo ngôn ngữ hệ thống chứ không theo ngôn ngữ giao diện của Dấu; không có bản dịch thì dùng tên hệ thống trả về (`docs/ARCHITECTURE.md`, `LayoutNames`).
 - Ba bước, thanh bước bên trái có trạng thái xong / đang làm / chưa. Dòng về quyền cần cấp để ô trống cho tới khi kiểm chứng (N5).
 - **Bước 1, tắt bộ gõ cũ:** chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/M5-INSTALL.md` mục 5). Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng; app chưa kiểm thì ghi chung "Thoát <tên>" và đường dẫn Mục đăng nhập (N5). Tự kiểm tra lại khi cửa sổ được kích hoạt; cho phép bỏ qua.
