@@ -63,7 +63,7 @@
 	<key>TISIconIsTemplate</key>
 	<true/>
 	<!-- One input mode, "Dấu – Tiếng Việt" (D2, 30/10/2026; the old ".en" mode is gone,
-	     English is typed with the system's ABC/U.S. source). The mode is kept, rather than
+	     English is typed with the system's U.S. source). The mode is kept, rather than
 	     declaring the bundle alone, so the input source ID users already enabled
 	     ("….Dau.vi") does not change and the source stays in the Vietnamese group.
 	     Input mode IDs are literal: Xcode expands build settings in plist values but not in

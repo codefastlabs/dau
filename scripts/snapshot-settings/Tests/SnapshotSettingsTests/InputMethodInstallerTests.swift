@@ -60,8 +60,8 @@ final class FakeTextInputSources: TextInputSources {
         [Source(entry: InputSourceEntry(id: imID, bundleID: imID, isMode: false, name: "Dấu"), enabled: enabled),
          Source(entry: InputSourceEntry(id: modeID, bundleID: imID, isMode: true, name: "Dấu – Tiếng Việt"), enabled: enabled)]
     }
-    static let abc = Source(entry: InputSourceEntry(id: "com.apple.keylayout.ABC", bundleID: "com.apple.keylayout",
-                                                    isMode: false, name: "ABC"), enabled: true)
+    static let us = Source(entry: InputSourceEntry(id: "com.apple.keylayout.US", bundleID: "com.apple.keylayout",
+                                                    isMode: false, name: "U.S."), enabled: true)
 
     func register(_ url: URL) -> OSStatus {
         log.append("register"); order?.log.append("register")
@@ -174,7 +174,7 @@ struct Rig {
     init(installed: InputMethodBundleInfo? = nil, sources: [FakeTextInputSources.Source] = [],
          removedByUserAfterPauses: Int? = nil) {
         files.installed = installed
-        tis.all = sources + [FakeTextInputSources.abc]
+        tis.all = sources + [FakeTextInputSources.us]
         let counter = Counter(), keyboardOpened = Counter(), pauses = Counter()
         self.counter = counter
         self.keyboardOpened = keyboardOpened
@@ -183,7 +183,7 @@ struct Rig {
         installer = SystemInputMethodInstaller(files: files, sources: tis, processes: processes,
                                                settings: settings,
                                                deleteSharedData: { counter.value += 1; return true },
-                                               openKeyboardSettings: { keyboardOpened.value += 1 },
+                                               openInputSources: { keyboardOpened.value += 1 },
                                                // Yields, so a loop that waits can be cancelled.
                                                pause: { _ in
                                                    pauses.value += 1
@@ -427,8 +427,8 @@ struct InputMethodInstallerTests {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.tis.currentID = modeID
         let preparation = try await rig.installer.prepareUninstall()
-        #expect(preparation == UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false))
-        #expect(rig.tis.log == ["select com.apple.keylayout.ABC"])
+        #expect(preparation == UninstallPreparation(switchedTo: "U.S.", needsOtherKeyboard: false))
+        #expect(rig.tis.log == ["select com.apple.keylayout.US"])
         #expect(rig.keyboardOpened.value == 1)
         #expect(rig.files.log.isEmpty)
         #expect(rig.processes.log.isEmpty)
@@ -439,7 +439,7 @@ struct InputMethodInstallerTests {
     @Test("prepare: Dấu not selected → no keyboard switch, Keyboard settings still open")
     func prepareNotSelected() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
-        rig.tis.currentID = "com.apple.keylayout.ABC"
+        rig.tis.currentID = "com.apple.keylayout.US"
         let preparation = try await rig.installer.prepareUninstall()
         #expect(preparation == UninstallPreparation(switchedTo: nil, needsOtherKeyboard: false))
         #expect(rig.tis.log.isEmpty)
@@ -657,20 +657,20 @@ struct UninstallFlowTests {
     @Test("prepare, the sheet while the user removes Dấu, then finish: nothing removed before the entry is gone")
     func waitsThenFinishes() async {
         let installer = FakeInputMethodInstaller(.selected)
-        installer.preparation = UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false)
+        installer.preparation = UninstallPreparation(switchedTo: "U.S.", needsOtherKeyboard: false)
         installer.stillListed = true
         installer.uninstallReport = UninstallReport(switchedTo: nil, movedToTrash: true, stillEnabled: false, dataDeleted: true)
         let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
         let run = Task { await actions.performUninstall(deleteSettings: true) }
         await settle { actions.uninstallSheet != nil }
-        #expect(actions.uninstallSheet == UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false))
+        #expect(actions.uninstallSheet == UninstallPreparation(switchedTo: "U.S.", needsOtherKeyboard: false))
         #expect(actions.isUninstalling)
         #expect(installer.calls == ["prepareUninstall", "wait"])
         #expect(installer.status() == .selected)
 
         installer.stillListed = false   // the user clicked "–"
         let outcome = await run.value
-        #expect(outcome == .done(UninstallReport(switchedTo: "ABC", movedToTrash: true, stillEnabled: false, dataDeleted: true)))
+        #expect(outcome == .done(UninstallReport(switchedTo: "U.S.", movedToTrash: true, stillEnabled: false, dataDeleted: true)))
         #expect(installer.calls == ["prepareUninstall", "wait", "finish+data"])
         #expect(actions.uninstallSheet == nil)
         #expect(!actions.isUninstalling)
@@ -703,13 +703,16 @@ struct UninstallFlowTests {
         #expect(!actions.isUninstalling)
     }
 
-    @Test("\"Mở System Settings\" on the sheet opens the Keyboard pane")
-    func openKeyboard() {
-        final class Opened { var count = 0 }
+    @Test("\"Mở System Settings\" on the sheet opens the Input Sources list, not the plain Keyboard pane")
+    func openInputSources() {
+        final class Opened { var keyboard = 0, sources = 0 }
         let opened = Opened()
-        let actions = InputMethodActions(installer: FakeInputMethodInstaller(.enabled), openKeyboardSettings: { opened.count += 1 })
-        actions.openKeyboard()
-        #expect(opened.count == 1)
+        let actions = InputMethodActions(installer: FakeInputMethodInstaller(.enabled),
+                                         openKeyboardSettings: { opened.keyboard += 1 },
+                                         openInputSources: { opened.sources += 1 })
+        actions.showInputSources()
+        #expect(opened.sources == 1)
+        #expect(opened.keyboard == 0)
     }
 }
 
@@ -727,7 +730,7 @@ struct BannerEnableTests {
         let control = self.control
         return InputMethodActions(installer: installer, openKeyboardSettings: { opened.count += 1 },
                                   shortcut: { shortcut == .unknown ? .shortcut(control) : shortcut },
-                                  englishLayout: { "ABC" })
+                                  englishLayout: { "U.S." })
     }
 
     @Test("Bật lại enables and reads back; the confirmation names the real shortcut and has no undo")
@@ -737,7 +740,7 @@ struct BannerEnableTests {
         #expect(await actions.enableFromBanner() == false)
         #expect(actions.banner == .enabled)
         #expect(actions.shortcut == .shortcut(control))
-        #expect(actions.englishLayout == "ABC")
+        #expect(actions.englishLayout == "U.S.")
         #expect(installer.calls == ["enable"])
     }
 

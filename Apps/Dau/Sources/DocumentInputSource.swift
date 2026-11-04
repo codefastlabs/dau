@@ -1,7 +1,7 @@
 import Foundation
 
 /// The macOS option "Automatically switch to a document's input source" (Keyboard
-/// settings › Input Sources). It is what remembers Tiếng Việt / ABC per window; Dấu
+/// settings › Input Sources). It is what remembers Tiếng Việt / U.S. per window; Dấu
 /// only shows it on "Ứng dụng" and opens Keyboard settings to change it (D5, N1, N4).
 ///
 /// Read, never written (N4), from `com.apple.HIToolbox` → `AppleGlobalTextInputProperties`

@@ -68,7 +68,7 @@ fi
 if (( ${#entry_lines} && ${#bundles} )); then
   print -u2 "\nCòn mục DauProbe trong com.apple.inputsources mà bundle còn cài. Chưa xoá gì."
   print -u2 "Làm từng bước:"
-  print -u2 "  1. Chọn một bàn phím khác (ví dụ ABC) trên menu nhập liệu nếu một biến thể đang được chọn."
+  print -u2 "  1. Chọn một bàn phím khác (ví dụ U.S.) trên menu nhập liệu nếu một biến thể đang được chọn."
   print -u2 "  2. System Settings › Keyboard › Input Sources › Edit…: chọn từng dòng \"Dấu thử …\", bấm \"–\"."
   print -u2 "  3. Bấm Done, rồi chạy lại: scripts/probe/cleanup.sh --yes"
   exit 1

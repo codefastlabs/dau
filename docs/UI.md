@@ -10,10 +10,11 @@ Mỗi phần của giao diện có một nguồn:
 Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho khớp.
 
 ## Menu nguồn nhập liệu (hệ thống vẽ)
-- Không có status item riêng. Dấu có một input mode (D2); gõ tiếng Anh bằng nguồn ABC/U.S. của người dùng.
+- Không có status item riêng. Dấu có một input mode (D2); gõ tiếng Anh bằng nguồn U.S. (hoặc nguồn tiếng Anh khác) của người dùng.
 - Bộ gõ chỉ bổ sung qua `menu()` của IMK: đổi kiểu gõ, mở Cài đặt Dấu, mở Cài đặt Bàn phím.
 
 ## Onboarding
+- Tên bàn phím nào Dấu nêu (bàn phím tiếng Anh ở dòng phím tắt, bàn phím đã chuyển sang khi gỡ) viết như thanh menu của macOS, theo ngôn ngữ hệ thống chứ không theo ngôn ngữ giao diện của Dấu; không có bản dịch thì dùng tên hệ thống trả về (`docs/ARCHITECTURE.md`, `LayoutNames`).
 - Ba bước, thanh bước bên trái có trạng thái xong / đang làm / chưa. Dòng về quyền cần cấp để ô trống cho tới khi kiểm chứng (N5).
 - **Bước 1, tắt bộ gõ cũ:** chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/M5-INSTALL.md` mục 5). Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng; app chưa kiểm thì ghi chung "Thoát <tên>" và đường dẫn Mục đăng nhập (N5). Tự kiểm tra lại khi cửa sổ được kích hoạt; cho phép bỏ qua.
 - **Bước 2, bật Dấu:** chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu" (N4, D37). macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn (artboard `OnboardingEnable`, `OnboardingEnableNotes`, `OnboardingEnableWaiting`, `OnboardingEnableDone`, `OnboardingEnableDoneNoShortcut`, `OnboardingEnableFailed`, `OnboardingEnableError`). Mọi bước dùng chung một khung: tiêu đề, mô tả và nội dung cuộn được, hàng nút cố định ở đáy (có đường kẻ phía trên khi nội dung bị che), nên nội dung dài không tràn ra ngoài cửa sổ. Tên màn hình của macOS viết tiếng Anh như trên máy người dùng (System Settings › Keyboard › Input Sources). Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5). Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
@@ -62,10 +63,10 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - **Chế độ tối:** Cài đặt và onboarding đều có (màu hệ thống).
 - **Gỡ cài đặt** (D16): macOS chỉ cho người dùng tự bỏ một nguồn nhập liệu, nên gỡ có ba bước (artboard `ConfirmDialogs`, `UninstallRemoveSource`):
   - Alert xác nhận (hệ thống), có tuỳ chọn xoá cả cài đặt và quy tắc; nút xác nhận là "Tiếp tục gỡ", chưa xoá gì.
-  - Sheet "Bỏ Dấu khỏi Nguồn nhập liệu" trên cửa sổ Cài đặt: app chọn bàn phím khác nếu Dấu đang được chọn (chỉ nêu tên bàn phím khi đọc lại đúng là nó, N5; không chuyển được thì bước này thành việc của người dùng) và mở Cài đặt Bàn phím; sheet chờ mục lưu của Dấu biến mất, không hết hạn. "Huỷ gỡ cài đặt" đóng sheet và không xoá gì; "Mở System Settings" chỉ mở trang.
+  - Sheet "Bỏ Dấu khỏi Nguồn nhập liệu" trên cửa sổ Cài đặt: app chọn bàn phím khác nếu Dấu đang được chọn (chỉ nêu tên bàn phím khi đọc lại đúng là nó, N5; không chuyển được thì bước này thành việc của người dùng) và mở thẳng danh sách Input Sources của System Settings (đã mở sẵn sheet Edit…); sheet chờ mục lưu của Dấu biến mất, không hết hạn. "Huỷ gỡ cài đặt" đóng sheet và không xoá gì; "Mở System Settings" chỉ mở trang.
   - Mục lưu biến mất → dừng bộ gõ, chuyển vào Thùng rác, xoá dữ liệu nếu đã tick, rồi alert nêu những gì đã làm (đọc lại từ hệ thống). App không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác. Bộ gõ không bao giờ bị xoá khi mục lưu còn: bundle mất trước thì mục còn lại không gỡ được.
 - **Xác nhận quay về bản trước:** D19.
-- **Khi gõ trong ứng dụng:** không gạch chân (mặc định), có gạch chân (từ đang gõ được gạch, chốt khi kết thúc từ), gõ tiếng Anh bằng ABC (chỉ báo của hệ thống), thêm dấu cho từ đã gõ.
+- **Khi gõ trong ứng dụng:** không gạch chân (mặc định), có gạch chân (từ đang gõ được gạch, chốt khi kết thúc từ), gõ tiếng Anh bằng U.S. (chỉ báo của hệ thống), thêm dấu cho từ đã gõ.
 
 ## Chưa có mã (mô tả nội dung tới khi dựng)
 

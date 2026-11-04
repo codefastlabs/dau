@@ -14,7 +14,7 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 - Xong khi: toàn bộ test xanh; số đo thời gian `handle` mỗi phím được ghi lại.
 
 ## M2 — Bộ gõ tối thiểu
-- `DauInputMethod` với Telex, một input mode Tiếng Việt (D2; tiếng Anh gõ bằng ABC của macOS), thay chữ tại chỗ.
+- `DauInputMethod` với Telex, một input mode Tiếng Việt (D2; tiếng Anh gõ bằng U.S. của macOS), thay chữ tại chỗ.
 - Script cài bản Debug vào `~/Library/Input Methods` và hướng dẫn người dùng bật thử.
 - **Giải quyết câu hỏi A/B** (đã chốt cách A, D11) (vị trí thay chữ): đo chi phí `selectedRange` trên TextEdit, Safari, Chrome, Telegram (thay Slack, 30/10/2026), VS Code, Terminal; cập nhật `DECISIONS.md`.
 - Xong khi: người dùng gõ được tiếng Việt trong TextEdit và Safari không gạch chân.
@@ -33,7 +33,7 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 
 ## M6 — Hiệu năng dưới tải
 - App test tự gửi phím 20 phím/giây vào TextEdit, Safari, Telegram trong khi CPU đầy và `memory_pressure` đang chạy.
-- Chỉ số: văn bản cuối khớp 100%; độ trễ p50/p99 phía bộ gõ; bộ nhớ ổn định theo thời gian. So với gõ bằng ABC và với OpenKey.
+- Chỉ số: văn bản cuối khớp 100%; độ trễ p50/p99 phía bộ gõ; bộ nhớ ổn định theo thời gian. So với gõ bằng U.S. và với OpenKey.
 - Chốt ngưỡng vào `DECISIONS.md`; quyết định về D12 dựa trên số đo.
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md` (người dùng chốt 30/10/2026): Zalo, Discord, Messages, Pages, Numbers, Ghostty, Zed, Xcode, WebStorm; kiểm lại Terminal không gửi ⌫ cho bộ gõ; K5, K6 cho phần lớn app (K6 theo D4 × D20).
 

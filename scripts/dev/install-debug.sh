@@ -116,7 +116,7 @@ cat <<'EOF'
   1. Mở System Settings › Keyboard, mở danh sách nguồn nhập liệu (sheet "All Input
      Sources", có nút "+" và "–" ở góc trái dưới).
   2. Bấm "+", chọn "Vietnamese" ở cột trái, chọn "Dấu – Tiếng Việt", bấm "Add".
-     Dấu chỉ có nguồn này (D2). Gõ tiếng Anh bằng ABC/U.S. sẵn có của macOS; nếu
+     Dấu chỉ có nguồn này (D2). Gõ tiếng Anh bằng U.S. sẵn có của macOS; nếu
      danh sách còn "Dấu – Tiếng Anh" từ bản cũ thì chọn nó và bấm "–".
   3. Trên macOS 27.2, nút "Bật Dấu" trong app có thể không bật được nguồn: cứ thêm bằng
      "+" như bước 2.

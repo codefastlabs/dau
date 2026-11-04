@@ -404,7 +404,7 @@ struct NotEnabledBanner: View {
         }
     }
 
-    /// "Chọn Dấu trong menu nhập liệu, hoặc bấm ⌃Space để chuyển giữa Dấu và ABC.": the
+    /// "Chọn Dấu trong menu nhập liệu, hoặc bấm ⌃Space để chuyển giữa Dấu và U.S.": the
     /// real shortcut (N5); without a readable one, only the first half.
     private var enabledHint: Text {
         guard let actions else { return Text("Chọn Dấu trong menu nhập liệu.") }

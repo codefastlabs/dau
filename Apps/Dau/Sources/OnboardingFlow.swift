@@ -31,7 +31,7 @@ final class OnboardingFlow {
     private(set) var conflicts: [DetectedInputMethod] = []
     private(set) var status: InputMethodStatus = .unknown
     private(set) var shortcut: InputSourceShortcut.Reading = .unknown
-    /// Name of the keyboard layout used for English, e.g. "ABC"; nil if unknown.
+    /// Name of the keyboard layout used for English, e.g. "U.S."; nil if unknown.
     private(set) var englishLayout: String?
     /// Other Vietnamese input sources enabled in the system (soft note, step 2).
     private(set) var otherSources: [String] = []

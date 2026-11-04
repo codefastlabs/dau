@@ -8,7 +8,7 @@ import DauShared
 /// `VietEngine` and cursor tracker: no global mutable state (ARCHITECTURE.md).
 ///
 /// Dấu has a single input mode, "Tiếng Việt" (D2, 30/10/2026). English is typed with a
-/// system input source (ABC, U.S.…), so there is no mode state here: whatever mode ID IMK
+/// system input source (U.S.…), so there is no mode state here: whatever mode ID IMK
 /// reports (an old install may still have "….Dau.en" enabled), keys are handled as
 /// Vietnamese (D18).
 ///

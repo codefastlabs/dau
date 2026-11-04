@@ -279,7 +279,7 @@ Tất cả đều reset bộ đệm. Mũi tên thì còn khôi phục (3.16). Ch
 
 - Lưu Việt/Anh (cùng bảng mã) theo bundle ID. Ứng dụng gặp lần đầu được ghi theo chế độ hiện tại, và mỗi lần người dùng đổi chế độ thì cập nhật cho ứng dụng đang dùng (`SmartSwitchKey.cpp`; `OpenKey.mm`, phần đổi ứng dụng).
 - Độ dài bundle ID lưu trong 1 byte, nên ID dài hơn 255 bị cắt (lỗi nhỏ).
-- Dấu: cố ý khác OpenKey, không làm (D5). Dấu chỉ có một input mode Tiếng Việt; gõ tiếng Anh bằng ABC/U.S. của macOS (D2). Nhớ nguồn nhập liệu theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (N1); quy tắc theo ứng dụng của Dấu chỉ còn lựa chọn gạch chân (D13).
+- Dấu: cố ý khác OpenKey, không làm (D5). Dấu chỉ có một input mode Tiếng Việt; gõ tiếng Anh bằng U.S. của macOS (D2). Nhớ nguồn nhập liệu theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (N1); quy tắc theo ứng dụng của Dấu chỉ còn lựa chọn gạch chân (D13).
 
 ### 3.20 Macro, viết hoa đầu câu, bảng mã, chuyển mã
 

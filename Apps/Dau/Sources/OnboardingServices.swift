@@ -363,7 +363,7 @@ extension InputSourceStatus {
         return current == bundleID
     }
 
-    /// Localized name of an enabled keyboard layout other than Dấu, e.g. "ABC": the one
+    /// Localized name of an enabled keyboard layout other than Dấu, e.g. "U.S.": the one
     /// the user switches to for English (D2). `nil` when there is none to name.
     nonisolated static func englishLayoutName() -> String? {
         let filter = [kTISPropertyInputSourceType as String: kTISTypeKeyboardLayout as String,
@@ -379,9 +379,14 @@ extension InputSourceStatus {
             let languages = Unmanaged<CFArray>.fromOpaque(raw).takeUnretainedValue() as? [String] ?? []
             return languages.first == "en"
         }
-        // An English layout first (ABC, U.S.…), else any other layout.
+        // An English layout first (U.S., or another English one), else any other layout.
         let ordered = list.filter(isEnglish) + list.filter { !isEnglish($0) }
-        return ordered.lazy.compactMap { string($0, kTISPropertyLocalizedName) }.first { !$0.isEmpty }
+        // The name as the menu bar shows it (`LayoutNames`), TIS's own as the fallback.
+        let names = LayoutNames.system()
+        return ordered.lazy.compactMap { source -> String? in
+            guard let tisName = string(source, kTISPropertyLocalizedName), !tisName.isEmpty else { return nil }
+            return names.displayName(sourceID: string(source, kTISPropertyInputSourceID) ?? "", fallback: tisName)
+        }.first
     }
 
     /// Localized names of enabled, selectable Vietnamese input sources that are not

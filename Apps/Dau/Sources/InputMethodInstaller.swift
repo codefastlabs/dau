@@ -120,7 +120,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     /// Deletes the App Group data (settings, app rules); true on success.
     private let deleteSharedData: @MainActor () -> Bool
     private let pause: @MainActor (Duration) async -> Void
-    private let openKeyboardSettings: @MainActor () -> Void
+    private let openInputSources: @MainActor () -> Void
 
     /// How long `enable()` waits for macOS to store Dấu as enabled: the user needs time
     /// to read the "Allow" dialog and click it (D37).
@@ -137,14 +137,14 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     init(files: InputMethodFiles, sources: TextInputSources, processes: InputMethodProcesses,
          settings: SystemSettingsControl,
          deleteSharedData: @escaping @MainActor () -> Bool,
-         openKeyboardSettings: @escaping @MainActor () -> Void = { SystemSettings.openKeyboard() },
+         openInputSources: @escaping @MainActor () -> Void = { SystemSettings.openInputSources() },
          pause: @escaping @MainActor (Duration) async -> Void = { try? await Task.sleep(for: $0) }) {
         self.files = files
         self.sources = sources
         self.processes = processes
         self.settings = settings
         self.deleteSharedData = deleteSharedData
-        self.openKeyboardSettings = openKeyboardSettings
+        self.openInputSources = openInputSources
         self.pause = pause
     }
 
@@ -267,7 +267,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             preparation.switchedTo = selectOtherKeyboardIfDauIsCurrent(bundleID: bundleID)
             preparation.needsOtherKeyboard = preparation.switchedTo == nil
         }
-        openKeyboardSettings()
+        openInputSources()
         installLogger.notice("event=uninstall-prepared switched=\(preparation.switchedTo != nil) needsOther=\(preparation.needsOtherKeyboard)")
         return preparation
     }
@@ -590,10 +590,14 @@ final class SystemTextInputSources: TextInputSources {
         func string(_ key: CFString) -> String? {
             TISGetInputSourceProperty(source, key).map { Unmanaged<CFString>.fromOpaque($0).takeUnretainedValue() as String }
         }
-        return InputSourceEntry(id: string(kTISPropertyInputSourceID) ?? "",
+        let id = string(kTISPropertyInputSourceID) ?? ""
+        // A keyboard layout is named as the menu bar names it (`LayoutNames`); TIS's name
+        // follows this process's language (Vietnamese), not the system's.
+        let name = LayoutNames.system().displayName(sourceID: id, fallback: string(kTISPropertyLocalizedName) ?? "")
+        return InputSourceEntry(id: id,
                                 bundleID: string(kTISPropertyBundleID),
                                 isMode: string(kTISPropertyInputSourceType) == (kTISTypeKeyboardInputMode as String),
-                                name: string(kTISPropertyLocalizedName) ?? "")
+                                name: name)
     }
 }
 

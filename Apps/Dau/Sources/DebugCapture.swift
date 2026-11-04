@@ -254,7 +254,7 @@ enum DebugCapture {
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
                 NSApp.appearance = NSAppearance(named: name)
-                let sample = UninstallReport(switchedTo: "ABC", movedToTrash: true, stillEnabled: false, dataDeleted: true)
+                let sample = UninstallReport(switchedTo: "U.S.", movedToTrash: true, stillEnabled: false, dataDeleted: true)
                 let alerts: [(String, NSAlert)] = [
                     ("confirm", UninstallAlert.confirmation().0),
                     ("done", UninstallAlert.done(sample)),
@@ -278,7 +278,7 @@ enum DebugCapture {
                 // The sheet of the Settings window, on the fake preparation.
                 window.makeKeyAndOrderFront(nil)
                 let sheets: [(String, UninstallPreparation)] = [
-                    ("remove", UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false)),
+                    ("remove", UninstallPreparation(switchedTo: "U.S.", needsOtherKeyboard: false)),
                     ("remove-other", UninstallPreparation(switchedTo: nil, needsOtherKeyboard: true)),
                 ]
                 for (key, preparation) in sheets {
@@ -333,7 +333,7 @@ enum DebugCapture {
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
                 NSApp.appearance = NSAppearance(named: name)
                 for (key, state, shortcut) in states {
-                    actions?.showBannerForCapture(state, shortcut: shortcut, englishLayout: "ABC")
+                    actions?.showBannerForCapture(state, shortcut: shortcut, englishLayout: "U.S.")
                     try? await Task.sleep(for: .milliseconds(900))
                     capture(window, to: directory.appendingPathComponent("banner-\(key)-\(mode).png"))
                     var entry: [String: [Double]] = ["window": [0, 0, Double(window.frame.width), Double(window.frame.height)]]

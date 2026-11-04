@@ -41,6 +41,7 @@ final class InputMethodActions {
 
     @ObservationIgnored let installer: InputMethodInstaller
     @ObservationIgnored private let openKeyboardSettings: () -> Void
+    @ObservationIgnored private let inputSourcesOpener: () -> Void
     @ObservationIgnored private let readShortcut: () -> InputSourceShortcut.Reading
     @ObservationIgnored private let readEnglishLayout: () -> String?
     @ObservationIgnored private var bannerTask: Task<EnableOutcome, Error>?
@@ -48,10 +49,12 @@ final class InputMethodActions {
 
     init(installer: InputMethodInstaller,
          openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard,
+         openInputSources: @escaping () -> Void = SystemSettings.openInputSources,
          shortcut: @escaping () -> InputSourceShortcut.Reading = InputSourceShortcut.read,
          englishLayout: @escaping () -> String? = InputSourceStatus.englishLayoutName) {
         self.installer = installer
         self.openKeyboardSettings = openKeyboardSettings
+        self.inputSourcesOpener = openInputSources
         self.readShortcut = shortcut
         self.readEnglishLayout = englishLayout
     }
@@ -223,8 +226,8 @@ final class InputMethodActions {
         uninstallTask?.cancel()
     }
 
-    /// "Mở System Settings" on the sheet: the Keyboard pane (N4: only opens it).
-    func openKeyboard() { openKeyboardSettings() }
+    /// "Mở System Settings" on the sheet: the Input Sources list (N4: only opens it).
+    func showInputSources() { inputSourcesOpener() }
 }
 
 extension EnvironmentValues {

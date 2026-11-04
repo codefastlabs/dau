@@ -22,7 +22,7 @@ struct OnboardingFlowTests {
         let installer = FakeInputMethodInstaller(status, failure: failure)
         let opened = self.opened
         let flow = OnboardingFlow(detector: detector, installer: installer,
-                                  shortcut: { shortcut }, englishLayout: { "ABC" },
+                                  shortcut: { shortcut }, englishLayout: { "U.S." },
                                   openKeyboardSettings: { opened.count += 1 })
         return (flow, detector, installer)
     }
@@ -268,7 +268,7 @@ struct OnboardingFlowTests {
         let (flow, _, _) = flow(shortcut: .shortcut(shortcut))
         flow.start()
         #expect(flow.shortcut == .shortcut(shortcut))
-        #expect(flow.englishLayout == "ABC")
+        #expect(flow.englishLayout == "U.S.")
     }
 
     @Test("launch opens onboarding only when Dấu is known to be missing or off")

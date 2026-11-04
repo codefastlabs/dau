@@ -646,7 +646,7 @@ struct AllowDialogIllustration: View {
     }
 }
 
-/// "Chọn Dấu trong menu nhập liệu, hoặc bấm <phím tắt thật> để chuyển giữa Dấu và ABC":
+/// "Chọn Dấu trong menu nhập liệu, hoặc bấm <phím tắt thật> để chuyển giữa Dấu và U.S.":
 /// the real shortcut (N5), as the "Sau khi bật" card reads it. No shortcut set: says so
 /// and offers "Đặt phím tắt trong System Settings" (`OnboardingEnableDoneNoShortcut`).
 /// A shortcut that cannot be read: only "Chọn Dấu trong menu nhập liệu." and the same

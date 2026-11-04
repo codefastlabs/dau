@@ -20,7 +20,7 @@ struct UninstallRemoveSheet: View {
                 Text("Bỏ Dấu khỏi Nguồn nhập liệu")
                     .font(.headline)
                     .accessibilityAddTraits(.isHeader)
-                Text("macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn trang Keyboard.")
+                Text("macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn danh sách Input Sources.")
                     .font(.system(size: 13))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -38,7 +38,7 @@ struct UninstallRemoveSheet: View {
                     NumberedLine(number: 1, text: Text("Chọn một bàn phím khác trong menu nhập liệu"))
                 }
                 NumberedLine(number: editNumber,
-                             text: Text("Bấm **Edit…** cạnh Input Sources, chọn **Dấu – Tiếng Việt**, bấm **–**, rồi **Done**."),
+                             text: Text("Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**."),
                              isCurrent: true)
             }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -62,7 +62,7 @@ struct UninstallRemoveSheet: View {
                     .keyboardShortcut(.cancelAction)
             }
             ToolbarItem(placement: .primaryAction) {
-                Button("Mở System Settings") { actions.openKeyboard() }
+                Button("Mở System Settings") { actions.showInputSources() }
             }
         }
     }

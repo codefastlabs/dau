@@ -131,16 +131,6 @@
         }
       }
     },
-    "Bấm **Edit…** cạnh Input Sources, chọn **Dấu – Tiếng Việt**, bấm **–**, rồi **Done**." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bấm **Edit…** cạnh Input Sources, chọn **Dấu – Tiếng Việt**, bấm **–**, rồi **Done**."
-          }
-        }
-      }
-    },
     "Bấm **Thử lại**, rồi bấm **Allow** khi System Settings hỏi." : {
       "localizations" : {
         "vi" : {
@@ -397,6 +387,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chọn"
+          }
+        }
+      }
+    },
+    "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**."
           }
         }
       }
@@ -1831,12 +1831,12 @@
         }
       }
     },
-    "macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn trang Keyboard." : {
+    "macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn danh sách Input Sources." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn trang Keyboard."
+            "value" : "macOS chỉ cho bạn tự bỏ một nguồn nhập liệu. System Settings đã mở sẵn danh sách Input Sources."
           }
         }
       }
