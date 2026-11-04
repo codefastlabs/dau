@@ -16,3 +16,4 @@ Lần cài đầu (cần|bắt buộc) đăng xuất	D37: "có thể"; whether t
 số đo trong `docs/UI\.md`	D9: UI measurements live in docs/research/SYSTEM-SETTINGS-REFERENCE.md
 macOS vẫn đưa phím cho nguồn đã bật dù bundle bị thay	D37: chưa đo, ghi là lý do chưa kiểm chứng (03/11/2026)
 Kiểm chứng bằng VoiceOver ở M3	D17: M3 mới kiểm hệ thống có đọc; tên đọc đúng kiểm ở M7 (03/11/2026)
+[Ll]ần cài đầu có thể (phải|cần) đăng xuất	D37: bật lần đầu không cần đăng xuất (xoá bộ đệm của System Settings, hộp thoại Allow), đăng xuất chỉ còn là đường lui (04/11/2026)

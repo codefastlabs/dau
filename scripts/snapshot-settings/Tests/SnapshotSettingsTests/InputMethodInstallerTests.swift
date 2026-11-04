@@ -10,6 +10,9 @@ import Testing
 private let imID = "com.codefastlabs.dau.inputmethod.Dau"
 private let modeID = imID + ".vi"
 
+/// One log shared by the fakes, to check the order of calls across them.
+@MainActor final class Order { var log: [String] = [] }
+
 /// Text Input Sources in memory. `log` records every call that changes something.
 @MainActor
 final class FakeTextInputSources: TextInputSources {
@@ -17,15 +20,20 @@ final class FakeTextInputSources: TextInputSources {
     var all: [Source] = []
     var currentID: String?
     var log: [String] = []
+    var order: Order?
     /// `enable` returns this status and changes nothing when false (the macOS 27.0
     /// report: noErr, mode still off).
     var enableTakesEffect = true
+    /// Enabling the parent also stores the mode (macOS does; 8.1b).
+    var enableCascadesToMode = true
     var enableStatus: OSStatus = noErr
     /// What `register` makes appear (nothing: the source is not listed until logout).
     var registerAdds: [Source] = []
-    /// Read-backs left before an enable that did not take effect turns on by itself
-    /// (the user clicked "Cho phép" a bit later). nil: never.
-    var turnsOnAfterReads: Int?
+    /// Stored-list reads, after `enable` is called, before macOS stores Dấu as enabled by itself (the user
+    /// clicked Allow a bit later). nil: never.
+    var storedAfterReads: Int?
+    private var storedReads = 0
+    private var enableCalled = false
     /// What macOS has stored as enabled (`com.apple.inputsources`). nil: follows the
     /// enabled flags. Set to model the T4 bug: TIS says off, the stored entries stay.
     var stored: Set<String>?
@@ -33,6 +41,11 @@ final class FakeTextInputSources: TextInputSources {
     var storedSticky = false
 
     func storedEnabledIDs(bundleID: String) -> Set<String> {
+        if let storedAfterReads {
+            guard enableCalled else { return [] }
+            storedReads += 1
+            return storedReads > storedAfterReads ? [imID, modeID] : []
+        }
         guard let stored else {
             return Set(all.filter { $0.entry.bundleID == bundleID && $0.enabled }.map(\.entry.id))
         }
@@ -47,26 +60,22 @@ final class FakeTextInputSources: TextInputSources {
                                                     isMode: false, name: "ABC"), enabled: true)
 
     func register(_ url: URL) -> OSStatus {
-        log.append("register")
+        log.append("register"); order?.log.append("register")
         for s in registerAdds where !all.contains(where: { $0.entry.id == s.entry.id }) { all.append(s) }
         return noErr
     }
 
     func sources(bundleID: String, includeDisabled: Bool) -> [InputSourceEntry] {
-        if !includeDisabled, var left = turnsOnAfterReads {
-            left -= 1
-            turnsOnAfterReads = left
-            if left <= 0 {
-                turnsOnAfterReads = nil
-                for i in all.indices where all[i].entry.bundleID == imID { all[i].enabled = true }
-            }
-        }
         return all.filter { $0.entry.bundleID == bundleID && (includeDisabled || $0.enabled) }.map(\.entry)
     }
 
     func enable(_ id: String) -> OSStatus {
-        log.append("enable \(id)")
+        enableCalled = true
+        log.append("enable \(id)"); order?.log.append("enable \(id)")
         if enableTakesEffect, let i = all.firstIndex(where: { $0.entry.id == id }) { all[i].enabled = true }
+        if enableTakesEffect, enableCascadesToMode, id == imID, let i = all.firstIndex(where: { $0.entry.id == modeID }) {
+            all[i].enabled = true
+        }
         return enableStatus
     }
 
@@ -113,6 +122,27 @@ final class FakeProcesses: InputMethodProcesses {
 }
 
 @MainActor
+final class FakeSettings: SystemSettingsControl {
+    var running = false
+    /// Quits when asked (false: stays, as with an unsaved-changes sheet).
+    var honoursTerminate = true
+    var removedFiles = 2
+    var log: [String] = []
+    /// Shared with the fake sources to record the order of every call.
+    var order: Order?
+
+    var isRunning: Bool { running }
+    func terminate() {
+        log.append("terminate"); order?.log.append("terminate")
+        if honoursTerminate { running = false }
+    }
+    func clearKeyboardCache() -> (removed: Int, failed: Int) {
+        log.append("clearCache"); order?.log.append("clearCache")
+        return (removedFiles, 0)
+    }
+}
+
+@MainActor
 final class FakeFiles: InputMethodFiles {
     var embedded: InputMethodBundleInfo? = InputMethodBundleInfo(bundleID: imID, version: "2", shortVersion: "0.2.0", modeIDs: [modeID])
     var installed: InputMethodBundleInfo?
@@ -143,6 +173,7 @@ struct Rig {
     let files = FakeFiles()
     let tis = FakeTextInputSources()
     let processes = FakeProcesses()
+    let settings = FakeSettings()
     let installer: SystemInputMethodInstaller
 
     init(installed: InputMethodBundleInfo? = nil, sources: [FakeTextInputSources.Source] = []) {
@@ -151,6 +182,7 @@ struct Rig {
         let counter = Counter()
         self.counter = counter
         installer = SystemInputMethodInstaller(files: files, sources: tis, processes: processes,
+                                               settings: settings,
                                                deleteSharedData: { counter.value += 1; return true },
                                                pause: { _ in })
     }
@@ -216,58 +248,106 @@ struct InputMethodInstallerTests {
 
     // MARK: Enable
 
-    @Test("enable: parent then mode, read back as enabled")
+    @Test("enable: register, clear the cache, quit System Settings, then enable the parent, read back from the stored entries")
     func enable() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.settings.running = true
+        rig.tis.storedAfterReads = 3
         #expect(try await rig.installer.enable() == .enabled)
-        #expect(rig.tis.log == ["enable \(imID)", "enable \(modeID)"])
+        #expect(rig.tis.log == ["register", "enable \(imID)"])
+        #expect(rig.settings.log == ["clearCache", "terminate"])
         #expect(rig.installer.enabledHere == [imID, modeID])
         #expect(rig.tis.currentID == nil)   // never selected (N4)
+    }
+
+    @Test("enable: the order is register, clear cache, quit System Settings, enable the parent")
+    func enableOrder() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.settings.running = true
+        let order = Order()
+        rig.settings.order = order
+        rig.tis.order = order
+        rig.tis.storedAfterReads = 1
+        #expect(try await rig.installer.enable() == .enabled)
+        #expect(order.log == ["register", "clearCache", "terminate", "enable \(imID)"])
+        #expect(!rig.settings.running)
+    }
+
+    @Test("enable: TIS says enabled but nothing is stored → not enabled, status not enabled")
+    func tisFlagIsNotEnough() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.tis.stored = []
+        rig.installer.enableTimeout = .seconds(1)
+        #expect(rig.installer.status() == .installed(version: "0.1.0"))
+        rig.tis.enableTakesEffect = false
+        #expect(try await rig.installer.enable() == .notEnabled)
+        #expect(rig.installer.status() == .installed(version: "0.1.0"))
+        // A stored mode is what makes it enabled, whatever TIS lists.
+        rig.tis.all[1].enabled = false
+        rig.tis.stored = [imID, modeID]
         #expect(rig.installer.status() == .enabled)
     }
 
-    @Test("enable: noErr but TIS still off is reported as not enabled, never as success")
+    @Test("enable: noErr but nothing stored before the deadline is not enabled, never success")
     func enableReturnsOkButStillOff() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.tis.enableTakesEffect = false
         rig.tis.enableStatus = noErr
+        rig.installer.enableTimeout = .seconds(2)
         #expect(try await rig.installer.enable() == .notEnabled)
         #expect(rig.installer.status() == .installed(version: "0.1.0"))
-        // Undo still knows what was asked for, if macOS turns it on later.
-        #expect(rig.installer.enabledHere == [imID, modeID])
+        // Undo still knows what was asked for, if macOS stores it later.
+        #expect(rig.installer.enabledHere == [imID])
     }
 
-    @Test("enable: turned on during the read-backs (the user allowed it) counts")
+    @Test("enable: stored during the wait (the user clicked Allow) counts")
     func enableLate() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.tis.enableTakesEffect = false
-        rig.tis.turnsOnAfterReads = 3
+        rig.tis.storedAfterReads = 40
         #expect(try await rig.installer.enable() == .enabled)
     }
 
-    @Test("enable: not listed in TIS at all → register once, then report a logout (D37)")
+    @Test("enable: System Settings not running → nothing to quit; one that will not quit does not stop it")
+    func enableSettings() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.tis.storedAfterReads = 1
+        _ = try await rig.installer.enable()
+        #expect(rig.settings.log == ["clearCache"])
+
+        let stuck = Rig(installed: old, sources: FakeTextInputSources.dau())
+        stuck.settings.running = true
+        stuck.settings.honoursTerminate = false
+        stuck.tis.storedAfterReads = 1
+        #expect(try await stuck.installer.enable() == .enabled)
+        #expect(stuck.settings.log == ["clearCache", "terminate"])
+        #expect(stuck.tis.log.last == "enable \(imID)")
+    }
+
+    @Test("enable: not listed in TIS after registering → report a logout (D37), nothing else touched")
     func enableNotListed() async throws {
         let rig = Rig(installed: old)
         #expect(try await rig.installer.enable() == .notListed)
         #expect(rig.tis.log == ["register"])
+        #expect(rig.settings.log.isEmpty)
         // Registering makes it appear (same session, same ID): enabled normally.
         let again = Rig(installed: old)
         again.tis.registerAdds = FakeTextInputSources.dau()
+        again.tis.storedAfterReads = 1
         #expect(try await again.installer.enable() == .enabled)
-        #expect(again.tis.log == ["register", "enable \(imID)", "enable \(modeID)"])
+        #expect(again.tis.log == ["register", "enable \(imID)"])
     }
 
-    @Test("enable: only what is off is turned on; nothing to undo when it was all on")
+    @Test("enable: already stored as enabled → no cache, no System Settings, no enable call; nothing to undo")
     func enableAlreadyOn() async throws {
-        var sources = FakeTextInputSources.dau()
-        sources[0].enabled = true
-        let rig = Rig(installed: old, sources: sources)
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.settings.running = true
         #expect(try await rig.installer.enable() == .enabled)
-        #expect(rig.tis.log == ["enable \(modeID)"])
+        #expect(rig.tis.log == ["register"])
+        #expect(rig.settings.log.isEmpty)
+        #expect(rig.installer.enabledHere.isEmpty)
         try await rig.installer.undoEnable()
-        #expect(rig.tis.log.last == "disable \(modeID)")
-        #expect(rig.installer.status() == .installed(version: "0.1.0"))
-        #expect(rig.tis.all[0].enabled)   // the parent was on before: left on
+        #expect(rig.tis.log == ["register"])
     }
 
     @Test("enable: not installed throws; nothing touched")

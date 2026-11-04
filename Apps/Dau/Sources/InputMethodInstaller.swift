@@ -10,7 +10,9 @@ import os
 // (scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift):
 // - `InputMethodFiles`: the bundle inside the app and the copy in ~/Library/Input Methods;
 // - `TextInputSources`: register, enable, disable, select, read back;
-// - `InputMethodProcesses`: is the input method running, ask it to quit.
+// - `InputMethodProcesses`: is the input method running, ask it to quit;
+// - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
+//   process (D37, M5-INSTALL.md section 8.1b).
 //
 // N4: install copies Dấu's own files; enable, undo and uninstall run only from a button
 // the user clicked ("Bật Dấu", "Bật lại", "Hoàn tác", "Gỡ cài đặt"); upgrade replaces
@@ -94,6 +96,19 @@ protocol InputMethodProcesses: AnyObject {
     func forceQuit(bundleID: String)
 }
 
+/// What "Bật Dấu" needs from System Settings (D37, docs/research/M5-INSTALL.md section
+/// 8.1b): its input source cache must be rebuilt to list a new source, and the enable
+/// request is only handled when System Settings has to open the Keyboard extension.
+@MainActor
+protocol SystemSettingsControl: AnyObject {
+    /// Deletes `com.apple.IntlDataCache.le*` in the user cache folder of System
+    /// Settings' Keyboard extension. `failed` counts files that could not be removed.
+    func clearKeyboardCache() -> (removed: Int, failed: Int)
+    var isRunning: Bool { get }
+    /// Polite request to quit (`terminate()`, never a forced end).
+    func terminate()
+}
+
 // MARK: - Installer
 
 @MainActor
@@ -101,6 +116,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     private let files: InputMethodFiles
     private let sources: TextInputSources
     private let processes: InputMethodProcesses
+    private let settings: SystemSettingsControl
     /// Deletes the App Group data (settings, app rules); true on success.
     private let deleteSharedData: @MainActor () -> Bool
     private let pause: @MainActor (Duration) async -> Void
@@ -109,21 +125,26 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     /// attempts: when macOS turns Dấu on later (after the user allowed it), undo still
     /// knows what to turn off.
     private(set) var enabledHere: [String] = []
-    /// Read-backs after enabling, `rereadInterval` apart (TIS may settle late).
-    var rereadAttempts = 5
-    var rereadInterval: Duration = .milliseconds(300)
+    /// How long `enable()` waits for macOS to store Dấu as enabled: the user needs time
+    /// to read the "Allow" dialog and click it (D37).
+    var enableTimeout: Duration = .seconds(60)
+    /// How long System Settings has to quit on request before `enable()` goes on.
+    var settingsQuitTimeout: Duration = .seconds(5)
     /// How long the input method has to quit on request before it is ended.
     var quitTimeout: Duration = .seconds(2)
     /// How long uninstall waits for macOS to drop Dấu's stored enabled entries.
     var storedSettle: Duration = .seconds(3)
     private let pollInterval: Duration = .milliseconds(100)
+    private let enablePollInterval: Duration = .milliseconds(250)
 
     init(files: InputMethodFiles, sources: TextInputSources, processes: InputMethodProcesses,
+         settings: SystemSettingsControl,
          deleteSharedData: @escaping @MainActor () -> Bool,
          pause: @escaping @MainActor (Duration) async -> Void = { try? await Task.sleep(for: $0) }) {
         self.files = files
         self.sources = sources
         self.processes = processes
+        self.settings = settings
         self.deleteSharedData = deleteSharedData
         self.pause = pause
     }
@@ -133,6 +154,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         SystemInputMethodInstaller(files: InputMethodBundleFiles.standard(),
                                    sources: SystemTextInputSources(),
                                    processes: SystemInputMethodProcesses(),
+                                   settings: SystemSettingsProcess(),
                                    deleteSharedData: SharedData.delete)
     }
 
@@ -162,32 +184,51 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         guard files.isInstalled else { throw InputMethodInstallerError.failed("not installed") }
         let bundleID = embedded.bundleID, mode = embedded.vietnameseModeID
 
-        var known = sources.sources(bundleID: bundleID, includeDisabled: true)
-        if known.isEmpty {
-            // Registered in another session, or never: register (harmless) and look again.
-            _ = sources.register(files.installedURL)
-            known = sources.sources(bundleID: bundleID, includeDisabled: true)
-        }
-        guard !known.isEmpty else {
+        // Always register: harmless, and what makes TIS list a bundle installed in this
+        // session (D37).
+        let registered = sources.register(files.installedURL)
+        installLogger.notice("event=enable-register status=\(registered)")
+        guard !sources.sources(bundleID: bundleID, includeDisabled: true).isEmpty else {
             installLogger.notice("event=enable-not-listed")
             return .notListed
         }
 
-        // The parent input method first, then the mode (TextInputSources.h).
-        let enabledBefore = Set(sources.sources(bundleID: bundleID, includeDisabled: false).map(\.id))
-        for id in [bundleID, mode] where known.contains(where: { $0.id == id }) && !enabledBefore.contains(id) {
-            let status = sources.enable(id)
-            installLogger.notice("event=enable id=\(id, privacy: .public) status=\(status)")
-            if !enabledHere.contains(id) { enabledHere.append(id) }
+        // "Enabled" is what macOS has stored, not TIS's flag: right after register TIS
+        // reports the mode enabled while the stored list is empty (8.1b).
+        if isEnabled(mode, of: bundleID) {
+            installLogger.notice("event=enable-already-stored")
+            return .enabled
         }
 
-        // The status code proves nothing (noErr with the mode still off was reported on
-        // macOS 27.0): read back (N4, N5).
-        for attempt in 0..<max(1, rereadAttempts) {
-            if isEnabled(mode, of: bundleID) { return .enabled }
-            if attempt + 1 < rereadAttempts { await pause(rereadInterval) }
+        // System Settings lists new sources and handles the enable request only when it
+        // builds the Keyboard extension afresh: drop its cache, make it quit (8.1b).
+        let cache = settings.clearKeyboardCache()
+        installLogger.notice("event=enable-cache-cleared removed=\(cache.removed) failed=\(cache.failed)")
+        await quitSystemSettings()
+
+        // The parent only; macOS stores the mode with it. TISEnableInputSource sends the
+        // request to System Settings and returns 0 whatever happens next.
+        let storedBefore = sources.storedEnabledIDs(bundleID: bundleID)
+        if !storedBefore.contains(bundleID) {
+            let status = sources.enable(bundleID)
+            installLogger.notice("event=enable id=\(bundleID, privacy: .public) status=\(status)")
+            if !enabledHere.contains(bundleID) { enabledHere.append(bundleID) }
         }
-        installLogger.notice("event=enable-still-off")
+
+        // The status code proves nothing: wait for the stored entry (N4, N5). The user
+        // may take a while to click Allow.
+        var waited: Duration = .zero
+        while true {
+            if isEnabled(mode, of: bundleID) {
+                if !storedBefore.contains(mode), !enabledHere.contains(mode) { enabledHere.append(mode) }
+                installLogger.notice("event=enable-stored waited=\(waited.components.seconds)s")
+                return .enabled
+            }
+            if waited >= enableTimeout { break }
+            await pause(enablePollInterval)
+            waited += enablePollInterval
+        }
+        installLogger.notice("event=enable-timeout waited=\(waited.components.seconds)s")
         return .notEnabled
     }
 
@@ -303,8 +344,29 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
     }
 
+    /// The mode is among the entries macOS stored as enabled (D37, N4): not TIS's flag,
+    /// which is true right after `TISRegisterInputSource`.
     private func isEnabled(_ mode: String, of bundleID: String) -> Bool {
-        sources.sources(bundleID: bundleID, includeDisabled: false).contains { $0.id == mode }
+        sources.storedEnabledIDs(bundleID: bundleID).contains(mode)
+    }
+
+    /// Asks System Settings to quit (never forced) and waits up to `settingsQuitTimeout`.
+    private func quitSystemSettings() async {
+        guard settings.isRunning else {
+            installLogger.notice("event=enable-settings-not-running")
+            return
+        }
+        settings.terminate()
+        var waited: Duration = .zero
+        while settings.isRunning, waited < settingsQuitTimeout {
+            await pause(pollInterval)
+            waited += pollInterval
+        }
+        if settings.isRunning {
+            installLogger.notice("event=enable-settings-still-running")
+        } else {
+            installLogger.notice("event=enable-settings-quit")
+        }
     }
 
     /// Selects an ASCII keyboard when Dấu is the current source. Returns its name.
@@ -517,6 +579,12 @@ final class SystemTextInputSources: TextInputSources {
     }
 
     func storedEnabledIDs(bundleID: String) -> Set<String> {
+        Self.readStoredEnabledIDs(bundleID: bundleID)
+    }
+
+    /// Also used by the banner (`InputSourceStatus.query`), so every "is Dấu on" answer
+    /// comes from the same place.
+    nonisolated static func readStoredEnabledIDs(bundleID: String) -> Set<String> {
         let domain = "com.apple.inputsources" as CFString
         CFPreferencesAppSynchronize(domain)
         guard let entries = CFPreferencesCopyAppValue("AppleEnabledThirdPartyInputSources" as CFString, domain)
@@ -573,5 +641,50 @@ final class SystemInputMethodProcesses: InputMethodProcesses {
         for app in NSRunningApplication.runningApplications(withBundleIdentifier: bundleID) {
             app.forceTerminate()
         }
+    }
+}
+
+// MARK: - System Settings
+
+@MainActor
+final class SystemSettingsProcess: SystemSettingsControl {
+    static let bundleID = "com.apple.systempreferences"
+
+    var isRunning: Bool {
+        NSRunningApplication.runningApplications(withBundleIdentifier: Self.bundleID).contains { !$0.isTerminated }
+    }
+
+    func terminate() {
+        for app in NSRunningApplication.runningApplications(withBundleIdentifier: Self.bundleID) {
+            app.terminate()
+        }
+    }
+
+    func clearKeyboardCache() -> (removed: Int, failed: Int) {
+        guard let folder = Self.cacheFolder() else {
+            installLogger.error("event=cache-folder-unknown")
+            return (0, 0)
+        }
+        let fm = FileManager.default
+        let names = (try? fm.contentsOfDirectory(atPath: folder.path)) ?? []
+        var removed = 0, failed = 0
+        for name in names where name.hasPrefix("com.apple.IntlDataCache.le") {
+            do {
+                try fm.removeItem(at: folder.appendingPathComponent(name))
+                removed += 1
+            } catch {
+                failed += 1
+                installLogger.error("event=cache-remove-failed name=\(name, privacy: .public) error=\(error.localizedDescription, privacy: .public)")
+            }
+        }
+        return (removed, failed)
+    }
+
+    /// `$(getconf DARWIN_USER_CACHE_DIR)/com.apple.Keyboard-Settings.extension`.
+    nonisolated static func cacheFolder() -> URL? {
+        var buffer = [CChar](repeating: 0, count: Int(PATH_MAX) + 1)
+        guard confstr(_CS_DARWIN_USER_CACHE_DIR, &buffer, buffer.count) > 0 else { return nil }
+        return URL(fileURLWithPath: String(cString: buffer), isDirectory: true)
+            .appendingPathComponent("com.apple.Keyboard-Settings.extension", isDirectory: true)
     }
 }

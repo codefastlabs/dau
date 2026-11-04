@@ -2,7 +2,7 @@ import AppKit
 import Carbon
 import Observation
 
-/// Whether Dấu is among the user's enabled input sources (Text Input Sources, read only).
+/// Whether Dấu is among the user's enabled input sources (as stored by macOS, read only).
 /// Drives the "Dấu chưa được bật" banner. Rechecked when the app becomes active and
 /// when the system announces a change of enabled input sources.
 @MainActor
@@ -35,18 +35,14 @@ final class InputSourceStatus {
         isEnabled = Self.query()
     }
 
-    /// Reads the enabled input sources now: is "Dấu – Tiếng Việt" (the `.vi` mode, D2)
-    /// among them? The same test as `SystemInputMethodInstaller.status()`: the parent
-    /// input method alone being on does not let the user type. `nil` when the input
-    /// method bundle is not found inside the app.
+    /// Is "Dấu – Tiếng Việt" (the `.vi` mode, D2) among the sources macOS has stored as
+    /// enabled (`com.apple.inputsources`, D37)? Not TIS's enabled flag: it reads true
+    /// right after registering, before macOS enables anything. The same test as
+    /// `SystemInputMethodInstaller.status()`. `nil` when the input method bundle is not
+    /// found inside the app.
     nonisolated static func query() -> Bool? {
-        guard let modeID = inputModeID else { return nil }
-        let filter = [kTISPropertyInputSourceID as String: modeID] as CFDictionary
-        // includeAllInstalled = false: only enabled sources are returned.
-        guard let list = TISCreateInputSourceList(filter, false)?.takeRetainedValue() else {
-            return false
-        }
-        return CFArrayGetCount(list) > 0
+        guard let modeID = inputModeID, let bundleID = inputMethodBundleID else { return nil }
+        return SystemTextInputSources.readStoredEnabledIDs(bundleID: bundleID).contains(modeID)
     }
 
     /// The Vietnamese input mode ID of the input method inside this app.
