@@ -480,6 +480,17 @@ Quan sát xuyên các vòng: mọi lần System Settings xử lý yêu cầu b�
 
 Tìm trong binary `KeyboardSettings` (macOS 27.2): chỉ có `inputSourceToBeEnabled`, không có đường nhận yêu cầu tắt/bỏ nguồn; `TISDisableInputSource` chỉ nhảy sang `TSMDisableInputSource`, cùng đường ghi bị chặn (mục 4.1). Chưa đo sau U3: mục ẩn của C1 có ảnh hưởng gì ở lần đăng nhập sau, và cài lại cùng ID thì macOS có tự bật lại không (kế hoạch K1, K4 ở mục 4.1).
 
+**Vòng D (04/11/2026), từ chối rồi thử lại**, phiên chính tự bấm qua trợ năng (`scripts/probe/settings-ax.swift`), không cần người dùng:
+
+| Giờ | Bước | Kết quả |
+|---|---|---|
+| 14:47:34 | D1: `Register`, xoá bộ đệm, System Settings đã thoát, `Enable` cha từ `TisAct.app` | hộp thoại `Allow “Dấu thử” to enable “Dấu thử D1”?` hiện (đọc qua trợ năng) |
+| 14:47:52 | bấm "Don’t Allow" | `com.apple.inputsources` không có D1; nhật ký `KeyboardSettings` không có dòng nào báo từ chối (chỉ có dòng `handleOpenParameter` lúc nhận yêu cầu) → app không biết người dùng đã từ chối, chỉ thấy "chưa bật" |
+| 14:48:16 | thoát System Settings, gửi lại yêu cầu (như "Thử lại") | hộp thoại hiện lại sau 4 s (macOS không nhớ lần từ chối) |
+| 14:48:21 | bấm "Allow" | D1 vào `com.apple.inputsources` ngay (cả hai mục) |
+| 14:48:41 | System Settings đang mở sheet Input Sources, gọi `NSRunningApplication.terminate()` như app | System Settings thoát trong < 5 s dù sheet đang mở |
+| 14:48:51 | mở `?InputSources`, chọn D1, bấm "–", Done (qua trợ năng) | D1 ra khỏi danh sách; dọn bằng `cleanup.sh --yes` |
+
 Q3 (chỉ dừng extension) chưa chạy: Q2 đã đủ và nhẹ hơn. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
 
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật theo mục 7, xem cả danh sách "+".

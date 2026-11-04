@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds tis-probe, tis-act and TisAct.app into build/probe.noindex/.
+# Builds tis-probe, tis-act, settings-ax and TisAct.app into build/probe.noindex/.
 # Side effects: builds
 # Output: build/probe.noindex/bin/tis-probe, bin/tis-act, and TisAct.app (a minimal, non-sandboxed
 # app named "Dấu thử" around tis-act, signed with the same Apple Development identity as the
@@ -21,6 +21,7 @@ build() { # name
   fi
 }
 build tis-probe
+build settings-ax
 build tis-act
 
 IDENT_HASH=$(security find-identity -v -p codesigning | grep -F "Apple Development:" | awk '{print $2}' | head -1)
@@ -57,4 +58,4 @@ PLIST
 fi
 plutil -lint "$APP/Contents/Info.plist" >/dev/null || exit 1
 codesign --verify --deep --strict "$APP" || exit 1
-print "OK: $BIN/tis-probe $BIN/tis-act $APP"
+print "OK: $BIN/tis-probe $BIN/tis-act $BIN/settings-ax $APP"
