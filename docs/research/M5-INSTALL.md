@@ -375,7 +375,11 @@ Bản thử `DauProbeA1`–`A4` dựng từ bản Release `22948d9` (Dấu ngày
 | Q1 10:24 | B1 | `Register` (0); chỉ thoát System Settings, mở lại Keyboard sau 1,5 s | không dựng lại (giờ ghi giữ 10:14:38) | không có B1 |
 | Q2 10:27 | B2 | `Register` (0); chỉ xoá bộ đệm, System Settings vẫn mở; mở lại Keyboard | dựng lại 10:27:13, `.kbdx` 139.252 → 142.540 byte | **có B1, B2** |
 
-Q3 (chỉ dừng extension) chưa chạy. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
+| Q4 10:29 | B3 | Chuỗi cài thử trọn vẹn: `Register` (0); xoá bộ đệm; mở Keyboard; 3 s sau `Enable` cha từ `TisAct.app` (0) | dựng lại 10:29:25 | **có B3** |
+
+Q4, phần bật: lần gửi đầu (10:29:28, 3 s sau khi mở lại Keyboard) không để lại dòng `handleOpenParameter` nào trong nhật ký `KeyboardSettings`, không có hộp thoại, `com.apple.inputsources` không có B3 sau 25 s, dù mã trả về 0. Gửi lại từ `TisAct.app` lúc 10:31:45 (`step.sh P3b B3`): `handleOpenParameter` 10:31:46, hộp thoại xin phép hiện, người dùng bấm "Allow", `com.apple.inputsources` có B3 lúc 10:32:03. Một dòng `handleOpenParameter` lúc 10:31:02 không do script gửi, chưa rõ nguồn. Chưa ghi câu chữ đúng của hộp thoại.
+
+Q3 (chỉ dừng extension) chưa chạy: Q2 đã đủ và nhẹ hơn. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
 
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật theo mục 7, xem cả danh sách "+".
 
