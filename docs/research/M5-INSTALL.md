@@ -356,6 +356,20 @@ Bản thử là bản sao `DauInputMethod.app` Release, đổi bundle ID, ID mod
 - `TISEnableInputSource` cho bản thử trả 0, mục cha vẫn tắt, `com.apple.inputsources` không đổi. Gọi từ công cụ dòng lệnh hay từ một app thử có bundle (không sandbox) đều không có hộp thoại xin phép; với app thử, Cài đặt hệ thống tự mở mục Bàn phím (người dùng xem).
 - Nhật ký `KeyboardSettings` (cùng truy vấn `/usr/bin/log show` ở mục 2.2): 03/11 08:42:17.603 "Invalid value on inputSourceToBeEnabled" sau lệnh `probe-tis enable` lúc 08:42:16; 08:44:56.610 cùng lỗi sau lần app thử có bundle gọi bật lúc 08:44:55. Cùng truy vấn còn thấy hai lần `handleOpenParameter` không kèm lỗi (03/11 08:43:23 và 08:46:12), chưa phân biệt nguồn.
 
+### 8.1b Vòng A (04/11/2026, `scripts/probe/`, tài khoản đang dùng, không đăng xuất)
+
+Bản thử `DauProbeA1`–`A4` dựng từ bản Release `22948d9` (Dấu ngày 02/11), đổi ID theo mục 8.2, ký Apple Development; chép vào `~/Library/Input Methods`. Trạng thái đọc bằng `tis-probe` (tiến trình mới); "+" là người dùng xem (System Settings › Keyboard › Input Sources › Edit… › "+" › Vietnamese). Nhật ký từng lệnh: `build/probe.noindex/logs/A-steps.log` (không vào repo). [Máy/bản thử]
+
+| Bước | Bản | Lời gọi (mã trả về) | TIS tiến trình mới | `com.apple.inputsources` | "+" |
+|---|---|---|---|---|---|
+| P0 09:41 | A1 | `Register` (0) | cha và mode có, liệt kê ngay | rỗng | không có (người dùng xem) |
+| P1 09:46 | A2 | `Register`, cha liệt kê ở lần hỏi đầu, `Enable` cha (0), mode (0); 0,3 s | có | rỗng | không có A1, A2 |
+| P2 09:46 | A3 | ba tiến trình: `Register` (0), `Enable` cha (0), mode (0); `KeyboardSettings` ghi "Invalid value on inputSourceToBeEnabled" 1,5 s sau | có | rỗng | không có A1–A3 |
+| P3 10:14 | A4 | `Register` (0), `Enable` cha (0); thoát System Settings; xoá `IntlDataCache.le*` (giờ ghi trước đó 08:47); `pkill` extension (lúc đó chỉ `KeyboardSettingsIntents` chạy); mở lại Keyboard. Bộ đệm được dựng lại 10:14:38.969 | có | rỗng | **có A1, A2, A3, A4** (ảnh của người dùng) |
+| P3b 10:20 | A4 | `Enable` cha từ `TisAct.app` (tên "Dấu thử") (0); `KeyboardSettings` ghi `handleOpenParameter`, `TCCAccessLaunchDisclosurePromptIfNeeded`, **không** có "Invalid value"; hộp thoại xin phép hiện, người dùng bấm "Allow" | cha và mode `enabled` | **có cả hai mục A4** (cha và mode `….A4.vi`) | — |
+
+Chưa tách: P3 gộp ba việc (thoát System Settings, xoá bộ đệm, dừng extension), chưa biết việc nào đủ; người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
+
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật theo mục 7, xem cả danh sách "+".
 
 ### 8.2 Kế hoạch vòng thử bằng bản thử (tìm cách không phải đăng xuất)

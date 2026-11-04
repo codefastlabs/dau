@@ -158,8 +158,10 @@ case $STEP in
     run osascript -e 'tell application "System Settings" to quit'
     run sleep 1.5
     run /bin/sh -c "rm -f ${(q)KBD_CACHE}/com.apple.IntlDataCache.le*"
-    run pgrep -fl KeyboardSettings
-    run pkill -f KeyboardSettings
+    # Match the extension binaries only: a bare "KeyboardSettings" also matches the
+    # log stream started by --log-stream, whose predicate names that process.
+    run pgrep -fl 'KeyboardSettings[A-Za-z]*\.appex/Contents/MacOS/'
+    run pkill -f 'KeyboardSettings[A-Za-z]*\.appex/Contents/MacOS/'
     run sleep 1
     run open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension"
     run sleep 5
