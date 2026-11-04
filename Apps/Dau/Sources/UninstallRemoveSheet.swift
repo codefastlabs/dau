@@ -1,3 +1,4 @@
+import Carbon
 import SwiftUI
 
 /// "Bỏ Dấu khỏi Nguồn nhập liệu": the sheet over the Settings window after "Tiếp tục
@@ -10,7 +11,7 @@ import SwiftUI
 /// user's Mac.
 struct UninstallRemoveSheet: View {
     let actions: InputMethodActions
-    let preparation: UninstallPreparation
+    @Environment(\.controlActiveState) private var activeState
 
     static let width: CGFloat = 470
 
@@ -26,18 +27,7 @@ struct UninstallRemoveSheet: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
             OnboardingCard(spacing: 10) {
-                if let keyboard = preparation.switchedTo {
-                    HStack(alignment: .top, spacing: 10) {
-                        ListBadge(kind: .done)
-                        Text("Đã chuyển sang **\(keyboard)**")
-                            .font(.system(size: 13))
-                            .padding(.top, 2)
-                    }
-                    .accessibilityElement(children: .combine)
-                } else if preparation.needsOtherKeyboard {
-                    NumberedLine(number: 1, text: Text("Chọn một bàn phím khác trong menu nhập liệu"))
-                }
-                NumberedLine(number: editNumber,
+                NumberedLine(number: 1,
                              text: Text("Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **Done**."),
                              isCurrent: true)
             }
@@ -52,6 +42,17 @@ struct UninstallRemoveSheet: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.updatesFrequently)
+            // Only while Dấu is the selected input source, which can dim "–": it goes away
+            // when the user switches to another keyboard.
+            if actions.dauIsSelected {
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Image(systemName: "info.circle")
+                        .foregroundStyle(.secondary)
+                        .accessibilityHidden(true)
+                    Hint(Text("Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trong menu nhập liệu trước."))
+                }
+                .accessibilityElement(children: .combine)
+            }
         }
         .padding(20)
         .frame(width: Self.width, alignment: .leading)
@@ -64,10 +65,21 @@ struct UninstallRemoveSheet: View {
                 Button("Mở System Settings") { actions.showInputSources() }
             }
         }
-    }
-
-    /// The row with the steps in System Settings follows the keyboard row, when there is one.
-    private var editNumber: Int {
-        preparation.switchedTo != nil || preparation.needsOtherKeyboard ? 2 : 1
+        // Read again when the sheet appears, when its window becomes key again and whenever
+        // the selected input source changes, so the hint follows the user's switch.
+        .onAppear { actions.refreshDauIsSelected() }
+        .onChange(of: activeState) { _, state in
+            if state == .key { actions.refreshDauIsSelected() }
+        }
+        .onReceive(DistributedNotificationCenter.default().publisher(
+            for: Notification.Name(kTISNotifySelectedKeyboardInputSourceChanged as String))) { _ in
+            // The notification can come before this process's input source state has
+            // changed: read now and again shortly after; the wait's poll covers the rest.
+            actions.refreshDauIsSelected()
+            Task {
+                try? await Task.sleep(for: .milliseconds(300))
+                actions.refreshDauIsSelected()
+            }
+        }
     }
 }

@@ -72,10 +72,10 @@ struct SettingsWindow: View {
         .background(HiddenWindowTitle())
         // "Gỡ cài đặt…": the sheet that waits for the user to remove Dấu from the input
         // sources (`InputMethodActions.performUninstall`); closing it cancels the removal.
-        .sheet(isPresented: Binding(get: { actions?.uninstallSheet != nil },
+        .sheet(isPresented: Binding(get: { actions?.isShowingUninstallSheet == true },
                                     set: { if !$0 { actions?.cancelUninstall() } })) {
-            if let actions, let preparation = actions.uninstallSheet {
-                UninstallRemoveSheet(actions: actions, preparation: preparation)
+            if let actions {
+                UninstallRemoveSheet(actions: actions)
             }
         }
         // System Settings opens at 740 × 560. A grouped Form caps its cards at 704 pt

@@ -9,7 +9,7 @@ import os
 // operations and every failure path are tested with fakes
 // (scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift):
 // - `InputMethodFiles`: the bundle inside the app and the copy in ~/Library/Input Methods;
-// - `TextInputSources`: register, enable, select, read back;
+// - `TextInputSources`: register, enable, read back;
 // - `InputMethodProcesses`: is the input method running, ask it to quit;
 // - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
 //   process (D37, M5-INSTALL.md section 8.1b).
@@ -72,12 +72,7 @@ protocol TextInputSources: AnyObject {
     /// Sources of `bundleID`; `includeDisabled` false returns the enabled ones only.
     func sources(bundleID: String, includeDisabled: Bool) -> [InputSourceEntry]
     func enable(_ id: String) -> OSStatus
-    func select(_ id: String) -> OSStatus
     func current() -> InputSourceEntry?
-    /// An enabled ASCII-capable keyboard layout to select before Dấu goes away: the
-    /// last-used one (`TISCopyCurrentASCIICapableKeyboardLayoutInputSource`), else the
-    /// first enabled one; never one of `excludingBundleID`.
-    func asciiKeyboard(excludingBundleID: String) -> InputSourceEntry?
     /// The IDs of `bundleID` macOS has stored as enabled (`com.apple.inputsources`
     /// › `AppleEnabledThirdPartyInputSources`; the parent's entry has no input mode, its
     /// ID is the bundle ID). This is what the next login enables, and what the user's
@@ -121,9 +116,6 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     private let deleteSharedData: @MainActor () -> Bool
     private let pause: @MainActor (Duration) async -> Void
     private let openInputSources: @MainActor () -> Void
-    /// The source that was selected before `prepareUninstall` switched away from it, for
-    /// `restoreInputSourceAfterUninstall`; nil when nothing was switched.
-    private var sourceBeforeUninstall: String?
 
     /// How long `enable()` waits for macOS to store Dấu as enabled: the user needs time
     /// to read the "Allow" dialog and click it (D37).
@@ -259,23 +251,12 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         return .upgraded(from: installed.version, to: new)
     }
 
-    func prepareUninstall() async throws -> UninstallPreparation {
-        guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
-        let bundleID = embedded.bundleID
-        var preparation = UninstallPreparation()
-        // Dấu is the current source: select a keyboard first. The "–" of the input source
-        // list is dimmed for the selected source, and the system would pick a keyboard by
-        // itself when Dấu goes away (research section 4).
-        sourceBeforeUninstall = nil
-        if let current = sources.current(), current.bundleID == bundleID {
-            preparation.switchedTo = selectOtherKeyboardIfDauIsCurrent(bundleID: bundleID)
-            preparation.needsOtherKeyboard = preparation.switchedTo == nil
-            // Only when the switch took effect, so there is something to put back.
-            if sources.current()?.id != current.id { sourceBeforeUninstall = current.id }
-        }
+    func prepareUninstall() async throws {
+        guard files.embedded != nil else { throw InputMethodInstallerError.unavailable }
+        // Only opens the list: "–" works for the selected source too, and macOS selects a
+        // keyboard itself when Dấu goes away (measured on macOS 27.2, 04/11/2026).
         openInputSources()
-        installLogger.notice("event=uninstall-prepared switched=\(preparation.switchedTo != nil) needsOther=\(preparation.needsOtherKeyboard)")
-        return preparation
+        installLogger.notice("event=uninstall-prepared")
     }
 
     func waitUntilRemovedFromInputSources() async throws {
@@ -285,19 +266,6 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             if sources.storedEnabledIDs(bundleID: embedded.bundleID).isEmpty { return }
             await pause(removalPollInterval)
         }
-    }
-
-    func restoreInputSourceAfterUninstall() -> Bool {
-        guard let id = sourceBeforeUninstall, let embedded = files.embedded else { return false }
-        sourceBeforeUninstall = nil
-        // Dấu may be gone already (the user removed it): then there is nothing to go back to.
-        guard sources.storedEnabledIDs(bundleID: embedded.bundleID).contains(id) else {
-            installLogger.notice("event=uninstall-restore-skipped id=\(id, privacy: .public) reason=not-enabled")
-            return false
-        }
-        let status = sources.select(id)
-        installLogger.notice("event=uninstall-restore id=\(id, privacy: .public) status=\(status)")
-        return sources.current()?.id == id
     }
 
     func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport {
@@ -310,7 +278,6 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             installLogger.error("event=uninstall-still-stored ids=\(stored.sorted(), privacy: .public)")
             throw InputMethodInstallerError.stillListed
         }
-        sourceBeforeUninstall = nil   // finished: macOS picks the keyboard, nothing to restore
         var report = UninstallReport()
 
         // Move it to the Trash, then stop it: the input method quits only once its
@@ -364,20 +331,6 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         } else {
             installLogger.notice("event=enable-settings-quit")
         }
-    }
-
-    /// Selects an ASCII keyboard when Dấu is the current source. Returns its name.
-    @discardableResult
-    private func selectOtherKeyboardIfDauIsCurrent(bundleID: String) -> String? {
-        guard sources.current()?.bundleID == bundleID else { return nil }
-        guard let keyboard = sources.asciiKeyboard(excludingBundleID: bundleID) else {
-            installLogger.error("event=no-ascii-keyboard")
-            return nil
-        }
-        let status = sources.select(keyboard.id)
-        installLogger.notice("event=select id=\(keyboard.id, privacy: .public) status=\(status)")
-        // Named to the user only if it reads back as the current source (N5).
-        return sources.current()?.id == keyboard.id ? keyboard.name : nil
     }
 
     /// Asks the input method to quit, waits up to `quitTimeout`, then ends it. Returns
@@ -561,11 +514,6 @@ final class SystemTextInputSources: TextInputSources {
         return TISEnableInputSource(source)
     }
 
-    func select(_ id: String) -> OSStatus {
-        guard let source = source(id) else { return OSStatus(paramErr) }
-        return TISSelectInputSource(source)
-    }
-
     func current() -> InputSourceEntry? {
         TISCopyCurrentKeyboardInputSource().map { Self.entry($0.takeRetainedValue()) }
     }
@@ -583,19 +531,6 @@ final class SystemTextInputSources: TextInputSources {
                 as? [[String: Any]] else { return [] }
         return Set(entries.filter { $0["Bundle ID"] as? String == bundleID }
                           .map { $0["Input Mode"] as? String ?? bundleID })
-    }
-
-    func asciiKeyboard(excludingBundleID: String) -> InputSourceEntry? {
-        let enabledLayouts = list([kTISPropertyInputSourceType as String: kTISTypeKeyboardLayout as String,
-                                   kTISPropertyInputSourceIsASCIICapable as String: true,
-                                   kTISPropertyInputSourceIsSelectCapable as String: true],
-                                  includeDisabled: false).map(Self.entry)
-            .filter { $0.bundleID != excludingBundleID }
-        if let last = TISCopyCurrentASCIICapableKeyboardLayoutInputSource().map({ Self.entry($0.takeRetainedValue()) }),
-           enabledLayouts.contains(where: { $0.id == last.id }) {
-            return last
-        }
-        return enabledLayouts.first
     }
 
     private func list(_ filter: [String: Any], includeDisabled: Bool) -> [TISInputSource] {

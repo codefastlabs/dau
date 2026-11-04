@@ -25,9 +25,13 @@ final class InputMethodActions {
 
     private(set) var banner: BannerState = .idle
     private(set) var isUninstalling = false
-    /// The uninstall sheet ("Bỏ Dấu khỏi Nguồn nhập liệu") is showing; what it says about
-    /// the keyboard Dấu switched away from.
-    private(set) var uninstallSheet: UninstallPreparation?
+    /// The uninstall sheet ("Bỏ Dấu khỏi Nguồn nhập liệu") is showing.
+    private(set) var isShowingUninstallSheet = false
+    /// Dấu is the selected input source (re-read by the sheet while it waits): the sheet
+    /// then warns that "–" may be dimmed and asks to select another keyboard first.
+    private(set) var dauIsSelected = false
+    /// Captures fix `dauIsSelected`: the sheet does not read the real one then.
+    @ObservationIgnored private var selectionPinned = false
 
     /// The installed input method is not the one this app installs (`installedIsGenuine`).
     private(set) var installedTampered = false
@@ -137,7 +141,11 @@ final class InputMethodActions {
     /// Captures (`--tampered`): show the banner without touching the installed copy.
     func forceTampered() { installedTampered = true }
     /// Captures (`--capture-uninstall`): show or hide the uninstall sheet, running nothing.
-    func showUninstallSheetForCapture(_ preparation: UninstallPreparation?) { uninstallSheet = preparation }
+    func showUninstallSheetForCapture(_ shown: Bool, dauIsSelected: Bool = false) {
+        selectionPinned = shown
+        isShowingUninstallSheet = shown
+        self.dauIsSelected = dauIsSelected
+    }
     /// Captures (`--capture-banner`): show a banner state, running nothing.
     func showBannerForCapture(_ state: BannerState, shortcut: InputSourceShortcut.Reading = .unknown, englishLayout: String? = nil) {
         banner = state
@@ -162,6 +170,11 @@ final class InputMethodActions {
     }
 
     @ObservationIgnored private var uninstallTask: Task<UninstallOutcome, Never>?
+    /// How often the sheet re-reads the selected input source while it waits. The change
+    /// notification can arrive before this process's Text Input Sources state has caught
+    /// up (measured: the hint lagged one change behind), so the poll is what keeps the hint
+    /// right; the notification only makes it quicker.
+    var selectionPollInterval: Duration = .milliseconds(500)
 
     /// "Gỡ cài đặt…": confirmation alert ("Tiếp tục gỡ"), then the sheet and the removal.
     func confirmUninstall(in window: NSWindow?) {
@@ -200,25 +213,31 @@ final class InputMethodActions {
         let installer = self.installer
         let task = Task { @MainActor [weak self] () -> UninstallOutcome in
             do {
-                let preparation = try await installer.prepareUninstall()
-                self?.uninstallSheet = preparation
+                try await installer.prepareUninstall()
+                self?.isShowingUninstallSheet = true
+                self?.refreshDauIsSelected()
+                let poll = self?.selectionPollInterval ?? .milliseconds(500)
+                let poller = Task { @MainActor [weak self] in
+                    while !Task.isCancelled {
+                        try? await Task.sleep(for: poll)
+                        self?.refreshDauIsSelected()
+                    }
+                }
+                defer { poller.cancel() }
                 try await installer.waitUntilRemovedFromInputSources()
-                var report = try await installer.finishUninstall(deleteSettings: deleteSettings)
-                report.switchedTo = preparation.switchedTo
-                return .done(report)
+                return .done(try await installer.finishUninstall(deleteSettings: deleteSettings))
             } catch is CancellationError {
-                // "Huỷ gỡ cài đặt": the user stays on the keyboard they had.
-                installer.restoreInputSourceAfterUninstall()
+                // "Huỷ gỡ cài đặt": nothing was switched or removed.
                 return .cancelled
             } catch {
                 installLogger.error("event=uninstall-failed error=\(String(describing: error), privacy: .public)")
-                installer.restoreInputSourceAfterUninstall()
                 return .failed
             }
         }
         uninstallTask = task
         let outcome = await task.value
-        uninstallSheet = nil
+        isShowingUninstallSheet = false
+        dauIsSelected = false
         uninstallTask = nil
         isUninstalling = false
         return outcome
@@ -227,6 +246,12 @@ final class InputMethodActions {
     /// "Huỷ gỡ cài đặt" on the sheet (or Esc).
     func cancelUninstall() {
         uninstallTask?.cancel()
+    }
+
+    /// Reads again whether Dấu is the selected input source (the sheet's hint follows it).
+    func refreshDauIsSelected() {
+        guard !selectionPinned else { return }
+        dauIsSelected = installer.status() == .selected
     }
 
     /// "Mở System Settings" on the sheet: the Input Sources list (N4: only opens it).
@@ -249,7 +274,7 @@ enum UninstallAlert {
         alert.messageText = String(localized: "Gỡ Dấu khỏi máy?")
         // macOS lets only the user remove an input source, so the alert says what happens
         // in order (docs/research/M5-INSTALL.md section 4).
-        alert.informativeText = String(localized: "Dấu chuyển bạn sang bàn phím khác, rồi bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác.")
+        alert.informativeText = String(localized: "Bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác.")
         let remove = alert.addButton(withTitle: String(localized: "Tiếp tục gỡ"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
@@ -269,9 +294,6 @@ enum UninstallAlert {
         var lines: [String] = []
         if report.movedToTrash {
             lines.append(String(localized: "Bộ gõ đã được chuyển vào Thùng rác."))
-        }
-        if let keyboard = report.switchedTo {
-            lines.append(String(localized: "Nguồn nhập liệu hiện tại: “\(keyboard)”."))
         }
         if report.stillEnabled {
             lines.append(String(localized: "macOS vẫn báo Dấu trong Nguồn nhập liệu; bạn có thể bỏ nó trong System Settings › Keyboard › Input Sources."))

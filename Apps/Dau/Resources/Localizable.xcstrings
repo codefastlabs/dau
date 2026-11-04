@@ -111,6 +111,16 @@
         }
       }
     },
+    "Bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác."
+          }
+        }
+      }
+    },
     "Bạn có thể bỏ “Dấu – Tiếng Việt” trong System Settings › Keyboard › Input Sources, rồi thử lại." : {
       "localizations" : {
         "vi" : {
@@ -127,6 +137,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt."
+          }
+        }
+      }
+    },
+    "Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trong menu nhập liệu trước." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn đang dùng Dấu. Nếu nút – bị mờ, chọn bàn phím khác trong menu nhập liệu trước."
           }
         }
       }
@@ -471,16 +491,6 @@
         }
       }
     },
-    "Chọn một bàn phím khác trong menu nhập liệu" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chọn một bàn phím khác trong menu nhập liệu"
-          }
-        }
-      }
-    },
     "Chọn ứng dụng cần quy tắc riêng" : {
       "localizations" : {
         "vi" : {
@@ -647,16 +657,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dùng khi bản mới gây lỗi"
-          }
-        }
-      }
-    },
-    "Dấu chuyển bạn sang bàn phím khác, rồi bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dấu chuyển bạn sang bàn phím khác, rồi bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác."
           }
         }
       }
@@ -1147,16 +1147,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Mở rộng"
-          }
-        }
-      }
-    },
-    "Nguồn nhập liệu hiện tại: “%@”." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nguồn nhập liệu hiện tại: “%@”."
           }
         }
       }
@@ -1927,16 +1917,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đã bật Dấu"
-          }
-        }
-      }
-    },
-    "Đã chuyển sang **%@**" : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đã chuyển sang **%@**"
           }
         }
       }

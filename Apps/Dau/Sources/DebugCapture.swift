@@ -232,8 +232,8 @@ enum DebugCapture {
     /// display, lays out the "Gỡ Dấu khỏi máy?" alert, the result alert and the "Bỏ Dấu
     /// khỏi Nguồn nhập liệu" sheet there without running anything, and writes
     /// `uninstall-confirm-<mode>.png`, `uninstall-done-<mode>.png`,
-    /// `uninstall-remove-<mode>.png` (keyboard switched) and
-    /// `uninstall-remove-other-<mode>.png` (no keyboard to switch to), plus `frames.json`
+    /// `uninstall-remove-<mode>.png` (Dấu not selected) and
+    /// `uninstall-remove-hint-<mode>.png` (Dấu selected: with the "–" hint), plus `frames.json`
     /// (sheet sizes).
     static let uninstallDirectory: URL? = {
         let args = CommandLine.arguments
@@ -254,7 +254,7 @@ enum DebugCapture {
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
                 NSApp.appearance = NSAppearance(named: name)
-                let sample = UninstallReport(switchedTo: "U.S.", movedToTrash: true, stillEnabled: false, dataDeleted: true)
+                let sample = UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: true)
                 let alerts: [(String, NSAlert)] = [
                     ("confirm", UninstallAlert.confirmation().0),
                     ("done", UninstallAlert.done(sample)),
@@ -277,18 +277,15 @@ enum DebugCapture {
                 }
                 // The sheet of the Settings window, on the fake preparation.
                 window.makeKeyAndOrderFront(nil)
-                let sheets: [(String, UninstallPreparation)] = [
-                    ("remove", UninstallPreparation(switchedTo: "U.S.", needsOtherKeyboard: false)),
-                    ("remove-other", UninstallPreparation(switchedTo: nil, needsOtherKeyboard: true)),
-                ]
-                for (key, preparation) in sheets {
-                    actions?.showUninstallSheetForCapture(preparation)
+                let sheets: [(String, Bool)] = [("remove", false), ("remove-hint", true)]
+                for (key, dauIsSelected) in sheets {
+                    actions?.showUninstallSheetForCapture(true, dauIsSelected: dauIsSelected)
                     try? await Task.sleep(for: .milliseconds(1200))
                     guard let sheet = window.attachedSheet else { print("no sheet for \(key)"); exit(1) }
                     capture(sheet, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
                             background: .windowBackgroundColor)
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
-                    actions?.showUninstallSheetForCapture(nil)
+                    actions?.showUninstallSheetForCapture(false)
                     try? await Task.sleep(for: .milliseconds(600))
                 }
             }

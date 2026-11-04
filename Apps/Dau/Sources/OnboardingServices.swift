@@ -199,22 +199,8 @@ extension InputMethodInstallerError {
     }
 }
 
-/// What `prepareUninstall` did (D16), for the sheet that asks the user to remove Dấu
-/// from the input sources.
-struct UninstallPreparation: Equatable, Sendable {
-    /// The keyboard selected because Dấu was the current input source, when it reads back
-    /// as the current source (N5).
-    var switchedTo: String?
-    /// Dấu is the current input source and no keyboard could be selected instead: the
-    /// user has to choose one (the "–" button is dimmed for the selected source).
-    var needsOtherKeyboard = false
-}
-
 /// What the uninstall did (D16), for the result alert.
 struct UninstallReport: Equatable, Sendable {
-    /// The keyboard selected first because Dấu was the current input source, when it
-    /// reads back as the current source (from `UninstallPreparation`).
-    var switchedTo: String?
     /// The input method bundle was moved to the Trash (false: it was not installed).
     var movedToTrash = false
     /// One of Dấu's sources still reads as enabled afterwards.
@@ -245,19 +231,13 @@ protocol InputMethodInstaller: AnyObject {
     func installedIsGenuine() -> Bool
     /// Replaces an older installed input method with the one in the app (D7).
     func upgradeIfNeeded() async throws -> UpgradeOutcome
-    /// Uninstall, step 1 (D16): selects another keyboard when Dấu is the current input
-    /// source and opens Keyboard settings, where the user removes Dấu from the list.
-    /// Removes nothing.
-    func prepareUninstall() async throws -> UninstallPreparation
+    /// Uninstall, step 1 (D16): opens the Input Sources list of System Settings, where the
+    /// user removes Dấu. Selects nothing and removes nothing: macOS picks a keyboard itself
+    /// when Dấu goes away.
+    func prepareUninstall() async throws
     /// Uninstall, step 2: returns once none of Dấu's entries is stored as enabled any
     /// more (the user removed it). Polls; throws `CancellationError` when cancelled.
     func waitUntilRemovedFromInputSources() async throws
-    /// The uninstall ended without removing Dấu (cancelled, or it failed): selects again
-    /// the input source `prepareUninstall` switched away from, only if it did switch and
-    /// that source is still enabled in `com.apple.inputsources`. Does nothing after a
-    /// finished uninstall. Returns whether it selected one.
-    @discardableResult
-    func restoreInputSourceAfterUninstall() -> Bool
     /// Uninstall, step 3, only once none of Dấu's entries is stored (else throws
     /// `stillListed`, nothing touched): stops the input method, moves it to the Trash,
     /// deletes the App Group data when `deleteSettings`, and reads the result back (D16).
@@ -276,7 +256,6 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     var enableWaits = false
     private(set) var enableWaiting = false
     var release: EnableOutcome?
-    var preparation = UninstallPreparation()
     var uninstallReport = UninstallReport()
     /// Dấu is still among the stored input sources: `finishUninstall` throws, and
     /// `waitUntilRemovedFromInputSources` waits until this is false or it is cancelled.
@@ -327,10 +306,9 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         return .upToDate
     }
 
-    func prepareUninstall() async throws -> UninstallPreparation {
+    func prepareUninstall() async throws {
         calls.append("prepareUninstall")
         if let failure { throw failure }
-        return preparation
     }
 
     func waitUntilRemovedFromInputSources() async throws {
@@ -339,11 +317,6 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
             try Task.checkCancellation()
             try await Task.sleep(for: .milliseconds(5))
         }
-    }
-
-    func restoreInputSourceAfterUninstall() -> Bool {
-        calls.append("restore")
-        return false
     }
 
     func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport {
