@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Runs one step (P0..P7, P3b) of the "new input source without logging out" experiments on one variant.
+# Runs one step (P0..P7, P3b, Q1..Q4) of the "new input source without logging out" experiments on one variant.
 # Side effects: installs input method, changes input source, kills processes, needs admin password (P6 only); builds the probe tools first
 # Plan: docs/research/M5-INSTALL.md 8.2. Variants come from scripts/probe/make-variants.sh. Run it yourself
 # (it copies into the input method folder, registers, enables, and for P3..P5 stops system processes of
@@ -7,7 +7,7 @@
 #
 # Usage:
 #   scripts/probe/step.sh [--dry-run] [--log-stream] [--watch] <step> <variant>
-#     step     P0 P1 P2 P3 P3b P4 P5 P6 P7
+#     step     P0 P1 P2 P3 P3b P4 P5 P6 P7 Q1 Q2 Q3 Q4
 #     variant  DauProbeA1 or just A1 (round letters + number)
 #     --dry-run     print the command sequence, run nothing (also builds nothing, checks nothing)
 #     --log-stream  run `log stream` (filter of M5-INSTALL.md 7.2 step 3) into build/probe.noindex/logs/<round>-stream.log
@@ -24,6 +24,13 @@
 #   P5  copy; register; enable parent; stop TextInputSwitcher, CursorUIViewService, TextInputMenuAgent, 0.5 s apart.
 #   P6  sudo copy into /Library/Input Methods (root owned); register from this user; enable parent, mode.
 #   P7  like P0, then select the mode; print the status and whether the variant process runs.
+#   Q1..Q3 split P3 (round B, 04/11/2026): copy; register; then ONE of the three refreshes, with
+#   System Settings already open on Keyboard before the step:
+#   Q1  quit System Settings only, reopen Keyboard settings.
+#   Q2  delete IntlDataCache.le* only (System Settings stays open), reopen Keyboard settings.
+#   Q3  stop the Keyboard settings extension only (System Settings stays open), reopen Keyboard settings.
+#   Q4  the candidate install flow end to end: copy; register; delete IntlDataCache.le* (System Settings
+#       may be open or not); open Keyboard settings; wait; enable the parent through TisAct.app.
 # P8 (stopping imklaunchagent / keyboardservicesd) is deliberately not here.
 #
 # Every command is logged with its time to build/probe.noindex/logs/<round>-steps.log. The variant is
@@ -57,7 +64,7 @@ for a in "$@"; do
 done
 (( ${#args} == 2 )) || { print -u2 "Cần <bước> <biến thể>. Xem --help."; exit 2 }
 STEP=${(U)args[1]}; STEP=${STEP/B/b}
-[[ $STEP == (P0|P1|P2|P3|P3b|P4|P5|P6|P7) ]] || { print -u2 "Bước không hợp lệ: ${args[1]} (P0 P1 P2 P3 P3b P4 P5 P6 P7)"; exit 2 }
+[[ $STEP == (P0|P1|P2|P3|P3b|P4|P5|P6|P7|Q1|Q2|Q3|Q4) ]] || { print -u2 "Bước không hợp lệ: ${args[1]} (P0 P1 P2 P3 P3b P4 P5 P6 P7 Q1 Q2 Q3 Q4)"; exit 2 }
 NAME=${args[2]#DauProbe}
 [[ $NAME =~ '^([A-Za-z]+)([0-9]+)$' ]] || { print -u2 "Biến thể không hợp lệ: ${args[2]} (ví dụ DauProbeA1 hoặc A1)"; exit 2 }
 ROUND=$match[1]
@@ -165,6 +172,41 @@ case $STEP in
     run sleep 1
     run open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension"
     run sleep 5
+    ;;
+  Q1)
+    copy_variant
+    tisact register "$DEST"
+    run osascript -e 'tell application "System Settings" to quit'
+    run sleep 1.5
+    run open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension"
+    run sleep 5
+    ;;
+  Q2)
+    copy_variant
+    tisact register "$DEST"
+    run /bin/sh -c "rm -f ${(q)KBD_CACHE}/com.apple.IntlDataCache.le*"
+    run open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension"
+    run sleep 5
+    ;;
+  Q3)
+    copy_variant
+    tisact register "$DEST"
+    run pgrep -fl 'KeyboardSettings[A-Za-z]*\.appex/Contents/MacOS/'
+    run pkill -f 'KeyboardSettings[A-Za-z]*\.appex/Contents/MacOS/'
+    run sleep 1
+    run open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension"
+    run sleep 5
+    ;;
+  Q4)
+    copy_variant
+    tisact register "$DEST"
+    run /bin/sh -c "rm -f ${(q)KBD_CACHE}/com.apple.IntlDataCache.le*"
+    run open "x-apple.systempreferences:com.apple.Keyboard-Settings.extension"
+    run sleep 3
+    run rm -f "$TISACT_LOG"
+    run open -W -n --stdout "$TISACT_LOG" --stderr "$TISACT_LOG" "$TISACT_APP" --args enable "$PARENT"
+    run cat "$TISACT_LOG"
+    say "Q4: có hộp thoại xin phép không? Ghi đúng câu chữ, bấm Allow."
     ;;
   P3b)
     run rm -f "$TISACT_LOG"

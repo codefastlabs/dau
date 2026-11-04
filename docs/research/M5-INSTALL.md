@@ -368,7 +368,14 @@ Bản thử `DauProbeA1`–`A4` dựng từ bản Release `22948d9` (Dấu ngày
 | P3 10:14 | A4 | `Register` (0), `Enable` cha (0); thoát System Settings; xoá `IntlDataCache.le*` (giờ ghi trước đó 08:47); `pkill` extension (lúc đó chỉ `KeyboardSettingsIntents` chạy); mở lại Keyboard. Bộ đệm được dựng lại 10:14:38.969 | có | rỗng | **có A1, A2, A3, A4** (ảnh của người dùng) |
 | P3b 10:20 | A4 | `Enable` cha từ `TisAct.app` (tên "Dấu thử") (0); `KeyboardSettings` ghi `handleOpenParameter`, `TCCAccessLaunchDisclosurePromptIfNeeded`, **không** có "Invalid value"; hộp thoại xin phép hiện, người dùng bấm "Allow" | cha và mode `enabled` | **có cả hai mục A4** (cha và mode `….A4.vi`) | — |
 
-Chưa tách: P3 gộp ba việc (thoát System Settings, xoá bộ đệm, dừng extension), chưa biết việc nào đủ; người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
+**Vòng B (04/11/2026)**, tách P3 (bước Q1–Q3 của `scripts/probe/step.sh`, mỗi bước một ID mới, System Settings đang mở ở Keyboard trước bước):
+
+| Bước | Bản | Làm mới | Bộ đệm `IntlDataCache.le*` | "+" |
+|---|---|---|---|---|
+| Q1 10:24 | B1 | `Register` (0); chỉ thoát System Settings, mở lại Keyboard sau 1,5 s | không dựng lại (giờ ghi giữ 10:14:38) | không có B1 |
+| Q2 10:27 | B2 | `Register` (0); chỉ xoá bộ đệm, System Settings vẫn mở; mở lại Keyboard | dựng lại 10:27:13, `.kbdx` 139.252 → 142.540 byte | **có B1, B2** |
+
+Q3 (chỉ dừng extension) chưa chạy. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
 
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật theo mục 7, xem cả danh sách "+".
 
