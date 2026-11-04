@@ -1,6 +1,6 @@
 ---
 description: Điều phối trọn một mốc trong docs/ROADMAP.md bằng các subagent, có kiểm toán trước khi đóng mốc
-argument-hint: <M0..M8>
+argument-hint: <M0..M10>
 ---
 Điều phối mốc **$ARGUMENTS** theo mục "Điều phối" trong `CLAUDE.md`:
 

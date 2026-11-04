@@ -48,3 +48,18 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 - Dựng trang tải về theo `docs/UI.md` (mục "Trang tải về") và `docs/BRAND.md`: trang tĩnh, responsive, thẻ meta và ảnh Open Graph, favicon. Công nghệ chọn ở đầu mốc và hỏi người dùng.
 - Các ô số liệu và lời hứa chỉ điền từ kết quả M2/M6 (N5).
 - Xong khi: Lighthouse ≥ 95 ở cả bốn hạng mục trên điện thoại; kiểm toán ĐẠT.
+
+## M9 — Đa ngôn ngữ
+Người dùng nêu 04/11/2026: Dấu có thể thành bộ gõ được người Việt dùng rộng rãi, và người nước ngoài học tiếng Việt cũng muốn dùng.
+- Cần chốt trước khi bắt đầu (sửa D38, người dùng duyệt): app và bộ gõ hiện ngôn ngữ nào. Đề xuất: theo ngôn ngữ của macOS, chưa hỗ trợ thì tiếng Anh; tên "Dấu" giữ nguyên ở mọi ngôn ngữ (D24); tên giao diện của macOS vẫn lấy từ chuỗi của hệ thống (D38).
+- Dịch toàn bộ String Catalog của app chủ và bộ gõ sang tiếng Anh trước; ngôn ngữ khác sau. Menu nhập liệu hết lẫn hai thứ tiếng trên máy tiếng Anh ("Dấu Settings…" cạnh "Open Keyboard Settings…").
+- Không tự giải quyết được: mục "Open Dấu Settings…" của hệ thống (mục cuối menu nhập liệu) chỉ có khi bộ gõ khai báo được trang cài đặt riêng; nghiên cứu riêng trước M9.
+- Canvas: bản tiếng Anh cho các màn chính trước khi sửa mã. Bộ kiểm cửa sổ thật (`run.sh`) chạy theo từng ngôn ngữ vì độ dài chữ đổi bố cục. Trang tải về (M8) có bản tiếng Anh.
+- Xong khi: máy để tiếng Anh hẳn thấy toàn bộ app, bộ gõ, onboarding, hộp thoại bằng tiếng Anh; `run.sh` đạt ở cả hai ngôn ngữ; kiểm toán ĐẠT.
+
+## M10 — Học cách gõ
+Người dùng nêu 04/11/2026: người dùng biết và học được cách gõ, và khác biệt về cách gõ giữa các bộ gõ.
+- Trong app: ô gõ thử giải thích từng bước (`vieetj` → vi → viê → việt, phím nào làm gì); bảng tra Telex, Telex đơn giản, VNI. Theo D9 (giao diện gọn như System Settings); không lưu gì về chữ đã gõ (D8).
+- Trên trang web: trang "Dấu khác các bộ gõ khác thế nào", chỉ ghi khác biệt đã đo được (N5), lấy từ `docs/OPENKEY-NOTES.md` và bộ dữ liệu kiểm thử (đặt dấu kiểu mới/cũ, bỏ dấu tự do, khôi phục từ nước ngoài, uơ/ươ…); dẫn mục "Đã biết nhưng không làm" của `docs/DECISIONS.md`.
+- Canvas trước, mã sau. Nội dung có bản tiếng Việt và tiếng Anh nếu M9 đã xong.
+- Xong khi: người dùng duyệt nội dung trên canvas; mọi ví dụ trong phần học có test engine tương ứng; kiểm toán ĐẠT.

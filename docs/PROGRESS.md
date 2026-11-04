@@ -29,6 +29,8 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 | M6 Hiệu năng dưới tải | chưa | — | |
 | M7 Phát hành | chưa | — | |
 | M8 Website | chưa | — | |
+| M9 Đa ngôn ngữ | chưa | — | thêm 04/11 |
+| M10 Học cách gõ | chưa | — | thêm 04/11 |
 
 ## Kế hoạch M5 (30/10/2026)
 | # | Việc | Agent | Song song |
