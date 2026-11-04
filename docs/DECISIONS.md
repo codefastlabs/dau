@@ -51,9 +51,29 @@ Nguồn chuẩn duy nhất cho mọi quyết định của dự án. Mỗi quy�
 - **D37. Cài đặt bộ gõ (M5, 30/10/2026):** app chủ Dấu.app **không chạy sandbox**, vì phải chép bộ gõ vào `~/Library/Input Methods`, nâng cấp tại chỗ và dừng tiến trình bộ gõ cũ: app có sandbox thì file chép ra luôn bị gắn cờ quarantine mà app không gỡ được, và không dừng được app khác (Apple DTS; không bộ gõ tham khảo nào làm vậy). Bộ gõ vẫn chạy sandbox và không có quyền mạng (N2); App Group giữ nguyên. Không đổi giữa các bản: bundle ID, ID mode `….Dau.vi`, tên kết nối, tên file và tên tiến trình bộ gõ (đổi thì bộ đệm TIS lệch, phải đăng xuất). **Bật lần đầu không cần đăng xuất** (người dùng chốt 04/11/2026): khi người dùng bấm "Bật Dấu", app chép bộ gõ, xoá `com.apple.IntlDataCache.le*` trong **mọi** thư mục con của `DARWIN_USER_CACHE_DIR` (của System Settings và của từng app; thư mục nào không có quyền thì bỏ qua và ghi nhật ký) ngay trước khi đăng ký bộ gõ, thoát System Settings nếu đang chạy, rồi gọi `TISEnableInputSource` cho mục cha: macOS mở System Settings và hỏi "Allow “Dấu” to enable “…”?"; chỉ tính là bật khi `com.apple.inputsources` › `AppleEnabledThirdPartyInputSources` có mục của Dấu (không tin cờ enabled của TIS). Sau khi đã bật, app quét lại một lượt: bộ đệm nào vẫn không có `DauInputMethod.app` (dựng lại trong khoảng giữa lúc xoá và lúc đăng ký) thì xoá rồi đăng ký lại một lần. Lý do (đo bằng bản thử rồi bằng Dấu thật 04/11/2026, macOS 27.2, tài khoản đã từng cài Dấu; `docs/research/M5-INSTALL.md` mục 0 (b)9, (b)10 và 8.1b vòng E): danh sách "+" và việc dựng hộp thoại đọc bộ đệm của System Settings, bộ đệm không làm mới khi có nguồn mới đăng ký (trước đây chỉ đăng xuất mới làm mới); yêu cầu bật gửi lúc trang Keyboard đang mở sẵn bị bỏ qua im lặng. Mỗi app có sandbox cũng giữ bộ đệm riêng, dùng nguyên bộ đệm có sẵn kể cả khi mở lại app: Telegram dựng bộ đệm lúc chưa có Dấu thì không chọn được Dấu, gõ vẫn ra bộ gõ khác; xoá bộ đệm trước khi đăng ký thì app đang chạy dựng lại ở lần đăng ký và dùng được nguồn mới, không cần mở lại (bản thử). Chưa làm cho gỡ cài đặt: bộ đệm còn nhớ bộ gõ đã gỡ, chưa đo hậu quả. Không có tài liệu Apple cho cả hai điều này, bản macOS sau có thể khác: đọc lại không thấy mục của Dấu thì hướng dẫn tự thêm bằng "+", và nếu "+" không có Dấu thì đăng xuất một lần (Apple DTS 6/2026). (Bản trước: "Lần cài đầu có thể phải đăng xuất một lần để nguồn nhập liệu xuất hiện: onboarding phát hiện và hướng dẫn.") Homebrew cask chỉ khai `app`. Chi tiết: `docs/research/M5-INSTALL.md`. Mỗi lần mở app và mỗi lần app được đưa lên trước, app kiểm chữ ký và Team ID của bộ gõ đã cài; không khớp thì hiện banner "Cài lại" (người dùng duyệt 02/11/2026). Lý do: thư mục này tài khoản người dùng ghi được, nên bundle có thể bị thay; macOS có chặn bundle bị thay hay vẫn đưa phím cho nó thì chưa đo.
 - **D38. Chữ trên giao diện** (người dùng chốt 04/11/2026): chữ của Dấu viết tiếng Việt (String Catalog), nhưng mọi tên giao diện của macOS (System Settings, Keyboard, Input Sources, Allow, tên bàn phím…) hiện **đúng như macOS của người dùng đang hiện**, theo ngôn ngữ của macOS chứ không theo ngôn ngữ của app; lấy chữ từ chính chuỗi của hệ thống, không tự dịch (máy tiếng Anh: "System Settings › Keyboard › Input Sources"; máy tiếng Việt: "Cài đặt hệ thống › Bàn phím › Nguồn đầu vào"). Khi nói về khái niệm chung trong câu tiếng Việt, dùng thuật ngữ Apple tiếng Việt ("nguồn đầu vào", không phải "nguồn nhập liệu"). Lý do: hướng dẫn chỉ đúng khi tên khớp với thứ người dùng thấy; macOS tiếng Việt gọi Input Sources là "Nguồn đầu vào" (đọc từ chuỗi của System Settings 27.2). Cùng tinh thần với tên bàn phím (`LayoutNames`).
 
+## Đã biết nhưng không làm
+
+Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết và cố ý không làm; lý do nằm ở quyết định được dẫn, không chép lại ở đây. Muốn làm một mục thì sửa quyết định đó trước, như mọi quyết định khác. (Tách thành mục riêng ngày 04/11/2026, người dùng chốt; cột "Bộ gõ khác có" theo `docs/OPENKEY-NOTES.md`, "—" là chưa đối chiếu.)
+
+| Tính năng | Bộ gõ khác có | Vì sao Dấu không làm |
+|---|---|---|
+| Macro, gõ tắt văn bản | OpenKey | D3 (macOS có Thay thế văn bản, N1) |
+| Viết hoa chữ đầu câu | OpenKey | D3 |
+| Bảng mã cũ (TCVN3, VNI-Windows, CP1258, Unicode tổ hợp), nhớ bảng mã theo ứng dụng | OpenKey | D3 (chỉ xuất Unicode dựng sẵn) |
+| Công cụ chuyển mã, kể cả chuẩn hoá Unicode cho chữ dán vào | OpenKey | D3, N1 |
+| Tự đổi Việt/Anh theo ứng dụng | OpenKey | D5, D2 |
+| Từ điển tiếng Anh để giữ từ tiếng Anh | — | D4 |
+| Quick Telex (cc → ch, nn → ng…) | OpenKey | Kích hoạt cả giữa từ nên phá từ tiếng Anh có phụ âm đôi ("connect" → "congect"); trùng mục đích với gõ tắt phụ âm (D21) |
+| Phím chuyển Việt/Anh riêng (nhấn-nhả ⌃ hoặc ⇧), tiếng bíp khi chuyển | OpenKey | D2 |
+| Tạm tắt bộ gõ hoặc kiểm tra chính tả bằng nhấn-nhả ⌃/⌘ | OpenKey | D2, D30 |
+| Biểu tượng riêng trên thanh menu, mục "Thoát" | — | D2 (Dấu là một nguồn đầu vào của macOS), N1 |
+| Thông báo nổi và âm thanh khi chuyển Việt/Anh | — | D17, N1 |
+| Thống kê gõ phím, telemetry | — | D8 |
+| Phát hành trên Mac App Store | — | D6, D37 |
+
 ## Đã cân nhắc và loại bỏ
 
-Rust/WASM và đa nền tảng; thử gõ trên trang web; Mac App Store; event tap + Backspace giả (cách của OpenKey); status item riêng trên thanh menu và mục "Thoát"; phím chuyển nhấn-nhả ⌃ hoặc ⇧; thông báo nổi và âm thanh khi chuyển; `NSSpellChecker` trong đường nóng; từ điển tiếng Anh nhúng sẵn (xem D4); nhúng engine UniKey qua C++ interop; chạy engine OpenKey làm đáp án cho test (oracle); MIT/MPL tách riêng cho engine; Quick Telex (cc → ch, nn → ng…: kích hoạt cả giữa từ nên phá từ tiếng Anh có phụ âm đôi, "connect" → "congect"; trùng mục đích với gõ tắt phụ âm D21); tạm tắt bộ gõ bằng nhấn-nhả ⌃/⌘ (cùng tinh thần D2).
+Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM và đa nền tảng; thử gõ trên trang web; event tap + Backspace giả (cách của OpenKey); `NSSpellChecker` trong đường nóng; nhúng engine UniKey qua C++ interop; chạy engine OpenKey làm đáp án cho test (oracle); MIT/MPL tách riêng cho engine.
 
 ## Câu hỏi mở (phải kiểm chứng trên máy thật)
 

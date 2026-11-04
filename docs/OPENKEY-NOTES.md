@@ -36,7 +36,7 @@ Tài liệu tham khảo cho mốc M1. Viết bằng lời của Dấu, **không 
 | 6 | Kiểm tra chính tả (`vCheckSpelling`) | Luôn chạy bên trong, không có công tắc riêng; định nghĩa âm tiết hợp lệ theo D31 | D30, D31 |
 | 7 | Khôi phục khi sai chính tả (`vRestoreIfWrongSpelling`) | Làm ("Tự khôi phục từ không phải tiếng Việt"), mặc định bật | D4, D15 |
 | 8 | Gõ đúp phím dấu để giữ chữ gốc | Làm; sau gõ đúp phím dấu đi thẳng tới hết từ | D4, D26 |
-| 9 | Gõ nhanh / Quick Telex (`vQuickTelex`: cc→ch, gg→gi, kk→kh, nn→ng, qq→qu, pp→ph, tt→th) | Không làm | DECISIONS, mục "Đã cân nhắc và loại bỏ" |
+| 9 | Gõ nhanh / Quick Telex (`vQuickTelex`: cc→ch, gg→gi, kk→kh, nn→ng, qq→qu, pp→ph, tt→th) | Không làm | DECISIONS, mục "Đã biết nhưng không làm" |
 | 10 | Gõ tắt phụ âm đầu (`vQuickStartConsonant`: f→ph, j→gi, w→qu) | Làm, có khác biệt; w→qu chỉ ở VNI (không ở Telex, Telex đơn giản) | D21, D22, D23, D29 |
 | 11 | Gõ tắt phụ âm cuối (`vQuickEndConsonant`: g→ng, h→nh, k→ch) | Làm, có khác biệt | D21 |
 | 12 | Cho phép phụ âm z, f, w, j (`vAllowConsonantZFWJ`) | Làm, loại trừ với mục 10–11 | D22, D15 |
@@ -47,8 +47,8 @@ Tài liệu tham khảo cho mốc M1. Viết bằng lời của Dấu, **không 
 | 17 | Smart switch: nhớ Việt/Anh theo ứng dụng (`vUseSmartSwitchKey`, `SmartSwitchKey.cpp`) | Không làm, cố ý khác OpenKey: Dấu không nhớ Việt/Anh theo app; nhớ nguồn nhập liệu theo cửa sổ để cho tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" | D5, D2 |
 | 18 | Nhớ bảng mã theo ứng dụng (`vRememberCode`) | Không làm (vì không có bảng mã) | D3 |
 | 19 | Phím chuyển Việt/Anh riêng, có tiếng bíp | Không làm | D2 |
-| 20 | Tạm tắt chính tả bằng nhấn-nhả ⌃ (`vTempOffSpelling`) | Không làm (kiểm tra chính tả luôn chạy, D30) | D30, mục "Đã cân nhắc và loại bỏ" |
-| 21 | Tạm tắt bộ gõ cho từ hiện tại bằng nhấn-nhả ⌘ (`vTempOffOpenKey`) | Không làm | D2, mục "Đã cân nhắc và loại bỏ" |
+| 20 | Tạm tắt chính tả bằng nhấn-nhả ⌃ (`vTempOffSpelling`) | Không làm (kiểm tra chính tả luôn chạy, D30) | D30, mục "Đã biết nhưng không làm" |
+| 21 | Tạm tắt bộ gõ cho từ hiện tại bằng nhấn-nhả ⌘ (`vTempOffOpenKey`) | Không làm | D2, mục "Đã biết nhưng không làm" |
 | 22 | Tắt tiếng Việt khi bàn phím hệ thống không phải tiếng Anh (`vOtherLanguage`) | Không cần: Dấu tự là nguồn nhập liệu (suy luận) | D2 |
 | 23 | Sửa gợi ý tự hoàn thành của trình duyệt (`vFixRecommendBrowser`), gửi từng phím (`vSendKeyStepByStep`) | Không làm mẹo gửi từng phím của event tap. Gợi ý bôi đen ngay sau con trỏ thì thay cả từ lẫn phần gợi ý trong cùng một `insertText` | D11 |
 | 24 | Phím `[` → ơ, `]` → ư (chỉ Telex) | Không làm; `[ ]` luôn là dấu câu, kết thúc từ | D27 |
@@ -198,7 +198,7 @@ Xem B5, B6. **Dấu:** kiểm tra chính tả luôn chạy, không có công t�
 - Gõ hai lần c, g, k, n, q, p hoặc t thì ra ch, gi, kh, ng, qu, ph, th (`handleQuickTelex`). Bảng có cả uu → ươ nhưng không bao giờ được dùng, vì u không nằm trong danh sách phím kích hoạt.
 - Kích hoạt **ở bất kỳ vị trí nào trong từ**, không chỉ ở đầu từ: "conn" → "cong", "matt" → "math". Vì thế nó phá các từ tiếng Anh có phụ âm đôi, và theo B7 các từ này cũng không được khôi phục ("connect" → "congect").
 - Chữ hoa của chữ đầu bị lấy theo phím thứ hai (B14).
-- **Dấu không làm** (DECISIONS, mục "Đã cân nhắc và loại bỏ"). Gõ tắt phụ âm (D21) là tính năng **khác**.
+- **Dấu không làm** (DECISIONS, mục "Đã biết nhưng không làm"). Gõ tắt phụ âm (D21) là tính năng **khác**.
 
 ### 3.11 Gõ tắt phụ âm (quick start / end consonant): so với D21, D23
 
@@ -569,9 +569,9 @@ Ban đầu chỉ liệt kê. Đến 29/10/2026 (commit `22f3e4d`) M1–M17 đã 
 - **M14. Độ dài từ tối đa.** Chưa có quyết định (3.15).
   - **Đã chốt: D33.** Dài hơn 7 chữ cái thì ngừng biến đổi; bộ đệm cố định.
 - **M15. Quick Telex (cc → ch…)** không có trong DECISIONS. Đề xuất ghi vào "Đã cân nhắc và loại bỏ": phá từ tiếng Anh có phụ âm đôi, trùng mục đích với gõ tắt phụ âm.
-  - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (Quick Telex).**
+  - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (Quick Telex); từ 04/11/2026 nằm ở mục "Đã biết nhưng không làm".**
 - **M16. Phím `[` `]` ở Telex** không có trong DECISIONS. Đề xuất không làm hoặc chốt rõ: xung đột với gõ code/markdown, và "Telex đơn giản" theo đề xuất đã bỏ chúng.
   - **Đã chốt: D27.** `[ ]` luôn là dấu câu.
 - **M17. Tạm tắt chính tả/bộ gõ bằng nhấn-nhả ⌃/⌘** (OpenKey). Đề xuất ghi vào "Đã cân nhắc và loại bỏ" cho rõ, cùng tinh thần D2 (không phím riêng; mục loại bỏ đã có "phím chuyển nhấn-nhả ⌃ hoặc ⇧").
-  - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (tạm tắt bằng nhấn-nhả ⌃/⌘), cùng D30.**
+  - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (tạm tắt bằng nhấn-nhả ⌃/⌘), cùng D30; từ 04/11/2026 nằm ở mục "Đã biết nhưng không làm".**
 - **M18. Chưa phát hiện vi phạm N1–N5 trong bản thân DECISIONS.** Chỉ lưu ý: ví dụ giao diện "vieetj → việt" ở mục Thông minh đúng theo luật, còn "car → cả" và "carr → car" khớp D4.
