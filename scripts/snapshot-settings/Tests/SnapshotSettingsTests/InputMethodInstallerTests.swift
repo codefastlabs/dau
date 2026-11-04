@@ -128,11 +128,32 @@ final class FakeSettings: SystemSettingsControl {
     }
 }
 
+/// The per-app input source caches (D37): what the passes return, and what they were asked.
+@MainActor
+final class FakeCaches: InputSourceCaches {
+    var cleared = InputSourceCacheCounts(removed: 4)
+    /// What the verification pass finds (default: every cache lists Dấu).
+    var checked = InputSourceCacheCounts(checked: 3)
+    var markers: [String] = []
+    var log: [String] = []
+    var order: Order?
+
+    func clearAll() -> InputSourceCacheCounts {
+        log.append("clearCaches"); order?.log.append("clearCaches")
+        return cleared
+    }
+    func removeCaches(notMentioning marker: String) -> InputSourceCacheCounts {
+        log.append("checkCaches"); order?.log.append("checkCaches")
+        markers.append(marker)
+        return checked
+    }
+}
+
 @MainActor
 final class FakeFiles: InputMethodFiles {
     var embedded: InputMethodBundleInfo? = InputMethodBundleInfo(bundleID: imID, version: "2", shortVersion: "0.2.0", modeIDs: [modeID])
     var installed: InputMethodBundleInfo?
-    var installedURL = URL(fileURLWithPath: "/tmp/does-not-matter/DauInputMethod.app")
+    var installedURL = URL(fileURLWithPath: "/tmp/does-not-matter/Input Methods/DauInputMethod.app")
     var isInstalled: Bool { installed != nil }
     var genuine = true
     var installedIsGenuine: Bool { !isInstalled || genuine }
@@ -160,6 +181,7 @@ struct Rig {
     let tis = FakeTextInputSources()
     let processes = FakeProcesses()
     let settings = FakeSettings()
+    let caches = FakeCaches()
     let installer: SystemInputMethodInstaller
 
     init(installed: InputMethodBundleInfo? = nil, sources: [FakeTextInputSources.Source] = [],
@@ -172,7 +194,7 @@ struct Rig {
         self.pauses = pauses
         let tis = self.tis
         installer = SystemInputMethodInstaller(files: files, sources: tis, processes: processes,
-                                               settings: settings,
+                                               settings: settings, caches: caches,
                                                deleteSharedData: { counter.value += 1; return true },
                                                openInputSources: { keyboardOpened.value += 1 },
                                                // Yields, so a loop that waits can be cancelled.
@@ -248,28 +270,86 @@ struct InputMethodInstallerTests {
 
     // MARK: Enable
 
-    @Test("enable: register, clear the cache, quit System Settings, then enable the parent, read back from the stored entries")
+    @Test("enable: clear every app's cache, register, quit System Settings, then enable the parent, read back from the stored entries")
     func enable() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.settings.running = true
         rig.tis.storedAfterReads = 3
         #expect(try await rig.installer.enable() == .enabled)
         #expect(rig.tis.log == ["register", "enable \(imID)"])
-        #expect(rig.settings.log == ["clearCache", "terminate"])
+        // System Settings' cache is one of the apps' caches: no separate clear.
+        #expect(rig.settings.log == ["terminate"])
+        #expect(rig.caches.log == ["clearCaches", "checkCaches"])
         #expect(rig.tis.currentID == nil)   // never selected (N4)
     }
 
-    @Test("enable: the order is register, clear cache, quit System Settings, enable the parent")
+    @Test("enable: the order is clear the caches, register, quit System Settings, enable the parent, check the caches")
     func enableOrder() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.settings.running = true
         let order = Order()
         rig.settings.order = order
         rig.tis.order = order
+        rig.caches.order = order
         rig.tis.storedAfterReads = 1
         #expect(try await rig.installer.enable() == .enabled)
-        #expect(order.log == ["register", "clearCache", "terminate", "enable \(imID)"])
+        #expect(order.log == ["clearCaches", "register", "terminate", "enable \(imID)", "checkCaches"])
         #expect(!rig.settings.running)
+    }
+
+    @Test("enable: the check looks for the installed bundle's folder and file name")
+    func enableCacheMarker() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.tis.storedAfterReads = 1
+        _ = try await rig.installer.enable()
+        #expect(rig.caches.markers == ["Input Methods/DauInputMethod.app"])
+    }
+
+    @Test("enable: stale caches found once enabled → register again exactly once, after the check")
+    func enableStaleCaches() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        let order = Order()
+        rig.tis.order = order
+        rig.caches.order = order
+        rig.caches.checked = InputSourceCacheCounts(checked: 5, stale: 2, removed: 4)
+        rig.tis.storedAfterReads = 1
+        #expect(try await rig.installer.enable() == .enabled)
+        #expect(order.log == ["clearCaches", "register", "enable \(imID)", "checkCaches", "register"])
+        #expect(rig.caches.log == ["clearCaches", "checkCaches"])
+    }
+
+    @Test("enable: no stale cache → no second register")
+    func enableNoStaleCaches() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.caches.checked = InputSourceCacheCounts(checked: 5)
+        rig.tis.storedAfterReads = 1
+        #expect(try await rig.installer.enable() == .enabled)
+        #expect(rig.tis.log == ["register", "enable \(imID)"])
+        // Nothing readable at all: same.
+        let none = Rig(installed: old, sources: FakeTextInputSources.dau())
+        none.caches.checked = InputSourceCacheCounts()
+        none.tis.storedAfterReads = 1
+        #expect(try await none.installer.enable() == .enabled)
+        #expect(none.tis.log == ["register", "enable \(imID)"])
+    }
+
+    @Test("enable: caches that cannot be listed, read or removed change nothing in the outcome")
+    func enableCacheFailures() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.caches.cleared = InputSourceCacheCounts(removed: 0, failed: 7)
+        rig.caches.checked = InputSourceCacheCounts(checked: 1, stale: 1, removed: 0, failed: 3)
+        rig.tis.storedAfterReads = 1
+        #expect(try await rig.installer.enable() == .enabled)
+        #expect(rig.tis.log == ["register", "enable \(imID)", "register"])
+
+        let off = Rig(installed: old, sources: FakeTextInputSources.dau())
+        off.caches.cleared = InputSourceCacheCounts(failed: 7)
+        off.tis.enableTakesEffect = false
+        off.installer.enableTimeout = .seconds(1)
+        #expect(try await off.installer.enable() == .notEnabled)
+        // Not enabled: no check, no second register.
+        #expect(off.caches.log == ["clearCaches"])
+        #expect(off.tis.log == ["register", "enable \(imID)"])
     }
 
     @Test("enable: TIS says enabled but nothing is stored → not enabled, status not enabled")
@@ -311,14 +391,14 @@ struct InputMethodInstallerTests {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.tis.storedAfterReads = 1
         _ = try await rig.installer.enable()
-        #expect(rig.settings.log == ["clearCache"])
+        #expect(rig.settings.log.isEmpty)
 
         let stuck = Rig(installed: old, sources: FakeTextInputSources.dau())
         stuck.settings.running = true
         stuck.settings.honoursTerminate = false
         stuck.tis.storedAfterReads = 1
         #expect(try await stuck.installer.enable() == .enabled)
-        #expect(stuck.settings.log == ["clearCache", "terminate"])
+        #expect(stuck.settings.log == ["terminate"])
         #expect(stuck.tis.log.last == "enable \(imID)")
     }
 
@@ -328,6 +408,8 @@ struct InputMethodInstallerTests {
         #expect(try await rig.installer.enable() == .notListed)
         #expect(rig.tis.log == ["register"])
         #expect(rig.settings.log.isEmpty)
+        // The caches went before the register; no check, Dấu is not enabled.
+        #expect(rig.caches.log == ["clearCaches"])
         // Registering makes it appear (same session, same ID): enabled normally.
         let again = Rig(installed: old)
         again.tis.registerAdds = FakeTextInputSources.dau()
@@ -336,13 +418,22 @@ struct InputMethodInstallerTests {
         #expect(again.tis.log == ["register", "enable \(imID)"])
     }
 
-    @Test("enable: already stored as enabled → no cache, no System Settings, no enable call")
+    @Test("enable: already stored as enabled → caches cleared before register and checked, no System Settings, no enable call")
     func enableAlreadyOn() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.settings.running = true
+        let order = Order()
+        rig.tis.order = order
+        rig.caches.order = order
         #expect(try await rig.installer.enable() == .enabled)
-        #expect(rig.tis.log == ["register"])
+        #expect(order.log == ["clearCaches", "register", "checkCaches"])
         #expect(rig.settings.log.isEmpty)
+        // An app that rebuilt its cache without Dấu in between: one more register.
+        let stale = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        stale.caches.checked = InputSourceCacheCounts(checked: 2, stale: 1, removed: 2)
+        #expect(try await stale.installer.enable() == .enabled)
+        #expect(stale.tis.log == ["register", "register"])
+        #expect(stale.settings.log.isEmpty)
     }
 
     @Test("enable: not installed throws; nothing touched")
@@ -350,6 +441,7 @@ struct InputMethodInstallerTests {
         let rig = Rig()
         await #expect(throws: InputMethodInstallerError.failed("not installed")) { try await rig.installer.enable() }
         #expect(rig.tis.log.isEmpty)
+        #expect(rig.caches.log.isEmpty)
     }
 
     @Test("enable: cancelling during the wait throws CancellationError and reports nothing (Thử lại)")
@@ -487,7 +579,9 @@ struct InputMethodInstallerTests {
         #expect(rig.processes.log == ["requestQuit"])
         #expect(rig.files.log == ["trash"])
         // The cache goes after the bundle, so the "+" list drops the row without a name.
+        // Only System Settings' cache: the apps' caches are left alone on uninstall.
         #expect(rig.settings.log == ["clearCache"])
+        #expect(rig.caches.log.isEmpty)
         #expect(report == UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: false))
         #expect(rig.counter.value == 0)
         #expect(rig.installer.status() == .notInstalled)
@@ -523,6 +617,86 @@ struct InputMethodInstallerTests {
         #expect(rig.files.log.isEmpty)
         #expect(!report.movedToTrash)
         #expect(!report.stillEnabled)
+    }
+
+    // MARK: Input source caches (temp folder)
+
+    @Test("caches: every subfolder's IntlDataCache.le* goes; the root, other files and links stay; an unlistable folder fails")
+    func cachesClearAll() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("dau-caches-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let le = UserInputSourceCaches.prefix, kbdx = UserInputSourceCaches.index
+        func write(_ path: String, _ text: String = "x") throws {
+            let url = root.appendingPathComponent(path)
+            try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data(text.utf8).write(to: url)
+        }
+        try write(le); try write(kbdx)                                   // shared cache: untouched
+        try write("com.apple.Keyboard-Settings.extension/\(le)")
+        try write("com.apple.Keyboard-Settings.extension/\(kbdx)")
+        try write("ru.keepcoder.Telegram/\(le)")
+        try write("ru.keepcoder.Telegram/\(kbdx)")
+        try write("ru.keepcoder.Telegram/other.db")
+        try write("com.example.empty/other.db")
+        let outside = fm.temporaryDirectory.appendingPathComponent("dau-caches-outside-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: outside) }
+        try fm.createDirectory(at: outside, withIntermediateDirectories: true)
+        try Data("x".utf8).write(to: outside.appendingPathComponent(le))
+        try fm.createSymbolicLink(at: root.appendingPathComponent("link"), withDestinationURL: outside)
+        let locked = root.appendingPathComponent("com.example.locked")
+        try fm.createDirectory(at: locked, withIntermediateDirectories: true)
+        try Data("x".utf8).write(to: locked.appendingPathComponent(le))
+        #expect(chmod(locked.path, 0) == 0)
+        defer { chmod(locked.path, 0o755) }
+
+        let counts = UserInputSourceCaches(root: root).clearAll()
+        #expect(counts == InputSourceCacheCounts(removed: 4, failed: 1))
+        #expect(fm.fileExists(atPath: root.appendingPathComponent(le).path))
+        #expect(fm.fileExists(atPath: root.appendingPathComponent(kbdx).path))
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("com.apple.Keyboard-Settings.extension").path).isEmpty)
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("ru.keepcoder.Telegram").path) == ["other.db"])
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("com.example.empty").path) == ["other.db"])
+        #expect(fm.fileExists(atPath: outside.appendingPathComponent(le).path))   // not followed
+
+        // No cache folder known, or none there: nothing done, nothing thrown.
+        #expect(UserInputSourceCaches(root: nil).clearAll() == InputSourceCacheCounts())
+        #expect(UserInputSourceCaches(root: root.appendingPathComponent("missing")).clearAll() == InputSourceCacheCounts())
+    }
+
+    @Test("caches: the check deletes only caches whose index lacks the bundle path; unreadable ones are skipped")
+    func cachesRemoveStale() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("dau-caches-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let le = UserInputSourceCaches.prefix, kbdx = UserInputSourceCaches.index
+        let marker = "Input Methods/DauInputMethod.app"
+        func write(_ path: String, _ text: String) throws {
+            let url = root.appendingPathComponent(path)
+            try fm.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true)
+            try Data(text.utf8).write(to: url)
+        }
+        try write(kbdx, "\u{0}old")                                      // shared cache: never read
+        try write("fresh/\(le)", "x")
+        try write("fresh/\(kbdx)", "\u{0}\u{1}/Users/u/Library/\(marker)/Contents\u{0}")
+        try write("stale/\(le)", "x")
+        try write("stale/\(kbdx)", "\u{0}/Users/u/Library/Input Methods/DauProbeA1.app\u{0}")
+        try write("staleIndexOnly/\(kbdx)", "nothing")
+        try write("noIndex/\(le)", "x")
+        try write("unreadable/\(le)", "x")
+        try write("unreadable/\(kbdx)", "nothing")
+        let unreadable = root.appendingPathComponent("unreadable/\(kbdx)")
+        #expect(chmod(unreadable.path, 0) == 0)
+        defer { chmod(unreadable.path, 0o644) }
+
+        let counts = UserInputSourceCaches(root: root).removeCaches(notMentioning: marker)
+        #expect(counts == InputSourceCacheCounts(checked: 3, stale: 2, removed: 3, failed: 0))
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("fresh").path).sorted() == [le, kbdx])
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("stale").path).isEmpty)
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("staleIndexOnly").path).isEmpty)
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("noIndex").path) == [le])
+        #expect(try fm.contentsOfDirectory(atPath: root.appendingPathComponent("unreadable").path).sorted() == [le, kbdx])
+        #expect(fm.fileExists(atPath: root.appendingPathComponent(kbdx).path))
     }
 
     // MARK: Files (temp folder)

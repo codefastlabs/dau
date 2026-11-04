@@ -5,14 +5,16 @@ import Security
 import os
 
 // The real `InputMethodInstaller` (M5, D14, D16, D37; docs/research/M5-INSTALL.md
-// sections 2–4). It talks to the system through three narrow interfaces, so the order of
+// sections 2–4). It talks to the system through narrow interfaces, so the order of
 // operations and every failure path are tested with fakes
 // (scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift):
 // - `InputMethodFiles`: the bundle inside the app and the copy in ~/Library/Input Methods;
 // - `TextInputSources`: register, enable, read back;
 // - `InputMethodProcesses`: is the input method running, ask it to quit;
 // - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
-//   process (D37, M5-INSTALL.md section 8.1b).
+//   process (D37, M5-INSTALL.md section 8.1b);
+// - `InputSourceCaches`: the input source list cache of every app (D37, M5-INSTALL.md
+//   section 0 (b)10, (d)10, section 8.1b round E).
 //
 // N4: install copies Dấu's own files; enable and uninstall run only from a button the
 // user clicked ("Bật Dấu", "Bật lại", "Tiếp tục gỡ"); upgrade replaces Dấu's own bundle
@@ -91,17 +93,47 @@ protocol InputMethodProcesses: AnyObject {
     func forceQuit(bundleID: String)
 }
 
-/// What "Bật Dấu" needs from System Settings (D37, docs/research/M5-INSTALL.md section
-/// 8.1b): its input source cache must be rebuilt to list a new source, and the enable
-/// request is only handled when System Settings has to open the Keyboard extension.
+/// What "Bật Dấu" and uninstall need from System Settings (D37, docs/research/M5-INSTALL.md
+/// section 8.1b): the enable request is only handled when System Settings has to open the
+/// Keyboard extension, and its input source cache must be rebuilt to drop a removed source.
 @MainActor
 protocol SystemSettingsControl: AnyObject {
     /// Deletes `com.apple.IntlDataCache.le*` in the user cache folder of System
-    /// Settings' Keyboard extension. `failed` counts files that could not be removed.
+    /// Settings' Keyboard extension (uninstall). `failed` counts files that could not be
+    /// removed.
     func clearKeyboardCache() -> (removed: Int, failed: Int)
     var isRunning: Bool { get }
     /// Polite request to quit (`terminate()`, never a forced end).
     func terminate()
+}
+
+/// Counts of one pass over the input source caches, for the log.
+struct InputSourceCacheCounts: Equatable, Sendable {
+    /// `.kbdx` files read (verification pass only).
+    var checked = 0
+    /// Caches that do not list the input method (verification pass only).
+    var stale = 0
+    /// Cache files deleted.
+    var removed = 0
+    /// Folders that could not be listed, `.kbdx` files that could not be read, cache files
+    /// that could not be removed. Skipped, never an error of the caller.
+    var failed = 0
+}
+
+/// The input source list caches of every app (D37; docs/research/M5-INSTALL.md section 0
+/// (b)10, (d)10, section 8.1b round E). Each sandboxed app (System Settings' Keyboard
+/// extension too) keeps `com.apple.IntlDataCache.le*` in its own folder of the user cache
+/// folder and uses it as is, even after a relaunch; a missing cache is rebuilt from disk
+/// at the next `TISRegisterInputSource`. The shared cache in the folder's root refreshes
+/// itself and is never touched.
+@MainActor
+protocol InputSourceCaches {
+    /// Deletes `com.apple.IntlDataCache.le*` in every immediate subfolder of the user
+    /// cache folder.
+    func clearAll() -> InputSourceCacheCounts
+    /// Reads every subfolder's `com.apple.IntlDataCache.le.kbdx` that is readable and
+    /// deletes the caches whose bytes do not contain `marker` (UTF-8).
+    func removeCaches(notMentioning marker: String) -> InputSourceCacheCounts
 }
 
 // MARK: - Installer
@@ -112,6 +144,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     private let sources: TextInputSources
     private let processes: InputMethodProcesses
     private let settings: SystemSettingsControl
+    private let caches: InputSourceCaches
     /// Deletes the App Group data (settings, app rules); true on success.
     private let deleteSharedData: @MainActor () -> Bool
     private let pause: @MainActor (Duration) async -> Void
@@ -130,7 +163,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     private let enablePollInterval: Duration = .milliseconds(250)
 
     init(files: InputMethodFiles, sources: TextInputSources, processes: InputMethodProcesses,
-         settings: SystemSettingsControl,
+         settings: SystemSettingsControl, caches: InputSourceCaches,
          deleteSharedData: @escaping @MainActor () -> Bool,
          openInputSources: @escaping @MainActor () -> Void = { SystemSettings.openInputSources() },
          pause: @escaping @MainActor (Duration) async -> Void = { try? await Task.sleep(for: $0) }) {
@@ -138,6 +171,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         self.sources = sources
         self.processes = processes
         self.settings = settings
+        self.caches = caches
         self.deleteSharedData = deleteSharedData
         self.openInputSources = openInputSources
         self.pause = pause
@@ -149,6 +183,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
                                    sources: SystemTextInputSources(),
                                    processes: SystemInputMethodProcesses(),
                                    settings: SystemSettingsProcess(),
+                                   caches: UserInputSourceCaches.standard(),
                                    deleteSharedData: SharedData.delete)
     }
 
@@ -178,6 +213,14 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         guard files.isInstalled else { throw InputMethodInstallerError.failed("not installed") }
         let bundleID = embedded.bundleID, mode = embedded.vietnameseModeID
 
+        // Every app's input source cache goes right before registering: an app keeps a
+        // cache built before Dấu was installed forever, and rebuilds a missing one from
+        // disk at the register below, running or not (D37; System Settings' Keyboard
+        // extension is one of them). As short a gap as possible: an app may rebuild it
+        // in between.
+        let cleared = caches.clearAll()
+        installLogger.notice("event=enable-caches-cleared removed=\(cleared.removed) failed=\(cleared.failed)")
+
         // Always register: harmless, and what makes TIS list a bundle installed in this
         // session (D37).
         let registered = sources.register(files.installedURL)
@@ -191,13 +234,12 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         // reports the mode enabled while the stored list is empty (8.1b).
         if isEnabled(mode, of: bundleID) {
             installLogger.notice("event=enable-already-stored")
+            refreshStaleCaches()
             return .enabled
         }
 
-        // System Settings lists new sources and handles the enable request only when it
-        // builds the Keyboard extension afresh: drop its cache, make it quit (8.1b).
-        let cache = settings.clearKeyboardCache()
-        installLogger.notice("event=enable-cache-cleared removed=\(cache.removed) failed=\(cache.failed)")
+        // System Settings handles the enable request only when it builds the Keyboard
+        // extension afresh: make it quit (8.1b). Its cache went with the others above.
         await quitSystemSettings()
 
         // The parent only; macOS stores the mode with it. TISEnableInputSource sends the
@@ -215,6 +257,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             try Task.checkCancellation()
             if isEnabled(mode, of: bundleID) {
                 installLogger.notice("event=enable-stored waited=\(waited.components.seconds)s")
+                refreshStaleCaches()
                 return .enabled
             }
             if waited >= enableTimeout { break }
@@ -312,6 +355,24 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     /// which is true right after `TISRegisterInputSource`.
     private func isEnabled(_ mode: String, of bundleID: String) -> Bool {
         sources.storedEnabledIDs(bundleID: bundleID).contains(mode)
+    }
+
+    /// One pass once Dấu is enabled (D37): a cache an app rebuilt between the clearing and
+    /// the register may still miss Dấu; such caches go, and one more register makes the
+    /// apps rebuild them. Never throws, never changes the outcome of `enable()`.
+    ///
+    /// Heuristic on an undocumented format: a cache that lists the input method is taken
+    /// to contain its path, ".../Input Methods/DauInputMethod.app", as UTF-8
+    /// (M5-INSTALL.md section 0 (b)10 found the bundle name in rebuilt caches; the exact
+    /// bytes are not documented and may change).
+    private func refreshStaleCaches() {
+        let url = files.installedURL
+        let marker = url.deletingLastPathComponent().lastPathComponent + "/" + url.lastPathComponent
+        let pass = caches.removeCaches(notMentioning: marker)
+        installLogger.notice("event=enable-caches-checked checked=\(pass.checked) stale=\(pass.stale) removed=\(pass.removed) failed=\(pass.failed)")
+        guard pass.stale > 0 else { return }
+        let status = sources.register(url)
+        installLogger.notice("event=enable-register-again status=\(status)")
     }
 
     /// Asks System Settings to quit (never forced) and waits up to `settingsQuitTimeout`.
@@ -613,9 +674,105 @@ final class SystemSettingsProcess: SystemSettingsControl {
 
     /// `$(getconf DARWIN_USER_CACHE_DIR)/com.apple.Keyboard-Settings.extension`.
     nonisolated static func cacheFolder() -> URL? {
+        UserInputSourceCaches.userCacheFolder()?
+            .appendingPathComponent("com.apple.Keyboard-Settings.extension", isDirectory: true)
+    }
+}
+
+// MARK: - Input source caches
+
+/// The real caches. `root` is a parameter so tests run on a temp folder.
+struct UserInputSourceCaches: InputSourceCaches {
+    static let prefix = "com.apple.IntlDataCache.le"
+    static let index = prefix + ".kbdx"
+
+    /// The user cache folder (`$(getconf DARWIN_USER_CACHE_DIR)`); nil when unknown.
+    let root: URL?
+
+    static func standard() -> UserInputSourceCaches {
+        UserInputSourceCaches(root: userCacheFolder())
+    }
+
+    nonisolated static func userCacheFolder() -> URL? {
         var buffer = [CChar](repeating: 0, count: Int(PATH_MAX) + 1)
         guard confstr(_CS_DARWIN_USER_CACHE_DIR, &buffer, buffer.count) > 0 else { return nil }
-        return URL(fileURLWithPath: String(cString: buffer), isDirectory: true)
-            .appendingPathComponent("com.apple.Keyboard-Settings.extension", isDirectory: true)
+        let path = String(decoding: buffer.prefix { $0 != 0 }.map { UInt8(bitPattern: $0) }, as: UTF8.self)
+        return URL(fileURLWithPath: path, isDirectory: true)
+    }
+
+    func clearAll() -> InputSourceCacheCounts {
+        var counts = InputSourceCacheCounts()
+        for folder in subfolders() {
+            removeCacheFiles(in: folder, into: &counts)
+        }
+        return counts
+    }
+
+    func removeCaches(notMentioning marker: String) -> InputSourceCacheCounts {
+        var counts = InputSourceCacheCounts()
+        let needle = Data(marker.utf8)
+        let fm = FileManager.default
+        for folder in subfolders() {
+            let index = folder.appendingPathComponent(Self.index)
+            // Missing, or out of reach (some folders are protected): nothing to check.
+            guard fm.isReadableFile(atPath: index.path) else { continue }
+            let data: Data
+            do {
+                data = try Data(contentsOf: index, options: .mappedIfSafe)
+            } catch {
+                counts.failed += 1
+                installLogger.error("event=cache-read-failed folder=\(folder.lastPathComponent, privacy: .public) code=\((error as NSError).code)")
+                continue
+            }
+            counts.checked += 1
+            guard data.range(of: needle) == nil else { continue }
+            counts.stale += 1
+            removeCacheFiles(in: folder, into: &counts)
+        }
+        return counts
+    }
+
+    /// Immediate subfolders of `root`, symbolic links excluded. Files in `root` itself
+    /// (the shared cache) are never returned.
+    private func subfolders() -> [URL] {
+        guard let root else {
+            installLogger.error("event=cache-folder-unknown")
+            return []
+        }
+        do {
+            return try FileManager.default.contentsOfDirectory(at: root, includingPropertiesForKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+                .filter {
+                    let values = try? $0.resourceValues(forKeys: [.isDirectoryKey, .isSymbolicLinkKey])
+                    return values?.isDirectory == true && values?.isSymbolicLink != true
+                }
+                .sorted { $0.lastPathComponent < $1.lastPathComponent }
+        } catch {
+            installLogger.error("event=cache-root-unlisted code=\((error as NSError).code)")
+            return []
+        }
+    }
+
+    /// Deletes `com.apple.IntlDataCache.le*` in `folder`; a folder that cannot be listed
+    /// or a file that cannot be removed is skipped and counted as failed. Logs folder and
+    /// file names only.
+    private func removeCacheFiles(in folder: URL, into counts: inout InputSourceCacheCounts) {
+        let fm = FileManager.default
+        let names: [String]
+        do {
+            names = try fm.contentsOfDirectory(atPath: folder.path)
+        } catch {
+            counts.failed += 1
+            installLogger.error("event=cache-folder-unlisted folder=\(folder.lastPathComponent, privacy: .public) code=\((error as NSError).code)")
+            return
+        }
+        for name in names where name.hasPrefix(Self.prefix) {
+            do {
+                try fm.removeItem(at: folder.appendingPathComponent(name))
+                counts.removed += 1
+            } catch {
+                counts.failed += 1
+                installLogger.error("event=cache-remove-failed folder=\(folder.lastPathComponent, privacy: .public) name=\(name, privacy: .public) code=\((error as NSError).code)")
+            }
+        }
     }
 }
