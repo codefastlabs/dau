@@ -45,6 +45,24 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 7. **02/11:** `TISDisableInputSource` từ app trả 0 cho mục con và mục cha, nhưng System Policy chặn ghi `com.apple.inputsources` (`Dau deny(1) user-preference-write com.apple.inputsources`; cfprefsd "rejecting write"), hai mục Dấu còn nguyên, TIS tiến trình mới vẫn báo `enabled=true`. Chỉ nút "–" trong Cài đặt gỡ được (file ghi lúc 18:07, mục rỗng). [Máy/Dấu] Mục 4.
 8. **Chưa có phép đo trên tài khoản macOS mới, nhìn danh sách "+" bằng mắt, với Dấu thật.** Mục 7.
 9. **04/11, "Bật Dấu" theo D37 mới (Debug, mã `83baa29`), tài khoản đã từng cài Dấu nhưng lúc đó không cài Dấu và `com.apple.inputsources` không có mục nào của Dấu:** chép, đăng ký (0), xoá 2 file `IntlDataCache.le*`, System Settings thoát, bật mục cha (0) lúc 10:49:57.214; `KeyboardSettings` `handleOpenParameter` 10:49:58.364; hộp thoại `Allow “Dấu” to enable “Dấu”?` (ảnh của người dùng; tên thứ hai là tên của mục cha, không phải "Dấu – Tiếng Việt"); người dùng bấm "Allow"; `com.apple.inputsources` có mục cha và mode `….Dau.vi` lúc 10:50:02 (`event=enable-stored waited=4s`); tiến trình bộ gõ chạy; menu nhập liệu có "Dấu – Tiếng Việt", gõ "vieetj" ra "việt" (người dùng xem). Không đăng xuất. [Máy/Dấu] Mục 8.1b (cùng cách, đo trước bằng bản thử).
+10. **04/11, Telegram (`ru.keepcoder.Telegram` 13.1, có sandbox) không dùng được Dấu dù Dấu đã bật:**
+    - **Triệu chứng:**
+      - Chọn "Dấu – Tiếng Việt" từ menu nhập liệu trong Telegram không đổi được nguồn. U.S. và Telex thì đổi được.
+      - Vòng ⌃⌥Space trong Telegram chỉ có Telex và U.S. TextEdit, Finder và Sublime Text đi đủ ba nguồn.
+      - Chọn Dấu bằng TIS từ một tiến trình khác thì TIS báo Dấu, nhưng Dấu không nhận phím nào (signpost `handle` bằng 0), phím vẫn tới Telex.
+      - Thoát rồi mở lại Telegram không đổi gì.
+    - **Nguyên nhân:** bộ đệm riêng của Telegram, `$(getconf DARWIN_USER_CACHE_DIR)ru.keepcoder.Telegram/com.apple.IntlDataCache.le*`, ghi lúc 10:16:41.
+      - Lúc đó `~/Library/Input Methods` chỉ có các bản thử `DauProbeA1–A4` của mục 8.1b, nên bộ đệm liệt kê các bản thử mà không có `DauInputMethod.app`.
+      - Lần mở lại lúc 16:36 không ghi lại bộ đệm này.
+      - Bộ đệm của TextEdit và của một app thử có sandbox, dựng sau khi cài Dấu, thì có `DauInputMethod.app`.
+    - **Đã sửa được:** thoát Telegram, chuyển hai file đó ra chỗ khác, mở lại. Bộ đệm mới có `DauInputMethod.app`; chọn Dấu bằng menu và bằng ⌃⌥Space đều được; Dấu nhận 11/11 phím.
+    - Ngày 30/10, Dấu gõ đúng trong Telegram (nhật ký 30/10).
+    - **Đã đo để loại trừ:**
+      - Sandbox nói chung: app thử có sandbox, ký ad-hoc, có và không có hardened runtime, đều để Dấu nhận phím.
+      - Secure Event Input: không tiến trình nào giữ.
+      - Telegram không gọi `allowedInputSourceLocales` hay `TISSelectInputSource`.
+
+    [Máy/Dấu] Câu hỏi mở d10.
 
 ### (c) Diễn giải mã/binary (của người nghiên cứu)
 
@@ -64,6 +82,11 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 7. **`TISDisableInputSource` lên mode đang được chọn:** hệ thống đổi sang nguồn nào khi Dấu bị tắt (đo ở T4). Mục 4.
 8. **Mục ẩn (bundle đã xoá, mục còn trong `AppleEnabledThirdPartyInputSources`)**: dọn được bằng cài lại đúng ID rồi bấm "–", không cần tiến trình bộ gõ chạy (K1, bản thử, 04/11, mục 4.1). Còn mở: mục ẩn có hiện lại ở đâu sau một lần đăng xuất/đăng nhập không (K4; mục ẩn của C1 đã bị dọn trong K1, nên cần tạo lại một mục ẩn để đo).
 9. **Vì sao ml-ime ghi được miền này bằng `defaults write` trên macOS 26.5.2/26.6.2** trong khi Arion (26.6.2) và máy này (27.2) bị chặn; Full Disk Access có mở khoá không. Chưa đo; kế hoạch K0, K2 ở mục 4.1, chỉ để chẩn đoán.
+10. **Bộ đệm `IntlDataCache.le*` riêng của từng app được dựng lại khi nào** ((b)10).
+    - Đã biết: mở lại app thì không dựng lại. Chưa biết: đăng xuất hay khởi động lại máy có dựng lại không.
+    - Có phải chỉ app có sandbox mới có bộ đệm riêng này không. Đã thấy ở Telegram, TextEdit và app thử; Finder và Sublime Text không bị.
+    - App đang chạy có nhận Dấu sau khi xoá bộ đệm mà không cần mở lại không.
+    - Nếu đúng như vậy, lần bật đầu theo D37 (không đăng xuất) có thể để Dấu không dùng được trong các app có sandbox đã mở trước khi cài, kể cả khi mở lại app. Gỡ cài đặt có thể để lại mục cũ trong bộ đệm của các app đó. [Suy luận, cần kiểm chứng]
 
 ## 1. App chủ có sandbox có chép được bộ gõ vào `~/Library/Input Methods` không?
 
