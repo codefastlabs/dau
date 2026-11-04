@@ -14,6 +14,7 @@ Thư mục theo mục đích:
 | `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu) |
 | `scripts/check-docs/` | kiểm tài liệu |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
+| `scripts/probe/` | công cụ thử ném đi: làm nguồn nhập liệu mới hiện trong "+" không cần đăng xuất (`docs/research/M5-INSTALL.md` mục 8.2); không thuộc bản phát hành |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
 
 | Đường dẫn | Làm gì | Tác dụng phụ | Ai chạy | Gọi từ |
@@ -29,6 +30,10 @@ Thư mục theo mục đích:
 | `scripts/selftest/typing/run.sh` | Gõ một câu vào app thật bằng bộ gõ Dấu rồi đọc lại chữ ra. | builds, takes the screen, changes input source, changes user settings | người dùng, hỏi giờ trước | docs/ARCHITECTURE.md, docs/COMPATIBILITY.md |
 | `scripts/selftest/settings-window/run.sh` | Kiểm giao diện (`docs/UI-CHECKS.md`): bảy lần mở app lần lượt. Ba lần chụp trong app (onboarding, alert gỡ cài đặt; cửa sổ hiện giữa màn hình chính), bốn lần mở app thật (`open -n`) để đo qua Accessibility và chụp riêng cửa sổ: di chuyển, đổi cỡ cửa sổ qua trợ năng, lăn chuột thật trên sheet thêm quy tắc (con trỏ bị dời). Kiểu thanh cuộn và giao diện là đối số của từng lần mở, không đổi cài đặt hệ thống. Trước mỗi lần mở app thật xoá khung cửa sổ đã lưu của Dấu, trả lại khi xong. | builds, takes the screen, kills processes, changes user settings | người dùng, hỏi giờ trước | CLAUDE.md, docs/UI-CHECKS.md, `.claude/agents/app-ui-dev.md` |
 | `scripts/dev/clean-dau.sh` | Liệt kê mọi dấu vết của Dấu trên tài khoản; với `--yes` thì xoá những gì xoá được. Không tham số thì chỉ đọc (tác dụng phụ: none, agent chạy được). | kills processes, deletes data, changes user settings, changes input source (chỉ với `--yes`) | người dùng, hỏi giờ trước | CLAUDE.md, docs/research/M5-INSTALL.md |
+| `scripts/probe/make-variants.sh` | Dựng biến thể `DauProbe<vòng><N>` (ID, mode, kết nối, tên hiển thị, entitlement đổi theo; ký lại) từ bản Release của `DauInputMethod.app` vào `build/probe.noindex/<vòng>/`, không chép vào thư mục cài; từ chối ID đã dùng. | builds | agent | docs/research/M5-INSTALL.md (mục 8.2) |
+| `scripts/probe/build-tools.sh` | Biên dịch `tis-probe`, `tis-act` và đóng gói `TisAct.app` ("Dấu thử", ký, không sandbox) vào `build/probe.noindex/`. | builds | agent | `scripts/probe/step.sh` |
+| `scripts/probe/step.sh` | Chạy một bước P0–P7/P3b của vòng thử trên một biến thể (chép, register, enable, select, dừng tiến trình giao diện, đọc lại 3 lần), ghi giờ từng lệnh. `--dry-run` chỉ in chuỗi lệnh (tác dụng phụ none, agent chạy được). | installs input method, changes input source, kills processes, needs admin password (P6) | người dùng, hỏi giờ trước | docs/research/M5-INSTALL.md (mục 8.2) |
+| `scripts/probe/cleanup.sh` | Liệt kê biến thể `DauProbe` đã cài, đăng ký LaunchServices, mục trong `com.apple.inputsources`, tiến trình; với `--yes` thì gỡ (dừng nếu mục còn trong `com.apple.inputsources`). Không tham số thì chỉ đọc (none, agent chạy được). | kills processes, deletes data, needs admin password (chỉ với `--yes`) | người dùng, hỏi giờ trước | docs/research/M5-INSTALL.md (mục 8.2) |
 
 ## Chú giải tác dụng phụ
 
@@ -59,4 +64,5 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 
 - `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu) mà `scripts/selftest/app-group.sh` và `scripts/selftest/typing/run.sh` tự biên dịch; hưởng tác dụng phụ của script gọi nó.
 - Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
+- `scripts/probe/tis-probe.swift` (chỉ đọc: một dòng JSON về các nguồn `dau.inputmethod`, `--watch` nghe thông báo) và `scripts/probe/tis-act.swift` (register, enable, select, wait-listed, p1: đổi nguồn nhập liệu) do `scripts/probe/build-tools.sh` biên dịch; `tis-act` chỉ chạy qua `step.sh`. Tác dụng phụ của từng file ghi ở dòng đầu file.
 - `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.
