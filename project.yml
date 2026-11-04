@@ -115,9 +115,6 @@ targets:
     sources:
       - path: Apps/DauInputMethod/Sources
       - path: Apps/DauInputMethod/Resources
-      # macOS's own names and layout names (D38), shared with the host app's sources.
-      - path: Apps/Dau/Sources/SystemUINames.swift
-      - path: Apps/Dau/Sources/LayoutNames.swift
       # The host app's asset catalog (AppIcon only), shared rather than copied: the
       # bundle gets the same Finder icon as Dấu.app (CFBundleIconName, Assets.car).
       # The input source icons (menu bar V, ⌃Space indicator) are not app icons: they

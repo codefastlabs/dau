@@ -11,7 +11,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 
 ## Menu nguồn nhập liệu (hệ thống vẽ)
 - Không có status item riêng. Dấu có một input mode (D2); gõ tiếng Anh bằng nguồn U.S. (hoặc nguồn tiếng Anh khác) của người dùng.
-- Bộ gõ chỉ bổ sung qua `menu()` của IMK: đổi kiểu gõ, mở Cài đặt Dấu, mở Cài đặt Bàn phím.
+- Bộ gõ chỉ bổ sung qua `menu()` của IMK: ba kiểu gõ (Telex, VNI, Telex đơn giản) và "Cài đặt Dấu…", nằm dưới tiêu đề nhóm "Dấu" của hệ thống; không có tiêu đề riêng, không có mục mở Cài đặt Bàn phím vì hệ thống đã có "Open Keyboard Settings…" (N1).
 
 ## Onboarding
 - Mọi tên giao diện của macOS trong chữ của Dấu (System Settings, Keyboard, Input Sources, Edit…, Allow…) hiện đúng như macOS của người dùng, theo ngôn ngữ hệ thống (D38; `docs/ARCHITECTURE.md`, `SystemUINames`); câu tiếng Việt nói "nguồn đầu vào", không nói "nguồn nhập liệu", và không dùng chữ "app".

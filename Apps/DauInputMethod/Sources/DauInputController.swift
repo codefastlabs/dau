@@ -372,12 +372,11 @@ final class DauInputController: IMKInputController {
     override func menu() -> NSMenu! {
         let current = settings.typingMethod
         return onMain { () -> NSMenu in
+            // The system puts these under its own "Dấu" heading and ends the input menu
+            // with its "Open Keyboard Settings…": no heading of ours, no item of ours for
+            // Keyboard settings (N1; artboard Main, canvas version 106).
             let menu = NSMenu()
             menu.autoenablesItems = false
-            let header = NSMenuItem(title: String(localized: "Kiểu gõ", comment: "Input menu: header of the typing method group."),
-                                    action: nil, keyEquivalent: "")
-            header.isEnabled = false
-            menu.addItem(header)
             let methods: [(String, DauSettings.TypingMethod, Selector)] = [
                 (String(localized: "Telex", comment: "Input menu: typing method name."), .telex, #selector(selectTelex(_:))),
                 (String(localized: "VNI", comment: "Input menu: typing method name."), .vni, #selector(selectVNI(_:))),
@@ -386,15 +385,11 @@ final class DauInputController: IMKInputController {
             for (title, method, action) in methods {
                 let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
                 item.state = method == current ? .on : .off
-                item.indentationLevel = 1
                 menu.addItem(item)
             }
             menu.addItem(.separator())
             menu.addItem(NSMenuItem(title: String(localized: "Cài đặt Dấu…", comment: "Input menu: opens the Dấu app (Settings window)."),
                                     action: #selector(openHostApp(_:)), keyEquivalent: ""))
-            // N4: only open the right System Settings pane; never change settings.
-            menu.addItem(NSMenuItem(title: String(localized: "Mở \(SystemUINames.system().systemSettings)…", comment: "Input menu: opens System Settings › Keyboard (the name is macOS's own, D38)."),
-                                    action: #selector(openKeyboardSettings(_:)), keyEquivalent: ""))
             return menu
         }
     }
@@ -419,11 +414,6 @@ final class DauInputController: IMKInputController {
     /// "Cài đặt Dấu…": opens the host app, whose main window is Settings (UI.md).
     @objc func openHostApp(_ sender: Any?) {
         _ = onMain { HostApp.open(logger: settingsLogger) }
-    }
-
-    @objc func openKeyboardSettings(_ sender: Any?) {
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.Keyboard-Settings.extension") else { return }
-        _ = onMain { NSWorkspace.shared.open(url) }
     }
 
     /// Runs `body` on the main actor if already on the main thread; returns nil otherwise
