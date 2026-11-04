@@ -379,6 +379,19 @@ Bản thử `DauProbeA1`–`A4` dựng từ bản Release `22948d9` (Dấu ngày
 
 Q4, phần bật: lần gửi đầu (10:29:28, 3 s sau khi mở lại Keyboard) không để lại dòng `handleOpenParameter` nào trong nhật ký `KeyboardSettings`, không có hộp thoại, `com.apple.inputsources` không có B3 sau 25 s, dù mã trả về 0. Gửi lại từ `TisAct.app` lúc 10:31:45 (`step.sh P3b B3`): `handleOpenParameter` 10:31:46, hộp thoại xin phép hiện, người dùng bấm "Allow", `com.apple.inputsources` có B3 lúc 10:32:03. Một dòng `handleOpenParameter` lúc 10:31:02 không do script gửi, chưa rõ nguồn. Chưa ghi câu chữ đúng của hộp thoại.
 
+**Vòng C (04/11/2026)**, bước Q5: `Register`, xoá bộ đệm, rồi `Enable` cha từ `TisAct.app` ngay, không tự mở System Settings trước (`TISEnableInputSource` tự mở System Settings kèm yêu cầu, mục 2.2):
+
+| Giờ | Bản | System Settings trước lệnh bật | Nhật ký `KeyboardSettings` | `com.apple.inputsources` |
+|---|---|---|---|---|
+| 10:36:59 | C2 | đang mở ở Keyboard, có sheet Edit/"+" đang mở | không có `handleOpenParameter` | không có C2 |
+| 10:39:30 | C2 (gửi lại) | đang mở ở Keyboard, đã đóng sheet | không có `handleOpenParameter` | không có C2 |
+| 10:40:34 | C2 (gửi lại) | đã thoát (`osascript … quit`) | extension mới pid 32724: `TCCAccessLaunchDisclosurePromptIfNeeded` 10:40:35.086, `handleOpenParameter` 10:40:35.392; hộp thoại hiện (ảnh của người dùng), bấm "Allow" | có C2 lúc 10:40:51 |
+| 10:41:02 | C1 (ID mới) | đã thoát | extension mới pid 32891: `handleOpenParameter` 10:41:03.852; hộp thoại hiện, bấm "Allow" | có C1 lúc 10:41:19 |
+
+Hộp thoại (ảnh của người dùng, macOS 27.2, giao diện tiếng Anh): tiêu đề `Allow “Dấu thử” to enable “Dấu thử C2”?` (tên app gọi, rồi tên bộ gõ), thân "The developer of the input source will be able to access anything you type with this input source…", hai nút "Don't Allow" và "Allow"; hiện giữa cửa sổ System Settings ở trang Keyboard.
+
+Quan sát xuyên các vòng: mọi lần System Settings xử lý yêu cầu bật (`handleOpenParameter`, 10:20:51, 10:31:46, 10:40:35, 10:41:03) đều đi cùng một tiến trình extension `KeyboardSettings` có pid mới và dòng `TCCAccessLaunchDisclosurePromptIfNeeded` cùng lúc; mọi lần lệnh bật trả 0 mà không có dòng nào (Q4 10:29:28, Q5 10:36:59 và 10:39:30) đều là lúc trang Keyboard đang mở sẵn. Chưa thử: System Settings mở ở trang khác Keyboard.
+
 Q3 (chỉ dừng extension) chưa chạy: Q2 đã đủ và nhẹ hơn. Người dùng có thoát hẳn System Settings khi xem "+" ở P0–P2 hay không thì không ghi lại. Chưa ghi: câu chữ đúng của hộp thoại; menu nhập liệu có A4 không; gõ được không. Lỗi bộ thử đã sửa sau P3: `pkill -f KeyboardSettings` dừng nhầm cả `log stream` (bộ lọc chứa chữ đó), nên nhật ký liên tục của P3 dừng ở 10:14:37.
 
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật theo mục 7, xem cả danh sách "+".
