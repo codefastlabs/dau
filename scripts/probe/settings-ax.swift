@@ -12,6 +12,11 @@
 //   settings-ax rows                    print the rows of the Input Sources sheet's list
 //   settings-ax select <text>           select the row whose text contains <text>
 //   settings-ax enabled <title>         print whether that button is enabled
+//   settings-ax texts                   print the static texts of every window and sheet
+//   settings-ax pick <text>             select the row of any list (sidebar…) whose text
+//                                       contains <text>
+// Put "--app <bundle ID>" first to act on another app (e.g. com.codefastlabs.dau) instead
+// of System Settings; "dialog", "rows" and "select" stay System Settings' own.
 import AppKit
 import ApplicationServices
 
@@ -35,8 +40,9 @@ func all(_ e: AXUIElement, _ depth: Int = 0, _ match: (AXUIElement) -> Bool) -> 
     if depth < 30 { for c in children(e) { out += all(c, depth + 1, match) } }
     return out
 }
+var target = "com.apple.systempreferences"
 func settingsApp() -> AXUIElement? {
-    guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: "com.apple.systempreferences").first else { return nil }
+    guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: target).first(where: { !$0.isTerminated }) else { return nil }
     return AXUIElementCreateApplication(app.processIdentifier)
 }
 func roots() -> [AXUIElement] {
@@ -44,7 +50,7 @@ func roots() -> [AXUIElement] {
     return attr(app, kAXWindowsAttribute) as? [AXUIElement] ?? []
 }
 func buttons(titled t: String) -> [AXUIElement] {
-    roots().flatMap { all($0) { role($0) == kAXButtonRole && label($0) == t } }
+    roots().flatMap { all($0) { [kAXButtonRole, "AXMenuItem"].contains(role($0)) && label($0) == t } }
 }
 func poll<T>(_ timeout: Double, _ f: () -> T?) -> T? {
     let end = Date().addingTimeInterval(timeout)
@@ -54,7 +60,8 @@ func poll<T>(_ timeout: Double, _ f: () -> T?) -> T? {
 func now() -> String { let f = DateFormatter(); f.dateFormat = "HH:mm:ss.SSS"; return f.string(from: Date()) }
 
 guard AXIsProcessTrusted() else { print("HARNESS no Accessibility permission for this process"); exit(2) }
-let args = Array(CommandLine.arguments.dropFirst())
+var args = Array(CommandLine.arguments.dropFirst())
+if args.first == "--app", args.count >= 2 { target = args[1]; args.removeFirst(2) }
 switch args.first {
 case "dialog":
     let timeout = Double(args.dropFirst().first ?? "10") ?? 10
@@ -87,6 +94,21 @@ case "rows", "select":
     let r = AXUIElementSetAttributeValue(outline, kAXSelectedRowsAttribute as CFString, [hit.0] as CFArray)
     print("\(now()) select \(hit.1) -> \(r.rawValue)")
     exit(r == .success ? 0 : 1)
+case "pick":
+    guard args.count >= 2 else { print("pick <text>"); exit(64) }
+    let outlines = roots().flatMap { all($0) { role($0) == kAXOutlineRole || role($0) == kAXTableRole } }
+    for o in outlines {
+        for r in children(o) where role(r) == kAXRowRole {
+            let words = all(r) { _ in true }.flatMap { [label($0), (attr($0, kAXValueAttribute) as? String) ?? ""] }
+            if words.contains(where: { $0.contains(args[1]) }) {
+                let res = AXUIElementSetAttributeValue(o, kAXSelectedRowsAttribute as CFString, [r] as CFArray)
+                print("\(now()) pick \(args[1]) -> \(res.rawValue)"); exit(res == .success ? 0 : 1)
+            }
+        }
+    }
+    print("\(now()) no row \(args[1])"); exit(3)
+case "texts":
+    for w in roots() { print("[\(label(w))]"); for t in texts(w) { print("  " + t) } }
 case "enabled":
     guard args.count >= 2, let b = buttons(titled: args[1]).first else { print("no button"); exit(3) }
     print((attr(b, kAXEnabledAttribute) as? Bool).map { $0 ? "enabled" : "disabled" } ?? "?")
