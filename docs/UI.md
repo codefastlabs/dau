@@ -83,14 +83,15 @@ Icon app, "Đã có Dấu x.y.z", mô tả, "Có gì mới", dòng "Đã xác mi
 ### Trang tải về (M8)
 Phông Be Vietnam Pro, nền Giấy, màu nhấn Mực (D25, `docs/BRAND.md`). Một mã nguồn responsive cho máy tính và điện thoại. Thứ tự mục:
 1. **Thanh điều hướng:** logo, Tính năng / Bảng gõ / Hỏi đáp / GitHub (ẩn trên điện thoại), nút "Tải về".
-2. **Hero:** dòng nhỏ chứa cụm "Bộ gõ tiếng Việt cho macOS" (cho tìm kiếm), tiêu đề "Gõ tiếng Việt như thể macOS vốn đã làm vậy.", nút "Tải cho macOS" + "Xem mã nguồn", dòng yêu cầu hệ thống. Bên phải: **hoạt ảnh phát lại** chuỗi phím ra chữ có dấu kèm phím vừa gõ — hoạt ảnh CSS dựng sẵn, không phải engine chạy trên web. Tắt khi người dùng bật giảm chuyển động (`prefers-reduced-motion`).
-3. **Vì sao lại thêm một bộ gõ:** so sánh theo **loại** bộ gõ (có sẵn: gạch chân; chặn phím rồi gõ lại: có thể nhảy chữ, thường cần quyền Trợ năng; Dấu: thay chữ tại chỗ). Không gọi tên sản phẩm khác. Phạm vi ứng dụng của Dấu để ô trống tới khi có số đo (N5).
+2. **Hero:** dòng nhỏ chứa cụm "Bộ gõ tiếng Việt cho macOS" (cho tìm kiếm), tiêu đề "Gõ tiếng Việt trên Mac, tự nhiên như vốn có.", nút "Tải về" + "Xem mã nguồn", dòng yêu cầu hệ thống. Bên phải: **hoạt ảnh phát lại** chuỗi phím ra chữ có dấu kèm phím vừa gõ — hoạt ảnh CSS dựng sẵn, không phải engine chạy trên web. Tắt khi người dùng bật giảm chuyển động (`prefers-reduced-motion`).
+3. **Vì sao có Dấu:** so sánh theo **loại** bộ gõ, chỉ mô tả cách làm (có sẵn: gạch chân; giả lập phím: xoá rồi gõ lại bằng phím giả, ảnh hưởng khi máy bận để ô trống tới khi đo ở M6; Dấu: thay chữ tại chỗ, kèm danh sách ứng dụng đã kiểm chứng). Không gọi tên sản phẩm khác (N5).
 4. **Tính năng:** 4 thẻ có minh hoạ — giữ nguyên từ nước ngoài, thêm dấu cho từ đã gõ, theo từng ứng dụng, như một phần của macOS.
 5. **Bảng gõ Telex/VNI:** bảng thật (`<table>`), cột "Tên" ẩn trên điện thoại.
 6. **Quyền riêng tư:** nền Mực, 3 cam kết (giữ đúng nội dung D8/N2).
 7. **Đo được:** 4 ô số liệu để trống, chỉ điền từ kết quả test thật (N5).
-8. **Tải về:** phiên bản, ngày, dung lượng, yêu cầu hệ thống, nút "Tải DMG", "Lịch sử phiên bản", lệnh Homebrew (tên cask chưa chốt, D24), SHA-256. Không phải Mac thì nút chính thành "Sao chép liên kết" kèm câu "Dấu chỉ chạy trên Mac" (không có backend gửi email, D8).
-9. **Hỏi đáp:** 6 câu dạng `<details>` (miễn phí, thu thập dữ liệu, quyền cần cấp, khác bộ gõ có sẵn, chuyển từ bộ gõ khác, gỡ cài đặt).
-10. **Chân trang:** nền Than, logo có viền, liên kết mã nguồn, báo lỗi, lịch sử phiên bản, hướng dẫn gỡ, ủng hộ.
+8. **Tải về:** phiên bản, ngày, dung lượng, yêu cầu hệ thống, nút "Tải về (.dmg)", "Lịch sử phiên bản", lệnh Homebrew (tên cask chưa chốt, D24), SHA-256. Không phải Mac thì nút chính thành "Sao chép liên kết" kèm câu "Dấu chỉ chạy trên Mac" (không có backend gửi email, D8).
+9. **Góp sức:** góp công (báo lỗi, dùng thử Beta, góp mã nguồn, giới thiệu), ủng hộ qua VietQR và GitHub Sponsors (D39), mục Cảm ơn (chỉ nêu tên khi người đó đồng ý).
+10. **Hỏi đáp:** 7 câu dạng `<details>` (miễn phí, thu thập dữ liệu, quyền cần cấp, khác bộ gõ có sẵn, chuyển từ bộ gõ khác, vì sao không có gõ tắt/viết hoa đầu câu/chuyển mã, gỡ cài đặt). Tên giao diện macOS ghi tiếng Việt của Apple kèm tiếng Anh trong ngoặc.
+11. **Chân trang:** nền Than, logo có viền, liên kết mã nguồn, báo lỗi, lịch sử phiên bản, hướng dẫn gỡ, ủng hộ.
 
 Không dùng logo Apple trên nút tải (nhãn hiệu của Apple); dùng biểu tượng mũi tên tải xuống.

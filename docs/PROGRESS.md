@@ -168,3 +168,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md`.
   - thêm hỏi đáp "Sao Dấu không có gõ tắt…" và sửa "Gỡ Dấu thế nào?" theo D16;
   - bỏ khẳng định chưa đo về bộ gõ khác (N5); lời hứa của M7 thành ô trống; điền các ô "sau M2"; thêm dòng w → ư vào bảng Telex;
   - thêm phần "Góp sức": góp công, ủng hộ qua VietQR và GitHub Sponsors (D39), mục Cảm ơn.
+- 04/11/2026 — câu chữ trang tải về theo phản biện (Apple, văn hoá Việt; canvas phiên bản 115, người dùng duyệt): thống nhất "ứng dụng", "Tải về", "Mac"/"macOS"; tên giao diện macOS ghi tiếng Việt của Apple kèm tiếng Anh trong ngoặc; bỏ "input method", "telemetry", "test"; sửa tiêu đề và vài câu dịch cứng. Chiều cao xem trước của hai artboard nâng lên theo số đo (7000 / 10.500 px) vì nội dung cuối trang bị cắt. `docs/UI.md` mục "Trang tải về" cập nhật cho khớp.
