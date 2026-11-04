@@ -5,15 +5,11 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 > Từ 02/11/2026 repo ở https://github.com/codefastlabs/dau và lịch sử đã được viết lại: các mã commit ghi trước ngày này là mã cũ, tra `docs/history/COMMIT-MAP.md` để ra mã mới.
 
 ## Trạng thái hiện tại
-- Mốc đang làm: M5 — T1–T3 xong. "Bật Dấu" không cần đăng xuất (D37 sửa 04/11, đo bằng Dấu thật trên tài khoản này, `docs/research/M5-INSTALL.md` mục 0 (b)9). Tiếp: vẽ lại onboarding bước 2 và gỡ cài đặt trên canvas (chờ hộp thoại "Allow", đường lui khi không bật được, bỏ Hoàn tác vì macOS chặn tắt từ app, gỡ bằng "–" trước khi xoá file), sửa mã theo canvas; T4 trên tài khoản macOS mới; rồi T5 kiểm toán. Dọn bản thử: bỏ B3, C1, C2 bằng "–" rồi `scripts/probe/cleanup.sh --yes`.
-- Mở: "Bật Dấu" không gọi `TISRegisterInputSource` khi TIS trong tiến trình app đã thấy Dấu (nhật ký 03/11 12:45), nên luồng chép → đăng ký → xem "+" chưa được thử đúng lần nào.
-- Mở: gỡ cài đặt chuyển bộ gõ vào Thùng rác dù mục của Dấu còn trong `com.apple.inputsources` (tắt từ app bị chặn), để lại dòng không tên trong "+" và mục không gỡ được bằng "–"; thiết kế lại cùng onboarding (`docs/research/M5-INSTALL.md` mục 4).
+- Mốc đang làm: M5 — T1–T3 xong; onboarding, bật không đăng xuất (D37) và gỡ cài đặt có bước "–" (D16) đã dựng lại theo canvas và thử trọn bằng Dấu thật trên tài khoản này (nhật ký 04/11). Còn: T4 trên tài khoản macOS mới (lần cài đầu thật sự); T5 kiểm toán.
 - Mở: "window size at launch" của bộ kiểm cửa sổ Cài đặt một lần mở ở 740×452 (nhật ký 03/11 18:08), chưa tái hiện được.
-- Chờ: onboarding và gỡ cài đặt phải thiết kế lại theo `docs/research/M5-INSTALL.md` mục 0 (trên macOS 27.2, bật và tắt từ app trả 0 nhưng macOS không ghi danh sách nguồn đang bật — đo bằng Dấu thật 02/11); vẽ canvas trước. Lần cài đầu có phải đăng xuất không: còn mở.
-- Chờ duyệt: artboard `OnboardingLogout` trên canvas (không có trong `docs/UI.md`) chưa được người dùng duyệt và được vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ (xem dòng T4 lần 1 trong nhật ký). `docs/UI.md` và `docs/ARCHITECTURE.md` vẫn mô tả thiết kế onboarding/gỡ cài đặt cũ cho tới khi thiết kế lại xong.
-- Mở: onboarding báo sai trạng thái bật ("Đã bật Dấu", "tự thêm", "đã có trong Nguồn nhập liệu") khi macOS không bật (nhật ký 03/11); sửa cùng lúc thiết kế lại.
 - Mở: lỗi cửa sổ thật ở sheet thêm quy tắc (3 dòng, không thanh cuộn, 03/11 12:3x) chưa rõ nguyên nhân và không lặp ở 5 lượt chạy sau; bộ kiểm mới đòi danh sách tràn có thanh cuộn và có vài ứng dụng hệ thống theo tên (nhật ký 03/11, chưa chạy trên màn hình).
 - Mở: "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc); chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
+- Mở, chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú D14 vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím); ảnh hưởng của mục ẩn sau đăng nhập không còn liên quan vì D16 giữ bước "–".
 - Việc hoãn: ma trận tương thích còn lại → M6; biểu tượng V, danh sách "+" bằng mắt, VoiceOver đọc đúng tên, VoiceOver/Tab trong Cài đặt, máy tiếng Anh hẳn, sheet tối, câu gợi ý của hàng "Gặp ứng dụng gõ bị lỗi?" → M7.
 - Ký: Personal Team (Team ID trong D24), ký tự động "Apple Development"; bản phát hành dùng Developer ID ở M7.
 - Số test và số đo chỉ ghi trong dòng nhật ký có ngày và trong bảng mốc lúc đóng mốc; không ghi ở đây.
