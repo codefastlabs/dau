@@ -5,7 +5,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 > Từ 02/11/2026 repo ở https://github.com/codefastlabs/dau và lịch sử đã được viết lại: các mã commit ghi trước ngày này là mã cũ, tra `docs/history/COMMIT-MAP.md` để ra mã mới.
 
 ## Trạng thái hiện tại
-- Mốc đang làm: M5 — T1–T3 xong; onboarding, bật không đăng xuất (D37) và gỡ cài đặt có bước "–" (D16) đã dựng lại theo canvas và thử trọn bằng Dấu thật trên tài khoản này (nhật ký 04/11). Còn: T4 trên tài khoản macOS mới (lần cài đầu thật sự); T5 kiểm toán.
+- Mốc đang làm: M5 — T1–T3 xong; onboarding, bật không đăng xuất (D37) và gỡ cài đặt có bước "–" (D16) đã dựng lại theo canvas và thử trọn bằng Dấu thật trên tài khoản này (nhật ký 04/11). Còn: T5 kiểm toán (T4 bỏ, người dùng chốt 04/11/2026).
 - Mở: "window size at launch" của bộ kiểm cửa sổ Cài đặt một lần mở ở 740×452 (nhật ký 03/11 18:08), chưa tái hiện được.
 - Mở: sheet thêm quy tắc chập chờn trong `run.sh` (03/11: 3 dòng; 04/11: danh sách tạm 1–13 dòng lúc mở, một lượt gõ tìm không lọc); 2/3 lượt ngày 04/11 16:xx trượt, lượt sau đạt; chưa rõ do app hay do bộ kiểm (nhật ký 04/11).
 - Việc ngày 05/11/2026 (người dùng hẹn): đo đăng xuất/đăng nhập có làm mới bộ đệm `IntlDataCache.le*` riêng của từng app không (`docs/research/M5-INSTALL.md` (d)10). Cách đo: trước khi đăng xuất, cho một app thử có sandbox (bundle ID mới, dựng trong `build/`, không trong `/private/tmp`) giữ một bộ đệm thiếu Dấu, ghi giờ và nội dung bộ đệm của Telegram và của app thử. Người dùng đăng xuất rồi đăng nhập. Sau đó so lại: file còn hay bị xoá, giờ ghi, có Dấu không; chạy app thử xem nó thấy Dấu không. Kết quả quyết định có đưa đăng xuất vào mục khắc phục sự cố hay không (canvas trước).
@@ -25,7 +25,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 | M2 Bộ gõ tối thiểu | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) | cách A; tự gõ 30 ms/phím đúng ở TextEdit, Safari, Chrome, VS Code, Terminal, Telegram (thay Slack); Sublime gõ tay; selectedRange p50 0,2–0,6 ms (Debug). M2-TESTING mục 4 ĐẠT trừ việc hoãn (VoiceOver, biểu tượng V → M3; Telegram Return bỏ qua). Test engine 76, IMK 25 |
 | M3 Độ tin cậy | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) | gạch chân D13 theo quy tắc, mặc định tắt, danh sách đề xuất 13 app (VS Code, Electron/Chromium, Firefox); D20 ở bộ gõ (đọc lại 1–4 ms, chỉ phím dấu đầu khi bộ đệm trống); reset khi đổi nguồn không báo; sửa ⌫ xoá hai lần ở Chromium; ma trận `COMPATIBILITY.md` 11 app đã đo; D17: hệ thống tự đọc khi chuyển nguồn. Test engine 77, IMK 70, DauShared 32 |
 | M4 App Cài đặt | xong | ĐẠT (30/10, lần 3) | DauShared + cửa sổ 4 mục (2d6206e, c731c61); bộ gõ đọc cài đặt chung (0aa4872). App Group chạy với Team ID M58DANM3ZP (958a5a8). Bỏ chế độ Anh, quy tắc theo app chỉ còn gạch chân (9680c68, ea676ae, b23b266). M4-TESTING ĐẠT trừ việc hoãn sang M7 (máy tiếng Anh hẳn, sheet tối, VoiceOver/Tab). Ma trận UI 12/12. Test DauShared 21, IMK 25, snapshot-settings 10 |
-| M5 Onboarding, cài, gỡ | đang làm | — | T1–T3 xong (deddc49, d1b74f8); chờ chạy lại T4 |
+| M5 Onboarding, cài, gỡ | đang làm | — | T1–T3 xong (deddc49, d1b74f8); T4 bỏ (04/11); chờ T5 |
 | M6 Hiệu năng dưới tải | chưa | — | |
 | M7 Phát hành | chưa | — | |
 | M8 Website | chưa | — | |
@@ -36,7 +36,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 | T1 | Trả lời câu hỏi mở: `TISRegisterInputSource`/`TISEnableInputSource` từ app chủ có cần người dùng xác nhận, có phải đăng xuất lần đầu không; app chủ có sandbox chép được bộ gõ vào `~/Library/Input Methods` không (temporary-exception); cách các bộ gõ mở cài/gỡ; danh sách bundle ID bộ gõ tiếng Việt cũ | researcher | cùng T2 |
 | T2 | Giao diện onboarding 3 bước theo artboard (OnboardingConflict, OnboardingEnable, Onboarding), dịch vụ cài/bật/phát hiện để giao diện gọi qua protocol, hiện đúng phím tắt hệ thống | app-ui-dev | cùng T1 |
 | T3 | Dịch vụ cài đặt thật: chép bộ gõ nhúng sẵn, đăng ký, bật (người dùng bấm, N4) có Hoàn tác, nâng cấp bản mới (dừng tiến trình cũ), gỡ cài đặt (D16, sheet xác nhận) | imk-dev (+ app-ui-dev nối giao diện) | sau T1 |
-| T4 | Thử trên máy: gỡ bản Debug hiện tại rồi chạy onboarding từ đầu (cần người dùng đồng ý vì đổi nguồn nhập liệu đang bật) | phiên chính + người dùng | sau T3 |
+| T4 | ~~Thử trên máy: gỡ bản Debug hiện tại rồi chạy onboarding từ đầu~~ — bỏ (người dùng chốt 04/11/2026). Phần gỡ qua app rồi chạy onboarding từ đầu đã làm 04/11 với bản Release (nhật ký 04/11); không thử trên tài khoản macOS mới | — | — |
 | T5 | Kiểm toán M5 | auditor | cuối |
 
 ## Ghi nhớ cho M7 (từ kiểm toán M0)
@@ -159,3 +159,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md`.
   - Kết quả với Dấu thật: 8 s sau, SiriNCService và tiến trình bộ gõ đã dựng lại bộ đệm, có Dấu; các tiến trình khác dựng lại khi đọc danh sách lần sau; lần quét lại không còn bộ đệm nào lệch.
   - Còn lại: 13 vỏ container `local.probe.*` và `DauProbeC2`/`E4` trong `~/Library/Containers` (macOS chặn shell xoá file metadata và `Data`), cần xoá bằng Finder; các bản E1–E4 nằm trong Thùng rác.
 - 04/11/2026 — D37, N4 sửa (người dùng chốt): "Bật Dấu" xoá bộ đệm danh sách nguồn nhập liệu của mọi app ngay trước khi đăng ký, rồi quét lại sau khi bật (9e41e6c; canvas phiên bản 103) — app-ui-dev: giao diện `InputSourceCaches`, test snapshot 85 → 91, build Debug đạt. Kiểm chứng bằng Dấu thật (phiên chính, 17:35–17:38): dựng lại ca Telegram với bộ đệm cũ lúc 10:16 (Telegram chạy suốt), bấm "Bật Dấu", Allow; xoá 107 file, 5 thư mục được bảo vệ bỏ qua (không có hộp thoại xin quyền); Telegram dựng lại bộ đệm có Dấu, chọn được Dấu từ menu, Dấu nhận 6/6 phím ("việt"). Chi tiết: `docs/research/M5-INSTALL.md` mục 0 (b)11.
+- 04/11/2026 — gỡ bản Debug qua "Gỡ cài đặt…" (giữ cài đặt), cài bản Release 5a16fc4 vào `/Applications/Dau.app` qua onboarding ("Bật Dấu", Allow; xoá bộ đệm 44 file, 5 thư mục được bảo vệ bỏ qua; quét lại không bộ đệm nào thiếu Dấu); gõ thử đúng — phiên chính. Người dùng chốt: không làm T4 (thử trên tài khoản macOS mới).

@@ -90,13 +90,13 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 
 ### (d) Câu hỏi mở
 
-1. **Lần cài đầu có phải đăng xuất để danh sách "+" thấy ID mới không.** Trên macOS 27.2: không, nếu xoá bộ đệm `IntlDataCache.le*` của System Settings sau khi đăng ký (mục 8.1b bằng bản thử; (b)9 bằng Dấu thật trên tài khoản đã từng cài Dấu). Còn phải đo: tài khoản macOS mới (T4, mục 7), macOS 14–26, bản ký Developer ID. Lời khuyên đăng xuất của Apple DTS phù hợp với việc bộ đệm này chỉ được dựng lại khi đăng nhập [Suy luận, cần kiểm chứng]. Mục 2.3.
+1. **Lần cài đầu có phải đăng xuất để danh sách "+" thấy ID mới không.** Trên macOS 27.2: không, nếu xoá bộ đệm `IntlDataCache.le*` của System Settings sau khi đăng ký (mục 8.1b bằng bản thử; (b)9 bằng Dấu thật trên tài khoản đã từng cài Dấu). Còn phải đo: macOS 14–26, bản ký Developer ID (tài khoản macOS mới không đo: T4 bỏ, người dùng chốt 04/11/2026). Lời khuyên đăng xuất của Apple DTS phù hợp với việc bộ đệm này chỉ được dựng lại khi đăng nhập [Suy luận, cần kiểm chứng]. Mục 2.3.
 2. **Vì sao Cài đặt không dựng lại được nguồn** ("Invalid value"), kể cả với Dấu thật. Không tìm thấy nguồn. Mục 2.2.
 3. **Hộp thoại "Allow … to enable …?" hiện khi nào trên các bản macOS khác**, và bản ký Developer ID đã notarize có khác không. Trên máy này (27.2) đã thấy từ 04/11 khi làm theo D37 ((b)9, mục 8.1b); Shanjie thấy trên máy ảo macOS 26.6.2 (mục 4.1, nguồn). Mục 2.2.
 4. **Luật `.inputmethod.` trong bundle ID có do Apple quy định không.** Không tìm thấy nguồn Apple. Mục 2.7.
 5. **Bộ gõ đã notarize nhưng mang quarantine** (chép từ app sandbox) có chạy không, có bị translocate không; chỉ thử được ở M7. Mục 1.2. Chỉ liên quan tới các phương án sandbox (A đến C ở 1.3); D37 chọn D.
 6. **Ghi chú phát hành macOS 27.1 và ghi chú bản beta** chưa đọc được; tracker fcitx5-macos và aquaskk không rà được. Mục 2.1.
-7. **`TISDisableInputSource` lên mode đang được chọn:** hệ thống đổi sang nguồn nào khi Dấu bị tắt (đo ở T4). Mục 4.
+7. **`TISDisableInputSource` lên mode đang được chọn:** hệ thống đổi sang nguồn nào khi Dấu bị tắt (đã đo 04/11 khi bỏ Dấu bằng "–": macOS chuyển sang U.S.; T4 bỏ). Mục 4.
 8. **Mục ẩn (bundle đã xoá, mục còn trong `AppleEnabledThirdPartyInputSources`)**: dọn được bằng cài lại đúng ID rồi bấm "–", không cần tiến trình bộ gõ chạy (K1, bản thử, 04/11, mục 4.1). Còn mở: mục ẩn có hiện lại ở đâu sau một lần đăng xuất/đăng nhập không (K4; mục ẩn của C1 đã bị dọn trong K1, nên cần tạo lại một mục ẩn để đo).
 9. **Vì sao ml-ime ghi được miền này bằng `defaults write` trên macOS 26.5.2/26.6.2** trong khi Arion (26.6.2) và máy này (27.2) bị chặn; Full Disk Access có mở khoá không. Chưa đo; kế hoạch K0, K2 ở mục 4.1, chỉ để chẩn đoán.
 10. **Bộ đệm `IntlDataCache.le*` riêng của từng app có sandbox** ((b)10; vòng E ở mục 8.1b, bản thử).
@@ -110,7 +110,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
       - Đăng xuất hay khởi động lại máy có dựng lại bộ đệm không.
       - Các tiến trình nằm trong 5 thư mục được bảo vệ (WebKit, bộ đệm của Shortcuts) có giữ bộ đệm cũ không, và có ô nhập chữ nào bị ảnh hưởng không.
       - Sau khi gỡ, các bộ đệm cũ còn `DauInputMethod.app` thì có hậu quả gì.
-      - Đo trên tài khoản macOS mới (T4), macOS 14–26 và bản ký Developer ID.
+      - Đo trên macOS 14–26 và bản ký Developer ID (không đo trên tài khoản macOS mới: T4 bỏ, người dùng chốt 04/11/2026).
 
 ## 1. App chủ có sandbox có chép được bộ gõ vào `~/Library/Input Methods` không?
 
@@ -415,6 +415,8 @@ Chỉ liệt kê điều có nguồn ở trên; nối về D và N chỉ để t
 - Hướng dẫn trên giao diện (N5): câu về đăng xuất, hộp thoại "Cho phép", và "Bàn phím đang dùng trước đó được giữ nguyên" để dạng ô trống cho tới khi T4 kiểm xong.
 
 ## 7. Kế hoạch thử lại T4 bằng Dấu thật trên máy sạch (một lần đăng xuất)
+
+**Hiện trạng (04/11/2026): bỏ, người dùng chốt không làm T4.** Phần còn giá trị của mục này đã được trả lời bằng Dấu thật trên tài khoản đang dùng (mục 0 (b)9–(b)11). Phần dưới giữ làm tham khảo.
 
 Mục đích: trả lời câu hỏi mở d1 (lần cài đầu có phải đăng xuất để "+" thấy ID mới), bằng Dấu thật, **nhìn danh sách "+" bằng mắt**. Cần người dùng vì đổi nguồn nhập liệu, chiếm màn hình, đăng xuất.
 
