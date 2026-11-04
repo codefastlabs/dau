@@ -16,8 +16,8 @@
 #                                    the Trash (a copy in /Library needs sudo), and `lsregister -u` the copies that
 #                                    landed in the Trash too (same order and reason as scripts/dev/clean-dau.sh).
 #                                    Then remove the probe apps' folders: Application Scripts and cache folders are
-#                                    deleted; containers go to the Trash through Finder (macOS stops a shell from
-#                                    deleting a container's metadata).
+#                                    deleted; a container is deleted when the terminal has Full Disk Access, otherwise
+#                                    sent to the Trash through Finder; if both fail it says how to remove it by hand.
 #   scripts/probe/cleanup.sh --trash delete for good, from the Trash, only DauProbe*.app, DauInputMethod*.app
 #                                    and local.probe.* / com.codefastlabs.dau.inputmethod.DauProbe* (containers moved
 #                                    there by --yes); nothing else in the Trash. The Trash is readable only with Full
@@ -168,12 +168,23 @@ fi
 for d in $scripts_dirs $cache_dirs; do
   if rm -rf -- "$d"; then print -r -- "  đã xoá: $d"; else print -r -- "  KHÔNG xoá được: $d"; (( unremoved++ )); fi
 done
+# macOS protects other apps' containers (App Data): a shell deletes one only with Full Disk Access, and
+# Finder driven by AppleScript gets -5000 because it cannot ask for confirmation (measured 04/11/2026).
+container_left=0
 for d in $containers; do
-  if osascript -e "tell application \"Finder\" to delete (POSIX file \"$d\" as alias)" >/dev/null 2>&1; then
+  if rm -rf -- "$d" 2>/dev/null && [[ ! -e $d ]]; then
+    print -r -- "  đã xoá: $d"
+  elif osascript -e "tell application \"Finder\" to delete (POSIX file \"$d\" as alias)" >/dev/null 2>&1; then
     print -r -- "  vào Thùng rác: $d"
   else
-    print -r -- "  KHÔNG chuyển được vào Thùng rác (Finder từ chối): $d — kéo vào Thùng rác bằng tay."; (( unremoved++ ))
+    print -r -- "  KHÔNG xoá được: $d"; (( unremoved++ )); (( container_left++ ))
   fi
 done
+if (( container_left )); then
+  print "\nmacOS bảo vệ container của app khác. Chọn một trong hai:"
+  print "  - Cấp Full Disk Access cho ứng dụng terminal (System Settings › Privacy & Security › Full Disk Access),"
+  print "    mở lại terminal, chạy lại: scripts/probe/cleanup.sh --yes"
+  print "  - Hoặc kéo các thư mục trên vào Thùng rác trong Finder (open ~/Library/Containers); macOS có thể hỏi mật khẩu."
+fi
 if (( unremoved )); then print "\nCHƯA XOÁ HẾT ($unremoved mục). Xử lý tay rồi chạy lại để kiểm."; exit 1; fi
 print "\nXong. Mục còn trong com.apple.inputsources (nếu có) chỉ bỏ được bằng \"–\"; ID đã dùng chỉ \"mới\" lại sau khi dùng một vòng ID khác."
