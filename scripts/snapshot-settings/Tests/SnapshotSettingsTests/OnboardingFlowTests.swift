@@ -3,8 +3,8 @@ import DauShared
 @testable import SnapshotSettings
 
 /// The onboarding window's state machine (D14, docs/UI.md "Onboarding") on fake
-/// services: which step shows, what the sidebar marks done, enabling with undo, and
-/// which window opens at launch.
+/// services: which step shows, what the sidebar marks done, enabling (waiting for the
+/// user's Allow, retry, failure; no undo) and which window opens at launch.
 @MainActor
 @Suite("Onboarding flow")
 struct OnboardingFlowTests {
@@ -67,26 +67,26 @@ struct OnboardingFlowTests {
         #expect(flow.step == .oldInputMethods)
     }
 
-    @Test("enable installs first when needed, then offers undo")
-    func enableAndUndo() async {
+    /// Lets the main actor run until `condition` holds (the fake installer waits on a timer).
+    func settle(_ condition: () -> Bool) async {
+        for _ in 0..<400 where !condition() { try? await Task.sleep(for: .milliseconds(5)) }
+    }
+
+    @Test("enable installs first when needed, then step 2 is done and goes on")
+    func enableThenNext() async {
         let (flow, _, installer) = flow(status: .notInstalled)
         flow.start()
         flow.next()   // not enabled yet: stays
         #expect(flow.step == .enable)
+        #expect(flow.enableScreen == .ready)
 
         await flow.enable()
         #expect(installer.calls == ["install", "enable"])
         #expect(flow.status == .enabled)
-        #expect(flow.enabledHere)
+        #expect(flow.enableScreen == .done)
         #expect(!flow.failed)
+        #expect(!flow.isWorking)
 
-        await flow.undoEnable()
-        #expect(installer.calls == ["install", "enable", "undoEnable"])
-        #expect(!flow.status.isEnabled)
-        #expect(!flow.enabledHere)
-
-        await flow.enable()
-        #expect(installer.calls.suffix(1) == ["enable"])   // installed already
         flow.next()
         #expect(flow.step == .typing)
         #expect(flow.state(of: .enable) == .done)
@@ -95,53 +95,111 @@ struct OnboardingFlowTests {
         #expect(flow.step == .enable)
     }
 
-    @Test("a failed action says so and offers no undo")
-    func failure() async {
-        let (flow, _, installer) = flow(status: .installed(version: nil), failure: .unavailable)
+    @Test("clicking waits for the user's Allow: waiting, then done")
+    func waitsForAllow() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        installer.enableWaits = true
         flow.start()
-        await flow.enable()
-        #expect(flow.failed)
-        #expect(!flow.enabledHere)
-        #expect(installer.calls == ["enable"])
+        let run = Task { await flow.enable() }
+        await settle { installer.enableWaiting }
+        #expect(flow.isWorking)
+        #expect(flow.enableScreen == .waiting)
+        flow.next()   // not enabled yet
         #expect(flow.step == .enable)
-        flow.next()
-        #expect(flow.step == .enable)
+
+        installer.release = .enabled
+        await run.value
+        #expect(!flow.isWorking)
+        #expect(flow.enableScreen == .done)
+        #expect(flow.problem == nil)
     }
 
-    @Test("enable read back as off: guidance, Keyboard settings opened, no success claimed (N4, N5)")
-    func enableStillOff() async {
+    @Test("the wait ends with Dấu still off: failed screen, nothing opened by itself; macOS turning it on later is noticed")
+    func waitExpires() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.enableOutcome = .notEnabled
         flow.start()
         await flow.enable()
         #expect(flow.problem == .notEnabled)
-        #expect(!flow.enabledHere)
-        #expect(opened.count == 1)
+        #expect(flow.enableScreen == .notEnabled)
+        #expect(opened.count == 0)
         flow.next()
         #expect(flow.step == .enable)
-        // macOS turns it on later (the user allowed it): enabled here, with undo.
+        // "Mở System Settings" opens the Keyboard pane (N4: only opens it).
+        flow.openSystemSettings()
+        #expect(opened.count == 1)
+        // The user added Dấu by hand: the window notices and shows step 2 done.
         installer.current = .enabled
         flow.refresh()
         #expect(flow.problem == nil)
-        #expect(flow.enabledHere)
-        await flow.undoEnable()
-        #expect(installer.calls.suffix(1) == ["undoEnable"])
+        #expect(flow.enableScreen == .done)
+        flow.next()
+        #expect(flow.step == .typing)
     }
 
-    @Test("not listed by macOS: the logout guidance, nothing opened")
-    func enableNeedsLogout() async {
+    @Test("not listed by macOS: the same failed screen, nothing opened")
+    func notListed() async {
         let (flow, _, installer) = flow(status: .notInstalled)
         installer.enableOutcome = .notListed
         flow.start()
         await flow.enable()
         #expect(installer.calls == ["install", "enable"])
-        #expect(flow.problem == .needsLogout)
+        #expect(flow.problem == .notListed)
+        #expect(flow.enableScreen == .notEnabled)
         #expect(opened.count == 0)
-        #expect(!flow.enabledHere)
-        // Added by the user in Settings without "Bật Dấu" pending: not "enabled here".
-        installer.current = .enabled
-        flow.refresh()
-        #expect(!flow.enabledHere)
+    }
+
+    @Test("Thử lại cancels the wait that is running and asks again")
+    func retryCancelsTheOldWait() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        installer.enableWaits = true
+        flow.start()
+        let first = Task { await flow.enable() }
+        await settle { installer.enableWaiting }
+        let second = Task { await flow.enable() }
+        // The first run was cancelled and left no state behind; the second is waiting.
+        await first.value
+        #expect(flow.isWorking)
+        #expect(flow.problem == nil)
+        #expect(flow.enableScreen == .waiting)
+        await settle { installer.enableWaiting }
+        #expect(installer.calls == ["enable", "enable"])
+
+        installer.release = .enabled
+        await second.value
+        #expect(flow.enableScreen == .done)
+        #expect(!flow.isWorking)
+    }
+
+    @Test("Quay lại while waiting cancels the wait")
+    func backCancels() async {
+        let (flow, _, installer) = flow([openKey], status: .installed(version: nil))
+        installer.enableWaits = true
+        flow.start()
+        flow.skip()
+        let run = Task { await flow.enable() }
+        await settle { installer.enableWaiting }
+        flow.back()
+        await run.value
+        #expect(flow.step == .oldInputMethods)
+        #expect(!flow.isWorking)
+        #expect(flow.problem == nil)
+        await settle { !installer.enableWaiting }
+        #expect(!installer.enableWaiting)
+    }
+
+    @Test("an error says so; step 2 stays")
+    func failure() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil), failure: .unavailable)
+        flow.start()
+        await flow.enable()
+        #expect(flow.failed)
+        #expect(flow.problem == .failed)
+        #expect(flow.enableScreen == .failed)
+        #expect(installer.calls == ["enable"])
+        #expect(flow.step == .enable)
+        flow.next()
+        #expect(flow.step == .enable)
     }
 
     @Test("other Vietnamese input sources are a soft note, not step 1")
@@ -158,9 +216,9 @@ struct OnboardingFlowTests {
         let (flow, _, installer) = flow(status: .selected)
         flow.start()
         #expect(flow.step == .enable)
+        #expect(flow.enableScreen == .done)
         await flow.enable()   // nothing to do
         #expect(installer.calls.isEmpty)
-        #expect(!flow.enabledHere)
         flow.next()
         #expect(flow.step == .typing)
         #expect(flow.state(of: .enable) == .done)
@@ -168,17 +226,18 @@ struct OnboardingFlowTests {
 
     @Test("start over resets the session; a forced step applies once")
     func restart() async {
-        let (flow, _, _) = flow([openKey], status: .installed(version: nil))
+        let (flow, _, installer) = flow([openKey], status: .installed(version: nil))
         flow.forcedStartStep = .typing
         flow.start()
         #expect(flow.step == .typing)
         flow.start()
         #expect(flow.step == .oldInputMethods)
         flow.skip()
+        installer.enableOutcome = .notEnabled
         await flow.enable()
-        #expect(flow.enabledHere)
+        #expect(flow.problem == .notEnabled)
         flow.start()
-        #expect(!flow.enabledHere)
+        #expect(flow.problem == nil)
     }
 
     @Test("reads the shortcut and the English layout on start")

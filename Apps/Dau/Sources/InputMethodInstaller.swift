@@ -9,14 +9,15 @@ import os
 // operations and every failure path are tested with fakes
 // (scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift):
 // - `InputMethodFiles`: the bundle inside the app and the copy in ~/Library/Input Methods;
-// - `TextInputSources`: register, enable, disable, select, read back;
+// - `TextInputSources`: register, enable, select, read back;
 // - `InputMethodProcesses`: is the input method running, ask it to quit;
 // - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
 //   process (D37, M5-INSTALL.md section 8.1b).
 //
-// N4: install copies Dấu's own files; enable, undo and uninstall run only from a button
-// the user clicked ("Bật Dấu", "Bật lại", "Hoàn tác", "Gỡ cài đặt"); upgrade replaces
-// Dấu's own bundle (D7). Dấu never selects itself as the input source.
+// N4: install copies Dấu's own files; enable and uninstall run only from a button the
+// user clicked ("Bật Dấu", "Bật lại", "Tiếp tục gỡ"); upgrade replaces Dấu's own bundle
+// (D7). Dấu never selects itself as the input source, and never switches its own input
+// source off: macOS blocks that from an app, the user removes it in System Settings.
 
 let installLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Dau", category: "install")
 
@@ -71,7 +72,6 @@ protocol TextInputSources: AnyObject {
     /// Sources of `bundleID`; `includeDisabled` false returns the enabled ones only.
     func sources(bundleID: String, includeDisabled: Bool) -> [InputSourceEntry]
     func enable(_ id: String) -> OSStatus
-    func disable(_ id: String) -> OSStatus
     func select(_ id: String) -> OSStatus
     func current() -> InputSourceEntry?
     /// An enabled ASCII-capable keyboard layout to select before Dấu goes away: the
@@ -80,9 +80,9 @@ protocol TextInputSources: AnyObject {
     func asciiKeyboard(excludingBundleID: String) -> InputSourceEntry?
     /// The IDs of `bundleID` macOS has stored as enabled (`com.apple.inputsources`
     /// › `AppleEnabledThirdPartyInputSources`; the parent's entry has no input mode, its
-    /// ID is the bundle ID). This is what the next login enables. The TIS list of this
-    /// process can disagree with it for a while (M5 T4, 02/11/2026: disable returned
-    /// noErr, the list said off, the stored entries stayed).
+    /// ID is the bundle ID). This is what the next login enables, and what the user's
+    /// "–" in System Settings removes. The TIS list of this process can disagree with it
+    /// for a while.
     func storedEnabledIDs(bundleID: String) -> Set<String>
 }
 
@@ -120,11 +120,8 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     /// Deletes the App Group data (settings, app rules); true on success.
     private let deleteSharedData: @MainActor () -> Bool
     private let pause: @MainActor (Duration) async -> Void
+    private let openKeyboardSettings: @MainActor () -> Void
 
-    /// Source IDs `enable()` turned on (parent first), for `undoEnable()`. Kept across
-    /// attempts: when macOS turns Dấu on later (after the user allowed it), undo still
-    /// knows what to turn off.
-    private(set) var enabledHere: [String] = []
     /// How long `enable()` waits for macOS to store Dấu as enabled: the user needs time
     /// to read the "Allow" dialog and click it (D37).
     var enableTimeout: Duration = .seconds(60)
@@ -132,20 +129,22 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     var settingsQuitTimeout: Duration = .seconds(5)
     /// How long the input method has to quit on request before it is ended.
     var quitTimeout: Duration = .seconds(2)
-    /// How long uninstall waits for macOS to drop Dấu's stored enabled entries.
-    var storedSettle: Duration = .seconds(3)
+    /// How often uninstall looks for the user to have removed Dấu from the input sources.
+    var removalPollInterval: Duration = .milliseconds(500)
     private let pollInterval: Duration = .milliseconds(100)
     private let enablePollInterval: Duration = .milliseconds(250)
 
     init(files: InputMethodFiles, sources: TextInputSources, processes: InputMethodProcesses,
          settings: SystemSettingsControl,
          deleteSharedData: @escaping @MainActor () -> Bool,
+         openKeyboardSettings: @escaping @MainActor () -> Void = { SystemSettings.openKeyboard() },
          pause: @escaping @MainActor (Duration) async -> Void = { try? await Task.sleep(for: $0) }) {
         self.files = files
         self.sources = sources
         self.processes = processes
         self.settings = settings
         self.deleteSharedData = deleteSharedData
+        self.openKeyboardSettings = openKeyboardSettings
         self.pause = pause
     }
 
@@ -212,15 +211,14 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         if !storedBefore.contains(bundleID) {
             let status = sources.enable(bundleID)
             installLogger.notice("event=enable id=\(bundleID, privacy: .public) status=\(status)")
-            if !enabledHere.contains(bundleID) { enabledHere.append(bundleID) }
         }
 
         // The status code proves nothing: wait for the stored entry (N4, N5). The user
-        // may take a while to click Allow.
+        // may take a while to click Allow; "Thử lại" cancels the wait.
         var waited: Duration = .zero
         while true {
+            try Task.checkCancellation()
             if isEnabled(mode, of: bundleID) {
-                if !storedBefore.contains(mode), !enabledHere.contains(mode) { enabledHere.append(mode) }
                 installLogger.notice("event=enable-stored waited=\(waited.components.seconds)s")
                 return .enabled
             }
@@ -230,22 +228,6 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
         installLogger.notice("event=enable-timeout waited=\(waited.components.seconds)s")
         return .notEnabled
-    }
-
-    func undoEnable() async throws {
-        guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
-        guard !enabledHere.isEmpty else { return }
-        let bundleID = embedded.bundleID
-        selectOtherKeyboardIfDauIsCurrent(bundleID: bundleID)
-        // Mode before parent: the reverse of `enable()`.
-        for id in enabledHere.reversed() {
-            let status = sources.disable(id)
-            installLogger.notice("event=undo-enable id=\(id, privacy: .public) status=\(status)")
-        }
-        enabledHere = []
-        if isEnabled(embedded.vietnameseModeID, of: bundleID) {
-            throw InputMethodInstallerError.failed("still enabled")
-        }
     }
 
     func installedIsGenuine() -> Bool {
@@ -274,27 +256,44 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         return .upgraded(from: installed.version, to: new)
     }
 
-    func uninstall(deleteSettings: Bool) async throws -> UninstallReport {
+    func prepareUninstall() async throws -> UninstallPreparation {
         guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
         let bundleID = embedded.bundleID
+        var preparation = UninstallPreparation()
+        // Dấu is the current source: select a keyboard first. The "–" of the input source
+        // list is dimmed for the selected source, and the system would pick a keyboard by
+        // itself when Dấu goes away (research section 4).
+        if sources.current()?.bundleID == bundleID {
+            preparation.switchedTo = selectOtherKeyboardIfDauIsCurrent(bundleID: bundleID)
+            preparation.needsOtherKeyboard = preparation.switchedTo == nil
+        }
+        openKeyboardSettings()
+        installLogger.notice("event=uninstall-prepared switched=\(preparation.switchedTo != nil) needsOther=\(preparation.needsOtherKeyboard)")
+        return preparation
+    }
+
+    func waitUntilRemovedFromInputSources() async throws {
+        guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
+        while true {
+            try Task.checkCancellation()
+            if sources.storedEnabledIDs(bundleID: embedded.bundleID).isEmpty { return }
+            await pause(removalPollInterval)
+        }
+    }
+
+    func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport {
+        guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
+        let bundleID = embedded.bundleID
+        // Only once the user removed Dấu from the list: a bundle gone before that leaves
+        // an entry nobody can remove.
+        let stored = sources.storedEnabledIDs(bundleID: bundleID)
+        guard stored.isEmpty else {
+            installLogger.error("event=uninstall-still-stored ids=\(stored.sorted(), privacy: .public)")
+            throw InputMethodInstallerError.stillListed
+        }
         var report = UninstallReport()
 
-        // 1. Dấu is the current source: select a keyboard first, so the system does not
-        //    pick one by itself when Dấu goes away (research section 4).
-        report.switchedTo = selectOtherKeyboardIfDauIsCurrent(bundleID: bundleID)
-
-        // 2. Disable the modes, then the parent: every ID TIS lists as enabled or macOS
-        //    has stored as enabled, then wait until the stored entries are gone, and try
-        //    once more for any left (the status code proves nothing, N5).
-        disableAll(bundleID: bundleID)
-        if !(await storedEntriesGone(bundleID: bundleID)) {
-            installLogger.notice("event=uninstall-disable-retry left=\(self.sources.storedEnabledIDs(bundleID: bundleID).sorted(), privacy: .public)")
-            disableAll(bundleID: bundleID)
-            _ = await storedEntriesGone(bundleID: bundleID)
-        }
-        enabledHere = []
-
-        // 3. Move it to the Trash, 4. stop it: the input method quits only once its
+        // Move it to the Trash, then stop it: the input method quits only once its
         // bundle is gone from disk (InputMethodLifecycle), the running process keeps its
         // code mapped meanwhile.
         if files.isInstalled {
@@ -303,46 +302,17 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
         await stopInputMethod(bundleID)
 
-        // 5. The App Group data, only when asked.
+        // The App Group data, only when asked.
         if deleteSettings {
             report.dataDeleted = deleteSharedData()
         }
-        let stored = sources.storedEnabledIDs(bundleID: bundleID)
-        report.stillEnabled = !stored.isEmpty || !sources.sources(bundleID: bundleID, includeDisabled: false).isEmpty
-        if !stored.isEmpty {
-            installLogger.error("event=uninstall-still-stored ids=\(stored.sorted(), privacy: .public)")
-        }
-        installLogger.notice("event=uninstalled switched=\(report.switchedTo != nil) stillEnabled=\(report.stillEnabled) dataDeleted=\(report.dataDeleted)")
+        // What macOS stored, not TIS's flag (it can stay true after the source is gone).
+        report.stillEnabled = !sources.storedEnabledIDs(bundleID: bundleID).isEmpty
+        installLogger.notice("event=uninstalled stillEnabled=\(report.stillEnabled) dataDeleted=\(report.dataDeleted)")
         return report
     }
 
     // MARK: Helpers
-
-    /// Disables, modes first, every source of `bundleID` that TIS lists as enabled or that
-    /// macOS has stored as enabled.
-    private func disableAll(bundleID: String) {
-        let listed = sources.sources(bundleID: bundleID, includeDisabled: false)
-        var ids = listed.filter(\.isMode).map(\.id) + listed.filter { !$0.isMode }.map(\.id)
-        for id in sources.storedEnabledIDs(bundleID: bundleID).sorted() where !ids.contains(id) {
-            // Stored but not listed: modes before the parent, like the listed ones.
-            if id == bundleID { ids.append(id) } else { ids.insert(id, at: 0) }
-        }
-        for id in ids {
-            let status = sources.disable(id)
-            installLogger.notice("event=uninstall-disable id=\(id, privacy: .public) status=\(status)")
-        }
-    }
-
-    /// Waits up to `storedSettle` for macOS to drop the stored entries of `bundleID`.
-    private func storedEntriesGone(bundleID: String) async -> Bool {
-        var waited: Duration = .zero
-        while true {
-            if sources.storedEnabledIDs(bundleID: bundleID).isEmpty { return true }
-            if waited >= storedSettle { return false }
-            await pause(pollInterval)
-            waited += pollInterval
-        }
-    }
 
     /// The mode is among the entries macOS stored as enabled (D37, N4): not TIS's flag,
     /// which is true right after `TISRegisterInputSource`.
@@ -562,11 +532,6 @@ final class SystemTextInputSources: TextInputSources {
     func enable(_ id: String) -> OSStatus {
         guard let source = source(id) else { return OSStatus(paramErr) }
         return TISEnableInputSource(source)
-    }
-
-    func disable(_ id: String) -> OSStatus {
-        guard let source = source(id) else { return OSStatus(paramErr) }
-        return TISDisableInputSource(source)
     }
 
     func select(_ id: String) -> OSStatus {

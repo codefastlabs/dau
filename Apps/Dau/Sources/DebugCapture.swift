@@ -43,7 +43,8 @@ import SwiftUI
 /// Debug only: in-app captures that need fake services, run by
 /// scripts/selftest/settings-window on a copy re-signed ad hoc without entitlements:
 /// `--capture-onboarding` (the onboarding window on fixed services) and
-/// `--capture-uninstall` (the uninstall alerts, laid out without running anything). The
+/// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi Nguồn nhập liệu"
+/// sheet, laid out without running anything). The
 /// Settings window itself is measured from outside, in the real app (`--settings-window`,
 /// ax-check.swift).
 @MainActor
@@ -69,10 +70,11 @@ enum DebugCapture {
         return OnboardingFlow.Step(rawValue: n)
     }()
 
-    /// `--capture-onboarding <dir>`: the onboarding window on fixed services (OpenKey running, Dấu installed but not enabled). Writes
-    /// `onboarding-<step>-<mode>.png` for steps 1, 2, 2 when "Bật Dấu" leaves Dấu off
-    /// (`2-not-enabled`), 2 when macOS does not list Dấu (`2-logout`), 2 after "Bật Dấu"
-    /// (`2-enabled`) and 3, light and dark, plus `frames.json`.
+    /// `--capture-onboarding <dir>`: the onboarding window on fixed services (OpenKey
+    /// running, Dấu installed but not enabled). Writes `onboarding-<step>-<mode>.png` for
+    /// steps 1, 2 before "Bật Dấu" (`2`), 2 waiting for Allow (`2-waiting`), 2 when macOS
+    /// left Dấu off (`2-failed`), 2 once enabled (`2-done`) and 3, light and dark, plus
+    /// `frames.json`.
     static let onboardingDirectory: URL? = {
         let args = CommandLine.arguments
         guard let i = args.firstIndex(of: "--capture-onboarding"), i + 1 < args.count else { return nil }
@@ -93,6 +95,8 @@ enum DebugCapture {
     static var onboardingFlow: OnboardingFlow?
     static var onboardingDetector: FakeInputMethodDetector?
     static var onboardingInstaller: FakeInputMethodInstaller?
+    /// The Settings window's actions (`--capture-uninstall` lays the sheet out through them).
+    static var actions: InputMethodActions?
 
     static func startOnboarding() {
         guard let directory = onboardingDirectory else { return }
@@ -126,25 +130,32 @@ enum DebugCapture {
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
                 NSApp.appearance = NSAppearance(named: name)
                 let openKey = onboardingDetector?.found ?? []
+                onboardingInstaller?.current = .installed(version: nil)
+                onboardingInstaller?.enableWaits = false
                 flow.start()
                 flow.tryText = ""
+                let installer = onboardingInstaller
                 let shots: [(String, @MainActor () async -> Void)] = [
                     ("1", { flow.show(.oldInputMethods) }),
                     // As in the mockup: the user quit OpenKey, step 1 is done.
                     ("2", { onboardingDetector?.found = []; flow.refresh(); flow.show(.enable) }),
-                    ("2-not-enabled", {
-                        onboardingInstaller?.enableOutcome = .notEnabled
-                        onboardingDetector?.otherSources = ["Tiếng Việt – Telex"]
-                        flow.refresh()
+                    // "Bật Dấu" is waiting for the click on macOS's dialog.
+                    ("2-waiting", {
+                        installer?.enableWaits = true
+                        Task { @MainActor in await flow.enable() }
+                    }),
+                    // The wait ends with Dấu still off.
+                    ("2-failed", {
+                        installer?.enableOutcome = .notEnabled
+                        installer?.release = .notEnabled
+                        while flow.isWorking { try? await Task.sleep(for: .milliseconds(20)) }
+                    }),
+                    // "Thử lại", and this time the user allows it.
+                    ("2-done", {
+                        installer?.enableWaits = false
+                        installer?.enableOutcome = .enabled
                         await flow.enable()
                     }),
-                    ("2-logout", {
-                        onboardingInstaller?.enableOutcome = .notListed
-                        onboardingDetector?.otherSources = []
-                        flow.refresh()
-                        await flow.enable()
-                    }),
-                    ("2-enabled", { onboardingInstaller?.enableOutcome = .enabled; await flow.enable() }),
                     ("3", { flow.tryText = "Tôi yêu tiếng Việt"; flow.show(.typing) }),
                 ]
                 for (key, setUp) in shots {
@@ -159,7 +170,9 @@ enum DebugCapture {
                     for (name, r) in frames {
                         let parts = name.split(separator: "-", maxSplits: 1).map(String.init)
                         if parts.count == 2 {
-                            guard parts[1] == "\(flow.step.rawValue)" else { continue }
+                            // "<step>" or "<step>.<screen>" (step 2 swaps screens).
+                            let current = "\(flow.step.rawValue)"
+                            guard parts[1] == current || parts[1].hasPrefix(current + ".") else { continue }
                             entry[parts[0]] = [Double(r.minX), Double(r.minY), Double(r.width), Double(r.height)]
                         } else {
                             entry[name] = [Double(r.minX), Double(r.minY), Double(r.width), Double(r.height)]
@@ -177,7 +190,6 @@ enum DebugCapture {
                             atomically: true, encoding: .utf8)
                     }
                 }
-                await flow.undoEnable()
                 onboardingDetector?.found = openKey
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
@@ -191,9 +203,12 @@ enum DebugCapture {
     // MARK: Uninstall alert
 
     /// `--capture-uninstall <dir>`: opens the Settings window in the middle of the primary
-    /// display, lays out the "Gỡ Dấu khỏi máy?" alert and the result alert there without running
-    /// anything, and writes `uninstall-confirm-<mode>.png`, `uninstall-done-<mode>.png`
-    /// plus `frames.json` (sheet sizes).
+    /// display, lays out the "Gỡ Dấu khỏi máy?" alert, the result alert and the "Bỏ Dấu
+    /// khỏi Nguồn nhập liệu" sheet there without running anything, and writes
+    /// `uninstall-confirm-<mode>.png`, `uninstall-done-<mode>.png`,
+    /// `uninstall-remove-<mode>.png` (keyboard switched) and
+    /// `uninstall-remove-other-<mode>.png` (no keyboard to switch to), plus `frames.json`
+    /// (sheet sizes).
     static let uninstallDirectory: URL? = {
         let args = CommandLine.arguments
         guard let i = args.firstIndex(of: "--capture-uninstall"), i + 1 < args.count else { return nil }
@@ -233,6 +248,22 @@ enum DebugCapture {
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(panel.frame.width), Double(panel.frame.height)]]
                     panel.orderOut(nil)
                     try? await Task.sleep(for: .milliseconds(300))
+                }
+                // The sheet of the Settings window, on the fake preparation.
+                window.makeKeyAndOrderFront(nil)
+                let sheets: [(String, UninstallPreparation)] = [
+                    ("remove", UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false)),
+                    ("remove-other", UninstallPreparation(switchedTo: nil, needsOtherKeyboard: true)),
+                ]
+                for (key, preparation) in sheets {
+                    actions?.showUninstallSheetForCapture(preparation)
+                    try? await Task.sleep(for: .milliseconds(1200))
+                    guard let sheet = window.attachedSheet else { print("no sheet for \(key)"); exit(1) }
+                    capture(sheet, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
+                            background: .windowBackgroundColor)
+                    report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
+                    actions?.showUninstallSheetForCapture(nil)
+                    try? await Task.sleep(for: .milliseconds(600))
                 }
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {

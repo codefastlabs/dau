@@ -27,6 +27,9 @@ struct DauApp: App {
         _onboarding = State(initialValue: flow)
         let actions = InputMethodActions(installer: installer)
         _actions = State(initialValue: actions)
+        #if DEBUG
+        DebugCapture.actions = actions
+        #endif
         opensOnboarding = opens
         DauApp.upgradeAtLaunch(installer)
         DauApp.checkInstalled(actions)

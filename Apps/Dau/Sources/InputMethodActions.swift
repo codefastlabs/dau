@@ -2,7 +2,9 @@ import AppKit
 import SwiftUI
 
 /// The Settings window's input method actions: "Bật lại" on the "Dấu chưa được bật"
-/// banner (with "Hoàn tác", N4) and "Gỡ cài đặt…" (D16) with its confirmation. Views
+/// banner (N4; there is no undo, Dấu cannot switch itself off) and "Gỡ cài đặt…" (D16):
+/// confirmation, a sheet that waits for the user to remove Dấu from the input sources
+/// in System Settings, then the removal. Views
 /// get it from the environment; nil there (snapshots) leaves the old behavior: "Bật lại"
 /// opens Keyboard settings and "Gỡ cài đặt…" is disabled.
 @MainActor
@@ -12,7 +14,7 @@ final class InputMethodActions {
     enum BannerState: Equatable {
         case idle
         case working
-        /// Dấu was enabled from the banner: a confirmation with "Hoàn tác".
+        /// Dấu was enabled from the banner: a confirmation.
         case enabled
         /// The calls went through, TIS still reports Dấu off: Keyboard settings opened.
         case notEnabled
@@ -21,6 +23,9 @@ final class InputMethodActions {
 
     private(set) var banner: BannerState = .idle
     private(set) var isUninstalling = false
+    /// The uninstall sheet ("Bỏ Dấu khỏi Nguồn nhập liệu") is showing; what it says about
+    /// the keyboard Dấu switched away from.
+    private(set) var uninstallSheet: UninstallPreparation?
 
     /// The installed input method is not the one this app installs (`installedIsGenuine`).
     private(set) var installedTampered = false
@@ -98,19 +103,9 @@ final class InputMethodActions {
     #if DEBUG
     /// Captures (`--tampered`): show the banner without touching the installed copy.
     func forceTampered() { installedTampered = true }
+    /// Captures (`--capture-uninstall`): show or hide the uninstall sheet, running nothing.
+    func showUninstallSheetForCapture(_ preparation: UninstallPreparation?) { uninstallSheet = preparation }
     #endif
-
-    /// "Hoàn tác" on the banner after "Bật lại".
-    func undoBannerEnable() async {
-        guard banner == .enabled else { return }
-        banner = .working
-        do {
-            try await installer.undoEnable()
-            banner = .idle
-        } catch {
-            banner = .failed
-        }
-    }
 
     /// The input sources changed: once Dấu is on (e.g. the user added it in Keyboard
     /// settings) the "not enabled" guidance is no longer true.
@@ -120,7 +115,16 @@ final class InputMethodActions {
 
     // MARK: Uninstall (D16)
 
-    /// "Gỡ cài đặt…": confirmation alert, then the removal and its result.
+    enum UninstallOutcome: Equatable {
+        case done(UninstallReport)
+        case failed
+        /// "Huỷ gỡ cài đặt": nothing was removed.
+        case cancelled
+    }
+
+    @ObservationIgnored private var uninstallTask: Task<UninstallOutcome, Never>?
+
+    /// "Gỡ cài đặt…": confirmation alert ("Tiếp tục gỡ"), then the sheet and the removal.
     func confirmUninstall(in window: NSWindow?) {
         guard !isUninstalling else { return }
         let (alert, deleteData) = UninstallAlert.confirmation()
@@ -131,21 +135,60 @@ final class InputMethodActions {
         }
     }
 
+    /// The whole removal with its alerts: prepare, wait for the user, finish.
     func uninstall(deleteSettings: Bool, window: NSWindow?) async {
-        isUninstalling = true
-        defer { isUninstalling = false }
-        do {
-            let report = try await installer.uninstall(deleteSettings: deleteSettings)
+        switch await performUninstall(deleteSettings: deleteSettings) {
+        case .cancelled:
+            break
+        case .done(let report):
             UninstallAlert.present(UninstallAlert.done(report), in: window) { _ in
                 // The input method is gone; this app would only offer to install it
                 // again. It quits; the user removes Dấu.app from Applications.
                 NSApp.terminate(nil)
             }
-        } catch {
-            installLogger.error("event=uninstall-failed error=\(String(describing: error), privacy: .public)")
+        case .failed:
             UninstallAlert.present(UninstallAlert.failed(), in: window) { _ in }
         }
     }
+
+    /// Without the alerts (tests): `prepareUninstall` (another keyboard, Keyboard
+    /// settings), the sheet while it waits until Dấu is gone from the stored input
+    /// sources, then `finishUninstall` (stop, Trash, data). `cancelUninstall()` ends the
+    /// wait and removes nothing.
+    func performUninstall(deleteSettings: Bool) async -> UninstallOutcome {
+        guard !isUninstalling else { return .cancelled }
+        isUninstalling = true
+        let installer = self.installer
+        let task = Task { @MainActor [weak self] () -> UninstallOutcome in
+            do {
+                let preparation = try await installer.prepareUninstall()
+                self?.uninstallSheet = preparation
+                try await installer.waitUntilRemovedFromInputSources()
+                var report = try await installer.finishUninstall(deleteSettings: deleteSettings)
+                report.switchedTo = preparation.switchedTo
+                return .done(report)
+            } catch is CancellationError {
+                return .cancelled
+            } catch {
+                installLogger.error("event=uninstall-failed error=\(String(describing: error), privacy: .public)")
+                return .failed
+            }
+        }
+        uninstallTask = task
+        let outcome = await task.value
+        uninstallSheet = nil
+        uninstallTask = nil
+        isUninstalling = false
+        return outcome
+    }
+
+    /// "Huỷ gỡ cài đặt" on the sheet (or Esc).
+    func cancelUninstall() {
+        uninstallTask?.cancel()
+    }
+
+    /// "Mở System Settings" on the sheet: the Keyboard pane (N4: only opens it).
+    func openKeyboard() { openKeyboardSettings() }
 }
 
 extension EnvironmentValues {
@@ -162,10 +205,10 @@ enum UninstallAlert {
     static func confirmation() -> (NSAlert, NSButton) {
         let alert = NSAlert()
         alert.messageText = String(localized: "Gỡ Dấu khỏi máy?")
-        // N5: whether the keyboard used before Dấu stays selected is checked in M5 T4
-        // (docs/research/M5-INSTALL.md section 4); until then the sentence is a placeholder.
-        alert.informativeText = String(localized: "Dấu sẽ bị xoá khỏi Nguồn nhập liệu. [Bàn phím đang dùng trước đó được giữ nguyên — kiểm chứng ở M5 T4]")
-        let remove = alert.addButton(withTitle: String(localized: "Gỡ cài đặt"))
+        // macOS lets only the user remove an input source, so the alert says what happens
+        // in order (docs/research/M5-INSTALL.md section 4).
+        alert.informativeText = String(localized: "Dấu chuyển bạn sang bàn phím khác, rồi bạn bỏ Dấu khỏi Nguồn nhập liệu trong System Settings. Xong bước đó, Dấu được chuyển vào Thùng rác.")
+        let remove = alert.addButton(withTitle: String(localized: "Tiếp tục gỡ"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
         remove.keyEquivalent = ""

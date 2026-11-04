@@ -8,6 +8,7 @@ import SwiftUI
 struct SettingsWindow: View {
     @State private var selection: SettingsSection?
     @State private var query = ""
+    @Environment(\.inputMethodActions) private var actions
 
     init(initialSection: SettingsSection = .typing) {
         _selection = State(initialValue: initialSection)
@@ -69,6 +70,14 @@ struct SettingsWindow: View {
         // Settings' 52 pt and 15 pt bold title on every page; the window's own title
         // text is hidden.
         .background(HiddenWindowTitle())
+        // "Gỡ cài đặt…": the sheet that waits for the user to remove Dấu from the input
+        // sources (`InputMethodActions.performUninstall`); closing it cancels the removal.
+        .sheet(isPresented: Binding(get: { actions?.uninstallSheet != nil },
+                                    set: { if !$0 { actions?.cancelUninstall() } })) {
+            if let actions, let preparation = actions.uninstallSheet {
+                UninstallRemoveSheet(actions: actions, preparation: preparation)
+            }
+        }
         // System Settings opens at 740 × 560. A grouped Form caps its cards at 704 pt
         // and centers them once the detail column is wider than 744 pt (measured), so
         // the window never gets wider than the sidebar plus 744: the cards always

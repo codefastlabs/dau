@@ -359,10 +359,11 @@ struct WrappingHStack: Layout {
 /// input sources: orange tile with a white warning symbol, title, subtitle,
 /// prominent button.
 ///
-/// "Bật lại" enables Dấu (N4: the user's click, read back from Text Input Sources) and
-/// the banner then turns into a green confirmation with "Hoàn tác". When macOS keeps
-/// Dấu off it opens Keyboard settings with the steps; when Dấu is not installed or not
-/// listed yet it opens the onboarding window, which installs it or explains the logout.
+/// "Bật lại" enables Dấu (N4: the user's click, read back from Text Input Sources; the
+/// button stays busy while macOS waits for the user's Allow) and the banner then turns
+/// into a green confirmation. There is no undo: Dấu cannot switch itself off. When macOS
+/// keeps Dấu off it opens Keyboard settings with the steps; when Dấu is not installed or
+/// not listed yet it opens the onboarding window.
 struct NotEnabledBanner: View {
     @Environment(InputSourceStatus.self) private var status
     @Environment(\.inputMethodActions) private var actions
@@ -373,8 +374,8 @@ struct NotEnabledBanner: View {
         if state == .enabled {
             banner(tint: .green, symbol: "checkmark",
                    title: Text("Đã bật Dấu trong Nguồn nhập liệu"),
-                   hint: Text("Bấm Hoàn tác nếu bạn đổi ý.")) {
-                Button("Hoàn tác") { Task { await actions?.undoBannerEnable() } }
+                   hint: Text("“Dấu – Tiếng Việt” đã có trong Nguồn nhập liệu của macOS.")) {
+                EmptyView()
             }
         } else if status.isEnabled == false {
             banner(tint: .orange, symbol: "exclamationmark.triangle.fill",

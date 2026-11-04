@@ -37,8 +37,12 @@ final class FakeTextInputSources: TextInputSources {
     /// What macOS has stored as enabled (`com.apple.inputsources`). nil: follows the
     /// enabled flags. Set to model the T4 bug: TIS says off, the stored entries stay.
     var stored: Set<String>?
-    /// The stored entries ignore disable entirely (the uninstall reports them).
-    var storedSticky = false
+    /// The user clicks "–" in System Settings: Dấu's entries go, stored and listed.
+    func userRemovesDau() {
+        stored = []
+        for i in all.indices where all[i].entry.bundleID == imID { all[i].enabled = false }
+        if let currentID, all.first(where: { $0.entry.id == currentID })?.entry.bundleID == imID { self.currentID = nil }
+    }
 
     func storedEnabledIDs(bundleID: String) -> Set<String> {
         if let storedAfterReads {
@@ -77,15 +81,6 @@ final class FakeTextInputSources: TextInputSources {
             all[i].enabled = true
         }
         return enableStatus
-    }
-
-    func disable(_ id: String) -> OSStatus {
-        log.append("disable \(id)")
-        if !storedSticky { stored?.remove(id) }
-        guard let i = all.firstIndex(where: { $0.entry.id == id }) else { return -50 }
-        all[i].enabled = false
-        if currentID == id { currentID = nil }
-        return noErr
     }
 
     func select(_ id: String) -> OSStatus {
@@ -176,18 +171,32 @@ struct Rig {
     let settings = FakeSettings()
     let installer: SystemInputMethodInstaller
 
-    init(installed: InputMethodBundleInfo? = nil, sources: [FakeTextInputSources.Source] = []) {
+    init(installed: InputMethodBundleInfo? = nil, sources: [FakeTextInputSources.Source] = [],
+         removedByUserAfterPauses: Int? = nil) {
         files.installed = installed
         tis.all = sources + [FakeTextInputSources.abc]
-        let counter = Counter()
+        let counter = Counter(), keyboardOpened = Counter(), pauses = Counter()
         self.counter = counter
+        self.keyboardOpened = keyboardOpened
+        self.pauses = pauses
+        let tis = self.tis
         installer = SystemInputMethodInstaller(files: files, sources: tis, processes: processes,
                                                settings: settings,
                                                deleteSharedData: { counter.value += 1; return true },
-                                               pause: { _ in })
+                                               openKeyboardSettings: { keyboardOpened.value += 1 },
+                                               // Yields, so a loop that waits can be cancelled.
+                                               pause: { _ in
+                                                   pauses.value += 1
+                                                   if pauses.value == removedByUserAfterPauses { tis.userRemovesDau() }
+                                                   await Task.yield()
+                                               })
     }
 
     let counter: Counter
+    /// How many times Keyboard settings were opened.
+    let keyboardOpened: Counter
+    /// How many times the installer paused (polled).
+    let pauses: Counter
     @MainActor final class Counter { var value = 0 }
 }
 
@@ -256,7 +265,6 @@ struct InputMethodInstallerTests {
         #expect(try await rig.installer.enable() == .enabled)
         #expect(rig.tis.log == ["register", "enable \(imID)"])
         #expect(rig.settings.log == ["clearCache", "terminate"])
-        #expect(rig.installer.enabledHere == [imID, modeID])
         #expect(rig.tis.currentID == nil)   // never selected (N4)
     }
 
@@ -297,7 +305,6 @@ struct InputMethodInstallerTests {
         #expect(try await rig.installer.enable() == .notEnabled)
         #expect(rig.installer.status() == .installed(version: "0.1.0"))
         // Undo still knows what was asked for, if macOS stores it later.
-        #expect(rig.installer.enabledHere == [imID])
     }
 
     @Test("enable: stored during the wait (the user clicked Allow) counts")
@@ -338,16 +345,13 @@ struct InputMethodInstallerTests {
         #expect(again.tis.log == ["register", "enable \(imID)"])
     }
 
-    @Test("enable: already stored as enabled → no cache, no System Settings, no enable call; nothing to undo")
+    @Test("enable: already stored as enabled → no cache, no System Settings, no enable call")
     func enableAlreadyOn() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.settings.running = true
         #expect(try await rig.installer.enable() == .enabled)
         #expect(rig.tis.log == ["register"])
         #expect(rig.settings.log.isEmpty)
-        #expect(rig.installer.enabledHere.isEmpty)
-        try await rig.installer.undoEnable()
-        #expect(rig.tis.log == ["register"])
     }
 
     @Test("enable: not installed throws; nothing touched")
@@ -357,20 +361,17 @@ struct InputMethodInstallerTests {
         #expect(rig.tis.log.isEmpty)
     }
 
-    // MARK: Undo
-
-    @Test("undo: mode before parent; switches keyboards first if Dấu got selected")
-    func undo() async throws {
+    @Test("enable: cancelling during the wait throws CancellationError and reports nothing (Thử lại)")
+    func enableCancelled() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
-        _ = try await rig.installer.enable()
-        rig.tis.currentID = modeID
-        rig.tis.log = []
-        try await rig.installer.undoEnable()
-        #expect(rig.tis.log == ["select com.apple.keylayout.ABC", "disable \(modeID)", "disable \(imID)"])
-        #expect(rig.installer.enabledHere.isEmpty)
-        // A second undo does nothing.
-        try await rig.installer.undoEnable()
-        #expect(rig.tis.log.count == 3)
+        rig.tis.enableTakesEffect = false
+        let task = Task { try await rig.installer.enable() }
+        await Task.yield()
+        task.cancel()
+        await #expect(throws: CancellationError.self) { try await task.value }
+        // The user's pending Allow is not touched; a new run asks again.
+        let again = Rig(installed: old, sources: FakeTextInputSources.dau())
+        #expect(try await again.installer.enable() == .enabled)
     }
 
     // MARK: Upgrade
@@ -419,72 +420,126 @@ struct InputMethodInstallerTests {
         #expect(SystemInputMethodInstaller.isNewer("1", than: nil))
     }
 
-    // MARK: Uninstall
+    // MARK: Uninstall (D16): prepare, wait for the user, finish
 
-    @Test("uninstall: select a keyboard, disable mode then parent, stop, trash; data kept")
-    func uninstall() async throws {
+    @Test("prepare: Dấu is selected → another keyboard is selected and Keyboard settings open; nothing removed, nothing disabled")
+    func prepareSelected() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.tis.currentID = modeID
-        rig.processes.running = true
-        let report = try await rig.installer.uninstall(deleteSettings: false)
-        #expect(rig.tis.log == ["select com.apple.keylayout.ABC", "disable \(modeID)", "disable \(imID)"])
-        #expect(rig.processes.log == ["requestQuit"])
-        #expect(rig.files.log == ["trash"])
-        #expect(report == UninstallReport(switchedTo: "ABC", movedToTrash: true, stillEnabled: false, dataDeleted: false))
+        let preparation = try await rig.installer.prepareUninstall()
+        #expect(preparation == UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false))
+        #expect(rig.tis.log == ["select com.apple.keylayout.ABC"])
+        #expect(rig.keyboardOpened.value == 1)
+        #expect(rig.files.log.isEmpty)
+        #expect(rig.processes.log.isEmpty)
         #expect(rig.counter.value == 0)
-        #expect(rig.installer.status() == .notInstalled)
     }
 
-    @Test("uninstall: Dấu not selected → no keyboard switch; the box deletes the data")
-    func uninstallWithData() async throws {
+    @Test("prepare: Dấu not selected → no keyboard switch, Keyboard settings still open")
+    func prepareNotSelected() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.tis.currentID = "com.apple.keylayout.ABC"
-        let report = try await rig.installer.uninstall(deleteSettings: true)
-        #expect(!rig.tis.log.contains { $0.hasPrefix("select") })
-        #expect(report.switchedTo == nil)
+        let preparation = try await rig.installer.prepareUninstall()
+        #expect(preparation == UninstallPreparation(switchedTo: nil, needsOtherKeyboard: false))
+        #expect(rig.tis.log.isEmpty)
+        #expect(rig.keyboardOpened.value == 1)
+    }
+
+    @Test("prepare: Dấu is selected and there is no keyboard to switch to → the user must choose one (N5: no name claimed)")
+    func prepareNoKeyboard() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.tis.all.removeAll { $0.entry.id.contains("keylayout") }
+        rig.tis.currentID = modeID
+        let preparation = try await rig.installer.prepareUninstall()
+        #expect(preparation == UninstallPreparation(switchedTo: nil, needsOtherKeyboard: true))
+        #expect(rig.keyboardOpened.value == 1)
+    }
+
+    @Test("wait: returns once the user removed Dấu from the input sources; it never disables anything itself")
+    func waitUntilRemoved() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true), removedByUserAfterPauses: 3)
+        try await rig.installer.waitUntilRemovedFromInputSources()
+        #expect(rig.pauses.value == 3)
+        #expect(rig.tis.log.isEmpty)
+        #expect(rig.files.log.isEmpty)
+        // Already gone: no wait.
+        try await rig.installer.waitUntilRemovedFromInputSources()
+        #expect(rig.pauses.value == 3)
+    }
+
+    @Test("wait: cancelling ends the wait and removes nothing (Huỷ gỡ cài đặt)")
+    func waitCancelled() async {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        let task = Task { try await rig.installer.waitUntilRemovedFromInputSources() }
+        await Task.yield()
+        task.cancel()
+        await #expect(throws: CancellationError.self) { try await task.value }
+        #expect(rig.files.log.isEmpty)
+        #expect(rig.counter.value == 0)
+        #expect(rig.installer.status() == .enabled)
+    }
+
+    @Test("finish: refuses while Dấu is still in the stored input sources; nothing stopped, trashed or deleted")
+    func finishWhileStored() async {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.processes.running = true
+        await #expect(throws: InputMethodInstallerError.stillListed) {
+            _ = try await rig.installer.finishUninstall(deleteSettings: true)
+        }
+        #expect(rig.files.log.isEmpty)
+        #expect(rig.processes.log.isEmpty)
+        #expect(rig.counter.value == 0)
+        // Only the mode left over counts too.
+        rig.tis.stored = [modeID]
+        await #expect(throws: InputMethodInstallerError.stillListed) {
+            _ = try await rig.installer.finishUninstall(deleteSettings: false)
+        }
+        #expect(rig.files.log.isEmpty)
+    }
+
+    @Test("finish: once removed → stop the input method, Trash, data kept")
+    func finish() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.processes.running = true
+        rig.tis.userRemovesDau()
+        let report = try await rig.installer.finishUninstall(deleteSettings: false)
+        #expect(rig.processes.log == ["requestQuit"])
+        #expect(rig.files.log == ["trash"])
+        #expect(report == UninstallReport(switchedTo: nil, movedToTrash: true, stillEnabled: false, dataDeleted: false))
+        #expect(rig.counter.value == 0)
+        #expect(rig.installer.status() == .notInstalled)
+        // TIS is not asked to disable anything.
+        #expect(!rig.tis.log.contains { $0.hasPrefix("disable") })
+    }
+
+    @Test("finish: the box deletes the data")
+    func finishWithData() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.tis.userRemovesDau()
+        let report = try await rig.installer.finishUninstall(deleteSettings: true)
         #expect(report.dataDeleted)
         #expect(rig.counter.value == 1)
     }
 
-    @Test("uninstall: a failed trash throws and deletes no data")
-    func uninstallTrashFails() async {
+    @Test("finish: a failed trash throws and deletes no data")
+    func finishTrashFails() async {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.tis.userRemovesDau()
         rig.files.trashError = .failed("trash")
         await #expect(throws: InputMethodInstallerError.failed("trash")) {
-            _ = try await rig.installer.uninstall(deleteSettings: true)
+            _ = try await rig.installer.finishUninstall(deleteSettings: true)
         }
         #expect(rig.counter.value == 0)
-        // The sources were already off: Dấu does not type any more.
-        #expect(rig.installer.status() == .installed(version: "0.1.0"))
     }
 
-    @Test("uninstall: not installed (only listed) still disables and reports")
-    func uninstallNotInstalled() async throws {
+    @Test("finish: not installed (only listed before) still reports")
+    func finishNotInstalled() async throws {
         let rig = Rig(sources: FakeTextInputSources.dau(enabled: true))
-        let report = try await rig.installer.uninstall(deleteSettings: false)
+        rig.tis.userRemovesDau()
+        let report = try await rig.installer.finishUninstall(deleteSettings: false)
         #expect(rig.files.log.isEmpty)
         #expect(!report.movedToTrash)
         #expect(!report.stillEnabled)
-    }
-
-    @Test("uninstall: stored entries TIS no longer lists are disabled too")
-    func uninstallStoredOnly() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: false))
-        rig.tis.stored = [modeID, imID]
-        let report = try await rig.installer.uninstall(deleteSettings: false)
-        #expect(rig.tis.log == ["disable \(modeID)", "disable \(imID)"])
-        #expect(!report.stillEnabled)
-    }
-
-    @Test("uninstall: stored entries that ignore disable are retried once and reported")
-    func uninstallStoredSticky() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
-        rig.tis.stored = [modeID, imID]
-        rig.tis.storedSticky = true
-        let report = try await rig.installer.uninstall(deleteSettings: false)
-        #expect(rig.tis.log.filter { $0 == "disable \(modeID)" }.count == 2)
-        #expect(report.stillEnabled)
-        #expect(report.movedToTrash)
     }
 
     // MARK: Files (temp folder)
@@ -585,5 +640,96 @@ struct TamperedInputMethodTests {
         files.installed = files.embedded
         files.genuine = false
         #expect(!files.installedIsGenuine)
+    }
+}
+
+@MainActor
+@Suite("Uninstall flow (D16)")
+struct UninstallFlowTests {
+    func settle(_ condition: () -> Bool) async {
+        for _ in 0..<400 where !condition() { try? await Task.sleep(for: .milliseconds(5)) }
+    }
+
+    @Test("prepare, the sheet while the user removes Dấu, then finish: nothing removed before the entry is gone")
+    func waitsThenFinishes() async {
+        let installer = FakeInputMethodInstaller(.selected)
+        installer.preparation = UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false)
+        installer.stillListed = true
+        installer.uninstallReport = UninstallReport(switchedTo: nil, movedToTrash: true, stillEnabled: false, dataDeleted: true)
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        let run = Task { await actions.performUninstall(deleteSettings: true) }
+        await settle { actions.uninstallSheet != nil }
+        #expect(actions.uninstallSheet == UninstallPreparation(switchedTo: "ABC", needsOtherKeyboard: false))
+        #expect(actions.isUninstalling)
+        #expect(installer.calls == ["prepareUninstall", "wait"])
+        #expect(installer.status() == .selected)
+
+        installer.stillListed = false   // the user clicked "–"
+        let outcome = await run.value
+        #expect(outcome == .done(UninstallReport(switchedTo: "ABC", movedToTrash: true, stillEnabled: false, dataDeleted: true)))
+        #expect(installer.calls == ["prepareUninstall", "wait", "finish+data"])
+        #expect(actions.uninstallSheet == nil)
+        #expect(!actions.isUninstalling)
+    }
+
+    @Test("Huỷ gỡ cài đặt: the sheet closes and nothing is removed")
+    func cancel() async {
+        let installer = FakeInputMethodInstaller(.enabled)
+        installer.stillListed = true
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        let run = Task { await actions.performUninstall(deleteSettings: true) }
+        await settle { actions.uninstallSheet != nil }
+        actions.cancelUninstall()
+        #expect(await run.value == .cancelled)
+        #expect(installer.calls == ["prepareUninstall", "wait"])
+        #expect(installer.status() == .enabled)
+        #expect(actions.uninstallSheet == nil)
+        #expect(!actions.isUninstalling)
+        // A later uninstall starts again.
+        installer.stillListed = false
+        #expect(await actions.performUninstall(deleteSettings: false) == .done(UninstallReport()))
+    }
+
+    @Test("a failed preparation or finish ends in the failure alert, no sheet left")
+    func failure() async {
+        let installer = FakeInputMethodInstaller(.enabled, failure: .unavailable)
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        #expect(await actions.performUninstall(deleteSettings: false) == .failed)
+        #expect(actions.uninstallSheet == nil)
+        #expect(!actions.isUninstalling)
+    }
+
+    @Test("\"Mở System Settings\" on the sheet opens the Keyboard pane")
+    func openKeyboard() {
+        final class Opened { var count = 0 }
+        let opened = Opened()
+        let actions = InputMethodActions(installer: FakeInputMethodInstaller(.enabled), openKeyboardSettings: { opened.count += 1 })
+        actions.openKeyboard()
+        #expect(opened.count == 1)
+    }
+}
+
+@MainActor
+@Suite("Banner enable (N4)")
+struct BannerEnableTests {
+    @Test("Bật lại enables and reads back; the banner has no undo")
+    func enable() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        #expect(await actions.enableFromBanner() == false)
+        #expect(actions.banner == .enabled)
+        #expect(installer.calls == ["enable"])
+    }
+
+    @Test("macOS keeps Dấu off → Keyboard settings open")
+    func stillOff() async {
+        final class Opened { var count = 0 }
+        let opened = Opened()
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.enableOutcome = .notEnabled
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: { opened.count += 1 })
+        _ = await actions.enableFromBanner()
+        #expect(actions.banner == .notEnabled)
+        #expect(opened.count == 1)
     }
 }

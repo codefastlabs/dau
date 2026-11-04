@@ -15,8 +15,9 @@ import DauShared
 //   hand-made window does not reproduce the scene's chrome, system colors and control
 //   sizes exactly. The other appearance uses this tool's window.
 // - With <onboarding-capture-dir> (Dau --capture-onboarding <dir>), also writes
-//   "onboarding-<step>-compare-<mode>.png" (mockup | real window) for the three
-//   onboarding artboards and their element frames. There is no dark artboard: the
+//   "onboarding-<step>-compare-<mode>.png" (mockup | real window) for the onboarding
+//   artboards (OnboardingConflict, OnboardingEnable, OnboardingEnableWaiting,
+//   OnboardingEnableFailed, OnboardingEnableDone, Onboarding) and their element frames. There is no dark artboard: the
 //   dark compare puts the light mockup beside the dark window.
 
 var arguments: [String] = []
@@ -204,7 +205,9 @@ MainActor.assumeIsolated {
                 "onbSegmented": "document.querySelector('main .seg') && document.querySelector('main .seg').getBoundingClientRect()",
                 "onbButtons": "document.querySelector('main > div:last-child').getBoundingClientRect()",
             ]
-            for (step, file) in [("1", "OnboardingConflict"), ("2", "OnboardingEnable"), ("3", "Onboarding")] {
+            for (step, file) in [("1", "OnboardingConflict"), ("2", "OnboardingEnable"),
+                                 ("2-waiting", "OnboardingEnableWaiting"), ("2-failed", "OnboardingEnableFailed"),
+                                 ("2-done", "OnboardingEnableDone"), ("3", "Onboarding")] {
                 guard let mock = Mockup.render(artboards.appendingPathComponent("\(file).dc.html"),
                                                size: CGSize(width: 820, height: 580), crop: crop, measure: measure)
                 else { print("cannot render \(file)"); continue }

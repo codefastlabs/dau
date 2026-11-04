@@ -103,13 +103,14 @@ capture() {   # <step name> <Dau arguments…>
   fi
 }
 
-# The onboarding window (steps 1, 2, 2 with Dấu still off, 2 not listed (logout),
-# 2 after "Bật Dấu", 3; light and dark), on fixed services; once with the real
+# The onboarding window (steps 1, 2 before "Bật Dấu", 2 waiting for Allow, 2 failed,
+# 2 done, 3; light and dark), on fixed services; once with the real
 # input-source shortcut, once as if none were set.
 capture "onboarding" --capture-onboarding "$out/onboarding"
 capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-shortcut" \
   --shortcut none
-# The uninstall alerts (D16, mockup "ConfirmDialogs"): laid out, captured, dismissed;
+# The uninstall alerts and the "Bỏ Dấu khỏi Nguồn nhập liệu" sheet (D16, mockup
+# "ConfirmDialogs", "UninstallRemoveSource"): laid out, captured, dismissed;
 # nothing is uninstalled.
 capture "uninstall alerts" --capture-uninstall "$out/uninstall"
 

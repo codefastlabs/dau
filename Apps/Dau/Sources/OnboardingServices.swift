@@ -152,6 +152,10 @@ enum InputMethodInstallerError: Error, Equatable {
     /// The input method inside the app is not validly signed by the app's own team.
     case invalidSignature
     case failed(String)
+    /// Dấu's entries are still among the stored input sources: the user has not removed
+    /// it yet, so nothing is deleted (a bundle gone before that leaves an entry that can
+    /// no longer be removed).
+    case stillListed
 }
 
 /// What Text Input Sources reports after "Bật Dấu" (N4: re-read, never assumed).
@@ -161,8 +165,8 @@ enum EnableOutcome: Equatable, Sendable {
     /// The calls went through but the source is still off (macOS may wait for the user
     /// to allow it, or ignore the call: docs/research/M5-INSTALL.md section 2.2).
     case notEnabled
-    /// Text Input Sources does not list Dấu at all: a first install shows up only after
-    /// logging out and in once (D37).
+    /// Text Input Sources does not list Dấu at all: macOS shows a new input method only
+    /// after a logout (D37), when none of the ways around it worked.
     case notListed
 }
 
@@ -176,10 +180,21 @@ enum UpgradeOutcome: Equatable, Sendable {
     case skipped(String)
 }
 
-/// What `uninstall` did (D16), for the result alert.
+/// What `prepareUninstall` did (D16), for the sheet that asks the user to remove Dấu
+/// from the input sources.
+struct UninstallPreparation: Equatable, Sendable {
+    /// The keyboard selected because Dấu was the current input source, when it reads back
+    /// as the current source (N5).
+    var switchedTo: String?
+    /// Dấu is the current input source and no keyboard could be selected instead: the
+    /// user has to choose one (the "–" button is dimmed for the selected source).
+    var needsOtherKeyboard = false
+}
+
+/// What the uninstall did (D16), for the result alert.
 struct UninstallReport: Equatable, Sendable {
     /// The keyboard selected first because Dấu was the current input source, when it
-    /// reads back as the current source.
+    /// reads back as the current source (from `UninstallPreparation`).
     var switchedTo: String?
     /// The input method bundle was moved to the Trash (false: it was not installed).
     var movedToTrash = false
@@ -189,19 +204,21 @@ struct UninstallReport: Equatable, Sendable {
     var dataDeleted = false
 }
 
-/// Installs, enables, upgrades and removes Dấu's input method. The user starts enable,
-/// undo and uninstall (N4); enabling can be undone; results are read back from Text
-/// Input Sources (N5).
+/// Installs, enables, upgrades and removes Dấu's input method. The user starts enable
+/// and uninstall (N4); results are read back from Text Input Sources (N5). Dấu cannot
+/// switch its own input source off (macOS blocks `TISDisableInputSource` from an app,
+/// docs/research/M5-INSTALL.md section 4): only the user removes it, in System
+/// Settings, so there is no undo and uninstall waits for that.
 @MainActor
 protocol InputMethodInstaller: AnyObject {
     func status() -> InputMethodStatus
     /// Copies the input method bundled in the app to ~/Library/Input Methods and
     /// registers it.
     func install() async throws
-    /// Adds "Dấu – Tiếng Việt" to the user's input sources, then reads it back.
+    /// Adds "Dấu – Tiếng Việt" to the user's input sources, then reads it back. Waits for
+    /// the user to allow it in macOS's dialog; throws `CancellationError` when the task
+    /// is cancelled.
     func enable() async throws -> EnableOutcome
-    /// Disables what `enable()` turned on.
-    func undoEnable() async throws
     /// Whether the installed input method is the one this app installs (valid signature
     /// by the same team); true when none is installed. ~/Library/Input Methods is
     /// writable by any process of the user, and macOS keeps feeding keys to an enabled
@@ -209,8 +226,17 @@ protocol InputMethodInstaller: AnyObject {
     func installedIsGenuine() -> Bool
     /// Replaces an older installed input method with the one in the app (D7).
     func upgradeIfNeeded() async throws -> UpgradeOutcome
-    /// Removes the input method (D16); `deleteSettings` also deletes the App Group data.
-    func uninstall(deleteSettings: Bool) async throws -> UninstallReport
+    /// Uninstall, step 1 (D16): selects another keyboard when Dấu is the current input
+    /// source and opens Keyboard settings, where the user removes Dấu from the list.
+    /// Removes nothing.
+    func prepareUninstall() async throws -> UninstallPreparation
+    /// Uninstall, step 2: returns once none of Dấu's entries is stored as enabled any
+    /// more (the user removed it). Polls; throws `CancellationError` when cancelled.
+    func waitUntilRemovedFromInputSources() async throws
+    /// Uninstall, step 3, only once none of Dấu's entries is stored (else throws
+    /// `stillListed`, nothing touched): stops the input method, moves it to the Trash,
+    /// deletes the App Group data when `deleteSettings`, and reads the result back (D16).
+    func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport
 }
 
 /// In-memory installer for previews, captures and tests. Records the calls it gets.
@@ -220,7 +246,16 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     var failure: InputMethodInstallerError?
     /// What the next `enable()` reports.
     var enableOutcome: EnableOutcome = .enabled
+    /// `enable()` waits (like the real one for the user's click) until `release` is set,
+    /// or throws `CancellationError` when the task is cancelled. Captures and tests.
+    var enableWaits = false
+    private(set) var enableWaiting = false
+    var release: EnableOutcome?
+    var preparation = UninstallPreparation()
     var uninstallReport = UninstallReport()
+    /// Dấu is still among the stored input sources: `finishUninstall` throws, and
+    /// `waitUntilRemovedFromInputSources` waits until this is false or it is cancelled.
+    var stillListed = false
     var genuine = true
     private(set) var calls: [String] = []
 
@@ -242,14 +277,19 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         calls.append("enable")
         if let failure { throw failure }
         guard current != .notInstalled else { throw InputMethodInstallerError.failed("not installed") }
-        if enableOutcome == .enabled, !current.isEnabled { current = .enabled }
-        return enableOutcome
-    }
-
-    func undoEnable() async throws {
-        calls.append("undoEnable")
-        if let failure { throw failure }
-        current = .installed(version: nil)
+        var outcome = enableOutcome
+        if enableWaits {
+            enableWaiting = true
+            defer { enableWaiting = false }
+            release = nil
+            while release == nil {
+                try Task.checkCancellation()
+                try await Task.sleep(for: .milliseconds(5))
+            }
+            outcome = release ?? outcome
+        }
+        if outcome == .enabled, !current.isEnabled { current = .enabled }
+        return outcome
     }
 
     func installedIsGenuine() -> Bool { genuine }
@@ -260,9 +300,24 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         return .upToDate
     }
 
-    func uninstall(deleteSettings: Bool) async throws -> UninstallReport {
-        calls.append(deleteSettings ? "uninstall+data" : "uninstall")
+    func prepareUninstall() async throws -> UninstallPreparation {
+        calls.append("prepareUninstall")
         if let failure { throw failure }
+        return preparation
+    }
+
+    func waitUntilRemovedFromInputSources() async throws {
+        calls.append("wait")
+        while stillListed {
+            try Task.checkCancellation()
+            try await Task.sleep(for: .milliseconds(5))
+        }
+    }
+
+    func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport {
+        calls.append(deleteSettings ? "finish+data" : "finish")
+        if let failure { throw failure }
+        if stillListed { throw InputMethodInstallerError.stillListed }
         current = .notInstalled
         return uninstallReport
     }

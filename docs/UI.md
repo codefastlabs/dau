@@ -14,16 +14,14 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - Bộ gõ chỉ bổ sung qua `menu()` của IMK: đổi kiểu gõ, mở Cài đặt Dấu, mở Cài đặt Bàn phím.
 
 ## Onboarding
-> Ghi chú (03/11/2026): phần này mô tả mã hiện tại và sẽ được thiết kế lại sau M5 T4 (xem `docs/PROGRESS.md` "Trạng thái hiện tại" và `docs/research/M5-INSTALL.md` mục 0). Câu về đăng xuất, đường "tự thêm" và "Hoàn tác" chưa kiểm chứng trên macOS 27.2 (N5).
-
 - Ba bước, thanh bước bên trái có trạng thái xong / đang làm / chưa. Dòng về quyền cần cấp để ô trống cho tới khi kiểm chứng (N5).
 - **Bước 1, tắt bộ gõ cũ:** chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/M5-INSTALL.md` mục 5). Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng; app chưa kiểm thì ghi chung "Thoát <tên>" và đường dẫn Mục đăng nhập (N5). Tự kiểm tra lại khi cửa sổ được kích hoạt; cho phép bỏ qua.
-- **Bước 2, bật Dấu:** chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu", có Hoàn tác (N4, D37). Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5):
-  - macOS vẫn để tắt → mở Cài đặt Bàn phím, hiện các bước tự thêm;
-  - macOS chưa liệt kê Dấu (lần cài đầu) → hướng dẫn đăng xuất, đăng nhập lại một lần;
-  - có nguồn tiếng Việt kiểu IMK khác đang bật → chỉ nhắc nhẹ, không chặn (D14).
-  - Phím tắt chuyển nguồn hiện **phím tắt thật** đọc từ cài đặt hệ thống, không viết cứng (N5); chưa đặt thì nói vậy và có nút mở Cài đặt Bàn phím; không đọc được thì keycap trống kèm nút đó.
-  - Chỗ dành cho hướng dẫn nếu macOS hỏi xác nhận ("Cho phép … bật …?"), điền sau M5 T4.
+- **Bước 2, bật Dấu:** chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu" (N4, D37). macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có bốn màn (artboard `OnboardingEnable`, `OnboardingEnableWaiting`, `OnboardingEnableDone`, `OnboardingEnableFailed`). Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5). Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
+  - **Trước khi bấm:** thẻ "Sau khi bật, bạn sẽ thấy", rồi thẻ nói trước điều sắp xảy ra (System Settings đóng rồi mở lại, hộp thoại hỏi) kèm hình thu nhỏ hộp thoại của macOS (minh hoạ, ẩn với VoiceOver). Nhắc nhẹ khi có nguồn tiếng Việt kiểu IMK khác đang bật (D14), không chặn.
+  - **Đang chờ:** trong lúc `enable()` chờ mục lưu của Dấu. Thẻ trạng thái có vòng xoay; nút "Thử lại" huỷ lần chờ đang chạy rồi bật lại (macOS hỏi lại); "Quay lại" cũng huỷ. Màn tự chuyển sang "đã bật" khi macOS ghi mục.
+  - **Đã bật:** nút duy nhất "Tiếp tục". Câu chọn Dấu nêu **phím tắt thật** đọc từ cài đặt hệ thống, không viết cứng (N5); chưa đặt thì nói vậy và có nút mở Cài đặt Bàn phím; không đọc được thì chỉ nói chọn trong menu nhập liệu và có nút đó.
+  - **Chưa bật được** (hết hạn chờ, hoặc macOS không liệt kê Dấu): ba cách theo thứ tự (Thử lại; tự thêm trong System Settings; đăng xuất một lần). Không tự mở Cài đặt, có nút "Mở System Settings". Nếu sau đó Dấu xuất hiện (người dùng tự thêm), cửa sổ nhận ra và sang "đã bật".
+  - Lỗi khác (chép, chữ ký, đăng ký) giữ màn "trước khi bấm" kèm một dòng báo lỗi và nút mở Cài đặt Bàn phím; chưa có artboard riêng.
 - **Bước 3, chọn kiểu gõ và gõ thử.** Ví dụ gõ thử phải đúng quy tắc của kiểu gõ đang chọn.
 
 ## Cửa sổ Cài đặt
@@ -55,15 +53,16 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - "Thêm" chỉ bật khi ứng dụng đang chọn còn trong danh sách đang lọc; gõ tìm làm ẩn ứng dụng đang chọn thì bỏ chọn.
 
 ## Trạng thái bổ sung
-> Ghi chú (03/11/2026): các mô tả "Dấu chưa được bật" và "Xác nhận gỡ cài đặt" dưới đây là của mã hiện tại và sẽ được thiết kế lại sau M5 T4 (xem `docs/PROGRESS.md` "Trạng thái hiện tại" và `docs/research/M5-INSTALL.md` mục 0). Câu về đăng xuất, đường "tự thêm" và "Hoàn tác" chưa kiểm chứng trên macOS 27.2 (N5).
-
-- **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4):
-  - bật được → banner xác nhận kèm "Hoàn tác";
+- **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4); trong lúc macOS chờ người dùng bấm Allow, nút chỉ bận (chưa có artboard cho trạng thái chờ của banner):
+  - bật được → banner xác nhận (không có Hoàn tác: app không tự tắt được Dấu);
   - macOS vẫn để tắt → mở Cài đặt Bàn phím, banner hiện các bước tự thêm;
   - chưa cài hoặc macOS chưa liệt kê Dấu → mở cửa sổ thiết lập.
 - **Bộ gõ trên máy đã bị thay** (chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước): banner đỏ đầu mọi mục Cài đặt, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên; cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
 - **Chế độ tối:** Cài đặt và onboarding đều có (màu hệ thống).
-- **Xác nhận gỡ cài đặt:** alert hệ thống, có tuỳ chọn xoá cả cài đặt và quy tắc. Câu về bàn phím trước đó để ô trống cho tới M5 T4 (N5). Gỡ xong: alert nêu những gì đã làm (đọc lại từ hệ thống); app không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác.
+- **Gỡ cài đặt** (D16): macOS chỉ cho người dùng tự bỏ một nguồn nhập liệu, nên gỡ có ba bước (artboard `ConfirmDialogs`, `UninstallRemoveSource`):
+  - Alert xác nhận (hệ thống), có tuỳ chọn xoá cả cài đặt và quy tắc; nút xác nhận là "Tiếp tục gỡ", chưa xoá gì.
+  - Sheet "Bỏ Dấu khỏi Nguồn nhập liệu" trên cửa sổ Cài đặt: app chọn bàn phím khác nếu Dấu đang được chọn (chỉ nêu tên bàn phím khi đọc lại đúng là nó, N5; không chuyển được thì bước này thành việc của người dùng) và mở Cài đặt Bàn phím; sheet chờ mục lưu của Dấu biến mất, không hết hạn. "Huỷ gỡ cài đặt" đóng sheet và không xoá gì; "Mở System Settings" chỉ mở trang.
+  - Mục lưu biến mất → dừng bộ gõ, chuyển vào Thùng rác, xoá dữ liệu nếu đã tick, rồi alert nêu những gì đã làm (đọc lại từ hệ thống). App không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác. Bộ gõ không bao giờ bị xoá khi mục lưu còn: bundle mất trước thì mục còn lại không gỡ được.
 - **Xác nhận quay về bản trước:** D19.
 - **Khi gõ trong ứng dụng:** không gạch chân (mặc định), có gạch chân (từ đang gõ được gạch, chốt khi kết thúc từ), gõ tiếng Anh bằng ABC (chỉ báo của hệ thống), thêm dấu cho từ đã gõ.
 

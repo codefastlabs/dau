@@ -19,7 +19,8 @@
 //   (f) onboarding/, onboarding-no-shortcut/ (Dau --capture-onboarding): every shot has
 //       the app name, title, card and buttons where the mockup puts them; a view missing
 //       from a shot is FAIL (the app drops a view's frame when it disappears).
-//   (g) uninstall/ (Dau --capture-uninstall): both alerts in both appearances, not cut.
+//   (g) uninstall/ (Dau --capture-uninstall): both alerts and both sheets of "Bỏ Dấu khỏi
+//   Nguồn nhập liệu" in both appearances, not cut.
 // Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
 // check needs is missing (the step that writes it says why in its own table); no skip.
 // Exit status 0 only when every row is ok.
@@ -213,9 +214,10 @@ for (style, dirName) in windowDirs {
 
 // MARK: - Onboarding (f)
 
-// Mockup positions ("OnboardingConflict", "OnboardingEnable", "Onboarding"; window at
+// Mockup positions ("OnboardingConflict", "OnboardingEnable", "OnboardingEnableWaiting",
+// "OnboardingEnableFailed", "OnboardingEnableDone", "Onboarding"; window at
 // 50,40 in the artboard), the same in every step and both appearances.
-let onboardingShots = ["1", "2", "2-not-enabled", "2-logout", "2-enabled", "3"]
+let onboardingShots = ["1", "2", "2-waiting", "2-failed", "2-done", "3"]
     .flatMap { step in ["light", "dark"].map { "onboarding-\(step)-\($0)" } }
 for dirName in ["onboarding", "onboarding-no-shortcut"] {
     guard let (shots, _) = loadFrames(root.appendingPathComponent(dirName)) else {
@@ -249,7 +251,7 @@ for dirName in ["onboarding", "onboarding-no-shortcut"] {
 
 let uninstallDir = root.appendingPathComponent("uninstall")
 let uninstallShots = loadFrames(uninstallDir)?.shots
-for key in ["confirm", "done"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
+for key in ["confirm", "done", "remove", "remove-other"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
     let at = "uninstall/\(key)"
     guard let sheet = uninstallShots?[key]?["sheet"], image(uninstallDir.appendingPathComponent("\(key).png")) != nil else {
         harness(at, "(g)", "no capture (see the capture step in run.sh's output)")
