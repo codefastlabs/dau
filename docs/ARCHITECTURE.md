@@ -86,7 +86,7 @@ dau/
 - **Cuộn:**
   - Form tự cuộn và lấp cột chi tiết; không tính độ rộng bằng tay.
   - Trên macOS 26+, nội dung cuộn dưới header được che bằng `scrollEdgeEffectStyle(.hard, for: .top)`.
-  - Thanh cuộn theo cài đặt hệ thống. Kiểu overlay không chiếm chỗ. Kiểu legacy chỉ hiện ở mục cần cuộn; mục đó hẹp hơn đúng độ rộng thanh cuộn, còn vị trí mọi thứ giữ nguyên (xem `docs/UI-CHECKS.md`).
+  - Thanh cuộn theo cài đặt hệ thống. Kiểu When scrolling không chiếm chỗ. Kiểu Always chỉ hiện ở mục cần cuộn; mục đó hẹp hơn đúng độ rộng thanh cuộn, còn vị trí mọi thứ giữ nguyên (xem `docs/UI-CHECKS.md`).
 - **Control hệ thống được bọc:**
   - `SegmentedPicker` bọc `NSSegmentedControl`, chỉ còn ở cửa sổ onboarding: `Picker(.segmented)` trên macOS 14–15 giữ độ rộng nội tại và căn giữa, không trải theo khung như mockup. Cửa sổ Cài đặt dùng `Picker(.segmented)` (macOS 26+: `buttonSizing(.flexible)`).
 - **Sheet thêm quy tắc** (`AddAppRuleSheet`): hàng đầu gồm tiêu đề bên trái và ô tìm hệ thống (`NSSearchField`) bên phải; danh sách ứng dụng là `List(selection:)` cao cố định trong `GroupBox` ngoài Form (`List` lồng trong `Form(.grouped)` không cuộn được), để "Khi đang gõ" luôn trong tầm nhìn; "Khi đang gõ" là thẻ của một `Form(.grouped)`; nút trên `toolbar` (`cancellationAction`, `confirmationAction`; "Chọn ứng dụng khác…" là `.automatic`, nằm đầu trái thanh nút), như sheet của System Settings (D9, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`, mục Sheet).

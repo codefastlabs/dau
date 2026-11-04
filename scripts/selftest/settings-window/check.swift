@@ -2,9 +2,9 @@
 // onboarding and uninstall captures (docs/UI-CHECKS.md). run.sh compiles this file with
 // Reference.swift (every pass value) and runs it after the app launches.
 //
-// Usage: check <out-dir> overlay:<dir> legacy:<dir>…
-//   overlay:<dir>  ax-check --geometry output (overlay scroll bars): (b), (c), (e)
-//   legacy:<dir>   ax-check --pixels output (legacy scroll bars): (b), (c), (d), (e)
+// Usage: check <out-dir> whenScrolling:<dir> always:<dir>…
+//   whenScrolling:<dir>  ax-check --geometry output (When scrolling scroll bars): (b), (c), (e)
+//   always:<dir>   ax-check --pixels output (Always scroll bars): (b), (c), (d), (e)
 // Each <dir> holds the screenshots and frames.json written by ax-check (window points,
 // origin at the window's top-left; "meta": the primary display's scale and the
 // appearance). Only the primary display's screenshots are checked. Sample positions are
@@ -12,13 +12,15 @@
 // were set on a 2x display, which the output says when the primary display is 1x.
 //   (b) The page color reaches the right edge (or the scroll bar sitting there), the
 //       toolbar band is one color from the middle to the right edge.
-//   (c) No strip of another color in the Form's right margin: every overlay screenshot,
-//       and a legacy one only on a page without a scroll bar (a legacy bar fills the strip).
-//   (d) Scrolled (Reference.scrollingSection, legacy): the header looks as when not scrolled.
+//   (c) No strip of another color in the Form's right margin: every When scrolling screenshot,
+//       and a Always one only on a page without a scroll bar (a Always bar fills the strip).
+//   (d) Scrolled (Reference.scrollingSection, Always): the header looks as when not scrolled.
 //   (e) The Ứng dụng toolbar "+" is drawn round.
 //   (f) onboarding/, onboarding-no-shortcut/ (Dau --capture-onboarding): every shot has
 //       the app name, title, card and buttons where the mockup puts them; a view missing
 //       from a shot is FAIL (the app drops a view's frame when it disappears).
+//   (h) banner-states/ (Dau --capture-banner): the three banner states after "Bật lại" in
+//   both appearances, shown inside the Form's margins.
 //   (g) uninstall/ (Dau --capture-uninstall): both alerts and both sheets of "Bỏ Dấu khỏi
 //   Nguồn nhập liệu" in both appearances, not cut.
 // Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
@@ -27,13 +29,13 @@
 import AppKit
 
 let args = Array(CommandLine.arguments.dropFirst())
-guard let rootArg = args.first else { print("usage: check <out-dir> overlay:<dir> legacy:<dir>…"); exit(2) }
+guard let rootArg = args.first else { print("usage: check <out-dir> whenScrolling:<dir> always:<dir>…"); exit(2) }
 let root = URL(fileURLWithPath: rootArg, isDirectory: true)
 let windowDirs: [(style: String, dir: String)] = args.dropFirst().compactMap {
     let parts = $0.split(separator: ":", maxSplits: 1).map(String.init)
-    return parts.count == 2 && ["overlay", "legacy"].contains(parts[0]) ? (parts[0], parts[1]) : nil
+    return parts.count == 2 && ["whenScrolling", "always"].contains(parts[0]) ? (parts[0], parts[1]) : nil
 }
-guard windowDirs.count == args.count - 1 else { print("usage: check <out-dir> overlay:<dir> legacy:<dir>…"); exit(2) }
+guard windowDirs.count == args.count - 1 else { print("usage: check <out-dir> whenScrolling:<dir> always:<dir>…"); exit(2) }
 
 // MARK: - Results
 
@@ -143,12 +145,12 @@ for (style, dirName) in windowDirs {
                    got: "\(Int(mid.distance(edge)))", ok: mid.distance(edge) <= colorTol)
         }
 
-        // (c) No strip of another color in the Form's right margin (item 11). Overlay bars
-        // are not drawn at rest, so the whole strip is sampled. A legacy bar fills the
+        // (c) No strip of another color in the Form's right margin (item 11). When scrolling bars
+        // are not drawn at rest, so the whole strip is sampled. A Always bar fills the
         // strip (it lies in the margin), so (c) runs only on a page without one; on a page
         // with one, (a) in ax-check holds the lane to the bar's width and (b) reads the page
         // color left of it.
-        if style == "overlay" || scroller == nil {
+        if style == "whenScrolling" || scroller == nil {
             var stray = 0, samples = 0
             for x in stride(from: W - Reference.formMargin + Reference.strayStripInset, to: W, by: 1) {
                 for y in stride(from: Reference.straySampleTop, to: low, by: Reference.straySampleStep) {
@@ -165,8 +167,8 @@ for (style, dirName) in windowDirs {
         // its left (the drawn button starts at or before the frame) and not past it to the
         // right (the search field follows).
         // The toolbar does not depend on the scroll-bar style: (e) runs on the geometry
-        // launch's captures (overlay), the only ones that record the "+" frame.
-        if section == "apps" && style == "overlay" {
+        // launch's captures (When scrolling), the only ones that record the "+" frame.
+        if section == "apps" && style == "whenScrolling" {
             guard let add = f["headerAdd"] else {
                 harness(at, "(e) + drawn round", "no \"+\" frame (see \(dirName).txt)")
                 continue
@@ -193,7 +195,7 @@ for (style, dirName) in windowDirs {
 
     // (d) Scrolled through the bar: the header right of the title looks as when not
     // scrolled (the system's hard scroll edge, item 9).
-    if style == "legacy" {
+    if style == "always" {
         let section = Reference.scrollingSection
         let at = "\(dirName)/\(section)-scrolled-\(tag) \(mode)"
         if let (base, _) = load("\(section)-\(tag)", "(d) header when scrolled"),
@@ -214,10 +216,14 @@ for (style, dirName) in windowDirs {
 
 // MARK: - Onboarding (f)
 
-// Mockup positions ("OnboardingConflict", "OnboardingEnable", "OnboardingEnableWaiting",
-// "OnboardingEnableFailed", "OnboardingEnableDone", "Onboarding"; window at
+/// The system's Always scroll bar width (what a scrolling step gives up when the bars are Always).
+let alwaysScrollerWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
+
+// Mockup positions ("OnboardingConflict", "OnboardingEnable", "OnboardingEnableNotes",
+// "OnboardingEnableWaiting", "OnboardingEnableFailed", "OnboardingEnableError",
+// "OnboardingEnableDone", "OnboardingEnableDoneNoShortcut", "Onboarding"; window at
 // 50,40 in the artboard), the same in every step and both appearances.
-let onboardingShots = ["1", "2", "2-waiting", "2-failed", "2-done", "3"]
+let onboardingShots = ["1", "2", "2-notes", "2-waiting", "2-failed", "2-error", "2-done", "2-done-noshortcut", "3"]
     .flatMap { step in ["light", "dark"].map { "onboarding-\(step)-\($0)" } }
 for dirName in ["onboarding", "onboarding-no-shortcut"] {
     guard let (shots, _) = loadFrames(root.appendingPathComponent(dirName)) else {
@@ -240,8 +246,17 @@ for dirName in ["onboarding", "onboarding-no-shortcut"] {
         place("onbAppName", { near($0.minX, name.x) && near($0.minY, name.y) }, expected: "at \(fmt(name.x)),\(fmt(name.y))")
         place("onbTitle", { near($0.minX, title.x) && near($0.minY, title.y, Reference.onboardingTitleYTolerance) },
               expected: "at \(fmt(title.x)),\(fmt(title.y)) (y ± \(fmt(Reference.onboardingTitleYTolerance)))")
-        place("onbCard", { near($0.minX, Reference.onboardingCardX) && near($0.width, Reference.onboardingCardWidth) },
-              expected: "x \(fmt(Reference.onboardingCardX)), width \(fmt(Reference.onboardingCardWidth))")
+        // The step scrolls when its content is taller than the window (the divider above
+        // the buttons shows then). With the system's Always scroll bars (Always, or Automatic
+        // with a mouse) the bar takes its own width from the cards; When scrolling bars take none.
+        // Same rule as the Settings window: full width, or one system scroller less, and only
+        // while the content scrolls.
+        let scrolls = f["onbDivider"] != nil
+        let cardWidths = scrolls ? [Reference.onboardingCardWidth, Reference.onboardingCardWidth - alwaysScrollerWidth]
+                                 : [Reference.onboardingCardWidth]
+        place("onbCard", { r in near(r.minX, Reference.onboardingCardX) && cardWidths.contains { w in near(r.width, w) } },
+              expected: "x \(fmt(Reference.onboardingCardX)), width \(fmt(Reference.onboardingCardWidth))"
+                + (scrolls ? " or \(fmt(Reference.onboardingCardWidth - alwaysScrollerWidth)) (scrolls, Always scroll bar)" : ""))
         place("onbButtons", { near($0.maxX, Reference.onboardingButtonsMaxX) && near($0.maxY, Reference.onboardingButtonsMaxY) },
               expected: "ending at \(fmt(Reference.onboardingButtonsMaxX)),\(fmt(Reference.onboardingButtonsMaxY))")
     }
@@ -260,6 +275,28 @@ for key in ["confirm", "done", "remove", "remove-other"].flatMap({ k in ["light"
     let min = Reference.alertMinSize
     record(at, "(g) alert not cut", expected: "≥ \(fmt(min.width))×\(fmt(min.height))", got: "\(fmt(sheet.width))×\(fmt(sheet.height))",
            ok: sheet.width >= min.width && sheet.height >= min.height)
+}
+
+// MARK: - Banner states (h)
+
+// The banner after "Bật lại" (Dau --capture-banner): waiting, not enabled, enabled, both
+// appearances. The banner row must be shown (a state that fails to draw has no frame),
+// inside the Form's margins and below the toolbar.
+let bannerDir = root.appendingPathComponent("banner-states")
+let bannerShots = loadFrames(bannerDir)?.shots
+for key in ["waiting", "failed", "done"].flatMap({ k in ["light", "dark"].map { "banner-\(k)-\($0)" } }) {
+    let at = "banner-states/\(key)"
+    guard let f = bannerShots?[key], image(bannerDir.appendingPathComponent("\(key).png")) != nil else {
+        harness(at, "(h)", "no capture (see the capture step in run.sh's output)")
+        continue
+    }
+    guard let banner = f["banner"], let window = f["window"] else {
+        record(at, "(h) banner shown", expected: "a banner row", got: "missing (view not shown)", ok: false)
+        continue
+    }
+    let left = Reference.sidebarWidth + Reference.formMargin, right = window.width - Reference.formMargin
+    record(at, "(h) banner inside the Form's margins", expected: "x ≥ \(fmt(left)), right edge ≤ \(fmt(right)), y ≥ \(fmt(Reference.formFirstItemY))",
+           got: fmt(banner), ok: banner.minX >= left - 0.5 && banner.maxX <= right + 0.5 && banner.minY >= Reference.formFirstItemY - 0.5)
 }
 
 print("where | check | expected | got | result")

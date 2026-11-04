@@ -10,14 +10,16 @@ import SwiftUI
 @MainActor
 @Observable
 final class InputMethodActions {
-    /// What the banner shows after "Bật lại".
+    /// What the banner shows after "Bật lại" (mockup "SettingsBannerStates").
     enum BannerState: Equatable {
         case idle
+        /// Waiting for the user's Allow ("Thử lại" cancels and asks again).
         case working
-        /// Dấu was enabled from the banner: a confirmation.
+        /// Dấu was enabled from the banner: a confirmation with "Ẩn".
         case enabled
-        /// The calls went through, TIS still reports Dấu off: Keyboard settings opened.
+        /// The wait ended, Dấu still off: how to add it by hand.
         case notEnabled
+        /// An error (copy, signature, registration): shown like `notEnabled`.
         case failed
     }
 
@@ -32,18 +34,35 @@ final class InputMethodActions {
     enum ReinstallState: Equatable { case idle, working, failed }
     private(set) var reinstall: ReinstallState = .idle
 
+    /// The input source shortcut and the English layout, read when Dấu got enabled from
+    /// the banner (its confirmation names the real shortcut, N5).
+    private(set) var shortcut: InputSourceShortcut.Reading = .unknown
+    private(set) var englishLayout: String?
+
     @ObservationIgnored let installer: InputMethodInstaller
     @ObservationIgnored private let openKeyboardSettings: () -> Void
+    @ObservationIgnored private let readShortcut: () -> InputSourceShortcut.Reading
+    @ObservationIgnored private let readEnglishLayout: () -> String?
+    @ObservationIgnored private var bannerTask: Task<EnableOutcome, Error>?
+    @ObservationIgnored private var bannerAttempt = 0
 
-    init(installer: InputMethodInstaller, openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard) {
+    init(installer: InputMethodInstaller,
+         openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard,
+         shortcut: @escaping () -> InputSourceShortcut.Reading = InputSourceShortcut.read,
+         englishLayout: @escaping () -> String? = InputSourceStatus.englishLayoutName) {
         self.installer = installer
         self.openKeyboardSettings = openKeyboardSettings
+        self.readShortcut = shortcut
+        self.readEnglishLayout = englishLayout
     }
 
-    /// "Bật lại". Returns true when the onboarding window should take over: the input
-    /// method is not installed, or macOS does not list it yet (first install, logout).
+    /// "Bật lại" and "Thử lại". Returns true when the onboarding window should take over:
+    /// the input method is not installed, or macOS does not list it yet. A run still
+    /// waiting for the user's Allow is cancelled first.
     func enableFromBanner() async -> Bool {
-        guard banner != .working else { return false }
+        bannerTask?.cancel()
+        bannerAttempt += 1
+        let mine = bannerAttempt
         banner = .working
         switch installer.status() {
         case .notInstalled:
@@ -60,21 +79,32 @@ final class InputMethodActions {
         case .installed:
             break
         }
-        do {
-            switch try await installer.enable() {
-            case .enabled:
-                banner = .enabled
-            case .notEnabled:
-                banner = .notEnabled
-                openKeyboardSettings()
-            case .notListed:
-                banner = .idle
-                return true
-            }
-        } catch {
+        let installer = self.installer
+        let task = Task { @MainActor in try await installer.enable() }
+        bannerTask = task
+        let result = await task.result
+        guard mine == bannerAttempt else { return false }   // replaced by a newer run
+        bannerTask = nil
+        switch result {
+        case .success(.enabled):
+            shortcut = readShortcut()
+            englishLayout = readEnglishLayout()
+            banner = .enabled
+        case .success(.notEnabled):
+            banner = .notEnabled
+        case .success(.notListed):
+            banner = .idle
+            return true
+        case .failure:
             banner = .failed
         }
         return false
+    }
+
+    /// "Ẩn" on the confirmation: hides it for this session.
+    func dismissBanner() {
+        guard banner == .enabled else { return }
+        banner = .idle
     }
 
     /// Checks the installed input method's signature (at launch and whenever the app
@@ -105,6 +135,12 @@ final class InputMethodActions {
     func forceTampered() { installedTampered = true }
     /// Captures (`--capture-uninstall`): show or hide the uninstall sheet, running nothing.
     func showUninstallSheetForCapture(_ preparation: UninstallPreparation?) { uninstallSheet = preparation }
+    /// Captures (`--capture-banner`): show a banner state, running nothing.
+    func showBannerForCapture(_ state: BannerState, shortcut: InputSourceShortcut.Reading = .unknown, englishLayout: String? = nil) {
+        banner = state
+        self.shortcut = shortcut
+        self.englishLayout = englishLayout
+    }
     #endif
 
     /// The input sources changed: once Dấu is on (e.g. the user added it in Keyboard
@@ -232,7 +268,7 @@ enum UninstallAlert {
             lines.append(String(localized: "Nguồn nhập liệu hiện tại: “\(keyboard)”."))
         }
         if report.stillEnabled {
-            lines.append(String(localized: "macOS vẫn báo Dấu trong Nguồn nhập liệu; bạn có thể bỏ nó trong Cài đặt Bàn phím."))
+            lines.append(String(localized: "macOS vẫn báo Dấu trong Nguồn nhập liệu; bạn có thể bỏ nó trong System Settings › Keyboard › Input Sources."))
         }
         if report.dataDeleted {
             lines.append(String(localized: "Đã xoá cài đặt và quy tắc ứng dụng."))
@@ -247,7 +283,7 @@ enum UninstallAlert {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = String(localized: "Chưa gỡ được Dấu")
-        alert.informativeText = String(localized: "Bạn có thể bỏ “Dấu – Tiếng Việt” trong Cài đặt Bàn phím › Nguồn đầu vào, rồi thử lại.")
+        alert.informativeText = String(localized: "Bạn có thể bỏ “Dấu – Tiếng Việt” trong System Settings › Keyboard › Input Sources, rồi thử lại.")
         alert.addButton(withTitle: String(localized: "OK"))
         return alert
     }

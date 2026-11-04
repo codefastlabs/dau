@@ -46,7 +46,7 @@ struct AppRulesView: View {
                         }
                         Button("Đổi…") { SystemSettings.openKeyboard() }
                             .accessibilityLabel(Text("Đổi tuỳ chọn nhớ nguồn nhập liệu theo từng cửa sổ"))
-                            .accessibilityHint(Text("Mở Cài đặt Bàn phím của macOS"))
+                            .accessibilityHint(Text("Mở System Settings"))
                     }
                 } label: {
                     Text("Nhớ nguồn nhập liệu theo từng cửa sổ")

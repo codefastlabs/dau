@@ -355,15 +355,16 @@ struct WrappingHStack: Layout {
 }
 
 /// "Dấu chưa được bật" banner (docs/UI.md, "Các trạng thái bổ sung", mockup
-/// "SettingsNotEnabled"), first on every page while Dấu is not among the enabled
-/// input sources: orange tile with a white warning symbol, title, subtitle,
-/// prominent button.
+/// "SettingsNotEnabled", "SettingsBannerStates"), first on every page while Dấu is not
+/// among the enabled input sources: a tile (orange with a white warning symbol), title,
+/// subtitle, button.
 ///
-/// "Bật lại" enables Dấu (N4: the user's click, read back from Text Input Sources; the
-/// button stays busy while macOS waits for the user's Allow) and the banner then turns
-/// into a green confirmation. There is no undo: Dấu cannot switch itself off. When macOS
-/// keeps Dấu off it opens Keyboard settings with the steps; when Dấu is not installed or
-/// not listed yet it opens the onboarding window.
+/// "Bật lại" enables Dấu (N4: the user's click, read back from Text Input Sources). While
+/// macOS waits for the user's Allow the banner waits too (spinner, "Thử lại" cancels the
+/// wait and asks again); when macOS keeps Dấu off it says so with the way to add it by
+/// hand and "Thử lại"; once enabled it turns into a green confirmation with the real
+/// shortcut and "Ẩn", which hides it for this session. No undo: Dấu cannot switch itself
+/// off. Not installed or not listed yet: the onboarding window opens.
 struct NotEnabledBanner: View {
     @Environment(InputSourceStatus.self) private var status
     @Environment(\.inputMethodActions) private var actions
@@ -371,38 +372,61 @@ struct NotEnabledBanner: View {
 
     var body: some View {
         let state = actions?.banner ?? .idle
-        if state == .enabled {
-            banner(tint: .green, symbol: "checkmark",
-                   title: Text("Đã bật Dấu trong Nguồn nhập liệu"),
-                   hint: Text("“Dấu – Tiếng Việt” đã có trong Nguồn nhập liệu của macOS.")) {
-                EmptyView()
+        switch state {
+        case .enabled:
+            noticeBanner(probe: "banner.enabled", leading: tile(.green, symbol: "checkmark"),
+                         title: Text("Đã bật Dấu"), hint: enabledHint) {
+                Button("Ẩn") { actions?.dismissBanner() }
             }
-        } else if status.isEnabled == false {
-            banner(tint: .orange, symbol: "exclamationmark.triangle.fill",
-                   title: Text("Dấu chưa được bật trong Nguồn nhập liệu"), hint: hint(state)) {
-                if state == .notEnabled || state == .failed {
-                    // The onboarding's button at the Form's control size.
-                    Button("Mở Cài đặt Bàn phím…") { SystemSettings.openKeyboard() }
-                        .fixedSize()
-                } else {
-                    Button("Bật lại") { enable() }
-                        .buttonStyle(.borderedProminent)
-                        .disabled(state == .working)
-                }
+        case .working:
+            noticeBanner(probe: "banner.working", leading: ProgressView().controlSize(.small).frame(width: 28, height: 28).accessibilityHidden(true),
+                         title: Text("Đang chờ bạn bấm Allow"),
+                         hint: Text("Hộp thoại nằm trong cửa sổ System Settings. Bấm Allow để bật Dấu.")) {
+                Button("Thử lại") { enable() }
+            }
+            .accessibilityAddTraits(.updatesFrequently)
+        case .notEnabled, .failed:
+            noticeBanner(probe: "banner.notEnabled", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
+                         title: Text("Chưa bật được Dấu"),
+                         hint: Text("Bấm Thử lại rồi Allow, hoặc tự thêm: System Settings › Keyboard › Input Sources › Edit… › + › Vietnamese › Dấu.")) {
+                Button("Thử lại") { enable() }
             }
             .onChange(of: status.isEnabled) { _, isEnabled in actions?.inputSourcesChanged(isEnabled: isEnabled) }
+        case .idle:
+            if status.isEnabled == false {
+                noticeBanner(probe: "banner.idle", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
+                             title: Text("Dấu chưa được bật trong Nguồn nhập liệu"),
+                             hint: Text("Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt.")) {
+                    Button("Bật lại") { enable() }
+                        .buttonStyle(.borderedProminent)
+                }
+            }
         }
     }
 
-    private func hint(_ state: InputMethodActions.BannerState) -> Text {
-        switch state {
-        case .notEnabled:
-            Text("macOS chưa bật Dấu. Trong Cài đặt Bàn phím › Nguồn đầu vào, bấm Sửa…, bấm +, chọn “Dấu – Tiếng Việt” trong nhóm Tiếng Việt rồi bấm Thêm.")
-        case .failed:
-            Text("Chưa bật được Dấu. Bạn có thể tự thêm “Dấu – Tiếng Việt” trong Cài đặt Bàn phím › Nguồn đầu vào.")
+    /// "Chọn Dấu trong menu nhập liệu, hoặc bấm ⌃Space để chuyển giữa Dấu và ABC.": the
+    /// real shortcut (N5); without a readable one, only the first half.
+    private var enabledHint: Text {
+        guard let actions else { return Text("Chọn Dấu trong menu nhập liệu.") }
+        switch (actions.shortcut.shortcut, actions.englishLayout) {
+        case (let shortcut?, let layout?):
+            return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và \(layout).")
+        case (let shortcut?, nil):
+            return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và bàn phím tiếng Anh.")
         default:
-            Text("Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt.")
+            return Text("Chọn Dấu trong menu nhập liệu.")
         }
+    }
+
+    private func tile(_ tint: Color, symbol: String) -> some View {
+        // Mockup "SettingsNotEnabled": a tile in a system color with a white symbol, at
+        // the size of the app icons in Form rows. System colors only (D9).
+        Image(systemName: symbol)
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundStyle(.white)
+            .frame(width: 28, height: 28)
+            .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+            .accessibilityHidden(true)
     }
 
     private func enable() {
@@ -417,11 +441,6 @@ struct NotEnabledBanner: View {
             }
         }
     }
-
-    private func banner<Buttons: View>(tint: Color, symbol: String, title: Text, hint: Text,
-                                       @ViewBuilder buttons: () -> Buttons) -> some View {
-        noticeBanner(tint: tint, symbol: symbol, title: title, hint: hint, buttons: buttons)
-    }
 }
 
 /// "Bộ gõ trên máy không phải bản Dấu đã cài" (mockup "SettingsTampered"): the input
@@ -433,7 +452,12 @@ struct TamperedBanner: View {
 
     var body: some View {
         if let actions, actions.installedTampered {
-            noticeBanner(tint: .red, symbol: "exclamationmark.triangle.fill",
+            noticeBanner(leading: Image(systemName: "exclamationmark.triangle.fill")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundStyle(.white)
+                            .frame(width: 28, height: 28)
+                            .background(Color.red, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
+                            .accessibilityHidden(true),
                          title: Text("Bộ gõ trên máy không phải bản Dấu đã cài"),
                          hint: actions.reinstall == .failed
                             ? Text("Chưa cài lại được. Hãy gỡ cài đặt Dấu rồi cài lại từ bản tải về.")
@@ -451,19 +475,11 @@ struct TamperedBanner: View {
 /// Settings' own notices (a grouped Form on macOS draws no row background set with
 /// `listRowBackground`, measured on macOS 27.2); the tile carries the color.
 @MainActor @ViewBuilder
-private func noticeBanner<Buttons: View>(tint: Color, symbol: String, title: Text, hint: Text,
-                                         @ViewBuilder buttons: () -> Buttons) -> some View {
+private func noticeBanner<Leading: View, Buttons: View>(probe: String = "banner", leading: Leading, title: Text, hint: Text,
+                                                        @ViewBuilder buttons: () -> Buttons) -> some View {
     Section {
         HStack(alignment: .center, spacing: 10) {
-            // Mockup "SettingsNotEnabled": a tile in a system color with a white
-            // symbol, at the size of the app icons in Form rows. System colors only
-            // (D9).
-            Image(systemName: symbol)
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
-                .frame(width: 28, height: 28)
-                .background(tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
-                .accessibilityHidden(true)
+            leading
             VStack(alignment: .leading, spacing: 2) {
                 title
                     .fontWeight(.semibold)
@@ -474,6 +490,7 @@ private func noticeBanner<Buttons: View>(tint: Color, symbol: String, title: Tex
             buttons()
         }
         .accessibilityElement(children: .contain)
+        .layoutProbe(probe)
     }
 }
 

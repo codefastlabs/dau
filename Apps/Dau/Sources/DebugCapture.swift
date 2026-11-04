@@ -42,9 +42,10 @@ import SwiftUI
 
 /// Debug only: in-app captures that need fake services, run by
 /// scripts/selftest/settings-window on a copy re-signed ad hoc without entitlements:
-/// `--capture-onboarding` (the onboarding window on fixed services) and
+/// `--capture-onboarding` (the onboarding window on fixed services),
 /// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi Nguồn nhập liệu"
-/// sheet, laid out without running anything). The
+/// sheet, laid out without running anything) and `--capture-banner` (the three banner
+/// states after "Bật lại", laid out without running anything). The
 /// Settings window itself is measured from outside, in the real app (`--settings-window`,
 /// ax-check.swift).
 @MainActor
@@ -56,7 +57,7 @@ enum DebugCapture {
 
     /// The probe closure installed in the onboarding scene while capturing.
     static var probe: (@MainActor @Sendable (String, CGRect) -> Void)? {
-        guard onboardingDirectory != nil else { return nil }
+        guard onboardingDirectory != nil || bannerDirectory != nil else { return nil }
         return { @MainActor name, frame in DebugCapture.frames[name] = frame.isNull ? nil : frame }
     }
 
@@ -72,9 +73,11 @@ enum DebugCapture {
 
     /// `--capture-onboarding <dir>`: the onboarding window on fixed services (OpenKey
     /// running, Dấu installed but not enabled). Writes `onboarding-<step>-<mode>.png` for
-    /// steps 1, 2 before "Bật Dấu" (`2`), 2 waiting for Allow (`2-waiting`), 2 when macOS
-    /// left Dấu off (`2-failed`), 2 once enabled (`2-done`) and 3, light and dark, plus
-    /// `frames.json`.
+    /// steps 1, 2 before "Bật Dấu" (`2`), 2 with an unreadable shortcut and another
+    /// Vietnamese source on (`2-notes`), 2 waiting for Allow (`2-waiting`), 2 when macOS
+    /// left Dấu off (`2-failed`), 2 on an install error (`2-error`), 2 once enabled
+    /// (`2-done`), 2 enabled with no shortcut set (`2-done-noshortcut`) and 3, light and
+    /// dark, plus `frames.json`.
     static let onboardingDirectory: URL? = {
         let args = CommandLine.arguments
         guard let i = args.firstIndex(of: "--capture-onboarding"), i + 1 < args.count else { return nil }
@@ -82,15 +85,19 @@ enum DebugCapture {
     }()
 
     /// `--shortcut none|unknown`: pretend the input source shortcut reads so (captures).
-    static let shortcutOverride: (() -> InputSourceShortcut.Reading)? = {
+    static let shortcutArgument: InputSourceShortcut.Reading? = {
         let args = CommandLine.arguments
         guard let i = args.firstIndex(of: "--shortcut"), i + 1 < args.count else { return nil }
         switch args[i + 1] {
-        case "none": return { .none }
-        case "unknown": return { .unknown }
+        case "none": return InputSourceShortcut.Reading.none
+        case "unknown": return InputSourceShortcut.Reading.unknown
         default: return nil
         }
     }()
+
+    /// What the captures' flow reads as the shortcut: a shot may set it; nil reads the
+    /// real one.
+    static var shortcutNow: InputSourceShortcut.Reading? = shortcutArgument
 
     static var onboardingFlow: OnboardingFlow?
     static var onboardingDetector: FakeInputMethodDetector?
@@ -132,15 +139,27 @@ enum DebugCapture {
                 let openKey = onboardingDetector?.found ?? []
                 onboardingInstaller?.current = .installed(version: nil)
                 onboardingInstaller?.enableWaits = false
+                onboardingInstaller?.failure = nil
+                shortcutNow = shortcutArgument
                 flow.start()
                 flow.tryText = ""
                 let installer = onboardingInstaller
+                let detector = onboardingDetector
                 let shots: [(String, @MainActor () async -> Void)] = [
                     ("1", { flow.show(.oldInputMethods) }),
                     // As in the mockup: the user quit OpenKey, step 1 is done.
-                    ("2", { onboardingDetector?.found = []; flow.refresh(); flow.show(.enable) }),
+                    ("2", { detector?.found = []; flow.refresh(); flow.show(.enable) }),
+                    // The shortcut cannot be read and another Vietnamese source is on (D14).
+                    ("2-notes", {
+                        shortcutNow = InputSourceShortcut.Reading.unknown
+                        detector?.otherSources = ["Tiếng Việt – Telex"]
+                        flow.refresh()
+                    }),
                     // "Bật Dấu" is waiting for the click on macOS's dialog.
                     ("2-waiting", {
+                        shortcutNow = shortcutArgument
+                        detector?.otherSources = []
+                        flow.refresh()
                         installer?.enableWaits = true
                         Task { @MainActor in await flow.enable() }
                     }),
@@ -150,13 +169,20 @@ enum DebugCapture {
                         installer?.release = .notEnabled
                         while flow.isWorking { try? await Task.sleep(for: .milliseconds(20)) }
                     }),
+                    // "Thử lại" hits an install error.
+                    ("2-error", {
+                        installer?.enableWaits = false
+                        installer?.failure = .invalidSignature
+                        await flow.enable()
+                    }),
                     // "Thử lại", and this time the user allows it.
                     ("2-done", {
-                        installer?.enableWaits = false
+                        installer?.failure = nil
                         installer?.enableOutcome = .enabled
                         await flow.enable()
                     }),
-                    ("3", { flow.tryText = "Tôi yêu tiếng Việt"; flow.show(.typing) }),
+                    ("2-done-noshortcut", { shortcutNow = InputSourceShortcut.Reading.none; flow.refresh() }),
+                    ("3", { shortcutNow = shortcutArgument; flow.refresh(); flow.tryText = "Tôi yêu tiếng Việt"; flow.show(.typing) }),
                 ]
                 for (key, setUp) in shots {
                     // Probes report changes only: a view still shown keeps its frame
@@ -264,6 +290,57 @@ enum DebugCapture {
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
                     actions?.showUninstallSheetForCapture(nil)
                     try? await Task.sleep(for: .milliseconds(600))
+                }
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
+                try? data.write(to: directory.appendingPathComponent("frames.json"))
+            }
+            print("captured to \(directory.path)")
+            exit(0)
+        }
+    }
+
+    // MARK: Banner states
+
+    /// `--capture-banner <dir>`: opens the Settings window in the middle of the primary
+    /// display and lays out the banner after "Bật lại" in its three states without running
+    /// anything: waiting for Allow (`banner-waiting-<mode>.png`), not enabled
+    /// (`banner-failed-<mode>.png`) and enabled with the real shortcut
+    /// (`banner-done-<mode>.png`), plus `frames.json` ("banner": the banner row, "window").
+    static let bannerDirectory: URL? = {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--capture-banner"), i + 1 < args.count else { return nil }
+        return URL(fileURLWithPath: args[i + 1], isDirectory: true)
+    }()
+
+    static func startBanner() {
+        guard let directory = bannerDirectory else { return }
+        NSApp.setActivationPolicy(.accessory)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(600))
+            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
+                print("no window"); exit(1)
+            }
+            placeForCapture(window, size: SettingsScene.defaultSize)
+            var report: [String: [String: [Double]]] = [:]
+            let control = InputSourceShortcut(keys: ["⌃", "Space"], globeKey: false)
+            let states: [(String, InputMethodActions.BannerState, InputSourceShortcut.Reading)] = [
+                ("waiting", .working, .unknown),
+                ("failed", .notEnabled, .unknown),
+                ("done", .enabled, .shortcut(control)),
+            ]
+            for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
+                NSApp.appearance = NSAppearance(named: name)
+                for (key, state, shortcut) in states {
+                    actions?.showBannerForCapture(state, shortcut: shortcut, englishLayout: "ABC")
+                    try? await Task.sleep(for: .milliseconds(900))
+                    capture(window, to: directory.appendingPathComponent("banner-\(key)-\(mode).png"))
+                    var entry: [String: [Double]] = ["window": [0, 0, Double(window.frame.width), Double(window.frame.height)]]
+                    if let r = frames.first(where: { $0.key.hasPrefix("banner") })?.value {
+                        entry["banner"] = [Double(r.minX), Double(r.minY), Double(r.width), Double(r.height)]
+                    }
+                    report["banner-\(key)-\(mode)"] = entry
                 }
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {

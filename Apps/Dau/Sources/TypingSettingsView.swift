@@ -47,11 +47,11 @@ struct TypingSettingsView: View {
                         ShortcutKeycaps(shortcut: shortcut)
                         Button("Đổi…") { SystemSettings.openKeyboard() }
                             .layoutProbe("button")
-                            .accessibilityHint(Text("Mở Cài đặt Bàn phím của macOS"))
+                            .accessibilityHint(Text("Mở System Settings"))
                     }
                 } label: {
                     Text("Phím tắt nguồn nhập liệu")
-                    Text("Dùng chung phím tắt của macOS, đổi trong Cài đặt Bàn phím")
+                    Text("Dùng chung phím tắt của macOS, đổi trong System Settings › Keyboard")
                 }
             }
         }

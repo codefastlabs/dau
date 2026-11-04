@@ -82,7 +82,7 @@ enum KnownInputMethods {
 
     /// System Settings path on macOS 27.2 (research section 2.5).
     static func loginItemsStep(_ name: String) -> String {
-        String(localized: "Nếu \(name) tự mở lại: Cài đặt hệ thống › Cài đặt chung › Mục đăng nhập & Phần mở rộng, tắt \(name)")
+        String(localized: "Nếu \(name) tự mở lại: System Settings › General › Login Items & Extensions, tắt \(name)")
     }
 }
 
@@ -178,6 +178,25 @@ enum UpgradeOutcome: Equatable, Sendable {
     case upgraded(from: String?, to: String)
     /// Not replaced: the installed bundle has another identity (D37: IDs never change).
     case skipped(String)
+}
+
+extension InputMethodInstallerError {
+    /// What the "Chi tiết" line of the error screen says, in Vietnamese and only what the
+    /// error is (N5). The technical text (system status codes) goes to the log, not here.
+    var detail: String {
+        switch self {
+        case .unavailable:
+            String(localized: "Không tìm thấy bộ gõ trong ứng dụng Dấu.")
+        case .invalidSignature:
+            String(localized: "Chữ ký của bộ gõ không hợp lệ, hoặc không cùng nhà phát triển với ứng dụng.")
+        case .failed(let message) where message == "not installed":
+            String(localized: "Bộ gõ chưa được chép vào máy.")
+        case .failed:
+            String(localized: "macOS báo lỗi khi chép hoặc đăng ký bộ gõ.")
+        case .stillListed:
+            String(localized: "Dấu vẫn còn trong Nguồn nhập liệu.")
+        }
+    }
 }
 
 /// What `prepareUninstall` did (D16), for the sheet that asks the user to remove Dấu

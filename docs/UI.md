@@ -16,12 +16,12 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 ## Onboarding
 - Ba bước, thanh bước bên trái có trạng thái xong / đang làm / chưa. Dòng về quyền cần cấp để ô trống cho tới khi kiểm chứng (N5).
 - **Bước 1, tắt bộ gõ cũ:** chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/M5-INSTALL.md` mục 5). Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng; app chưa kiểm thì ghi chung "Thoát <tên>" và đường dẫn Mục đăng nhập (N5). Tự kiểm tra lại khi cửa sổ được kích hoạt; cho phép bỏ qua.
-- **Bước 2, bật Dấu:** chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu" (N4, D37). macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có bốn màn (artboard `OnboardingEnable`, `OnboardingEnableWaiting`, `OnboardingEnableDone`, `OnboardingEnableFailed`). Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5). Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
-  - **Trước khi bấm:** thẻ "Sau khi bật, bạn sẽ thấy", rồi thẻ nói trước điều sắp xảy ra (System Settings đóng rồi mở lại, hộp thoại hỏi) kèm hình thu nhỏ hộp thoại của macOS (minh hoạ, ẩn với VoiceOver). Nhắc nhẹ khi có nguồn tiếng Việt kiểu IMK khác đang bật (D14), không chặn.
+- **Bước 2, bật Dấu:** chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu" (N4, D37). macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn (artboard `OnboardingEnable`, `OnboardingEnableNotes`, `OnboardingEnableWaiting`, `OnboardingEnableDone`, `OnboardingEnableDoneNoShortcut`, `OnboardingEnableFailed`, `OnboardingEnableError`). Mọi bước dùng chung một khung: tiêu đề, mô tả và nội dung cuộn được, hàng nút cố định ở đáy (có đường kẻ phía trên khi nội dung bị che), nên nội dung dài không tràn ra ngoài cửa sổ. Tên màn hình của macOS viết tiếng Anh như trên máy người dùng (System Settings › Keyboard › Input Sources). Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5). Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
+  - **Trước khi bấm:** thẻ "Sau khi bật, bạn sẽ thấy", rồi thẻ nói trước điều sắp xảy ra (System Settings đóng rồi mở lại, hộp thoại hỏi) kèm hình thu nhỏ hộp thoại của macOS (minh hoạ, ẩn với VoiceOver). Phím tắt không đọc được thì hàng phím tắt là một dòng nói vậy kèm nút mở System Settings, không có keycap rỗng. Nhắc nhẹ (biểu tượng thông tin) khi có nguồn tiếng Việt kiểu IMK khác đang bật (D14), không chặn.
   - **Đang chờ:** trong lúc `enable()` chờ mục lưu của Dấu. Thẻ trạng thái có vòng xoay; nút "Thử lại" huỷ lần chờ đang chạy rồi bật lại (macOS hỏi lại); "Quay lại" cũng huỷ. Màn tự chuyển sang "đã bật" khi macOS ghi mục.
-  - **Đã bật:** nút duy nhất "Tiếp tục". Câu chọn Dấu nêu **phím tắt thật** đọc từ cài đặt hệ thống, không viết cứng (N5); chưa đặt thì nói vậy và có nút mở Cài đặt Bàn phím; không đọc được thì chỉ nói chọn trong menu nhập liệu và có nút đó.
+  - **Đã bật:** nút duy nhất "Tiếp tục". Câu chọn Dấu nêu **phím tắt thật** đọc từ cài đặt hệ thống, không viết cứng (N5); chưa đặt thì nói vậy và có nút đặt phím tắt trong System Settings (`OnboardingEnableDoneNoShortcut`); không đọc được thì chỉ nói chọn trong menu nhập liệu, không khẳng định gì về phím tắt, kèm cùng nút.
   - **Chưa bật được** (hết hạn chờ, hoặc macOS không liệt kê Dấu): ba cách theo thứ tự (Thử lại; tự thêm trong System Settings; đăng xuất một lần). Không tự mở Cài đặt, có nút "Mở System Settings". Nếu sau đó Dấu xuất hiện (người dùng tự thêm), cửa sổ nhận ra và sang "đã bật".
-  - Lỗi khác (chép, chữ ký, đăng ký) giữ màn "trước khi bấm" kèm một dòng báo lỗi và nút mở Cài đặt Bàn phím; chưa có artboard riêng.
+  - **Lỗi cài** (chép, kiểm chữ ký, đăng ký): màn riêng "Chưa cài được Dấu", hai cách xử lý, dòng "Chi tiết" là mô tả thật của lỗi (chọn được để chép), nút "Thử lại" bật lại từ đầu.
 - **Bước 3, chọn kiểu gõ và gõ thử.** Ví dụ gõ thử phải đúng quy tắc của kiểu gõ đang chọn.
 
 ## Cửa sổ Cài đặt
@@ -53,9 +53,10 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - "Thêm" chỉ bật khi ứng dụng đang chọn còn trong danh sách đang lọc; gõ tìm làm ẩn ứng dụng đang chọn thì bỏ chọn.
 
 ## Trạng thái bổ sung
-- **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4); trong lúc macOS chờ người dùng bấm Allow, nút chỉ bận (chưa có artboard cho trạng thái chờ của banner):
-  - bật được → banner xác nhận (không có Hoàn tác: app không tự tắt được Dấu);
-  - macOS vẫn để tắt → mở Cài đặt Bàn phím, banner hiện các bước tự thêm;
+- **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4), artboard `SettingsBannerStates`:
+  - đang chờ người dùng bấm Allow → banner có vòng xoay; "Thử lại" huỷ lần chờ rồi bật lại;
+  - bật được → banner xác nhận nêu phím tắt thật (như onboarding, N5; không đọc được thì không nêu), nút "Ẩn" ẩn banner trong phiên này; không có Hoàn tác (app không tự tắt được Dấu);
+  - macOS vẫn để tắt hoặc lỗi → banner nói chưa bật được, kèm cách tự thêm trong System Settings và "Thử lại" (không tự mở System Settings);
   - chưa cài hoặc macOS chưa liệt kê Dấu → mở cửa sổ thiết lập.
 - **Bộ gõ trên máy đã bị thay** (chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước): banner đỏ đầu mọi mục Cài đặt, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên; cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
 - **Chế độ tối:** Cài đặt và onboarding đều có (màu hệ thống).

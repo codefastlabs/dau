@@ -191,13 +191,13 @@ enum Reference {
     static let colorTolerance = 6.0
     /// Mean per-sample color difference allowed in the header once scrolled (of 255). The
     /// system's scroll edge blurs content under the toolbar, it does not hide it. Measured
-    /// 03/11/2026 on Cập nhật & hỗ trợ with the banner, legacy bars, 2x: Dấu 6.8 dark / 5.2
+    /// 03/11/2026 on Cập nhật & hỗ trợ with the banner, Always bars, 2x: Dấu 6.8 dark / 5.2
     /// light; a build without `HardTopScrollEdge` (content sharp over the title, item 9)
     /// 31.8 / 31.2. System Settings (Appearance, General; 1x, dark, same sampling) 18–20.
     /// The limit lies halfway between Dấu and the broken build.
     static let scrolledHeaderMeanDiff = 19.0
     /// The scroll bar's lane: it sits in the right margin, at most `formMargin` wide
-    /// from the window's edge (System: legacy bar), and starts no higher than the
+    /// from the window's edge (System: Always bar), and starts no higher than the
     /// toolbar's bottom edge minus 1.
     static let scrollerLane: CGFloat = formMargin
     static let scrollerMinY: CGFloat = toolbarHeight - 1

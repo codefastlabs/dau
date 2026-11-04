@@ -60,8 +60,8 @@ final class OnboardingFlow {
         case done
         /// `notEnabled` or `notListed`: retry, add by hand, log out.
         case notEnabled
-        /// An error (copy, signature, registration).
-        case failed
+        /// An install error (copy, signature, registration): "Chưa cài được Dấu".
+        case error
     }
 
     var enableScreen: EnableScreen {
@@ -69,12 +69,15 @@ final class OnboardingFlow {
         if isWorking { return .waiting }
         switch problem {
         case .notEnabled?, .notListed?: return .notEnabled
-        case .failed?: return .failed
+        case .failed?: return .error
         case nil: return .ready
         }
     }
 
     var failed: Bool { problem != nil }
+    /// The error's own description, shown as "Chi tiết" on the error screen (no
+    /// placeholder, N5). Set with `problem == .failed`.
+    private(set) var errorDetail: String?
     /// Text of the try-it field (step 3).
     var tryText = ""
     /// Step to open at instead of the usual first step, once (debug flag `--onboarding`).
@@ -105,6 +108,7 @@ final class OnboardingFlow {
     func start() {
         cancelEnable()
         problem = nil
+        errorDetail = nil
         readSystem()
         step = conflicts.isEmpty ? .enable : .oldInputMethods
         if let forced = forcedStartStep {
@@ -164,6 +168,7 @@ final class OnboardingFlow {
         let mine = attempt
         isWorking = true
         problem = nil
+        errorDetail = nil
         let installer = self.installer
         let install = status == .notInstalled
         let task = Task { @MainActor () throws -> EnableOutcome in
@@ -180,10 +185,21 @@ final class OnboardingFlow {
         case .success(.enabled): break
         case .success(.notEnabled): problem = .notEnabled
         case .success(.notListed): problem = .notListed
-        case .failure: problem = .failed
+        case .failure(let error):
+            problem = .failed
+            errorDetail = Self.describe(error)
+            installLogger.error("event=enable-failed error=\(String(describing: error), privacy: .public)")
         }
         status = installer.status()
         if status.isEnabled { problem = nil }
+    }
+
+    /// What the error screen shows under "Chi tiết": the error's description.
+    nonisolated static func describe(_ error: Error) -> String {
+        if let error = error as? InputMethodInstallerError { return error.detail }
+        // Any other error (a file operation): its text is in the system's language, not
+        // Dấu's, so the screen says only where it happened; the log has the error.
+        return String(localized: "Có lỗi khi chép hoặc đăng ký bộ gõ.")
     }
 
     /// "Mở System Settings" on the "Chưa bật được" screen (N4: only opens the pane).

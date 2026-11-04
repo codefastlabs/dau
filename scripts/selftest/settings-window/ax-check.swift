@@ -5,7 +5,7 @@
 //
 // Usage: ax-check <pid> <output-dir> <light|dark> <mode>…
 //   <light|dark>   the appearance the app draws in (run.sh knows it); written to frames.json.
-//   --geometry     (overlay scroll bars) The window's size at launch, read before anything
+//   --geometry     (When scrolling scroll bars) The window's size at launch, read before anything
 //                  is moved or resized. Then on every display, one pass per backing scale
 //                  (rows labelled "2x" / "1x"): each section, selected through the
 //                  sidebar's accessibility, against System Settings; the sidebar search
@@ -14,7 +14,7 @@
 //                  installed apps, end of list), search and selection wiring, Huỷ. Last,
 //                  the window's size limits (by resizing it) and, at the widest, the first
 //                  card of every section.
-//   --pixels       (legacy scroll bars) Primary display: per section the scroll room rule
+//   --pixels       (Always scroll bars) Primary display: per section the scroll room rule
 //                  (a) and a screenshot; on the section that overflows
 //                  (Reference.scrollingSection) a scroll through its scroll bar, the
 //                  scroll bar's lane (d) and a second screenshot. check.swift reads the
@@ -222,8 +222,8 @@ nonisolated(unsafe) let window: AXUIElement = {
 let launchSize = frame(window).size
 
 let sections = Reference.sections
-/// System: the legacy scroll bar's width (check (a)).
-let legacyWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
+/// System: the Always scroll bar's width (check (a)).
+let alwaysBarWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
 let appsIndex = sections.firstIndex(of: "apps")!
 let sidebarWidth = Reference.sidebarWidth, formMargin = Reference.formMargin
 
@@ -293,7 +293,7 @@ func pageScrollArea() -> AXUIElement? {
         .max { rel($0).width * rel($0).height < rel($1).width * rel($1).height }
 }
 /// The page's vertical scroll bar, if it shows one: by orientation, in the detail column.
-/// Optional by nature: a legacy bar shows only on a page that overflows.
+/// Optional by nature: a Always bar shows only on a page that overflows.
 func pageScrollBar() -> AXUIElement? {
     windowElements { role($0) == "AXScrollBar" && string($0, kAXOrientationAttribute) == "AXVerticalOrientation"
         && rel($0).minX >= sidebarWidth && rel($0).width > 0 }
@@ -451,7 +451,7 @@ func measureSection(_ d: String, _ tag: String, _ index: Int) {
             check(d, page, "first item y", first.frame.minY, Reference.formFirstItemY)
         }
         let cards = items.filter { $0.role == "AXGroup" }
-        // Item 1: the card spans the detail column with the Form's margins (overlay scroll
+        // Item 1: the card spans the detail column with the Form's margins (When scrolling scroll
         // bars take no room), measured from the window, not from the app's own column.
         if let card = require(d, page, "first card", find: { cards.first }) {
             shot["firstCard"] = card.frame
@@ -532,7 +532,7 @@ func measureSection(_ d: String, _ tag: String, _ index: Int) {
         }
     }
 
-    if let scroller = pageScrollBar() { shot["scroller"] = rel(scroller) }   // overlay: for check.swift to leave out
+    if let scroller = pageScrollBar() { shot["scroller"] = rel(scroller) }   // whenScrolling: for check.swift to leave out
 
     // Pixels: where the text of an unselected sidebar row begins.
     if let rep = screenshot(d, page, "\(page)-\(tag)", frames: shot) {
@@ -940,7 +940,7 @@ func measureLimits() {
     _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
 }
 
-// MARK: - Legacy scroll bars (--pixels)
+// MARK: - Always scroll bars (--pixels)
 
 /// Per section: the scroll room rule (a) and a screenshot for check.swift (b), (c). On
 /// Reference.scrollingSection: scrolled through its scroll bar, the bar's lane (d) and a
@@ -955,8 +955,8 @@ func measurePixels(_ d: String, _ tag: String) {
         else { continue }
         let w = frame(window)
         let full = w.width - sidebarWidth - 2 * formMargin
-        // (a) Legacy bars: only a page that needs one shows it; the page may get narrower
-        // by exactly the system's legacy bar width, and nothing moves.
+        // (a) Always bars: only a page that needs one shows it; the page may get narrower
+        // by exactly the system's Always bar width, and nothing moves.
         check(d, page, "(a) first card x", card.frame.minX, sidebarWidth + formMargin)
         check(d, page, "(a) first item y", first.frame.minY, Reference.formFirstItemY)
         var shot: [String: CGRect] = ["column": rel(area), "firstCard": card.frame]
@@ -967,8 +967,8 @@ func measurePixels(_ d: String, _ tag: String) {
             // The bar's accessibility frame is not the lane the page gives up: it measured
             // 19 pt wide, reaching 1 pt past the window, against the system's 17 (03/11/2026).
             // So the bar's width is not compared; the card width below holds the lane rule.
-            record(d, page, "(a) first card width with the scroll bar", expected: "\(fmt(full)) or \(fmt(full - legacyWidth)) (narrower by the bar)",
-                   got: fmt(card.frame.width), ok: near(card.frame.width, full) || near(card.frame.width, full - legacyWidth))
+            record(d, page, "(a) first card width with the scroll bar", expected: "\(fmt(full)) or \(fmt(full - alwaysBarWidth)) (narrower by the bar)",
+                   got: fmt(card.frame.width), ok: near(card.frame.width, full) || near(card.frame.width, full - alwaysBarWidth))
         } else {
             check(d, page, "(a) first card width without a scroll bar", card.frame.width, full)
         }
@@ -978,7 +978,7 @@ func measurePixels(_ d: String, _ tag: String) {
         // (d) Item 10: the page that overflows shows a scroll bar; scrolled through it, the
         // header keeps covering the content (check.swift) and the bar stays in its lane.
         guard let scrollBar = requireShown(d, page, "(d) scroll bar of the page that overflows",
-                                      diagnose: { "missing (legacy bars show on overflowing pages; the scrolled checks did not run)" },
+                                      diagnose: { "missing (Always bars show on overflowing pages; the scrolled checks did not run)" },
                                       find: { bar }) else { continue }
         // How far the page moved: the item nearest the column's middle, which stays in view.
         let column = rel(area)
@@ -1027,7 +1027,7 @@ func measureBanner(_ d: String, _ tag: String) {
           let area = require(d, page, "page Form (scroll area in the detail column)", find: pageScrollArea),
           let card = require(d, page, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } })
     else { return }
-    let titles = ["Bật lại", "Mở Cài đặt Bàn phím…"]
+    let titles = ["Bật lại", "Thử lại"]
     let buttons = all(card.element) { role($0) == "AXButton" }.map(label)
     record(d, page, "banner first", expected: "first card holds \(titles.joined(separator: " or "))",
            got: buttons.isEmpty ? "no button" : buttons.joined(separator: ", "), ok: buttons.contains { titles.contains($0) })

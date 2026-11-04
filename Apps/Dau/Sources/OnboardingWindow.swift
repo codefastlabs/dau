@@ -215,7 +215,9 @@ struct OnboardingStepView: View {
 }
 
 /// Title (22 bold), subtitle (13 secondary), content, then the buttons at the bottom
-/// right, as in the three artboards.
+/// right, as in the artboards. The title, subtitle and content scroll when they are taller
+/// than the window (a long note, a large text size) while the buttons stay in place under a
+/// separator, so nothing can run out of the window or under the buttons.
 struct StepLayout<Content: View, Buttons: View>: View {
     /// Names the layout probes (captures): a step leaving the window can still report.
     let step: OnboardingFlow.Step
@@ -227,34 +229,47 @@ struct StepLayout<Content: View, Buttons: View>: View {
     @ViewBuilder var content: Content
     @ViewBuilder var buttons: Buttons
 
+    @State private var contentHeight: CGFloat = 0
+    @State private var viewportHeight: CGFloat = 0
+
     var body: some View {
-        // The gap before the buttons is the spacer's minimum (18 pt), counted once: the
-        // tightest step (2, before "Bật Dấu") needs it to fit the window.
         VStack(alignment: .leading, spacing: 0) {
-            VStack(alignment: .leading, spacing: 18) {
-                VStack(alignment: .leading, spacing: 6) {
-                    title
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundStyle(.primary)
-                        .accessibilityAddTraits(.isHeader)
-                        .layoutProbe("onbTitle-\(step.rawValue)\(screen)")
-                    // Mockup line height 1.5: 19.5 pt per line.
-                    subtitle
-                        .font(.system(size: 13))
-                        .foregroundStyle(.secondary)
-                        .lineSpacing(3.5)
-                        .padding(.vertical, 1.75)
-                        .fixedSize(horizontal: false, vertical: true)
+            ScrollView(.vertical) {
+                VStack(alignment: .leading, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        title
+                            .font(.system(size: 22, weight: .bold))
+                            .foregroundStyle(.primary)
+                            .accessibilityAddTraits(.isHeader)
+                            .layoutProbe("onbTitle-\(step.rawValue)\(screen)")
+                        // Mockup line height 1.5: 19.5 pt per line.
+                        subtitle
+                            .font(.system(size: 13))
+                            .foregroundStyle(.secondary)
+                            .lineSpacing(3.5)
+                            .padding(.vertical, 1.75)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    content
                 }
-                content
+                .frame(maxWidth: .infinity, alignment: .topLeading)
+                .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { contentHeight = $0 }
             }
-            Spacer(minLength: 18)
+            .scrollBounceBehavior(.basedOnSize)
+            .onGeometryChange(for: CGFloat.self) { $0.size.height } action: { viewportHeight = $0 }
+            // The separator shows only when something is scrolled out of sight.
+            if contentHeight > viewportHeight + 0.5 {
+                Divider()
+                    .layoutProbe("onbDivider-\(step.rawValue)\(screen)")
+                    .padding(.top, 8)
+            }
             HStack(spacing: 10) {
                 Spacer(minLength: 0)
                 buttons
             }
             .settingsButton()
             .layoutProbe("onbButtons-\(step.rawValue)\(screen)")
+            .padding(.top, 18)
         }
     }
 }
@@ -280,16 +295,13 @@ struct ConflictStep: View {
         let names = flow.conflicts.map(\.name).formatted(.list(type: .and))
         StepLayout(step: .oldInputMethods, title: Text("Tắt bộ gõ cũ trước đã"),
                    subtitle: Text("\(names) đang chạy. Hai bộ gõ cùng chạy sẽ thêm dấu hai lần và ra chữ lỗi.")) {
-            ScrollView(.vertical) {
-                VStack(alignment: .leading, spacing: 18) {
-                    ForEach(flow.conflicts) { app in
-                        ConflictCard(app: app)
-                            .layoutProbe(app == flow.conflicts.first ? "onbCard-1" : "onbCard-1-more")
-                    }
-                    Hint(Text("Dấu tự kiểm tra lại khi bạn quay về cửa sổ này."))
+            VStack(alignment: .leading, spacing: 18) {
+                ForEach(flow.conflicts) { app in
+                    ConflictCard(app: app)
+                        .layoutProbe(app == flow.conflicts.first ? "onbCard-1" : "onbCard-1-more")
                 }
+                Hint(Text("Dấu tự kiểm tra lại khi bạn quay về cửa sổ này."))
             }
-            .scrollBounceBehavior(.basedOnSize)
         } buttons: {
             Button("Bỏ qua") { flow.skip() }
                 .accessibilityHint(Text("Tiếp tục khi bộ gõ cũ vẫn đang chạy"))
@@ -372,19 +384,22 @@ struct OtherAppIcon: View {
 
 // MARK: Step 2
 
-/// Step 2 has four screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
-/// "Bật Dấu" (`OnboardingEnable`), waiting for the user to click Allow
-/// (`OnboardingEnableWaiting`), done (`OnboardingEnableDone`) and "Chưa bật được"
-/// (`OnboardingEnableFailed`). The first card of each is the `onbCard-2` probe.
+/// Step 2 has five screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
+/// "Bật Dấu" (`OnboardingEnable`, `OnboardingEnableNotes`), waiting for the user to click
+/// Allow (`OnboardingEnableWaiting`), done (`OnboardingEnableDone`,
+/// `OnboardingEnableDoneNoShortcut`), "Chưa bật được" (`OnboardingEnableFailed`) and an
+/// install error (`OnboardingEnableError`). The first card of each is the `onbCard-2`
+/// probe.
 struct EnableStep: View {
     @Environment(OnboardingFlow.self) private var flow
 
     var body: some View {
         switch flow.enableScreen {
-        case .ready, .failed: ready
+        case .ready: ready
         case .waiting: waiting
         case .done: done
         case .notEnabled: notEnabled
+        case .error: installError
         }
     }
 
@@ -425,10 +440,8 @@ struct EnableStep: View {
                     AllowDialogIllustration()
                 }
             }
-            // Only when there is something to say (an error, other input sources): an
-            // empty row would still cost a gap.
-            if flow.problem == .failed || !flow.otherSources.isEmpty {
-                EnableResult()
+            if !flow.otherSources.isEmpty {
+                OtherSourcesNote(names: flow.otherSources)
             }
         } buttons: {
             if flow.canGoBack {
@@ -513,6 +526,36 @@ struct EnableStep: View {
             .layoutProbe("onbCard-2.failed")
         } buttons: {
             Button("Mở System Settings") { flow.openSystemSettings() }
+            Button("Thử lại") { Task { await flow.enable() } }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+        }
+    }
+
+    // An error while copying, checking the signature or registering.
+    private var installError: some View {
+        StepLayout(step: .enable, screen: ".error", title: Text("Chưa cài được Dấu"),
+                   subtitle: Text("Dấu không chép được bộ gõ vào máy, nên chưa bật được.")) {
+            OnboardingCard(spacing: 10) {
+                NumberedLine(number: 1, text: Text("Bấm **Thử lại**."))
+                NumberedLine(number: 2, text: Text("Vẫn lỗi: tải lại Dấu, kéo vào thư mục **Applications**, rồi mở lại."))
+            }
+            .layoutProbe("onbCard-2.error")
+            if let detail = flow.errorDetail {
+                // The error's own text, selectable so it can be copied into a report.
+                VStack(alignment: .leading, spacing: 2) {
+                    Hint(Text("Chi tiết"))
+                    Text(verbatim: detail)
+                        .font(.system(size: 12))
+                        .textSelection(.enabled)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .combine)
+            }
+        } buttons: {
+            if flow.canGoBack {
+                Button("Quay lại") { flow.back() }
+            }
             Button("Thử lại") { Task { await flow.enable() } }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
@@ -604,8 +647,10 @@ struct AllowDialogIllustration: View {
 }
 
 /// "Chọn Dấu trong menu nhập liệu, hoặc bấm <phím tắt thật> để chuyển giữa Dấu và ABC":
-/// the real shortcut (N5), as the "Sau khi bật" card reads it; no shortcut or one that
-/// cannot be read says so and offers Keyboard settings.
+/// the real shortcut (N5), as the "Sau khi bật" card reads it. No shortcut set: says so
+/// and offers "Đặt phím tắt trong System Settings" (`OnboardingEnableDoneNoShortcut`).
+/// A shortcut that cannot be read: only "Chọn Dấu trong menu nhập liệu." and the same
+/// button, no claim about the shortcut.
 struct ChooseDauLine: View {
     let reading: InputSourceShortcut.Reading
     let englishLayout: String?
@@ -623,26 +668,22 @@ struct ChooseDauLine: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
         case .none:
-            HStack(spacing: 12) {
-                Text("Chọn Dấu trong menu nhập liệu. Chưa có phím tắt để chuyển nhanh sang bàn phím tiếng Anh.")
-                    .font(.system(size: 13))
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                OpenKeyboardSettingsButton()
-            }
+            Text("Chọn Dấu trong menu nhập liệu. macOS chưa có phím tắt để chuyển nhanh giữa Dấu và bàn phím tiếng Anh.")
+                .font(.system(size: 13))
+                .fixedSize(horizontal: false, vertical: true)
+            SystemSettingsLinkButton(title: "Đặt phím tắt trong System Settings")
         case .unknown:
-            HStack(spacing: 12) {
-                Text("Chọn Dấu trong menu nhập liệu.")
-                    .font(.system(size: 13))
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                OpenKeyboardSettingsButton()
-            }
+            Text("Chọn Dấu trong menu nhập liệu.")
+                .font(.system(size: 13))
+                .fixedSize(horizontal: false, vertical: true)
+            SystemSettingsLinkButton(title: "Đặt phím tắt trong System Settings")
         }
     }
 }
 
 /// The input source shortcut row of step 2: the real shortcut as keycaps (D2), never a
-/// guessed one; when there is none, or it cannot be read, a way to Keyboard settings.
+/// guessed one. None set: says so, with a way to System Settings. Not readable: one line
+/// saying so, with the same button and no empty keycap (`OnboardingEnableNotes`).
 struct ShortcutLine: View {
     let reading: InputSourceShortcut.Reading
     let englishLayout: String?
@@ -662,16 +703,15 @@ struct ShortcutLine: View {
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                OpenKeyboardSettingsButton()
+                SystemSettingsLinkButton(title: "Mở System Settings")
             }
         case .unknown:
             HStack(spacing: 12) {
-                ShortcutKeycaps(shortcut: nil)
-                switchText
+                Text("Không đọc được phím tắt chuyển nguồn nhập liệu.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                OpenKeyboardSettingsButton()
+                SystemSettingsLinkButton(title: "Mở System Settings")
             }
         }
     }
@@ -685,45 +725,33 @@ struct ShortcutLine: View {
     }
 }
 
-struct OpenKeyboardSettingsButton: View {
+/// A small capsule button that opens the Keyboard pane of System Settings (N4: only opens
+/// it), 24 pt tall as in the artboards.
+struct SystemSettingsLinkButton: View {
+    let title: LocalizedStringKey
+
     var body: some View {
-        Button("Mở Cài đặt Bàn phím…") { SystemSettings.openKeyboard() }
-            .settingsButton()
+        Button(title) { SystemSettings.openKeyboard() }
+            .controlSize(.small)
+            .buttonBorderShape(.capsule)
             .fixedSize()
     }
 }
 
-/// Under the cards of the first screen: an error of the last action (the copy, the
-/// signature, the registration), then a soft note about other Vietnamese input sources
-/// (D14).
-struct EnableResult: View {
-    @Environment(OnboardingFlow.self) private var flow
+/// Soft note under the cards: other Vietnamese input sources are on (D14). Not a block.
+/// The names are macOS's own, in English.
+struct OtherSourcesNote: View {
+    let names: [String]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            if flow.problem == .failed {
-                problemRow(Text("Chưa bật được Dấu. Bạn có thể tự thêm “Dấu – Tiếng Việt” trong Cài đặt Bàn phím › Nguồn đầu vào."))
-            }
-            if !flow.otherSources.isEmpty {
-                let names = flow.otherSources.map { "“\($0)”" }.formatted(.list(type: .and))
-                Hint(Text("Đang bật nguồn nhập liệu tiếng Việt khác: \(names). Bạn có thể bỏ bớt trong Cài đặt Bàn phím cho gọn danh sách."))
-            }
-        }
-    }
-
-    private func problemRow(_ text: Text) -> some View {
-        HStack(alignment: .center, spacing: 10) {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundStyle(Color.orange)
-                .accessibilityHidden(true)
-            text
-                .font(.system(size: 12))
+        let list = names.map { "“\($0)”" }.formatted(.list(type: .and))
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "info.circle")
                 .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
-                .frame(maxWidth: .infinity, alignment: .leading)
-            OpenKeyboardSettingsButton()
+                .accessibilityHidden(true)
+            Hint(Text("Đang bật nguồn nhập liệu tiếng Việt khác: \(list). Bạn có thể bỏ bớt trong System Settings › Keyboard › Input Sources cho gọn danh sách."))
         }
-        .accessibilityElement(children: .contain)
+        .accessibilityElement(children: .combine)
     }
 }
 

@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 import DauShared
 @testable import SnapshotSettings
@@ -188,6 +189,24 @@ struct OnboardingFlowTests {
         #expect(!installer.enableWaiting)
     }
 
+    @Test("Thử lại after an error asks again and clears the detail; a failed step shows each kind of error")
+    func retryAfterError() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil), failure: .failed("TISRegisterInputSource -50"))
+        flow.start()
+        await flow.enable()
+        #expect(flow.enableScreen == .error)
+        #expect(flow.errorDetail == InputMethodInstallerError.failed("TISRegisterInputSource -50").detail)
+        // Vietnamese only: the status code stays in the log.
+        #expect(flow.errorDetail?.contains("TIS") == false)
+        installer.failure = nil
+        await flow.enable()
+        #expect(flow.enableScreen == .done)
+        #expect(flow.errorDetail == nil)
+        #expect(OnboardingFlow.describe(InputMethodInstallerError.invalidSignature).isEmpty == false)
+        #expect(OnboardingFlow.describe(CocoaError(.fileWriteNoPermission)) == "Có lỗi khi chép hoặc đăng ký bộ gõ.")
+        #expect(InputMethodInstallerError.failed("swap errno 13").detail.contains("errno") == false)
+    }
+
     @Test("an error says so; step 2 stays")
     func failure() async {
         let (flow, _, installer) = flow(status: .installed(version: nil), failure: .unavailable)
@@ -195,7 +214,10 @@ struct OnboardingFlowTests {
         await flow.enable()
         #expect(flow.failed)
         #expect(flow.problem == .failed)
-        #expect(flow.enableScreen == .failed)
+        #expect(flow.enableScreen == .error)
+        // "Chi tiết" is the error's own description, not a placeholder (N5).
+        #expect(flow.errorDetail == InputMethodInstallerError.unavailable.detail)
+        #expect(flow.errorDetail?.contains("[") == false)
         #expect(installer.calls == ["enable"])
         #expect(flow.step == .enable)
         flow.next()

@@ -15,13 +15,14 @@
 #   1. --capture-onboarding                    onboarding/
 #   2. --capture-onboarding --shortcut none    onboarding-no-shortcut/
 #   3. --capture-uninstall                     uninstall/ (alerts laid out, nothing removed)
+#   3b. --capture-banner                       banner-states/ (banner states laid out)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
 # ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
 # Settings window only:
-#   4. overlay scroll bars                     real/                  ax-check --geometry
-#   5. legacy scroll bars                      legacy/                ax-check --pixels
+#   4. When scrolling scroll bars              real/                  ax-check --geometry
+#   5. Always scroll bars                      always/                ax-check --pixels
 #   6. --not-enabled                           banner/                ax-check --banner
-#   7. the other appearance, legacy bars       legacy-<light|dark>/   ax-check --pixels --sheet-shots
+#   7. the other appearance, Always bars       always-<light|dark>/   ax-check --pixels --sheet-shots
 # Then check.swift checks the screenshots' pixels and the in-app captures.
 # Tables: <dir>.txt per launch, check.txt. Exit status 0 only if every row is ok.
 #
@@ -103,8 +104,8 @@ capture() {   # <step name> <Dau arguments…>
   fi
 }
 
-# The onboarding window (steps 1, 2 before "Bật Dấu", 2 waiting for Allow, 2 failed,
-# 2 done, 3; light and dark), on fixed services; once with the real
+# The onboarding window (steps 1, 2 before "Bật Dấu", 2 with notes, 2 waiting for Allow,
+# 2 failed, 2 install error, 2 done, 2 done without a shortcut, 3; light and dark), on fixed services; once with the real
 # input-source shortcut, once as if none were set.
 capture "onboarding" --capture-onboarding "$out/onboarding"
 capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-shortcut" \
@@ -113,6 +114,9 @@ capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-s
 # "ConfirmDialogs", "UninstallRemoveSource"): laid out, captured, dismissed;
 # nothing is uninstalled.
 capture "uninstall alerts" --capture-uninstall "$out/uninstall"
+# The Settings banner after "Bật lại" (mockup "SettingsBannerStates"): waiting, not
+# enabled, enabled; laid out and captured, nothing is enabled.
+capture "banner states" --capture-banner "$out/banner-states"
 
 # --- Launches 4–7: the real window ----------------------------------------------------
 
@@ -163,14 +167,14 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
 }
 
 real_window real $current --geometry -- -AppleShowScrollBars WhenScrolling || result=1
-real_window legacy $current --pixels -- -AppleShowScrollBars Always || result=1
+real_window always $current --pixels -- -AppleShowScrollBars Always || result=1
 real_window banner $current --banner -- -AppleShowScrollBars WhenScrolling --not-enabled || result=1
-real_window legacy-$other $other --pixels --sheet-shots -- \
+real_window always-$other $other --pixels --sheet-shots -- \
   -AppleShowScrollBars Always --appearance $other || result=1
 
 # --- Pixels of the screenshots, in-app captures ----------------------------------------
 
-"$work/check" "$out" overlay:real legacy:legacy legacy:legacy-$other > "$out/check.txt" || result=1
+"$work/check" "$out" whenScrolling:real always:always always:always-$other > "$out/check.txt" || result=1
 echo "check:"
 tail -3 "$out/check.txt" | sed 's/^/    /'
 exit $result

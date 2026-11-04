@@ -712,24 +712,83 @@ struct UninstallFlowTests {
 @MainActor
 @Suite("Banner enable (N4)")
 struct BannerEnableTests {
-    @Test("Bật lại enables and reads back; the banner has no undo")
+    final class Opened { var count = 0 }
+    func settle(_ condition: () -> Bool) async {
+        for _ in 0..<400 where !condition() { try? await Task.sleep(for: .milliseconds(5)) }
+    }
+    let control = InputSourceShortcut(keys: ["⌃", "Space"], globeKey: false)
+
+    func actions(_ installer: FakeInputMethodInstaller, opened: Opened = Opened(),
+                 shortcut: InputSourceShortcut.Reading = .unknown) -> InputMethodActions {
+        let control = self.control
+        return InputMethodActions(installer: installer, openKeyboardSettings: { opened.count += 1 },
+                                  shortcut: { shortcut == .unknown ? .shortcut(control) : shortcut },
+                                  englishLayout: { "ABC" })
+    }
+
+    @Test("Bật lại enables and reads back; the confirmation names the real shortcut and has no undo")
     func enable() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
-        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        let actions = actions(installer)
         #expect(await actions.enableFromBanner() == false)
         #expect(actions.banner == .enabled)
+        #expect(actions.shortcut == .shortcut(control))
+        #expect(actions.englishLayout == "ABC")
         #expect(installer.calls == ["enable"])
     }
 
-    @Test("macOS keeps Dấu off → Keyboard settings open")
+    @Test("Ẩn hides the confirmation for this session")
+    func dismiss() async {
+        let actions = actions(FakeInputMethodInstaller(.installed(version: nil)))
+        actions.dismissBanner()   // nothing to hide yet
+        #expect(actions.banner == .idle)
+        _ = await actions.enableFromBanner()
+        #expect(actions.banner == .enabled)
+        actions.dismissBanner()
+        #expect(actions.banner == .idle)
+    }
+
+    @Test("waits for the user's Allow; Thử lại cancels the old wait and asks again")
+    func waitAndRetry() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.enableWaits = true
+        let actions = actions(installer)
+        let first = Task { await actions.enableFromBanner() }
+        await settle { installer.enableWaiting }
+        #expect(actions.banner == .working)
+        let second = Task { await actions.enableFromBanner() }
+        #expect(await first.value == false)   // cancelled, left the state alone
+        #expect(actions.banner == .working)
+        await settle { installer.enableWaiting }
+        #expect(installer.calls == ["enable", "enable"])
+        installer.release = .enabled
+        _ = await second.value
+        #expect(actions.banner == .enabled)
+    }
+
+    @Test("macOS keeps Dấu off → the not-enabled banner (no automatic opening of System Settings); Dấu appearing clears it")
     func stillOff() async {
-        final class Opened { var count = 0 }
         let opened = Opened()
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         installer.enableOutcome = .notEnabled
-        let actions = InputMethodActions(installer: installer, openKeyboardSettings: { opened.count += 1 })
+        let actions = actions(installer, opened: opened)
         _ = await actions.enableFromBanner()
         #expect(actions.banner == .notEnabled)
-        #expect(opened.count == 1)
+        #expect(opened.count == 0)
+        actions.inputSourcesChanged(isEnabled: true)
+        #expect(actions.banner == .idle)
+    }
+
+    @Test("an error shows the same banner as a wait that ended; not listed opens the onboarding")
+    func errorAndNotListed() async {
+        let failing = actions(FakeInputMethodInstaller(.installed(version: nil), failure: .unavailable))
+        #expect(await failing.enableFromBanner() == false)
+        #expect(failing.banner == .failed)
+
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.enableOutcome = .notListed
+        let notListed = actions(installer)
+        #expect(await notListed.enableFromBanner() == true)
+        #expect(notListed.banner == .idle)
     }
 }
