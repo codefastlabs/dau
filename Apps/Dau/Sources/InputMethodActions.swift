@@ -207,9 +207,12 @@ final class InputMethodActions {
                 report.switchedTo = preparation.switchedTo
                 return .done(report)
             } catch is CancellationError {
+                // "Huỷ gỡ cài đặt": the user stays on the keyboard they had.
+                installer.restoreInputSourceAfterUninstall()
                 return .cancelled
             } catch {
                 installLogger.error("event=uninstall-failed error=\(String(describing: error), privacy: .public)")
+                installer.restoreInputSourceAfterUninstall()
                 return .failed
             }
         }

@@ -121,6 +121,9 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     private let deleteSharedData: @MainActor () -> Bool
     private let pause: @MainActor (Duration) async -> Void
     private let openInputSources: @MainActor () -> Void
+    /// The source that was selected before `prepareUninstall` switched away from it, for
+    /// `restoreInputSourceAfterUninstall`; nil when nothing was switched.
+    private var sourceBeforeUninstall: String?
 
     /// How long `enable()` waits for macOS to store Dấu as enabled: the user needs time
     /// to read the "Allow" dialog and click it (D37).
@@ -263,9 +266,12 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         // Dấu is the current source: select a keyboard first. The "–" of the input source
         // list is dimmed for the selected source, and the system would pick a keyboard by
         // itself when Dấu goes away (research section 4).
-        if sources.current()?.bundleID == bundleID {
+        sourceBeforeUninstall = nil
+        if let current = sources.current(), current.bundleID == bundleID {
             preparation.switchedTo = selectOtherKeyboardIfDauIsCurrent(bundleID: bundleID)
             preparation.needsOtherKeyboard = preparation.switchedTo == nil
+            // Only when the switch took effect, so there is something to put back.
+            if sources.current()?.id != current.id { sourceBeforeUninstall = current.id }
         }
         openInputSources()
         installLogger.notice("event=uninstall-prepared switched=\(preparation.switchedTo != nil) needsOther=\(preparation.needsOtherKeyboard)")
@@ -281,6 +287,19 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
     }
 
+    func restoreInputSourceAfterUninstall() -> Bool {
+        guard let id = sourceBeforeUninstall, let embedded = files.embedded else { return false }
+        sourceBeforeUninstall = nil
+        // Dấu may be gone already (the user removed it): then there is nothing to go back to.
+        guard sources.storedEnabledIDs(bundleID: embedded.bundleID).contains(id) else {
+            installLogger.notice("event=uninstall-restore-skipped id=\(id, privacy: .public) reason=not-enabled")
+            return false
+        }
+        let status = sources.select(id)
+        installLogger.notice("event=uninstall-restore id=\(id, privacy: .public) status=\(status)")
+        return sources.current()?.id == id
+    }
+
     func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport {
         guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
         let bundleID = embedded.bundleID
@@ -291,6 +310,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             installLogger.error("event=uninstall-still-stored ids=\(stored.sorted(), privacy: .public)")
             throw InputMethodInstallerError.stillListed
         }
+        sourceBeforeUninstall = nil   // finished: macOS picks the keyboard, nothing to restore
         var report = UninstallReport()
 
         // Move it to the Trash, then stop it: the input method quits only once its

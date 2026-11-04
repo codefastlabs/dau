@@ -52,7 +52,6 @@ struct UninstallRemoveSheet: View {
             }
             .accessibilityElement(children: .combine)
             .accessibilityAddTraits(.updatesFrequently)
-            Hint(Text("Nút – bị mờ? Bạn đang dùng Dấu: chọn bàn phím khác trong menu nhập liệu trước."))
         }
         .padding(20)
         .frame(width: Self.width, alignment: .leading)

@@ -145,3 +145,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md`.
   - Thoát Dấu.app khi sheet gỡ đang chờ: không xoá gì.
   - Khi Dấu không được bật mà mở app thì app mở onboarding (không phải cửa sổ Cài đặt có banner).
   - Lỗi tìm thấy: câu phím tắt kết thúc thành "U.S.." (màn "Đã bật", banner); alert gỡ xong ghi "thư mục Ứng dụng" (các chỗ khác dùng tên tiếng Anh); câu gợi ý "Nút – bị mờ? Bạn đang dùng Dấu…" trên sheet gỡ không đúng trên 27.2 (N5). Cần quyết: huỷ gỡ có trả lại bàn phím trước đó không — phiên chính
+- 04/11/2026 — sheet gỡ bỏ câu "Nút – bị mờ?…" (sai trên macOS 27.2, canvas phiên bản 99); huỷ gỡ (nút, Esc, đóng sheet) hoặc gỡ lỗi giữa chừng thì chọn lại nguồn đang dùng trước khi app chuyển sang U.S., nếu nguồn đó còn bật — app-ui-dev (sonnet); 84 test; `run.sh` ĐẠT (314, 15, 2, 18; 232); phiên chính tự thử bằng Dấu thật qua trợ năng 15:15: Dấu → U.S. khi mở sheet → "Huỷ gỡ cài đặt" → Dấu được chọn lại (`uninstall-restore … status=0`), không xoá gì — phiên chính

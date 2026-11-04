@@ -252,6 +252,12 @@ protocol InputMethodInstaller: AnyObject {
     /// Uninstall, step 2: returns once none of Dấu's entries is stored as enabled any
     /// more (the user removed it). Polls; throws `CancellationError` when cancelled.
     func waitUntilRemovedFromInputSources() async throws
+    /// The uninstall ended without removing Dấu (cancelled, or it failed): selects again
+    /// the input source `prepareUninstall` switched away from, only if it did switch and
+    /// that source is still enabled in `com.apple.inputsources`. Does nothing after a
+    /// finished uninstall. Returns whether it selected one.
+    @discardableResult
+    func restoreInputSourceAfterUninstall() -> Bool
     /// Uninstall, step 3, only once none of Dấu's entries is stored (else throws
     /// `stillListed`, nothing touched): stops the input method, moves it to the Trash,
     /// deletes the App Group data when `deleteSettings`, and reads the result back (D16).
@@ -275,6 +281,8 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     /// Dấu is still among the stored input sources: `finishUninstall` throws, and
     /// `waitUntilRemovedFromInputSources` waits until this is false or it is cancelled.
     var stillListed = false
+    /// `finishUninstall` throws this (a failure after the wait).
+    var finishFailure: InputMethodInstallerError?
     var genuine = true
     private(set) var calls: [String] = []
 
@@ -333,9 +341,15 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         }
     }
 
+    func restoreInputSourceAfterUninstall() -> Bool {
+        calls.append("restore")
+        return false
+    }
+
     func finishUninstall(deleteSettings: Bool) async throws -> UninstallReport {
         calls.append(deleteSettings ? "finish+data" : "finish")
         if let failure { throw failure }
+        if let finishFailure { throw finishFailure }
         if stillListed { throw InputMethodInstallerError.stillListed }
         current = .notInstalled
         return uninstallReport

@@ -1181,16 +1181,6 @@
         }
       }
     },
-    "Nút – bị mờ? Bạn đang dùng Dấu: chọn bàn phím khác trong menu nhập liệu trước." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nút – bị mờ? Bạn đang dùng Dấu: chọn bàn phím khác trong menu nhập liệu trước."
-          }
-        }
-      }
-    },
     "Nếu %@ tự mở lại: System Settings › General › Login Items & Extensions, tắt %@" : {
       "localizations" : {
         "vi" : {
