@@ -659,7 +659,7 @@ struct ChooseDauLine: View {
         switch reading {
         case .shortcut(let shortcut):
             if let englishLayout {
-                Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và \(englishLayout).")
+                Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và “\(englishLayout)”.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
             } else {

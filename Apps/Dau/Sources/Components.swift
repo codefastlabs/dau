@@ -410,7 +410,7 @@ struct NotEnabledBanner: View {
         guard let actions else { return Text("Chọn Dấu trong menu nhập liệu.") }
         switch (actions.shortcut.shortcut, actions.englishLayout) {
         case (let shortcut?, let layout?):
-            return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và \(layout).")
+            return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và “\(layout)”.")
         case (let shortcut?, nil):
             return Text("Chọn Dấu trong menu nhập liệu, hoặc bấm \(shortcut.inlineText) để chuyển giữa Dấu và bàn phím tiếng Anh.")
         default:

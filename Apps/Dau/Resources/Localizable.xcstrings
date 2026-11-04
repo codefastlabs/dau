@@ -401,22 +401,22 @@
         }
       }
     },
-    "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và %@." : {
-      "localizations" : {
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và %@."
-          }
-        }
-      }
-    },
     "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và bàn phím tiếng Anh." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và bàn phím tiếng Anh."
+          }
+        }
+      }
+    },
+    "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và “%@”." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chọn Dấu trong menu nhập liệu, hoặc bấm %@ để chuyển giữa Dấu và “%@”."
           }
         }
       }
@@ -1111,12 +1111,12 @@
         }
       }
     },
-    "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Ứng dụng vào Thùng rác." : {
+    "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Applications vào Thùng rác." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Ứng dụng vào Thùng rác."
+            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Applications vào Thùng rác."
           }
         }
       }

@@ -276,7 +276,7 @@ enum UninstallAlert {
         if report.dataDeleted {
             lines.append(String(localized: "Đã xoá cài đặt và quy tắc ứng dụng."))
         }
-        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Ứng dụng vào Thùng rác."))
+        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục Applications vào Thùng rác."))
         alert.informativeText = lines.joined(separator: " ")
         alert.addButton(withTitle: String(localized: "Thoát Dấu"))
         return alert
