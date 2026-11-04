@@ -63,6 +63,23 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
       - Telegram không gọi `allowedInputSourceLocales` hay `TISSelectInputSource`.
 
     [Máy/Dấu] Câu hỏi mở d10.
+11. **04/11, 17:35–17:38, luồng bật theo D37 đã sửa (bản Debug):** dựng lại đúng ca lỗi của (b)10, và lần này luồng bật sửa được.
+    - **Chuẩn bị:**
+      - Bỏ Dấu bằng "–" qua trợ năng.
+      - Đặt lại cho Telegram bộ đệm cũ lúc 10:16 (không có `DauInputMethod.app`), mở Telegram. Telegram chạy suốt, không mở lại (cùng pid).
+    - **Bật:** mở Dấu.app, cửa sổ thiết lập ở bước 2, bấm "Bật Dấu".
+      - App xoá 107 file bộ đệm. 5 thư mục được hệ thống bảo vệ không liệt kê được: ba thư mục WebKit, hai thư mục bộ đệm của Shortcuts. Nhật ký kernel ghi `System Policy: Dau deny file-read-metadata`, không có yêu cầu nào tới TCC, không có hộp thoại xin quyền.
+      - Sau đó đăng ký (0) và bật mục cha (0).
+      - Hộp thoại `Allow “Dấu” to enable “Dấu”?` hiện; bấm Allow. macOS ghi mục sau 3 s.
+      - Lượt quét lại đọc 20 bộ đệm đã dựng lại, không bộ đệm nào thiếu Dấu.
+    - **Kết quả ở Telegram (vẫn chạy suốt):**
+      - Bộ đệm của Telegram được dựng lại lúc 17:37:47 và có `DauInputMethod.app`.
+      - Chọn "Dấu – Tiếng Việt" từ menu nhập liệu được.
+      - Dấu nhận 6/6 phím ở ô tìm kiếm, ra "việt".
+      - ⌃⌥Space đi qua cả Dấu.
+    - Quét lại toàn bộ thư mục cache: không còn bộ đệm riêng nào lệch so với bộ đệm chung.
+
+    [Máy/Dấu] Câu hỏi mở d10.
 
 ### (c) Diễn giải mã/binary (của người nghiên cứu)
 
@@ -88,12 +105,12 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
       - Xoá bộ đệm của app đã thoát thì lần mở sau dựng lại.
       - Xoá bộ đệm của app đang chạy thì nó dựng lại ở lần đăng ký nguồn tiếp theo. Thứ tự "chép → xoá bộ đệm của app → đăng ký → bật" làm app đang chạy dùng được nguồn mới mà không cần mở lại.
       - Tiến trình không sandbox dùng bộ đệm chung, và bộ đệm này tự dựng lại.
+    - **Đã đo bằng Dấu thật ((b)11):** luồng bật theo D37 đã sửa làm Telegram đang chạy, với bộ đệm cũ, dùng được Dấu mà không cần mở lại. 5 thư mục được hệ thống bảo vệ thì bỏ qua, không có hộp thoại xin quyền.
     - **Còn mở:**
-      - Đo lại thứ tự trên bằng Dấu thật, với app thật có sandbox đang chạy (Telegram).
       - Đăng xuất hay khởi động lại máy có dựng lại bộ đệm không.
-      - App bên thứ ba có thể không có quyền xoá một số thư mục trong `DARWIN_USER_CACHE_DIR` (có thư mục shell báo "Operation not permitted").
+      - Các tiến trình nằm trong 5 thư mục được bảo vệ (WebKit, bộ đệm của Shortcuts) có giữ bộ đệm cũ không, và có ô nhập chữ nào bị ảnh hưởng không.
       - Sau khi gỡ, các bộ đệm cũ còn `DauInputMethod.app` thì có hậu quả gì.
-    - **Hệ quả cho D37** [Suy luận, cần kiểm chứng]: luồng bật hiện chỉ xoá bộ đệm của System Settings. Trên máy đã từng mở các app có sandbox, Dấu có thể không dùng được trong các app đó cho tới khi bộ đệm của chúng được dựng lại.
+      - Đo trên tài khoản macOS mới (T4), macOS 14–26 và bản ký Developer ID.
 
 ## 1. App chủ có sandbox có chép được bộ gõ vào `~/Library/Input Methods` không?
 
