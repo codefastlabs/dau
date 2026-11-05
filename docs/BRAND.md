@@ -11,7 +11,8 @@ Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và 
 
 ## Biểu tượng bản phát triển
 - Quy tắc ở D25 (các loại bản ở D7): biểu tượng chuẩn chỉ cho bản chính thức; mọi bản khác dùng biểu tượng bản phát triển.
-- Mockup: artboard "Nhận diện – biểu tượng bản phát triển" trên canvas (hai hướng: A dải góc, B nền sọc; chờ người dùng chọn). Vẽ ở cùng các cỡ và các kiểu như biểu tượng chuẩn, kiểm bằng mắt ở 16–32 pt và ở kiểu Trong suốt, Phủ màu.
+- Chữ "ấ" giữ nguyên như biểu tượng chuẩn (Giấy, dấu sắc Son), trên nền **Chì**; một dải chéo màu **Hổ phách** cắt góc dưới phải, nằm ngoài chữ "a". Kiểu Tối: nền và dải tối hơn một bậc. Kiểu Trong suốt và Phủ màu: macOS bỏ màu, dải còn lại như một hình sáng hơn nền.
+- Mockup: artboard "Nhận diện – biểu tượng bản phát triển" trên canvas. Kiểm bằng mắt ở 16–32 pt và ở kiểu Trong suốt, Phủ màu khi xuất từ Icon Composer (artboard chỉ mô phỏng hai kiểu này).
 
 ## Biểu tượng thanh menu (input mode)
 - Một ảnh template đơn sắc: ô bo tròn tô đặc, chữ "V" khoét rỗng, cùng kiểu và cùng cỡ với ô "A" của U.S. (ô 22 × 16 pt, góc bo 4 pt; chữ 9 × 8,5 pt căn giữa; đo trên thanh menu Retina 30/10/2026, `scripts/assets/make-mode-icons.swift`), để macOS tự tô màu theo nền. Cờ `TISIconIsTemplate` phải khai ở cả cấp bundle lẫn cấp input mode; thiếu ở cấp mode thì thanh menu không đổi màu theo từng màn hình và ô chỉ báo ⌃Space dưới con trỏ trống (COMPATIBILITY 6.6, 6.7). Ô chỉ báo vẽ chính ảnh này màu trắng; chữ trần như "A" của U.S. chỉ có cho nguồn của Apple (bảng nhãn dựng sẵn trong macOS, không đọc `TISIconLabels` của bộ gõ ngoài). Không dùng màu thương hiệu (D9). Dấu chỉ có một input mode (D2); khi gõ tiếng Anh bằng ABC/U.S., biểu tượng là của hệ thống.
@@ -27,6 +28,8 @@ Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và 
 | Son | `#E0533D` | chỉ dấu sắc trong biểu tượng — không dùng cho nút, chữ, nền |
 | Giấy | `#F6F1E7` | chữ trên nền Mực, nền website |
 | Than | `#1D1D1F` | chữ chính |
+| Chì | `#2C2F35` (Tối: `#1A1B1F`) | chỉ nền biểu tượng bản phát triển |
+| Hổ phách | `#F2B705` (Tối: `#D9A400`) | chỉ dải góc của biểu tượng bản phát triển — không dùng cho nút, chữ, nền |
 
 App dùng màu và phông của hệ thống (D9); bảng màu này dành cho biểu tượng, website, ảnh chia sẻ, tài liệu.
 

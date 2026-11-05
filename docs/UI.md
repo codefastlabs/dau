@@ -47,6 +47,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 
 **Cập nhật & hỗ trợ**
 - Trạng thái kiểm tra cập nhật và cách cài bản mới để ô trống cho tới M7 (N5).
+- Bản phát triển (D7, D25; artboard "Cài đặt – Cập nhật & hỗ trợ (bản phát triển)"): thẻ đầu trang dùng biểu tượng bản phát triển và thêm dòng "Bản phát triển · Debug" (hoặc "· Release"); dòng phiên bản cuối sidebar thêm "· Debug"/"· Release". Bản chính thức không có dòng này; Beta hiện số phiên bản dạng "1.3 beta 2".
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (người dùng chốt 02/11/2026, D9).
 - Chú thích quyền riêng tư giữ đúng nội dung D8/N2.
 
