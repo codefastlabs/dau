@@ -721,12 +721,12 @@
         }
       }
     },
-    "Dấu không cần quyền Trợ năng. macOS chỉ hỏi một lần khi bật." : {
+    "Dấu không cần quyền Trợ năng." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu không cần quyền Trợ năng. macOS chỉ hỏi một lần khi bật."
+            "value" : "Dấu không cần quyền Trợ năng."
           }
         }
       }

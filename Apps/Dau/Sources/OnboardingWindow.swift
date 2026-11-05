@@ -88,7 +88,7 @@ struct OnboardingSidebar: View {
 
             Spacer(minLength: 0)
 
-            Hint(Text("Dấu không cần quyền Trợ năng. macOS chỉ hỏi một lần khi bật."))
+            Hint(Text("Dấu không cần quyền Trợ năng."))
         }
         // Mockup: 16 pt inset, the 12 pt traffic lights, then 22 pt to the app name.
         .padding(.top, OnboardingScene.belowTitleBar(50))
