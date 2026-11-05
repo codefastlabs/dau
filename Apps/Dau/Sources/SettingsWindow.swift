@@ -10,6 +10,8 @@ import SwiftUI
 struct SettingsWindow: View {
     @State private var history: SectionHistory
     @State private var query = ""
+    /// A page's sheet is shown (`sheetShown(_:)`): the add-rule sheet.
+    @State private var pageSheetShown = false
     @Environment(\.inputMethodActions) private var actions
 
     init(initialSection: SettingsSection = .typing) {
@@ -19,6 +21,9 @@ struct SettingsWindow: View {
     private var visibleSections: [SettingsSection] {
         SettingsSection.allCases.filter { $0.matches(query) }
     }
+
+    /// Any sheet on the window: a page's, or the uninstall sheet.
+    private var sheetShown: Bool { pageSheetShown || actions?.isShowingUninstallSheet == true }
 
     var body: some View {
         NavigationSplitView {
@@ -74,13 +79,15 @@ struct SettingsWindow: View {
         // item on the page -25205, item on the split view 0; System Settings returns 0).
         .toolbar {
             ToolbarItem(placement: .navigation) {
-                SettingsHistoryButtons(history: $history)
+                SettingsHistoryButtons(history: $history, sheetShown: sheetShown)
             }
         }
         // View › Back / Forward act on this window's history while it has focus.
         .focusedSceneValue(\.settingsNavigation, SettingsNavigation(
-            canGoBack: history.canGoBack, canGoForward: history.canGoForward,
+            canGoBack: history.canGoBack(sheetShown: sheetShown),
+            canGoForward: history.canGoForward(sheetShown: sheetShown),
             goBack: { history.goBack() }, goForward: { history.goForward() }))
+        .onPreferenceChange(SheetShownKey.self) { pageSheetShown = $0 }
         // "Gỡ cài đặt…": the sheet that waits for the user to remove Dấu from the input
         // sources (`InputMethodActions.performUninstall`); closing it cancels the removal.
         .sheet(isPresented: Binding(get: { actions?.isShowingUninstallSheet == true },

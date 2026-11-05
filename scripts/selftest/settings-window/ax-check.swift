@@ -1032,6 +1032,59 @@ func measureHistory() {
     checkShown(d, p, "after ⌘]", 1)
 }
 
+/// A sheet on the window (the add-rule sheet): ⌘[ ⌘] and View › Back / Forward must leave
+/// the page behind it alone, and the two items must be off while the sheet is up (as in a
+/// modal state; a page changing behind a sheet is not seen by the user). Back and Forward
+/// both have somewhere to go when the sheet opens: the pages visited are 0, apps, last,
+/// and Back returned to apps.
+func measureHistoryUnderSheet() {
+    let d = "-", p = "history-under-sheet"
+    let last = sections.count - 1
+    guard last > appsIndex, showSection(d, 0), showSection(d, appsIndex), showSection(d, last),
+          let back = require(d, p, "toolbar button \"\(Reference.backLabel)\"", find: { historyButton(Reference.backLabel) }),
+          drive(d, p, "press \(Reference.backLabel)", press(back)) else { return }
+    wait(1.0)
+    checkShown(d, p, "before the sheet", appsIndex)
+    checkHistoryButtons(d, p, "before the sheet", back: true, forward: true)
+    guard let add = require(d, p, "toolbar + (\"Thêm ứng dụng\")", find: toolbarAddButton),
+          drive(d, p, "press +", press(add)),
+          requireShown(d, p, "sheet opened by +", within: 5, find: attachedSheet) != nil else {
+        if attachedSheet() != nil { closeSheet(d) }
+        return
+    }
+    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
+    wait(0.5)
+    // kVK_ANSI_LeftBracket / RightBracket.
+    postKey(d, p, 33, .maskCommand)
+    checkShown(d, p, "under the sheet after ⌘[", appsIndex)
+    record(d, p, "sheet after ⌘[", expected: "shown", got: attachedSheet() == nil ? "closed" : "shown", ok: attachedSheet() != nil)
+    postKey(d, p, 30, .maskCommand)
+    checkShown(d, p, "under the sheet after ⌘]", appsIndex)
+    record(d, p, "sheet after ⌘]", expected: "shown", got: attachedSheet() == nil ? "closed" : "shown", ok: attachedSheet() != nil)
+    // The View menu's items while the sheet is up.
+    let viewTitles = systemTitles([Reference.viewMenuKey])
+    if let bar = require(d, p, "menu bar", find: { attr(app, kAXMenuBarAttribute).map { $0 as! AXUIElement } }),
+       let viewItem = require(d, p, "View menu", find: { children(bar).first { viewTitles.contains(label($0)) } }),
+       drive(d, p, "open the View menu", press(viewItem)) {
+        wait(0.6)
+        let items = children(viewItem).first { role($0) == "AXMenu" }.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
+        for title in [Reference.backLabel, Reference.forwardLabel] {
+            let item = items.first { label($0) == title }
+            record(d, p, "menu item \"\(title)\" under the sheet", expected: "disabled",
+                   got: item.map { enabled($0) ? "enabled" : "disabled" } ?? "missing", ok: item.map { !enabled($0) } ?? false)
+        }
+        if let menu = children(viewItem).first(where: { role($0) == "AXMenu" }) { _ = AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
+        wait(0.4)
+        if (attr(viewItem, kAXSelectedAttribute) as? Bool) == true {
+            for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
+            wait(0.4)
+        }
+    }
+    closeSheet(d)
+    checkShown(d, p, "after the sheet closed", appsIndex)
+    checkHistoryButtons(d, p, "after the sheet closed", back: true, forward: true)
+}
+
 /// Values of `keys` in the system's string tables, in the app's languages.
 func systemTitles(_ keys: [String]) -> Set<String> {
     var titles = Set<String>()
@@ -1267,12 +1320,14 @@ if modes.contains("--geometry") {
     measureLimits()
     // The shell last: a sidebar left collapsed cannot spoil the other rows.
     measureHistory()
+    measureHistoryUnderSheet()
     measureViewMenu()
     measureSidebarCollapse()
 }
 // `--shell` alone: only the Back/Forward and View-menu rows (a quick pass on a running app).
 if modes.contains("--shell") && !modes.contains("--geometry") {
     measureHistory()
+    measureHistoryUnderSheet()
     measureViewMenu()
 }
 if modes.contains("--pixels") || modes.contains("--banner") || modes.contains("--sheet-shots"),

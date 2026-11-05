@@ -43,6 +43,13 @@ struct SectionHistory: Equatable {
         select(first)
     }
 
+    /// While a sheet is shown the window is modal: Back and Forward must not change the page
+    /// behind it (the page owns the sheet, so a change would also close it). The menu
+    /// commands and the toolbar buttons use these two instead of `canGoBack` / `canGoForward`
+    /// (HIG, Sheets: https://developer.apple.com/design/human-interface-guidelines/sheets).
+    func canGoBack(sheetShown: Bool) -> Bool { canGoBack && !sheetShown }
+    func canGoForward(sheetShown: Bool) -> Bool { canGoForward && !sheetShown }
+
     mutating func goBack() {
         guard let previous = back.popLast() else { return }
         forward.append(current)
@@ -68,6 +75,8 @@ struct SectionHistory: Equatable {
 /// AppKit shrinks it to a title bar (measured on macOS 27.2).
 struct SettingsHistoryButtons: View {
     @Binding var history: SectionHistory
+    /// A sheet is shown on the window: both buttons are off (`SectionHistory.canGoBack(sheetShown:)`).
+    var sheetShown = false
 
     var body: some View {
         ControlGroup {
@@ -79,20 +88,35 @@ struct SettingsHistoryButtons: View {
                 Label("Lùi", systemImage: "chevron.backward")
             }
             .help(Text("Lùi"))
-            .disabled(!history.canGoBack)
+            .disabled(!history.canGoBack(sheetShown: sheetShown))
             Button {
                 history.goForward()
             } label: {
                 Label("Tiến", systemImage: "chevron.forward")
             }
             .help(Text("Tiến"))
-            .disabled(!history.canGoForward)
+            .disabled(!history.canGoForward(sheetShown: sheetShown))
         } label: {
             // Names the group for VoiceOver, and in the toolbar's overflow menu.
             Text("Điều hướng")
         }
         .controlGroupStyle(.navigation)
     }
+}
+
+/// Set by a page that presents a sheet (`View.sheetShown(_:)`), read by the Settings window
+/// through `onPreferenceChange`: a preference travels from a view up to its ancestors
+/// (https://developer.apple.com/documentation/swiftui/preferencekey), and the page owns the
+/// sheet's state, which the window above it cannot read otherwise.
+struct SheetShownKey: PreferenceKey {
+    static let defaultValue = false
+    static func reduce(value: inout Bool, nextValue: () -> Bool) { value = value || nextValue() }
+}
+
+extension View {
+    /// Reports to the Settings window whether this page has a sheet shown
+    /// (https://developer.apple.com/documentation/swiftui/view/preference(key:value:)).
+    func sheetShown(_ shown: Bool) -> some View { preference(key: SheetShownKey.self, value: shown) }
 }
 
 /// What the View menu's Back and Forward act on: the history of the Settings window

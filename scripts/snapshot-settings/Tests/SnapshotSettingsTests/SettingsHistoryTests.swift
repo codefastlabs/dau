@@ -56,6 +56,18 @@ struct SettingsHistoryTests {
         #expect(history.canGoBack)
     }
 
+    @Test("under a sheet Back and Forward are off, whatever the history holds")
+    func underSheet() {
+        var history = SectionHistory(.typing)
+        history.select(.smart)
+        history.select(.apps)
+        history.goBack()
+        #expect(history.canGoBack(sheetShown: false))
+        #expect(history.canGoForward(sheetShown: false))
+        #expect(!history.canGoBack(sheetShown: true))
+        #expect(!history.canGoForward(sheetShown: true))
+    }
+
     @Test("a new choice after Back drops the forward steps")
     func newChoiceClearsForward() {
         var history = SectionHistory(.typing)

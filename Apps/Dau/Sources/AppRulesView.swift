@@ -109,6 +109,8 @@ struct AppRulesView: View {
         .sheet(isPresented: $isAdding) {
             AddAppRuleSheet()
         }
+        // The window's Back/Forward stay off under the sheet (`SettingsWindow`).
+        .sheetShown(isAdding)
     }
 
     private func remove(_ rule: AppRule) {
