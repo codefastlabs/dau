@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Regenerates the temporary input mode icon "V" of the input method.
 # Side effects: writes repo files
 # Template TIFF, 22 × 16 pt @1x + @2x, written into Apps/DauInputMethod/Resources.

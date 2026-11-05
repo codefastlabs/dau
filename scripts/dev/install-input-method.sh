@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Builds the input method and installs it for the current user.
 # Side effects: builds; unless --build-only: installs input method, kills processes
 # Universal, Debug unless --release, into ~/Library/Input Methods; then it stops the old

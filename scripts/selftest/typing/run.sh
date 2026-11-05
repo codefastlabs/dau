@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Types a sentence into real apps with the Dấu input method and checks the text.
 # Side effects: builds, takes the screen, changes input source, changes user settings
 # Needs the Accessibility permission for the process running the script
@@ -65,7 +65,8 @@
 # Exit status 0 only if every app gives the expected text.
 set -uo pipefail
 
-ROOT="$(cd "$(dirname "$0")/../../.." && pwd)"
+SELF="${0:A}"   # $0 inside a function is the function name in zsh
+ROOT="${SELF:h:h:h:h}"
 HERE="$ROOT/scripts/selftest/typing"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 BIN="$ROOT/build/selftest"
@@ -80,7 +81,7 @@ UNDERLINE=0
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
 # Prints the whole leading comment block.
-usage() { awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; }
+usage() { awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$SELF"; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --delay) DELAY_MS="${2:?--delay cần số ms}"; shift 2 ;;
@@ -194,7 +195,7 @@ select_dau() {
     [[ "$now" == "$DAU_SOURCE" ]] && return 0
     sleep 0.2
   done
-  echo "DỪNG: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì. Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"." >&2
+  print -r -- "DỪNG: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì. Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"." >&2
   echo source > "$STOP_FILE"
   return 1
 }
@@ -233,7 +234,7 @@ guarded() {
     sleep 0.4
   done
   if ! out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)"; then
-    echo "DỪNG: $out — không gửi phím nào nữa" >&2
+    print -r -- "DỪNG: $out — không gửi phím nào nữa" >&2
     echo front > "$STOP_FILE"
     return 1
   fi
@@ -463,7 +464,7 @@ trim_right() { sed -e 's/[[:space:]]*$//'; }
 EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
 FAILED=0
 echo "Script sẽ mở: ${APPS[*]} (mỗi app một cửa sổ/tab mới, đóng lại sau khi đọc chữ; app nào chưa chạy thì vẫn để chạy)."
-echo "Phím: \"$KEYS\"   mong đợi: \"$EXPECT\"   nghỉ giữa phím: ${DELAY_MS} ms"
+print -r -- "Phím: \"$KEYS\"   mong đợi: \"$EXPECT\"   nghỉ giữa phím: ${DELAY_MS} ms"
 bundle_id() {
   case "$1" in
     textedit) echo com.apple.TextEdit ;; safari) echo com.apple.Safari ;;
@@ -503,7 +504,7 @@ for app in "${APPS[@]}"; do
     fi
   fi
   echo
-  if [[ $ok == 1 ]]; then echo "PASS $app: \"$got_trimmed\""; else echo "FAIL $app: \"$got_trimmed\""; FAILED=1; fi
+  if [[ $ok == 1 ]]; then print -r -- "PASS $app: \"$got_trimmed\""; else print -r -- "FAIL $app: \"$got_trimmed\""; FAILED=1; fi
   "$LOG" show --start "$start" --style compact \
     --predicate "subsystem == \"$IM_ID\" AND category == \"perf\"" > "$WORK/perf.log" 2>/dev/null
   case "$app" in

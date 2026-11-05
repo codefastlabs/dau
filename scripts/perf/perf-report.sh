@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Prints per-app timing of the input method from the unified log.
 # Side effects: none
 # Approach A (N3/D11): p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole

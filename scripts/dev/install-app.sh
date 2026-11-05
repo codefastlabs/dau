@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Builds Dấu.app (the host app: Settings, onboarding) and installs it into /Applications.
 # Side effects: builds, installs app, kills processes, deletes data
 # Release unless --debug. The installed copy goes to the Trash through Finder (it can be
@@ -41,7 +41,7 @@ dau_require_signing_identity || exit 1
 if [[ "$WITH_IM" == 1 ]]; then
   im_args=()
   [[ "$CONFIG" == Release ]] && im_args+=(--release)
-  "$ROOT/scripts/dev/install-input-method.sh" ${im_args[@]+"${im_args[@]}"}
+  "$ROOT/scripts/dev/install-input-method.sh" "${im_args[@]}"
 fi
 
 dau_build Dau "$CONFIG" || exit 1

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/zsh
 # Self test, without typing, of the settings path from the host app to the input method.
 # Side effects: builds, changes input source, changes user settings; with --install also: installs input method, kills processes
 # Does a setting saved by the host app reach the input method through the App Group
@@ -106,7 +106,7 @@ fi
 if [[ "$INSTALL" == 1 ]]; then
   echo "==> Cài bộ gõ Debug (install-input-method.sh --no-build; bản vừa build ở trên)"
   install_log="$("$ROOT/scripts/dev/install-input-method.sh" --no-build 2>&1)" || { echo "$install_log"; fail "install-input-method.sh"; }
-  echo "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed 's/^ */    /'
+  print -r -- "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed 's/^ */    /'
 fi
 [[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/dev/install-input-method.sh)"
 commit_of() { local f="$1/Contents/Resources/BuildCommit.txt"; [[ -f "$f" ]] && cat "$f" || echo "không có mã commit"; }
@@ -135,8 +135,8 @@ if ! im_running; then
   # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
   # disagree (TIS alone has been wrong on macOS 27.2).
   enabled_ids="$("$HELPER" enabled "$IM_ID")"
-  DAU_SOURCE="$(echo "$enabled_ids" | grep '\.vi$' | head -1)"
-  [[ -n "$DAU_SOURCE" ]] || DAU_SOURCE="$(echo "$enabled_ids" | head -1)"
+  DAU_SOURCE="$(print -r -- "$enabled_ids" | grep '\.vi$' | head -1)"
+  [[ -n "$DAU_SOURCE" ]] || DAU_SOURCE="$(print -r -- "$enabled_ids" | head -1)"
   if [[ -z "$DAU_SOURCE" ]]; then
     fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (xem install-input-method.sh), rồi chạy lại."
   fi
@@ -184,7 +184,7 @@ explain() {
     2>/dev/null | grep -E 'REJECTED|rejecting write|deny\(1\) file-write-data .*Group Containers' | sed 's/^/      /' | head -6)"
   if [[ -n "$why" ]]; then
     echo "    Nhật ký hệ thống:"
-    echo "$why"
+    print -r -- "$why"
   fi
 }
 
@@ -194,11 +194,11 @@ for method in vni telex; do
   echo "==> Dau --set-typing-method $method"
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   out="$("$APP_BIN" --set-typing-method "$method" 2>&1)"
-  status=$?
-  echo "    app: $out"
-  [[ $status == 0 ]] || { echo "    app thoát với mã $status"; PASS=0; }
+  rc=$?   # not "status": read-only in zsh
+  print -r -- "    app: $out"
+  [[ $rc == 0 ]] || { echo "    app thoát với mã $rc"; PASS=0; }
   if [[ "$method" == vni ]]; then
-    prev="$(echo "$out" | sed -n 's/.*previous=\([A-Za-z0-9]*\).*/\1/p' | head -1)"
+    prev="$(print -r -- "$out" | sed -n 's/.*previous=\([A-Za-z0-9]*\).*/\1/p' | head -1)"
     case "$prev" in
       telex|vni|simpleTelex) PREVIOUS_METHOD="$prev"; echo "    kiểu gõ trước khi thử: $prev (sẽ được trả lại ở cuối)" ;;
       *) echo "    CẢNH BÁO: không đọc được previous= từ app; kiểu gõ trước đó sẽ không được trả lại" ;;
@@ -207,7 +207,7 @@ for method in vni telex; do
   sleep "$WAIT_SECONDS"
   lines="$(im_settings_log "$start")"
   echo "    bộ gõ:"
-  if [[ -n "$lines" ]]; then echo "$lines" | sed 's/^.*\] /      /'; else echo "      (không có dòng nào)"; fi
+  if [[ -n "$lines" ]]; then print -r -- "$lines" | sed 's/^.*\] /      /'; else echo "      (không có dòng nào)"; fi
   if [[ "$out" == *"synchronize=failed"* ]]; then
     echo "    ghi chú: synchronize() trả về false (không phải lỗi, xem đầu script)"
   fi
@@ -219,7 +219,7 @@ for method in vni telex; do
       PASS=0
     fi
   fi
-  if echo "$lines" | grep -q "event=settings-reloaded .*typingMethod=$method"; then
+  if print -r -- "$lines" | grep -q "event=settings-reloaded .*typingMethod=$method"; then
     if [[ "$method" == telex && "$VNI_OK" == 0 ]]; then
       echo "    bộ gõ đọc typingMethod=telex, nhưng telex cũng là mặc định khi không đọc được store: không phải bằng chứng"
       PASS=0

@@ -1,3 +1,4 @@
+#!/bin/zsh
 # Shared build step for the scripts that build Dấu with xcodebuild (sourced, not run).
 # Side effects: builds
 # Callers: scripts/dev/install-input-method.sh, scripts/dev/install-app.sh, scripts/selftest/app-group.sh.
@@ -12,7 +13,8 @@
 # revoke the one of another Mac on the same Apple ID (docs/history/LOG-M5.md), so it is
 # the user's action, printed below, never a script's.
 
-DAU_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+# %x is the file being sourced; :A resolves it, each :h drops one path component.
+DAU_ROOT="${${(%):-%x}:A:h:h:h}"
 DAU_DERIVED="$DAU_ROOT/build/DerivedData.noindex"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 

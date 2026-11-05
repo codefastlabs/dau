@@ -24,7 +24,8 @@
 #      measured reference, not a research note) has a "## … Hiện trạng" heading within
 #      its first 40 lines and no "Đính chính" heading (corrections are edited into the
 #      text, not appended);
-#   9. scripts list: every scripts/**/*.sh (not .build) has a "# Side effects:" line and
+#   9. scripts list: every scripts/**/*.sh (not .build) starts with "#!/bin/zsh" (one
+#      shell: /bin/bash on macOS is 3.2), has a "# Side effects:" line and
 #      is named, by path in backticks, in scripts/README.md; every repo path in backticks
 #      in scripts/README.md exists.
 # Exit status 0 only if every check passes.
@@ -115,6 +116,7 @@ if [[ ! -f $readme ]]; then
 else
   for s in scripts/**/*.sh(N); do
     [[ $s == */.build/* ]] && continue
+    [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: first line is not #!/bin/zsh"
     grep -qE '^# Side effects: ' $s || report "$s: no \"# Side effects:\" line"
     grep -qF -- "\`$s\`" $readme || report "$s: not listed in $readme"
   done
