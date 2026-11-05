@@ -31,6 +31,9 @@ struct ExternalCasesTests {
         var output: String
         var failures: [Failure]
         var boundaryChecks = 0
+        /// D20 reads the harness simulated, and how many of them seeded the engine.
+        var d20Reads = 0
+        var d20Seeded = 0
         var kinds: [String] { Array(Set(failures.map(\.kind))).sorted() }
     }
 
@@ -91,6 +94,11 @@ struct ExternalCasesTests {
         var failures: [Failure] = []
         var combiningAllowed = false
         var boundaryChecks = 0
+        var d20Reads = 0
+        var d20Seeded = 0
+        /// Mirror of `InPlaceComposer.Before`: false = `.unknown` (the cursor may follow a
+        /// word the engine does not know), true = `.noWord`.
+        var knownNoWord = false
 
         mutating func fail(_ kind: String, _ detail: String) {
             if !failures.contains(where: { $0.kind == kind }) {
@@ -120,6 +128,51 @@ struct ExternalCasesTests {
                 }
             }
         }
+    }
+
+    /// The letters, digits and marks at the end of `text` (`InPlaceComposer.trailingWord`).
+    static func trailingWord(_ text: [Unicode.Scalar]) -> [Unicode.Scalar] {
+        var word: [Unicode.Scalar] = []
+        for scalar in text.reversed() {
+            guard CharacterSet.alphanumerics.contains(scalar) else { break }
+            word.append(scalar)
+        }
+        word.reverse()
+        return word
+    }
+
+    /// `InPlaceComposer.isMarkKey`.
+    static func isMarkKey(_ scalar: Unicode.Scalar, method: EngineOptions.InputMethod) -> Bool {
+        let v = scalar.value
+        switch method {
+        case .vni: return v >= 0x30 && v <= 0x39
+        case .telex, .simpleTelex:
+            guard v < 0x80 else { return false }
+            let lower = (v >= 0x41 && v <= 0x5A) ? v + 0x20 : v
+            return "sfrxjzaeowd".unicodeScalars.contains { $0.value == lower }
+        }
+    }
+
+    /// D20 as `InPlaceComposer.addMarks`/`seedWord` do it: a mark key with no word in the
+    /// engine and an unknown text before the cursor reads the word before the cursor
+    /// (16 UTF-16 units), seeds the engine with it and lets the engine decide. Returns
+    /// the engine's action, or nil when the key takes the normal path (nothing seeded:
+    /// the engine is reset and the caller handles the key as the first key of a word).
+    /// Not mirrored: the 50 ms rule (`settleInterval`) — typing at normal speed is slower,
+    /// so every read counts as settled — and apps that give no text.
+    static func d20Seed(_ f: inout Field, key: Unicode.Scalar) -> Action? {
+        f.d20Reads += 1
+        let count = min(f.text.count, 16)
+        let text = Array(f.text.suffix(count))
+        let word = trailingWord(text)
+        if word.isEmpty { f.knownNoWord = true; return nil }
+        if word.count == text.count && f.text.count > count { return nil }
+        guard word.allSatisfy({ $0.utf16.count == 1 }), f.engine.seed(displayed: word) else {
+            f.engine.reset()
+            return nil
+        }
+        f.d20Seeded += 1
+        return f.engine.handle(key)
     }
 
     static func isBoundaryKey(_ v: UInt32) -> Bool {
@@ -153,8 +206,9 @@ struct ExternalCasesTests {
                 before = Array(inner[..<bar])
                 after = Array(inner[(bar + 1)...])
             }
+            // Text already in the field: the engine does not know it; the first mark key
+            // reads it (D20), and only the last word before the cursor.
             f.text.append(contentsOf: before)
-            _ = f.engine.seed(displayed: before)
         }
 
         for key in scalars {
@@ -165,6 +219,7 @@ struct ExternalCasesTests {
             switch key {
             case "⌫":
                 let action = f.engine.backspace()
+                defer { if !f.engine.isComposing { f.knownNoWord = false } }
                 if case .passThrough = action {
                     if !f.text.isEmpty { f.text.removeLast() }
                 } else {
@@ -172,21 +227,32 @@ struct ExternalCasesTests {
                 }
             case "←", "⎋":
                 f.engine.reset()
+                f.knownNoWord = false
                 if f.engine.isComposing { f.fail("reset-composing", "reset left the engine composing (D4)") }
             case "⏎":
                 boundary = true
                 f.apply(f.engine.endWord(), passing: nil)
+                f.engine.reset()
+                f.knownNoWord = false
                 f.text.append("\n")
                 plainKey = "\n"
             case "⇥":
                 boundary = true
                 f.apply(f.engine.endWord(), passing: nil)
+                f.engine.reset()
+                f.knownNoWord = false
                 f.text.append("\t")
                 plainKey = "\t"
             default:
                 if key == "␣" { plainKey = " " }
                 boundary = isBoundaryKey(plainKey.value)
-                f.apply(f.engine.handle(plainKey), passing: plainKey)
+                var action: Action?
+                if !f.engine.isComposing, !f.knownNoWord, isMarkKey(plainKey, method: options.inputMethod) {
+                    action = d20Seed(&f, key: plainKey)
+                    if action == nil { f.engine.reset() }
+                }
+                f.apply(action ?? f.engine.handle(plainKey), passing: plainKey)
+                if !f.engine.isComposing { f.knownNoWord = true }
             }
 
             // D33: after overflow every key passes through unchanged until the word ends.
@@ -261,7 +327,8 @@ struct ExternalCasesTests {
             .replacingOccurrences(of: " ", with: "␣")
             .replacingOccurrences(of: "\n", with: "⏎")
             .replacingOccurrences(of: "\t", with: "⇥")
-        return Result(output: shown, failures: f.failures, boundaryChecks: f.boundaryChecks)
+        return Result(output: shown, failures: f.failures, boundaryChecks: f.boundaryChecks,
+                      d20Reads: f.d20Reads, d20Seeded: f.d20Seeded)
     }
 
     // MARK: - Checker self-test
@@ -280,6 +347,13 @@ struct ExternalCasesTests {
         #expect(run("carr␣").output == "car␣" && run("carr␣").failures.isEmpty)
         #expect(run("tesst␣").output == "test␣" && run("tesst␣").failures.isEmpty)
         #expect(run("⟦cả⟧r␣").output == "car␣")
+        // D20 after ⌫ over a space, Return, a reset-only key; only the last word is read.
+        #expect(run("du␣⌫j").output == "dụ" && run("du␣⌫j").d20Seeded == 1)
+        #expect(run("tooi←s").output == "tối")
+        #expect(run("du⏎j").output == "du⏎j" && run("du⏎j").d20Reads == 2)
+        #expect(run("⟦ngả nghieng⟧e").output == "ngả␣nghiêng")
+        #expect(run("viet␣⌫j").output == "vietj")
+        #expect(run("hoc,a").d20Reads == 0)
     }
 
     // MARK: - The test
@@ -302,6 +376,9 @@ struct ExternalCasesTests {
         var examples: [String: [(String, String, String, String)]] = [:]
         var newFailures: [String] = []
         var boundaryChecks = 0
+        var d20Reads = 0
+        var d20Seeded = 0
+        var d20Cases = 0
         var found = Set<String>()
 
         for file in files {
@@ -312,6 +389,9 @@ struct ExternalCasesTests {
                 total += 1
                 let result = Self.replay(c)
                 boundaryChecks += result.boundaryChecks
+                d20Reads += result.d20Reads
+                d20Seeded += result.d20Seeded
+                if result.d20Seeded > 0 { d20Cases += 1 }
                 let srcOptions = c.options.filter { $0.hasPrefix("src:") }
                 let kinds = result.kinds
                 var status = kinds.isEmpty ? "ok" : "fail:" + kinds.joined(separator: ",")
@@ -340,6 +420,7 @@ struct ExternalCasesTests {
         var report = "EXTERNAL CASES: \(total) read, \(asserted) asserted, \(skippedCases) skipped (src: option; run, not asserted)\n"
         for (o, n) in skippedBySrc.sorted(by: { $0.key < $1.key }) { report += "  skipped by \(o): \(n)\n" }
         report += "  word-boundary checks executed (all cases): \(boundaryChecks)\n"
+        report += "  D20 reads simulated: \(d20Reads), seeded: \(d20Seeded), cases with a seed: \(d20Cases)\n"
         report += "  failures by kind (asserted cases): \(failuresByKind.sorted { $0.key < $1.key })\n"
         for (s, m) in failuresBySource.sorted(by: { $0.key < $1.key }) { report += "  \(s): \(m.sorted { $0.key < $1.key })\n" }
         for (k, list) in examples.sorted(by: { $0.key < $1.key }) {
