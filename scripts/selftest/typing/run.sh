@@ -3,7 +3,7 @@
 # Side effects: builds, takes the screen, changes input source, changes user settings
 # Needs the Accessibility permission for the process running the script
 # (System Events keystrokes); the Debug input method must be installed, the Dấu input
-# source enabled (scripts/dev/install-debug.sh), and the apps installed.
+# source enabled (scripts/dev/install-input-method.sh), and the apps installed.
 #
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
@@ -113,14 +113,14 @@ INPUT_SOURCE="$BIN/input-source"
 CLIPBOARD="$BIN/clipboard"
 
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
-[[ -f "$IM_PLIST" ]] || { echo "Chưa cài bộ gõ (scripts/dev/install-debug.sh)." >&2; exit 1; }
+[[ -f "$IM_PLIST" ]] || { echo "Chưa cài bộ gõ (scripts/dev/install-input-method.sh)." >&2; exit 1; }
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_PLIST")"
 DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
 # disagree (TIS alone has been wrong on macOS 27.2).
 [[ -n "$DAU_SOURCE" ]] || {
   echo "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)." >&2
-  echo "Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (scripts/dev/install-debug.sh nói rõ các bước)." >&2
+  echo "Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (scripts/dev/install-input-method.sh nói rõ các bước)." >&2
   exit 1
 }
 if [[ "$KEYS" == *"⇄"* ]] && ! "$INPUT_SOURCE" enabled "$US_SOURCE" | grep -qx "$US_SOURCE"; then

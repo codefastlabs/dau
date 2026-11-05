@@ -7,7 +7,7 @@
 #   1. Builds Debug (universal) into build/DerivedData.noindex (scheme Dau, which includes
 #      the input method). By default the input method already installed in
 #      ~/Library/Input Methods is used as it is and the script says so; only with
-#      --install is the Debug build installed first (scripts/dev/install-debug.sh --no-build,
+#      --install is the Debug build installed first (scripts/dev/install-input-method.sh --no-build,
 #      which also stops the old input method process), so the build is not made twice.
 #   2. Makes sure the input method runs. macOS launches it on demand, when a client
 #      activates it; if it is not running, the helper reselects the Dấu input source,
@@ -104,11 +104,11 @@ if [[ "$BUILD" == 1 ]]; then
 fi
 [[ -x "$APP_BIN" ]] || fail "không thấy $APP_BIN (chạy không có --no-build)"
 if [[ "$INSTALL" == 1 ]]; then
-  echo "==> Cài bộ gõ Debug (install-debug.sh --no-build; bản vừa build ở trên)"
-  install_log="$("$ROOT/scripts/dev/install-debug.sh" --no-build 2>&1)" || { echo "$install_log"; fail "install-debug.sh"; }
+  echo "==> Cài bộ gõ Debug (install-input-method.sh --no-build; bản vừa build ở trên)"
+  install_log="$("$ROOT/scripts/dev/install-input-method.sh" --no-build 2>&1)" || { echo "$install_log"; fail "install-input-method.sh"; }
   echo "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed 's/^ */    /'
 fi
-[[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/dev/install-debug.sh)"
+[[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/dev/install-input-method.sh)"
 commit_of() { local f="$1/Contents/Resources/BuildCommit.txt"; [[ -f "$f" ]] && cat "$f" || echo "không có mã commit"; }
 if [[ "$INSTALL" == 1 ]]; then
   echo "==> Bộ gõ thử: bản vừa cài ($(commit_of "$IM_APP"))"
@@ -138,7 +138,7 @@ if ! im_running; then
   DAU_SOURCE="$(echo "$enabled_ids" | grep '\.vi$' | head -1)"
   [[ -n "$DAU_SOURCE" ]] || DAU_SOURCE="$(echo "$enabled_ids" | head -1)"
   if [[ -z "$DAU_SOURCE" ]]; then
-    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (xem install-debug.sh), rồi chạy lại."
+    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (xem install-input-method.sh), rồi chạy lại."
   fi
   # Measured (macOS 27.0.1): reselecting the already selected Dấu source launched the
   # input method once and did nothing the next time (TIS treats it as no change). The

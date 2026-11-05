@@ -35,7 +35,7 @@ Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ 
 
    ```sh
    xcodegen generate
-   scripts/dev/install-debug.sh
+   scripts/dev/install-input-method.sh
    ```
 
    Script in ra các bước bật Dấu trong System Settings. Thêm `--release` để dùng hằng ngày (bản Release không ghi nhật ký theo từng phím, D8).

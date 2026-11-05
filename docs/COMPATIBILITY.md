@@ -81,7 +81,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 ### 4.1 Chuẩn bị
 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
-2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-debug.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
+2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-input-method.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
 3. Làm theo các bước script in ra. Lần đầu trên máy: bật bằng nút "Bật Dấu" của app chủ rồi Allow, không cần đăng xuất (D37); thêm tay (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào › Sửa… › "+" › Tiếng Việt › "Dấu – Tiếng Việt" › Thêm) có thể không thấy Dấu vì danh sách đọc bộ đệm cũ, khi đó đăng xuất rồi đăng nhập lại (`docs/research/M5-INSTALL.md` (b)9, (b)12). Dấu chỉ có nguồn này (D2); gõ tiếng Anh bằng U.S. của macOS, nên giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách. Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó.
 4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu. Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng hoặc cửa sổ nhớ nguồn riêng: chọn lại Dấu **sau khi** chuyển sang ứng dụng cần thử, và nhìn biểu tượng V trên thanh menu trước khi gõ.
 5. (Tuỳ chọn, để xem lỗi nếu bộ gõ không chạy) mở một cửa sổ Terminal riêng: `/usr/bin/log stream --predicate 'process == "DauInputMethod"'`. Trong zsh, `log` là một lệnh có sẵn khác, nên phải gõ đường dẫn đầy đủ.

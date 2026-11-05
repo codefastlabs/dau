@@ -1,6 +1,6 @@
 # Shared build step for the scripts that build Dấu with xcodebuild (sourced, not run).
 # Side effects: builds
-# Callers: scripts/dev/install-debug.sh, scripts/dev/install-app.sh, scripts/selftest/app-group.sh.
+# Callers: scripts/dev/install-input-method.sh, scripts/dev/install-app.sh, scripts/selftest/app-group.sh.
 # Each caller keeps its own checks of the result (per target: N2 applies to the input
 # method only), this file only holds what must be identical everywhere:
 #

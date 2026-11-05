@@ -8,12 +8,12 @@
 # System Settings (N4). The steps are printed at the end.
 #
 # Usage:
-#   scripts/dev/install-debug.sh               build, install, stop the old process
-#   scripts/dev/install-debug.sh --build-only  build and check only, touch nothing outside the repo
-#   scripts/dev/install-debug.sh --no-build    skip xcodegen and xcodebuild: check and install the
+#   scripts/dev/install-input-method.sh               build, install, stop the old process
+#   scripts/dev/install-input-method.sh --build-only  build and check only, touch nothing outside the repo
+#   scripts/dev/install-input-method.sh --no-build    skip xcodegen and xcodebuild: check and install the
 #                                          build already in build/DerivedData.noindex (for a
 #                                          caller that has just built it, e.g. scripts/selftest/app-group.sh)
-#   scripts/dev/install-debug.sh --release     Release instead of Debug: for day-to-day typing
+#   scripts/dev/install-input-method.sh --release     Release instead of Debug: for day-to-day typing
 #                                          (no get-task-allow, no per-key log, D8)
 set -euo pipefail
 

@@ -39,7 +39,7 @@ mkdir -p "$OUT_ROOT"; touch "$USED"
 
 if [[ ! -d $SRC ]]; then
   print "==> Chưa có bản Release: build"
-  "$ROOT/scripts/dev/install-debug.sh" --build-only --release || exit 1
+  "$ROOT/scripts/dev/install-input-method.sh" --build-only --release || exit 1
 fi
 [[ -d $SRC ]] || { print -u2 "Không thấy $SRC"; exit 1 }
 

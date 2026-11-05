@@ -8,7 +8,7 @@
 # /Applications, but other system lists such as Spotlight and "Open With" still need the
 # registration). A running Dấu.app is quit normally first and opened again at the end.
 #
-# The input method is a separate step (scripts/dev/install-debug.sh); --with-input-method
+# The input method is a separate step (scripts/dev/install-input-method.sh); --with-input-method
 # runs it with the same configuration first. Nothing is enabled or selected (N4).
 #
 # Usage:
@@ -41,7 +41,7 @@ dau_require_signing_identity || exit 1
 if [[ "$WITH_IM" == 1 ]]; then
   im_args=()
   [[ "$CONFIG" == Release ]] && im_args+=(--release)
-  "$ROOT/scripts/dev/install-debug.sh" ${im_args[@]+"${im_args[@]}"}
+  "$ROOT/scripts/dev/install-input-method.sh" ${im_args[@]+"${im_args[@]}"}
 fi
 
 dau_build Dau "$CONFIG" || exit 1

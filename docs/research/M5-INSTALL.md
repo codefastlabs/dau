@@ -286,7 +286,7 @@ Trình tự đề xuất, ráp từ McBopomofo, vChewing, XKey và D7:
 3. Kiểm chữ ký bản trong app: Team ID đúng, chữ ký hợp lệ.
 4. Chép vào một thư mục tạm **trên cùng ổ đĩa** (trong `~/Library/Input Methods`, tên tạm không đuôi `.app` để TIS không quét), rồi **đổi chỗ cả khối** (`FileManager.replaceItemAt`, hoặc đổi tên cái cũ rồi đặt cái mới). Không ghi đè từng file lên bundle đang chạy: tiến trình cũ còn đang ánh xạ các trang mã của nó [Suy luận, cần kiểm chứng; vChewing làm đúng kiểu chép tạm rồi move].
 5. Gỡ quarantine của bản mới sau khi đã kiểm chữ ký (làm được vì app chủ không sandbox, D37).
-6. Dừng tiến trình cũ (`DauInputMethod`). Hệ thống sẽ chạy bản mới ở phím gõ kế tiếp (đã thấy với `scripts/dev/install-debug.sh`). Cách hợp với cả hai phương án sandbox: app chủ phát thông báo Darwin, bộ gõ tự `exit(0)` khi không có từ đang gõ; quá thời hạn thì app chủ (không sandbox) mới `terminate`. macSKK làm tương tự bằng cách gửi "quit" qua `osascript`. Bộ gõ thoát khi nhận thông báo `quitRequested` đã làm ở 30/10/2026 (`docs/PROGRESS.md`).
+6. Dừng tiến trình cũ (`DauInputMethod`). Hệ thống sẽ chạy bản mới ở phím gõ kế tiếp (đã thấy với `scripts/dev/install-input-method.sh`). Cách hợp với cả hai phương án sandbox: app chủ phát thông báo Darwin, bộ gõ tự `exit(0)` khi không có từ đang gõ; quá thời hạn thì app chủ (không sandbox) mới `terminate`. macSKK làm tương tự bằng cách gửi "quit" qua `osascript`. Bộ gõ thoát khi nhận thông báo `quitRequested` đã làm ở 30/10/2026 (`docs/PROGRESS.md`).
 7. Gọi lại `TISRegisterInputSource(url)` (Squirrel làm mỗi lần cài; vô hại). Không đụng tới trạng thái bật/chọn: ID giữ nguyên thì lựa chọn của người dùng còn nguyên.
 
 **Không làm:**

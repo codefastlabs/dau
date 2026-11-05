@@ -70,7 +70,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
 - `scripts/dev/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
 - `scripts/dev/clean-dau.sh` — không tham số: liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` (người dùng tự chạy) xoá những gì xoá được để thử cài từ máy sạch — các mục trong `com.apple.inputsources` phải bỏ bằng "–" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào — rồi đăng xuất.
-- `scripts/dev/install-debug.sh` — build và cài bộ gõ bản Debug vào `~/Library/Input Methods`; `--release` cho bản Release.
+- `scripts/dev/install-input-method.sh` — build và cài bộ gõ bản Debug vào `~/Library/Input Methods`; `--release` cho bản Release.
 - `scripts/dev/install-app.sh` — build và cài Dấu.app bản Release vào `/Applications` (đăng ký LaunchServices, thoát rồi mở lại app đang chạy); `--with-input-method` cài cả bộ gõ.
 - `swift test --package-path Packages/DauEngine` — test engine.
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings` — test của app chủ (giao diện dựng từ `Apps/Dau/Sources`).
