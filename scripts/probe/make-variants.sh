@@ -46,8 +46,9 @@ fi
 # Signing identity of the original build: the leaf certificate it was signed with.
 IDENT_NAME=$(codesign -dvv "$SRC" 2>&1 | sed -n 's/^Authority=\(Apple Development: .*\)$/\1/p' | head -1)
 [[ -n $IDENT_NAME ]] || { print -u2 "Bản gốc không ký bằng danh tính Apple Development."; exit 1 }
-IDENT_HASH=$(security find-identity -v -p codesigning | grep -F "\"$IDENT_NAME\"" | awk '{print $2}' | head -1)
-[[ -n $IDENT_HASH ]] || { print -u2 "Không thấy danh tính trong keychain: $IDENT_NAME"; exit 1 }
+source "$ROOT/scripts/lib/build.sh"   # dau_signing_identities: skips revoked identities
+IDENT_HASH=$(dau_signing_identities | grep -F "\"$IDENT_NAME\"" | awk '{print $2}' | head -1)
+[[ -n $IDENT_HASH ]] || { print -u2 "Không thấy danh tính dùng được trong keychain: $IDENT_NAME"; exit 1 }
 RUNTIME=()
 codesign -dvv "$SRC" 2>&1 | grep -q 'flags=.*runtime' && RUNTIME=(--options runtime)
 print "Danh tính ký: $IDENT_NAME ($IDENT_HASH) ${RUNTIME}"

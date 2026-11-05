@@ -24,8 +24,9 @@ build tis-probe
 build settings-ax
 build tis-act
 
-IDENT_HASH=$(security find-identity -v -p codesigning | grep -F "Apple Development:" | awk '{print $2}' | head -1)
-[[ -n $IDENT_HASH ]] || { print -u2 "Không có danh tính Apple Development trong keychain."; exit 1 }
+source "$ROOT/scripts/lib/build.sh"   # dau_signing_identities: skips revoked identities
+IDENT_HASH=$(dau_signing_identities | grep -F "Apple Development:" | awk '{print $2}' | head -1)
+[[ -n $IDENT_HASH ]] || { print -u2 "Không có danh tính Apple Development dùng được trong keychain."; exit 1 }
 
 if [[ ! -d $APP || $BIN/tis-act -nt $APP/Contents/MacOS/TisAct ]]; then
   rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS"

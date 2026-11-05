@@ -1,10 +1,13 @@
 #!/bin/zsh
 # Shared build step for the scripts that build Dấu with xcodebuild (sourced, not run).
 # Side effects: builds
-# Callers: scripts/dev/install-input-method.sh, scripts/dev/install-app.sh, scripts/selftest/app-group.sh.
+# Callers: scripts/dev/install-input-method.sh, scripts/dev/install-app.sh, scripts/selftest/app-group.sh;
+# scripts/probe/build-tools.sh and scripts/probe/make-variants.sh use dau_signing_identities only.
 # Each caller keeps its own checks of the result (per target: N2 applies to the input
 # method only), this file only holds what must be identical everywhere:
 #
+#   dau_signing_identities        the usable "Apple Development" identities, one
+#                                 find-identity line each ("N) <SHA-1> "<name>"")
 #   dau_require_signing_identity  stop early when the keychain has no usable
 #                                 "Apple Development" identity (revoked, expired, missing)
 #   dau_build SCHEME CONFIG       xcodegen, then xcodebuild universal into $DAU_DERIVED
@@ -18,13 +21,16 @@ DAU_ROOT="${${(%):-%x}:A:h:h:h}"
 DAU_DERIVED="$DAU_ROOT/build/DerivedData.noindex"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 
-dau_require_signing_identity() {
+dau_signing_identities() {
   # find-identity -v still lists a revoked identity, tagged CSSMERR_TP_CERT_REVOKED
-  # (seen 05/11/2026), so drop CSSMERR lines too.
-  if security find-identity -v -p codesigning 2>/dev/null \
-      | grep '"Apple Development' | grep -qv CSSMERR; then
-    return 0
-  fi
+  # (seen 05/11/2026), and a new certificate keeps the revoked one's name: drop CSSMERR
+  # lines, never pick by name alone.
+  security find-identity -v -p codesigning 2>/dev/null \
+    | grep '"Apple Development' | grep -v CSSMERR
+}
+
+dau_require_signing_identity() {
+  dau_signing_identities >/dev/null && return 0
   cat >&2 <<EOF
 Không có chứng chỉ "Apple Development" dùng được trong keychain (thiếu, hết hạn hoặc bị
 thu hồi; scripts/dev/dau-version.sh cho biết lý do). Chọn một trong hai cách (CONTRIBUTING.md):
