@@ -37,7 +37,7 @@ struct UninstallRemoveSheet: View {
                 ProgressView()
                     .controlSize(.small)
                     .accessibilityHidden(true)
-                Text("Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào Thùng rác.")
+                Text("Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào \(ui.trash).")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

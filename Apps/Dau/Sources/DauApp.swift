@@ -31,7 +31,7 @@ struct DauApp: App {
         DebugCapture.actions = actions
         #endif
         opensOnboarding = opens
-        DauApp.upgradeAtLaunch(installer)
+        DauApp.upgradeAtLaunch(actions)
         DauApp.checkInstalled(actions)
     }
 
@@ -43,27 +43,20 @@ struct DauApp: App {
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
             || DebugCapture.bannerDirectory != nil { return }
         #endif
-        actions.checkInstalled()
+        Task { await actions.checkInstalledAfterUpgrade() }
     }
 
     /// D7: replace an older installed input method. The user just opened Dấu (or the
     /// updater relaunched it), so no word is being typed; the input method still ends
     /// its word before it quits (InputMethodLifecycle).
     @MainActor
-    private static func upgradeAtLaunch(_ installer: InputMethodInstaller) {
+    private static func upgradeAtLaunch(_ actions: InputMethodActions) {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
             || DebugCapture.bannerDirectory != nil || DebugCapture.settingsWindowOnly { return }
         #endif
-        Task { @MainActor in
-            do {
-                let outcome = try await installer.upgradeIfNeeded()
-                installLogger.notice("event=launch-upgrade outcome=\(String(describing: outcome), privacy: .public)")
-            } catch {
-                installLogger.error("event=launch-upgrade-failed error=\(String(describing: error), privacy: .public)")
-            }
-        }
+        actions.startLaunchUpgrade()
     }
 
     /// The onboarding flow on the real services, and whether it opens at launch.

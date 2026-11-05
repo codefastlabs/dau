@@ -231,6 +231,10 @@ protocol InputMethodInstaller: AnyObject {
     func installedIsGenuine() -> Bool
     /// Replaces an older installed input method with the one in the app (D7).
     func upgradeIfNeeded() async throws -> UpgradeOutcome
+    /// Whether one of Dấu's entries is stored among the input sources (the same reading
+    /// as `waitUntilRemovedFromInputSources`). True when it cannot tell (no bundle in the
+    /// app), so uninstall takes the usual path and reports the error there.
+    func isListedInInputSources() -> Bool
     /// Uninstall, step 1 (D16): opens the Input Sources list of System Settings, where the
     /// user removes Dấu. Selects nothing and removes nothing: macOS picks a keyboard itself
     /// when Dấu goes away.
@@ -263,6 +267,9 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     /// `finishUninstall` throws this (a failure after the wait).
     var finishFailure: InputMethodInstallerError?
     var genuine = true
+    /// `upgradeIfNeeded` takes a moment, then replaces a bad installed copy with a good one
+    /// (`genuine` becomes true): the ordering test of the launch upgrade and the check.
+    var upgradeRepairs = false
     private(set) var calls: [String] = []
 
     init(_ status: InputMethodStatus = .notInstalled, failure: InputMethodInstallerError? = nil) {
@@ -303,8 +310,15 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     func upgradeIfNeeded() async throws -> UpgradeOutcome {
         calls.append("upgrade")
         if let failure { throw failure }
+        if upgradeRepairs {
+            try await Task.sleep(for: .milliseconds(30))
+            genuine = true
+            return .upgraded(from: nil, to: "2")
+        }
         return .upToDate
     }
+
+    func isListedInInputSources() -> Bool { stillListed }
 
     func prepareUninstall() async throws {
         calls.append("prepareUninstall")

@@ -131,12 +131,12 @@
         }
       }
     },
-    "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào Thùng rác." : {
+    "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào %@." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào Thùng rác."
+            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào %@."
           }
         }
       }
@@ -301,12 +301,12 @@
         }
       }
     },
-    "Bộ gõ đã được chuyển vào Thùng rác." : {
+    "Bộ gõ đã được chuyển vào %@." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bộ gõ đã được chuyển vào Thùng rác."
+            "value" : "Bộ gõ đã được chuyển vào %@."
           }
         }
       }
@@ -991,12 +991,12 @@
         }
       }
     },
-    "Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào Thùng rác." : {
+    "Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào %@." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào Thùng rác."
+            "value" : "Khi Dấu không còn trong danh sách, bộ gõ sẽ được chuyển vào %@."
           }
         }
       }
@@ -1171,12 +1171,12 @@
         }
       }
     },
-    "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào Thùng rác." : {
+    "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào %@." : {
       "localizations" : {
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào Thùng rác."
+            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào %@."
           }
         }
       }

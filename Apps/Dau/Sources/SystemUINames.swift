@@ -3,7 +3,7 @@ import Foundation
 /// A name of macOS's own interface that Dấu's text mentions (D38).
 enum SystemUIName: String, CaseIterable, Sendable {
     case systemSettings, general, loginItemsAndExtensions, keyboard, inputSources
-    case edit, add, done, allow, dontAllow, logOut, applications, vietnamese
+    case edit, add, done, allow, dontAllow, logOut, applications, trash, vietnamese
     case automaticallySwitchOption
     /// The "Allow … to enable …?" dialog macOS shows: title (two `%@`: the input method's name twice) and body.
     case allowDialogTitle, allowDialogBody
@@ -23,6 +23,7 @@ enum SystemUIName: String, CaseIterable, Sendable {
         case .dontAllow: "Don’t Allow"
         case .logOut: "Log Out"
         case .applications: "Applications"
+        case .trash: "Trash"
         case .vietnamese: "Vietnamese"
         case .automaticallySwitchOption: "Automatically switch to a document’s input source"
         case .allowDialogTitle: "Allow “%1$@” to enable “%2$@”?"
@@ -33,7 +34,7 @@ enum SystemUIName: String, CaseIterable, Sendable {
 
 /// Where a name is in the system's own strings (read only).
 enum SystemUITable: String, CaseIterable, Sendable {
-    case systemSettings, systemSettingsInfo, keyboardSettings, generalSettings, loginWindow, folderNames
+    case systemSettings, systemSettingsInfo, keyboardSettings, generalSettings, loginWindow, folderNames, finderNames
 }
 
 /// Names of macOS's interface as the user's macOS shows them (D38), for every sentence
@@ -65,6 +66,7 @@ struct SystemUINames: Sendable {
         case .inputSources, .edit, .add, .done, .allow, .dontAllow, .automaticallySwitchOption, .allowDialogTitle, .allowDialogBody: (.keyboardSettings, nil)
         case .logOut: (.loginWindow, nil)
         case .applications: (.folderNames, nil)
+        case .trash: (.finderNames, nil)
         case .vietnamese: nil
         }
     }
@@ -100,6 +102,7 @@ struct SystemUINames: Sendable {
     var systemSettings: String { name(.systemSettings) }
     var inputSources: String { name(.inputSources) }
     var applications: String { name(.applications) }
+    var trash: String { name(.trash) }
     var allow: String { name(.allow) }
     var dontAllow: String { name(.dontAllow) }
     var edit: String { name(.edit) }
@@ -146,6 +149,9 @@ struct SystemUINames: Sendable {
 
     static let folderNamesDirectory = URL(fileURLWithPath: "/System/Library/CoreServices/SystemFolderLocalizations")
 
+    /// Finder's own strings: one `Localizable.strings` per language, where "Trash" is keyed by its English name.
+    static let finderResources = URL(fileURLWithPath: "/System/Library/CoreServices/Finder.app/Contents/Resources")
+
     /// Reads every table; one that cannot be read is left out (its names come out in English).
     static func loadTables() -> [SystemUITable: Table] {
         var result: [SystemUITable: Table] = [:]
@@ -164,6 +170,18 @@ struct SystemUINames: Sendable {
             }
         }
         result[.folderNames] = folders
+        // Finder: only the "Trash" entry of each language is kept.
+        var finder: Table = [:]
+        for entry in (try? fm.contentsOfDirectory(atPath: finderResources.path)) ?? [] where entry.hasSuffix(".lproj") {
+            let language = String(entry.dropLast(".lproj".count))
+            let file = finderResources.appendingPathComponent(entry).appendingPathComponent("Localizable.strings")
+            if let data = try? Data(contentsOf: file),
+               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: String],
+               let trash = plist["Trash"] {
+                finder[language] = ["Trash": trash]
+            }
+        }
+        result[.finderNames] = finder
         return result
     }
 

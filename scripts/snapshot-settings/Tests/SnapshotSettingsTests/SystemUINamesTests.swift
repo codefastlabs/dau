@@ -20,10 +20,13 @@ struct SystemUINamesTests {
     // SystemFolderLocalizations: per language, keyed by the English name.
     let folders: SystemUINames.Table = ["vi": ["Applications": "Ứng dụng"], "en": ["Applications": "Applications"]]
 
+    // Finder's Localizable.strings per language: "Trash" keyed by its English name.
+    let finder: SystemUINames.Table = ["vi": ["Trash": "Thùng rác"], "en": ["Trash": "Trash"]]
+
     func names(_ languages: [String]) -> SystemUINames {
         SystemUINames(languages: languages,
                       tables: [.keyboardSettings: keyboard, .systemSettings: settings,
-                               .systemSettingsInfo: info, .folderNames: folders]) { code, language in
+                               .systemSettingsInfo: info, .folderNames: folders, .finderNames: finder]) { code, language in
             language == "vi" ? "Tiếng Việt" : (language == "en" ? "Vietnamese" : nil)
         }
     }
@@ -46,6 +49,15 @@ struct SystemUINamesTests {
         #expect(n.allow == "Cho phép")
         #expect(n.applications == "Ứng dụng")
         #expect(n.vietnamese == "Tiếng Việt")
+    }
+
+    @Test("the Trash: the system's own name in the user's language, English when no table has it (D38)")
+    func trash() {
+        #expect(names(["vi-VN"]).trash == "Thùng rác")
+        #expect(names(["en-VN", "vi-VN"]).trash == "Trash")
+        #expect(names(["xx"]).trash == "Trash")
+        let none = SystemUINames(languages: ["vi"], tables: [:]) { _, _ in nil }
+        #expect(none.trash == "Trash")
     }
 
     @Test("unknown language, a name a table lacks, or no table → English")
@@ -80,5 +92,7 @@ struct SystemUINamesTests {
         let vi = SystemUINames.system(languages: ["vi"])
         #expect(vi.inputSources == "Nguồn đầu vào")
         #expect(vi.systemSettings == "Cài đặt hệ thống")
+        if tables[.finderNames]?["vi"] != nil { #expect(vi.trash == "Thùng rác") }
+        #expect(en.trash == "Trash")
     }
 }

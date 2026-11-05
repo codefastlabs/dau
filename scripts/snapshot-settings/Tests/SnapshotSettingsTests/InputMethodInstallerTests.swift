@@ -519,6 +519,16 @@ struct InputMethodInstallerTests {
         #expect(rig.counter.value == 0)
     }
 
+    @Test("isListedInInputSources: reads the stored entries; true when it cannot tell")
+    func isListed() {
+        let listed = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        #expect(listed.installer.isListedInInputSources())
+        let notListed = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: false))
+        #expect(!notListed.installer.isListedInInputSources())
+        listed.files.embedded = nil
+        #expect(listed.installer.isListedInInputSources())
+    }
+
     @Test("prepare: nothing to uninstall without the bundle inside the app")
     func prepareUnavailable() async {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
@@ -885,6 +895,59 @@ struct UninstallFlowTests {
         actions.cancelUninstall()
         _ = await run.value
         #expect(!actions.dauIsSelected)
+    }
+
+    @Test("Dấu installed but not among the input sources: no System Settings, no sheet, straight to the removal (D16)")
+    func notListedSkipsTheSheet() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.stillListed = false
+        installer.uninstallReport = UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: true)
+        var opened = 0
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: { opened += 1 }, openInputSources: { opened += 1 })
+        let outcome = await actions.performUninstall(deleteSettings: true)
+        #expect(outcome == .done(UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: true)))
+        #expect(installer.calls == ["finish+data"])
+        #expect(opened == 0)
+        #expect(!actions.isShowingUninstallSheet)
+        #expect(!actions.isUninstalling)
+    }
+
+    @Test("Dấu listed: prepare (opens System Settings) and the sheet as before (D16)")
+    func listedKeepsTheSheet() async {
+        let installer = FakeInputMethodInstaller(.enabled)
+        installer.stillListed = true
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        let run = Task { await actions.performUninstall(deleteSettings: false) }
+        await settle { actions.isShowingUninstallSheet }
+        #expect(installer.calls == ["prepareUninstall", "wait"])
+        actions.cancelUninstall()
+        #expect(await run.value == .cancelled)
+    }
+
+    @Test("the signature check waits for the launch upgrade: a copy the upgrade repairs raises no banner (D37)")
+    func checkAfterUpgrade() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.genuine = false
+        installer.upgradeRepairs = true
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.startLaunchUpgrade()
+        await actions.checkInstalledAfterUpgrade()
+        #expect(!actions.installedTampered)
+        // Every activation checks: a copy that turns bad later shows the banner.
+        installer.genuine = false
+        await actions.checkInstalledAfterUpgrade()
+        #expect(actions.installedTampered)
+    }
+
+    @Test("still bad after the upgrade: the banner shows (D37)")
+    func checkAfterUpgradeStillBad() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.genuine = false
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.startLaunchUpgrade()
+        await actions.checkInstalledAfterUpgrade()
+        #expect(actions.installedTampered)
+        #expect(installer.calls == ["upgrade"])
     }
 
     @Test("a failed preparation or finish ends in the failure alert, no sheet left")

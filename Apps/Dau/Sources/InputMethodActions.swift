@@ -50,6 +50,7 @@ final class InputMethodActions {
     @ObservationIgnored private let readEnglishLayout: () -> String?
     @ObservationIgnored private var bannerTask: Task<EnableOutcome, Error>?
     @ObservationIgnored private var bannerAttempt = 0
+    @ObservationIgnored private var launchUpgrade: Task<Void, Never>?
 
     init(installer: InputMethodInstaller,
          openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard,
@@ -114,8 +115,31 @@ final class InputMethodActions {
         banner = .idle
     }
 
+    /// D7: replaces an older installed input method with the one in the app (at launch).
+    /// The signature check (`checkInstalledAfterUpgrade`) waits for it.
+    func startLaunchUpgrade() {
+        guard launchUpgrade == nil else { return }
+        let installer = self.installer
+        launchUpgrade = Task { @MainActor in
+            do {
+                let outcome = try await installer.upgradeIfNeeded()
+                installLogger.notice("event=launch-upgrade outcome=\(String(describing: outcome), privacy: .public)")
+            } catch {
+                installLogger.error("event=launch-upgrade-failed error=\(String(describing: error), privacy: .public)")
+            }
+        }
+    }
+
+    /// D37: the signature check, once the launch upgrade has finished (an old copy the
+    /// upgrade replaces must not raise "Cài lại"); at once when none was started or it is
+    /// done, so every activation checks.
+    func checkInstalledAfterUpgrade() async {
+        await launchUpgrade?.value
+        checkInstalled()
+    }
+
     /// Checks the installed input method's signature (at launch and whenever the app
-    /// becomes active).
+    /// becomes active). Use `checkInstalledAfterUpgrade` from the app.
     func checkInstalled() {
         guard reinstall != .working else { return }
         installedTampered = !installer.installedIsGenuine()
@@ -213,6 +237,12 @@ final class InputMethodActions {
         let installer = self.installer
         let task = Task { @MainActor [weak self] () -> UninstallOutcome in
             do {
+                // D16: Dấu installed but not among the input sources (never enabled, or the
+                // user removed it already): nothing to wait for, so no System Settings and
+                // no sheet; straight to the removal.
+                guard installer.isListedInInputSources() else {
+                    return .done(try await installer.finishUninstall(deleteSettings: deleteSettings))
+                }
                 try await installer.prepareUninstall()
                 self?.isShowingUninstallSheet = true
                 self?.refreshDauIsSelected()
@@ -276,7 +306,7 @@ enum UninstallAlert {
         // macOS lets only the user remove an input source, so the alert says what happens
         // in order (docs/research/M5-INSTALL.md section 4).
         let ui = SystemUINames.system()   // macOS's own names (D38)
-        alert.informativeText = String(localized: "Bạn sẽ bỏ Dấu khỏi \(ui.inputSources) trong \(ui.systemSettings); sau đó Dấu được chuyển vào Thùng rác.")
+        alert.informativeText = String(localized: "Bạn sẽ bỏ Dấu khỏi \(ui.inputSources) trong \(ui.systemSettings); sau đó Dấu được chuyển vào \(ui.trash).")
         let remove = alert.addButton(withTitle: String(localized: "Tiếp tục gỡ"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
@@ -296,7 +326,7 @@ enum UninstallAlert {
         let ui = SystemUINames.system()   // macOS's own names (D38)
         var lines: [String] = []
         if report.movedToTrash {
-            lines.append(String(localized: "Bộ gõ đã được chuyển vào Thùng rác."))
+            lines.append(String(localized: "Bộ gõ đã được chuyển vào \(ui.trash)."))
         }
         if report.stillEnabled {
             lines.append(String(localized: "macOS vẫn báo Dấu trong nguồn đầu vào; bạn có thể bỏ nó trong \(ui.inputSourcesPath)."))
@@ -304,7 +334,7 @@ enum UninstallAlert {
         if report.dataDeleted {
             lines.append(String(localized: "Đã xoá cài đặt và quy tắc ứng dụng."))
         }
-        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục \(ui.applications) vào Thùng rác."))
+        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục \(ui.applications) vào \(ui.trash)."))
         alert.informativeText = lines.joined(separator: " ")
         alert.addButton(withTitle: String(localized: "Thoát Dấu"))
         return alert

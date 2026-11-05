@@ -294,6 +294,11 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         return .upgraded(from: installed.version, to: new)
     }
 
+    func isListedInInputSources() -> Bool {
+        guard let embedded = files.embedded else { return true }
+        return !sources.storedEnabledIDs(bundleID: embedded.bundleID).isEmpty
+    }
+
     func prepareUninstall() async throws {
         guard files.embedded != nil else { throw InputMethodInstallerError.unavailable }
         // Only opens the list: "–" works for the selected source too, and macOS selects a
