@@ -9,6 +9,10 @@ Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và 
 - Ở 16–32 pt tăng độ dày nét dấu để vẫn đọc ra "ấ"; kiểm tra bằng mắt ở từng cỡ.
 - Trên nền tối hoặc nền Mực: thêm viền mảnh màu Giấy ~35% để tách biểu tượng khỏi nền.
 
+## Biểu tượng bản phát triển
+- Quy tắc ở D25 (các loại bản ở D7): biểu tượng chuẩn chỉ cho bản chính thức; mọi bản khác dùng biểu tượng bản phát triển.
+- Mockup: artboard "Nhận diện – Bản phát triển" trên canvas (chưa vẽ). Vẽ ở cùng các cỡ và các kiểu như biểu tượng chuẩn, kiểm bằng mắt ở 16–32 pt và ở kiểu Trong suốt, Phủ màu.
+
 ## Biểu tượng thanh menu (input mode)
 - Một ảnh template đơn sắc: ô bo tròn tô đặc, chữ "V" khoét rỗng, cùng kiểu và cùng cỡ với ô "A" của U.S. (ô 22 × 16 pt, góc bo 4 pt; chữ 9 × 8,5 pt căn giữa; đo trên thanh menu Retina 30/10/2026, `scripts/assets/make-mode-icons.swift`), để macOS tự tô màu theo nền. Cờ `TISIconIsTemplate` phải khai ở cả cấp bundle lẫn cấp input mode; thiếu ở cấp mode thì thanh menu không đổi màu theo từng màn hình và ô chỉ báo ⌃Space dưới con trỏ trống (COMPATIBILITY 6.6, 6.7). Ô chỉ báo vẽ chính ảnh này màu trắng; chữ trần như "A" của U.S. chỉ có cho nguồn của Apple (bảng nhãn dựng sẵn trong macOS, không đọc `TISIconLabels` của bộ gõ ngoài). Không dùng màu thương hiệu (D9). Dấu chỉ có một input mode (D2); khi gõ tiếng Anh bằng ABC/U.S., biểu tượng là của hệ thống.
 
@@ -33,6 +37,7 @@ App dùng màu và phông của hệ thống (D9); bảng màu này dành cho bi
 | File | Kích thước | Dùng ở |
 |---|---|---|
 | Biểu tượng app (Icon Composer + `.icns`) | 16–1024 pt | Finder, Dock, Launchpad, Spotlight, onboarding, hộp thoại |
+| Biểu tượng bản phát triển (Icon Composer + `.icns`) | 16–1024 pt | như trên, ở mọi bản không phải bản chính thức (D25) |
 | Ảnh template thanh menu V | 22×16 pt @1x/@2x (TIFF; PDF vector khi có bản chính thức) | menu Nguồn nhập liệu |
 | `favicon.ico` + `favicon.svg` | 16, 32 | tab trình duyệt, kết quả tìm kiếm |
 | `apple-touch-icon.png` | 180×180 | ghim trang trên iPhone/iPad |

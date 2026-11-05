@@ -40,7 +40,8 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 ## M7 — Phát hành
 - Ký Developer ID, notarize, DMG; Sparkle 2 (EdDSA, 2 kênh, phát hành theo đợt); JSON tương thích có chữ ký; GitHub Actions build từ tag + artifact attestation; Homebrew cask với `auto_updates true`.
 - Báo lỗi (URL issue điền sẵn), Quay về bản trước, Gỡ cài đặt.
-- Xuất bộ file nhận diện theo `docs/BRAND.md` (biểu tượng app, ảnh template thanh menu, favicon, ảnh Open Graph, ảnh xem trước GitHub, nền DMG) và gắn thẻ meta cho website.
+- Loại bản dựng (D7, D25): cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt; mặc định là biểu tượng bản phát triển; số build tăng dần và số hiển thị có chữ beta; trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit (vẽ trên canvas trước).
+- Xuất bộ file nhận diện theo `docs/BRAND.md` (biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, favicon, ảnh Open Graph, ảnh xem trước GitHub, nền DMG) và gắn thẻ meta cho website.
 - Việc cần tài khoản Apple Developer: chuẩn bị sẵn, dừng lại để người dùng thực hiện.
 - Kiểm tra trước phát hành (cần người, hoãn từ M4): VoiceOver và Tab ("Điều hướng bàn phím") qua cửa sổ Cài đặt; VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn (M3 mới xác nhận là hệ thống có đọc, D17); biểu tượng "V" trên thanh menu đơn sắc, đổi màu theo nền sáng/tối (hoãn từ M2/M3, người dùng chốt 30/10/2026); máy để tiếng Anh hẳn (menu app, tên "Dấu" trong Finder); các sheet ở chế độ tối.
 
