@@ -56,7 +56,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - Swift 6, strict concurrency. Engine là Swift package thuần, **không import Foundation/AppKit**.
 - Dự án Xcode sinh từ `project.yml` bằng XcodeGen, không commit thủ công thay đổi trong `.xcodeproj`.
-- Test bằng Swift Testing. Tên định danh, comment và commit message bằng tiếng Anh; chuỗi giao diện bằng tiếng Việt (String Catalog).
+- Test bằng Swift Testing. Tên định danh, comment và commit message bằng tiếng Anh; chuỗi giao diện trong String Catalog, khoá là câu tiếng Anh, có bản tiếng Việt (D41).
 - Script trong `scripts/` viết bằng zsh, dòng đầu `#!/bin/zsh` (bash có sẵn trên macOS là bản 3.2; `check.sh` kiểm).
 - Giấy phép GPLv3 cho toàn bộ repo. Engine là của Dấu, viết từ đầu bằng Swift. Không chép mã từ OpenKey hay UniKey.
 

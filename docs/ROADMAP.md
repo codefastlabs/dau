@@ -38,6 +38,7 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md` (người dùng chốt 30/10/2026): Zalo, Discord, Messages, Pages, Numbers, Ghostty, Zed, Xcode, WebStorm; kiểm lại Terminal không gửi ⌫ cho bộ gõ; K5, K6 cho phần lớn app (K6 theo D4 × D20).
 
 ## M7 — Phát hành
+- Làm trước: phần nền đa ngôn ngữ (mục M9, D41).
 - Ký Developer ID, notarize, DMG; Sparkle 2 (EdDSA, 2 kênh, phát hành theo đợt); JSON tương thích có chữ ký; GitHub Actions build từ tag + artifact attestation; Homebrew cask với `auto_updates true`.
 - Báo lỗi (URL issue điền sẵn), Quay về bản trước, Gỡ cài đặt.
 - Loại bản dựng (D7, D25): cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt; mặc định là biểu tượng bản phát triển; số build tăng dần và số hiển thị có chữ beta; trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit (vẽ trên canvas trước).
@@ -52,8 +53,20 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 
 ## M9 — Đa ngôn ngữ
 Người dùng nêu 04/11/2026: Dấu có thể thành bộ gõ được người Việt dùng rộng rãi, và người nước ngoài học tiếng Việt cũng muốn dùng.
-- Cần chốt trước khi bắt đầu (sửa D38, người dùng duyệt): app và bộ gõ hiện ngôn ngữ nào. Đề xuất: theo ngôn ngữ của macOS, chưa hỗ trợ thì tiếng Anh; tên "Dấu" giữ nguyên ở mọi ngôn ngữ (D24); tên giao diện của macOS vẫn lấy từ chuỗi của hệ thống (D38).
-- Dịch toàn bộ String Catalog của app chủ và bộ gõ sang tiếng Anh trước; ngôn ngữ khác sau. Menu nhập liệu hết lẫn hai thứ tiếng trên máy tiếng Anh ("Dấu Settings…" cạnh "Open Keyboard Settings…").
+Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và ô chọn ngôn ngữ: D41.
+
+**Phần nền — làm trước M7** (D41, người dùng chốt 06/11/2026):
+- Đổi String Catalog của app chủ và bộ gõ sang ngôn ngữ gốc tiếng Anh: khoá là câu tiếng Anh, viết đủ tiếng Anh cho mọi chuỗi, tiếng Việt thành bản dịch giữ nguyên câu chữ hiện có. Tên nguồn "Dấu – Vietnamese", menu bộ gõ hết lẫn hai thứ tiếng trên máy tiếng Anh ("Dấu Settings…" cạnh "Open Keyboard Settings…").
+- Dạng số nhiều cho bản tiếng Anh ở các chuỗi có số.
+- Bỏ việc ghim `vi` khi app chủ khởi động; vẫn nhận tham số `-AppleLanguages` để chạy kiểm theo ngôn ngữ.
+- Script kiểm (vào `check.sh` hoặc script riêng): mọi khoá có bản `vi` và `en` đã dịch, không còn chuỗi "new"/"needs review".
+- Test: `snapshot-settings` nạp catalog để so chữ đúng ngôn ngữ; bộ kiểm cửa sổ thật chạy ở `vi`.
+- Bảng thuật ngữ tiếng Anh theo Apple (input source, Simple Telex, underline…), đặt ở một chỗ.
+- Xong khi: test xanh; máy tiếng Việt thấy mọi chữ như trước; chạy với `-AppleLanguages (en)` không còn chữ tiếng Việt ngoài tên "Dấu" và tên giao diện macOS theo D38; kiểm toán ĐẠT.
+
+**Phần còn lại — M9:**
+- Người dùng duyệt câu chữ tiếng Anh; ngôn ngữ khác chỉ thêm khi có người nói thạo duyệt (D41).
+- Ô chọn ngôn ngữ trong Cài đặt (D41): đóng câu hỏi mở về ngoại lệ N1 trước, canvas trước mã.
 - Không tự giải quyết được: mục "Open Dấu Settings…" của hệ thống (mục cuối menu nhập liệu) chỉ có khi bộ gõ khai báo được trang cài đặt riêng; nghiên cứu riêng trước M9.
 - Canvas: bản tiếng Anh cho các màn chính trước khi sửa mã. Bộ kiểm cửa sổ thật (`run.sh`) chạy theo từng ngôn ngữ vì độ dài chữ đổi bố cục. Trang tải về (M8) có bản tiếng Anh.
 - Xong khi: máy để tiếng Anh hẳn thấy toàn bộ app, bộ gõ, onboarding, hộp thoại bằng tiếng Anh; `run.sh` đạt ở cả hai ngôn ngữ; kiểm toán ĐẠT.
