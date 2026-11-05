@@ -58,6 +58,24 @@ struct SettledRulesTests {
     ])
     func uwoPair(_ c: Case) { expectTyped(c.keys, c.expected) }
 
+    /// D35 "Thứ tự u + móc + o": VNI "u7o" follows the same rule as Telex "uwo"; a
+    /// further 7 on that pair adds the horn on u, it does not undo (D26).
+    /// "thu7o73": the second 7 gives "ươ" (D35), the tone sits on ơ ("thưở" mid-word);
+    /// an open "ươ" is not a syllable (D31), so the word end restores the keys (D4).
+    @Test(arguments: [
+        Case("u7o", "uơ"), Case("u7o ", "uơ "), Case("hu7o ", "huơ "), Case("thu7o3", "thuở"),
+        Case("thu7o3 ", "thuở "), Case("ngu7o2i", "người"), Case("ngu7o72i", "người"),
+        Case("hu7o7ng ", "hương "), Case("mu7o7n ", "mươn "), Case("u7on ", "ươn "),
+        Case("u7o7ng", "ương"), Case("thu7o73", "thưở"), Case("thu7o73 ", "thu7o73 "),
+        Case("uo77", "uo7"),   // D26: 7 again on a pair hooked by "uo7" undoes it
+        Case("thuwowr ", "thuwowr "),
+    ])
+    func u7oPairVNI(_ c: Case) {
+        // Telex comparison case mixed in: route by the keys.
+        let telex = c.keys.contains("w")
+        expectTyped(c.keys, c.expected, telex ? EngineOptions() : vni)
+    }
+
     /// D31: the rhyme table has "oao" (ngoao, ngoáo) and "uêu" (nguều).
     @Test(arguments: [
         Case("ngoaos", "ngoáo"), Case("ngoaos ", "ngoáo "), Case("ngoafo ", "ngoào "),
@@ -161,6 +179,6 @@ struct HatOnHornedClusterTests {
     ])
     func loneWThenO(_ c: Case) { expectTyped(c.keys, c.expected) }
 
-    @Test(arguments: [Case("u7o6", "ươ6"), Case("u7on6", "uôn")])
+    @Test(arguments: [Case("u7o6", "uô"), Case("u7on6", "uôn")])   // D35 uơ, then D28
     func loneHornVNI(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
 }

@@ -274,7 +274,7 @@ public struct VietEngine: Sendable {
         }
         raw.append(v)
         if !isLocked {
-            word.normalizeHornedUO(openPair: options.inputMethod != .vni)
+            word.normalizeHornedUO()
             if !isValid(word, .prefix) { lockedBySpelling = true }
             if !isLocked { word.placeTone(modern: modern) }
         }
@@ -427,7 +427,8 @@ public struct VietEngine: Sendable {
                     let oHook = w.mod[i + 1] == Mod.hook
                     let hasFollower = i + 2 < w.count
                     if oHook && !uHook && !hasFollower && w.origin[i + 1] == Origin.movedHorn {
-                        // "uwo" + w: the horn goes on u too (D35 "nguwowif" → "người").
+                        // "uwo" + w, "u7o" + 7: the horn goes on u too (D35 "nguwowif",
+                        // "ngu7o72i" → "người").
                         let saved = w
                         w.mod[i] = Mod.hook
                         w.origin[i + 1] = Origin.typed
@@ -477,10 +478,10 @@ public struct VietEngine: Sendable {
                     w.mod[hooked] = Mod.none
                     return .doubled(appendKey: true, lock: true)
                 }
-                // A lone-w "ư" has no horn to remove: it turns back into w (D26
-                // "ww" → "w") only when it is the only target. With another vowel
-                // after it the key stays a letter ("waw", "Warwick", "waxwing" are
-                // restored whole at the boundary, D4).
+                // D26 "Ngoại lệ": a lone-w "ư" (D23) is not unhooked by a later w.
+                // It turns back into w ("ww" → "w") only when it is the only target;
+                // with another vowel after it the key stays a letter ("waw",
+                // "Warwick", "waxwing" are restored whole at the boundary, D4).
                 if unhookedTargets == 0 {
                     w.base[hooked] = Ch.w
                     w.mod[hooked] = Mod.none

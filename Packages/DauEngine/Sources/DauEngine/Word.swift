@@ -7,8 +7,9 @@ enum Origin {
     /// "ư" produced by a lone Telex `w` (D23), so a second `w` turns it back into the
     /// letter w (D26 "ww" → "w").
     static let loneW: UInt8 = 1
-    /// "ơ" of an open "uơ" whose horn was typed on the u (Telex "uwo", D35). A `w`
-    /// typed next adds the horn on u ("nguwowif" → "người") instead of undoing.
+    /// "ơ" of an open "uơ" whose horn was typed on the u (Telex "uwo", VNI "u7o"; D35).
+    /// A horn key typed next adds the horn on u ("nguwowif", "ngu7o72i" → "người")
+    /// instead of undoing (D26).
     static let movedHorn: UInt8 = 2
 }
 
@@ -123,11 +124,10 @@ struct Word: Sendable, Equatable {
 
     /// "uơ"/"ưo" followed by another letter becomes "ươ" ("tưon" → "tươn",
     /// "đuơc" → "đươc", "huơu" → "hươu"). Without a following letter "uơ" stays, for
-    /// "thuở" and "huơ". With `openPair` (Telex), a typed "ưo" ending the word is that
-    /// same pair: "uơ" (D35 names Telex "uwo" like "uow"; for VNI it names only "uo7",
-    /// so "u7o" keeps "ưo"). An "ư" from a lone `w` is not a typed u, so "two", "wood"
-    /// keep their letters.
-    mutating func normalizeHornedUO(openPair: Bool) {
+    /// "thuở" and "huơ", and a typed "ưo" ending the word is that same pair: "uơ"
+    /// (D35 "Thứ tự u + móc + o": Telex "uwo", VNI "u7o"). An "ư" from a lone `w` is
+    /// not a typed u, so "two", "wood" keep their letters.
+    mutating func normalizeHornedUO() {
         let (s, e) = nucleus()
         var i = s
         while i + 1 < e {
@@ -140,7 +140,7 @@ struct Word: Sendable, Equatable {
                         mod[i + 1] = Mod.hook
                         origin[i + 1] = Origin.typed
                     }
-                } else if openPair && uHook && mod[i + 1] == Mod.none && origin[i] != Origin.loneW {
+                } else if uHook && mod[i + 1] == Mod.none && origin[i] != Origin.loneW {
                     mod[i] = Mod.none
                     mod[i + 1] = Mod.hook
                     origin[i + 1] = Origin.movedHorn
