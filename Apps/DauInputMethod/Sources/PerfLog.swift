@@ -47,7 +47,8 @@ struct PerfLog {
         /// ("viet" + j): the key went to the app unchanged.
         case seedPass = "seed_pass"
         /// D20: selectedRange (and attributedSubstring if there was text before the
-        /// cursor) found no word to seed; the key was handled as the first of a word.
+        /// cursor) found no word to seed, or a plain letter did not join the word read
+        /// (E8); the key was handled as the first of a word.
         case seedNone = "seed_none"
         /// D11: a mismatch, then the word before the cursor was read and seeded, and the
         /// key replaced it (one more attributedSubstring than a plain mismatch).
@@ -73,16 +74,6 @@ struct PerfLog {
         #endif
     }
 
-    #if DEBUG
-    /// Experiment (Debug only): variant B of D20, see `InPlaceComposer.readOnFirstLetter`.
-    /// `defaults write -g DauReadOnFirstLetter -bool true`; read at activation and on a
-    /// settings change, never per key. Absent from Release builds.
-    static let readOnFirstLetterKey = "DauReadOnFirstLetter"
-    static func readOnFirstLetterSwitch() -> Bool {
-        UserDefaults.standard.bool(forKey: readOnFirstLetterKey)
-    }
-    #endif
-
     @inline(__always) static func now() -> UInt64 {
         clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
     }
@@ -92,8 +83,8 @@ struct PerfLog {
     ///   - insertTextNs: duration of the `insertText` call (or, for `mark`, of the
     ///     `setMarkedText` call), or -1 if not called.
     ///   - readNs: duration of the `attributedSubstring` call (D20), or -1 if not called.
-    ///   - extra: A/B experiment fields, each with a leading space (` var=A d20=mark
-    ///     seeded=1 changed=0`); only numbers and fixed words, never text (D8).
+    ///   - extra: D20 fields, each with a leading space (` d20=letter seeded=1 diff=0`);
+    ///     only numbers and fixed words, never text (D8).
     func record(_ kind: Kind, handleNs: UInt64, selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, extra: String = "", app: String) {
         #if DEBUG

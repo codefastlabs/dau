@@ -178,6 +178,18 @@ struct MarkedComposerTests {
         #expect(s.passedWithMarked == 0)
     }
 
+    @Test("D20 (E8 too) not in underline mode: text already in the app is never read, the letter starts a word")
+    func noD20() {
+        var s = Session()
+        s.app.document = "q"   // ⟦q⟧uer: in-place mode would join it into "quẻ"
+        s.type("uer ")
+        // The client protocol has no position or text read; the word is "uer" alone,
+        // "ủe" is not a syllable, so the word end restores it (D4).
+        #expect(s.app.document == "quer ")
+        #expect(s.app.onlyNotFound)
+        #expect(s.overCalls == 0)
+    }
+
     @Test("reset events (click, deactivate, client/source/settings change) commit; empty does nothing")
     func commitEvent() {
         var s = Session()

@@ -21,23 +21,16 @@ protocol InPlaceClient {
 /// - key that replaces text before the cursor: one `selectedRange`, one `insertText`;
 ///   Backspace (D32) that re-places the tone also does, and is still left to the app,
 ///   whose own Delete removes the last character (see `handle`);
-/// - D20 "Thêm dấu cho từ đã gõ" (see `addMarks`): on a tone or transform key typed with
-///   no word in the engine and an unknown text before the cursor, one `selectedRange`
-///   and one `text(in:)` (attributedSubstring), then at most one `insertText`.
+/// - D20 "Thêm dấu cho từ đã gõ" (see `addMarks`): on a tone or transform key, or a
+///   plain letter (E8), typed with no word in the engine and an unknown text before the
+///   cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
+///   one `insertText`.
 ///
 /// Pure value type over `InPlaceClient`, no IMK, unit tested in DauInputMethodTests.
 struct InPlaceComposer {
     /// D20 on (`DauSettings.addMarksToTypedWords`, D15 default on). Set from the shared
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
-
-    #if DEBUG
-    /// Experiment, Debug builds only (compiled out of Release, D8): variant B of D20. The
-    /// first LETTER key, not only a tone/transform key, also reads and seeds the word
-    /// before the cursor when the engine has no word and the text before the cursor is
-    /// unknown. Same limits as variant A. Off = variant A, today's behaviour.
-    var readOnFirstLetter = false
-    #endif
 
     /// What the cursor is known to follow while the engine has no word (D20 needs a word
     /// right before the cursor; reading costs two client calls, so it is skipped when
@@ -92,7 +85,7 @@ struct InPlaceComposer {
         var kind = PerfLog.Kind.pass
         var attempt: Attempt?
         #if DEBUG
-        /// Set when this key made a D20 read (perf log of the A/B experiment).
+        /// Set when this key made a D20 read (Debug perf log).
         var d20: D20Trace?
         /// While a word seeded by a D20 read is being typed (including the key that
         /// seeded it): whether the displayed word differs from what an engine that never
@@ -103,13 +96,13 @@ struct InPlaceComposer {
     }
 
     #if DEBUG
-    /// What a D20 read did, for comparing variants A and B (Debug perf log only).
+    /// What a D20 read did (Debug perf log only).
     struct D20Trace: Equatable {
-        /// What triggered the read: a tone/transform key (variant A too) or a plain letter
-        /// (variant B only).
+        /// What triggered the read: a tone/transform key, or a plain letter (E8).
         enum Trigger: String { case mark, letter }
         var trigger: Trigger
-        /// The engine was seeded with the word read.
+        /// The engine was seeded with the word read and kept it (a plain letter that does
+        /// not join the word read is not counted: the word was discarded).
         var seeded: Bool
     }
     /// The word the last `seedWord` seeded.
@@ -246,11 +239,11 @@ struct InPlaceComposer {
                 if Self.isMarkKey(scalar, method: method) {
                     return addMarks(scalar, letter: false, engine: &engine, client: client)
                 }
-                #if DEBUG
-                if readOnFirstLetter, Self.isLetter(scalar) {
+                // E8 (D20, "Chữ cái gõ sát chữ có sẵn"): a plain letter reads too, and
+                // joins the word read only if the result is still a valid prefix.
+                if Self.isLetter(scalar) {
                     return addMarks(scalar, letter: true, engine: &engine, client: client)
                 }
-                #endif
             }
             if engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
                Self.isMarkKey(scalar, method: engine.options.inputMethod),
@@ -280,13 +273,19 @@ struct InPlaceComposer {
         }
     }
 
-    #if DEBUG
-    /// ASCII letters, any case (the plain letters of variant B).
+    /// ASCII letters, any case: the plain letters that also make a D20 read (E8) when
+    /// they are not mark keys of the typing method.
     static func isLetter(_ scalar: Unicode.Scalar) -> Bool {
         let v = scalar.value
         return (v >= 0x41 && v <= 0x5A) || (v >= 0x61 && v <= 0x7A)
     }
-    #endif
+
+    /// The engine's word is still a valid prefix (D30) after a key: not locked by spelling,
+    /// and not past the longest syllable (D33 overflow: the engine still composes but
+    /// tracks no letters, so `lastShown` is nil).
+    static func isValidPrefix(_ engine: VietEngine) -> Bool {
+        !engine.isSpellingLocked && engine.lastShown != nil
+    }
 
     /// A character with the engine's word (if any).
     /// `settled`: the previous key or click is old enough to read the client's text
@@ -399,6 +398,11 @@ struct InPlaceComposer {
     /// word in place (one `insertText`) or goes to the app unchanged. Reads nothing more
     /// than `readLength` UTF-16 units; any odd answer from the client means no seed and
     /// the key is handled as the first key of a new word (D18).
+    ///
+    /// `letter`: the key is a plain letter, not a mark key (E8). It joins the word read
+    /// only if the word with it is still a valid prefix (D30): "q" + u → "qu", "tôi" + l
+    /// starts a new word "l". Decided before anything is sent to the client, so a letter
+    /// that does not join makes the same calls as an unseeded key after the read.
     private mutating func addMarks(_ scalar: Unicode.Scalar, letter: Bool = false, engine: inout VietEngine,
                                    client: some InPlaceClient) -> Outcome {
         #if DEBUG
@@ -410,10 +414,12 @@ struct InPlaceComposer {
         lastSeededWord = []
         #endif
         let selection = client.selectedRange()
-        var outcome = seedWord(scalar, selection: selection, engine: &engine, client: client)
+        var outcome = seedWord(scalar, selection: selection, engine: &engine, client: client,
+                               joinOnlyIfValid: letter)
         if outcome == nil {
-            // Not seeded: the key starts a word as usual (never asks selectedRange again:
-            // with an empty engine a key never replaces text before the cursor).
+            // Not seeded (or a letter that does not join, E8): the key starts a word as
+            // usual (never asks selectedRange again: with an empty engine a key never
+            // replaces text before the cursor).
             engine.reset()
             outcome = character(scalar, selection: selection, engine: &engine, client: client)
             // The read happened (perf log): pass or insert at the cursor, nothing seeded.
@@ -431,10 +437,12 @@ struct InPlaceComposer {
     /// `alreadyRead`: the text of the same range, when the caller read it already (one
     /// read per key, N3). `allowSelection`: a selection after the word is an app's
     /// suggestion (D11), replaced with the word; D20 itself never seeds with a selection
-    /// (the user selected text the key will replace).
+    /// (the user selected text the key will replace). `joinOnlyIfValid`: a plain letter
+    /// (E8) whose seeded word is no longer a valid prefix returns nil before any client
+    /// call, and the caller handles the key as the first key of a new word.
     private mutating func seedWord(_ scalar: Unicode.Scalar, selection: NSRange, engine: inout VietEngine,
                                    client: some InPlaceClient, alreadyRead: String? = nil,
-                                   allowSelection: Bool = false) -> Outcome? {
+                                   allowSelection: Bool = false, joinOnlyIfValid: Bool = false) -> Outcome? {
         if selection.location == NSNotFound || selection.length == NSNotFound {
             readUnavailable = true  // no document access: replacing could not work either
             return nil
@@ -465,10 +473,16 @@ struct InPlaceComposer {
         // counts (deleteCount below); anything else is refused by `seed` anyway.
         guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else { return nil }
 
+        let action = engine.handle(scalar)
+        if joinOnlyIfValid, !Self.isValidPrefix(engine) {
+            // E8 (D20): "tôi" + l, "sắc" + m, "foo" + b: the letter starts a new word.
+            engine.reset()
+            return nil
+        }
         #if DEBUG
         lastSeededWord = word
         #endif
-        switch engine.handle(scalar) {
+        switch action {
         case .passThrough:
             // D20 does not apply ("viet" + j → "vietj"): the app types the key. The
             // engine keeps the word, so the next keys continue it (D4 baseline = seed).

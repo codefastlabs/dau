@@ -123,7 +123,7 @@ final class DauInputController: IMKInputController {
         #if DEBUG
         /// Positions of the last replacement attempt of this key (Debug diagnostics).
         var diag: ReplaceDiag?
-        /// D20 read of this key (A/B experiment).
+        /// D20 read of this key (Debug perf log).
         var d20: InPlaceComposer.D20Trace?
         var seedDiffers: Bool?
         #endif
@@ -151,13 +151,11 @@ final class DauInputController: IMKInputController {
         var extra = ""
         #if DEBUG
         if perf.enabled {
-            // Variant of every key (A: today, B: first letter reads too), and what a D20
-            // read did. Words and numbers only, never text (D8).
-            extra = " var=\(inPlace.readOnFirstLetter ? "B" : "A")"
+            // What a D20 read did on this key. Words and numbers only, never text (D8).
             if let t = result.d20 {
-                extra += " d20=\(t.trigger.rawValue) seeded=\(t.seeded ? 1 : 0)"
+                extra = " d20=\(t.trigger.rawValue) seeded=\(t.seeded ? 1 : 0)"
             } else {
-                extra += " d20=none"
+                extra = " d20=none"
             }
             // Seeded word differs from the unseeded one (any key while that word lasts).
             extra += " diff=\(result.seedDiffers.map { $0 ? "1" : "0" } ?? "-")"
@@ -358,9 +356,6 @@ final class DauInputController: IMKInputController {
         }
         // D20 "Thêm dấu cho từ đã gõ" (D15: on by default). Read here, never per key.
         inPlace.addMarksEnabled = new.addMarksToTypedWords
-        #if DEBUG
-        inPlace.readOnFirstLetter = PerfLog.readOnFirstLetterSwitch()
-        #endif
     }
 
     /// Debug builds only: bundle IDs forced into underline mode for trials

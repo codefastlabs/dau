@@ -88,6 +88,9 @@ private final class FakeDocument: InPlaceClient {
         }
     }
 
+    /// What the app types for an end-word key (Return; "\t" for Tab).
+    var endWordText = "\n"
+
     /// What the app does with a key the input method did not consume.
     func defaultAction(_ route: KeyRoute) {
         switch route {
@@ -103,7 +106,7 @@ private final class FakeDocument: InPlaceClient {
                 cursor -= 1
             }
         case .endWord:
-            insertText("\n", replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
+            insertText(endWordText, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
             calls.removeLast()
         case .ignore:
             break
@@ -370,13 +373,16 @@ struct InPlaceComposerTests {
         #expect(InPlaceComposer().addMarksEnabled)
     }
 
-    @Test("no read for letters that are not mark keys, nor inside a word")
-    func onlyMarkKeys() {
+    @Test("E8: a plain letter reads too and joins a valid prefix; no read inside a word")
+    func letterReadsOnce() {
         var s = Session("ho")
-        s.type("c")      // not a Telex mark key: plain start of a word
-        #expect(s.doc.calls.isEmpty)
-        s.type("j")      // inside the word "c" (engine tracks it): normal key
-        #expect(s.reads == 0)
+        s.type("c")      // not a mark key: reads "ho", "hoc" is a valid prefix (E8)
+        #expect(s.reads == 1)
+        #expect(s.kinds == [.seedPass])
+        s.type("j")      // inside the word "hoc" (engine tracks it): normal key
+        #expect(s.doc.text == "học")
+        #expect(s.reads == 1)
+        #expect(s.overCalls == 0)
     }
 
     @Test("no read after a word-ending key typed here; read again after a reset")
@@ -648,131 +654,229 @@ struct InPlaceComposerTests {
     }
 }
 
-#if DEBUG
-/// Variant B of D20 (Debug-only experiment): the first letter after a reset reads too.
-@Suite("InPlaceComposer variant B (read on first letter)")
-struct InPlaceComposerVariantBTests {
-    private static func session(_ text: String, b: Bool) -> Session {
-        var s = Session(text)
-        s.composer.readOnFirstLetter = b
-        return s
-    }
+/// E8 (D20, "Chữ cái gõ sát chữ có sẵn", 05/11/2026): the first plain letter after a
+/// reset also reads the word before the cursor, and joins it only while the word with
+/// that letter is still a valid prefix (D30); otherwise the letter starts a new word.
+/// `⟦x⟧` in the names is the text before the cursor after a click.
+@Suite("InPlaceComposer: plain letter next to existing text (D20, E8)")
+struct InPlaceComposerLetterTests {
+    private static func telex(_ text: String) -> Session { Session(text) }
 
-    @Test("A is the default and unchanged: a plain letter after a reset does not read")
-    func aUnchanged() {
-        #expect(!InPlaceComposer().readOnFirstLetter)
-        var s = Self.session("q", b: false)
-        s.type("u")
-        #expect(s.doc.calls.isEmpty)
-        #expect(s.kinds == [.pass])
-    }
-
-    @Test("⟦q⟧uer: A → qủe, B → quẻ", arguments: [(false, "qủe"), (true, "quẻ")])
-    func quer(_ b: Bool, _ expected: String) {
-        var s = Self.session("q", b: b)
-        s.type("uer")
+    @Test("joins when the word stays a valid prefix", arguments: [
+        ("q", "uer ", "quẻ "),
+        ("q", "uas ", "quá "),
+        ("g", "ias ", "giá "),
+        ("ngh", "ieengx ", "nghiễng "),
+        ("tiê", "ngs ", "tiếng "),
+        ("ba", "nj ", "bạn "),
+    ])
+    func joins(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
         #expect(s.doc.text == expected)
-        #expect(s.reads == (b ? 1 : 0))
+        #expect(s.reads == 1)
+        #expect(s.kinds.first == .seedPass || s.kinds.first == .seed)
         #expect(s.overCalls == 0)
     }
 
-    @Test("⟦vi⟧eetj: same under A and B (e is a mark key, both read)", arguments: [false, true])
-    func vieetj(_ b: Bool) {
-        var s = Self.session("vi", b: b)
-        s.type("eetj")
-        #expect(s.doc.text == "việt")
+    @Test("starts a new word when the joined word is not a valid prefix", arguments: [
+        ("tôi", "laf ", "tôilà "),
+        ("sắc", "mauf ", "sắcmàu "),
+        ("Xin chào", "banj ", "Xin chàobạn "),
+    ])
+    func newWord(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.reads == 1)
+        #expect(s.kinds.first == .seedNone)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("a letter that does not join sends nothing beyond the read: the app types it")
+    func rejectedLetterCalls() {
+        var s = Self.telex("tôi")
+        s.type("l")
+        #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 3))])
+        #expect(s.consumed == [false])
+        #expect(s.doc.text == "tôil")
+        // The new word is tracked from the letter alone: the next mark key does not read.
+        s.type("af")
+        #expect(s.doc.text == "tôilà")
         #expect(s.reads == 1)
     }
 
-    @Test("B reads at the first letter after an arrow, once, not mid-word")
+    @Test("VNI: ⟦q⟧ue3 → quẻ")
+    func vni() {
+        var settings = DauSettings.defaults
+        settings.typingMethod = .vni
+        var s = Session("q", settings: settings)
+        s.type("ue3 ")
+        #expect(s.doc.text == "quẻ ")
+        #expect(s.reads == 1)
+    }
+
+    @Test("after ⌫ over a Space: ba␣⌫nj → bạn, ddi␣⌫hocj → đihọc")
+    func afterBackspace() {
+        var s = Session()
+        s.type("ba ⌫nj ")
+        #expect(s.doc.text == "bạn ")
+        var t = Session()
+        t.type("ddi ⌫hocj ")
+        #expect(t.doc.text == "đihọc ")
+        #expect(s.overCalls == 0 && t.overCalls == 0)
+    }
+
+    @Test("known limits (D20): ⟦#Hà⟧Nooij → #HàNooij, ⟦foo⟧bar → foobả")
+    func knownLimits() {
+        var s = Self.telex("#Hà")
+        s.type("Nooij ")
+        #expect(s.doc.text == "#HàNooij ")
+        var t = Self.telex("foo")
+        t.type("bar ")
+        #expect(t.doc.text == "foobả ")
+    }
+
+    @Test("duow␣⌫c shows dươc mid-word, the word end restores duơc (D31)")
+    func duowc() {
+        var s = Session()
+        s.type("duow ⌫c")
+        #expect(s.doc.text == "dươc")
+        s.type(" ")
+        #expect(s.doc.text == "duơc ")
+    }
+
+    @Test("a sentence with no reset reads at most once, at the first key")
+    func sentence() {
+        var s = Session("Xin chào ")
+        s.type("tooi laf sinh vieen ")
+        #expect(s.doc.text == "Xin chào tôi là sinh viên ")
+        #expect(s.reads == 1)
+        #expect(s.doc.calls.first == .selectedRange)
+        var empty = Session()
+        empty.type("tooi laf sinh vieen ")
+        #expect(empty.reads == 0)   // start of the document: selectedRange only
+        #expect(empty.doc.text == "tôi là sinh viên ")
+    }
+
+    @Test("reads at the first letter after an arrow, once, not mid-word")
     func readsAfterReset() {
-        var s = Self.session("", b: true)
+        var s = Session()
         s.type("xin")           // start of the document: selectedRange only, no text to read
         #expect(s.reads == 0)
         s.type("←")
         let before = s.doc.calls.count
-        s.type("b")             // unknown again: reads "xin" before the cursor
+        s.type("b")             // unknown again: reads "xin", "xinb" is not a prefix
         #expect(s.reads == 1)
         s.type("cn")            // mid-word: no more calls
         #expect(s.reads == 1)
         #expect(s.doc.calls.count == before + 2)   // selectedRange + read of that key only
+        #expect(s.doc.text == "xinbcn")
     }
 
-    @Test("B does not read after a known no-word (Space typed here)")
+    @Test("no read after a known no-word (Space typed here)")
     func noReadAfterSpace() {
-        var s = Self.session("", b: true)
+        var s = Session()
         s.type("hoc ")
         let before = s.doc.calls.count
         s.type("q")
         #expect(s.doc.calls.count == before)
     }
 
-    @Test("B keeps the limits: D20 off, no document access, a selection, too long a word")
-    func limits() {
+    @Test("D20 off: a letter reads nothing")
+    func off() {
         var settings = DauSettings.defaults
         settings.addMarksToTypedWords = false
-        var off = Session("q", settings: settings)
-        off.composer.readOnFirstLetter = true
-        off.type("u")
-        #expect(off.doc.calls.isEmpty)
-
-        var noAccess = Self.session("q", b: true)
-        noAccess.doc.noAccess = true
-        noAccess.type("u")
-        noAccess.type("←")
-        noAccess.type("e")
-        #expect(noAccess.reads == 0)
-        #expect(noAccess.doc.calls.filter { $0 == .selectedRange }.count == 1)
-
-        var selected = Self.session("q", b: true)
-        selected.doc.selectionLength = 1
-        selected.type("u")
-        #expect(selected.reads == 0)
-
-        var long = Self.session("abcdefgh", b: true)
-        long.type("u")
-        #expect(long.doc.text == "abcdefghu")
+        var s = Session("q", settings: settings)
+        s.type("uer ")
+        #expect(s.reads == 0)
+        #expect(s.kinds.first == .pass)
+        #expect(s.doc.text == "quer ")
     }
 
-    @Test("B: the 50 ms rule holds for letters too")
+    @Test("keys under 50 ms apart: no read on a letter")
     func settleRule() {
-        var s = Self.session("q", b: true)
+        var s = Session("q")
         s.interval = 0.01
         s.composer.noteEvent(at: 0.0)
         s.type("u")
+        #expect(s.doc.calls.isEmpty)
         #expect(s.reads == 0)
     }
 
-    @Test("trace: read, seeded, and whether the seed changes the word shown")
+    @Test("Return or Tab, then a word: the read finds no word, nothing is joined", arguments: ["\n", "\t"])
+    func afterEndWord(_ key: String) {
+        var s = Session()
+        s.doc.endWordText = key
+        s.type("ba⏎")
+        s.type("nj ")
+        #expect(s.doc.text == "ba" + key + "nj ")
+        #expect(s.reads == 1)
+        #expect(s.kinds[3] == .seedNone)
+    }
+
+    @Test("a selection: no seed, the letter replaces it as the app does")
+    func selection() {
+        var s = Session("q")
+        s.doc.selectionLength = 1
+        s.type("u")
+        #expect(s.doc.calls == [.selectedRange])
+        #expect(s.kinds == [.seedNone])
+    }
+
+    @Test("D18: no document access → no read, and no read again until activation")
+    func noAccess() {
+        var s = Session("q")
+        s.doc.noAccess = true
+        s.type("u←e")
+        #expect(s.reads == 0)
+        #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 1)
+    }
+
+    @Test("a word that fills the read (8+ letters) is not seeded")
+    func longWord() {
+        var s = Session("abcdefghijklmnopq")
+        s.type("u")
+        #expect(s.doc.text == "abcdefghijklmnopqu")
+        #expect(s.kinds == [.seedNone])
+    }
+
+    @Test("a seeded 7-letter word plus a letter is past the longest syllable (D33): new word")
+    func overflow() {
+        var s = Session("nghiêng")
+        s.type("bans ")
+        #expect(s.doc.text == "nghiêngbán ")
+        #expect(s.kinds.first == .seedNone)
+    }
+
+    #if DEBUG
+    @Test("trace: trigger, seeded, and whether the seed changes the word shown")
     func trace() {
         // q + u: the key itself looks the same, the next keys show the difference.
-        var s = Self.session("q", b: true)
-        s.interval = 0.2
-        s.type("u")
-        s.type("e")
-        s.type("r")
+        var s = Session("q")
+        s.type("uer")
         #expect(s.doc.text == "quẻ")
         #expect(s.diffs == [false, false, true])
         #expect(s.traces.first == InPlaceComposer.D20Trace(trigger: .letter, seeded: true))
         #expect(s.traces.dropFirst().allSatisfy { $0 == nil })
 
-        // vi + eetj: reading "vi" makes no difference to the result (diff stays false).
-        var v = Self.session("vi", b: true)
-        v.type("eetj")
-        #expect(v.doc.text == "việt")
-        #expect(v.diffs == [false, false, false, false])
+        // tôi + l: read, not joined: not seeded, no diff.
+        var l = Session("tôi")
+        l.type("la")
+        #expect(l.traces == [InPlaceComposer.D20Trace(trigger: .letter, seeded: false), nil])
+        #expect(l.diffs == [nil, nil])
 
         // hoc + j: the seed is what makes "học" instead of "hocj".
-        var h = Self.session("hoc", b: true)
+        var h = Session("hoc")
         h.type("j")
         #expect(h.doc.text == "học")
         #expect(h.diffs == [true])
 
         // A read that finds no word is not seeded and has no diff; the next key has no trace.
-        var n = Self.session("xin, ", b: true)
+        var n = Session("xin, ")
         n.type("as")
         #expect(n.traces == [InPlaceComposer.D20Trace(trigger: .mark, seeded: false), nil])
         #expect(n.diffs == [nil, nil])
     }
+    #endif
 }
-#endif
