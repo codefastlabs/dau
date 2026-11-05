@@ -151,7 +151,8 @@ struct InPlaceComposer {
             shadowPrefix = lastSeededWord
         }
         pendingShadow = nil
-        if let shadow, engine.isComposing {
+        if let shadow, engine.isComposing, engine.lastShown != nil {
+            // (D33's pass-through state tracks no letters: nothing to compare.)
             outcome.seedDiffers = engine.shown != shadowPrefix + shadow.shown
         } else {
             self.shadow = nil
@@ -399,10 +400,10 @@ struct InPlaceComposer {
     /// than `readLength` UTF-16 units; any odd answer from the client means no seed and
     /// the key is handled as the first key of a new word (D18).
     ///
-    /// `letter`: the key is a plain letter, not a mark key (E8). It joins the word read
-    /// only if the word with it is still a valid prefix (D30): "q" + u → "qu", "tôi" + l
-    /// starts a new word "l". Decided before anything is sent to the client, so a letter
-    /// that does not join makes the same calls as an unseeded key after the read.
+    /// `letter`: the key is a plain letter, not a mark key (E8). Whether the key joins the
+    /// word read follows D20 and its three exceptions (`SeedRule`), decided from the text
+    /// already read before anything is sent to the client, so a key that does not join
+    /// makes the same calls as an unseeded key after the read.
     private mutating func addMarks(_ scalar: Unicode.Scalar, letter: Bool = false, engine: inout VietEngine,
                                    client: some InPlaceClient) -> Outcome {
         #if DEBUG
@@ -415,9 +416,9 @@ struct InPlaceComposer {
         #endif
         let selection = client.selectedRange()
         var outcome = seedWord(scalar, selection: selection, engine: &engine, client: client,
-                               joinOnlyIfValid: letter)
+                               rule: letter ? .letter : .mark)
         if outcome == nil {
-            // Not seeded (or a letter that does not join, E8): the key starts a word as
+            // Not seeded (or a key that does not join, D20): the key starts a word as
             // usual (never asks selectedRange again: with an empty engine a key never
             // replaces text before the cursor).
             engine.reset()
@@ -433,16 +434,44 @@ struct InPlaceComposer {
         return traced
     }
 
+    /// How `seedWord` decides whether the key joins the word read.
+    enum SeedRule {
+        /// D11: the engine's word is re-synced with the app's text; the key always
+        /// applies to the word read.
+        case resync
+        /// D20, a tone or transform key typed first after a reset.
+        case mark
+        /// D20, a plain letter typed first after a reset (E8).
+        case letter
+    }
+
     /// The seeded path, or nil when nothing could be seeded.
     /// `alreadyRead`: the text of the same range, when the caller read it already (one
     /// read per key, N3). `allowSelection`: a selection after the word is an app's
     /// suggestion (D11), replaced with the word; D20 itself never seeds with a selection
-    /// (the user selected text the key will replace). `joinOnlyIfValid`: a plain letter
-    /// (E8) whose seeded word is no longer a valid prefix returns nil before any client
-    /// call, and the caller handles the key as the first key of a new word.
+    /// (the user selected text the key will replace).
+    ///
+    /// `rule` `.mark` or `.letter` (D20): every decision below uses the text already
+    /// read, before any `insertText` (N3). nil means the caller handles the key as the
+    /// first key of a new word.
+    /// - Exception (b): a word that is not Vietnamese takes the key and the rest of the
+    ///   word unchanged, whatever its case (camelCase: "foo" + B → "fooB"): one the
+    ///   engine cannot seed (longer than 7 letters, D33, or letters it does not know)
+    ///   goes to D33's pass-through state (`VietEngine.seedOverflow`); one already locked
+    ///   by spelling (D30) stays seeded and locked ("foo" + bar → "foobar").
+    /// - Exception (a), on a Vietnamese word: an upper-case key after a lower-case
+    ///   letter starts a new word ("#Hà" + N → "#HàN…", "Hà" + O), unless it is a mark
+    ///   key that places a tone or transform on the word (a replacement: "hoc" + J →
+    ///   "học"). "VI" + E, "V" + i still join.
+    /// - A letter on a Vietnamese word joins only if the word stays a valid prefix (E8):
+    ///   "q" + u → "qu", "tôi" + l starts a new word "l".
+    /// - Exception (c): a mark key that is not applied to a Vietnamese word (the key
+    ///   passes through and leaves the word locked or past 7 letters) starts a new word:
+    ///   "anh" + e → "anhe…" as a new "e", "tôi" + d → new "d". A double key (D26) is
+    ///   applied: "cả" + r → "car".
     private mutating func seedWord(_ scalar: Unicode.Scalar, selection: NSRange, engine: inout VietEngine,
                                    client: some InPlaceClient, alreadyRead: String? = nil,
-                                   allowSelection: Bool = false, joinOnlyIfValid: Bool = false) -> Outcome? {
+                                   allowSelection: Bool = false, rule: SeedRule = .resync) -> Outcome? {
         if selection.location == NSNotFound || selection.length == NSNotFound {
             readUnavailable = true  // no document access: replacing could not work either
             return nil
@@ -467,18 +496,51 @@ struct InPlaceComposer {
             before = .noWord
             return nil
         }
+        let d20 = rule != .resync
         // The word may go on before what was read: too long to be one the engine tracks.
-        if word.count == text.unicodeScalars.count && location > count { return nil }
+        if word.count == text.unicodeScalars.count && location > count {
+            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine) : nil
+        }
         // Every scalar the engine accepts is in the BMP, so its scalar counts are UTF-16
         // counts (deleteCount below); anything else is refused by `seed` anyway.
-        guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else { return nil }
-
-        let action = engine.handle(scalar)
-        if joinOnlyIfValid, !Self.isValidPrefix(engine) {
-            // E8 (D20): "tôi" + l, "sắc" + m, "foo" + b: the letter starts a new word.
-            engine.reset()
-            return nil
+        guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else {
+            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine) : nil
         }
+
+        let lockedBefore = engine.isSpellingLocked
+        let action = engine.handle(scalar)
+        // D20 (a): no upper-case letter inside a Vietnamese syllable; (b) wins on a word
+        // locked before the key. A mark key that changed the word (a replacement that
+        // deletes something) added no letter and keeps it.
+        if d20, !lockedBefore, Self.startsNewWord(scalar, after: word) {
+            var addsLetter = true
+            if rule == .mark, case .replace(let deleteCount, _) = action, deleteCount > 0 { addsLetter = false }
+            if addsLetter {
+                engine.reset()
+                return nil
+            }
+        }
+        switch rule {
+        case .resync:
+            break
+        case .letter:
+            // E8: "tôi" + l, "sắc" + m: the letter starts a new word. D20 (b): a word
+            // locked before the key is not Vietnamese, the letter belongs to it.
+            if !lockedBefore, !Self.isValidPrefix(engine) {
+                engine.reset()
+                return nil
+            }
+        case .mark:
+            // D20 (c): "anh" + e, "tôi" + d: the key was not applied (passed through)
+            // and the word stopped being Vietnamese: the key starts a new word.
+            if !lockedBefore, !Self.isValidPrefix(engine), case .passThrough = action {
+                engine.reset()
+                return nil
+            }
+        }
+        // The engine's word is the app's text: a word locked by spelling needs no D11
+        // check against that text (`checkLockedWord`, one read per word).
+        if engine.isSpellingLocked { checkedLockedWord = true }
         #if DEBUG
         lastSeededWord = word
         #endif
@@ -503,6 +565,46 @@ struct InPlaceComposer {
             if !engine.isComposing { tracker.invalidate() }
             return result
         }
+    }
+
+    /// D20 exception (a): the key is an upper-case letter and the word read ends with a
+    /// lower-case one ("#Hà" + N). Upper case after upper case ("VI" + E) or lower case
+    /// after upper case ("V" + i) may still join. The caller applies it only to a
+    /// Vietnamese word, and not to a mark key that changes the word (`seedWord`).
+    static func startsNewWord(_ key: Unicode.Scalar, after word: [Unicode.Scalar]) -> Bool {
+        guard Character(key).isUppercase else { return false }
+        var view = String.UnicodeScalarView()
+        view.append(contentsOf: word)
+        // The last character, not scalar: decomposed text (NFD) ends with a mark.
+        return String(view).last?.isLowercase == true
+    }
+
+    /// D20 exception (b) for a word `seed` cannot take: if it is all letters (not
+    /// Vietnamese: longer than 7 letters, D33, or letters the engine does not know), the
+    /// key and the rest of the word pass through unchanged (D33's state,
+    /// `VietEngine.seedOverflow`) until the word ends. nil: not letters ("abc123"), the
+    /// key starts a new word as before.
+    private mutating func continueForeignWord(_ word: [Unicode.Scalar], _ scalar: Unicode.Scalar, location: Int,
+                                              engine: inout VietEngine) -> Outcome? {
+        guard word.allSatisfy({ CharacterSet.letters.contains($0) }) else {
+            engine.reset()
+            return nil
+        }
+        var view = String.UnicodeScalarView()
+        view.append(contentsOf: word)
+        // Characters, as the app's Delete removes them: ⌫ over the whole word ends the
+        // state (D33). Fewer than the real word when the read is cut (16 UTF-16 units):
+        // the state then ends early and the next key reads again.
+        engine.seedOverflow(shown: String(view).count)
+        guard case .passThrough = engine.handle(scalar) else {
+            engine.reset()
+            return nil
+        }
+        #if DEBUG
+        lastSeededWord = word
+        #endif
+        tracker.didReplace(NSRange(location: location, length: 0), insertedLength: scalar.utf16.count)
+        return Outcome(consumed: false, kind: .seedPass)
     }
 
     /// The letters (with combining marks, digits) at the end of `text`.

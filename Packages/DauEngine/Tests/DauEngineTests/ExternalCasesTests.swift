@@ -156,11 +156,20 @@ struct ExternalCasesTests {
     /// D20 as `InPlaceComposer.addMarks`/`seedWord` do it: a mark key or a plain ASCII
     /// letter (E8) with no word in the engine and an unknown text before the cursor reads
     /// the word before the cursor (16 UTF-16 units), seeds the engine with it and lets the
-    /// engine decide. `letter`: a plain letter joins the word read only if the result is
-    /// still a valid prefix (D30: not locked by spelling, not past D33's length);
-    /// otherwise it is not seeded. Returns the engine's action, or nil when the key takes
-    /// the normal path (nothing seeded: the engine is reset and the caller handles the
-    /// key as the first key of a word).
+    /// engine decide, with the three exceptions of D20:
+    /// - (b) a word that is not Vietnamese takes the key unchanged, any case: one the
+    ///   engine cannot seed (all letters, longer than 7 or unknown) goes to D33's
+    ///   pass-through state (`VietEngine.seedOverflow`), one locked by spelling before
+    ///   the key stays seeded;
+    /// - (a) on a Vietnamese word, an upper-case key after a lower-case letter is not
+    ///   seeded ("#Hà" + N), unless a mark key changes the word ("hoc" + J → "học");
+    /// - E8: a plain letter on a Vietnamese word joins only if the result is still a
+    ///   valid prefix (D30: not locked by spelling, not past D33's length);
+    /// - (c) a mark key on a Vietnamese word that passes through and leaves it locked or
+    ///   past 7 letters is not seeded ("anh" + e, "tôi" + d); a D26 double key applies.
+    /// Returns the engine's action, or nil when the key takes the normal path (nothing
+    /// seeded: the engine is reset and the caller handles the key as the first key of a
+    /// word).
     /// Not mirrored: the 50 ms rule (`settleInterval`) — typing at normal speed is slower,
     /// so every read counts as settled — and apps that give no text.
     static func d20Seed(_ f: inout Field, key: Unicode.Scalar, letter: Bool) -> Action? {
@@ -169,16 +178,39 @@ struct ExternalCasesTests {
         let text = Array(f.text.suffix(count))
         let word = trailingWord(text)
         if word.isEmpty { f.knownNoWord = true; return nil }
-        if word.count == text.count && f.text.count > count { return nil }
-        guard word.allSatisfy({ $0.utf16.count == 1 }), f.engine.seed(displayed: word) else {
+        // (b) `InPlaceComposer.continueForeignWord`.
+        func foreign() -> Action? {
             f.engine.reset()
-            return nil
+            guard word.allSatisfy({ CharacterSet.letters.contains($0) }) else { return nil }
+            f.engine.seedOverflow(shown: String(String.UnicodeScalarView(word)).count)
+            f.d20Seeded += 1
+            return f.engine.handle(key)
         }
+        if word.count == text.count && f.text.count > count { return foreign() }
+        guard word.allSatisfy({ $0.utf16.count == 1 }), f.engine.seed(displayed: word) else {
+            return foreign()
+        }
+        let lockedBefore = f.engine.isSpellingLocked
         let action = f.engine.handle(key)
-        if letter, f.engine.isSpellingLocked || f.engine.overflow {
-            // E8: "tôi" + l starts a new word "l" (`InPlaceComposer.isValidPrefix`).
-            f.engine.reset()
-            return nil
+        // (a) `InPlaceComposer.startsNewWord`; (b) wins on a locked word.
+        if !lockedBefore, Character(key).isUppercase,
+           String(String.UnicodeScalarView(word)).last?.isLowercase == true {
+            var addsLetter = true
+            if !letter, case .replace(let deleteCount, _) = action, deleteCount > 0 { addsLetter = false }
+            if addsLetter { f.engine.reset(); return nil }
+        }
+        let validPrefix = !f.engine.isSpellingLocked && !f.engine.overflow
+        if !lockedBefore, !validPrefix {
+            if letter {
+                // E8: "tôi" + l starts a new word "l" (`InPlaceComposer.isValidPrefix`).
+                f.engine.reset()
+                return nil
+            }
+            if case .passThrough = action {
+                // (c): "anh" + e, "tôi" + d start a new word.
+                f.engine.reset()
+                return nil
+            }
         }
         f.d20Seeded += 1
         return action
@@ -378,6 +410,23 @@ struct ExternalCasesTests {
         #expect(run("⟦tôi⟧laf␣").output == "tôilà␣" && run("⟦tôi⟧laf␣").d20Seeded == 0)
         #expect(run("ddi␣⌫hocj␣").output == "đihọc␣")
         #expect(run("⟦nghiêng⟧bans␣").output == "nghiêngbán␣")
+        // D20's three exceptions: (a) upper case after lower case starts a new word…
+        #expect(run("⟦#Hà⟧Nooij␣").output == "#HàNội␣" && run("⟦#Hà⟧Nooij␣").d20Seeded == 0)
+        #expect(run("⟦VI⟧EEJT␣").output == "VIỆT␣" && run("⟦V⟧ieejt␣").output == "Việt␣")
+        // …unless a mark key changes the word, and not after a foreign word (b wins).
+        #expect(run("⟦hoc⟧J␣").output == "học␣" && run("⟦hoc⟧J␣").d20Seeded == 1)
+        #expect(run("⟦foo⟧Bar␣").output == "fooBar␣" && run("⟦keyboard⟧Bar␣").output == "keyboardBar␣")
+        // …(b) a foreign word takes the letters unchanged until it ends…
+        #expect(run("⟦foo⟧bar␣").output == "foobar␣" && run("⟦foo⟧bar␣").failures.isEmpty)
+        #expect(run("⟦keyboard⟧bar␣").output == "keyboardbar␣" && run("⟦keyboard⟧bar␣").failures.isEmpty)
+        #expect(run("⟦iPhone⟧mowis␣").output == "iPhonemowis␣")
+        #expect(run("⟦car⟧s␣").output == "cars␣")
+        // …(c) a mark key that does not apply starts a new word; a double key applies.
+        #expect(run("⟦anh⟧emx␣").output == "anhẽm␣" && run("⟦tôi⟧ddi␣").output == "tôiđi␣")
+        #expect(run("⟦ba⟧ef␣").output == "baè␣" && run("⟦cả⟧r␣").output == "car␣")
+        #expect(run("⟦viet⟧j␣").output == "vietj␣" && run("⟦hoc⟧f␣").output == "hocf␣")
+        // Remaining limit: a new word that starts like a valid continuation still joins.
+        #expect(run("⟦#hà⟧nooij␣").output == "#hànooij␣" && run("⟦ba⟧nawm␣").output == "banawm␣")
     }
 
     // MARK: - The test

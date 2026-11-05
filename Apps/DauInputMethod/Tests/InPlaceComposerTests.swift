@@ -287,7 +287,8 @@ struct InPlaceComposerTests {
         var s = Session("viet")
         s.type("j")
         #expect(s.doc.text == "vietj")
-        #expect(s.kinds == [.seedPass])
+        // D20 (c): "vietj" is not a prefix, so the j starts a new word (same text).
+        #expect(s.kinds == [.seedNone])
         #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 4))])
     }
 
@@ -416,12 +417,16 @@ struct InPlaceComposerTests {
         #expect(s.kinds == [.seedNone])
     }
 
-    @Test("a word longer than the read (8+ letters) is not seeded")
+    @Test("a word longer than the read is not Vietnamese: the key and the rest pass (D20 b)")
     func longWord() {
         var s = Session("abcdefghijklmnopqrstu")
         s.type("s")
         #expect(s.doc.text == "abcdefghijklmnopqrstus")
-        #expect(s.kinds == [.seedNone])
+        #expect(s.kinds == [.seedPass])
+        s.type("as ")
+        #expect(s.doc.text == "abcdefghijklmnopqrstusas ")
+        #expect(s.reads == 1)
+        #expect(s.overCalls == 0)
     }
 
     @Test("a selection: no read, the key replaces it as the app does")
@@ -669,6 +674,7 @@ struct InPlaceComposerLetterTests {
         ("ngh", "ieengx ", "nghiễng "),
         ("tiê", "ngs ", "tiếng "),
         ("ba", "nj ", "bạn "),
+        ("Ng", "uyeenx ", "Nguyễn "),
     ])
     func joins(_ before: String, _ keys: String, _ expected: String) {
         var s = Self.telex(before)
@@ -727,14 +733,20 @@ struct InPlaceComposerLetterTests {
         #expect(s.overCalls == 0 && t.overCalls == 0)
     }
 
-    @Test("known limits (D20): ⟦#Hà⟧Nooij → #HàNooij, ⟦foo⟧bar → foobả")
-    func knownLimits() {
-        var s = Self.telex("#Hà")
-        s.type("Nooij ")
-        #expect(s.doc.text == "#HàNooij ")
-        var t = Self.telex("foo")
-        t.type("bar ")
-        #expect(t.doc.text == "foobả ")
+    @Test("known limit (D20): a new word glued to a Vietnamese word joins while a prefix is valid",
+          arguments: [
+              ("#hà", "nooij ", "#hànooij "),
+              ("ba", "nawm ", "banawm "),
+              ("HÀ", "NOOIJ ", "HÀNOOIJ "),
+          ])
+    func knownLimit(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.kinds.first == .seedPass || s.kinds.first == .seed)
+        // One D20 read, and at most one D11 check once the joined word stops being a prefix.
+        #expect(s.reads <= 2)
+        #expect(s.overCalls == 0)
     }
 
     @Test("duow␣⌫c shows dươc mid-word, the word end restores duơc (D31)")
@@ -833,12 +845,15 @@ struct InPlaceComposerLetterTests {
         #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 1)
     }
 
-    @Test("a word that fills the read (8+ letters) is not seeded")
+    @Test("a word that fills the read is not Vietnamese: the letters belong to it (D20 b)")
     func longWord() {
         var s = Session("abcdefghijklmnopq")
         s.type("u")
         #expect(s.doc.text == "abcdefghijklmnopqu")
-        #expect(s.kinds == [.seedNone])
+        #expect(s.kinds == [.seedPass])
+        s.type("as ")
+        #expect(s.doc.text == "abcdefghijklmnopquas ")
+        #expect(s.reads == 1)
     }
 
     @Test("a seeded 7-letter word plus a letter is past the longest syllable (D33): new word")
@@ -879,4 +894,166 @@ struct InPlaceComposerLetterTests {
         #expect(n.diffs == [nil, nil])
     }
     #endif
+}
+
+/// The three exceptions of D20 (05/11/2026), on the first key after a reset. Every
+/// decision uses the text the read already returned: no client call beyond the read (N3).
+/// `⟦x⟧` in the names is the text before the cursor after a click.
+@Suite("InPlaceComposer: the three exceptions of D20")
+struct InPlaceComposerExceptionTests {
+    private static func telex(_ text: String, autoRestore: Bool = true) -> Session {
+        var settings = DauSettings.defaults
+        settings.autoRestore = autoRestore
+        return Session(text, settings: settings)
+    }
+
+    private static func inserts(_ s: Session) -> Int {
+        s.doc.calls.filter { if case .insert = $0 { true } else { false } }.count
+    }
+
+    // MARK: (a) upper case after lower case
+
+    @Test("(a) an upper-case letter after a lower-case one starts a new word", arguments: [
+        ("#Hà", "Nooij ", "#HàNội "),
+        ("Hà", "Nooij ", "HàNội "),
+        ("#Đà", "Nawngx ", "#ĐàNẵng "),
+        ("Hà", "Oi ", "HàOi "),             // O only adds a letter: new word "Oi"
+    ])
+    func upperAfterLower(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.kinds.first == .seedNone)
+        #expect(s.reads == 1)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("(a) not for a mark key that places a tone or transform: ⟦hoc⟧J → học")
+    func upperMarkKeyApplies() {
+        var s = Self.telex("hoc")
+        s.type("J ")
+        #expect(s.doc.text == "học ")
+        #expect(s.kinds.first == .seed)
+        var t = Self.telex("hoc")
+        t.type("j ")
+        #expect(t.doc.text == "học ")
+        #expect(s.overCalls == 0 && t.overCalls == 0)
+    }
+
+    @Test("(a) decomposed (NFD) text: the last character, not its mark, is lower case")
+    func upperAfterDecomposed() {
+        var s = Self.telex("Ha\u{0300}")
+        s.type("Nooij ")
+        #expect(s.doc.text == "Ha\u{0300}Nội ")
+    }
+
+    @Test("(a) upper after upper, lower after upper: still joins", arguments: [
+        ("VI", "EEJT ", "VIỆT "),
+        ("V", "ieejt ", "Việt "),
+        ("NG", "UOWIF ", "NGƯỜI "),
+    ])
+    func sameCaseJoins(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.kinds.first == .seed || s.kinds.first == .seedPass)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("(a) VNI: ⟦Hà⟧No6i5 → HàNội")
+    func upperAfterLowerVNI() {
+        var settings = DauSettings.defaults
+        settings.typingMethod = .vni
+        var s = Session("Hà", settings: settings)
+        s.type("No6i5 ")
+        #expect(s.doc.text == "HàNội ")
+        #expect(s.reads == 1)
+    }
+
+    // MARK: (b) a foreign word before the cursor
+
+    @Test("(b) a word that is not Vietnamese takes the letters unchanged until it ends", arguments: [
+        ("foo", "bar ", "foobar "),
+        ("keyboard", "bar ", "keyboardbar "),
+        ("iPhone", "mowis ", "iPhonemowis "),
+        ("hello", "banj ", "hellobanj "),
+        ("car", "s ", "cars "),
+        ("keyboard", "sas ", "keyboardsas "),
+        // (b) wins over (a): camelCase after a foreign word, short or long.
+        ("foo", "Bar ", "fooBar "),
+        ("keyboard", "Bar ", "keyboardBar "),
+        ("abcdefghijklmnopq", "Bar ", "abcdefghijklmnopqBar "),
+    ])
+    func foreignWord(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.kinds.first == .seedPass)
+        #expect(Self.inserts(s) == 0)       // every key went to the app as typed
+        #expect(s.reads == 1)               // no D11 re-read of a word just read
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("(b) also with auto restore off; the next word is Vietnamese again")
+    func foreignWordThenVietnamese() {
+        var s = Self.telex("foo", autoRestore: false)
+        s.type("bar ")
+        #expect(s.doc.text == "foobar ")
+        var t = Self.telex("keyboard")
+        t.type("bar vieetj ")
+        #expect(t.doc.text == "keyboardbar việt ")
+        var u = Self.telex("foo")
+        u.type("bar tooi ")
+        #expect(u.doc.text == "foobar tôi ")
+    }
+
+    @Test("(b) ⌫ over a long foreign word and its letters ends the pass-through (D33)")
+    func foreignWordDeleted() {
+        var s = Self.telex("keyboard")
+        s.type("b⌫⌫⌫⌫⌫⌫⌫⌫⌫")
+        #expect(s.doc.text == "")
+        s.type("vieetj ")
+        #expect(s.doc.text == "việt ")
+    }
+
+    @Test("(b) a word with digits is not taken for a foreign word: the key starts a new word")
+    func wordWithDigits() {
+        var s = Self.telex("abc12345")
+        s.type("vieetj ")
+        #expect(s.doc.text == "abc12345việt ")
+    }
+
+    // MARK: (c) a mark key that is not applied to a Vietnamese word
+
+    @Test("(c) a mark key that does not apply starts a new word", arguments: [
+        ("anh", "emx ", "anhẽm "),
+        ("anh", "ems ", "anhém "),
+        ("tôi", "ddi ", "tôiđi "),
+        ("Hà", "ddi ", "Hàđi "),
+        ("tôi", "awn ", "tôiăn "),
+        ("ba", "ef ", "baè "),
+    ])
+    func markStartsWord(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.kinds.first == .seedNone)
+        #expect(s.reads == 1)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("(c) unchanged: a double key is applied, and keys that apply or keep a prefix", arguments: [
+        ("cả", "r", "car"),
+        ("ca", "rr ", "car "),
+        ("hoc", "f", "hòc"),
+        ("hoc", "f ", "hocf "),
+        ("viet", "j ", "vietj "),
+        ("viet", "ej ", "việt "),
+    ])
+    func markUnchanged(_ before: String, _ keys: String, _ expected: String) {
+        var s = Self.telex(before)
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.overCalls == 0)
+    }
 }

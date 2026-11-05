@@ -8,8 +8,8 @@ Mục đích: lấy **chuỗi phím** trong bộ test của các bộ gõ tiến
 
 - **Bước 1 xong.** Giữ 10 nguồn, tổng **10.303 ca**: Telex 8.222, VNI 2.028, Telex đơn giản 53. Mỗi nguồn một file TSV trong `docs/research/external-test-inputs/`; đáp án của họ nằm riêng ở `build/external-answers/` (thư mục bị git bỏ qua, xem mục 3). `extract.sh` đã sửa cho 43 ca trích sai lúc đầu (mục 9.6): bỏ 14 ca của test chỉ in kết quả, ghi đủ số ⌫ của vòng lặp và hàm phụ, đọc đúng tuỳ chọn của hàm tạo engine ở gonhanh, tách nhánh `if` ở XKey, đọc lại hàng đợi commit của fcitx5-unikey. So với bản trước: gonhanh bỏ 3 ca (test macro, D3), đổi 12; uvie-rs bỏ 14, đổi 38; XKey đổi 6 ca; fcitx5-unikey đổi ghi chú 1 ca; sáu nguồn còn lại ra đúng từng byte như trước.
 - **Bỏ:** ibus-unikey, OpenKey, fcitx5-bamboo (không có bộ test chuỗi phím); bộ ca CSV của XKey (8.046 dòng, chính tác giả ghi là do một engine khác sinh ra, không nêu engine nào và giấy phép gì). Mọi nguồn giữ lại có giấy phép tương thích GPLv3 (mục 4).
-- **Bước 2 xong** theo cách khác kế hoạch ở mục 1: thay cho đáp án mù từng ca, test `ExternalCasesTests` của engine kiểm các bất biến rút từ DECISIONS.md và ghi đầu ra của Dấu vào `build/external-dau-output/` (nhật ký `docs/PROGRESS.md` ngày 05/11/2026). Từ commit f39f066 khung test này mô phỏng cả việc đọc chữ trước con trỏ của D20 như lớp IMK, và từ ngày 05/11/2026 cả việc đọc ở chữ cái đầu tiên theo E8 (D20, mục 9.8). Chưa chạy gì từ các bản clone: chỉ đọc file.
-- **Bước 3** (mục 9), đo lại 05/11/2026 trên engine sau commit 0a9bb4b (E9, D33) và khung test mô phỏng D20 theo E8, bằng `scripts/research/external-tests/compare.sh`: 10.303 ca, 235 ca họ không kiểm chữ, 8.061 ca khớp, 2.007 ca khác. Trong 2.007 ca khác: 435 Dấu cố ý khác theo một quyết định (A), 1.493 do tuỳ chọn của nguồn mà Dấu không có (B), 73 đáp án của họ sai chính tả (C), **0 lỗi của Dấu (D)**: bốn kiểu D1–D4 đã sửa; **0 cần người dùng quyết định (E)**: E1–E9 người dùng đã chốt (D20, D26, D28, D30, D31, D32, D33, D40, mục 9.8): ca nào còn khác nay thuộc lớp A; 6 không so được (X, mục 9.6): lỗi trích đã sửa, ca thiếu mô phỏng D20 nay khớp hết.
+- **Bước 2 xong** theo cách khác kế hoạch ở mục 1: thay cho đáp án mù từng ca, test `ExternalCasesTests` của engine kiểm các bất biến rút từ DECISIONS.md và ghi đầu ra của Dấu vào `build/external-dau-output/` (nhật ký `docs/PROGRESS.md` ngày 05/11/2026). Từ commit f39f066 khung test này mô phỏng cả việc đọc chữ trước con trỏ của D20 như lớp IMK, và từ ngày 05/11/2026 cả việc đọc ở chữ cái đầu tiên theo E8 cùng ba ngoại lệ của D20 (mục 9.8). Chưa chạy gì từ các bản clone: chỉ đọc file.
+- **Bước 3** (mục 9), đo lại 05/11/2026 trên engine sau commit 0a9bb4b (E9, D33) và khung test mô phỏng D20 theo E8 cùng ba ngoại lệ của D20, bằng `scripts/research/external-tests/compare.sh`: 10.303 ca, 235 ca họ không kiểm chữ, 8.063 ca khớp, 2.005 ca khác. Trong 2.005 ca khác: 435 Dấu cố ý khác theo một quyết định (A), 1.493 do tuỳ chọn của nguồn mà Dấu không có (B), 73 đáp án của họ sai chính tả (C), **0 lỗi của Dấu (D)**: bốn kiểu D1–D4 đã sửa; **0 cần người dùng quyết định (E)**: E1–E9 người dùng đã chốt (D20, D26, D28, D30, D31, D32, D33, D40, mục 9.8): ca nào còn khác nay thuộc lớp A; 4 không so được (X, mục 9.6): lỗi trích đã sửa, ca thiếu mô phỏng D20 nay khớp hết.
 - **Đếm sơ bộ trên đáp án của họ** (mục 6) đã được xem từng ca ở bước 3: các từ có dấu không phải âm tiết hợp lệ trong đáp án của họ phần lớn đúng là do cấu hình test của họ (nhóm B: từ điển của ibus-teni, danh sách từ tiếng Anh của gonhanh và uvie-rs, tắt kiểm tra chính tả của fcitx5-unikey); phần còn lại là đáp án sai chính tả (nhóm C).
 - **Người dùng chốt (05/11/2026):** (1) ghi công nguồn trong `docs/research/external-test-inputs/NOTICE.md` (tên, URL, commit, SPDX, dòng bản quyền nguyên văn, toàn văn giấy phép MIT/BSD-3-Clause); (2) giữ ibus-telex dù repo không có file LICENSE, ghi chú rằng giấy phép chỉ được khai trong `Cargo.toml`; (3) chưa trích các kho lớn sinh máy móc, để làm sau (mục 7); (4) script trích nằm ở `scripts/research/external-tests/extract.sh`, ghim commit của từng nguồn và tạo lại đúng từng byte các TSV đã commit (kiểm 05/11/2026 bằng `git diff` sau khi chạy lại trên bản clone ở đúng commit).
 - Không có khẳng định nào về API Apple trong file này.
@@ -212,15 +212,15 @@ Nguồn tra: GitHub (`gh search repos "vietnamese input method"`), https://githu
 
 - `scripts/research/external-tests/compare.sh` ghép `docs/research/external-test-inputs/<nguồn>.tsv`, `build/external-dau-output/<nguồn>.tsv` (đầu ra bước 2) và `build/external-answers/<nguồn>.tsv` theo `id`, so ở dạng NFC, ghi `build/external-review/` và in hai bảng ở mục 9.2. Chuẩn hoá theo `their_note`: bỏ phím commit cuối (⏎, ß…) và phần chữ sau con trỏ khi họ chỉ kiểm phần chữ được commit; bỏ một ␣ cuối (và ⏎/⇥ ngay trước nó) cho bộ corpus của ibus-telex (khung test của họ gõ thêm Space rồi bỏ dấu cách cuối); với "current word only", "getCurrentWord()", "preedit" chỉ so từ cuối; với "covers only the last N keys", "committed part only" chỉ so phần cuối. Trên dữ liệu của lần xét đầu, script cho đúng từng ca khớp/khác như lần đó.
 - Mỗi ca khác được xếp vào một lớp. **A**: Dấu cố ý khác, chỉ khi quyết định được dẫn thật sự sinh ra đầu ra của Dấu. **B**: do tuỳ chọn `src:` của nguồn. **C**: đáp án của họ sai chính tả. **D**: Dấu có vẻ sai, không quyết định nào biện minh. **E**: DECISIONS.md chưa nói hoặc nói chưa rõ, cần người dùng chọn. Thêm lớp **X** cho ca không so được (mục 9.6). Ca vừa thuộc B vừa có quyết định cụ thể của Dấu (ví dụ "pass" ở nguồn có từ điển tiếng Anh, Dấu ra "pas" theo D26) xếp vào A.
-- Xếp lớp là việc của người so, script không tự xếp: ca khác giữ lớp của lần xét trước nếu phím, đầu ra của Dấu và đáp án của họ không đổi; còn lại thành `unreviewed` (ghi lớp cũ trong `rule_notes`), người so xem từng ca rồi áp lớp bằng `--set`. Để xem ca, người so chạy engine của Dấu bằng chương trình tạm ngoài repo (gọi `VietEngine` qua API công khai, không sửa engine). Từ commit f39f066, việc đọc chữ trước con trỏ của D20 nằm trong khung test `ExternalCasesTests` (mô hình theo `InPlaceComposer`, chưa chạy trên Dấu thật); từ ngày 05/11/2026 khung test đọc cả ở chữ cái đầu tiên và chỉ nối khi từ ghép còn là tiền tố hợp lệ (E8, D20).
+- Xếp lớp là việc của người so, script không tự xếp: ca khác giữ lớp của lần xét trước nếu phím, đầu ra của Dấu và đáp án của họ không đổi; còn lại thành `unreviewed` (ghi lớp cũ trong `rule_notes`), người so xem từng ca rồi áp lớp bằng `--set`. Để xem ca, người so chạy engine của Dấu bằng chương trình tạm ngoài repo (gọi `VietEngine` qua API công khai, không sửa engine). Từ commit f39f066, việc đọc chữ trước con trỏ của D20 nằm trong khung test `ExternalCasesTests` (mô hình theo `InPlaceComposer`, chưa chạy trên Dấu thật); từ ngày 05/11/2026 khung test đọc cả ở chữ cái đầu tiên và chỉ nối khi từ ghép còn là tiền tố hợp lệ (E8, D20), cùng ba ngoại lệ của D20 (mục 9.8).
 
 ### 9.2 Đếm theo nguồn
 
-Đo 05/11/2026 trên engine sau commit 0a9bb4b, khung test mô phỏng D20 theo E8. "Khác" gồm cả lớp X. Cột `src:`: ca có tuỳ chọn của nguồn mà Dấu không có (mục 2.2).
+Đo 05/11/2026 trên engine sau commit 0a9bb4b, khung test mô phỏng D20 theo E8 và ba ngoại lệ của D20. "Khác" gồm cả lớp X. Cột `src:`: ca có tuỳ chọn của nguồn mà Dấu không có (mục 2.2).
 
 | Nguồn | Ca | Họ không kiểm chữ | Khớp, không `src:` | Khác, không `src:` | Khớp, có `src:` | Khác, có `src:` |
 |---|---|---|---|---|---|---|
-| gonhanh | 4.110 | 119 | 2.228 | 86 | 1.503 | 174 |
+| gonhanh | 4.110 | 119 | 2.228 | 86 | 1.505 | 172 |
 | ibus-teni | 3.050 | 1 | 0 | 0 | 1.627 | 1.422 |
 | fcitx5-unikey | 1.325 | 1 | 7 | 0 | 1.225 | 92 |
 | uvie-rs | 947 | 37 | 1 | 0 | 743 | 166 |
@@ -230,13 +230,13 @@ Nguồn tra: GitHub (`gh search repos "vietnamese input method"`), https://githu
 | bamboo-core | 67 | 7 | 50 | 10 | 0 | 0 |
 | ibus-bamboo | 32 | 17 | 14 | 1 | 0 | 0 |
 | goxkey | 4 | 0 | 3 | 1 | 0 | 0 |
-| **Tổng** | **10.303** | **235** | **2.953** | **149** | **5.108** | **1.858** |
+| **Tổng** | **10.303** | **235** | **2.953** | **149** | **5.110** | **1.856** |
 
 Theo lớp (chỉ ca khác):
 
 | Nguồn | A | B | C | D | E | X |
 |---|---|---|---|---|---|---|
-| gonhanh | 197 | 21 | 39 | 0 | 0 | 3 |
+| gonhanh | 197 | 21 | 39 | 0 | 0 | 1 |
 | ibus-teni | 0 | 1.416 | 6 | 0 | 0 | 0 |
 | fcitx5-unikey | 84 | 8 | 0 | 0 | 0 | 0 |
 | uvie-rs | 102 | 46 | 18 | 0 | 0 | 0 |
@@ -246,9 +246,9 @@ Theo lớp (chỉ ca khác):
 | bamboo-core | 8 | 0 | 0 | 0 | 0 | 2 |
 | ibus-bamboo | 1 | 0 | 0 | 0 | 0 | 0 |
 | goxkey | 1 | 0 | 0 | 0 | 0 | 0 |
-| **Tổng** | **435** | **1.493** | **73** | **0** | **0** | **6** |
+| **Tổng** | **435** | **1.493** | **73** | **0** | **0** | **4** |
 
-Lần xét đầu (cùng ngày, trước khi sửa engine, khung test và `extract.sh`): 10.320 ca, 240 họ không kiểm chữ, 7.971 khớp, 2.109 khác (A 359, B 1.492, C 73, D 10, E 77, X 98). Từ đó: 10 ca D: 7 khớp, 3 sang A (D26, D35); 77 ca E: 16 khớp (E2, E3, E7), 61 sang A theo quyết định đã chốt; 48 ca X thiếu mô phỏng D20 khớp cả; 7 ca X của XKey và bamboo-core mà họ không kiểm chữ trên màn hình: 5 khớp (vòng ⌫ nay ghi đủ), 2 còn X; 43 ca trích sai: 6 bị bỏ (test chỉ in), 23 khớp, 11 sang A (D32 10, D31 1), 1 sang B, 1 thành câu hỏi E9, 1 thành X (nhánh `if` không xảy ra ở Dấu). 8 ca lần đầu khớp nay khác: 3 X (`←` là `clear()`), 2 A (D20 + D26) và 1 E8 do khung test nay mô phỏng D20; 2 A do D35 mới ("uwo" → "uơ"). Sau đó, cùng ngày: ca E9 khớp sau khi D33 chốt (commit 0a9bb4b); ca E8 và 3 ca A-D20 ("duow␣⌫c") khớp sau khi D20 đọc cả ở chữ cái đầu tiên (E8).
+Lần xét đầu (cùng ngày, trước khi sửa engine, khung test và `extract.sh`): 10.320 ca, 240 họ không kiểm chữ, 7.971 khớp, 2.109 khác (A 359, B 1.492, C 73, D 10, E 77, X 98). Từ đó: 10 ca D: 7 khớp, 3 sang A (D26, D35); 77 ca E: 16 khớp (E2, E3, E7), 61 sang A theo quyết định đã chốt; 48 ca X thiếu mô phỏng D20 khớp cả; 7 ca X của XKey và bamboo-core mà họ không kiểm chữ trên màn hình: 5 khớp (vòng ⌫ nay ghi đủ), 2 còn X; 43 ca trích sai: 6 bị bỏ (test chỉ in), 23 khớp, 11 sang A (D32 10, D31 1), 1 sang B, 1 thành câu hỏi E9, 1 thành X (nhánh `if` không xảy ra ở Dấu). 8 ca lần đầu khớp nay khác: 3 X (`←` là `clear()`), 2 A (D20 + D26) và 1 E8 do khung test nay mô phỏng D20; 2 A do D35 mới ("uwo" → "uơ"). Sau đó, cùng ngày: ca E9 khớp sau khi D33 chốt (commit 0a9bb4b); ca E8 và 3 ca A-D20 ("duow␣⌫c") khớp sau khi D20 đọc cả ở chữ cái đầu tiên (E8); với ba ngoại lệ của D20, 26 ca đổi đầu ra (mục 9.8): 2 ca X của chuỗi gonhanh (`←` là `clear()`) nay khớp, ca X thứ ba vẫn X, 2 ca B của uvie-rs ra chữ khác nhưng vẫn B, 22 ca còn lại vẫn khớp.
 
 ### 9.3 Lớp A — Dấu cố ý khác (435)
 
@@ -280,7 +280,7 @@ Lần xét đầu (cùng ngày, trước khi sửa engine, khung test và `extra
 | Tuỳ chọn | Ca | Ghi chú |
 |---|---|---|
 | `src:dictionary` (ibus-teni) | 1.416 | gần hết là từ viết tắt có đ (đbp, hđqt, tnđh…), từ mượn nhiều âm tiết (amiđan, bôxit, café), từ tiếng Anh giữa từ; Dấu không dùng từ điển (D4, D31) |
-| `src:englishDictionary` (gonhanh, uvie-rs) | 67 | giữa từ họ đã hiện chữ tiếng Anh ("good"), Dấu hiện "gôd" và khôi phục khi kết thúc từ; từ sai không có trong danh sách của họ thì họ giữ nguyên (chứcc, tàoo, đc) |
+| `src:englishDictionary` (gonhanh, uvie-rs) | 67 | giữa từ họ đã hiện chữ tiếng Anh ("good"), Dấu hiện "gôd" và khôi phục khi kết thúc từ; từ sai không có trong danh sách của họ thì họ giữ nguyên (chứcc, tàoo, đc). "good←book": "gôd" có sẵn không phải tiếng Việt nên "book" gõ sau reset đi thẳng ("gôdbook", D20 ngoại lệ (b)); họ ra "goodbook" |
 | `src:spellcheck=off` (fcitx5-unikey, XKey, ibus-telex) | 10 | họ biến đổi cả chữ không phải âm tiết ("baao␣" ra "bâo␣"); Dấu kiểm tra chính tả luôn chạy (D30) |
 
 ### 9.5 Lớp C — đáp án của họ sai chính tả (73)
@@ -294,11 +294,11 @@ Lần xét đầu (cùng ngày, trước khi sửa engine, khung test và `extra
 | ă, â không đứng cuối âm tiết (D31) | 6 |
 | phân bố c/k, g/gh, ng/ngh, q+u (D31): cí, ghá, nghá, qá, qư | 5 |
 
-### 9.6 Lớp X — không so được (6)
+### 9.6 Lớp X — không so được (4)
 
 | Nguyên nhân | Ca | Ghi chú |
 |---|---|---|
-| `←` là `clear()` của engine họ, không phải phím mũi tên (mục 2.1) | 3 | gonhanh `integration_test.rs:complex_mau_sac_continuous_session#3`, `#17`, `#24`: sau `clear()` họ gõ tiếp sát chữ cũ như trong ô mới; khung test của Dấu coi `←` là phím mũi tên nên D20 đọc từ ngay trước con trỏ ("sắc" + "ddepj" đi thẳng). Muốn so được thì khung test phải chạy `clear()` như đổi ô nhập (reset và biết trước con trỏ không có từ) |
+| `←` là `clear()` của engine họ, không phải phím mũi tên (mục 2.1) | 1 | gonhanh `integration_test.rs:complex_mau_sac_continuous_session#24`: sau `clear()` họ gõ tiếp sát chữ cũ như trong ô mới; khung test của Dấu coi `←` là phím mũi tên nên D20 đọc từ ngay trước con trỏ ("mà" + "sawsc" ra "măsc", họ ra "sắc"). Hai ca cùng chuỗi `#3`, `#17` ("sắc" + "ddepj", "sắc" + "ddor") nay khớp nhờ D20 ngoại lệ (c). Muốn so được thì khung test phải chạy `clear()` như đổi ô nhập (reset và biết trước con trỏ không có từ) |
 | Họ không kiểm chữ trên màn hình | 2 | "raw-keys view" của bamboo-core |
 | Nhánh `if` trên trạng thái engine của họ không xảy ra ở Dấu | 1 | XKey `VNEngineTests.swift:testTelex_BackspaceAndRetype_LY#3` chỉ chạy khi engine của họ còn "l" sau hai ⌫; ở Dấu "lý" ⌫⌫ còn rỗng (D32), và nhánh kia (`#2`) khớp |
 
@@ -339,5 +339,7 @@ Hai câu hỏi của lần xét thứ hai (đáp án của họ trích nguyên v
 | E9 | uvie-rs `feed_diff_tests.rs:diff_sticky_full_erase_restores_vietnamese#3` | `permission` + 10 ⌫ + `vieetj` | vieetj | việt (khớp) | uvie-rs: việt |
 
 **Cách chọn E8 (mô phỏng, 05/11/2026).** Ba phương án chạy bằng engine của Dấu trên 10.303 ca và các tình huống sửa chữ, qua bản sao khung test `ExternalCasesTests` (mô hình theo `InPlaceComposer`, chưa chạy trên Dấu thật): (A) chỉ đọc ở phím dấu/biến đổi, như trước; (B) đọc cả ở chữ cái đầu tiên và luôn nối vào từ đọc được; (C) như B nhưng chữ cái chỉ nối khi từ ghép còn là tiền tố hợp lệ. So với A, B ra khác ở 38 ca và làm hỏng 34 ca trong đó, vì dính từ mới vào từ trước con trỏ (sau ⌫ qua dấu cách hay sau reset, "ddi␣⌫hocj" ra "đihocj" thay vì "đihọc"); C ra khác ở 4 ca: ca E8 và 3 ca "duow␣⌫c" của gonhanh (`bug_reports_test.rs:bug_duow_restore_horn#1`, `bug_duow_double_break_backspace_horn#1`, `bug_dduow_break_backspace_final#1`), giữa từ ra "dươc", "đươc". Người dùng chọn C (D20). Sau khi khung test trong repo mô phỏng C, `compare.sh` cho đúng 4 ca đó đổi đầu ra, cả 4 khớp với họ; lớp IMK làm C ở `InPlaceComposer` (test `InPlaceComposerLetterTests`).
+
+**Ba ngoại lệ của D20 (mô phỏng rồi đo trong repo, 05/11/2026).** Người dùng chốt ba ngoại lệ sau mô phỏng cùng cách trên cho các giới hạn còn lại của C ("#Hà" + "Nooij" ra "#HàNooij", "foo" + "bar" ra "foobả", "anh" + "emx" ra "anhemx"): (a) chữ hoa sau chữ thường bắt đầu từ mới; (b) từ có sẵn không phải tiếng Việt nhận chữ gõ tiếp nguyên văn tới hết từ; (c) phím dấu/biến đổi đầu tiên không áp dụng được lên từ tiếng Việt có sẵn thì bắt đầu từ mới (D20). Trên 10.303 ca, mô phỏng cho (a) đổi 0 ca, (b) đổi 2, (c) đổi 24, không bất biến nào hỏng. Khung test trong repo làm theo (`ExternalCasesTests.d20Seed`; từ dài hơn 7 chữ đi vào trạng thái đi thẳng của D33 bằng `VietEngine.seedOverflow`), áp (b) cho cả phím dấu lẫn chữ cái và cho (b) thắng (a), (a) không áp cho phím dấu có đặt dấu lên từ (D20): đúng 26 ca đổi đầu ra, như mô phỏng. (b): uvie-rs `real_api_sim.rs:real_type_good_then_arrow_then_type#3`, `real_type_good_escape#3` ("good←book" ra "gôdbook", trước "gôdbôk"; vẫn lớp B). (c): 24 ca của chuỗi gonhanh `integration_test.rs:complex_mau_sac_continuous_session` (`#3`–`#26`), "sắc" + "ddepj" nay "sắcđẹp", "sắc" + "ddor" nay "sắcđỏ"; `#3` và `#17` chuyển từ X sang khớp. `compare.sh`: khớp 8.061 → 8.063, X 6 → 4, A, B, C, D, E không đổi. Lớp IMK làm ở `InPlaceComposer` (test `InPlaceComposerExceptionTests`); chưa gõ thử trên Dấu thật.
 
 Chữ tiếng Việt dựng sẵn đến như một phím (mục 2.1, 7 ca): cả 7 ca khớp với họ; D40 chốt Dấu coi đó là một chữ cái của từ.
