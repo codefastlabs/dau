@@ -1851,6 +1851,16 @@
         }
       }
     },
+    "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › %@) rồi đăng nhập lại một lần." : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › %@) rồi đăng nhập lại một lần."
+          }
+        }
+      }
+    },
     "Đang bật nguồn đầu vào tiếng Việt khác: %@. Bạn có thể bỏ bớt trong %@ cho gọn danh sách." : {
       "localizations" : {
         "vi" : {

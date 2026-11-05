@@ -501,6 +501,12 @@ struct EnableStep: View {
         }
     }
 
+    /// D37: one app that still cannot select Dấu is fixed by a fresh login. The menu name
+    /// is macOS's own (D38).
+    static func logOutHint(logOut: String) -> String {
+        String(localized: "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › \(logOut)) rồi đăng nhập lại một lần.")
+    }
+
     // `.enabled`.
     private var done: some View {
         StepLayout(step: .enable, screen: ".done", title: Text("Đã bật Dấu"),
@@ -518,6 +524,7 @@ struct EnableStep: View {
                 }
             }
             .layoutProbe("onbCard-2.done")
+            Hint(Text(Self.logOutHint(logOut: ui.logOut)))
         } buttons: {
             Button("Tiếp tục") { flow.next() }
                 .buttonStyle(.borderedProminent)
