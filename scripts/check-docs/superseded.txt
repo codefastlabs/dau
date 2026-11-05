@@ -22,3 +22,5 @@ lần cài đầu có bắt buộc đăng xuất hay không còn mở	D37: "Bậ
 có thể không bật được nguồn: cứ thêm bằng	D37: "Bật Dấu" clears the caches and enables (04/11/2026)
 chữ cái thường gõ sau Backspace bắt đầu từ mới	D20/E8: chữ cái nối vào từ trước con trỏ khi từ ghép hợp lệ (05/11/2026)
 Câu hỏi còn mở về chữ cái thường gõ sát	D20/E8 đã chốt (05/11/2026)
+"foo" \+ "bar" → "foobả"	D20 ngoại lệ (b): từ nước ngoài gõ tiếp đi thẳng (05/11/2026)
+"#Hà" \+ "Nooij" → "#HàNooij"	D20 ngoại lệ (a): chữ hoa sau chữ thường là từ mới (05/11/2026)
