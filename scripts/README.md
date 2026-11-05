@@ -16,6 +16,7 @@ Thư mục theo mục đích:
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/probe/` | công cụ thử ném đi: làm nguồn nhập liệu mới hiện trong "+" không cần đăng xuất (`docs/research/M5-INSTALL.md` mục 8.2); không thuộc bản phát hành |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
+| `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ) |
 
 | Đường dẫn | Làm gì | Tác dụng phụ | Ai chạy | Gọi từ |
 |---|---|---|---|---|
@@ -34,6 +35,7 @@ Thư mục theo mục đích:
 | `scripts/probe/build-tools.sh` | Biên dịch `tis-probe`, `tis-act` và đóng gói `TisAct.app` ("Dấu thử", ký, không sandbox) vào `build/probe.noindex/`. | builds | agent | `scripts/probe/step.sh` |
 | `scripts/probe/step.sh` | Chạy một bước P0–P7/P3b của vòng thử trên một biến thể (chép, register, enable, select, dừng tiến trình giao diện, đọc lại 3 lần), ghi giờ từng lệnh. `--dry-run` chỉ in chuỗi lệnh (tác dụng phụ none, agent chạy được). | installs input method, changes input source, kills processes, needs admin password (P6) | người dùng, hỏi giờ trước | docs/research/M5-INSTALL.md (mục 8.2) |
 | `scripts/probe/cleanup.sh` | Liệt kê biến thể `DauProbe` đã cài, đăng ký LaunchServices, mục trong `com.apple.inputsources`, tiến trình, và thư mục macOS tạo cho các app thử có sandbox (container, Application Scripts, thư mục cache); với `--yes` thì gỡ (dừng nếu mục còn trong `com.apple.inputsources`), container vào Thùng rác qua Finder; với `--trash` thì xoá hẳn khỏi Thùng rác chỉ các bản thử (hỏi lại, cần Full Disk Access). Không tham số thì chỉ đọc (none, agent chạy được). | kills processes, deletes data, needs admin password (chỉ với `--yes`); deletes data (`--trash`) | người dùng, hỏi giờ trước | docs/research/M5-INSTALL.md (mục 8.2) |
+| `scripts/research/external-tests/extract.sh` | Lấy 10 bộ gõ khác ở commit đã ghim (mạng, vào `/tmp/ext-ime/`), đọc file test của họ bằng các helper Python cùng thư mục (`python3 -I`), ghi lại các TSV chuỗi phím trong `docs/research/external-test-inputs/` (ra đúng từng byte bản đã commit), đáp án của họ vào `build/external-answers/` và số đếm vào `build/external-tests-stats/`. Không build hay chạy gì của các bản clone. Helper `answer_stats.py` (chạy riêng, chỉ đọc) in số đếm cho mục 6 của tài liệu. | writes repo files | agent | docs/research/EXTERNAL-TEST-INPUTS.md, `docs/research/external-test-inputs/NOTICE.md` |
 
 ## Chú giải tác dụng phụ
 
