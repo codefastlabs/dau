@@ -30,6 +30,8 @@ public struct VietEngine: Sendable {
     var lockedBySpelling = false
     /// D33: the word grew past 7 letters; everything passes through until it ends.
     var overflow = false
+    /// D33: letters the app shows for the overflowed word; ⌫ to zero ends the state.
+    var overflowShown = 0
     /// D20: the next key is the first one after `seed(displayed:)`.
     var seedPending = false
 
@@ -68,6 +70,7 @@ public struct VietEngine: Sendable {
         lockedByDouble = false
         lockedBySpelling = false
         overflow = false
+        overflowShown = 0
         seedPending = false
     }
 
@@ -89,7 +92,10 @@ public struct VietEngine: Sendable {
         guard let info = Letters.decompose(v) else {
             return finishWord(appending: v)
         }
-        if overflow { return .passThrough }
+        if overflow {
+            overflowShown += 1
+            return .passThrough
+        }
         return handleLetter(v, info)
     }
 
@@ -106,7 +112,12 @@ public struct VietEngine: Sendable {
     /// recomputed. Returns `.passThrough` when the app's own Backspace gives the right
     /// result (or when the engine is not tracking a word).
     public mutating func backspace() -> Action {
-        if overflow { return .passThrough }
+        if overflow {
+            // D33: deleting the whole word ends the pass-through state.
+            overflowShown -= 1
+            if overflowShown <= 0 { reset() }
+            return .passThrough
+        }
         if word.count == 0 {
             reset()
             return .passThrough
@@ -556,6 +567,7 @@ public struct VietEngine: Sendable {
     /// was transformed and auto restore is on) and let the rest of the word through.
     mutating func startOverflow(_ v: UInt32) -> Action {
         overflow = true
+        overflowShown = (options.autoRestore && raw != screen ? raw.length : screen.length) + 1
         var action = Action.passThrough
         if options.autoRestore && raw != screen {
             var output = raw
