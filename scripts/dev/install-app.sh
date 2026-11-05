@@ -18,8 +18,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-DERIVED="$ROOT/build/DerivedData.noindex"
+# shellcheck source=../lib/build.sh
+source "$ROOT/scripts/lib/build.sh"
+DERIVED="$DAU_DERIVED"
 DEST="/Applications/Dau.app"
 LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 
@@ -34,27 +35,16 @@ for arg in "$@"; do
   esac
 done
 
+# Before the input method step too, so a missing certificate stops before anything is built.
+dau_require_signing_identity || exit 1
+
 if [[ "$WITH_IM" == 1 ]]; then
   im_args=()
   [[ "$CONFIG" == Release ]] && im_args+=(--release)
   "$ROOT/scripts/dev/install-debug.sh" ${im_args[@]+"${im_args[@]}"}
 fi
 
-if ! command -v xcodegen >/dev/null 2>&1; then
-  echo "Cần XcodeGen: brew install xcodegen" >&2
-  exit 1
-fi
-echo "==> Sinh Dau.xcodeproj"
-(cd "$ROOT" && xcodegen generate --quiet)
-
-echo "==> Build $CONFIG (scheme Dau)"
-xcodebuild \
-  -project "$ROOT/Dau.xcodeproj" \
-  -scheme Dau \
-  -configuration "$CONFIG" \
-  -destination 'generic/platform=macOS' \
-  -derivedDataPath "$DERIVED" \
-  build -quiet
+dau_build Dau "$CONFIG" || exit 1
 
 APP="$DERIVED/Build/Products/$CONFIG/Dau.app"
 [[ -d "$APP" ]] || { echo "Không thấy $APP sau khi build." >&2; exit 1; }

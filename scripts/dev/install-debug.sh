@@ -18,8 +18,9 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-DERIVED="$ROOT/build/DerivedData.noindex"
+# shellcheck source=../lib/build.sh
+source "$ROOT/scripts/lib/build.sh"
+DERIVED="$DAU_DERIVED"
 PROCESS_NAME="DauInputMethod"            # CFBundleExecutable of the input method
 BUNDLE_NAME="$PROCESS_NAME.app"
 DEST_DIR="$HOME/Library/Input Methods"
@@ -44,23 +45,7 @@ if [[ "$SKIP_BUILD" == 1 && "$BUILD_ONLY" == 1 ]]; then
   exit 2
 fi
 if [[ "$SKIP_BUILD" == 0 ]]; then
-  if ! command -v xcodegen >/dev/null 2>&1; then
-    echo "Cần XcodeGen: brew install xcodegen" >&2
-    exit 1
-  fi
-
-  echo "==> Sinh Dau.xcodeproj"
-  (cd "$ROOT" && xcodegen generate --quiet)
-
-  echo "==> Build $CONFIG universal (scheme DauInputMethod)"
-  xcodebuild \
-    -project "$ROOT/Dau.xcodeproj" \
-    -scheme DauInputMethod \
-    -configuration "$CONFIG" \
-    -destination 'generic/platform=macOS' \
-    -derivedDataPath "$DERIVED" \
-    -quiet \
-    build
+  dau_build DauInputMethod "$CONFIG" || exit 1
 else
   echo "==> --no-build: dùng bản build có sẵn trong build/DerivedData.noindex"
 fi

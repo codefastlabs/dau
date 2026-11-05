@@ -46,8 +46,9 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
-DERIVED="$ROOT/build/DerivedData.noindex"
+# shellcheck source=../lib/build.sh
+source "$ROOT/scripts/lib/build.sh"
+DERIVED="$DAU_DERIVED"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
 IM_APP="$HOME/Library/Input Methods/DauInputMethod.app"
@@ -98,11 +99,8 @@ trap 'exit 130' INT
 trap 'exit 143' TERM
 
 if [[ "$BUILD" == 1 ]]; then
-  echo "==> Build Debug universal (Dau, gồm bộ gõ)"
-  (cd "$ROOT" && xcodegen generate --quiet) || fail "xcodegen"
-  xcodebuild -project "$ROOT/Dau.xcodeproj" -scheme Dau -configuration Debug \
-    -destination 'generic/platform=macOS' -derivedDataPath "$DERIVED" -quiet build \
-    || fail "build Dau"
+  # Scheme Dau includes the input method.
+  dau_build Dau Debug || fail "build Dau"
 fi
 [[ -x "$APP_BIN" ]] || fail "không thấy $APP_BIN (chạy không có --no-build)"
 if [[ "$INSTALL" == 1 ]]; then
