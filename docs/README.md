@@ -42,5 +42,6 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | `docs/history/M2-TESTING.md` | gõ thử M2 trên máy thật và kết quả (cách thử hiện hành: `docs/COMPATIBILITY.md` mục 4) |
 | `docs/history/M4-TESTING.md` | cách thử M4 trên máy thật |
 | `docs/history/LOG-M0-M4.md` | nhật ký M0–M4 (29–30/10/2026), chuyển từ `PROGRESS.md` khi đóng M4 |
+| `docs/history/LOG-M5.md` | nhật ký M5 (30/10–05/11/2026), chuyển từ `PROGRESS.md` khi đóng M5 |
 | `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
 | `docs/history/KICKOFF.md` | brief khởi động M0–M8 lúc bắt đầu dự án |
