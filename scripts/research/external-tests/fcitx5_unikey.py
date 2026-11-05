@@ -24,9 +24,17 @@ basic = [
     ("aao⏎", [C], "aao"),
     ("aaoß", [C], "aao"),
 ]
+# With Macro off and ModifySurroundingText off, their engine sends a consonant typed at the
+# start of a word straight to the app (word auto-commit in src/unikey-im.cpp) instead of
+# committing it, so for "baao␣" the commit queue holds only "âo␣": the b is on screen but not
+# in their expectation (the macro setting changes before the 2nd group, ModifySurroundingText
+# stays off until the surrounding-text cases).
 for i, (k, o, e) in enumerate(basic, 1):
-    s.add(f"testunikey.cpp:testBasic#{i}", "telex", o, k, ref, e,
-          "commit expectations are a queue; pairing with key groups is by order (our reading)")
+    note = "commit expectations are a queue; pairing with key groups is by order (our reading)"
+    if i == 2:
+        note = ("committed part only: the first key b goes straight to the app (their auto-commit of a"
+                " word-initial consonant), the commit queue holds the rest")
+    s.add(f"testunikey.cpp:testBasic#{i}", "telex", o, k, ref, e, note)
 
 # expectedTelexData: active (uncommented) entries; run with AutoNonVnRestore=False, SpellCheck=False, each + Return.
 m = re.search(r"expectedTelexData\{(.*?)\n\};", src, re.S)

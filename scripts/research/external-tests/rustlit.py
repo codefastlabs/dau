@@ -125,3 +125,85 @@ def pairs(text):
             continue
         res.append((a[0], b[0], m.start()))
     return res
+
+
+RANGE_LOOP_RE = re.compile(r"for\s+(\w+)(?:\s*:\s*\w+)?\s+in\s+(\d+)\s*(\.\.<|\.\.=|\.\.\.|\.\.)\s*([^{]+?)\s*\{")
+LIST_LOOP_RE = re.compile(r"for\s+(\w+)\s+in\s+&?\[")
+UNKNOWN_LOOP = "__UNKNOWN_LOOP__()"
+
+
+def unroll_loops(body, key_re):
+    """Expand loops whose iteration count is in the source, so each key call inside is seen
+    once per iteration. `for _ in 0..N { … }` (Rust `..`, `..=`; Swift `..<`, `...`) with a
+    literal N becomes N copies of its body; `for w in &["a", "b"] { … }` becomes one copy per
+    literal with `w` replaced by it. A range loop with a bound computed at run time whose body
+    matches `key_re` (a key call) becomes UNKNOWN_LOOP, so callers can stop trusting the key
+    history from there. Other loops are left as they are. Text only; nothing is run."""
+    out, i = [], 0
+    while True:
+        m1 = RANGE_LOOP_RE.search(body, i)
+        m2 = LIST_LOOP_RE.search(body, i)
+        cands = [m for m in (m1, m2) if m]
+        if not cands:
+            out.append(body[i:])
+            return "".join(out)
+        m = min(cands, key=lambda x: x.start())
+        if m is m1:
+            lb = m.end() - 1
+            end = match_close(body, lb)
+            inner = unroll_loops(body[lb + 1:end - 1], key_re)
+            hi = m.group(4).strip()
+            if hi.isdigit():
+                n = int(hi) - int(m.group(2)) + (1 if m.group(3) in ("..=", "...") else 0)
+                out.append(body[i:m.start()])
+                out.append(("{" + inner + "}\n") * max(n, 0))
+            elif re.search(key_re, inner):
+                out.append(body[i:m.start()])
+                out.append(UNKNOWN_LOOP + ";")
+            else:
+                out.append(body[i:lb + 1] + inner + "}")
+            i = end
+            continue
+        # literal list loop: every element must be a string literal
+        a = m.end() - 1
+        arr_end = match_close(body, a, "[", "]")
+        arr = body[a + 1:arr_end - 1]
+        items, j, ok = [], 0, True
+        while True:
+            mm = re.match(r"\s*(?:,\s*)?", arr[j:])
+            j += mm.end()
+            if j >= len(arr):
+                break
+            lv = STR_RE.match(arr, j)
+            if not lv:
+                ok = False
+                break
+            items.append(arr[j:lv.end()])
+            j = lv.end()
+        rest = re.match(r"\s*(?:\.iter\(\))?\s*\{", body[arr_end:])
+        if not ok or not items or not rest:
+            out.append(body[i:m.end()])
+            i = m.end()
+            continue
+        lb = arr_end + rest.end() - 1
+        end = match_close(body, lb)
+        inner = unroll_loops(body[lb + 1:end - 1], key_re)
+        if not re.search(key_re, inner):
+            out.append(body[i:end])
+            i = end
+            continue
+        out.append(body[i:m.start()])
+        var = re.compile(r"(?<![\w\"])\*?" + re.escape(m.group(1)) + r"\b")
+        for it in items:
+            out.append("{" + var.sub(lambda _: it, inner) + "}\n")
+        i = end
+
+
+def has_assertion(body):
+    """True if a test body checks anything (Rust assert*/panic!, Swift XCTAssert*/#expect)."""
+    return re.search(r"\bassert(?:_eq|_ne)?!|\bassert_\w+\(|\bpanic!|\bXCTAssert|#expect|\bXCTFail", body) is not None
+
+
+def print_only(body):
+    """A test that prints its results instead of checking them: no assertion, has println!."""
+    return not has_assertion(body) and "println!" in body

@@ -7,6 +7,7 @@ Tài liệu tham khảo cho mốc M1. Viết bằng lời của Dấu, **không 
 - **OpenKey chưa được chạy.** Mọi hành vi dưới đây có được bằng cách lần theo mã. Chỗ nào chỉ là suy luận, chưa chạy thử để xác nhận, sẽ ghi "(suy luận)". Ta cũng cố ý không chạy để kiểm chứng, vì D10 cấm dùng OpenKey làm đáp án.
 - Quy ước: `␣` là phím Space. "Bộ đệm" là từ đang gõ.
 - Cập nhật 29/10/2026 theo DECISIONS.md (commit `22f3e4d`): các điểm mơ hồ M1–M17 đã được chốt thành D4 (ranh giới từ), D20–D23 (sửa) và D26–D33. Mục 2, 3, 6, 7 đã đổi nhãn tương ứng.
+- Cập nhật 05/11/2026: mục 8 đối chiếu với bộ test của XKey (engine chuyển từ OpenKey), từ việc so ca thử ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9; mục 3.3 sửa theo đó (khoá sau gõ đúp và Backspace).
 
 ---
 
@@ -98,7 +99,7 @@ Các phím được xử lý (`IS_SPECIALKEY` trong `DataType.h`): `a e o w d s 
 - Gõ lại cùng phím dấu (`insertMark`), cùng phím mũ (`insertAOE`), w (`insertW`) hoặc d (`insertD`) thì biến đổi bị bỏ và phím vừa gõ được thêm như chữ thường:
   - "as" + `s` → "as"; "car" + `r` → "car"; "â" + `a` → "aa"; "đ" + `d` → "dd";
   - "ư" (từ w đứng riêng) + `w` → "w" (chữ w thay chữ ư, phím w thứ hai bị nuốt); "ă" + `w` → "aw".
-- Sau khi gõ đúp, **cờ tạm tắt xử lý được bật cho tới hết từ**: mọi phím biến đổi gõ sau đó đều là chữ thường.
+- Sau khi gõ đúp, **cờ tạm tắt xử lý được bật**: mọi phím biến đổi gõ sau đó đều là chữ thường. Cờ này cũng là cờ "từ sai chính tả": khi bật kiểm tra chính tả, mỗi lần một chữ được thêm vào bộ đệm (kể cả chữ vừa gõ đúp) và mỗi lần Backspace, engine kiểm tra lại phần chữ đang có và đặt cờ theo kết quả. Chữ còn lại sau gõ đúp thường không hợp lệ ("car", "tes", "nhâmf") nên khoá thường giữ tới hết từ; nhưng Backspace về lại chữ hợp lệ thì khoá mở lại ("nhâmf" ⌫ → "nhâm", phím f sau đó đặt dấu; mục 8). Đọc mã, chưa chạy.
   - "carr" + `s` → "cars" (cùng một từ). Khớp ví dụ trong D20, nhưng ở đây cơ chế là "cờ tạm tắt sau gõ đúp" (Dấu: D26), không phải D20 (D20 nói về bộ đệm rỗng). Xem M7.
   - "tess" + `t` → "test"; "sexx" → "sex"; "ddd" → "dd"; "aaa" → "aa"; "ww" → "w"; "www" → "ww".
 - **Ngoại lệ "oo"**: "ô" + `o` → "oo" nhưng **không** bật cờ tạm tắt (ghi chú trong mã: dành cho "thoòng"). Vì thế "xooong" → "xoong", rồi gõ dấu tiếp vẫn được ("xooongf" → "xoòng").
@@ -575,3 +576,15 @@ Ban đầu chỉ liệt kê. Đến 29/10/2026 (commit `22f3e4d`) M1–M17 đã 
 - **M17. Tạm tắt chính tả/bộ gõ bằng nhấn-nhả ⌃/⌘** (OpenKey). Đề xuất ghi vào "Đã cân nhắc và loại bỏ" cho rõ, cùng tinh thần D2 (không phím riêng; mục loại bỏ đã có "phím chuyển nhấn-nhả ⌃ hoặc ⇧").
   - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (tạm tắt bằng nhấn-nhả ⌃/⌘), cùng D30; từ 04/11/2026 nằm ở mục "Đã biết nhưng không làm".**
 - **M18. Chưa phát hiện vi phạm N1–N5 trong bản thân DECISIONS.** Chỉ lưu ý: ví dụ giao diện "vieetj → việt" ở mục Thông minh đúng theo luật, còn "car → cả" và "carr → car" khớp D4.
+
+## 8. Đối chiếu với test của XKey (05/11/2026)
+
+XKey (macOS, MIT, commit ghi ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 5.10) ghi trong mã rằng engine của họ là bản chuyển engine OpenKey sang Swift, nên test của XKey cho thấy hành vi kiểu OpenKey ở những chỗ XKey chưa đổi. Các điểm dưới đây rút từ lần so ca thử (`docs/research/EXTERNAL-TEST-INPUTS.md` mục 9, lớp A: Dấu cố ý khác); khác biệt với các bộ gõ khác chỉ ghi ở tài liệu đó. Cột OpenKey lấy từ đọc mã (chưa chạy); cột XKey là đáp án trong test của họ; cột Dấu là đầu ra của engine Dấu (chạy 05/11/2026). Theo D10, test của XKey chỉ dùng để tìm ca đáng xem lại, không làm đáp án.
+
+| Hành vi | OpenKey (đọc mã) | XKey (test của họ) | Dấu |
+|---|---|---|---|
+| Khoá sau gõ đúp, rồi Backspace | Backspace chạy lại kiểm tra chính tả và đặt lại cờ tạm tắt theo phần còn lại, nên khoá được mở lại khi phần còn lại hợp lệ (3.3); suy luận: tắt kiểm tra chính tả thì khoá còn | "nhaamff⌫f" → "nhầm", "ddd⌫d" → "đ" | D26: khoá giữ tới hết từ kể cả sau Backspace: "nhaamff⌫f" → "nhâmf", "ddd⌫d" → "dd". Xoá hết cả từ thì engine bắt đầu từ mới |
+| "ooo" rồi phím dấu | "ooo" → "oo" không bật cờ tạm tắt (để gõ "thoòng", 3.3), nên phím dấu sau đó vẫn đặt dấu (suy luận: "pooor" giữa từ hiện "poỏ") | đổi so với OpenKey: khoá cả sau "ooo", "pooor" → "poor" (test của họ gọi hành vi cũ là lỗi) | D26, ngoại lệ "ooo" như OpenKey: "pooor" giữa từ hiện "poỏ"; kết thúc từ "poỏ" không phải âm tiết hợp lệ, D4 khôi phục từ mốc sau gõ đúp nên "pooor␣" → "poor␣"; "xooongf" → "xoòng" |
+| Móc trên cặp "uo" ở cuối từ (VNI "nuo7", Telex "nuow") | luôn ra "ươ", trừ sau "th" và "q" (B4) | "nuo7" → "nươ" | D35: "uơ" khi cặp đứng cuối từ ("nuo7" → "nuơ"), thành "ươ" khi gõ thêm chữ ("nuo7c" → "nươc") |
+| Âm cuối k | không phải âm cuối hợp lệ, trừ khi bật gõ tắt phụ âm cuối (3.8, 3.11) | đổi so với OpenKey: k là âm cuối hợp lệ sau mọi nguyên âm (test ghi "desk" → "dék", "oaks" → "oák"; theo ghi chú của họ chỉ đổi việc coi là đúng chính tả, nên từ đó không bị khôi phục) | D31: âm cuối k chỉ sau ă (Đắk Lắk); "oaks" giữ nguyên, "desk" giữa từ hiện "dék" rồi kết thúc từ D4 khôi phục "desk" |
+| Backspace qua dấu cách rồi gõ tiếp | lấy từ trước ra khỏi lịch sử từ, phím gõ tiếp nối vào từ đó (3.17, B12) | cũng có lịch sử từ (`getCurrentWord()` sau Backspace qua dấu cách là từ trước) | D20: không có lịch sử từ; chỉ phím dấu/biến đổi đầu tiên đọc lại chữ trước con trỏ ("du␣⌫j" → "dụ"); chữ cái thường gõ sau Backspace bắt đầu từ mới. Câu hỏi còn mở về chữ cái thường gõ sát chữ có sẵn: `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.8 (E8) |

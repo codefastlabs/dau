@@ -1,7 +1,7 @@
 import sys, os, re, collections
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import Sink, keys_from_text, BRACKETS
-from rustlit import strip_comments, match_close, lit_at, literals
+from rustlit import strip_comments, match_close, lit_at, literals, unroll_loops
 
 ROOT = sys.argv[1]  # clone of xmannv/xkey
 REPORT = len(sys.argv) > 2
@@ -65,6 +65,8 @@ def sw_char(lit):
 
 
 SWIFT_STR = r'"((?:[^"\\]|\\.|\\u\{[0-9a-fA-F]+\})*)"'
+# A key call in a test body; loops around one must have a count known from the source.
+KEY_CALL = r"processKey|processBackspace|processWordBreak|typeBackspace|typeWord|processSpace|typeTelex|\btype\(|\bvni\("
 
 unextracted = collections.defaultdict(list)
 for fname in FILES:
@@ -76,7 +78,26 @@ for fname in FILES:
         if "vAutoCaps" in body or "UpperCaseFirstChar" in body:
             s.skip("D3: capitalise first letter / macro caps (tests)")
             continue
+        body = unroll_loops(body, KEY_CALL)
         ev = []
+        # if/else chains: each branch starts from the key history at its `if`, and rows
+        # inside a branch say which condition on their engine state it depends on.
+        branches = []
+        for m in re.finditer(r"\bif\s+([^{\n]+?)\s*\{", body):
+            lb = m.end() - 1
+            end = match_close(body, lb)
+            ev.append((m.start(), "if", m.start()))
+            cond = m.group(1).strip()
+            branches.append((lb, end, f"if {cond}"))
+            em = re.match(r"\s*else\s*\{", body[end:])
+            if em:
+                elb = end + em.end() - 1
+                ev.append((end, "else", m.start()))
+                branches.append((elb, match_close(body, elb), f"not ({cond})"))
+            elif re.match(r"\s*else\s+if\b", body[end:]):
+                ev.append((end, "else", m.start()))
+        for m in re.finditer(r"__UNKNOWN_LOOP__\(\)", body):
+            ev.append((m.start(), "key", None))
         for m in re.finditer(r"engine\.(reset|resetWithCursorMoved|notifyFocusChanged|startNewSession)\(", body):
             ev.append((m.start(), "reset", None))
         for m in re.finditer(r"engine\.(v\w+)\s*=\s*([^\n]+)", body):
@@ -124,12 +145,21 @@ for fname in FILES:
         st, hist, bad, idx, got = {}, "", False, 0, 0
         skip_range = None
         last_check_hist = None
+        snap = {}
+
+        def branch_note(pos):
+            conds = [c for a, b, c in branches if a < pos < b]
+            return "; their test branch: " + " and ".join(conds) if conds else ""
         for pos, kind, data in ev:
             if skip_range and skip_range[0] <= pos < skip_range[1] and kind == "key":
                 continue
             if kind == "skipkeys":
                 skip_range = data; continue
-            if kind == "reset":
+            if kind == "if":
+                snap[data] = (hist, bad)
+            elif kind == "else":
+                hist, bad = snap[data]
+            elif kind == "reset":
                 hist, bad = "", False
             elif kind == "set":
                 st[data[0]] = data[1]
@@ -177,7 +207,7 @@ for fname in FILES:
                     s.skip("Quick Telex (on by default in their engine) may rewrite a doubled consonant in these keys"); continue
                 idx += 1
                 s.add(f"{fname}:{fn}#{idx}", method, opts, keys_from_text(hist), f"XKeyTests/{fname}", data,
-                      "getCurrentWord(): current word only")
+                      "getCurrentWord(): current word only" + branch_note(pos))
         if got == 0:
             if fn.startswith("testMacro"):
                 s.skip("D3: macro (tests)")

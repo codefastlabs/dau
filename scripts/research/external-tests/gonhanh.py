@@ -150,6 +150,14 @@ for fname in sorted(os.listdir(TD)):
         a = m.end() - 1
         words[m.group(1)] = [v for v, _ in literals(text[a:match_close(text, a, "[", "]")])]
     used_consts = set()
+    # Factory helpers `fn engine_on() -> Engine { let mut e = Engine::new(); e.set_…(…); e }`:
+    # a test's `let mut e = engine_on();` is inlined as Engine::new() plus the same setters.
+    factories = {}
+    for fm2 in re.finditer(r"\nfn (\w+)\(\s*\)\s*->\s*Engine\s*\{", text):
+        fb0 = fm2.end() - 1
+        fbody = text[fb0:match_close(text, fb0)]
+        sets = [(m.group(1), m.group(2)) for m in re.finditer(r"\.(set_\w+)\(\s*([^)]*?)\s*\)", fbody)]
+        factories[fm2.group(1)] = (sets, bool(re.search(r"shortcuts?_mut|add_shortcut|Shortcut::", fbody)))
     helpers = {}
     for hm in re.finditer(r"\nfn (\w+)\(\s*\w+\s*:\s*&str\s*\)\s*->\s*String\s*\{", text):
         hb0 = hm.end() - 1
@@ -162,6 +170,12 @@ for fname in sorted(os.listdir(TD)):
         fn = fm.group(1)
         b0 = text.index("{", fm.end())
         body = text[b0:match_close(text, b0)]
+        for fname2, (sets, has_sc) in factories.items():
+            def inline(m, sets=sets, has_sc=has_sc):
+                v = m.group(1)
+                return (f"let mut {v} = Engine::new();" + "".join(f" {v}.{k}({x});" for k, x in sets)
+                        + (f" {v}.shortcuts_mut();" if has_sc else ""))
+            body = re.sub(r"let\s+(?:mut\s+)?(\w+)(?:\s*:\s*Engine)?\s*=\s*" + fname2 + r"\(\s*\)\s*;", inline, body)
         if tm.group(1) == "rstest":
             n = len(re.findall(r"#\[case", text[tm.end():fm.start()]))
             s.skip("rstest generated cases (inputs built from parameters at run time), not extracted", max(n, 1))
