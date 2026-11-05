@@ -5,7 +5,7 @@
 # Usage: scripts/check-docs/check.sh
 #
 # Living docs = docs/*.md (except PROGRESS.md's dated log and history/research,
-# which record the past), CLAUDE.md, README.md, .claude/agents, .claude/commands.
+# which record the past), CLAUDE.md, README.md, CONTRIBUTING.md, .claude/agents, .claude/commands.
 # Checks:
 #   1. repo paths in backticks exist;
 #   2. no file:line references (line numbers drift; name the type or function);
@@ -35,7 +35,7 @@ cd "$root"
 fail=0
 report() { print -r -- "$1"; fail=1 }
 
-living=(docs/*.md(N) CLAUDE.md README.md(N) .claude/agents/*.md(N) .claude/commands/*.md(N))
+living=(docs/*.md(N) CLAUDE.md README.md(N) CONTRIBUTING.md(N) .claude/agents/*.md(N) .claude/commands/*.md(N))
 living=(${living:#docs/PROGRESS.md})
 cited=($living docs/PROGRESS.md)
 

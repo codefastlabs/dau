@@ -4,7 +4,7 @@ Bộ gõ tiếng Việt cho macOS, dựng trên InputMethodKit.
 
 Dự án đang phát triển, chưa có bản phát hành. Bản Debug đã gõ được Telex/VNI (đã thử TextEdit, Safari, Chrome, VS Code, Terminal, Sublime Text; giới hạn còn lại ghi trong `docs/PROGRESS.md`); cài thử bằng `scripts/dev/install-debug.sh`.
 
-Tài liệu dự án nằm trong `docs/`: bắt đầu từ `docs/DECISIONS.md` (sổ quyết định) và `docs/ROADMAP.md` (lộ trình).
+Tài liệu dự án nằm trong `docs/`: bắt đầu từ `docs/DECISIONS.md` (sổ quyết định) và `docs/ROADMAP.md` (lộ trình). Muốn đóng góp: [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Cấu trúc
 
@@ -56,7 +56,7 @@ Với Command Line Tools (Swift 6.4), `swift test` báo lỗi không tìm thấy
 
 ## Định danh tạm thời
 
-Bundle ID đã chốt (D24): `project.yml` dùng `BUNDLE_ID_PREFIX = com.codefastlabs.dau` (app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, App Group `M58DANM3ZP.com.codefastlabs.dau.shared`). `DEVELOPMENT_TEAM` là Personal Team miễn phí `M58DANM3ZP`; mọi cấu hình ký tự động "Apple Development" (App Group cần Team ID thật, xem đầu `project.yml`). Build dưới team khác: truyền `DEVELOPMENT_TEAM=<team>` cho `xcodebuild`. Bản phát hành ký Developer ID ở M7. Bộ gõ chỉ có một input mode, `com.codefastlabs.dau.inputmethod.Dau.vi` (D2). Khi đổi `BUNDLE_ID_PREFIX`, phải sửa cả ID này trong `Apps/DauInputMethod/Info.plist` và `Apps/DauInputMethod/Resources/InfoPlist.xcstrings`, vì Xcode không thay biến trong khoá plist (chỉ thay trong giá trị).
+Bundle ID đã chốt (D24): `project.yml` dùng `BUNDLE_ID_PREFIX = com.codefastlabs.dau` (app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, App Group `M58DANM3ZP.com.codefastlabs.dau.shared`). `DEVELOPMENT_TEAM` nằm trong `Config/Signing.xcconfig`: Personal Team miễn phí `M58DANM3ZP`, trừ khi `Config/Local.xcconfig` (git bỏ qua) đặt team khác; mọi cấu hình ký tự động "Apple Development" (App Group cần Team ID thật, xem đầu `project.yml`). Build dưới team của bạn: xem [CONTRIBUTING.md](CONTRIBUTING.md). Bản phát hành ký Developer ID ở M7. Bộ gõ chỉ có một input mode, `com.codefastlabs.dau.inputmethod.Dau.vi` (D2). Khi đổi `BUNDLE_ID_PREFIX`, phải sửa cả ID này trong `Apps/DauInputMethod/Info.plist` và `Apps/DauInputMethod/Resources/InfoPlist.xcstrings`, vì Xcode không thay biến trong khoá plist (chỉ thay trong giá trị).
 
 ## Giấy phép
 

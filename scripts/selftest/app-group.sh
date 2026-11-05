@@ -247,7 +247,7 @@ cat <<'EOF'
 FAIL: bộ gõ không nhận được cài đặt app chủ vừa lưu.
   - Nếu nhật ký có "REJECTED … should be prefixed by requestor's team ID" hoặc
     "rejecting write": bản ký ad-hoc (không có Team ID) không được dùng App Group trên
-    macOS này; cần Team ID (project.yml DEVELOPMENT_TEAM).
+    macOS này; cần Team ID (DEVELOPMENT_TEAM trong Config/Signing.xcconfig hoặc Config/Local.xcconfig).
   - Nếu macOS hiện hộp thoại hỏi cho "Dấu" truy cập dữ liệu của ứng dụng khác: script
     không bấm được. Bấm "Cho phép" (Allow) rồi chạy lại script.
 EOF
