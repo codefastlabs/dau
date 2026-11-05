@@ -153,14 +153,17 @@ struct ExternalCasesTests {
         }
     }
 
-    /// D20 as `InPlaceComposer.addMarks`/`seedWord` do it: a mark key with no word in the
-    /// engine and an unknown text before the cursor reads the word before the cursor
-    /// (16 UTF-16 units), seeds the engine with it and lets the engine decide. Returns
-    /// the engine's action, or nil when the key takes the normal path (nothing seeded:
-    /// the engine is reset and the caller handles the key as the first key of a word).
+    /// D20 as `InPlaceComposer.addMarks`/`seedWord` do it: a mark key or a plain ASCII
+    /// letter (E8) with no word in the engine and an unknown text before the cursor reads
+    /// the word before the cursor (16 UTF-16 units), seeds the engine with it and lets the
+    /// engine decide. `letter`: a plain letter joins the word read only if the result is
+    /// still a valid prefix (D30: not locked by spelling, not past D33's length);
+    /// otherwise it is not seeded. Returns the engine's action, or nil when the key takes
+    /// the normal path (nothing seeded: the engine is reset and the caller handles the
+    /// key as the first key of a word).
     /// Not mirrored: the 50 ms rule (`settleInterval`) — typing at normal speed is slower,
     /// so every read counts as settled — and apps that give no text.
-    static func d20Seed(_ f: inout Field, key: Unicode.Scalar) -> Action? {
+    static func d20Seed(_ f: inout Field, key: Unicode.Scalar, letter: Bool) -> Action? {
         f.d20Reads += 1
         let count = min(f.text.count, 16)
         let text = Array(f.text.suffix(count))
@@ -171,8 +174,20 @@ struct ExternalCasesTests {
             f.engine.reset()
             return nil
         }
+        let action = f.engine.handle(key)
+        if letter, f.engine.isSpellingLocked || f.engine.overflow {
+            // E8: "tôi" + l starts a new word "l" (`InPlaceComposer.isValidPrefix`).
+            f.engine.reset()
+            return nil
+        }
         f.d20Seeded += 1
-        return f.engine.handle(key)
+        return action
+    }
+
+    /// `InPlaceComposer.isLetter`: ASCII letters, any case.
+    static func isLetter(_ scalar: Unicode.Scalar) -> Bool {
+        let v = scalar.value
+        return (v >= 0x41 && v <= 0x5A) || (v >= 0x61 && v <= 0x7A)
     }
 
     static func isBoundaryKey(_ v: UInt32) -> Bool {
@@ -207,7 +222,7 @@ struct ExternalCasesTests {
                 after = Array(inner[(bar + 1)...])
             }
             // Text already in the field: the engine does not know it; the first mark key
-            // reads it (D20), and only the last word before the cursor.
+            // or letter reads it (D20, E8), and only the last word before the cursor.
             f.text.append(contentsOf: before)
         }
 
@@ -247,8 +262,9 @@ struct ExternalCasesTests {
                 if key == "␣" { plainKey = " " }
                 boundary = isBoundaryKey(plainKey.value)
                 var action: Action?
-                if !f.engine.isComposing, !f.knownNoWord, isMarkKey(plainKey, method: options.inputMethod) {
-                    action = d20Seed(&f, key: plainKey)
+                let mark = isMarkKey(plainKey, method: options.inputMethod)
+                if !f.engine.isComposing, !f.knownNoWord, mark || isLetter(plainKey) {
+                    action = d20Seed(&f, key: plainKey, letter: !mark)
                     if action == nil { f.engine.reset() }
                 }
                 f.apply(action ?? f.engine.handle(plainKey), passing: plainKey)
@@ -353,7 +369,15 @@ struct ExternalCasesTests {
         #expect(run("du⏎j").output == "du⏎j" && run("du⏎j").d20Reads == 2)
         #expect(run("⟦ngả nghieng⟧e").output == "ngả␣nghiêng")
         #expect(run("viet␣⌫j").output == "vietj")
-        #expect(run("hoc,a").d20Reads == 0)
+        // Only the first key of the field reads (E8: a letter too); a mark key after a
+        // word end typed here does not.
+        #expect(run("hoc,a").d20Reads == 1)
+        // E8: a plain letter reads too, and joins only a valid prefix.
+        #expect(run("⟦q⟧uer␣").output == "quẻ␣" && run("⟦q⟧uer␣").d20Seeded == 1)
+        #expect(run("ba␣⌫nj␣").output == "bạn␣")
+        #expect(run("⟦tôi⟧laf␣").output == "tôilà␣" && run("⟦tôi⟧laf␣").d20Seeded == 0)
+        #expect(run("ddi␣⌫hocj␣").output == "đihọc␣")
+        #expect(run("⟦nghiêng⟧bans␣").output == "nghiêngbán␣")
     }
 
     // MARK: - The test
