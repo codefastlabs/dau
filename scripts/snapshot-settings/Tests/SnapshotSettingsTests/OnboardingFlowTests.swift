@@ -236,7 +236,7 @@ struct OnboardingFlowTests {
     @Test("enabled screen carries the log-out hint with macOS's own menu name (D37, D38)")
     func logOutHint() {
         let names = SystemUINames(languages: ["en"], tables: [:]) { _, _ in nil }
-        let line = EnableStep.logOutHint(logOut: names.logOut)
+        let line = EnableStep.logOutHintPlain(logOut: names.logOut)
         #expect(line == "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › Log Out) rồi đăng nhập lại một lần.")
     }
 

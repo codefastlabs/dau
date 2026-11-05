@@ -502,9 +502,15 @@ struct EnableStep: View {
     }
 
     /// D37: one app that still cannot select Dấu is fixed by a fresh login. The menu name
-    /// is macOS's own (D38).
-    static func logOutHint(logOut: String) -> String {
-        String(localized: "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › \(logOut)) rồi đăng nhập lại một lần.")
+    /// is macOS's own (D38). The Apple menu symbol is drawn with the SF Symbol `applelogo`
+    /// (macOS 11+), because the private-use glyph U+F8FF is missing from most fonts.
+    static func logOutHint(logOut: String) -> Text {
+        Text("Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất (\(Image(systemName: "applelogo")) › \(logOut)) rồi đăng nhập lại một lần.")
+    }
+
+    /// Plain-text form of the same catalog entry (symbol left out), for tests.
+    static func logOutHintPlain(logOut: String) -> String {
+        String(format: String(localized: "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất (%@ › %@) rồi đăng nhập lại một lần."), "", logOut)
     }
 
     // `.enabled`.
@@ -524,7 +530,7 @@ struct EnableStep: View {
                 }
             }
             .layoutProbe("onbCard-2.done")
-            Hint(Text(Self.logOutHint(logOut: ui.logOut)))
+            Hint(Self.logOutHint(logOut: ui.logOut))
         } buttons: {
             Button("Tiếp tục") { flow.next() }
                 .buttonStyle(.borderedProminent)
