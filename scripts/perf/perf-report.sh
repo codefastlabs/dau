@@ -15,6 +15,10 @@
 #   scripts/perf/perf-report.sh --last 10m           any `log show --last` value
 #   scripts/perf/perf-report.sh --app TextEdit       bundle ID or part of it, any case
 #                                               (TextEdit, com.apple.Safari, chrome, slack)
+#   scripts/perf/perf-report.sh --split-variant      one group per app and D20 variant ("app [A]" / "app [B]",
+#                                               the Debug-only experiment DauReadOnFirstLetter); adds
+#                                               d20_<trigger>_seeded<0|1> counts and diff_<0|1> (seeded
+#                                               word differs from an unseeded engine) per key
 #   scripts/perf/perf-report.sh --input FILE         parse saved `log show --style compact` output
 #
 # Subsystem = the input method's bundle ID, read from the installed bundle; override with
@@ -24,10 +28,12 @@ set -euo pipefail
 LAST="1h"
 APP_FILTER=""
 INPUT=""
+SPLIT=0
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --last) LAST="${2:?--last cần giá trị, ví dụ 10m}"; shift 2 ;;
     --app) APP_FILTER="${2:?--app cần tên app hoặc bundle ID}"; shift 2 ;;
+    --split-variant) SPLIT=1; shift ;;
     --input) INPUT="${2:?--input cần đường dẫn file}"; shift 2 ;;
     -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
     *) echo "Tham số không hợp lệ: $1" >&2; exit 2 ;;
@@ -54,7 +60,7 @@ TMP="$(mktemp)"
 trap 'rm -f "$TMP"' EXIT
 
 # Step 1: one row per measurement: "<app> <metric> <value>".
-read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]')" '
+read_log | awk -v split_variant="$SPLIT" -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]')" '
   function field(name,   i, n, parts) {
     for (i = 1; i <= NF; i++) {
       if (index($i, name "=") == 1) { return substr($i, length(name) + 2) }
@@ -65,6 +71,10 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
     app = field("app"); kind = field("kind")
     if (app == "" || kind == "") next
     if (want != "" && index(tolower(app), want) == 0) next
+    d20 = field("d20"); seeded = field("seeded"); diff = field("diff")
+    if (split_variant == 1) app = app "[" (field("var") == "" ? "?" : field("var")) "]"
+    if (d20 != "" && d20 != "none") print app, "d20_" d20 "_seeded" seeded, 1
+    if (diff == "0" || diff == "1") print app, "diff_" diff, 1
     print app, "count_" kind, 1
     h = field("handle_ns"); s = field("sel_ns"); i = field("ins_ns"); r = field("read_ns")
     if (h != "") print app, "handle_us", h / 1000
@@ -102,7 +112,7 @@ echo "Đơn vị: µs. p50/p99 theo hạng gần nhất (nearest rank). n = số
 awk '
   function flush(   i50, i99) {
     if (n == 0) return
-    if (metric ~ /^(count_|event_)/) {
+    if (metric ~ /^(count_|event_|d20_|diff_)/) {
       printf "  %-22s %8d\n", metric, n
     } else {
       i50 = int((50 * n + 99) / 100); if (i50 < 1) i50 = 1

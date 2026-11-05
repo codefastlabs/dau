@@ -118,6 +118,10 @@ private struct Session {
     let doc: FakeDocument
     var kinds: [PerfLog.Kind] = []
     var consumed: [Bool] = []
+    #if DEBUG
+    var traces: [InPlaceComposer.D20Trace?] = []
+    var diffs: [Bool?] = []
+    #endif
     /// Keys that made more than one `insertText` or `selectedRange`, or more than one read
     /// (must stay 0, N3).
     var overCalls = 0
@@ -141,6 +145,10 @@ private struct Session {
         if inserts > 1 || selections > 1 || reads > 1 { overCalls += 1 }
         kinds.append(outcome.kind)
         consumed.append(outcome.consumed)
+        #if DEBUG
+        traces.append(outcome.d20)
+        diffs.append(outcome.seedDiffers)
+        #endif
         if !outcome.consumed || (route == .backspace && doc.deletesConsumedBackspace) {
             doc.defaultAction(route)
         }
@@ -639,3 +647,132 @@ struct InPlaceComposerTests {
         #expect(InPlaceComposer.trailingWord("") == [])
     }
 }
+
+#if DEBUG
+/// Variant B of D20 (Debug-only experiment): the first letter after a reset reads too.
+@Suite("InPlaceComposer variant B (read on first letter)")
+struct InPlaceComposerVariantBTests {
+    private static func session(_ text: String, b: Bool) -> Session {
+        var s = Session(text)
+        s.composer.readOnFirstLetter = b
+        return s
+    }
+
+    @Test("A is the default and unchanged: a plain letter after a reset does not read")
+    func aUnchanged() {
+        #expect(!InPlaceComposer().readOnFirstLetter)
+        var s = Self.session("q", b: false)
+        s.type("u")
+        #expect(s.doc.calls.isEmpty)
+        #expect(s.kinds == [.pass])
+    }
+
+    @Test("⟦q⟧uer: A → qủe, B → quẻ", arguments: [(false, "qủe"), (true, "quẻ")])
+    func quer(_ b: Bool, _ expected: String) {
+        var s = Self.session("q", b: b)
+        s.type("uer")
+        #expect(s.doc.text == expected)
+        #expect(s.reads == (b ? 1 : 0))
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("⟦vi⟧eetj: same under A and B (e is a mark key, both read)", arguments: [false, true])
+    func vieetj(_ b: Bool) {
+        var s = Self.session("vi", b: b)
+        s.type("eetj")
+        #expect(s.doc.text == "việt")
+        #expect(s.reads == 1)
+    }
+
+    @Test("B reads at the first letter after an arrow, once, not mid-word")
+    func readsAfterReset() {
+        var s = Self.session("", b: true)
+        s.type("xin")           // start of the document: selectedRange only, no text to read
+        #expect(s.reads == 0)
+        s.type("←")
+        let before = s.doc.calls.count
+        s.type("b")             // unknown again: reads "xin" before the cursor
+        #expect(s.reads == 1)
+        s.type("cn")            // mid-word: no more calls
+        #expect(s.reads == 1)
+        #expect(s.doc.calls.count == before + 2)   // selectedRange + read of that key only
+    }
+
+    @Test("B does not read after a known no-word (Space typed here)")
+    func noReadAfterSpace() {
+        var s = Self.session("", b: true)
+        s.type("hoc ")
+        let before = s.doc.calls.count
+        s.type("q")
+        #expect(s.doc.calls.count == before)
+    }
+
+    @Test("B keeps the limits: D20 off, no document access, a selection, too long a word")
+    func limits() {
+        var settings = DauSettings.defaults
+        settings.addMarksToTypedWords = false
+        var off = Session("q", settings: settings)
+        off.composer.readOnFirstLetter = true
+        off.type("u")
+        #expect(off.doc.calls.isEmpty)
+
+        var noAccess = Self.session("q", b: true)
+        noAccess.doc.noAccess = true
+        noAccess.type("u")
+        noAccess.type("←")
+        noAccess.type("e")
+        #expect(noAccess.reads == 0)
+        #expect(noAccess.doc.calls.filter { $0 == .selectedRange }.count == 1)
+
+        var selected = Self.session("q", b: true)
+        selected.doc.selectionLength = 1
+        selected.type("u")
+        #expect(selected.reads == 0)
+
+        var long = Self.session("abcdefgh", b: true)
+        long.type("u")
+        #expect(long.doc.text == "abcdefghu")
+    }
+
+    @Test("B: the 50 ms rule holds for letters too")
+    func settleRule() {
+        var s = Self.session("q", b: true)
+        s.interval = 0.01
+        s.composer.noteEvent(at: 0.0)
+        s.type("u")
+        #expect(s.reads == 0)
+    }
+
+    @Test("trace: read, seeded, and whether the seed changes the word shown")
+    func trace() {
+        // q + u: the key itself looks the same, the next keys show the difference.
+        var s = Self.session("q", b: true)
+        s.interval = 0.2
+        s.type("u")
+        s.type("e")
+        s.type("r")
+        #expect(s.doc.text == "quẻ")
+        #expect(s.diffs == [false, false, true])
+        #expect(s.traces.first == InPlaceComposer.D20Trace(trigger: .letter, seeded: true))
+        #expect(s.traces.dropFirst().allSatisfy { $0 == nil })
+
+        // vi + eetj: reading "vi" makes no difference to the result (diff stays false).
+        var v = Self.session("vi", b: true)
+        v.type("eetj")
+        #expect(v.doc.text == "việt")
+        #expect(v.diffs == [false, false, false, false])
+
+        // hoc + j: the seed is what makes "học" instead of "hocj".
+        var h = Self.session("hoc", b: true)
+        h.type("j")
+        #expect(h.doc.text == "học")
+        #expect(h.diffs == [true])
+
+        // A read that finds no word is not seeded and has no diff; the next key has no trace.
+        var n = Self.session("xin, ", b: true)
+        n.type("as")
+        #expect(n.traces == [InPlaceComposer.D20Trace(trigger: .mark, seeded: false), nil])
+        #expect(n.diffs == [nil, nil])
+    }
+}
+#endif

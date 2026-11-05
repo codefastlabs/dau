@@ -31,6 +31,14 @@ struct InPlaceComposer {
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
 
+    #if DEBUG
+    /// Experiment, Debug builds only (compiled out of Release, D8): variant B of D20. The
+    /// first LETTER key, not only a tone/transform key, also reads and seeds the word
+    /// before the cursor when the engine has no word and the text before the cursor is
+    /// unknown. Same limits as variant A. Off = variant A, today's behaviour.
+    var readOnFirstLetter = false
+    #endif
+
     /// What the cursor is known to follow while the engine has no word (D20 needs a word
     /// right before the cursor; reading costs two client calls, so it is skipped when
     /// the answer is already known).
@@ -83,7 +91,34 @@ struct InPlaceComposer {
         var consumed = false
         var kind = PerfLog.Kind.pass
         var attempt: Attempt?
+        #if DEBUG
+        /// Set when this key made a D20 read (perf log of the A/B experiment).
+        var d20: D20Trace?
+        /// While a word seeded by a D20 read is being typed (including the key that
+        /// seeded it): whether the displayed word differs from what an engine that never
+        /// read the text would show (that word's letters after the seeded prefix). nil:
+        /// no seeded word, or the key ended it.
+        var seedDiffers: Bool?
+        #endif
     }
+
+    #if DEBUG
+    /// What a D20 read did, for comparing variants A and B (Debug perf log only).
+    struct D20Trace: Equatable {
+        /// What triggered the read: a tone/transform key (variant A too) or a plain letter
+        /// (variant B only).
+        enum Trigger: String { case mark, letter }
+        var trigger: Trigger
+        /// The engine was seeded with the word read.
+        var seeded: Bool
+    }
+    /// The word the last `seedWord` seeded.
+    private var lastSeededWord: [Unicode.Scalar] = []
+    /// An engine that never read the text, fed the keys of the seeded word, and that
+    /// word: `Outcome.seedDiffers` compares the real engine with prefix + shadow.
+    private var shadow: VietEngine?
+    private var shadowPrefix: [Unicode.Scalar] = []
+    #endif
 
     // MARK: - Session events
 
@@ -112,6 +147,34 @@ struct InPlaceComposer {
     /// D20 does not wait for anything).
     mutating func handle(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
                          client: some InPlaceClient) -> Outcome {
+        #if DEBUG
+        // Feed the key to the unseeded shadow before the real engine changes (see seedDiffers).
+        if shadow != nil {
+            if case .character(let c) = route, engine.isComposing { _ = shadow?.handle(c) } else { shadow = nil }
+        }
+        var outcome = handleKey(route, time: time, engine: &engine, client: client)
+        if outcome.d20?.seeded == true, let plain = pendingShadow {
+            shadow = plain
+            shadowPrefix = lastSeededWord
+        }
+        pendingShadow = nil
+        if let shadow, engine.isComposing {
+            outcome.seedDiffers = engine.shown != shadowPrefix + shadow.shown
+        } else {
+            self.shadow = nil
+        }
+        return outcome
+        #else
+        return handleKey(route, time: time, engine: &engine, client: client)
+        #endif
+    }
+
+    #if DEBUG
+    private var pendingShadow: VietEngine?
+    #endif
+
+    private mutating func handleKey(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
+                                    client: some InPlaceClient) -> Outcome {
         let settled = isSettled(at: time)
         if let time { lastEventTime = time }
 
@@ -178,9 +241,16 @@ struct InPlaceComposer {
             return result
 
         case .character(let scalar):
-            if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable, settled,
-               Self.isMarkKey(scalar, method: engine.options.inputMethod) {
-                return addMarks(scalar, engine: &engine, client: client)
+            if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable, settled {
+                let method = engine.options.inputMethod
+                if Self.isMarkKey(scalar, method: method) {
+                    return addMarks(scalar, letter: false, engine: &engine, client: client)
+                }
+                #if DEBUG
+                if readOnFirstLetter, Self.isLetter(scalar) {
+                    return addMarks(scalar, letter: true, engine: &engine, client: client)
+                }
+                #endif
             }
             if engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
                Self.isMarkKey(scalar, method: engine.options.inputMethod),
@@ -209,6 +279,14 @@ struct InPlaceComposer {
             return "sfrxjzaeowd".unicodeScalars.contains { $0.value == lower }
         }
     }
+
+    #if DEBUG
+    /// ASCII letters, any case (the plain letters of variant B).
+    static func isLetter(_ scalar: Unicode.Scalar) -> Bool {
+        let v = scalar.value
+        return (v >= 0x41 && v <= 0x5A) || (v >= 0x61 && v <= 0x7A)
+    }
+    #endif
 
     /// A character with the engine's word (if any).
     /// `settled`: the previous key or click is old enough to read the client's text
@@ -321,8 +399,16 @@ struct InPlaceComposer {
     /// word in place (one `insertText`) or goes to the app unchanged. Reads nothing more
     /// than `readLength` UTF-16 units; any odd answer from the client means no seed and
     /// the key is handled as the first key of a new word (D18).
-    private mutating func addMarks(_ scalar: Unicode.Scalar, engine: inout VietEngine,
+    private mutating func addMarks(_ scalar: Unicode.Scalar, letter: Bool = false, engine: inout VietEngine,
                                    client: some InPlaceClient) -> Outcome {
+        #if DEBUG
+        // The key alone on an empty engine: what the document would get without a seed.
+        var plain = engine
+        plain.reset()
+        _ = plain.handle(scalar)
+        pendingShadow = plain
+        lastSeededWord = []
+        #endif
         let selection = client.selectedRange()
         var outcome = seedWord(scalar, selection: selection, engine: &engine, client: client)
         if outcome == nil {
@@ -333,7 +419,12 @@ struct InPlaceComposer {
             // The read happened (perf log): pass or insert at the cursor, nothing seeded.
             if outcome?.kind == .pass || outcome?.kind == .insert { outcome?.kind = .seedNone }
         }
-        return outcome ?? Outcome()
+        var traced = outcome ?? Outcome()
+        #if DEBUG
+        let seeded = traced.kind == .seed || traced.kind == .seedPass
+        traced.d20 = D20Trace(trigger: letter ? .letter : .mark, seeded: seeded)
+        #endif
+        return traced
     }
 
     /// The seeded path, or nil when nothing could be seeded.
@@ -374,6 +465,9 @@ struct InPlaceComposer {
         // counts (deleteCount below); anything else is refused by `seed` anyway.
         guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else { return nil }
 
+        #if DEBUG
+        lastSeededWord = word
+        #endif
         switch engine.handle(scalar) {
         case .passThrough:
             // D20 does not apply ("viet" + j → "vietj"): the app types the key. The

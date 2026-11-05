@@ -73,6 +73,16 @@ struct PerfLog {
         #endif
     }
 
+    #if DEBUG
+    /// Experiment (Debug only): variant B of D20, see `InPlaceComposer.readOnFirstLetter`.
+    /// `defaults write -g DauReadOnFirstLetter -bool true`; read at activation and on a
+    /// settings change, never per key. Absent from Release builds.
+    static let readOnFirstLetterKey = "DauReadOnFirstLetter"
+    static func readOnFirstLetterSwitch() -> Bool {
+        UserDefaults.standard.bool(forKey: readOnFirstLetterKey)
+    }
+    #endif
+
     @inline(__always) static func now() -> UInt64 {
         clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
     }
@@ -82,12 +92,14 @@ struct PerfLog {
     ///   - insertTextNs: duration of the `insertText` call (or, for `mark`, of the
     ///     `setMarkedText` call), or -1 if not called.
     ///   - readNs: duration of the `attributedSubstring` call (D20), or -1 if not called.
+    ///   - extra: A/B experiment fields, each with a leading space (` var=A d20=mark
+    ///     seeded=1 changed=0`); only numbers and fixed words, never text (D8).
     func record(_ kind: Kind, handleNs: UInt64, selectedRangeNs: Int64, insertTextNs: Int64,
-                readNs: Int64 = -1, app: String) {
+                readNs: Int64 = -1, extra: String = "", app: String) {
         #if DEBUG
         guard enabled else { return }
         PerfLog.logger.notice(
-            "key kind=\(kind.rawValue, privacy: .public) handle_ns=\(handleNs, privacy: .public) sel_ns=\(selectedRangeNs, privacy: .public) ins_ns=\(insertTextNs, privacy: .public) read_ns=\(readNs, privacy: .public) app=\(app, privacy: .public)"
+            "key kind=\(kind.rawValue, privacy: .public) handle_ns=\(handleNs, privacy: .public) sel_ns=\(selectedRangeNs, privacy: .public) ins_ns=\(insertTextNs, privacy: .public) read_ns=\(readNs, privacy: .public) app=\(app, privacy: .public)\(extra, privacy: .public)"
         )
         #endif
     }

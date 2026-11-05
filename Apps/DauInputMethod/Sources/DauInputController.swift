@@ -98,6 +98,8 @@ final class DauInputController: IMKInputController {
             result = KeyResult(consumed: outcome.consumed, kind: outcome.kind)
             #if DEBUG
             result.diag = outcome.attempt.map(ReplaceDiag.init)
+            result.d20 = outcome.d20
+            result.seedDiffers = outcome.seedDiffers
             #endif
         }
         result.selectedRangeNs = timed.selectedRangeNs
@@ -121,6 +123,9 @@ final class DauInputController: IMKInputController {
         #if DEBUG
         /// Positions of the last replacement attempt of this key (Debug diagnostics).
         var diag: ReplaceDiag?
+        /// D20 read of this key (A/B experiment).
+        var d20: InPlaceComposer.D20Trace?
+        var seedDiffers: Bool?
         #endif
     }
 
@@ -143,11 +148,27 @@ final class DauInputController: IMKInputController {
     }
 
     private func record(_ result: KeyResult, start: UInt64) {
+        var extra = ""
+        #if DEBUG
+        if perf.enabled {
+            // Variant of every key (A: today, B: first letter reads too), and what a D20
+            // read did. Words and numbers only, never text (D8).
+            extra = " var=\(inPlace.readOnFirstLetter ? "B" : "A")"
+            if let t = result.d20 {
+                extra += " d20=\(t.trigger.rawValue) seeded=\(t.seeded ? 1 : 0)"
+            } else {
+                extra += " d20=none"
+            }
+            // Seeded word differs from the unseeded one (any key while that word lasts).
+            extra += " diff=\(result.seedDiffers.map { $0 ? "1" : "0" } ?? "-")"
+        }
+        #endif
         perf.record(result.kind,
                     handleNs: PerfLog.now() &- start,
                     selectedRangeNs: result.selectedRangeNs,
                     insertTextNs: result.insertTextNs,
                     readNs: result.readNs,
+                    extra: extra,
                     app: clientApp)
     }
 
@@ -337,6 +358,9 @@ final class DauInputController: IMKInputController {
         }
         // D20 "Thêm dấu cho từ đã gõ" (D15: on by default). Read here, never per key.
         inPlace.addMarksEnabled = new.addMarksToTypedWords
+        #if DEBUG
+        inPlace.readOnFirstLetter = PerfLog.readOnFirstLetterSwitch()
+        #endif
     }
 
     /// Debug builds only: bundle IDs forced into underline mode for trials
