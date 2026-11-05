@@ -200,6 +200,21 @@ public struct VietEngine: Sendable {
         return true
     }
 
+    /// D20 (exception b) with D33: the app already shows, right before the cursor, a
+    /// word that is not Vietnamese and that `seed(displayed:)` cannot take (longer than
+    /// 7 letters, or letters the engine does not know). The keys typed next belong to
+    /// that word: as with an over-long word typed here (D33), every key passes through
+    /// unchanged until the word ends, and nothing is restored (D4: the engine never
+    /// changed it). `shown`: how many characters the app shows for the word; ⌫ ends
+    /// the state once they are all deleted. A count of zero or less leaves the engine
+    /// empty.
+    public mutating func seedOverflow(shown: Int) {
+        reset()
+        guard shown > 0 else { return }
+        overflow = true
+        overflowShown = shown
+    }
+
     // MARK: - Letter keys
 
     var isLocked: Bool { lockedByDouble || lockedBySpelling }
