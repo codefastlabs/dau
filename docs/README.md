@@ -31,6 +31,7 @@ Mỗi chủ đề một file; kết luận hiện hành ở đầu file, mỗi k
 |---|---|
 | `docs/research/M5-INSTALL.md` | cài, bật, nâng cấp, gỡ bộ gõ; lần cài đầu; bộ gõ cũ cần phát hiện |
 | `docs/research/SYSTEM-SETTINGS-REFERENCE.md` | số đo giao diện của System Settings dùng làm chuẩn (script kiểm đọc theo) |
+| `docs/research/SWIFTUI-WINDOW-API.md` | API cửa sổ của Apple cho cửa sổ Cài đặt (`NavigationSplitView`, thanh công cụ, tiêu đề, Lùi/Tiến), có nguồn; đối chiếu từng chỗ vá với API chính thức |
 | `docs/research/EXTERNAL-TEST-INPUTS.md` | ca thử (chuỗi phím, không đáp án) gom từ bộ test của 10 bộ gõ tiếng Việt khác, để viết đáp án mù cho engine; ghi công ở `docs/research/external-test-inputs/NOTICE.md` |
 
 ## Lưu trữ
