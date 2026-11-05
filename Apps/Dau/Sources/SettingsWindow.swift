@@ -75,8 +75,9 @@ struct SettingsWindow: View {
         // On the split view itself, not on the page: a page change swaps the page's view
         // tree, and a toolbar item declared there is rebuilt with it, so AXPress on Back
         // changed the page but returned kAXErrorAttributeUnsupported (-25205) to the
-        // caller (measured on macOS 27.2: probe in build/probe-shell, page swapped,
-        // item on the page -25205, item on the split view 0; System Settings returns 0).
+        // caller (measured on macOS 27.2, 05/11/2026, with a throwaway probe app: page
+        // swapped, item on the page -25205, item on the split view 0; System Settings
+        // returns 0).
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 SettingsHistoryButtons(history: $history, sheetShown: sheetShown)
