@@ -48,19 +48,17 @@ struct HeaderAdd {
 /// 20 pt margins, cards, section headers, row heights, separators, and it scrolls
 /// under the toolbar with the system's scroll edge.
 ///
-/// The title is a leading toolbar item (`PageTitle`, see `SettingsWindow`). `search`
-/// and `add`: the Apps page's header controls, as toolbar items: the system search
-/// field (`searchable`) and a "+" button.
+/// The title is the system's navigation title (`SettingsDetail`). `search` and `add`:
+/// the Apps page's header controls, as toolbar items: the system search field
+/// (`searchable`) and a "+" button.
 struct SettingsPage<Content: View>: View {
-    let title: String
     var search: Binding<String>?
     var searchPrompt: Text?
     var add: HeaderAdd?
     @ViewBuilder var content: Content
 
-    init(_ title: String, search: Binding<String>? = nil, searchPrompt: Text? = nil,
+    init(search: Binding<String>? = nil, searchPrompt: Text? = nil,
          add: HeaderAdd? = nil, @ViewBuilder content: () -> Content) {
-        self.title = title
         self.search = search
         self.searchPrompt = searchPrompt
         self.add = add
@@ -77,14 +75,6 @@ struct SettingsPage<Content: View>: View {
         // Content scrolled under the toolbar must not show through the title (UI-CHECKS
         // item 9): the system's hard scroll edge on macOS 26+.
         .modifier(HardTopScrollEdge())
-        .toolbar {
-            if #available(macOS 26, *) {
-                ToolbarItem(placement: .navigation) { PageTitle(title: title) }
-                    .sharedBackgroundVisibility(.hidden)
-            } else {
-                ToolbarItem(placement: .navigation) { PageTitle(title: title) }
-            }
-        }
         .modifier(PageSearch(text: search, prompt: searchPrompt, add: add))
     }
 }
@@ -102,40 +92,11 @@ struct HardTopScrollEdge: ViewModifier {
     }
 }
 
-/// The page title in the toolbar, as System Settings draws it: 15 pt bold, primary,
-/// starting 20 pt from the sidebar (the detail column's margin, where the system's
-/// own navigation title sits; measured 252.5 with the 232 pt sidebar).
-///
-/// Why not the system's navigation title: System Settings has no sidebar toggle, so
-/// the window removes it (`.toolbar(removing: .sidebarToggle)`, `SettingsWindow`).
-/// Without the toggle the toolbar holds no item on most pages and the system title
-/// shrinks: AppKit collapses the toolbar to a 32 pt title bar with the small window
-/// title (measured on macOS 27.2, 1x display). This item keeps the toolbar at System
-/// Settings' 52 pt with its 15 pt bold title on every page; `HiddenWindowTitle` and
-/// `RemoveToolbarTitle` keep the system title from being drawn a second time.
-struct PageTitle: View {
-    let title: String
-
-    var body: some View {
-        Text(verbatim: title)
-            .font(.system(size: 15, weight: .bold))
-            .foregroundStyle(.primary)
-            .fixedSize()
-            .accessibilityAddTraits(.isHeader)
-            .layoutProbe("title")
-            // The toolbar item starts 4 pt right of the sidebar.
-            .padding(.leading, 16)
-            // A fixed item width: with the text's own width the toolbar placed the
-            // title half a point apart on some pages (measured 251.5 vs 252).
-            .frame(width: 200, alignment: .leading)
-    }
-}
-
 /// The page's toolbar search field and "+" (Apps), on the trailing side of the
-/// toolbar. The system puts the search field of `searchable` last, after the "+"
-/// (macOS 27.2: a `DefaultToolbarItem(kind: .search)` placed before the "+" does not
-/// move it); the mockup header has them the other way round, the system order wins
-/// (D9).
+/// toolbar, after the Back/Forward cluster and the title. The system puts the search
+/// field of `searchable` last, after the "+" (macOS 27.2: a
+/// `DefaultToolbarItem(kind: .search)` placed before the "+" does not move it), the
+/// order of the "SettingsApps" artboard.
 private struct PageSearch: ViewModifier {
     let text: Binding<String>?
     let prompt: Text?

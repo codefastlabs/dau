@@ -33,7 +33,7 @@ struct AppRulesView: View {
         let rules = model.settings.appRules
         let visibleRules = matching(rules)
         let visibleSuggestions = matching(suggestions)
-        SettingsPage(SettingsSection.apps.title, search: $query, searchPrompt: Text("Tìm ứng dụng"),
+        SettingsPage(search: $query, searchPrompt: Text("Tìm ứng dụng"),
                      add: HeaderAdd(label: String(localized: "Thêm ứng dụng"), action: { isAdding = true })) {
             Section(header: Text("Nguồn đầu vào theo cửa sổ")) {
                 LabeledContent {

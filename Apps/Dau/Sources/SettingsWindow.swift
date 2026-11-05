@@ -4,14 +4,16 @@ import SwiftUI
 /// default metrics; numbers in docs/research/SYSTEM-SETTINGS-REFERENCE.md): a
 /// `NavigationSplitView` whose sidebar is a plain `List` with the system's sidebar
 /// search field, 232 pt wide, and whose detail is a grouped `Form` per section. The
-/// mockup only sets the content (sections, rows, copy, order, icons).
+/// toolbar holds the Back/Forward cluster (`SettingsHistoryButtons`) and the system's
+/// own page title (`navigationTitle`, set by `SettingsDetail`). The mockup only sets the
+/// content (sections, rows, copy, order, icons).
 struct SettingsWindow: View {
-    @State private var selection: SettingsSection?
+    @State private var history: SectionHistory
     @State private var query = ""
     @Environment(\.inputMethodActions) private var actions
 
     init(initialSection: SettingsSection = .typing) {
-        _selection = State(initialValue: initialSection)
+        _history = State(initialValue: SectionHistory(initialSection))
     }
 
     private var visibleSections: [SettingsSection] {
@@ -20,7 +22,10 @@ struct SettingsWindow: View {
 
     var body: some View {
         NavigationSplitView {
-            List(visibleSections, selection: $selection) { section in
+            // Choosing a row is a step in the history; the list never clears the page
+            // shown (a nil selection is ignored).
+            List(visibleSections, selection: Binding(get: { history.current },
+                                                     set: { if let section = $0 { history.select(section) } })) { section in
                 Label {
                     Text(section.title)
                 } icon: {
@@ -30,19 +35,15 @@ struct SettingsWindow: View {
             }
             .overlay {
                 // No section matches: the system's search empty state in the sidebar.
-                // The detail keeps the open page, so its toolbar title stays (a
-                // detail without a page title would shrink the toolbar, see
-                // `PageTitle`).
+                // The detail keeps the open page and its title.
                 if visibleSections.isEmpty {
                     ContentUnavailableView.search(text: query.trimmingCharacters(in: .whitespaces))
                 }
             }
             .searchable(text: $query, placement: .sidebar, prompt: Text("Tìm kiếm"))
             .onChange(of: query) {
-                // Jump to the first match so the result is visible right away.
-                if let first = visibleSections.first, selection.map(visibleSections.contains) != true {
-                    selection = first
-                }
+                // Jump to the first match (a step in the history, `showFirstMatch`).
+                history.showFirstMatch(of: visibleSections)
             }
             .safeAreaInset(edge: .bottom, alignment: .leading) {
                 // Mockup content: the app name and version under the sections.
@@ -52,24 +53,34 @@ struct SettingsWindow: View {
                     .padding(.horizontal, 20)
                     .padding(.bottom, 14)
             }
-            // System Settings has no sidebar toggle (Back/Forward sit there instead),
-            // so the window has none either. Removing it makes the system title
-            // shrink: the toolbar collapses to a 32 pt title bar with the small window
-            // title (measured on macOS 27.2, 1x display). Hence `PageTitle`,
-            // `HiddenWindowTitle` and `RemoveToolbarTitle` below.
+            // System Settings has no sidebar toggle: Back/Forward sit at the toolbar's
+            // leading edge instead (`toolbar(removing:)`,
+            // https://developer.apple.com/documentation/swiftui/view/toolbar(removing:)).
+            // The sidebar can still be collapsed by dragging the divider (SwiftUI has no
+            // API to prevent it, D9); View › Show Sidebar (⌃⌘S, `SidebarCommands` in
+            // `DauApp`) always brings it back, as the HIG asks
+            // (https://developer.apple.com/design/human-interface-guidelines/split-views).
             .toolbar(removing: .sidebarToggle)
+            // A fixed, preferred width (https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(_:)).
             // Must stay the last modifier of the column to take effect.
             .navigationSplitViewColumnWidth(SettingsScene.sidebarWidth)
         } detail: {
-            SettingsDetail(section: selection ?? .typing)
+            SettingsDetail(section: history.current)
         }
-        // Without the sidebar toggle the toolbar holds no item on most pages, and
-        // AppKit then shrinks it to a 32 pt title bar with the small window title
-        // (measured on macOS 27.2, 1x display). Each page puts its title as a
-        // leading toolbar item instead (`PageTitle`), so the toolbar keeps System
-        // Settings' 52 pt and 15 pt bold title on every page; the window's own title
-        // text is hidden.
-        .background(HiddenWindowTitle())
+        // On the split view itself, not on the page: a page change swaps the page's view
+        // tree, and a toolbar item declared there is rebuilt with it, so AXPress on Back
+        // changed the page but returned kAXErrorAttributeUnsupported (-25205) to the
+        // caller (measured on macOS 27.2: probe in build/probe-shell, page swapped,
+        // item on the page -25205, item on the split view 0; System Settings returns 0).
+        .toolbar {
+            ToolbarItem(placement: .navigation) {
+                SettingsHistoryButtons(history: $history)
+            }
+        }
+        // View › Back / Forward act on this window's history while it has focus.
+        .focusedSceneValue(\.settingsNavigation, SettingsNavigation(
+            canGoBack: history.canGoBack, canGoForward: history.canGoForward,
+            goBack: { history.goBack() }, goForward: { history.goForward() }))
         // "Gỡ cài đặt…": the sheet that waits for the user to remove Dấu from the input
         // sources (`InputMethodActions.performUninstall`); closing it cancels the removal.
         .sheet(isPresented: Binding(get: { actions?.isShowingUninstallSheet == true },
@@ -87,7 +98,12 @@ struct SettingsWindow: View {
     }
 }
 
-/// One section page; its title also names the window (Window menu, VoiceOver).
+/// One section page. Its title is the system's navigation title: on macOS the inline
+/// title of the unified toolbar, right after the Back/Forward cluster, and the window's
+/// title in the Window menu, Mission Control and VoiceOver
+/// (https://developer.apple.com/documentation/swiftui/view/navigationtitle(_:)); the HIG
+/// asks a settings window to title itself after the visible pane
+/// (https://developer.apple.com/design/human-interface-guidelines/settings).
 struct SettingsDetail: View {
     let section: SettingsSection
 
@@ -101,22 +117,6 @@ struct SettingsDetail: View {
             }
         }
         .navigationTitle(section.title)
-        .modifier(RemoveToolbarTitle())
-    }
-}
-
-/// The page title is a toolbar item already (`PageTitle`); remove the system title so
-/// it is not drawn twice. The navigation title still names the window (Window menu,
-/// Mission Control, VoiceOver). Why not the system title: without the sidebar toggle
-/// (removed as System Settings has none) it shrinks to the small window title in a
-/// 32 pt title bar (measured on macOS 27.2, 1x display).
-struct RemoveToolbarTitle: ViewModifier {
-    func body(content: Content) -> some View {
-        if #available(macOS 15, *) {
-            content.toolbar(removing: .title)
-        } else {
-            content
-        }
     }
 }
 

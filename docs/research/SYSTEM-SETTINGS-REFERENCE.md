@@ -148,12 +148,12 @@ Kết luận: trên macOS 27.2 lý do cũ trong D9 ("DisclosureGroup làm thụt
 
 ### Cần chỉnh / không khớp
 
-Đã giải quyết trong app (02/11/2026, d446a09): sidebar 232 + ô tìm `.searchable(.sidebar)`; lề trên giữ 20 (D9: không đè thông số hệ thống); nút sidebar bị gỡ như System Settings, tiêu đề trang là `PageTitle` 15 đậm vì tiêu đề hệ thống co khi gỡ nút; cửa sổ 740–976 để không chạm giới hạn 704; nút trong hàng chỉ có nút căn phải.
+Đã giải quyết trong app (02/11/2026, d446a09): sidebar 232 + ô tìm `.searchable(.sidebar)`; lề trên giữ 20 (D9: không đè thông số hệ thống); nút sidebar bị gỡ như System Settings; từ 05/11/2026 thanh công cụ có cụm Lùi/Tiến như System Settings nên tiêu đề hệ thống giữ 15 đậm (trước đó là `PageTitle` tự vẽ); cửa sổ 740–976 để không chạm giới hạn 704; nút trong hàng chỉ có nút căn phải.
 
 - **Độ rộng sidebar**: mặc định 144, System Settings 232. Mặc định làm cụt chữ "Cập nhật & hỗ trợ". Cách gần nhất: `navigationSplitViewColumnWidth(232)`; đặt rồi thì mọi số đo sidebar và lề form trùng System Settings.
 - **Ô tìm ở sidebar**: mặc định không có; dùng `.searchable(placement: .sidebar)` là ra đúng khung của System Settings.
 - **Lề trên form**: 20 so với 12. Chưa tìm được cách giảm bằng API công khai (`contentMargins` chỉ cộng thêm). Theo D9 thì không tự chỉnh thông số hệ thống; giữ 20 hay tìm cách khớp 12 cần người dùng quyết.
-- **Nút trên thanh công cụ**: SwiftUI tự thêm nút ẩn/hiện sidebar; System Settings có Lùi/Tiến thay vào đó. Bỏ nút bằng `.toolbar(removing: .sidebarToggle)` làm thanh công cụ co từ 52 xuống 32 và tiêu đề trang thành chữ tiêu đề cửa sổ; muốn giữ thanh 52 thì để nguyên nút.
+- **Nút trên thanh công cụ**: SwiftUI tự thêm nút ẩn/hiện sidebar; System Settings có Lùi/Tiến thay vào đó. Bỏ nút bằng `.toolbar(removing: .sidebarToggle)` làm thanh công cụ co từ 52 xuống 32 và tiêu đề trang thành chữ tiêu đề cửa sổ; muốn giữ thanh 52 thì để nguyên nút. Đã giải quyết (05/11/2026): cụm Lùi/Tiến bằng `ControlGroup { … }.controlGroupStyle(.navigation)` ở `.navigation` giữ thanh 52 và tiêu đề hệ thống 15 đậm. Đo trên Dấu (`run.sh` 05/11/2026): nút Lùi 239.5,8 36×36, Tiến 275.5,8 37×36, khung tiêu đề x 316.5 (1x: 317); System Settings đo cùng ngày: 240,8 36×36 và 276,8 37×36, vạch ngăn x 276, nét tiêu đề từ x 326. Sidebar của System Settings (05/11/2026): kéo đường chia 200 pt sang hai bên và bấm đúp không đổi độ rộng, không thu được, con trỏ là mũi tên; Dấu không khoá được bằng API công khai nên kéo thu được, mở lại bằng ⌃⌘S (D9).
 - **Hàng chỉ có `Text`**: cao 36, không phải 37.5 như hàng nhãn + control (System Settings không có hàng nhãn trơn để so).
 - **Hàng chỉ có nút**: SwiftUI căn nút trái; System Settings căn nút phải.
 - **Form rộng**: thẻ không quá 704; với cửa sổ khoảng 740–976 thì không ảnh hưởng.

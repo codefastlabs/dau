@@ -209,6 +209,8 @@ enum DebugCapture {
                         entry["close"] = [Double(r.minX), Double(window.frame.height - r.maxY), Double(r.width), Double(r.height)]
                     }
                     entry["window"] = [0, 0, Double(window.frame.width), Double(window.frame.height)]
+                    // Check (f): the window shows no title text (`.hiddenTitleBar`, DauApp).
+                    entry["titleHidden"] = [window.titleVisibility == .hidden ? 1 : 0]
                     report["onboarding-\(key)-\(mode)"] = entry
                     if mode == "light" {
                         try? await accessibilityTree(window).write(

@@ -9,7 +9,7 @@ struct UpdatesSupportView: View {
     @Environment(\.inputMethodActions) private var actions
 
     var body: some View {
-        SettingsPage(SettingsSection.updates.title) {
+        SettingsPage {
             Section {
                 HStack(spacing: 12) {
                     // System Settings' pane header card (Notifications, Siri: icon,

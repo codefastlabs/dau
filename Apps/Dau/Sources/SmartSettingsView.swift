@@ -12,7 +12,7 @@ struct SmartSettingsView: View {
     var body: some View {
         @Bindable var model = model
         let method = model.settings.typingMethod
-        SettingsPage(SettingsSection.smart.title) {
+        SettingsPage {
             Section(header: Text("Gõ lẫn từ nước ngoài")) {
                 Toggle(isOn: $model.settings.autoRestore) {
                     Text("Tự khôi phục từ không phải tiếng Việt")

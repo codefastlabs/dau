@@ -43,7 +43,6 @@ struct OnboardingWindow: View {
         }
         .frame(width: OnboardingScene.size.width,
                height: OnboardingScene.size.height - OnboardingScene.titleBarHeight)
-        .background(HiddenWindowTitle())
         .onAppear { flow.start() }
         // Step 1 is rechecked whenever the user comes back to the window.
         .onChange(of: activeState) { _, state in

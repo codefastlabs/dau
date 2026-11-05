@@ -121,6 +121,11 @@ struct DauApp: App {
         .windowResizability(.contentSize)
         .commands {
             SettingsCommands()
+            // View › Show/Hide Sidebar (⌃⌘S): the way back when the sidebar was collapsed
+            // by dragging its divider (D9; https://developer.apple.com/documentation/swiftui/sidebarcommands).
+            SidebarCommands()
+            // View › Back (⌘[) and Forward (⌘]).
+            SettingsHistoryCommands()
         }
 
         Window(Text("Thiết lập Dấu"), id: OnboardingScene.id) {
@@ -132,6 +137,9 @@ struct DauApp: App {
                 .environment(\.layoutProbe, DebugCapture.probe)
                 #endif
         }
+        // "Hides both the window's title and the backing of the titlebar area"
+        // (https://developer.apple.com/documentation/swiftui/hiddentitlebarwindowstyle):
+        // the mockup has no title text. The title stays set, for the Window menu.
         .windowStyle(.hiddenTitleBar)
         .windowResizability(.contentSize)
     }

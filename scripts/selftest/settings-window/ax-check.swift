@@ -5,15 +5,18 @@
 //
 // Usage: ax-check <pid> <output-dir> <light|dark> <mode>…
 //   <light|dark>   the appearance the app draws in (run.sh knows it); written to frames.json.
-//   --geometry     (When scrolling scroll bars) The window's size at launch, read before anything
-//                  is moved or resized. Then on every display, one pass per backing scale
-//                  (rows labelled "2x" / "1x"): each section, selected through the
-//                  sidebar's accessibility, against System Settings; the sidebar search
-//                  with a query nothing matches; the add-rule sheet ("+" on Ứng dụng):
-//                  layout, the app list (settles, overflows, scroll bar, wheel, always-
-//                  installed apps, end of list), search and selection wiring, Huỷ. Last,
-//                  the window's size limits (by resizing it) and, at the widest, the first
-//                  card of every section.
+//   --geometry     (When scrolling scroll bars) The window's size and Back/Forward at launch,
+//                  read before anything is moved or resized. Then on every display, one
+//                  pass per backing scale (rows labelled "2x" / "1x"): each section,
+//                  selected through the sidebar's accessibility, against System Settings
+//                  (toolbar, Back/Forward cluster, system title, sidebar, Form); the sidebar
+//                  search with a query nothing matches; the add-rule sheet ("+" on Ứng
+//                  dụng): layout, the app list (settles, overflows, scroll bar, wheel,
+//                  always-installed apps, end of list), search and selection wiring, Huỷ.
+//                  Then the window's size limits (by resizing it) and, at the widest, the
+//                  first card of every section. Last, the shell: Back/Forward through the
+//                  buttons and ⌘[ ⌘] (key events), the View menu (opened, read, closed),
+//                  and the divider dragged left until the sidebar collapses, then ⌃⌘S.
 //   --pixels       (Always scroll bars) Primary display: per section the scroll room rule
 //                  (a) and a screenshot; on the section that overflows
 //                  (Reference.scrollingSection) a scroll through its scroll bar, the
@@ -43,8 +46,8 @@ import AppKit
 
 // MARK: - Arguments
 
-let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --pixels | --banner | --sheet-shots …"
-let modeFlags: Set = ["--geometry", "--pixels", "--banner", "--sheet-shots"]
+let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --pixels | --banner | --sheet-shots | --shell …"
+let modeFlags: Set = ["--geometry", "--pixels", "--banner", "--sheet-shots", "--shell"]
 let arguments = Array(CommandLine.arguments.dropFirst())
 guard arguments.count >= 4, let pid = pid_t(arguments[0]), ["light", "dark"].contains(arguments[2]),
       Set(arguments.dropFirst(3)).isSubset(of: modeFlags) else {
@@ -268,13 +271,24 @@ func toolbar() -> AXUIElement? {
 }
 /// The close button: one per window, the subrole is the identity.
 func closeButton() -> AXUIElement? { windowElements { subrole($0) == "AXCloseButton" }.first }
-/// The page title: the toolbar's heading in the detail column, leftmost (its text is the
-/// page's, so no label to look for).
+/// The window's title: the shown page's navigation title.
+func windowTitle() -> String { string(window, kAXTitleAttribute) ?? "" }
+/// The page title: the system's inline title, a static text in the toolbar band carrying
+/// the window's title, leftmost.
 func pageTitle() -> AXUIElement? {
-    toolbar().flatMap { bar in
-        all(bar) { role($0) == "AXHeading" && rel($0).minX >= sidebarWidth - Reference.tolerance }
-            .min { rel($0).minX < rel($1).minX }
-    }
+    let title = windowTitle()
+    guard !title.isEmpty else { return nil }
+    return windowElements { role($0) == "AXStaticText" && label($0) == title && rel($0).midY < Reference.toolbarHeight }
+        .min { rel($0).minX < rel($1).minX }
+}
+/// Static texts in the toolbar band, for a missing title's diagnosis.
+func toolbarTexts() -> String {
+    windowElements { role($0) == "AXStaticText" && rel($0).midY < Reference.toolbarHeight }
+        .map { "\"\(label($0))\" \(fmt(rel($0)))" }.joined(separator: "; ").nonEmpty ?? "none"
+}
+/// A Back/Forward button, by its label, in the toolbar band.
+func historyButton(_ name: String) -> AXUIElement? {
+    windowElements { role($0) == "AXButton" && label($0) == name && rel($0).midY < Reference.toolbarHeight }.first
 }
 /// The toolbar "+" of Ứng dụng, by its label.
 func toolbarAddButton() -> AXUIElement? {
@@ -414,9 +428,21 @@ func measureSection(_ d: String, _ tag: String, _ index: Int) {
         shot["close"] = rel(close)
         check(d, page, "close button", rel(close), Reference.closeFrame)
     }
-    let title = require(d, page, "page title (toolbar heading)", find: pageTitle).map(rel)
+    // Back/Forward cluster, then the system title right of it (System Settings).
+    for (name, expected, key) in [(Reference.backLabel, Reference.backButtonFrame, "back"),
+                                  (Reference.forwardLabel, Reference.forwardButtonFrame, "forward")] {
+        if let button = require(d, page, "toolbar button \"\(name)\"", find: { historyButton(name) }) {
+            shot[key] = rel(button)
+            check(d, page, "\(key) button", rel(button), expected)
+        }
+    }
+    let title = require(d, page, "page title (system title in the toolbar)",
+                        diagnose: { "no static text \"\(windowTitle())\" in the toolbar; texts there: \(toolbarTexts())" },
+                        find: pageTitle).map(rel)
     if let title {
         shot["title"] = title
+        record(d, page, "title text", expected: Reference.sectionTitles[index], got: windowTitle(),
+               ok: windowTitle() == Reference.sectionTitles[index])
         check(d, page, "title x", title.minX, Reference.titleX)
         check(d, page, "title center y", title.midY, Reference.titleCenterY)
     }
@@ -940,6 +966,191 @@ func measureLimits() {
     _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
 }
 
+// MARK: - Shell: Back/Forward, View menu, sidebar collapse (--geometry)
+
+/// Back and Forward as the buttons show them now: enabled or not.
+func checkHistoryButtons(_ d: String, _ p: String, _ when: String, back: Bool?, forward: Bool?) {
+    for (name, want) in [(Reference.backLabel, back), (Reference.forwardLabel, forward)] {
+        guard let want else { continue }
+        if let button = require(d, p, "toolbar button \"\(name)\"", find: { historyButton(name) }) {
+            record(d, p, "\(name) \(when)", expected: want ? "enabled" : "disabled",
+                   got: enabled(button) ? "enabled" : "disabled", ok: enabled(button) == want)
+        }
+    }
+}
+
+/// The page shown, by the window's title, within 2 s.
+func checkShown(_ d: String, _ p: String, _ when: String, _ index: Int) {
+    let want = Reference.sectionTitles[index]
+    let start = Date()
+    while windowTitle() != want && Date().timeIntervalSince(start) < 2 { wait(0.2) }
+    record(d, p, "page \(when)", expected: want, got: windowTitle(), ok: windowTitle() == want)
+}
+
+/// Posts a key with modifiers to the frontmost app (Dấu, brought to the front first).
+func postKey(_ d: String, _ p: String, _ virtualKey: CGKeyCode, _ flags: CGEventFlags) {
+    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
+    wait(0.3)
+    for down in [true, false] {
+        let event = CGEvent(keyboardEventSource: nil, virtualKey: virtualKey, keyDown: down)
+        event?.flags = flags
+        event?.post(tap: .cghidEventTap)
+    }
+    wait(1.0)
+}
+
+/// At launch, before anything is selected: the window opens on Gõ phím with nothing
+/// visited, so Back and Forward are both off (artboard "SettingsTyping").
+func measureLaunchState() {
+    let d = "-", p = "launch"
+    checkShown(d, p, "at launch", 0)
+    checkHistoryButtons(d, p, "at launch", back: false, forward: false)
+}
+
+/// Back/Forward wiring (what the history does is `swift test` "Settings history"):
+/// visiting another section turns Back on; Back and Forward, through the buttons and
+/// through ⌘[ ⌘] (View menu), move between the two pages.
+func measureHistory() {
+    let d = "-", p = "history"
+    guard showSection(d, 0), showSection(d, 1) else { return }
+    checkShown(d, p, "after selecting \(sections[1])", 1)
+    checkHistoryButtons(d, p, "after selecting another section", back: true, forward: false)
+    guard let back = require(d, p, "toolbar button \"\(Reference.backLabel)\"", find: { historyButton(Reference.backLabel) }),
+          drive(d, p, "press \(Reference.backLabel)", press(back)) else { return }
+    wait(1.0)
+    checkShown(d, p, "after \(Reference.backLabel)", 0)
+    checkHistoryButtons(d, p, "after \(Reference.backLabel)", back: nil, forward: true)
+    guard let forward = require(d, p, "toolbar button \"\(Reference.forwardLabel)\"", find: { historyButton(Reference.forwardLabel) }),
+          drive(d, p, "press \(Reference.forwardLabel)", press(forward)) else { return }
+    wait(1.0)
+    checkShown(d, p, "after \(Reference.forwardLabel)", 1)
+    checkHistoryButtons(d, p, "after \(Reference.forwardLabel)", back: true, forward: false)
+    // kVK_ANSI_LeftBracket / RightBracket: "[" and "]" on the ANSI layout.
+    postKey(d, p, 33, .maskCommand)
+    checkShown(d, p, "after ⌘[", 0)
+    postKey(d, p, 30, .maskCommand)
+    checkShown(d, p, "after ⌘]", 1)
+}
+
+/// Values of `keys` in the system's string tables, in the app's languages.
+func systemTitles(_ keys: [String]) -> Set<String> {
+    var titles = Set<String>()
+    for path in Reference.menuStringTables {
+        guard let data = FileManager.default.contents(atPath: path),
+              let table = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any] else { continue }
+        for language in Reference.menuLanguages {
+            guard let strings = table[language] as? [String: String] else { continue }
+            for key in keys { if let v = strings[key] { titles.insert(v) } }
+        }
+    }
+    return titles
+}
+
+/// View menu (HIG: every toolbar item is a menu command; a hidden sidebar has a way
+/// back): Back ⌘[, Forward ⌘], Show/Hide Sidebar ⌃⌘S and Enter/Exit Full Screen. Opened
+/// through accessibility, read, closed.
+func measureViewMenu() {
+    let d = "-", p = "view-menu"
+    let viewTitles = systemTitles([Reference.viewMenuKey])
+    let sidebarTitles = Set(systemTitles(Reference.sidebarItemKeys).map { $0.lowercased() })
+    let fullScreenTitles = Set(systemTitles(Reference.fullScreenItemKeys).map { $0.lowercased() })
+    guard !viewTitles.isEmpty, !sidebarTitles.isEmpty, !fullScreenTitles.isEmpty else {
+        harness(d, p, "system menu strings", expected: "readable", got: "missing in \(Reference.menuStringTables.joined(separator: ", "))")
+        return
+    }
+    guard let bar = require(d, p, "menu bar", find: { attr(app, kAXMenuBarAttribute).map { $0 as! AXUIElement } }),
+          let viewItem = require(d, p, "View menu", diagnose: {
+              "menus: " + children(bar).map(label).joined(separator: ", ") }, find: {
+              children(bar).first { viewTitles.contains(label($0)) } }),
+          drive(d, p, "open the View menu", press(viewItem)) else { return }
+    wait(0.6)
+    let menu = children(viewItem).first { role($0) == "AXMenu" }
+    let items = menu.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
+    func shortcut(_ e: AXUIElement) -> (String, Int) {
+        (string(e, "AXMenuItemCmdChar") ?? "", (attr(e, "AXMenuItemCmdModifiers") as? Int) ?? -1)
+    }
+    let listed = items.map { e -> String in
+        let (c, m) = shortcut(e)
+        return c.isEmpty ? label(e) : "\(label(e)) [\(c) \(m)]"
+    }.filter { !$0.isEmpty }.joined(separator: ", ").nonEmpty ?? "none"
+    for (name, title, key) in [("Back", Reference.backLabel, Reference.backShortcut),
+                               ("Forward", Reference.forwardLabel, Reference.forwardShortcut)] {
+        let item = items.first { label($0) == title }
+        let got = item.map { shortcut($0) }
+        record(d, p, "\(name) \"\(title)\"", expected: "\(key.0) with modifiers \(key.1)",
+               got: got.map { "\($0.0) with modifiers \($0.1)" } ?? "missing; items: \(listed)",
+               ok: got.map { $0.0 == key.0 && $0.1 == key.1 } ?? false)
+    }
+    let sidebar = items.first { shortcut($0) == Reference.sidebarShortcut }
+    record(d, p, "Show/Hide Sidebar", expected: "\(Reference.sidebarShortcut.0) with modifiers \(Reference.sidebarShortcut.1), titled by the system",
+           got: sidebar.map(label) ?? "missing; items: \(listed)",
+           ok: sidebar.map { sidebarTitles.contains(label($0).lowercased()) } ?? false)
+    let fullScreen = items.first { fullScreenTitles.contains(label($0).lowercased()) }
+    record(d, p, "Enter/Exit Full Screen", expected: "an item titled by the system",
+           got: fullScreen.map(label) ?? "missing; items: \(listed)", ok: fullScreen != nil)
+    if let menu { _ = AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
+    wait(0.4)
+    if (attr(viewItem, kAXSelectedAttribute) as? Bool) == true {
+        for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
+        wait(0.4)
+    }
+}
+
+/// The sidebar list when it shows: the outline with one row per section, inside the
+/// sidebar column and wider than nothing.
+func shownSidebar() -> AXUIElement? {
+    windowElements { role($0) == "AXOutline" && rowCount($0) == sections.count }
+        .first { let r = rel($0); return r.width > 1 && r.maxX > 1 && r.minX < sidebarWidth }
+}
+
+/// D9 exception: the divider can collapse the sidebar (SwiftUI has no API to stop it);
+/// View › Show Sidebar (⌃⌘S) must bring it back at its width. A real mouse drag from the
+/// sidebar's edge to `Reference.collapseDragEndX`, then the key.
+func measureSidebarCollapse() {
+    let d = "-", p = "sidebar-collapse"
+    guard showSection(d, 0) else { return }
+    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
+    wait(0.3)
+    let w = frame(window)
+    let start = CGPoint(x: w.minX + sidebarWidth, y: w.minY + w.height / 2)
+    let end = CGPoint(x: w.minX + Reference.collapseDragEndX, y: start.y)
+    CGWarpMouseCursorPosition(start)
+    CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: start, mouseButton: .left)?.post(tap: .cghidEventTap)
+    wait(0.3)
+    CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: start, mouseButton: .left)?.post(tap: .cghidEventTap)
+    wait(0.1)
+    let steps = 20
+    for i in 1...steps {
+        let x = start.x + (end.x - start.x) * CGFloat(i) / CGFloat(steps)
+        CGEvent(mouseEventSource: nil, mouseType: .leftMouseDragged, mouseCursorPosition: CGPoint(x: x, y: start.y),
+                mouseButton: .left)?.post(tap: .cghidEventTap)
+        wait(0.03)
+    }
+    CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: end, mouseButton: .left)?.post(tap: .cghidEventTap)
+    wait(1.0)
+    let collapsed = shownSidebar() == nil
+    record(d, p, "divider dragged left", expected: "sidebar collapsed",
+           got: collapsed ? "collapsed" : "sidebar still at \(shownSidebar().map { fmt(rel($0)) } ?? "?")", ok: collapsed)
+    _ = screenshot(d, p, "sidebar-collapsed")
+    // kVK_ANSI_S with ⌃⌘: View › Show Sidebar.
+    postKey(d, p, 1, [.maskControl, .maskCommand])
+    let back = require(d, p, "sidebar after ⌃⌘S", within: 2, diagnose: { "still collapsed" }, find: shownSidebar)
+    if back != nil {
+        record(d, p, "⌃⌘S shows the sidebar", expected: "shown", got: "shown", ok: true)
+        if let field = require(d, p, "sidebar search field", find: sidebarSearchField) {
+            check(d, p, "sidebar search after ⌃⌘S", rel(field), Reference.sidebarSearchFrame)
+        }
+        if let area = require(d, p, "page Form (scroll area in the detail column)", find: pageScrollArea),
+           let card = require(d, p, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } }) {
+            check(d, p, "first card x after ⌃⌘S", card.frame.minX, sidebarWidth + formMargin)
+        }
+        if let title = require(d, p, "page title (system title in the toolbar)", find: pageTitle) {
+            check(d, p, "title x after ⌃⌘S", rel(title).minX, Reference.titleX)
+        }
+    }
+    _ = screenshot(d, p, "sidebar-restored")
+}
+
 // MARK: - Always scroll bars (--pixels)
 
 /// Per section: the scroll room rule (a) and a screenshot for check.swift (b), (c). On
@@ -1047,12 +1258,22 @@ func tag(_ screen: NSScreen) -> String { "\(fmt(screen.backingScaleFactor))x" }
 
 if modes.contains("--geometry") {
     check("-", "window", "window size at launch", CGRect(origin: .zero, size: launchSize), CGRect(origin: .zero, size: Reference.windowSize))
+    measureLaunchState()
     for screen in displays where moveWindow(to: screen, tag(screen)) {
         for index in sections.indices { measureSection(tag(screen), tag(screen), index) }
         measureSidebarSearch(tag(screen), tag(screen))
         measureSheet(tag(screen), tag(screen))
     }
     measureLimits()
+    // The shell last: a sidebar left collapsed cannot spoil the other rows.
+    measureHistory()
+    measureViewMenu()
+    measureSidebarCollapse()
+}
+// `--shell` alone: only the Back/Forward and View-menu rows (a quick pass on a running app).
+if modes.contains("--shell") && !modes.contains("--geometry") {
+    measureHistory()
+    measureViewMenu()
 }
 if modes.contains("--pixels") || modes.contains("--banner") || modes.contains("--sheet-shots"),
    moveWindow(to: primary, tag(primary)) {

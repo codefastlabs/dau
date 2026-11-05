@@ -18,7 +18,9 @@
 #   3b. --capture-banner                       banner-states/ (banner states laid out)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
 # ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
-# Settings window only:
+# Settings window only. Launch 4 also drives the window shell with real input: ⌘[ ⌘] and
+# ⌃⌘S key events, the View menu opened and closed, the sidebar divider dragged with the
+# mouse (the pointer moves):
 #   4. When scrolling scroll bars              real/                  ax-check --geometry
 #   5. Always scroll bars                      always/                ax-check --pixels
 #   6. --not-enabled                           banner/                ax-check --banner
@@ -28,7 +30,8 @@
 #
 # Before each real launch the saved "NSWindow Frame settings" of com.codefastlabs.dau is
 # deleted, so the window opens at the scene's default size (ax-check reads it before it
-# moves anything); both saved frames are put back as they were at the end.
+# moves anything); both saved frames, and the sidebar's saved split (AppKit's autosave,
+# changed by the collapse check), are put back as they were at the end.
 set -euo pipefail
 here=${0:A:h}
 out=${1:?output dir}
@@ -47,15 +50,23 @@ lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchSe
 # launch then opened onboarding squeezed into a screen corner. Keep the saved frames as
 # they were before the run and put them back at the end.
 frames_domain=com.codefastlabs.dau
-frame_keys=("NSWindow Frame onboarding" "NSWindow Frame settings")
-typeset -A saved_frames
+frame_keys=("NSWindow Frame onboarding" "NSWindow Frame settings"
+  "NSSplitView Subview Frames settings, SidebarNavigationSplitView")
+typeset -A saved_frames saved_types
 for k in $frame_keys; do
-  v=$(defaults read $frames_domain "$k" 2>/dev/null) && saved_frames[$k]=$v
+  v=$(defaults read $frames_domain "$k" 2>/dev/null) && saved_frames[$k]=$v \
+    && saved_types[$k]=$(defaults read-type $frames_domain "$k" 2>/dev/null)
 done
 restore_frames() {
   for k in $frame_keys; do
     if (( ${+saved_frames[$k]} )); then
-      defaults write $frames_domain "$k" -string "${saved_frames[$k]}"
+      # A string is written as is; an array (the split) goes back as the plist text
+      # `defaults read` printed.
+      if [[ ${saved_types[$k]} == *string* ]]; then
+        defaults write $frames_domain "$k" -string "${saved_frames[$k]}"
+      else
+        defaults write $frames_domain "$k" "${saved_frames[$k]}"
+      fi
     else
       defaults delete $frames_domain "$k" >/dev/null 2>&1
     fi

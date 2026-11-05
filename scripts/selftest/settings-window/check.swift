@@ -17,8 +17,9 @@
 //   (d) Scrolled (Reference.scrollingSection, Always): the header looks as when not scrolled.
 //   (e) The Ứng dụng toolbar "+" is drawn round.
 //   (f) onboarding/, onboarding-no-shortcut/ (Dau --capture-onboarding): every shot has
-//       the app name, title, card and buttons where the mockup puts them; a view missing
-//       from a shot is FAIL (the app drops a view's frame when it disappears).
+//       the app name, title, card and buttons where the mockup puts them, and the window
+//       shows no title text; a view missing from a shot is FAIL (the app drops a view's
+//       frame when it disappears).
 //   (h) banner-states/ (Dau --capture-banner): the three banner states after "Bật lại" in
 //   both appearances, shown inside the Form's margins.
 //   (g) uninstall/ (Dau --capture-uninstall): both alerts and both sheets of "Bỏ Dấu khỏi
@@ -230,9 +231,16 @@ for dirName in ["onboarding", "onboarding-no-shortcut"] {
         harness(dirName, "(f)", "no frames.json (see the capture step in run.sh's output)")
         continue
     }
+    // Flags beside the frames: "titleHidden" is the window's `titleVisibility == .hidden`.
+    let flags = (try? Data(contentsOf: root.appendingPathComponent(dirName).appendingPathComponent("frames.json")))
+        .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: [String: [Double]]] } ?? [:]
     for key in onboardingShots {
         let at = "\(dirName)/\(key)"
         guard let f = shots[key] else { harness(at, "(f)", "no capture (see the capture step in run.sh's output)"); continue }
+        // The mockup has no title text; `.hiddenTitleBar` alone hides it (no window code).
+        let hidden = flags[key]?["titleHidden"]?.first
+        record(at, "(f) window title hidden", expected: "hidden", got: hidden.map { $0 == 1 ? "hidden" : "shown" } ?? "missing",
+               ok: hidden == 1)
         func place(_ name: String, _ ok: (CGRect) -> Bool, expected: String) {
             guard let r = f[name] else {
                 record(at, "(f) \(name)", expected: expected, got: "missing (view not shown)", ok: false)

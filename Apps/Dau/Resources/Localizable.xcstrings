@@ -661,6 +661,16 @@
         }
       }
     },
+    "Điều hướng" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Điều hướng"
+          }
+        }
+      }
+    },
     "Dùng chung phím tắt của macOS, đổi trong %@" : {
       "localizations" : {
         "vi" : {
@@ -1171,6 +1181,16 @@
         }
       }
     },
+    "Lùi" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lùi"
+          }
+        }
+      }
+    },
     "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào %@." : {
       "localizations" : {
         "vi" : {
@@ -1527,6 +1547,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Thử lại"
+          }
+        }
+      }
+    },
+    "Tiến" : {
+      "localizations" : {
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tiến"
           }
         }
       }

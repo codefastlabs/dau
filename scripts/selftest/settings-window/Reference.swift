@@ -21,6 +21,9 @@ enum Reference {
 
     /// The four sections of the Settings window, in sidebar order.
     static let sections = ["typing", "smart", "apps", "updates"]
+    /// Content (docs/UI.md): their titles, in the same order: the system's page title and
+    /// the window's title.
+    static let sectionTitles = ["Gõ phím", "Thông minh", "Ứng dụng", "Cập nhật & hỗ trợ"]
 
     // MARK: Tolerance
 
@@ -70,12 +73,52 @@ enum Reference {
     /// the toolbar color at the top of the button's frame.
     static let addButtonInkThreshold = 8
 
-    // MARK: Title (System Settings)
+    // MARK: Back/Forward (System Settings; labels: Mockup)
 
-    /// The page title starts at the detail column's margin (sidebar + form margin)...
-    static let titleX: CGFloat = sidebarWidth + formMargin
+    /// Mockup: the buttons' accessibility labels (artboards "Settings…", aria-label), in the
+    /// String Catalog.
+    static let backLabel = "Lùi"
+    static let forwardLabel = "Tiến"
+    /// System Settings' pair is one cluster, 73 × 36 at x 240, y 8. Probe (05/11/2026, a
+    /// test app with the same `ControlGroup`, matched System Settings pixel for pixel):
+    /// Back 36 wide at 240, Forward 37 wide at 276, the separator at 276.
+    static let backButtonFrame = CGRect(x: 240, y: 8, width: 36, height: 36)
+    static let forwardButtonFrame = CGRect(x: 276, y: 8, width: 37, height: 36)
+
+    // MARK: Title (System Settings, after the Back/Forward cluster)
+
+    /// The system's page title (an AXStaticText in the toolbar) starts here. Probe
+    /// (05/11/2026, the same toolbar in a test app): text frame at x ≈ 317, glyphs from
+    /// ≈ 326; System Settings' glyphs start at ≈ 324 (SYSTEM-SETTINGS-REFERENCE.md). Not
+    /// yet measured on Dấu: the first run.sh of the new shell confirms or replaces it.
+    static let titleX: CGFloat = 317
     /// ... and is centered in the toolbar.
     static let titleCenterY: CGFloat = toolbarHeight / 2
+
+    // MARK: Sidebar collapse and the View menu (HIG; D9 "Vỏ cửa sổ Cài đặt")
+
+    /// Probe: the divider is dragged from the sidebar's edge to this x (window points) to
+    /// collapse the sidebar; then ⌃⌘S (View › Show Sidebar) must bring it back at
+    /// `sidebarWidth`.
+    static let collapseDragEndX: CGFloat = 20
+    /// System: the app pins its localization to Vietnamese (main.swift), so the system's
+    /// own menu items are in that language; English is accepted too. Read from the
+    /// system's string tables, never typed here (D38).
+    static let menuLanguages = ["vi", "en"]
+    static let menuStringTables = [
+        "/System/Library/Frameworks/SwiftUI.framework/Versions/A/Resources/MainMenu.loctable",
+        "/System/Library/Frameworks/SwiftUI.framework/Versions/A/Resources/Localizable.loctable",
+        "/System/Library/Frameworks/AppKit.framework/Resources/MenuCommands.loctable",
+    ]
+    /// Keys (the English text) of the View menu and of the system items it must hold.
+    static let viewMenuKey = "View"
+    static let sidebarItemKeys = ["Show Sidebar", "Hide Sidebar"]
+    static let fullScreenItemKeys = ["Enter Full Screen", "Exit Full Screen"]
+    /// Shortcuts: character and the Accessibility API's modifier mask (0 = ⌘ alone,
+    /// 4 = ⌃⌘). Back ⌘[ and Forward ⌘] as System Settings; Show Sidebar ⌃⌘S (System).
+    static let backShortcut = ("[", 0)
+    static let forwardShortcut = ("]", 0)
+    static let sidebarShortcut = ("S", 4)
 
     // MARK: Close button (System Settings)
 
@@ -220,8 +263,9 @@ enum Reference {
     static let straySampleTop: CGFloat = 64
     static let straySampleStep: CGFloat = 16
     /// Probe: header region compared when scrolled; x from just right of the page title
-    /// ("Cập nhật & hỗ trợ" ends near 380) to 24 from the edge every 6; y 6...46 every 4.
-    static let scrolledProbeStartX: CGFloat = 400
+    /// ("Cập nhật & hỗ trợ", 127 wide at 15 pt bold, from `titleX` + 9: ends near 453) to
+    /// 24 from the edge every 6; y 6...46 every 4.
+    static let scrolledProbeStartX: CGFloat = 470
     static let scrolledProbeRightInset: CGFloat = 24
     static let scrolledProbeStepX: CGFloat = 6
     static let scrolledProbeY: Range<CGFloat> = 6..<46
