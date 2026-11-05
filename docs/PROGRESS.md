@@ -8,7 +8,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - Mốc đang làm: M5 — T1–T3 xong; onboarding, bật không đăng xuất (D37) và gỡ cài đặt có bước "–" (D16) đã dựng lại theo canvas và thử trọn bằng Dấu thật trên tài khoản này (nhật ký 04/11). Còn: T5 kiểm toán (T4 bỏ, người dùng chốt 04/11/2026).
 - Mở: "window size at launch" của bộ kiểm cửa sổ Cài đặt một lần mở ở 740×452 (nhật ký 03/11 18:08), chưa tái hiện được.
 - Mở: sheet thêm quy tắc chập chờn trong `run.sh` (03/11: 3 dòng; 04/11: danh sách tạm 1–13 dòng lúc mở, một lượt gõ tìm không lọc); 2/3 lượt ngày 04/11 16:xx trượt, lượt sau đạt; chưa rõ do app hay do bộ kiểm (nhật ký 04/11).
-- Chờ người dùng duyệt canvas phiên bản 123: gợi ý "đăng xuất rồi đăng nhập lại" cho ca một ứng dụng không chọn được Dấu (D37) ở màn "Đã bật" (hai artboard), sheet Báo lỗi, Hỏi đáp trang tải về (hai artboard). Duyệt xong thì giao app-ui-dev phần onboarding; sheet Báo lỗi làm ở M7, trang tải về ở M8.
+- Đang làm (05/11/2026): dòng gợi ý đăng xuất ở màn "Đã bật" của onboarding (canvas phiên bản 123, người dùng duyệt) — app-ui-dev; sheet Báo lỗi làm ở M7, Hỏi đáp trang tải về ở M8.
 - Mở: các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm; ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` (d)10).
 - Mở: "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc); chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
 - Mở, chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú D14 vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím); ảnh hưởng của mục ẩn sau đăng nhập không còn liên quan vì D16 giữ bước "–".
