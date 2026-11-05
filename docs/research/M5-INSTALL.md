@@ -20,7 +20,7 @@ Mỗi khẳng định mang một nhãn. Chỗ không có nguồn ghi đúng "kh�
 
 Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu), hai đợt đọc: 30/10: Squirrel 46962d2, McBopomofo 18e2060, vChewing 7c82f5f, macSKK 539cce3, fcitx5-macos 3466612, Gureum 46c62e5, XKey 398e78e, goxkey b197c57, OpenKey 89c2fd3. 02/11 (`/tmp/dau-research/`): Squirrel d220b92, McBopomofo 257da53, vChewing-macOS 8c1bb72, macSKK c812585, Gureum 46c62e5, fcitx5-macos 3466612, XKey 398e78e.
 
-## 0. Hiện trạng hiểu biết (04/11/2026, macOS 27.2)
+## 0. Hiện trạng hiểu biết (05/11/2026, macOS 27.2)
 
 ### (a) Có nguồn Apple, nguồn ngoài, hoặc file hệ thống
 
@@ -80,6 +80,19 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
     - Quét lại toàn bộ thư mục cache: không còn bộ đệm riêng nào lệch so với bộ đệm chung.
 
     [Máy/Dấu] Câu hỏi mở d10.
+12. **05/11, 09:44–09:48, đăng xuất rồi đăng nhập có làm mới bộ đệm riêng của từng app không** (Dấu thật đã bật; app thử có sandbox `local.probe.cacheL1`, ký ad-hoc, dựng trong `build/probe.noindex/L/`; máy chạy liên tục từ 29/10, không khởi động lại).
+    - **Trước khi đăng xuất:**
+      - Thay bộ đệm của app thử bằng một bộ đệm cũ (04/11 08:47, không có `DauInputMethod.app`). Chạy app thử: nó dùng bộ đệm đó, giờ ghi giữ nguyên, **không thấy Dấu** (09:45:08).
+      - Chụp 26 bộ đệm (bộ đệm chung và từng app; giờ ghi, inode, có Dấu không): 25 có Dấu, chỉ bộ đệm của app thử không có. Bộ đệm của Telegram ghi lúc 04/11 17:56:37. Telegram đang chạy.
+    - **Người dùng đăng xuất và đăng nhập lại (09:46).** Chụp lại lúc 09:47:26, trước khi mở app nào:
+      - Bộ đệm chung và bộ đệm của 12 tiến trình chạy lúc đăng nhập (MenuBarAgent, notificationcenterui, PressAndHold…) được ghi mới (09:46:41–09:46:52, inode mới), đều có Dấu.
+      - Bộ đệm của app thử và của Telegram (chưa chạy) **còn nguyên**: cùng inode, cùng giờ ghi. Đăng xuất không xoá bộ đệm.
+    - **Mở app sau khi đăng nhập:**
+      - App thử: lần chạy đầu (09:47:35) dựng lại bộ đệm (inode mới) và **thấy Dấu**. Lần chạy sau (09:48:12) dùng lại bộ đệm 09:47:35.
+      - Telegram (mở ở chế độ nền, 09:47:49): bộ đệm cũng được dựng lại ngay khi mở (inode mới), có Dấu.
+    - **Tóm lại:** sau một lần đăng nhập mới, mỗi app có sandbox dựng lại bộ đệm của nó ở lần đầu đọc nguồn đầu vào, kể cả khi bộ đệm cũ không có Dấu. Trước đăng xuất, mở lại app không làm điều này ((b)10, vòng E). Vì vậy đăng xuất rồi đăng nhập sửa được ca Telegram của (b)10 mà không cần xoá bộ đệm bằng tay. Chưa đo: khởi động lại máy, macOS 14–26. Vì sao hệ thống coi bộ đệm cũ là hết hạn sau khi đăng nhập thì chưa biết: trước đăng xuất, bộ đệm chung cũng mới hơn bộ đệm của app thử mà app thử vẫn dùng bộ đệm cũ.
+
+    [Máy/Dấu] Câu hỏi mở d10.
 
 ### (c) Diễn giải mã/binary (của người nghiên cứu)
 
@@ -106,8 +119,9 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
       - Xoá bộ đệm của app đang chạy thì nó dựng lại ở lần đăng ký nguồn tiếp theo. Thứ tự "chép → xoá bộ đệm của app → đăng ký → bật" làm app đang chạy dùng được nguồn mới mà không cần mở lại.
       - Tiến trình không sandbox dùng bộ đệm chung, và bộ đệm này tự dựng lại.
     - **Đã đo bằng Dấu thật ((b)11):** luồng bật theo D37 đã sửa làm Telegram đang chạy, với bộ đệm cũ, dùng được Dấu mà không cần mở lại. 5 thư mục được hệ thống bảo vệ thì bỏ qua, không có hộp thoại xin quyền.
+    - **Đã đo bằng Dấu thật, đăng xuất ((b)12):** đăng xuất không xoá bộ đệm của từng app, nhưng sau khi đăng nhập lại, mỗi app dựng lại bộ đệm ở lần đầu đọc nguồn đầu vào và thấy Dấu (app thử có bộ đệm cũ không có Dấu; Telegram).
     - **Còn mở:**
-      - Đăng xuất hay khởi động lại máy có dựng lại bộ đệm không.
+      - Khởi động lại máy có làm như đăng xuất không.
       - Các tiến trình nằm trong 5 thư mục được bảo vệ (WebKit, bộ đệm của Shortcuts) có giữ bộ đệm cũ không, và có ô nhập chữ nào bị ảnh hưởng không.
       - Sau khi gỡ, các bộ đệm cũ còn `DauInputMethod.app` thì có hậu quả gì.
       - Đo trên macOS 14–26 và bản ký Developer ID (không đo trên tài khoản macOS mới: T4 bỏ, người dùng chốt 04/11/2026).
