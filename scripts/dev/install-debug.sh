@@ -113,17 +113,19 @@ echo
 echo "Đã cài bản $CONFIG của Dấu. Các bước còn lại do bạn làm trên máy:"
 cat <<'EOF'
 
-  1. Mở System Settings › Keyboard, mở danh sách nguồn nhập liệu (sheet "All Input
-     Sources", có nút "+" và "–" ở góc trái dưới).
-  2. Bấm "+", chọn "Vietnamese" ở cột trái, chọn "Dấu – Tiếng Việt", bấm "Add".
-     Dấu chỉ có nguồn này (D2). Gõ tiếng Anh bằng U.S. sẵn có của macOS; nếu
-     danh sách còn "Dấu – Tiếng Anh" từ bản cũ thì chọn nó và bấm "–".
-  3. Trên macOS 27.2, nút "Bật Dấu" trong app có thể không bật được nguồn: cứ thêm bằng
-     "+" như bước 2.
-  4. Nếu không thấy "Dấu" trong danh sách: đăng xuất rồi đăng nhập lại, sau đó làm lại
-     từ bước 1 (lần cài đầu, hệ thống có thể chưa quét thư mục ~/Library/Input Methods).
-  5. Chọn "Dấu – Tiếng Việt" trên menu nguồn nhập liệu ở thanh menu, hoặc bằng phím tắt
-     chuyển nguồn nhập liệu của macOS.
+  1. Dấu đã bật từ trước trên máy này: không phải làm gì thêm. Chuyển nguồn đầu vào ra
+     rồi vào lại Dấu để macOS chạy bản vừa cài.
+  2. Lần đầu trên máy này: bật bằng app chủ (build scheme Dau, mở Dau.app, bấm "Bật Dấu",
+     rồi Allow trong hộp thoại của macOS). App xoá bộ đệm danh sách nguồn đầu vào trước
+     khi đăng ký, nên không cần đăng xuất (D37). Thêm tay bằng "+" trong System Settings
+     có thể không thấy Dấu, vì danh sách đó đọc bộ đệm cũ.
+  3. Bật không được: làm theo màn "Chưa bật được" của app (tự thêm bằng "+"; đăng xuất
+     một lần là đường lui, D37). Một ứng dụng vẫn không chọn được Dấu: đăng xuất rồi đăng
+     nhập lại một lần.
+  4. Dấu chỉ có "Dấu – Tiếng Việt" (D2); gõ tiếng Anh bằng U.S. sẵn có của macOS. Còn
+     "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó bằng "–".
+  5. Chọn "Dấu – Tiếng Việt" trên menu nguồn đầu vào ở thanh menu, hoặc bằng phím tắt
+     chuyển nguồn đầu vào của macOS.
   6. Tắt các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…) trước khi thử.
 EOF
 if [[ "$CONFIG" == Debug ]]; then

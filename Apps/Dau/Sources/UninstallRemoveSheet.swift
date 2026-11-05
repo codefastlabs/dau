@@ -1,14 +1,14 @@
 import Carbon
 import SwiftUI
 
-/// "Bỏ Dấu khỏi Nguồn nhập liệu": the sheet over the Settings window after "Tiếp tục
+/// "Bỏ Dấu khỏi nguồn đầu vào": the sheet over the Settings window after "Tiếp tục
 /// gỡ" (D16). macOS lets only the user remove an input source, so it lists what is done
 /// and what the user does, and waits until Dấu is gone from the list; then Dấu stops the
 /// input method and moves it to the Trash (`InputMethodActions.performUninstall`). Built
 /// like the add-rule sheet (D9): the sheet's own button bar from the toolbar's
 /// cancellation and primary placements, no default button (Return must not cancel or
-/// open anything by accident). The wording of macOS's own screens is English, as on the
-/// user's Mac.
+/// open anything by accident). Names of macOS's own screens come from the system's strings
+/// in the user's macOS language (D38, `SystemUINames`).
 struct UninstallRemoveSheet: View {
     let actions: InputMethodActions
     @Environment(\.controlActiveState) private var activeState

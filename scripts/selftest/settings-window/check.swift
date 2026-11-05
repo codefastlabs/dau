@@ -22,7 +22,7 @@
 //   (h) banner-states/ (Dau --capture-banner): the three banner states after "Bật lại" in
 //   both appearances, shown inside the Form's margins.
 //   (g) uninstall/ (Dau --capture-uninstall): both alerts and both sheets of "Bỏ Dấu khỏi
-//   Nguồn nhập liệu" in both appearances, not cut.
+//   nguồn đầu vào" in both appearances, not cut.
 // Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
 // check needs is missing (the step that writes it says why in its own table); no skip.
 // Exit status 0 only when every row is ok.

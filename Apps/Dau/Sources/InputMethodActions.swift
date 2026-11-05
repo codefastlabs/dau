@@ -25,7 +25,7 @@ final class InputMethodActions {
 
     private(set) var banner: BannerState = .idle
     private(set) var isUninstalling = false
-    /// The uninstall sheet ("Bỏ Dấu khỏi Nguồn nhập liệu") is showing.
+    /// The uninstall sheet ("Bỏ Dấu khỏi nguồn đầu vào") is showing.
     private(set) var isShowingUninstallSheet = false
     /// Dấu is the selected input source (re-read by the sheet while it waits): the sheet
     /// then warns that "–" may be dimmed and asks to select another keyboard first.

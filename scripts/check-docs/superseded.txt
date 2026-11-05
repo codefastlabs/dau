@@ -16,3 +16,7 @@ macOS vẫn đưa phím cho nguồn đã bật dù bundle bị thay	D37: chưa �
 Kiểm chứng bằng VoiceOver ở M3	D17: M3 mới kiểm hệ thống có đọc; tên đọc đúng kiểm ở M7 (03/11/2026)
 [Ll]ần cài đầu có thể (phải|cần) đăng xuất	D37: bật lần đầu không cần đăng xuất (xoá bộ đệm của System Settings, hộp thoại Allow), đăng xuất chỉ còn là đường lui (04/11/2026)
 xoá bộ đệm danh sách nguồn của System Settings và thoát System Settings nếu đang mở	D37/N4: also the per-app input source caches of every app (04/11/2026)
+Bỏ Dấu khỏi Nguồn nhập liệu	D38: the uninstall sheet is "Bỏ Dấu khỏi nguồn đầu vào" (05/11/2026)
+gỡ khỏi Nguồn nhập liệu	D38: "nguồn đầu vào" in text the user sees (05/11/2026)
+lần cài đầu có bắt buộc đăng xuất hay không còn mở	D37: "Bật Dấu" needs no logout; logout is the fallback (04/11/2026)
+có thể không bật được nguồn: cứ thêm bằng	D37: "Bật Dấu" clears the caches and enables (04/11/2026)

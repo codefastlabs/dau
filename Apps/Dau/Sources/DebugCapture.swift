@@ -43,7 +43,7 @@ import SwiftUI
 /// Debug only: in-app captures that need fake services, run by
 /// scripts/selftest/settings-window on a copy re-signed ad hoc without entitlements:
 /// `--capture-onboarding` (the onboarding window on fixed services),
-/// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi Nguồn nhập liệu"
+/// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào"
 /// sheet, laid out without running anything) and `--capture-banner` (the three banner
 /// states after "Bật lại", laid out without running anything). The
 /// Settings window itself is measured from outside, in the real app (`--settings-window`,
@@ -230,7 +230,7 @@ enum DebugCapture {
 
     /// `--capture-uninstall <dir>`: opens the Settings window in the middle of the primary
     /// display, lays out the "Gỡ Dấu khỏi máy?" alert, the result alert and the "Bỏ Dấu
-    /// khỏi Nguồn nhập liệu" sheet there without running anything, and writes
+    /// khỏi nguồn đầu vào" sheet there without running anything, and writes
     /// `uninstall-confirm-<mode>.png`, `uninstall-done-<mode>.png`,
     /// `uninstall-remove-<mode>.png` (Dấu not selected) and
     /// `uninstall-remove-hint-<mode>.png` (Dấu selected: with the "–" hint), plus `frames.json`

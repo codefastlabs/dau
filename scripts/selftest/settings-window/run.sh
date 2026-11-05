@@ -110,7 +110,7 @@ capture() {   # <step name> <Dau arguments…>
 capture "onboarding" --capture-onboarding "$out/onboarding"
 capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-shortcut" \
   --shortcut none
-# The uninstall alerts and the "Bỏ Dấu khỏi Nguồn nhập liệu" sheet (D16, mockup
+# The uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào" sheet (D16, mockup
 # "ConfirmDialogs", "UninstallRemoveSource"): laid out, captured, dismissed;
 # nothing is uninstalled.
 capture "uninstall alerts" --capture-uninstall "$out/uninstall"

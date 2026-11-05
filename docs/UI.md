@@ -56,16 +56,16 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - "Thêm" chỉ bật khi ứng dụng đang chọn còn trong danh sách đang lọc; gõ tìm làm ẩn ứng dụng đang chọn thì bỏ chọn.
 
 ## Trạng thái bổ sung
-- **Dấu chưa được bật** (người dùng gỡ khỏi Nguồn nhập liệu): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4), artboard `SettingsBannerStates`:
+- **Dấu chưa được bật** (người dùng gỡ khỏi nguồn đầu vào): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4), artboard `SettingsBannerStates`:
   - đang chờ người dùng bấm Allow → banner có vòng xoay; "Thử lại" huỷ lần chờ rồi bật lại;
   - bật được → banner xác nhận nêu phím tắt thật (như onboarding, N5; không đọc được thì không nêu), nút "Ẩn" ẩn banner trong phiên này; không có Hoàn tác (app không tự tắt được Dấu);
   - macOS vẫn để tắt hoặc lỗi → banner nói chưa bật được, kèm cách tự thêm trong System Settings và "Thử lại" (không tự mở System Settings);
   - chưa cài hoặc macOS chưa liệt kê Dấu → mở cửa sổ thiết lập.
 - **Bộ gõ trên máy đã bị thay** (chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước): banner đỏ đầu mọi mục Cài đặt, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên; cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
 - **Chế độ tối:** Cài đặt và onboarding đều có (màu hệ thống).
-- **Gỡ cài đặt** (D16): macOS chỉ cho người dùng tự bỏ một nguồn nhập liệu, nên gỡ có ba bước (artboard `ConfirmDialogs`, `UninstallRemoveSource`):
+- **Gỡ cài đặt** (D16): macOS chỉ cho người dùng tự bỏ một nguồn đầu vào, nên gỡ có ba bước (artboard `ConfirmDialogs`, `UninstallRemoveSource`):
   - Alert xác nhận (hệ thống), có tuỳ chọn xoá cả cài đặt và quy tắc; nút xác nhận là "Tiếp tục gỡ", chưa xoá gì; nội dung chỉ nói người dùng bỏ Dấu trong System Settings rồi Dấu được chuyển vào Thùng rác.
-  - Sheet "Bỏ Dấu khỏi Nguồn nhập liệu" trên cửa sổ Cài đặt: app không chuyển nguồn nhập liệu nào (người dùng chọn). App mở thẳng danh sách Input Sources của System Settings (đã mở sẵn sheet Edit…), sheet nêu một bước (chọn Dấu, bấm "–", Done) và chờ mục lưu của Dấu biến mất, không hết hạn. Câu nhắc "nếu nút – bị mờ, chọn bàn phím khác" chỉ hiện khi Dấu đang là nguồn được chọn, đọc lại khi sheet hiện, khi cửa sổ thành key lại và khi nguồn đang chọn đổi, nên biến mất khi người dùng chuyển bàn phím. "Huỷ gỡ cài đặt" (hoặc Esc, đóng sheet, hoặc gỡ lỗi giữa chừng) đóng sheet và không xoá hay đổi gì; "Mở System Settings" chỉ mở trang.
+  - Sheet "Bỏ Dấu khỏi nguồn đầu vào" trên cửa sổ Cài đặt: app không chuyển nguồn đầu vào nào (người dùng chọn). App mở thẳng danh sách Input Sources của System Settings (đã mở sẵn sheet Edit…), sheet nêu một bước (chọn Dấu, bấm "–", Done) và chờ mục lưu của Dấu biến mất, không hết hạn. Câu nhắc "nếu nút – bị mờ, chọn bàn phím khác" chỉ hiện khi Dấu đang là nguồn được chọn, đọc lại khi sheet hiện, khi cửa sổ thành key lại và khi nguồn đang chọn đổi, nên biến mất khi người dùng chuyển bàn phím. "Huỷ gỡ cài đặt" (hoặc Esc, đóng sheet, hoặc gỡ lỗi giữa chừng) đóng sheet và không xoá hay đổi gì; "Mở System Settings" chỉ mở trang.
   - Mục lưu biến mất → dừng bộ gõ, chuyển vào Thùng rác, xoá dữ liệu nếu đã tick, rồi alert nêu những gì đã làm (đọc lại từ hệ thống). App không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác. Bộ gõ không bao giờ bị xoá khi mục lưu còn: bundle mất trước thì mục còn lại không gỡ được.
 - **Xác nhận quay về bản trước:** D19.
 - **Khi gõ trong ứng dụng:** không gạch chân (mặc định), có gạch chân (từ đang gõ được gạch, chốt khi kết thúc từ), gõ tiếng Anh bằng U.S. (chỉ báo của hệ thống), thêm dấu cho từ đã gõ.
