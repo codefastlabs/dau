@@ -124,6 +124,14 @@ struct DauApp: App {
             // View › Back (⌘[) and Forward (⌘]). No `SidebarCommands`: the sidebar is
             // fixed, so the View menu has no Show/Hide Sidebar (D9).
             SettingsHistoryCommands()
+            // Edit › Find › Find… (⌘F) for the sidebar search (D9;
+            // `SettingsSplitViewController.performFindPanelAction(_:)`). The system's
+            // built-in group "for searching, editing, and transforming selections of
+            // text" (https://developer.apple.com/documentation/swiftui/texteditingcommands):
+            // the text-editing placement's Find, Spelling and Grammar, Substitutions,
+            // Transformations and Speech submenus
+            // (https://developer.apple.com/documentation/swiftui/commandgroupplacement/textediting).
+            TextEditingCommands()
         }
 
         Window(Text("Set Up Dấu"), id: OnboardingScene.id) {

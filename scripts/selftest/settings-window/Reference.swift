@@ -118,8 +118,9 @@ enum Reference {
     static let viewMenuKey = "View"
     static let sidebarItemKeys = ["Show Sidebar", "Hide Sidebar"]
     static let fullScreenItemKeys = ["Enter Full Screen", "Exit Full Screen"]
-    /// Edit › Find › Find… (SwiftUI's default Find submenu,
-    /// `CommandGroupPlacement.textEditing`): ⌘F puts the focus in the sidebar search field.
+    /// Edit › Find › Find… (the Find submenu of `TextEditingCommands`, added by `DauApp`):
+    /// present, ⌘F, enabled while the sidebar list has the focus; ⌘F puts the focus in the
+    /// sidebar search field (D9).
     static let editMenuKey = "Edit"
     static let findSubmenuKey = "Find"
     static let findItemKey = "Find…"

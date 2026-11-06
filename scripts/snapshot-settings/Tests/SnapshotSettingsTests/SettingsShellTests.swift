@@ -46,25 +46,16 @@ struct SettingsShellTests {
         #expect(state.searchField?.currentEditor() == nil)
     }
 
-    /// Edit › Find › Find… and Find Next, as either documented action sends them.
-    static let findItems: [(action: Selector, show: Int, next: Int)] = [
-        (#selector(SettingsSplitViewController.performFindPanelAction(_:)),
-         Int(NSFindPanelAction.showFindPanel.rawValue), Int(NSFindPanelAction.next.rawValue)),
-        (#selector(NSResponder.performTextFinderAction(_:)),
-         NSTextFinder.Action.showFindInterface.rawValue, NSTextFinder.Action.nextMatch.rawValue),
-    ]
-
-    @Test("Edit › Find (⌘F) puts the focus in the sidebar search field, by either action",
-          arguments: [0, 1])
-    func findFocusesSearch(_ index: Int) {
-        let (action, show, next) = Self.findItems[index]
+    @Test("Edit › Find › Find… (⌘F) puts the focus in the sidebar search field")
+    func findFocusesSearch() {
         let state = SettingsWindowState(.typing)
         let controller = controller(state)
         let window = hiddenWindow(controller)
+        let action = #selector(SettingsSplitViewController.performFindPanelAction(_:))
         let find = NSMenuItem(title: "Find…", action: action, keyEquivalent: "f")
-        find.tag = show
+        find.tag = Int(NSFindPanelAction.showFindPanel.rawValue)
         let findNext = NSMenuItem(title: "Find Next", action: action, keyEquivalent: "g")
-        findNext.tag = next
+        findNext.tag = Int(NSFindPanelAction.next.rawValue)
         #expect(controller.validateMenuItem(find))
         #expect(!controller.validateMenuItem(findNext))
         #expect(state.searchField?.currentEditor() == nil)

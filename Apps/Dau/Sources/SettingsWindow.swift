@@ -194,13 +194,13 @@ final class SettingsSplitViewController: NSSplitViewController {
     /// AppKit's own Show/Hide Sidebar action (`toggleSidebar(_:)`,
     /// https://developer.apple.com/documentation/appkit/nssplitviewcontroller/togglesidebar(_:))
     /// stays off should any menu item or key send it, and Edit › Find › Find… is on while
-    /// the sidebar has its search field: the controller validates its actions
+    /// the sidebar has its search field (the other Find items stay off): the controller
+    /// validates its actions
     /// (https://developer.apple.com/documentation/appkit/nsuserinterfacevalidations).
     override func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
         if item.action == #selector(NSSplitViewController.toggleSidebar(_:)) { return false }
-        if item.action == #selector(NSResponder.performTextFinderAction(_:))
-            || item.action == #selector(performFindPanelAction(_:)) {
-            return Self.showsFind(item) && state.searchField != nil
+        if item.action == #selector(performFindPanelAction(_:)) {
+            return item.tag == Self.showFindPanelTag && state.searchField != nil
         }
         return super.validateUserInterfaceItem(item)
     }
@@ -212,48 +212,27 @@ final class SettingsSplitViewController: NSSplitViewController {
         validateUserInterfaceItem(menuItem)
     }
 
-    /// Edit › Find › Find… (⌘F) puts the focus in the sidebar's search field, as the
-    /// system's sidebar search did. The item travels up the responder chain, which runs
-    /// through this controller from either column. Apple documents two actions for it,
-    /// told apart by the item's tag; SwiftUI does not document which its default Find
-    /// submenu (`CommandGroupPlacement.textEditing`,
-    /// https://developer.apple.com/documentation/swiftui/commandgroupplacement/textediting)
-    /// sends, so both are handled:
-    /// - `performFindPanelAction(_:)` with `NSFindPanelAction.showFindPanel`
-    ///   (https://developer.apple.com/documentation/appkit/nstextview/performfindpanelaction(_:),
-    ///   https://developer.apple.com/documentation/appkit/nsfindpanelaction/showfindpanel).
-    ///   SwiftUI's binary references this selector and not the other (its selector
-    ///   references read in-process, macOS 27.2), and ⌘F did nothing while only the other
-    ///   was handled (run.sh --focus 06/11/2026);
-    /// - `performTextFinderAction(_:)` with `NSTextFinder.Action.showFindInterface`
-    ///   (https://developer.apple.com/documentation/appkit/nsresponder/performtextfinderaction(_:),
-    ///   https://developer.apple.com/documentation/appkit/nstextfinder/action/showfindinterface).
-    /// The field becomes first responder with `makeFirstResponder(_:)`
+    /// Edit › Find › Find… (⌘F; the Find submenu of `TextEditingCommands` in `DauApp`)
+    /// puts the focus in the sidebar's search field (D9). The item travels up the
+    /// responder chain, which runs through this controller from either column, as AppKit's
+    /// find action `performFindPanelAction(_:)` with the tag
+    /// `NSFindPanelAction.showFindPanel`
+    /// (https://developer.apple.com/documentation/appkit/nstextview/performfindpanelaction(_:),
+    /// https://developer.apple.com/documentation/appkit/nsfindpanelaction/showfindpanel).
+    /// SwiftUI does not document which action its Find submenu sends; its binary
+    /// references this selector and not `performTextFinderAction:` (its selector
+    /// references, read in-process on macOS 27.2). run.sh --focus checks the item and ⌘F
+    /// on the real window. The field becomes first responder with `makeFirstResponder(_:)`
     /// (https://developer.apple.com/documentation/appkit/nswindow/makefirstresponder(_:)).
     /// A responder nearer the focus that handles Find itself (the Apps page's toolbar
     /// search field) answers first.
     @objc func performFindPanelAction(_ sender: Any?) {
-        showSearchField(sender)
-    }
-
-    override func performTextFinderAction(_ sender: Any?) {
-        showSearchField(sender)
-    }
-
-    /// The item asks to show the find interface: its tag, for either action.
-    private static func showsFind(_ item: any NSValidatedUserInterfaceItem) -> Bool {
-        switch item.action {
-        case #selector(performFindPanelAction(_:)): item.tag == Int(NSFindPanelAction.showFindPanel.rawValue)
-        case #selector(NSResponder.performTextFinderAction(_:)): item.tag == NSTextFinder.Action.showFindInterface.rawValue
-        default: false
-        }
-    }
-
-    private func showSearchField(_ sender: Any?) {
-        guard let item = sender as? NSValidatedUserInterfaceItem, Self.showsFind(item),
+        guard (sender as? NSValidatedUserInterfaceItem)?.tag == Self.showFindPanelTag,
               let field = state.searchField else { return }
         field.window?.makeFirstResponder(field)
     }
+
+    private static let showFindPanelTag = Int(NSFindPanelAction.showFindPanel.rawValue)
 }
 
 // MARK: - Sidebar
