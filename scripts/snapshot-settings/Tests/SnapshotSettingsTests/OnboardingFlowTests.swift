@@ -180,6 +180,8 @@ struct OnboardingFlowTests {
         flow.skip()
         let run = Task { await flow.enable() }
         await settle { installer.enableWaiting }
+        #expect(flow.enableScreen == .waiting)
+        #expect(flow.canGoBack)
         flow.back()
         await run.value
         #expect(flow.step == .oldInputMethods)
@@ -187,7 +189,143 @@ struct OnboardingFlowTests {
         #expect(flow.problem == nil)
         await settle { !installer.enableWaiting }
         #expect(!installer.enableWaiting)
+        // The cancelled run left no state behind: back on step 2, the screen is "ready".
+        flow.skip()
+        #expect(flow.enableScreen == .ready)
+        #expect(installer.calls == ["enable"])
     }
+
+    @Test("Quay lại on step 2: shown on ready, waiting and error once step 1 was part of the onboarding; not on done or failed")
+    func backVisibility() async {
+        // Came through step 1, then quit the other input method: step 1 is done.
+        let (flow, detector, installer) = flow([openKey], status: .installed(version: nil))
+        flow.start()
+        #expect(flow.cameThroughOldInputMethods)
+        #expect(!flow.canGoBack)   // step 1 itself
+        detector.found = []
+        flow.refresh()
+        #expect(flow.step == .enable)
+        #expect(flow.enableScreen == .ready)
+        #expect(flow.canGoBack)
+
+        installer.enableWaits = true
+        let run = Task { await flow.enable() }
+        await settle { installer.enableWaiting }
+        #expect(flow.enableScreen == .waiting)
+        #expect(flow.canGoBack)
+        installer.release = .notEnabled
+        await run.value
+        #expect(flow.enableScreen == .notEnabled)
+        #expect(!flow.canGoBack)   // "Chưa bật được" keeps its own buttons
+
+        installer.enableWaits = false
+        installer.failure = .invalidSignature
+        await flow.enable()
+        #expect(flow.enableScreen == .error)
+        #expect(flow.canGoBack)
+
+        installer.failure = nil
+        installer.enableOutcome = .enabled
+        await flow.enable()
+        #expect(flow.enableScreen == .done)
+        #expect(!flow.canGoBack)   // after Dấu is on: no going back
+        flow.next()
+        #expect(flow.canGoBack)    // step 3 → step 2
+    }
+
+    @Test("Quay lại is hidden when step 1 never showed")
+    func noBackWithoutStepOne() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        flow.start()
+        #expect(!flow.cameThroughOldInputMethods)
+        #expect(flow.enableScreen == .ready)
+        #expect(!flow.canGoBack)
+        flow.back()   // ignored
+        #expect(flow.step == .enable)
+        installer.failure = .invalidSignature
+        await flow.enable()
+        #expect(flow.enableScreen == .error)
+        #expect(!flow.canGoBack)
+        // An input method started later does not bring step 1 into this onboarding.
+        let (later, detector, _) = self.flow(status: .installed(version: nil))
+        later.start()
+        detector.found = [openKey]
+        later.refresh()
+        #expect(later.step == .enable)
+        #expect(!later.canGoBack)
+    }
+
+    @Test("Quay lại goes to step 1 and rechecks: still running shows the conflict screen")
+    func backWhileRunning() {
+        let (flow, _, _) = flow([openKey], status: .installed(version: nil))
+        flow.start()
+        flow.skip()
+        flow.back()
+        #expect(flow.step == .oldInputMethods)
+        #expect(flow.oldInputMethodsScreen == .conflict)
+        #expect(flow.conflicts.map(\.name) == ["OpenKey"])
+        flow.next()   // "Tiếp tục" is not on the conflict screen
+        #expect(flow.step == .oldInputMethods)
+    }
+
+    @Test("Quay lại with the old input method quit: \"Đã tắt bộ gõ cũ\", which stays on activation; Tiếp tục goes to step 2")
+    func backToDone() async {
+        let (flow, detector, installer) = flow([openKey], status: .installed(version: nil))
+        flow.start()
+        detector.found = []
+        flow.refresh()
+        #expect(flow.step == .enable)
+        installer.failure = .invalidSignature
+        await flow.enable()
+        #expect(flow.enableScreen == .error)
+        flow.back()
+        #expect(flow.step == .oldInputMethods)
+        #expect(flow.oldInputMethodsScreen == .done)
+        #expect(flow.foundOldInputMethods.map(\.name) == ["OpenKey"])
+        // Step 1 is still the current one in the sidebar (artboard OnboardingConflictDone).
+        #expect(flow.state(of: .oldInputMethods) == .current)
+        #expect(flow.state(of: .enable) == .pending)
+        #expect(!flow.canGoBack)
+        // The window becoming active again does not move on by itself.
+        flow.refresh()
+        #expect(flow.step == .oldInputMethods)
+        #expect(flow.oldInputMethodsScreen == .done)
+        flow.next()   // "Tiếp tục"
+        #expect(flow.step == .enable)
+        // The error was dropped on the way back: the screen is "ready" again.
+        #expect(flow.enableScreen == .ready)
+        #expect(flow.errorDetail == nil)
+        #expect(flow.canGoBack)
+    }
+
+    @Test("on \"Đã tắt bộ gõ cũ\", an old input method running again brings back the conflict screen")
+    func conflictReturns() {
+        let (flow, detector, _) = flow([openKey], status: .installed(version: nil))
+        flow.start()
+        detector.found = []
+        flow.refresh()
+        flow.back()
+        #expect(flow.oldInputMethodsScreen == .done)
+        let evKey = FakeInputMethodDetector.running("EVKey", bundleID: "com.lamquangminh.evkey")
+        detector.found = [openKey, evKey]
+        flow.refresh()   // the window became active
+        #expect(flow.step == .oldInputMethods)
+        #expect(flow.oldInputMethodsScreen == .conflict)
+        #expect(flow.conflicts.map(\.name) == ["OpenKey", "EVKey"])
+        // Quit again: "Đã tắt bộ gõ cũ" lists every one found in this onboarding.
+        detector.found = []
+        flow.refresh()
+        #expect(flow.step == .oldInputMethods)
+        #expect(flow.oldInputMethodsScreen == .done)
+        #expect(flow.foundOldInputMethods.map(\.name) == ["OpenKey", "EVKey"])
+        // A new start that finds nothing running forgets step 1 and skips it.
+        flow.start()
+        #expect(flow.step == .enable)
+        #expect(flow.foundOldInputMethods.isEmpty)
+        #expect(!flow.cameThroughOldInputMethods)
+        #expect(!flow.canGoBack)
+    }
+
 
     @Test("Thử lại after an error asks again and clears the detail; a failed step shows each kind of error")
     func retryAfterError() async {
@@ -337,6 +475,55 @@ struct ShortcutReadingTests {
         #expect(InputSourceShortcut(keys: [], globeKey: true).inlineText == "🌐")
         #expect(InputSourceShortcut(keys: ["⌃", "Space"], globeKey: true).inlineText == "⌃Space or 🌐")
         #expect(String(format: SnapshotLocalization.text("%@ or 🌐", "vi"), "⌃Space") == "⌃Space hoặc 🌐")
+    }
+}
+
+@MainActor
+@Suite("Shortcut drawn as keycaps in onboarding sentences (N5)")
+struct ShortcutSentenceTests {
+    let control = InputSourceShortcut(keys: ["⌃", "Space"], globeKey: false)
+    let marker = ShortcutSentence.marker
+
+    @Test("the Done sentence splits around the keys, in English and Vietnamese")
+    func doneSentence() throws {
+        let english = ChooseDauLine.sentence(englishLayout: "U.S.")
+        let parts = try #require(ShortcutSentence.parts(of: english))
+        #expect(parts == ShortcutSentence.Parts(before: "Choose Dấu from the Input menu, or press",
+                                                after: "to switch between Dấu and “U.S.”.",
+                                                spaceBefore: true, spaceAfter: true))
+        #expect(ShortcutSentence.spoken(english, shortcut: control)
+                == "Choose Dấu from the Input menu, or press ⌃Space to switch between Dấu and “U.S.”.")
+        let key = "Choose Dấu from the Input menu, or press %@ to switch between Dấu and “%@”."
+        let vietnamese = String(format: SnapshotLocalization.text(key, "vi"), marker, "U.S.")
+        let vi = try #require(ShortcutSentence.parts(of: vietnamese))
+        #expect(vi.before == "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn")
+        #expect(vi.after == "để chuyển giữa Dấu và “U.S.”.")
+        // No English layout name: the other sentence, same split.
+        let general = try #require(ShortcutSentence.parts(of: ChooseDauLine.sentence(englishLayout: nil)))
+        #expect(general.after == "to switch between Dấu and an English keyboard.")
+        // No placeholder line about the shortcut anywhere (N5).
+        #expect(!english.contains("("))
+    }
+
+    @Test("the step 3 hint keeps the comma against the keys")
+    func notActiveSentence() throws {
+        let english = TypingStep.notActiveSentence(dauInputSource: "Dấu – Vietnamese")
+        let parts = try #require(ShortcutSentence.parts(of: english))
+        #expect(parts.before == "Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu or press")
+        #expect(parts.after == ", then try typing.")
+        #expect(parts.spaceBefore && !parts.spaceAfter)
+        let key = "Dấu isn’t the current input source: choose “%@” from the Input menu or press %@, then try typing."
+        let vietnamese = String(format: SnapshotLocalization.text(key, "vi"), "Dấu – Tiếng Việt", marker)
+        let vi = try #require(ShortcutSentence.parts(of: vietnamese))
+        #expect(vi.before == "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào hoặc nhấn")
+        #expect(vi.after == "rồi gõ thử.")
+        #expect(vi.spaceBefore && vi.spaceAfter)
+        #expect(ShortcutSentence.words(vi.after) == ["rồi", "gõ", "thử."])
+    }
+
+    @Test("a sentence without the marker is not split")
+    func noMarker() {
+        #expect(ShortcutSentence.parts(of: "Choose Dấu from the Input menu.") == nil)
     }
 }
 

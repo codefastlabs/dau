@@ -73,7 +73,8 @@ enum DebugCapture {
 
     /// `--capture-onboarding <dir>`: the onboarding window on fixed services (OpenKey
     /// running, Dấu installed but not enabled). Writes `onboarding-<step>-<mode>.png` for
-    /// steps 1, 2 before "Bật Dấu" (`2`), 2 with an unreadable shortcut and another
+    /// steps 1, 2 before "Bật Dấu" (`2`), 1 after "Quay lại" with OpenKey quit
+    /// (`1-done`), 2 with an unreadable shortcut and another
     /// Vietnamese source on (`2-notes`), 2 waiting for Allow (`2-waiting`), 2 when macOS
     /// left Dấu off (`2-failed`), 2 on an install error (`2-error`), 2 once enabled
     /// (`2-done`), 2 enabled with no shortcut set (`2-done-noshortcut`) and 3, light and
@@ -149,8 +150,12 @@ enum DebugCapture {
                     ("1", { flow.show(.oldInputMethods) }),
                     // As in the mockup: the user quit OpenKey, step 1 is done.
                     ("2", { detector?.found = []; flow.refresh(); flow.show(.enable) }),
-                    // The shortcut cannot be read and another Vietnamese source is on (D14).
+                    // "Quay lại" from there: step 1 says OpenKey is off.
+                    ("1-done", { flow.back() }),
+                    // "Tiếp tục"; the shortcut cannot be read and another Vietnamese
+                    // source is on (D14).
                     ("2-notes", {
+                        flow.next()
                         shortcutNow = InputSourceShortcut.Reading.unknown
                         detector?.otherSources = ["Tiếng Việt – Telex"]
                         flow.refresh()

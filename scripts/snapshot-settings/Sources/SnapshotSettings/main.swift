@@ -17,7 +17,7 @@ import DauShared
 //   sizes exactly. The other appearance uses this tool's window.
 // - With <onboarding-capture-dir> (Dau --capture-onboarding <dir>), also writes
 //   "onboarding-<step>-compare-<mode>.png" (mockup | real window) for the onboarding
-//   artboards (OnboardingConflict, OnboardingEnable, OnboardingEnableNotes,
+//   artboards (OnboardingConflict, OnboardingConflictDone, OnboardingEnable, OnboardingEnableNotes,
 //   OnboardingEnableWaiting, OnboardingEnableFailed, OnboardingEnableError,
 //   OnboardingEnableDone, OnboardingEnableDoneNoShortcut, Onboarding) and their element frames. There is no dark artboard: the
 //   dark compare puts the light mockup beside the dark window.
@@ -212,7 +212,8 @@ MainActor.assumeIsolated {
                 "onbSegmented": "document.querySelector('main .seg') && document.querySelector('main .seg').getBoundingClientRect()",
                 "onbButtons": "document.querySelector('main > div:last-child').getBoundingClientRect()",
             ]
-            for (step, file) in [("1", "OnboardingConflict"), ("2", "OnboardingEnable"),
+            for (step, file) in [("1", "OnboardingConflict"), ("1-done", "OnboardingConflictDone"),
+                                 ("2", "OnboardingEnable"),
                                  ("2-notes", "OnboardingEnableNotes"),
                                  ("2-waiting", "OnboardingEnableWaiting"), ("2-failed", "OnboardingEnableFailed"),
                                  ("2-error", "OnboardingEnableError"), ("2-done", "OnboardingEnableDone"),

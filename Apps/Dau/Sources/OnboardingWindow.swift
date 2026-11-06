@@ -198,7 +198,11 @@ struct OnboardingStepView: View {
     var body: some View {
         Group {
             switch flow.step {
-            case .oldInputMethods: ConflictStep()
+            case .oldInputMethods:
+                switch flow.oldInputMethodsScreen {
+                case .conflict: ConflictStep()
+                case .done: ConflictDoneStep()
+                }
             case .enable: EnableStep()
             case .typing: TypingStep()
             }
@@ -320,6 +324,36 @@ struct ConflictStep: View {
     }
 }
 
+/// Step 1 after "Quay lại" when no old input method runs any more (artboard
+/// OnboardingConflictDone): the ones found in this onboarding, each marked "Đã tắt", and
+/// "Tiếp tục" to step 2. One that starts again brings back the conflict screen.
+struct ConflictDoneStep: View {
+    @Environment(OnboardingFlow.self) private var flow
+
+    var body: some View {
+        StepLayout(step: .oldInputMethods, screen: ".done", title: Text("Other Input Methods Turned Off"),
+                   subtitle: Text("No other Vietnamese input method is running, so marks won’t be typed twice.")) {
+            OnboardingCard {
+                ForEach(flow.foundOldInputMethods) { app in
+                    HStack(spacing: 12) {
+                        OtherAppIcon(bundleID: app.bundleID, name: app.name)
+                        Text(verbatim: app.name)
+                            .font(.system(size: 13, weight: .semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        StatusChip(text: Text("Turned Off"), tint: .green)
+                    }
+                    .accessibilityElement(children: .combine)
+                }
+            }
+            .layoutProbe("onbCard-1.done")
+        } buttons: {
+            Button("Continue") { flow.next() }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
+        }
+    }
+}
+
 struct ConflictCard: View {
     let app: DetectedInputMethod
 
@@ -358,12 +392,22 @@ struct ConflictCard: View {
 /// "Đang chạy": a capsule on the system orange tint.
 struct RunningChip: View {
     var body: some View {
-        Text("Running")
+        StatusChip(text: Text("Running"), tint: .orange)
+    }
+}
+
+/// A status capsule on a system color's light tint ("Đang chạy" orange, "Đã tắt" green).
+struct StatusChip: View {
+    let text: Text
+    let tint: Color
+
+    var body: some View {
+        text
             .font(.system(size: 12))
             .foregroundStyle(.primary)
             .padding(.horizontal, 9)
             .frame(height: 22)
-            .background(Color.orange.quaternary, in: Capsule())
+            .background(tint.quaternary, in: Capsule())
     }
 }
 
@@ -679,27 +723,32 @@ struct AllowDialogIllustration: View {
 }
 
 /// "Chọn Dấu trong menu nhập liệu, hoặc bấm <phím tắt thật> để chuyển giữa Dấu và U.S.":
-/// the real shortcut (N5), as the "Sau khi bật" card reads it. No shortcut set: says so
-/// and offers "Đặt phím tắt trong System Settings" (`OnboardingEnableDoneNoShortcut`).
-/// A shortcut that cannot be read: only "Chọn Dấu trong menu nhập liệu." and the same
-/// button, no claim about the shortcut.
+/// the real shortcut (N5), as the "Sau khi bật" card reads it, drawn as keycaps like the
+/// Settings "Gõ phím" page (`OnboardingEnableDone`). No shortcut set: says so and offers
+/// "Đặt phím tắt trong System Settings" (`OnboardingEnableDoneNoShortcut`). A shortcut
+/// that cannot be read: only "Chọn Dấu trong menu nhập liệu." and the same button, no
+/// claim about the shortcut.
 struct ChooseDauLine: View {
     let reading: InputSourceShortcut.Reading
     let englishLayout: String?
     private let ui = SystemUINames.system()
 
+    /// The sentence with `ShortcutSentence.marker` where the shortcut goes.
+    static func sentence(englishLayout: String?) -> String {
+        let marker = ShortcutSentence.marker
+        if let englishLayout {
+            return String(localized: "Choose Dấu from the Input menu, or press \(marker) to switch between Dấu and “\(englishLayout)”.")
+        }
+        return String(localized: "Choose Dấu from the Input menu, or press \(marker) to switch between Dấu and an English keyboard.")
+    }
+
     var body: some View {
         switch reading {
         case .shortcut(let shortcut):
-            if let englishLayout {
-                Text("Choose Dấu from the Input menu, or press \(shortcut.inlineText) to switch between Dấu and “\(englishLayout)”.")
-                    .font(.system(size: 13))
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                Text("Choose Dấu from the Input menu, or press \(shortcut.inlineText) to switch between Dấu and an English keyboard.")
-                    .font(.system(size: 13))
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+            // The artboard lays the text before the keys, the keys and the text after them
+            // side by side, each moving to the next line whole when it does not fit.
+            ShortcutSentence(sentence: Self.sentence(englishLayout: englishLayout), shortcut: shortcut,
+                             fontSize: 13, wrap: .pieces)
         case .none:
             Text("Choose Dấu from the Input menu. macOS has no shortcut yet to switch quickly between Dấu and an English keyboard.")
                 .font(.system(size: 13))
@@ -710,6 +759,172 @@ struct ChooseDauLine: View {
                 .font(.system(size: 13))
                 .fixedSize(horizontal: false, vertical: true)
             SystemSettingsLinkButton(title: String(localized: "Set a Shortcut in \(ui.systemSettings)"))
+        }
+    }
+}
+
+/// A sentence that names the input-source shortcut, with the shortcut drawn as keycaps
+/// (`ShortcutKeycaps`, the Settings "Gõ phím" page's) where the text names it. The
+/// sentence is localized with `marker` in the shortcut's place, so a translation puts the
+/// keys wherever its word order needs them. VoiceOver reads it as one sentence with the
+/// keys spelled out (`InputSourceShortcut.inlineText`).
+struct ShortcutSentence: View {
+    /// U+FFFC OBJECT REPLACEMENT CHARACTER: stands for the keycaps in the localized text.
+    nonisolated static let marker = "\u{FFFC}"
+
+    enum Wrap {
+        /// The text before the keys, the keys and the text after them stay three pieces,
+        /// laid side by side (artboard OnboardingEnableDone).
+        case pieces
+        /// Word by word, as running text (artboard OnboardingNotSelected).
+        case words
+    }
+
+    let sentence: String
+    let shortcut: InputSourceShortcut
+    var fontSize: CGFloat
+    var keycaps: Keycap.Size = .regular
+    var wrap: Wrap
+
+    /// The text before and after the marker, without the spaces around it, and whether
+    /// a space separates each from the keys (a comma right after them does not).
+    struct Parts: Equatable {
+        var before: String
+        var after: String
+        var spaceBefore: Bool
+        var spaceAfter: Bool
+    }
+
+    /// nil when the localized sentence has no marker.
+    nonisolated static func parts(of sentence: String) -> Parts? {
+        let halves = sentence.components(separatedBy: marker)
+        guard halves.count == 2 else { return nil }
+        let before = halves[0], after = halves[1]
+        return Parts(before: before.trimmingCharacters(in: .whitespaces),
+                     after: after.trimmingCharacters(in: .whitespaces),
+                     spaceBefore: before.last?.isWhitespace ?? false,
+                     spaceAfter: after.first?.isWhitespace ?? false)
+    }
+
+    /// What VoiceOver reads: the sentence with the keys as text.
+    nonisolated static func spoken(_ sentence: String, shortcut: InputSourceShortcut) -> String {
+        sentence.replacingOccurrences(of: marker, with: shortcut.inlineText)
+    }
+
+    var body: some View {
+        Group {
+            if let parts = Self.parts(of: sentence) {
+                switch wrap {
+                case .pieces: piecesFlow(parts)
+                case .words: wordsFlow(parts)
+                }
+            } else {
+                Text(verbatim: Self.spoken(sentence, shortcut: shortcut))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .font(.system(size: fontSize))
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(Text(verbatim: Self.spoken(sentence, shortcut: shortcut)))
+        .accessibilityAddTraits(.isStaticText)
+    }
+
+    private var caps: some View {
+        ShortcutKeycaps(shortcut: shortcut, size: keycaps, inSentence: true)
+    }
+
+    // Artboard OnboardingEnableDone: 6 pt between the pieces and between the lines.
+    private func piecesFlow(_ parts: Parts) -> some View {
+        InlineFlow(spacing: 6, lineSpacing: 6) {
+            if !parts.before.isEmpty { Text(verbatim: parts.before) }
+            caps
+            if !parts.after.isEmpty { Text(verbatim: parts.after) }
+        }
+    }
+
+    // Artboard OnboardingNotSelected: a space between words, lines as tall as a keycap
+    // plus 4 pt (22 pt apart with the small keycaps).
+    private func wordsFlow(_ parts: Parts) -> some View {
+        var before = Self.words(parts.before)
+        var after = Self.words(parts.after)
+        // Punctuation against the keys stays on their line.
+        let leading = parts.spaceBefore ? nil : before.popLast()
+        let trailing = parts.spaceAfter ? nil : (after.isEmpty ? nil : after.removeFirst())
+        let space = (" " as NSString).size(withAttributes: [.font: NSFont.systemFont(ofSize: fontSize)]).width
+        return InlineFlow(spacing: space, lineSpacing: 4, minLineHeight: keycaps.height) {
+            ForEach(Array(before.enumerated()), id: \.offset) { _, word in Text(verbatim: word) }
+            HStack(spacing: 0) {
+                if let leading { Text(verbatim: leading) }
+                caps
+                if let trailing { Text(verbatim: trailing) }
+            }
+            ForEach(Array(after.enumerated()), id: \.offset) { _, word in Text(verbatim: word) }
+        }
+    }
+
+    nonisolated static func words(_ text: String) -> [String] {
+        text.split(whereSeparator: \.isWhitespace).map(String.init)
+    }
+}
+
+/// Lays pieces out as running text: left to right; a piece that does not fit on the line
+/// starts the next one, and a piece wider than a whole line wraps inside it (then the next
+/// piece starts a new line), as CSS flex-wrap does in the artboards. The pieces of a line
+/// are centered on it (keycaps are taller than the text).
+struct InlineFlow: Layout {
+    var spacing: CGFloat
+    var lineSpacing: CGFloat
+    var minLineHeight: CGFloat = 0
+
+    private struct Line {
+        var items: [(index: Int, size: CGSize)] = []
+        var width: CGFloat = 0
+        var height: CGFloat = 0
+    }
+
+    private func lines(width maxWidth: CGFloat, _ subviews: Subviews) -> [Line] {
+        var lines = [Line()]
+        func add(_ index: Int, _ size: CGSize) {
+            let gap = lines[lines.count - 1].items.isEmpty ? 0 : spacing
+            lines[lines.count - 1].items.append((index, size))
+            lines[lines.count - 1].width += gap + size.width
+            lines[lines.count - 1].height = max(lines[lines.count - 1].height, size.height, minLineHeight)
+        }
+        for (index, subview) in subviews.enumerated() {
+            let ideal = subview.sizeThatFits(.unspecified)
+            let current = lines[lines.count - 1]
+            let gap = current.items.isEmpty ? 0 : spacing
+            if current.width + gap + ideal.width <= maxWidth {
+                add(index, ideal)
+                continue
+            }
+            if !current.items.isEmpty { lines.append(Line()) }
+            if ideal.width <= maxWidth {
+                add(index, ideal)
+            } else {
+                add(index, subview.sizeThatFits(ProposedViewSize(width: maxWidth, height: nil)))
+                lines.append(Line())
+            }
+        }
+        return lines.filter { !$0.items.isEmpty }
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let lines = lines(width: proposal.width ?? .infinity, subviews)
+        let height = lines.map(\.height).reduce(0, +) + lineSpacing * CGFloat(max(0, lines.count - 1))
+        return CGSize(width: lines.map(\.width).max() ?? 0, height: height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for line in lines(width: bounds.width, subviews) {
+            var x = bounds.minX
+            for (index, size) in line.items {
+                subviews[index].place(at: CGPoint(x: x, y: y + (line.height - size.height) / 2),
+                                      anchor: .topLeading, proposal: ProposedViewSize(size))
+                x += size.width + spacing
+            }
+            y += line.height + lineSpacing
         }
     }
 }
@@ -840,7 +1055,7 @@ struct TypingStep: View {
                 .layoutProbe("onbTryField-3")
                 Hint(Text("Try: \(SettingsSamples.tryIt(model.settings.typingMethod).keys)"))
                 if flow.status != .selected {
-                    Hint(notActiveText)
+                    notActive
                 }
             }
             .layoutProbe("onbCard-3")
@@ -852,12 +1067,22 @@ struct TypingStep: View {
         }
     }
 
-    /// The field types with the current input source, which is not Dấu yet.
-    private var notActiveText: Text {
+    /// The field types with the current input source, which is not Dấu yet. The real
+    /// shortcut as small keycaps in the hint (N5; artboard OnboardingNotSelected).
+    @ViewBuilder private var notActive: some View {
         if let shortcut = flow.shortcut.shortcut {
-            Text("Dấu isn’t the current input source: choose “\(ui.dauInputSource)” from the Input menu or press \(shortcut.inlineText), then try typing.")
+            ShortcutSentence(sentence: Self.notActiveSentence(dauInputSource: ui.dauInputSource),
+                             shortcut: shortcut, fontSize: 12, keycaps: .small, wrap: .words)
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         } else {
-            Text("Dấu isn’t the current input source: choose “\(ui.dauInputSource)” from the Input menu, then try typing.")
+            Hint(Text("Dấu isn’t the current input source: choose “\(ui.dauInputSource)” from the Input menu, then try typing."))
         }
+    }
+
+    /// The hint with `ShortcutSentence.marker` where the shortcut goes.
+    static func notActiveSentence(dauInputSource: String) -> String {
+        let marker = ShortcutSentence.marker
+        return String(localized: "Dấu isn’t the current input source: choose “\(dauInputSource)” from the Input menu or press \(marker), then try typing.")
     }
 }

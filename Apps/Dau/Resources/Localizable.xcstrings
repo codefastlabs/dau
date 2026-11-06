@@ -1701,6 +1701,23 @@
         }
       }
     },
+    "No other Vietnamese input method is running, so marks won’t be typed twice." : {
+      "comment" : "Onboarding step 1 subtitle after Go Back, when no other input method is running any more.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No other Vietnamese input method is running, so marks won’t be typed twice."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không còn bộ gõ tiếng Việt nào khác đang chạy, nên dấu không bị gõ hai lần."
+          }
+        }
+      }
+    },
     "Not started" : {
       "comment" : "VoiceOver value of a later onboarding step.",
       "localizations" : {
@@ -1850,6 +1867,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hoặc tự thêm: %@ › **%@** › **+** › %@ › **Dấu**, rồi bấm **%@**."
+          }
+        }
+      }
+    },
+    "Other Input Methods Turned Off" : {
+      "comment" : "Onboarding step 1 title after Go Back, when no other input method is running any more.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other Input Methods Turned Off"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã tắt bộ gõ cũ"
           }
         }
       }
@@ -2955,6 +2989,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bật gạch chân cho %@"
+          }
+        }
+      }
+    },
+    "Turned Off" : {
+      "comment" : "Chip on another input method that the user has quit (onboarding step 1).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Turned Off"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã tắt"
           }
         }
       }
