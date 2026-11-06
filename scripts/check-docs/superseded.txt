@@ -28,3 +28,5 @@ install-debug\.sh	scripts/dev/install-debug.sh renamed to scripts/dev/install-in
 chữ của Dấu viết tiếng Việt	D41: app has Vietnamese and English; source language is English (06/11/2026)
 Localizable\.xcstrings`\), tiếng Việt\.	D41: catalog keys are English sentences with a Vietnamese translation (06/11/2026)
 Chuỗi giao diện tiếng Việt trong String Catalog	D41: keys are English sentences with a Vietnamese translation (06/11/2026)
+View › Show Sidebar \(⌃⌘S\)	D9: sidebar cố định, không còn lệnh Show/Hide Sidebar (06/11/2026)
+kéo đường chia vẫn thu được sidebar	D9: sidebar cố định bằng NSSplitViewController (06/11/2026)
