@@ -12,11 +12,14 @@ Nhãn dùng trong file:
 | **[SDK]** | Đọc từ `SwiftUI.swiftinterface` của SDK trên máy (chỉ chứng minh API có hay không, không nói hành vi). |
 | **[Suy luận, cần kiểm chứng]** | Suy ra từ các nguồn trên, Apple không viết thẳng. |
 | **[Phải đo]** | Chỉ trả lời được bằng cách chạy cửa sổ thật (hỏi người dùng giờ chạy, CLAUDE.md). |
+| **[Đo trên app thử]** | Đo trên app thử ném đi (`build/probe-fixed-sidebar/`, ID riêng, không phải Dấu); chỉ là quan sát, chưa phải kết luận về Dấu. |
 | **[Đo của Dấu]** | Số hay hành vi Dấu đã đo, dẫn nơi ghi; không phải tài liệu Apple. |
 
-## Hiện trạng (05/11/2026)
+## Hiện trạng (06/11/2026)
 
-- **Đã áp dụng (05/11/2026, D9):** cụm Lùi/Tiến `ControlGroup` kiểu `.navigation` ở `.navigation`, `navigationTitle` của hệ thống, `SidebarCommands`; đã gỡ `PageTitle`, `HiddenWindowTitle`, `RemoveToolbarTitle`; không chặn thu gọn sidebar. [Đo của Dấu] Gắn `.toolbar` của cụm lên trang trong cột chi tiết thì đổi trang làm item dựng lại và AXPress trên Lùi/Tiến trả lỗi -25205 dù vẫn chạy; gắn lên `NavigationSplitView` thì AXPress trả 0 (đo bằng app thử, rồi trên Dấu). `run.sh` 05/11/2026 đạt toàn bộ. Menu View có Lùi ⌘[, Tiến ⌘], "Hiển thị thanh bên" ⌃⌘S và mục toàn màn hình (điểm (a) dưới đây không xảy ra vì không còn thay nhóm `.sidebar`).
+- **Khoá sidebar bằng split view của chính app (06/11/2026, D9 sửa theo):** [Đo trên app thử] cửa sổ scene SwiftUI chứa `NSSplitViewController` do app tạo, sidebar `canCollapse = false`, `canCollapseFromWindowResize = false`, độ dày tối thiểu = tối đa = 232, nội dung SwiftUI trong `NSHostingController`, thanh công cụ và tiêu đề qua `sceneBridgingOptions`: sidebar giữ 232 qua kéo chuột, bấm đúp, đặt `AXSplitter`, đổi cỡ cửa sổ; thanh công cụ, tiêu đề, Lùi/Tiến, ⌘[ ⌘] khớp Dấu hiện tại. `searchable(placement: .sidebar)` không vào sidebar khi không có `NavigationSplitView`; thay bằng `NSSearchField` `controlSize = .large`. Chi tiết mục 10. Các gạch đầu dòng dưới đây (05/11/2026) vẫn đúng về SwiftUI.
+
+- **Đã áp dụng (05/11/2026, D9):** cụm Lùi/Tiến `ControlGroup` kiểu `.navigation` ở `.navigation`, `navigationTitle` của hệ thống, `SidebarCommands` (gỡ 06/11/2026 khi sidebar thành cố định, D9); đã gỡ `PageTitle`, `HiddenWindowTitle`, `RemoveToolbarTitle`; không chặn thu gọn sidebar. [Đo của Dấu] Gắn `.toolbar` của cụm lên trang trong cột chi tiết thì đổi trang làm item dựng lại và AXPress trên Lùi/Tiến trả lỗi -25205 dù vẫn chạy; gắn lên `NavigationSplitView` thì AXPress trả 0 (đo bằng app thử, rồi trên Dấu). `run.sh` 05/11/2026 đạt toàn bộ. Menu View có Lùi ⌘[, Tiến ⌘], "Hiển thị thanh bên" ⌃⌘S và mục toàn màn hình (điểm (a) dưới đây không xảy ra vì không còn thay nhóm `.sidebar`).
 
 - **Chặn người dùng thu gọn hay kéo rộng sidebar: SwiftUI không có API nào.** Tài liệu chỉ có `navigationSplitViewColumnWidth` (độ rộng "ưu tiên", hệ thống "cố gắng" theo) và `columnVisibility` ("điều khiển bằng mã"); không câu nào nói hai thứ này ngăn người dùng kéo. Tra toàn bộ chỉ mục tài liệu SwiftUI và `SwiftUI.swiftinterface` không thấy API nào khác ([SDK]). HIG còn khuyên điều ngược lại: cho người dùng ẩn sidebar và có nhiều cách mở lại (mục 1.6). `FixedSidebar` dùng API công khai của AppKit nhưng đặt lên cấu trúc bên trong mà SwiftUI không công bố, nên không có cam kết nào là còn chạy ở macOS sau.
 - **Thanh công cụ co còn 32 pt khi gỡ nút sidebar: Apple không ghi tài liệu cho hành vi này.** Cách được tài liệu hỗ trợ để có tiêu đề hệ thống nằm ngay sau cụm nút như System Settings: đặt nút điều hướng ở `ToolbarItemPlacement.navigation`, nơi tài liệu ghi là "mép đầu thanh công cụ, **trước tiêu đề inline**" (mục 2.4). Thanh có cao 52 pt và tiêu đề có 15 pt đậm khi chỉ có nút ở `.navigation` hay không thì phải đo.
@@ -209,3 +212,20 @@ Mọi mục dưới đây là thao tác trên cửa sổ thật, chiếm màn h�
 3. `columnVisibility`: kéo đường chia tới khi sidebar thu lại, ghi giá trị binding; thử đặt lại `.all` (mục 1.2).
 4. Menu View khi không có `CommandGroup(replacing: .sidebar)`, khi có, và khi có `SidebarCommands`: các mục và phím tắt (mục 1.5).
 5. System Settings, chỉ đọc: `AXSplitter`, menu View, cụm Lùi/Tiến (mục 6).
+
+## 10. Sidebar cố định bằng `NSSplitViewController` (đo trên app thử, 06/11/2026)
+
+[Đo trên app thử] macOS 27.2, `build/probe-fixed-sidebar/` (git bỏ qua), đo qua Accessibility với `scripts/selftest/settings-window/Reference.swift` làm chuẩn. Hai lượt: 6 cấu hình (09:40), rồi cấu hình chọn (10:00).
+
+| Cấu hình | Sidebar cố định 232 (kéo, bấm đúp, `AXSplitter`, đổi cỡ) | Thanh 52, tiêu đề x 317 15 pt, Lùi 240,8 36×36, Tiến 276,8 37×36 | ⌘[ ⌘] trong menu View | Ô tìm sidebar |
+|---|---|---|---|---|
+| v1: scene `Window` SwiftUI + `NSViewControllerRepresentable` bọc split view, `.searchable(placement: .sidebar)` | có | khớp | chạy | lên thanh công cụ (509,7 224×38) |
+| v1 + `NSSearchField` `controlSize = .large` (`NSViewRepresentable`, lề 10) | có | khớp | chạy | 10,62 212×28 (System Settings 10,61 212×28); hàng đầu y 100 (98); gõ "upd" lọc còn 1 mục |
+| v2: `NSWindow` do app tạo | có | khớp | **không chạy** (`focusedSceneValue` không tới cửa sổ AppKit); menu View thêm "Show Tab Bar", "Show All Tabs" | lên thanh công cụ |
+| v2 + `NSToolbar` AppKit (`sidebarTrackingSeparator`, nhóm `isNavigational`) | có | Lùi 240,9 38×36, Tiến 278,9 38×36 (lệch) | không chạy | lên thanh công cụ |
+| v2 + `NSSearchField` cỡ thường | có | khớp | không chạy | 10,63 212×24 |
+| v2, đường chia để AppKit tự quản | có | khớp | không chạy | — ; con trỏ đổi cỡ hiện ở đường chia (bản có `splitView(_:effectiveRect:forDrawnRect:ofDividerAt:)` trả `.zero` cho mũi tên thường) |
+
+- `NSSearchField` theo `controlSize`: mini 16, small 20, regular 24, large 28, extraLarge 36 (`intrinsicContentSize`, đo ngoài màn hình); phải đặt cỡ cả phía AppKit lẫn `.controlSize(.large)` phía SwiftUI.
+- 20 lần đổi cỡ cửa sổ 740 ↔ 976: trung vị 9,7 ms, tối đa 22,2 ms mỗi lần (v1 + ô tìm); sidebar không lệch lần nào. Chưa có số so sánh của `NavigationSplitView` hiện tại.
+- Ô tìm `NSSearchField` nhận focus lúc mở cửa sổ (hàng chọn màu xám); với `.searchable` focus ở danh sách. Đặt focus đầu tiên là việc khi làm vào Dấu.

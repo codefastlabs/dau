@@ -20,9 +20,9 @@
 #   3b. --capture-banner                       banner-states/ (banner states laid out)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
 # ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
-# Settings window only. Launch 4 also drives the window shell with real input: ⌘[ ⌘] and
-# ⌃⌘S key events, the View menu opened and closed, the sidebar divider dragged with the
-# mouse (the pointer moves):
+# Settings window only. Launch 4 also drives the window shell with real input: ⌘[ ⌘] key
+# events, the View menu opened and closed, the pointer over the sidebar divider, the
+# divider dragged and double-clicked with the mouse (the pointer moves):
 #   4. When scrolling scroll bars              real/                  ax-check --geometry
 #   5. Always scroll bars                      always/                ax-check --pixels
 #   6. --not-enabled                           banner/                ax-check --banner
@@ -33,7 +33,8 @@
 # Before each real launch the saved "NSWindow Frame settings" of com.codefastlabs.dau is
 # deleted, so the window opens at the scene's default size (ax-check reads it before it
 # moves anything); both saved frames, and the sidebar's saved split (AppKit's autosave,
-# changed by the collapse check), are put back as they were at the end.
+# left by builds before the fixed sidebar, which has none), are put back as they were at
+# the end.
 set -euo pipefail
 here=${0:A:h}
 out=${1:?output dir}

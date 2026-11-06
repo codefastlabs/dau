@@ -27,7 +27,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 - **Bước 3, chọn kiểu gõ và gõ thử.** Ví dụ gõ thử phải đúng quy tắc của kiểu gõ đang chọn.
 
 ## Cửa sổ Cài đặt
-- Thanh công cụ có cụm Lùi/Tiến trước tiêu đề trang (như System Settings; lịch sử các mục đã xem; mở cửa sổ thì cả hai tắt), tiêu đề là tiêu đề hệ thống (D9). Sidebar thu được bằng cách kéo đường chia; mở lại bằng View › Show Sidebar (⌃⌘S) (D9, theo HIG). Artboard: các artboard "Cài đặt – …", canvas phiên bản 127.
+- Thanh công cụ có cụm Lùi/Tiến trước tiêu đề trang (như System Settings; lịch sử các mục đã xem; mở cửa sổ thì cả hai tắt), tiêu đề là tiêu đề hệ thống (D9). Sidebar cố định như System Settings: không kéo rộng hẹp, không thu gọn, menu View không có mục ẩn/hiện sidebar (D9). Artboard: các artboard "Cài đặt – …", canvas phiên bản 127.
 - Ô tìm của sidebar khớp tên mục và mọi chữ nhìn thấy trong mục (tiêu đề hàng, tiêu đề nhóm, lựa chọn, nút), không phân biệt hoa thường, dấu, "đ"/"d". Không mục nào khớp thì sidebar hiện trạng thái trống của hệ thống, trang đang mở giữ nguyên.
 - Mô tả của một nhóm nằm dưới tiêu đề nhóm, trên thẻ (như System Settings).
 

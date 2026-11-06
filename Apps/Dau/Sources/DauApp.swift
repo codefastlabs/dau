@@ -121,10 +121,8 @@ struct DauApp: App {
         .windowResizability(.contentSize)
         .commands {
             SettingsCommands()
-            // View › Show/Hide Sidebar (⌃⌘S): the way back when the sidebar was collapsed
-            // by dragging its divider (D9; https://developer.apple.com/documentation/swiftui/sidebarcommands).
-            SidebarCommands()
-            // View › Back (⌘[) and Forward (⌘]).
+            // View › Back (⌘[) and Forward (⌘]). No `SidebarCommands`: the sidebar is
+            // fixed, so the View menu has no Show/Hide Sidebar (D9).
             SettingsHistoryCommands()
         }
 

@@ -95,12 +95,15 @@ enum Reference {
     /// ... and is centered in the toolbar.
     static let titleCenterY: CGFloat = toolbarHeight / 2
 
-    // MARK: Sidebar collapse and the View menu (HIG; D9 "Vỏ cửa sổ Cài đặt")
+    // MARK: Fixed sidebar and the View menu (System Settings; D9 "Sidebar cố định như System Settings")
 
-    /// Probe: the divider is dragged from the sidebar's edge to this x (window points) to
-    /// collapse the sidebar; then ⌃⌘S (View › Show Sidebar) must bring it back at
-    /// `sidebarWidth`.
-    static let collapseDragEndX: CGFloat = 20
+    /// System Settings (05/11/2026, SYSTEM-SETTINGS-REFERENCE.md): dragging the divider and
+    /// double-clicking it leave the sidebar at `sidebarWidth`; the pointer over the divider
+    /// is the normal arrow. Probe: the divider is dragged from its place to each of these
+    /// x (window points): to the left edge, and far right.
+    static let dividerDragEndXs: [CGFloat] = [20, 400]
+    /// Probe: the divider's AXSplitter value is set this far from its own, both ways.
+    static let splitterValueDeltas: [Double] = [-100, 100]
     /// System: run.sh launches the app with `-AppleLanguages (vi)`, so the system's own
     /// menu items are in that language; English is accepted too. Read from the
     /// system's string tables, never typed here (D38).
@@ -110,12 +113,14 @@ enum Reference {
         "/System/Library/Frameworks/SwiftUI.framework/Versions/A/Resources/Localizable.loctable",
         "/System/Library/Frameworks/AppKit.framework/Resources/MenuCommands.loctable",
     ]
-    /// Keys (the English text) of the View menu and of the system items it must hold.
+    /// Keys (the English text) of the View menu, of the system items it must hold (full
+    /// screen) and of those it must not (Show/Hide Sidebar: the sidebar is fixed).
     static let viewMenuKey = "View"
     static let sidebarItemKeys = ["Show Sidebar", "Hide Sidebar"]
     static let fullScreenItemKeys = ["Enter Full Screen", "Exit Full Screen"]
     /// Shortcuts: character and the Accessibility API's modifier mask (0 = ⌘ alone,
-    /// 4 = ⌃⌘). Back ⌘[ and Forward ⌘] as System Settings; Show Sidebar ⌃⌘S (System).
+    /// 4 = ⌃⌘). Back ⌘[ and Forward ⌘] as System Settings. System: the shortcut of
+    /// SwiftUI's Show/Hide Sidebar, which no View menu item may carry.
     static let backShortcut = ("[", 0)
     static let forwardShortcut = ("]", 0)
     static let sidebarShortcut = ("S", 4)
@@ -130,15 +135,20 @@ enum Reference {
     static let sidebarWidth: CGFloat = 232
     /// Inset of the search field and the selection cell from the column's edges.
     static let sidebarInset: CGFloat = 10
-    /// Search pill: x 10, y 61, 212 × 28.
-    static let sidebarSearchY: CGFloat = 61
+    /// Search field: x 10, 212 × 28 as System Settings. Deliberate y: Dấu's field is an
+    /// `NSSearchField` at the large size with the sidebar's standard 10 pt inset under the
+    /// toolbar (D9, fixed sidebar), so it sits at 62 where System Settings' is at 61; D9
+    /// accepts the 1–2 pt rather than an offset tuned to the pixel. Probe (06/11/2026, a
+    /// test app with the same split view): 10,62 212×28.
+    static let sidebarSearchY: CGFloat = 62
     static let sidebarSearchHeight: CGFloat = 28
     static var sidebarSearchFrame: CGRect {
         CGRect(x: sidebarInset, y: sidebarSearchY, width: sidebarWidth - 2 * sidebarInset, height: sidebarSearchHeight)
     }
     static let sidebarRowHeight: CGFloat = 32
-    /// First row's y (below the search field).
-    static let sidebarFirstRowY: CGFloat = 98
+    /// First row's y (below the search field). Deliberate, as the search field: 100,
+    /// System Settings 98 (D9 accepts 1–2 pt). Probe (06/11/2026): 100.
+    static let sidebarFirstRowY: CGFloat = 100
     /// Selection cell of row `i`: x 10, as wide as the column minus both insets.
     static func sidebarRowFrame(_ i: Int) -> CGRect {
         CGRect(x: sidebarInset, y: sidebarFirstRowY + sidebarRowHeight * CGFloat(i),

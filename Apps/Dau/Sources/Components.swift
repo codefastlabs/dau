@@ -330,6 +330,9 @@ struct NotEnabledBanner: View {
     @Environment(InputSourceStatus.self) private var status
     @Environment(\.inputMethodActions) private var actions
     @Environment(\.openWindow) private var openWindow
+    /// The Settings scene's `openWindow`: the pages live in a hosting controller of the
+    /// window's split view (`SettingsEnvironment`).
+    @Environment(\.settingsOpenWindow) private var settingsOpenWindow
 
     var body: some View {
         let ui = SystemUINames.system()   // macOS's own names (D38)
@@ -399,7 +402,7 @@ struct NotEnabledBanner: View {
         }
         Task {
             if await actions.enableFromBanner() {
-                openWindow(id: OnboardingScene.id)
+                (settingsOpenWindow ?? openWindow)(id: OnboardingScene.id)
             }
         }
     }

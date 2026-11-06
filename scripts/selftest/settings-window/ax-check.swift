@@ -16,7 +16,9 @@
 //                  Then the window's size limits (by resizing it) and, at the widest, the
 //                  first card of every section. Last, the shell: Back/Forward through the
 //                  buttons and ⌘[ ⌘] (key events), the View menu (opened, read, closed),
-//                  and the divider dragged left until the sidebar collapses, then ⌃⌘S.
+//                  and the fixed sidebar: its AXSplitter value set, window resizes, the
+//                  pointer over the divider, the divider dragged both ways and
+//                  double-clicked (real mouse events).
 //   --pixels       (Always scroll bars) Primary display: per section the scroll room rule
 //                  (a) and a screenshot; on the section that overflows
 //                  (Reference.scrollingSection) a scroll through its scroll bar, the
@@ -581,8 +583,9 @@ func measureSidebarSearch(_ d: String, _ tag: String) {
     let query = "zzzz-no-such-setting"
     guard let field = require(d, p, "sidebar search field", find: sidebarSearchField),
           let outline = findSidebarOutline(d, p),
-          // SwiftUI reads the sidebar field's value only while it has focus (measured: a
-          // value set without focus shows in the field but filters nothing).
+          // The field reports a value as an edit only while it has focus (measured with
+          // the earlier SwiftUI field: a value set without focus showed in the field but
+          // filtered nothing; the NSSearchField's edits come through its field editor).
           drive(d, p, "focus the search field", set(field, kAXFocusedAttribute, kCFBooleanTrue)),
           drive(d, p, "type the query", set(field, kAXValueAttribute, query as CFString))
     else { return }
@@ -966,7 +969,7 @@ func measureLimits() {
     _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
 }
 
-// MARK: - Shell: Back/Forward, View menu, sidebar collapse (--geometry)
+// MARK: - Shell: Back/Forward, View menu, fixed sidebar (--geometry)
 
 /// Back and Forward as the buttons show them now: enabled or not.
 func checkHistoryButtons(_ d: String, _ p: String, _ when: String, back: Bool?, forward: Bool?) {
@@ -1099,9 +1102,9 @@ func systemTitles(_ keys: [String]) -> Set<String> {
     return titles
 }
 
-/// View menu (HIG: every toolbar item is a menu command; a hidden sidebar has a way
-/// back): Back ⌘[, Forward ⌘], Show/Hide Sidebar ⌃⌘S and Enter/Exit Full Screen. Opened
-/// through accessibility, read, closed.
+/// View menu (HIG: every toolbar item is a menu command): Back ⌘[, Forward ⌘] and
+/// Enter/Exit Full Screen; no Show/Hide Sidebar, by title or by its ⌃⌘S (D9: the sidebar
+/// is fixed, as in System Settings). Opened through accessibility, read, closed.
 func measureViewMenu() {
     let d = "-", p = "view-menu"
     let viewTitles = systemTitles([Reference.viewMenuKey])
@@ -1134,10 +1137,10 @@ func measureViewMenu() {
                got: got.map { "\($0.0) with modifiers \($0.1)" } ?? "missing; items: \(listed)",
                ok: got.map { $0.0 == key.0 && $0.1 == key.1 } ?? false)
     }
-    let sidebar = items.first { shortcut($0) == Reference.sidebarShortcut }
-    record(d, p, "Show/Hide Sidebar", expected: "\(Reference.sidebarShortcut.0) with modifiers \(Reference.sidebarShortcut.1), titled by the system",
-           got: sidebar.map(label) ?? "missing; items: \(listed)",
-           ok: sidebar.map { sidebarTitles.contains(label($0).lowercased()) } ?? false)
+    let sidebarItems = items.filter { shortcut($0) == Reference.sidebarShortcut || sidebarTitles.contains(label($0).lowercased()) }
+    record(d, p, "no Show/Hide Sidebar", expected: "no item titled by the system's Show/Hide Sidebar, none with \(Reference.sidebarShortcut.0) and modifiers \(Reference.sidebarShortcut.1)",
+           got: sidebarItems.isEmpty ? "none; items: \(listed)" : sidebarItems.map(label).joined(separator: ", "),
+           ok: sidebarItems.isEmpty)
     let fullScreen = items.first { fullScreenTitles.contains(label($0).lowercased()) }
     record(d, p, "Enter/Exit Full Screen", expected: "an item titled by the system",
            got: fullScreen.map(label) ?? "missing; items: \(listed)", ok: fullScreen != nil)
@@ -1149,59 +1152,141 @@ func measureViewMenu() {
     }
 }
 
-/// The sidebar list when it shows: the outline with one row per section, inside the
-/// sidebar column and wider than nothing.
-func shownSidebar() -> AXUIElement? {
-    windowElements { role($0) == "AXOutline" && rowCount($0) == sections.count }
-        .first { let r = rel($0); return r.width > 1 && r.maxX > 1 && r.minX < sidebarWidth }
+/// The split group that holds the sidebar: the widest one in the window.
+func splitGroup() -> AXUIElement? {
+    windowElements { role($0) == "AXSplitGroup" }.max { rel($0).width < rel($1).width }
+}
+/// The sidebar's divider.
+func splitter() -> AXUIElement? {
+    splitGroup().flatMap { children($0).first { role($0) == "AXSplitter" } }
+}
+/// The sidebar's width: the split group's leftmost pane, else where the divider ends.
+func shownSidebarWidth() -> CGFloat? {
+    guard let group = splitGroup() else { return nil }
+    if let pane = children(group).filter({ role($0) != "AXSplitter" }).min(by: { rel($0).minX < rel($1).minX }) {
+        return rel(pane).width
+    }
+    return splitter().map { rel($0).maxX }
+}
+func checkSidebarWidth(_ d: String, _ p: String, _ when: String) {
+    let width = shownSidebarWidth()
+    record(d, p, "sidebar width \(when)", expected: fmt(sidebarWidth),
+           got: width.map(fmt) ?? "no split group (sidebar gone?)", ok: width.map { near($0, sidebarWidth) } ?? false)
 }
 
-/// D9 exception: the divider can collapse the sidebar (SwiftUI has no API to stop it);
-/// View › Show Sidebar (⌃⌘S) must bring it back at its width. A real mouse drag from the
-/// sidebar's edge to `Reference.collapseDragEndX`, then the key.
-func measureSidebarCollapse() {
-    let d = "-", p = "sidebar-collapse"
+/// Posts a left-button mouse event at `point` (screen points, top-left origin).
+func postMouse(_ type: CGEventType, _ point: CGPoint, clicks: Int64 = 1) {
+    let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: point, mouseButton: .left)
+    event?.setIntegerValueField(.mouseEventClickState, value: clicks)
+    event?.post(tap: .cghidEventTap)
+}
+/// The divider's middle, in screen points.
+func dividerPoint() -> CGPoint {
+    let w = frame(window)
+    let x = splitter().map { frame($0).midX } ?? (w.minX + sidebarWidth)
+    return CGPoint(x: x, y: w.minY + w.height / 2)
+}
+/// The system cursor named by AppKit's resize cursors it matches (hot spot and size;
+/// https://developer.apple.com/documentation/appkit/nscursor/currentsystem), plus its raw
+/// hot spot and size. Best effort: the arrow measured as "hot spot 5,5 size 28×40" on a
+/// test app (06/11/2026) and matched none of AppKit's named cursors, so the check is that
+/// no resize cursor shows.
+func cursorOverDivider() -> (resize: Bool, description: String) {
+    guard let current = NSCursor.currentSystem else { return (false, "unreadable") }
+    var resize: [(String, NSCursor)] = [("resizeLeftRight", .resizeLeftRight), ("resizeLeft", .resizeLeft),
+                                        ("resizeRight", .resizeRight)]
+    if #available(macOS 15.0, *) { resize.append(("columnResize", .columnResize)) }
+    let matches = resize.filter { $0.1.hotSpot == current.hotSpot && $0.1.image.size == current.image.size }.map(\.0)
+    let raw = "hot spot \(fmt(current.hotSpot.x)),\(fmt(current.hotSpot.y)) size \(fmt(current.image.size.width))×\(fmt(current.image.size.height))"
+    return (!matches.isEmpty, matches.isEmpty ? raw : "\(matches.joined(separator: " or ")) (\(raw))")
+}
+
+/// D9 "Sidebar cố định như System Settings": nothing the user does changes the sidebar's
+/// width or hides it. Through accessibility: the divider's AXSplitter value set both ways,
+/// the window at its widest and narrowest. With real mouse events (the pointer moves): the
+/// pointer over the divider shows no resize cursor, the divider dragged to each of
+/// `Reference.dividerDragEndXs`, then double-clicked. The width is 232 after each.
+func measureFixedSidebar() {
+    let d = "-", p = "sidebar-fixed"
     guard showSection(d, 0) else { return }
+    checkSidebarWidth(d, p, "at the start")
+    // The AXSplitter value (VoiceOver can set it too).
+    if let divider = require(d, p, "sidebar divider (AXSplitter)", find: splitter),
+       let value = attr(divider, kAXValueAttribute) as? NSNumber {
+        for delta in Reference.splitterValueDeltas {
+            let err = set(divider, kAXValueAttribute, NSNumber(value: value.doubleValue + delta))
+            wait(0.5)
+            // A refusal is fine (the value cannot change); only the width counts.
+            checkSidebarWidth(d, p, "after AXSplitter value \(delta > 0 ? "+" : "")\(Int(delta)) (AXError \(err.rawValue))")
+        }
+    }
+    // Window resizes.
+    for (name, size) in [("widest", Reference.probeLargeSize), ("narrowest", Reference.probeSmallSize)] {
+        guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(size))) else { continue }
+        wait(0.6)
+        checkSidebarWidth(d, p, "at the \(name) window")
+    }
+    _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
+    wait(0.6)
+
+    // Real mouse events.
     drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
     wait(0.3)
+    let over = dividerPoint()
+    CGWarpMouseCursorPosition(over)
+    postMouse(.mouseMoved, over)
+    wait(0.5)
+    let cursor = cursorOverDivider()
+    record(d, p, "cursor over the divider", expected: "the arrow (no resize cursor), as System Settings",
+           got: cursor.description, ok: !cursor.resize)
     let w = frame(window)
-    let start = CGPoint(x: w.minX + sidebarWidth, y: w.minY + w.height / 2)
-    let end = CGPoint(x: w.minX + Reference.collapseDragEndX, y: start.y)
-    CGWarpMouseCursorPosition(start)
-    CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: start, mouseButton: .left)?.post(tap: .cghidEventTap)
+    for endX in Reference.dividerDragEndXs {
+        let start = dividerPoint()
+        let end = CGPoint(x: w.minX + endX, y: start.y)
+        CGWarpMouseCursorPosition(start)
+        postMouse(.mouseMoved, start)
+        wait(0.3)
+        postMouse(.leftMouseDown, start)
+        wait(0.1)
+        let steps = 20
+        for i in 1...steps {
+            postMouse(.leftMouseDragged, CGPoint(x: start.x + (end.x - start.x) * CGFloat(i) / CGFloat(steps), y: start.y))
+            wait(0.03)
+        }
+        postMouse(.leftMouseUp, end)
+        wait(1.0)
+        checkSidebarWidth(d, p, "after dragging the divider to x \(fmt(endX))")
+    }
+    let point = dividerPoint()
+    CGWarpMouseCursorPosition(point)
+    postMouse(.mouseMoved, point)
     wait(0.3)
-    CGEvent(mouseEventSource: nil, mouseType: .leftMouseDown, mouseCursorPosition: start, mouseButton: .left)?.post(tap: .cghidEventTap)
-    wait(0.1)
-    let steps = 20
-    for i in 1...steps {
-        let x = start.x + (end.x - start.x) * CGFloat(i) / CGFloat(steps)
-        CGEvent(mouseEventSource: nil, mouseType: .leftMouseDragged, mouseCursorPosition: CGPoint(x: x, y: start.y),
-                mouseButton: .left)?.post(tap: .cghidEventTap)
-        wait(0.03)
-    }
-    CGEvent(mouseEventSource: nil, mouseType: .leftMouseUp, mouseCursorPosition: end, mouseButton: .left)?.post(tap: .cghidEventTap)
+    postMouse(.leftMouseDown, point, clicks: 1)
+    wait(0.03)
+    postMouse(.leftMouseUp, point, clicks: 1)
+    wait(0.05)
+    postMouse(.leftMouseDown, point, clicks: 2)
+    wait(0.03)
+    postMouse(.leftMouseUp, point, clicks: 2)
     wait(1.0)
-    let collapsed = shownSidebar() == nil
-    record(d, p, "divider dragged left", expected: "sidebar collapsed",
-           got: collapsed ? "collapsed" : "sidebar still at \(shownSidebar().map { fmt(rel($0)) } ?? "?")", ok: collapsed)
-    _ = screenshot(d, p, "sidebar-collapsed")
-    // kVK_ANSI_S with ⌃⌘: View › Show Sidebar.
-    postKey(d, p, 1, [.maskControl, .maskCommand])
-    let back = require(d, p, "sidebar after ⌃⌘S", within: 2, diagnose: { "still collapsed" }, find: shownSidebar)
-    if back != nil {
-        record(d, p, "⌃⌘S shows the sidebar", expected: "shown", got: "shown", ok: true)
-        if let field = require(d, p, "sidebar search field", find: sidebarSearchField) {
-            check(d, p, "sidebar search after ⌃⌘S", rel(field), Reference.sidebarSearchFrame)
-        }
-        if let area = require(d, p, "page Form (scroll area in the detail column)", find: pageScrollArea),
-           let card = require(d, p, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } }) {
-            check(d, p, "first card x after ⌃⌘S", card.frame.minX, sidebarWidth + formMargin)
-        }
-        if let title = require(d, p, "page title (system title in the toolbar)", find: pageTitle) {
-            check(d, p, "title x after ⌃⌘S", rel(title).minX, Reference.titleX)
-        }
+    // The button must be up again (a test app once stayed with it down after this
+    // double-click, 06/11/2026): one more mouse-up if the session still has it down.
+    if CGEventSource.buttonState(.combinedSessionState, button: .left) {
+        postMouse(.leftMouseUp, point, clicks: 2)
+        wait(0.5)
     }
-    _ = screenshot(d, p, "sidebar-restored")
+    checkSidebarWidth(d, p, "after double-clicking the divider")
+    if let field = require(d, p, "sidebar search field", find: sidebarSearchField) {
+        check(d, p, "sidebar search after the mouse", rel(field), Reference.sidebarSearchFrame)
+    }
+    if let area = require(d, p, "page Form (scroll area in the detail column)", find: pageScrollArea),
+       let card = require(d, p, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } }) {
+        check(d, p, "first card x after the mouse", card.frame.minX, sidebarWidth + formMargin)
+    }
+    if let title = require(d, p, "page title (system title in the toolbar)", find: pageTitle) {
+        check(d, p, "title x after the mouse", rel(title).minX, Reference.titleX)
+    }
+    _ = screenshot(d, p, "sidebar-fixed")
 }
 
 // MARK: - Always scroll bars (--pixels)
@@ -1318,11 +1403,11 @@ if modes.contains("--geometry") {
         measureSheet(tag(screen), tag(screen))
     }
     measureLimits()
-    // The shell last: a sidebar left collapsed cannot spoil the other rows.
+    // The shell last: the mouse checks move the pointer and resize the window.
     measureHistory()
     measureHistoryUnderSheet()
     measureViewMenu()
-    measureSidebarCollapse()
+    measureFixedSidebar()
 }
 // `--shell` alone: only the Back/Forward and View-menu rows (a quick pass on a running app).
 if modes.contains("--shell") && !modes.contains("--geometry") {

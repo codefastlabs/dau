@@ -2,7 +2,7 @@ import SwiftUI
 
 // Back/Forward of the Settings window, as System Settings has them (D9, "Vỏ cửa sổ Cài
 // đặt"; docs/research/SWIFTUI-WINDOW-API.md, section 3). SwiftUI has no history for a
-// `NavigationSplitView` (`NavigationStack` only goes back), so the window keeps its own:
+// split view (`NavigationStack` only goes back), so the window keeps its own:
 // `SectionHistory`, shown as a Back/Forward cluster in the toolbar's navigation placement
 // (`SettingsHistoryButtons`) and as View menu commands (`SettingsHistoryCommands`), since
 // the HIG asks for every toolbar item to be a menu command too
@@ -144,9 +144,11 @@ extension FocusedValues {
 }
 
 /// View › Back (⌘[) and Forward (⌘]), as in System Settings, before the system's sidebar
-/// group (Show/Hide Sidebar, Enter/Exit Full Screen; `CommandGroupPlacement.sidebar`,
-/// https://developer.apple.com/documentation/swiftui/commandgroupplacement/sidebar). The
-/// group is added to, never replaced: replacing it would drop full screen too.
+/// group (`CommandGroupPlacement.sidebar`,
+/// https://developer.apple.com/documentation/swiftui/commandgroupplacement/sidebar), which
+/// holds Enter/Exit Full Screen; without `SidebarCommands` it has no Show/Hide Sidebar
+/// (D9: the sidebar is fixed). The group is added to, never replaced: replacing it would
+/// drop full screen too.
 struct SettingsHistoryCommands: Commands {
     @FocusedValue(\.settingsNavigation) private var navigation
 
