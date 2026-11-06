@@ -46,19 +46,30 @@ struct SettingsShellTests {
         #expect(state.searchField?.currentEditor() == nil)
     }
 
-    @Test("Edit › Find (⌘F) puts the focus in the sidebar search field")
-    func findFocusesSearch() {
+    /// Edit › Find › Find… and Find Next, as either documented action sends them.
+    static let findItems: [(action: Selector, show: Int, next: Int)] = [
+        (#selector(SettingsSplitViewController.performFindPanelAction(_:)),
+         Int(NSFindPanelAction.showFindPanel.rawValue), Int(NSFindPanelAction.next.rawValue)),
+        (#selector(NSResponder.performTextFinderAction(_:)),
+         NSTextFinder.Action.showFindInterface.rawValue, NSTextFinder.Action.nextMatch.rawValue),
+    ]
+
+    @Test("Edit › Find (⌘F) puts the focus in the sidebar search field, by either action",
+          arguments: [0, 1])
+    func findFocusesSearch(_ index: Int) {
+        let (action, show, next) = Self.findItems[index]
         let state = SettingsWindowState(.typing)
         let controller = controller(state)
         let window = hiddenWindow(controller)
-        let find = NSMenuItem(title: "Find…", action: #selector(NSResponder.performTextFinderAction(_:)), keyEquivalent: "f")
-        find.tag = NSTextFinder.Action.showFindInterface.rawValue
-        let next = NSMenuItem(title: "Find Next", action: #selector(NSResponder.performTextFinderAction(_:)), keyEquivalent: "g")
-        next.tag = NSTextFinder.Action.nextMatch.rawValue
-        #expect(controller.validateUserInterfaceItem(find))
-        #expect(!controller.validateUserInterfaceItem(next))
+        let find = NSMenuItem(title: "Find…", action: action, keyEquivalent: "f")
+        find.tag = show
+        let findNext = NSMenuItem(title: "Find Next", action: action, keyEquivalent: "g")
+        findNext.tag = next
+        #expect(controller.validateMenuItem(find))
+        #expect(!controller.validateMenuItem(findNext))
+        #expect(state.searchField?.currentEditor() == nil)
         // From the list, up the responder chain, as the menu item's action travels.
-        #expect(window.firstResponder?.tryToPerform(#selector(NSResponder.performTextFinderAction(_:)), with: find) == true)
+        #expect(window.firstResponder?.tryToPerform(action, with: find) == true)
         #expect(state.searchField?.currentEditor() != nil)
     }
 

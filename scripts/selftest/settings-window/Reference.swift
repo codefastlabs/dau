@@ -118,6 +118,12 @@ enum Reference {
     static let viewMenuKey = "View"
     static let sidebarItemKeys = ["Show Sidebar", "Hide Sidebar"]
     static let fullScreenItemKeys = ["Enter Full Screen", "Exit Full Screen"]
+    /// Edit › Find › Find… (SwiftUI's default Find submenu,
+    /// `CommandGroupPlacement.textEditing`): ⌘F puts the focus in the sidebar search field.
+    static let editMenuKey = "Edit"
+    static let findSubmenuKey = "Find"
+    static let findItemKey = "Find…"
+    static let findShortcut = ("F", 0)
     /// Shortcuts: character and the Accessibility API's modifier mask (0 = ⌘ alone,
     /// 4 = ⌃⌘). Back ⌘[ and Forward ⌘] as System Settings. System: the shortcut of
     /// SwiftUI's Show/Hide Sidebar, which no View menu item may carry.

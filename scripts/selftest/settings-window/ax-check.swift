@@ -1099,6 +1099,46 @@ func measureLaunchFocus() {
            ok: toAccent < toGrey)
 }
 
+/// Edit › Find › Find…: opens Edit and its Find submenu through accessibility (AppKit
+/// validates items when their menu opens, so "enabled" is the state for the current
+/// focus), reads the item, closes both menus with Escape.
+func findMenuItemState() -> (ok: Bool, description: String) {
+    let editTitles = systemTitles([Reference.editMenuKey])
+    let findTitles = systemTitles([Reference.findSubmenuKey])
+    let itemTitles = systemTitles([Reference.findItemKey])
+    guard !editTitles.isEmpty, !findTitles.isEmpty, !itemTitles.isEmpty else { return (false, "system menu strings unreadable") }
+    func escape() {
+        for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
+        wait(0.3)
+    }
+    func menuItems(_ e: AXUIElement) -> [AXUIElement] {
+        children(e).first { role($0) == "AXMenu" }.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
+    }
+    guard let bar = attr(app, kAXMenuBarAttribute).map({ $0 as! AXUIElement }) else { return (false, "no menu bar") }
+    guard let edit = children(bar).first(where: { editTitles.contains(label($0)) }) else {
+        return (false, "no Edit menu; menus: " + children(bar).map(label).joined(separator: ", "))
+    }
+    guard press(edit) == .success else { return (false, "Edit menu did not open") }
+    wait(0.6)
+    let editItems = menuItems(edit)
+    guard let find = editItems.first(where: { findTitles.contains(label($0)) }) else {
+        escape()
+        return (false, "no Find submenu; Edit: " + editItems.map(label).filter { !$0.isEmpty }.joined(separator: ", "))
+    }
+    _ = press(find)
+    wait(0.6)
+    let findItems = menuItems(find)
+    escape(); escape()
+    if (attr(edit, kAXSelectedAttribute) as? Bool) == true { escape() }
+    guard let item = findItems.first(where: { itemTitles.contains(label($0)) }) else {
+        return (false, "no Find… item; Find: " + findItems.map(label).filter { !$0.isEmpty }.joined(separator: ", "))
+    }
+    let char = string(item, "AXMenuItemCmdChar") ?? "", mods = (attr(item, "AXMenuItemCmdModifiers") as? Int) ?? -1
+    let on = enabled(item)
+    return (char == Reference.findShortcut.0 && mods == Reference.findShortcut.1 && on,
+            "\(label(item)) [\(char) \(mods)] \(on ? "enabled" : "disabled")")
+}
+
 /// The search field stays reachable from the keyboard: Tab (or Shift-Tab) from the list,
 /// and Edit › Find (⌘F). The list gets the focus back through accessibility between
 /// the two.
@@ -1120,6 +1160,13 @@ func measureKeyboardToSearch() {
     }
     record(d, p, "Tab from the list reaches the search field", expected: "focused by Tab or Shift-Tab",
            got: searchHasFocus(field) ? "focused by \(how)" : "focused: \(describe(focusedElement()))", ok: searchHasFocus(field))
+    guard focusList() else { return }
+    wait(0.3)
+    // What ⌘F should hit, read before pressing it, so a failure says why: the menu item's
+    // title (system strings, D38), shortcut and whether it is on with the list focused.
+    let findItem = findMenuItemState()
+    record(d, p, "Edit › Find › Find… before ⌘F", expected: "present, \(Reference.findShortcut.0) with modifiers \(Reference.findShortcut.1), enabled",
+           got: findItem.description, ok: findItem.ok)
     guard focusList() else { return }
     wait(0.3)
     // kVK_ANSI_F 3 with ⌘: Edit › Find › Find….
