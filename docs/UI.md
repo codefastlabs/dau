@@ -2,7 +2,7 @@
 
 Mỗi phần của giao diện có một nguồn:
 
-- **Trông như thế nào:** canvas mockup https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln (mục, thứ tự, icon, trạng thái), sửa trước mỗi thay đổi giao diện, người dùng duyệt rồi mới sửa mã (D9).
+- **Trông như thế nào:** canvas mockup https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln (mục, thứ tự, icon, trạng thái), sửa trước mỗi thay đổi giao diện, người dùng duyệt rồi mới sửa mã (D9). Đây là canvas duy nhất được sửa. Bản lưu trữ mockup gốc trước khi cập nhật theo giao diện đã dựng (chép ngày 06/11/2026, không sửa, chỉ để đối chiếu; bỏ ghi chú sổ quyết định): https://claude.ai/artifact/76gf4DkE9BmbrAqH36YJEr
 - **Bố cục, khoảng cách, control:** System Settings của macOS hiện hành (D9). Số đo ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md`, mức đạt ở `scripts/selftest/settings-window/Reference.swift`.
 - **Chữ:** String Catalog trong mã (`Localizable.xcstrings`), khoá là câu tiếng Anh, có bản tiếng Việt; ngôn ngữ hiện ra theo D41. Canvas viết tiếng Việt; câu mới giao cho mã kèm câu tiếng Anh làm khoá.
 - **File này:** chỉ ghi hành vi, trạng thái, quy tắc và lý do — những gì hình vẽ và mã không tự nói ra. Không liệt kê chữ hay bố cục của phần đã có mã. Phần chưa có mã (cuối file) tạm mô tả nội dung cho tới khi dựng.
