@@ -9,11 +9,15 @@
 #   2. every key, except those marked shouldTranslate false, has an "en" and a "vi"
 #      text, and every text (each plural or device variation included) is in state
 #      "translated": none left "new", "needs_review" or "stale";
-#   3. every text has the format specifiers (%@, %lld, …; positions like %2$@ allowed)
-#      of its reference: the key itself in Localizable catalogs, the "en" text in
-#      InfoPlist catalogs. A plural form may leave its number out ("one").
+#   3. every text has the format specifiers (%@, %lld, …) of its reference, in the same
+#      argument order (positions like %2$@ reorder them): the key itself in Localizable
+#      catalogs, the "en" text in InfoPlist catalogs. A plural form may leave its number
+#      out ("one");
+#   4. no key is marked stale (Xcode no longer finds it in the code);
+#   5. keys and "en" texts hold no Vietnamese besides the phrases listed in
+#      allowed-vietnamese.txt (docs/GLOSSARY.md, "Không dịch").
 # With <build-dir> (a DerivedData or build/…noindex directory of a finished build), also:
-#   4. every key the compiler extracted from the code (*.stringsdata) is in the catalog
+#   6. every key the compiler extracted from the code (*.stringsdata) is in the catalog
 #      of its target, and the reverse, so no text shows its English key untranslated
 #      and no entry is left over.
 # Exit status 0 only if every check passes; the failures are listed one per line.
@@ -29,16 +33,31 @@ if (( ${#catalogs} == 0 )); then
   exit 1
 fi
 
+allowed=$(grep -vE '^(#|$)' $here/allowed-vietnamese.txt | jq -R . | jq -s .)
+
 for file in $catalogs; do
-  out=$(jq -r --arg file "$file" '
-    # Format specifiers of a text, without positions, sorted ("%2$@ %1$lld" → ["%@","%lld"]).
-    def specs: [gsub("%%"; "") | scan("%(?:[0-9]+\\$)?(?:ll[du]|l[du]|[@dufxXs]|\\.[0-9]+f)")
-                | sub("[0-9]+\\$"; "")] | sort;
+  out=$(jq -r --arg file "$file" --argjson allowed "$allowed" '
+    # Format specifiers of a text in argument order, positions dropped
+    # ("%2$@ %1$lld" → ["%lld","%@"]; "%@ %lld" → ["%@","%lld"]).
+    def specs: [gsub("%%"; "") | scan("%(?:([0-9]+)\\$)?(ll[du]|l[du]|[@dufxXs]|\\.[0-9]+f)")]
+               | to_entries | map({i: (if .value[0] then (.value[0] | tonumber) else .key + 1 end),
+                                   s: ("%" + .value[1])})
+               | sort_by(.i) | map(.s);
+    # Vietnamese letters left once the allowed phrases are taken out.
+    def vietnamese: reduce $allowed[] as $a (.; split($a) | join(""))
+                    | test("[àáảãạăắằẳẵặâấầẩẫậđèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]"; "i");
     # Every text of one language: (path label, unit) pairs, variations included.
     def units: [(if has("stringUnit") then {where: "", unit: .stringUnit} else empty end),
                 (paths(objects and has("stringUnit")) as $p
                  | {where: ($p | map(tostring) | join(".")), unit: (getpath($p).stringUnit)})];
     (if .sourceLanguage != "en" then "\($file): sourceLanguage is \(.sourceLanguage), expected en" else empty end),
+    (.strings | to_entries[] | select(.value.extractionState == "stale")
+     | "\($file): \(.key): stale (no longer in the code)"),
+    (.strings | to_entries[]
+     | .key as $key
+     | ([$key] + [.value.localizations.en // {} | .. | .value? // empty | strings] | unique)[]
+     | select(vietnamese)
+     | "\($file): \($key): Vietnamese in the key or en text: \(.)"),
     (.strings | to_entries[] | select(.value.shouldTranslate != false)
      | .key as $key | (.value.localizations // {}) as $loc
      | ($loc.en // {} | units) as $en

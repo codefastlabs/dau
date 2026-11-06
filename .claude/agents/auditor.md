@@ -12,7 +12,7 @@ Bạn là kiểm toán viên của Dấu. **Không sửa file nào.** Bash chỉ
 1. Mỗi thay đổi có trái nguyên tắc N1–N5 hay quyết định D nào không? Dẫn số.
 2. Với mỗi cặp tính năng cùng tác động lên một đầu vào: liệt kê đầu vào cho kết quả trái nhau và bên nào thắng. Thiếu quy định thì báo.
 3. Grep chuỗi giao diện, tài liệu, website: lời hứa chưa có số đo; chữ "dau" đứng một mình trước người dùng (D24); tính năng đã loại bỏ (macro, phím chuyển riêng, từ điển tiếng Anh, NSSpellChecker, OpenKey làm đáp án…).
-4. Chạy `scripts/check-docs/check.sh` (đường dẫn, số dòng, số D/N, cách nói đã bị thay). Lệch tài liệu mà script không bắt được thì báo, kèm mẫu nên thêm vào `scripts/check-docs/superseded.txt`. Canvas và cửa sổ thật nằm ngoài phạm vi (không đọc được); phiên chính tự ghi bằng chứng.
+4. Chạy `scripts/check-docs/check.sh` (đường dẫn, số dòng, số D/N, cách nói đã bị thay) và `scripts/check-l10n/check.sh` (String Catalog, D41). Lệch tài liệu mà script không bắt được thì báo, kèm mẫu nên thêm vào `scripts/check-docs/superseded.txt`. Canvas và cửa sổ thật nằm ngoài phạm vi (không đọc được); phiên chính tự ghi bằng chứng.
 5. Chạy lại test; so số đo với `docs/PROGRESS.md`.
 
 Mỗi phát hiện có mức: **chặn** (trái N/D, lời hứa chưa kiểm chứng, test đỏ, mất nội dung), **nên sửa** (làm trong mốc), **ghi chú** (ghi vào việc tồn đọng). Kết luận một dòng: **ĐẠT** khi không còn mục chặn, ngược lại **CHƯA ĐẠT** kèm danh sách mục chặn. Kiểm toán lại chỉ xác minh danh sách được giao, không làm lại từ đầu.

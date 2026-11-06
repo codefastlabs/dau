@@ -27,3 +27,4 @@ Câu hỏi còn mở về chữ cái thường gõ sát	D20/E8 đã chốt (05/1
 install-debug\.sh	scripts/dev/install-debug.sh renamed to scripts/dev/install-input-method.sh: it installs Debug or Release (05/11/2026)
 chữ của Dấu viết tiếng Việt	D41: app has Vietnamese and English; source language is English (06/11/2026)
 Localizable\.xcstrings`\), tiếng Việt\.	D41: catalog keys are English sentences with a Vietnamese translation (06/11/2026)
+Chuỗi giao diện tiếng Việt trong String Catalog	D41: keys are English sentences with a Vietnamese translation (06/11/2026)
