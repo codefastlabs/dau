@@ -217,7 +217,7 @@ struct SystemUINames: Sendable {
         return table
     }
 
-    nonisolated(unsafe) private static let loadedTables = loadTables()
+    private static let loadedTables = loadTables()
 
     /// On the real system; `languages` defaults to the system's own list.
     static func system(languages: [String] = LayoutNames.systemLanguages()) -> SystemUINames {

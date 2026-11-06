@@ -70,7 +70,7 @@ struct LayoutNames: Sendable {
     }
 
     /// Read once: the table does not change while the app runs.
-    nonisolated(unsafe) private static let loadedTable = loadTable()
+    private static let loadedTable = loadTable()
 
     /// On the real system. The language list is read at each call (the user may change it).
     static func system() -> LayoutNames {

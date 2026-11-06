@@ -85,3 +85,17 @@ fi
 
 echo
 "$ROOT/scripts/dev/dau-version.sh"
+
+if [[ "$WITH_IM" == 0 ]]; then
+  im="$HOME/Library/Input Methods/DauInputMethod.app"
+  im_commit_file="$im/Contents/Resources/BuildCommit.txt"
+  repo_commit=$(git -C "$ROOT" rev-parse --short=7 HEAD 2>/dev/null || true)
+  if [[ -f "$im_commit_file" && -n "$repo_commit" ]]; then
+    installed_commit=$(<"$im_commit_file")
+    if [[ "$installed_commit" != "$repo_commit"* ]]; then
+      echo
+      echo "💡 Lưu ý: Bộ gõ đã cài ($installed_commit) khác commit repo ($repo_commit)."
+      echo "   Dùng '$0 --with-input-method' để cập nhật cả bộ gõ."
+    fi
+  fi
+fi
