@@ -2,7 +2,11 @@
 # UI checks of the Settings window, onboarding and uninstall alerts (docs/UI-CHECKS.md).
 # Side effects: builds, takes the screen, kills processes, changes user settings
 #
-# Usage: scripts/selftest/settings-window/run.sh <output-dir> [Dau.app]
+# Usage: scripts/selftest/settings-window/run.sh [--focus] <output-dir> [Dau.app]
+#
+# --focus: only two real-window launches (no in-app captures, no pixel check), one per
+# appearance, ax-check --focus: the launch focus and accent selection of the sidebar,
+# Tab and ⌘F into the sidebar search, the sidebar search rows on the primary display.
 #
 # Seven app launches, one after the other; each shows a window on screen for a while
 # (do not click while it runs). Needs the Accessibility and Screen Recording permissions
@@ -26,7 +30,7 @@
 #   4. When scrolling scroll bars              real/                  ax-check --geometry
 #   5. Always scroll bars                      always/                ax-check --pixels
 #   6. --not-enabled                           banner/                ax-check --banner
-#   7. the other appearance, Always bars       always-<light|dark>/   ax-check --pixels --sheet-shots
+#   7. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
 # Then check.swift checks the screenshots' pixels and the in-app captures.
 # Tables: <dir>.txt per launch, check.txt. Exit status 0 only if every row is ok.
 #
@@ -37,6 +41,8 @@
 # the end.
 set -euo pipefail
 here=${0:A:h}
+focus_only=0
+if [[ ${1:-} == --focus ]]; then focus_only=1; shift; fi
 out=${1:?output dir}
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 # Absolute: the copy is made from it and pgrep matches its full path (a relative argument
@@ -97,6 +103,7 @@ build check.swift check
 
 # --- Launches 1–3: in-app captures ----------------------------------------------------
 
+if (( ! focus_only )); then
 cp -R "$app" "$work/Dau.app"
 cat > "$work/ent.plist" <<'PLIST'
 <?xml version="1.0" encoding="UTF-8"?>
@@ -131,6 +138,7 @@ capture "uninstall alerts" --capture-uninstall "$out/uninstall"
 # The Settings banner after "Bật lại" (mockup "SettingsBannerStates"): waiting, not
 # enabled, enabled; laid out and captured, nothing is enabled.
 capture "banner states" --capture-banner "$out/banner-states"
+fi
 
 # --- Launches 4–7: the real window ----------------------------------------------------
 
@@ -180,10 +188,16 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   return $rc
 }
 
+if (( focus_only )); then
+  real_window focus-$current $current --focus -- -AppleShowScrollBars WhenScrolling || result=1
+  real_window focus-$other $other --focus -- -AppleShowScrollBars WhenScrolling --appearance $other || result=1
+  exit $result
+fi
+
 real_window real $current --geometry -- -AppleShowScrollBars WhenScrolling || result=1
 real_window always $current --pixels -- -AppleShowScrollBars Always || result=1
 real_window banner $current --banner -- -AppleShowScrollBars WhenScrolling --not-enabled || result=1
-real_window always-$other $other --pixels --sheet-shots -- \
+real_window always-$other $other --focus --pixels --sheet-shots -- \
   -AppleShowScrollBars Always --appearance $other || result=1
 
 # --- Pixels of the screenshots, in-app captures ----------------------------------------

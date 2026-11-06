@@ -19,6 +19,12 @@
 //                  and the fixed sidebar: its AXSplitter value set, window resizes, the
 //                  pointer over the divider, the divider dragged both ways and
 //                  double-clicked (real mouse events).
+//                  --geometry starts with the --focus launch rows.
+//   --focus        At launch, before anything else: the sidebar list has the focus (not
+//                  the search field) and the selected row shows the accent selection
+//                  (pixels of `launch-focus.png` against the system's accent and inactive
+//                  grey, in the app's appearance). Alone (run.sh --focus): then Tab and ⌘F
+//                  into the sidebar search and the sidebar search rows, primary display.
 //   --pixels       (Always scroll bars) Primary display: per section the scroll room rule
 //                  (a) and a screenshot; on the section that overflows
 //                  (Reference.scrollingSection) a scroll through its scroll bar, the
@@ -48,8 +54,8 @@ import AppKit
 
 // MARK: - Arguments
 
-let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --pixels | --banner | --sheet-shots | --shell …"
-let modeFlags: Set = ["--geometry", "--pixels", "--banner", "--sheet-shots", "--shell"]
+let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --focus | --pixels | --banner | --sheet-shots | --shell …"
+let modeFlags: Set = ["--geometry", "--focus", "--pixels", "--banner", "--sheet-shots", "--shell"]
 let arguments = Array(CommandLine.arguments.dropFirst())
 guard arguments.count >= 4, let pid = pid_t(arguments[0]), ["light", "dark"].contains(arguments[2]),
       Set(arguments.dropFirst(3)).isSubset(of: modeFlags) else {
@@ -1002,6 +1008,128 @@ func postKey(_ d: String, _ p: String, _ virtualKey: CGKeyCode, _ flags: CGEvent
     wait(1.0)
 }
 
+/// The focused element of the app, through accessibility.
+func focusedElement() -> AXUIElement? {
+    attr(app, kAXFocusedUIElementAttribute).map { $0 as! AXUIElement }
+}
+/// `e` is `ancestor` or lies inside it (AXParent chain).
+func isInside(_ e: AXUIElement, _ ancestor: AXUIElement) -> Bool {
+    var current: AXUIElement? = e
+    for _ in 0..<12 {
+        guard let c = current else { return false }
+        if CFEqual(c, ancestor) { return true }
+        current = attr(c, kAXParentAttribute).map { $0 as! AXUIElement }
+    }
+    return false
+}
+func describe(_ e: AXUIElement?) -> String {
+    guard let e else { return "none" }
+    return "\(role(e))\(subrole(e).isEmpty ? "" : "/" + subrole(e)) \(fmt(rel(e)))"
+}
+/// The list has the keyboard focus: its own AXFocused, or the app's focused element is
+/// the list or inside it (a row).
+func listHasFocus(_ outline: AXUIElement) -> Bool {
+    (attr(outline, kAXFocusedAttribute) as? Bool) == true || focusedElement().map { isInside($0, outline) } == true
+}
+func searchHasFocus(_ field: AXUIElement) -> Bool {
+    (attr(field, kAXFocusedAttribute) as? Bool) == true || focusedElement().map { isInside($0, field) } == true
+}
+
+/// Mean sRGB color (0…1) of a block of the screenshot, in window points.
+func meanColor(_ rep: NSBitmapImageRep, width: CGFloat, _ r: CGRect) -> [CGFloat]? {
+    let scale = CGFloat(rep.pixelsWide) / width
+    var sum: [CGFloat] = [0, 0, 0], n: CGFloat = 0
+    for y in Int(r.minY * scale)..<Int(r.maxY * scale) {
+        for x in Int(r.minX * scale)..<Int(r.maxX * scale) {
+            guard let c = rep.colorAt(x: x, y: y)?.usingColorSpace(.sRGB) else { continue }
+            sum[0] += c.redComponent; sum[1] += c.greenComponent; sum[2] += c.blueComponent; n += 1
+        }
+    }
+    return n > 0 ? sum.map { $0 / n } : nil
+}
+/// A system color in sRGB (0…1), resolved in the appearance the app draws in.
+func systemColor(_ color: NSColor) -> [CGFloat] {
+    var out: [CGFloat] = [0, 0, 0]
+    NSAppearance(named: appearance == "dark" ? .darkAqua : .aqua)?.performAsCurrentDrawingAppearance {
+        if let c = color.usingColorSpace(.sRGB) { out = [c.redComponent, c.greenComponent, c.blueComponent] }
+    }
+    return out
+}
+func distance(_ a: [CGFloat], _ b: [CGFloat]) -> CGFloat { sqrt(zip(a, b).map { ($0 - $1) * ($0 - $1) }.reduce(0, +)) }
+func rgb(_ c: [CGFloat]) -> String { c.map { String(Int(($0 * 255).rounded())) }.joined(separator: ",") }
+
+/// The window as it opens, before the checker selects, moves or types anything: the
+/// sidebar list has the keyboard focus (not its search field, not nothing), so the
+/// selected row (Gõ phím) is drawn with the accent selection, as on the canvas and as
+/// before the fixed sidebar. Measured 06/11/2026 on the first fixed-sidebar build: no
+/// focus, a grey (inactive) selection. Dấu is brought to the front first: a window that
+/// is not key draws every selection grey.
+func measureLaunchFocus() {
+    let d = "-", p = "launch-focus"
+    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
+    wait(0.8)
+    guard let outline = findSidebarOutline(d, p) else { return }
+    let field = require(d, p, "sidebar search field", find: sidebarSearchField)
+    record(d, p, "sidebar list has the focus at launch", expected: "the list (AXFocused, or the app's focused element in it)",
+           got: listHasFocus(outline) ? "the list" : "focused: \(describe(focusedElement()))", ok: listHasFocus(outline))
+    if let field {
+        record(d, p, "search field without focus at launch", expected: "not focused",
+               got: searchHasFocus(field) ? "focused" : "not focused", ok: !searchHasFocus(field))
+    }
+    // The selected row's background, right of its text, against the system's accent color
+    // and the inactive selection grey, in the app's appearance: nearer the accent passes.
+    guard let row = require(d, p, "selected sidebar row", find: {
+              ((attr(outline, kAXSelectedRowsAttribute) as? [AXUIElement]) ?? []).first }),
+          let cell = require(d, p, "selected sidebar row cell", find: { children(row).first }) else { return }
+    let r = rel(cell)
+    let sample = CGRect(x: r.maxX - Reference.selectionSampleRightInset - Reference.selectionSampleSize,
+                        y: r.midY - Reference.selectionSampleSize / 2,
+                        width: Reference.selectionSampleSize, height: Reference.selectionSampleSize)
+    guard let rep = screenshot(d, p, "launch-focus", frames: ["selectedRow": r, "selectionSample": sample]) else { return }
+    let w = frame(window)
+    guard let got = meanColor(rep, width: w.width, sample) else {
+        harness(d, p, "selected row color", expected: "pixels in \(fmt(sample))", got: "none in the screenshot")
+        return
+    }
+    let accent = systemColor(.controlAccentColor), grey = systemColor(.unemphasizedSelectedContentBackgroundColor)
+    let toAccent = distance(got, accent), toGrey = distance(got, grey)
+    record(d, p, "selected row drawn with the accent selection (\(appearance))",
+           expected: "nearer accent \(rgb(accent)) than inactive grey \(rgb(grey))",
+           got: "\(rgb(got)) (to accent \(String(format: "%.2f", toAccent)), to grey \(String(format: "%.2f", toGrey)))",
+           ok: toAccent < toGrey)
+}
+
+/// The search field stays reachable from the keyboard: Tab (or Shift-Tab) from the list,
+/// and Edit › Find (⌘F). The list gets the focus back through accessibility between
+/// the two.
+func measureKeyboardToSearch() {
+    let d = "-", p = "search-keyboard"
+    guard let outline = findSidebarOutline(d, p),
+          let field = require(d, p, "sidebar search field", find: sidebarSearchField) else { return }
+    func focusList() -> Bool { drive(d, p, "focus the sidebar list", set(outline, kAXFocusedAttribute, kCFBooleanTrue)) }
+    guard focusList() else { return }
+    wait(0.3)
+    // kVK_Tab 48.
+    postKey(d, p, 48, [])
+    var how = "Tab"
+    if !searchHasFocus(field) {
+        guard focusList() else { return }
+        wait(0.3)
+        postKey(d, p, 48, .maskShift)
+        how = "Shift-Tab"
+    }
+    record(d, p, "Tab from the list reaches the search field", expected: "focused by Tab or Shift-Tab",
+           got: searchHasFocus(field) ? "focused by \(how)" : "focused: \(describe(focusedElement()))", ok: searchHasFocus(field))
+    guard focusList() else { return }
+    wait(0.3)
+    // kVK_ANSI_F 3 with ⌘: Edit › Find › Find….
+    postKey(d, p, 3, .maskCommand)
+    record(d, p, "⌘F from the list focuses the search field", expected: "focused",
+           got: searchHasFocus(field) ? "focused" : "focused: \(describe(focusedElement()))", ok: searchHasFocus(field))
+    _ = focusList()
+    wait(0.3)
+}
+
 /// At launch, before anything is selected: the window opens on Gõ phím with nothing
 /// visited, so Back and Forward are both off (artboard "SettingsTyping").
 func measureLaunchState() {
@@ -1394,6 +1522,16 @@ let displays = NSScreen.screens.filter { seenScales.insert($0.backingScaleFactor
 guard let primary = NSScreen.screens.first else { harnessAbort("displays", expected: "at least one", got: "none") }
 func tag(_ screen: NSScreen) -> String { "\(fmt(screen.backingScaleFactor))x" }
 
+// `--focus` (also first in --geometry): the launch focus before anything moves; then the
+// keyboard ways into the sidebar search and, with --focus alone, the search rows on the
+// primary display (run.sh --focus: a quick pass in both appearances).
+if modes.contains("--focus") || modes.contains("--geometry") {
+    measureLaunchFocus()
+}
+if modes.contains("--focus") && !modes.contains("--geometry"), moveWindow(to: primary, tag(primary)) {
+    measureKeyboardToSearch()
+    measureSidebarSearch(tag(primary), "\(tag(primary))-\(appearance)")
+}
 if modes.contains("--geometry") {
     check("-", "window", "window size at launch", CGRect(origin: .zero, size: launchSize), CGRect(origin: .zero, size: Reference.windowSize))
     measureLaunchState()
@@ -1403,6 +1541,7 @@ if modes.contains("--geometry") {
         measureSheet(tag(screen), tag(screen))
     }
     measureLimits()
+    measureKeyboardToSearch()
     // The shell last: the mouse checks move the pointer and resize the window.
     measureHistory()
     measureHistoryUnderSheet()

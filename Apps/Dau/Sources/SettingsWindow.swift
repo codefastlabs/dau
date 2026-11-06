@@ -63,6 +63,9 @@ final class SettingsWindowState {
     var query = ""
     /// A page's sheet is shown (`sheetShown(_:)`): the add-rule sheet.
     var pageSheetShown = false
+    /// The sidebar's search field, handed over by `SidebarSearchField` when it makes it,
+    /// for Edit › Find (`SettingsSplitViewController.performTextFinderAction(_:)`).
+    @ObservationIgnored weak var searchField: NSSearchField?
 
     init(_ section: SettingsSection) {
         history = SectionHistory(section)
@@ -127,8 +130,10 @@ struct SettingsSplitView: NSViewControllerRepresentable {
 final class SettingsSplitViewController: NSSplitViewController {
     private let sidebarHost: NSHostingController<SettingsSidebarRoot>
     private let detailHost: NSHostingController<SettingsDetailRoot>
+    private let state: SettingsWindowState
 
     init(sidebar: SettingsSidebarRoot, detail: SettingsDetailRoot) {
+        state = sidebar.state
         sidebarHost = NSHostingController(rootView: sidebar)
         detailHost = NSHostingController(rootView: detail)
         super.init(nibName: nil, bundle: nil)
@@ -192,7 +197,26 @@ final class SettingsSplitViewController: NSSplitViewController {
     /// (https://developer.apple.com/documentation/appkit/nsuserinterfacevalidations).
     override func validateUserInterfaceItem(_ item: any NSValidatedUserInterfaceItem) -> Bool {
         if item.action == #selector(NSSplitViewController.toggleSidebar(_:)) { return false }
+        if item.action == #selector(NSResponder.performTextFinderAction(_:)) {
+            return item.tag == NSTextFinder.Action.showFindInterface.rawValue && state.searchField != nil
+        }
         return super.validateUserInterfaceItem(item)
+    }
+
+    /// Edit › Find › Find… (⌘F) puts the focus in the sidebar's search field, as the
+    /// system's sidebar search did. The menu item sends `performTextFinderAction(_:)` up
+    /// the responder chain, which runs through this controller from either column
+    /// (https://developer.apple.com/documentation/appkit/nsresponder/performtextfinderaction(_:));
+    /// the item's tag is the action (`NSTextFinder.Action.showFindInterface`,
+    /// https://developer.apple.com/documentation/appkit/nstextfinder/action/showfindinterface).
+    /// The field becomes first responder with `makeFirstResponder(_:)`
+    /// (https://developer.apple.com/documentation/appkit/nswindow/makefirstresponder(_:)).
+    /// A responder nearer the focus that handles Find itself (the Apps page's toolbar
+    /// search field) answers first.
+    override func performTextFinderAction(_ sender: Any?) {
+        guard (sender as? NSValidatedUserInterfaceItem)?.tag == NSTextFinder.Action.showFindInterface.rawValue,
+              let field = state.searchField else { return }
+        field.window?.makeFirstResponder(field)
     }
 }
 
@@ -212,12 +236,15 @@ struct SettingsSidebarRoot: View {
 /// the app's name and version below.
 struct SettingsSidebar: View {
     @Bindable var state: SettingsWindowState
-    /// The list, not the search field, has the focus when the window opens (as with the
-    /// system's sidebar search): `focused(_:)` binds it
-    /// (https://developer.apple.com/documentation/swiftui/view/focused(_:)) and
-    /// `defaultFocus(_:_:priority:)` makes it the window's initial focus, "evaluated when
-    /// the window first appears"
-    /// (https://developer.apple.com/documentation/swiftui/view/defaultfocus(_:_:priority:)).
+    /// The list, not the search field, has the focus when the window opens, so its
+    /// selected row shows the accent color (as with the system's sidebar search). The list
+    /// is bound with `focused(_:)`, and setting the binding to true "moves focus to the
+    /// view" (https://developer.apple.com/documentation/swiftui/view/focused(_:),
+    /// https://developer.apple.com/documentation/swiftui/focusstate): it is set when the
+    /// list appears. `defaultFocus(_:_:priority:)` alone did not take inside this hosting
+    /// controller: the real window opened with no focus and a grey selection (run.sh
+    /// 06/11/2026); set on appear, the list became the window's first responder in an
+    /// off-screen window (`swift test` "Settings window shell").
     @FocusState private var listFocused: Bool
 
     var body: some View {
@@ -237,7 +264,7 @@ struct SettingsSidebar: View {
         // style (https://developer.apple.com/documentation/swiftui/liststyle/sidebar).
         .listStyle(.sidebar)
         .focused($listFocused)
-        .defaultFocus($listFocused, true)
+        .onAppear { listFocused = true }
         .overlay {
             // No section matches: the system's search empty state in the sidebar. The
             // page keeps the section shown and its title.
@@ -267,7 +294,8 @@ struct SettingsSidebar: View {
         // inset is the sidebar's standard 10 pt, no other offset (D9 accepts the 1–2 pt
         // to System Settings).
         .safeAreaInset(edge: .top, spacing: 0) {
-            SidebarSearchField(text: $state.query, prompt: String(localized: "Search"))
+            SidebarSearchField(text: $state.query, prompt: String(localized: "Search"),
+                               made: { state.searchField = $0 })
                 .controlSize(.large)
                 .padding(10)
         }
@@ -283,6 +311,8 @@ struct SettingsSidebar: View {
 struct SidebarSearchField: NSViewRepresentable {
     @Binding var text: String
     let prompt: String
+    /// Called with the field once made (Edit › Find needs it).
+    var made: (NSSearchField) -> Void = { _ in }
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
 
@@ -294,6 +324,7 @@ struct SidebarSearchField: NSViewRepresentable {
         field.delegate = context.coordinator
         field.target = context.coordinator
         field.action = #selector(Coordinator.searched(_:))
+        made(field)
         return field
     }
 

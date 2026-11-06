@@ -5,21 +5,61 @@ import DauShared
 @testable import SnapshotSettings
 
 /// The Settings window's split view (D9, "Sidebar cố định như System Settings"): built
-/// off screen, never shown. What the window does with it (drag, double-click, cursor,
-/// View menu) is measured on the real window (scripts/selftest/settings-window).
+/// off screen; the focus tests put it in a window that is never shown (not ordered in, no
+/// screen). What the real window does (drag, double-click, cursor, View menu, the
+/// selection's accent color at launch) is measured by scripts/selftest/settings-window.
 @MainActor
 @Suite("Settings window shell")
 struct SettingsShellTests {
-    func controller() -> SettingsSplitViewController {
+    func controller(_ state: SettingsWindowState = SettingsWindowState(.typing)) -> SettingsSplitViewController {
         let suite = "dau.snapshot-settings.tests.shell"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defaults.removePersistentDomain(forName: suite)
         let model = SettingsModel(store: SettingsStore(defaults: defaults, suiteName: suite))
         let environment = SettingsEnvironment(model: model, inputSource: InputSourceStatus(fixed: true), actions: nil,
                                               layoutProbe: nil, smartAdvancedExpanded: false, openWindow: nil)
-        let state = SettingsWindowState(.typing)
         return SettingsSplitViewController(sidebar: SettingsSidebarRoot(state: state, environment: environment),
                                            detail: SettingsDetailRoot(state: state, environment: environment))
+    }
+
+    /// The controller as a window's content, in a window never ordered in; the run loop
+    /// turns a few times so SwiftUI lays out and settles the focus.
+    func hiddenWindow(_ controller: SettingsSplitViewController) -> NSWindow {
+        let window = NSWindow(contentRect: CGRect(x: -6000, y: -6000, width: 740, height: 560),
+                              styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
+                              backing: .buffered, defer: true)
+        window.isReleasedWhenClosed = false
+        window.contentViewController = controller
+        for _ in 0..<15 { RunLoop.main.run(until: Date().addingTimeInterval(0.03)) }
+        return window
+    }
+
+    @Test("the sidebar list, not its search field, has the focus when the window opens")
+    func launchFocus() {
+        let state = SettingsWindowState(.typing)
+        let controller = controller(state)
+        let window = hiddenWindow(controller)
+        let sidebar = controller.splitViewItems.first?.viewController.view
+        let responder = window.firstResponder as? NSView
+        #expect(responder != nil && sidebar != nil && responder!.isDescendant(of: sidebar!))
+        #expect(state.searchField != nil)
+        #expect(state.searchField?.currentEditor() == nil)
+    }
+
+    @Test("Edit › Find (⌘F) puts the focus in the sidebar search field")
+    func findFocusesSearch() {
+        let state = SettingsWindowState(.typing)
+        let controller = controller(state)
+        let window = hiddenWindow(controller)
+        let find = NSMenuItem(title: "Find…", action: #selector(NSResponder.performTextFinderAction(_:)), keyEquivalent: "f")
+        find.tag = NSTextFinder.Action.showFindInterface.rawValue
+        let next = NSMenuItem(title: "Find Next", action: #selector(NSResponder.performTextFinderAction(_:)), keyEquivalent: "g")
+        next.tag = NSTextFinder.Action.nextMatch.rawValue
+        #expect(controller.validateUserInterfaceItem(find))
+        #expect(!controller.validateUserInterfaceItem(next))
+        // From the list, up the responder chain, as the menu item's action travels.
+        #expect(window.firstResponder?.tryToPerform(#selector(NSResponder.performTextFinderAction(_:)), with: find) == true)
+        #expect(state.searchField?.currentEditor() != nil)
     }
 
     @Test("a system sidebar, 232 pt, that neither collapses nor resizes")

@@ -154,6 +154,11 @@ enum Reference {
         CGRect(x: sidebarInset, y: sidebarFirstRowY + sidebarRowHeight * CGFloat(i),
                width: sidebarWidth - 2 * sidebarInset, height: sidebarRowHeight)
     }
+    /// Probe: the selected row's background is sampled in a square of this side, this far
+    /// left of the selection cell's right edge (clear of the label), at the row's middle
+    /// (--focus: accent selection at launch).
+    static let selectionSampleSize: CGFloat = 8
+    static let selectionSampleRightInset: CGFloat = 12
     /// Icon tile: x 19, 20 tall.
     static let sidebarIconX: CGFloat = 19
     static let sidebarIconSize: CGFloat = 20
