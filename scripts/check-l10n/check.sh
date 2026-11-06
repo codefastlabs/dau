@@ -15,9 +15,12 @@
 #      out ("one");
 #   4. no key is marked stale (Xcode no longer finds it in the code);
 #   5. keys and "en" texts hold no Vietnamese besides the phrases listed in
-#      allowed-vietnamese.txt (docs/GLOSSARY.md, "Không dịch").
+#      allowed-vietnamese.txt (docs/GLOSSARY.md, "Không dịch");
+#   6. the name is "Dấu" in every language (D24, a brand like Phở): no text, and no key
+#      of a Localizable catalog, has "Dau" without diacritics as a word (technical ids
+#      like com.codefastlabs.dau are fine; "dầu", "đau" are real Vietnamese words).
 # With <build-dir> (a DerivedData or build/…noindex directory of a finished build), also:
-#   6. every key the compiler extracted from the code (*.stringsdata) is in the catalog
+#   7. every key the compiler extracted from the code (*.stringsdata) is in the catalog
 #      of its target, and the reverse, so no text shows its English key untranslated
 #      and no entry is left over.
 # Exit status 0 only if every check passes; the failures are listed one per line.
@@ -58,6 +61,12 @@ for file in $catalogs; do
      | ([$key] + [.value.localizations.en // {} | .. | .value? // empty | strings] | unique)[]
      | select(vietnamese)
      | "\($file): \($key): Vietnamese in the key or en text: \(.)"),
+    (.strings | to_entries[]
+     | .key as $key
+     | ((if ($file | test("InfoPlist")) then [] else [$key] end)
+        + [.value.localizations // {} | .. | .value? // empty | strings] | unique)[]
+     | select(test("(^|[^.\\p{L}])dau($|[^.\\p{L}])"; "i"))
+     | "\($file): \($key): the name must be written Dấu (D24): \(.)"),
     (.strings | to_entries[] | select(.value.shouldTranslate != false)
      | .key as $key | (.value.localizations // {}) as $loc
      | ($loc.en // {} | units) as $en
