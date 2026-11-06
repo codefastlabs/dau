@@ -1,19 +1,36 @@
 {
-  "sourceLanguage" : "vi",
+  "sourceLanguage" : "en",
   "strings" : {
-    "Cài đặt Dấu…" : {
+    "Dấu Settings…" : {
       "comment" : "Input menu: opens the Dấu app (Settings window).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Cài đặt Dấu…"
+            "value" : "Dấu Settings…"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cài đặt Dấu…"
+          }
+        }
+      }
+    },
+    "Simple Telex" : {
+      "comment" : "Input menu: typing method name (D29).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Simple Telex"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Telex đơn giản"
           }
         }
       }
@@ -31,23 +48,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Telex"
-          }
-        }
-      }
-    },
-    "Telex đơn giản" : {
-      "comment" : "Input menu: typing method name (D29).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telex đơn giản"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Telex đơn giản"
           }
         }
       }

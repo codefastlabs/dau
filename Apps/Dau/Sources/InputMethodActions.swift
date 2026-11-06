@@ -302,49 +302,49 @@ enum UninstallAlert {
     /// The confirmation, and its "Xoá cả cài đặt và quy tắc ứng dụng" checkbox (off).
     static func confirmation() -> (NSAlert, NSButton) {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Gỡ Dấu khỏi máy?")
+        alert.messageText = String(localized: "Remove Dấu from this Mac?")
         // macOS lets only the user remove an input source, so the alert says what happens
         // in order (docs/research/M5-INSTALL.md section 4).
         let ui = SystemUINames.system()   // macOS's own names (D38)
-        alert.informativeText = String(localized: "Bạn sẽ bỏ Dấu khỏi \(ui.inputSources) trong \(ui.systemSettings); sau đó Dấu được chuyển vào \(ui.trash).")
-        let remove = alert.addButton(withTitle: String(localized: "Tiếp tục gỡ"))
+        alert.informativeText = String(localized: "You’ll remove Dấu from \(ui.inputSources) in \(ui.systemSettings); then Dấu is moved to the \(ui.trash).")
+        let remove = alert.addButton(withTitle: String(localized: "Uninstall"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
         remove.keyEquivalent = ""
-        let cancel = alert.addButton(withTitle: String(localized: "Huỷ"))
+        let cancel = alert.addButton(withTitle: String(localized: "Cancel"))
         cancel.keyEquivalent = "\u{1b}"
         alert.showsSuppressionButton = true
         let checkbox = alert.suppressionButton!
-        checkbox.title = String(localized: "Xoá cả cài đặt và quy tắc ứng dụng")
+        checkbox.title = String(localized: "Also delete settings and app rules")
         checkbox.state = .off
         return (alert, checkbox)
     }
 
     static func done(_ report: UninstallReport) -> NSAlert {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Đã gỡ bộ gõ Dấu")
+        alert.messageText = String(localized: "Dấu’s input method was removed")
         let ui = SystemUINames.system()   // macOS's own names (D38)
         var lines: [String] = []
         if report.movedToTrash {
-            lines.append(String(localized: "Bộ gõ đã được chuyển vào \(ui.trash)."))
+            lines.append(String(localized: "The input method was moved to the \(ui.trash)."))
         }
         if report.stillEnabled {
-            lines.append(String(localized: "macOS vẫn báo Dấu trong nguồn đầu vào; bạn có thể bỏ nó trong \(ui.inputSourcesPath)."))
+            lines.append(String(localized: "macOS still lists Dấu among the input sources; you can remove it in \(ui.inputSourcesPath)."))
         }
         if report.dataDeleted {
-            lines.append(String(localized: "Đã xoá cài đặt và quy tắc ứng dụng."))
+            lines.append(String(localized: "Settings and app rules were deleted."))
         }
-        lines.append(String(localized: "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục \(ui.applications) vào \(ui.trash)."))
+        lines.append(String(localized: "To remove the app too, drag Dấu from the \(ui.applications) folder to the \(ui.trash)."))
         alert.informativeText = lines.joined(separator: " ")
-        alert.addButton(withTitle: String(localized: "Thoát Dấu"))
+        alert.addButton(withTitle: String(localized: "Quit Dấu"))
         return alert
     }
 
     static func failed() -> NSAlert {
         let alert = NSAlert()
         alert.alertStyle = .warning
-        alert.messageText = String(localized: "Chưa gỡ được Dấu")
-        alert.informativeText = String(localized: "Bạn có thể bỏ “Dấu – Tiếng Việt” trong \(SystemUINames.system().inputSourcesPath), rồi thử lại.")
+        alert.messageText = String(localized: "Couldn’t Remove Dấu")
+        alert.informativeText = String(localized: "You can remove “Dấu – Vietnamese” in \(SystemUINames.system().inputSourcesPath), then try again.")
         alert.addButton(withTitle: String(localized: "OK"))
         return alert
     }

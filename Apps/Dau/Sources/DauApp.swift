@@ -3,13 +3,13 @@ import SwiftUI
 import DauShared
 
 /// Host app: the Settings window (M4) and the onboarding window (M5). Updates (M7)
-/// come later. The entry point is main.swift, which pins the localization first.
+/// come later. The entry point is main.swift.
 ///
 /// The Settings window is the app's main window, so opening Dấu from Finder shows it;
-/// the input menu's "Cài đặt Dấu…" item is meant to open the app the same way. ⌘,
+/// the input menu's "Dấu Settings…" item is meant to open the app the same way. ⌘,
 /// reopens it after it was closed. At launch, while Dấu is not installed or not enabled,
-/// the onboarding window opens instead (`LaunchRouter`); "Trợ giúp › Hướng dẫn thiết
-/// lập…" opens it at any time.
+/// the onboarding window opens instead (`LaunchRouter`); "Help › Setup Guide…" opens it at
+/// any time.
 ///
 /// At launch, an older input method in ~/Library/Input Methods is replaced by the one
 /// inside the app (D7, D37: `upgradeIfNeeded`); nothing happens when none is installed.
@@ -101,7 +101,7 @@ struct DauApp: App {
     }
 
     var body: some Scene {
-        Window(Text("Cài đặt Dấu"), id: SettingsScene.id) {
+        Window(Text("Dấu Settings"), id: SettingsScene.id) {
             SettingsWindow()
                 .environment(model)
                 .environment(inputSource)
@@ -128,7 +128,7 @@ struct DauApp: App {
             SettingsHistoryCommands()
         }
 
-        Window(Text("Thiết lập Dấu"), id: OnboardingScene.id) {
+        Window(Text("Set Up Dấu"), id: OnboardingScene.id) {
             OnboardingWindow()
                 .environment(onboarding)
                 .environment(model)
@@ -171,12 +171,12 @@ struct SettingsCommands: Commands {
 
     var body: some Commands {
         CommandGroup(replacing: .appSettings) {
-            Button("Cài đặt…") { openWindow(id: SettingsScene.id) }
+            Button("Settings…") { openWindow(id: SettingsScene.id) }
                 .keyboardShortcut(",", modifiers: .command)
         }
         // Dấu has no help book: the Help menu holds the setup guide instead.
         CommandGroup(replacing: .help) {
-            Button("Hướng dẫn thiết lập…") { openWindow(id: OnboardingScene.id) }
+            Button("Setup Guide…") { openWindow(id: OnboardingScene.id) }
         }
     }
 }

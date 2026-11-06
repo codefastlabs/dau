@@ -101,8 +101,8 @@ enum Reference {
     /// collapse the sidebar; then ⌃⌘S (View › Show Sidebar) must bring it back at
     /// `sidebarWidth`.
     static let collapseDragEndX: CGFloat = 20
-    /// System: the app pins its localization to Vietnamese (main.swift), so the system's
-    /// own menu items are in that language; English is accepted too. Read from the
+    /// System: run.sh launches the app with `-AppleLanguages (vi)`, so the system's own
+    /// menu items are in that language; English is accepted too. Read from the
     /// system's string tables, never typed here (D38).
     static let menuLanguages = ["vi", "en"]
     static let menuStringTables = [

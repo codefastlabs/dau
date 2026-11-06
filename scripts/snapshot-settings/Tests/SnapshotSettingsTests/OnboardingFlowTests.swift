@@ -196,14 +196,16 @@ struct OnboardingFlowTests {
         await flow.enable()
         #expect(flow.enableScreen == .error)
         #expect(flow.errorDetail == InputMethodInstallerError.failed("TISRegisterInputSource -50").detail)
-        // Vietnamese only: the status code stays in the log.
+        // Only words: the status code stays in the log.
         #expect(flow.errorDetail?.contains("TIS") == false)
         installer.failure = nil
         await flow.enable()
         #expect(flow.enableScreen == .done)
         #expect(flow.errorDetail == nil)
         #expect(OnboardingFlow.describe(InputMethodInstallerError.invalidSignature).isEmpty == false)
-        #expect(OnboardingFlow.describe(CocoaError(.fileWriteNoPermission)) == "Có lỗi khi chép hoặc đăng ký bộ gõ.")
+        let other = OnboardingFlow.describe(CocoaError(.fileWriteNoPermission))
+        #expect(other == "Something went wrong while copying or registering the input method.")
+        #expect(SnapshotLocalization.text(other, "vi") == "Có lỗi khi chép hoặc đăng ký bộ gõ.")
         #expect(InputMethodInstallerError.failed("swap errno 13").detail.contains("errno") == false)
     }
 
@@ -237,7 +239,10 @@ struct OnboardingFlowTests {
     func logOutHint() {
         let names = SystemUINames(languages: ["en"], tables: [:]) { _, _ in nil }
         let line = EnableStep.logOutHintPlain(logOut: names.logOut)
-        #expect(line == "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › Log Out) rồi đăng nhập lại một lần.")
+        #expect(line == "If an app can’t select Dấu yet, log out ( › Log Out) and log back in once.")
+        let key = "If an app can’t select Dấu yet, log out (%@ › %@) and log back in once."
+        #expect(String(format: SnapshotLocalization.text(key, "vi"), "", "Đăng xuất")
+                == "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › Đăng xuất) rồi đăng nhập lại một lần.")
     }
 
     @Test("already enabled: step 2 is done and goes straight on")
@@ -330,7 +335,8 @@ struct ShortcutReadingTests {
     func inline() {
         #expect(InputSourceShortcut(keys: ["⌃", "Space"], globeKey: false).inlineText == "⌃Space")
         #expect(InputSourceShortcut(keys: [], globeKey: true).inlineText == "🌐")
-        #expect(InputSourceShortcut(keys: ["⌃", "Space"], globeKey: true).inlineText == "⌃Space hoặc 🌐")
+        #expect(InputSourceShortcut(keys: ["⌃", "Space"], globeKey: true).inlineText == "⌃Space or 🌐")
+        #expect(String(format: SnapshotLocalization.text("%@ or 🌐", "vi"), "⌃Space") == "⌃Space hoặc 🌐")
     }
 }
 

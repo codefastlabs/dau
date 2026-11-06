@@ -199,7 +199,7 @@ final class OnboardingFlow {
         if let error = error as? InputMethodInstallerError { return error.detail }
         // Any other error (a file operation): its text is in the system's language, not
         // Dấu's, so the screen says only where it happened; the log has the error.
-        return String(localized: "Có lỗi khi chép hoặc đăng ký bộ gõ.")
+        return String(localized: "Something went wrong while copying or registering the input method.")
     }
 
     /// "Mở System Settings" on the "Chưa bật được" screen (N4: only opens the pane).

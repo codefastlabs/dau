@@ -14,10 +14,10 @@ struct TypingSettingsView: View {
                 PreviewCard(settings: model.settings)
             }
 
-            Section(header: Text("Kiểu gõ")) {
+            Section(header: Text("Typing method")) {
                 // No row label: the section title names it (mockup). System Settings
                 // spans such a segmented control across the row (Sound, Output/Input).
-                Picker("Kiểu gõ", selection: $model.settings.typingMethod) {
+                Picker("Typing method", selection: $model.settings.typingMethod) {
                     ForEach(DauSettings.TypingMethod.allCases, id: \.self) { method in
                         Text(verbatim: method.title).tag(method)
                     }
@@ -31,27 +31,27 @@ struct TypingSettingsView: View {
                         Text(verbatim: placement.title).tag(placement)
                     }
                 } label: {
-                    Text("Vị trí dấu thanh")
-                    Text("Kiểu mới: hoà, thuý · Kiểu cũ: hòa, thúy")
+                    Text("Tone mark placement")
+                    Text("Modern: hoà, thuý · Classic: hòa, thúy")
                 }
                 .pickerStyle(.segmented)
                 Toggle(isOn: $model.settings.freeMarking) {
-                    Text("Bỏ dấu tự do")
-                    Text("Gõ phím dấu ở bất kỳ đâu sau nguyên âm")
+                    Text("Free mark placement")
+                    Text("Type mark keys anywhere after the vowel")
                 }
             }
 
-            Section(header: Text("Chuyển tiếng Việt ↔ tiếng Anh")) {
+            Section(header: Text("Switch Vietnamese ↔ English")) {
                 LabeledContent {
                     HStack(spacing: 8) {
                         ShortcutKeycaps(shortcut: shortcut)
-                        Button("Đổi…") { SystemSettings.openKeyboard() }
+                        Button("Change…") { SystemSettings.openKeyboard() }
                             .layoutProbe("button")
-                            .accessibilityHint(Text("Mở \(SystemUINames.system().systemSettings)"))
+                            .accessibilityHint(Text("Open \(SystemUINames.system().systemSettings)"))
                     }
                 } label: {
-                    Text("Phím tắt chuyển nguồn đầu vào")
-                    Text("Dùng chung phím tắt của macOS, đổi trong \(SystemUINames.system().keyboardPath)")
+                    Text("Input source shortcut")
+                    Text("Uses the macOS shortcut; change it in \(SystemUINames.system().keyboardPath)")
                 }
             }
         }
@@ -80,7 +80,7 @@ struct PreviewCard: View {
         let example = SettingsSamples.preview(settings)
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
-                Text("Xem trước")
+                Text("Preview")
                     .fontWeight(.semibold)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityAddTraits(.isHeader)
@@ -106,7 +106,7 @@ struct PreviewCard: View {
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text("\(example.keys) thành \(example.result)"))
+            .accessibilityLabel(Text("\(example.keys) becomes \(example.result)"))
         }
         .layoutProbe("firstRow")
     }
@@ -143,7 +143,7 @@ struct ShortcutKeycaps: View {
                 if shortcut.globeKey {
                     if !shortcut.keys.isEmpty {
                         // System Settings' value text: 13 pt, secondary.
-                        Text("hoặc")
+                        Text("or")
                             .foregroundStyle(.secondary)
                             .padding(.horizontal, 2)
                     }
@@ -151,13 +151,13 @@ struct ShortcutKeycaps: View {
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel(Text("Phím tắt hiện tại"))
+            .accessibilityLabel(Text("Current shortcut"))
             .accessibilityAddTraits(.isStaticText)
             .accessibilityValue(Text(verbatim: spokenValue(shortcut)))
         } else {
             // Not readable: keep the placeholder rather than guess (N5).
             // System Settings' value text: 13 pt, secondary.
-            Text("[Phím tắt hệ thống]")
+            Text("[System shortcut]")
                 .foregroundStyle(.secondary)
         }
     }
@@ -194,7 +194,7 @@ extension DauSettings.TypingMethod {
         switch self {
         case .telex: String(localized: "Telex")
         case .vni: String(localized: "VNI")
-        case .simpleTelex: String(localized: "Telex đơn giản")
+        case .simpleTelex: String(localized: "Simple Telex")
         }
     }
 }
@@ -202,8 +202,8 @@ extension DauSettings.TypingMethod {
 extension DauSettings.TonePlacement {
     var title: String {
         switch self {
-        case .modern: String(localized: "Kiểu mới")
-        case .classic: String(localized: "Kiểu cũ")
+        case .modern: String(localized: "Modern")
+        case .classic: String(localized: "Classic")
         }
     }
 }

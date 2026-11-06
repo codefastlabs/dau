@@ -41,8 +41,8 @@ enum SystemUITable: String, CaseIterable, Sendable {
 /// that points the user at a place in System Settings: "System Settings › Keyboard ›
 /// Input Sources" on an English Mac, "Cài đặt hệ thống › Bàn phím › Nguồn đầu vào" on a
 /// Vietnamese one. The words come from the system's own tables, not from Dấu's
-/// translation, and follow the system's preferred languages, not this process's (pinned
-/// to Vietnamese, main.swift): same idea as `LayoutNames`. A name with no entry in any
+/// translation, and follow the system's preferred languages, not this process's (which
+/// can differ, D41): same idea as `LayoutNames`. A name with no entry in any
 /// preferred language is shown in English.
 ///
 /// The tables are `language → key → value` (the shape of a `.loctable`), found by the

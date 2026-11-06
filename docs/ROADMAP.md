@@ -62,7 +62,7 @@ Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và ô chọn ngôn ngữ: D4
 - Script kiểm (vào `check.sh` hoặc script riêng): mọi khoá có bản `vi` và `en` đã dịch, không còn chuỗi "new"/"needs review".
 - Test: `snapshot-settings` nạp catalog để so chữ đúng ngôn ngữ; bộ kiểm cửa sổ thật chạy ở `vi`.
 - Bảng thuật ngữ tiếng Anh theo Apple (input source, Simple Telex, underline…), đặt ở một chỗ.
-- Xong khi: test xanh; máy tiếng Việt thấy mọi chữ như trước; chạy với `-AppleLanguages (en)` không còn chữ tiếng Việt ngoài tên "Dấu" và tên giao diện macOS theo D38; kiểm toán ĐẠT.
+- Xong khi: test xanh; máy tiếng Việt thấy mọi chữ như trước; chạy với `-AppleLanguages (en)` không còn chữ tiếng Việt ngoài tên "Dấu", tên giao diện macOS theo D38, nhãn của app khác chép nguyên và ví dụ gõ (`docs/GLOSSARY.md`); kiểm toán ĐẠT.
 
 **Phần còn lại — M9:**
 - Người dùng duyệt câu chữ tiếng Anh; ngôn ngữ khác chỉ thêm khi có người nói thạo duyệt (D41).

@@ -399,7 +399,7 @@ final class DauInputController: IMKInputController {
             let methods: [(String, DauSettings.TypingMethod, Selector)] = [
                 (String(localized: "Telex", comment: "Input menu: typing method name."), .telex, #selector(selectTelex(_:))),
                 (String(localized: "VNI", comment: "Input menu: typing method name."), .vni, #selector(selectVNI(_:))),
-                (String(localized: "Telex đơn giản", comment: "Input menu: typing method name (D29)."), .simpleTelex, #selector(selectSimpleTelex(_:))),
+                (String(localized: "Simple Telex", comment: "Input menu: typing method name (D29)."), .simpleTelex, #selector(selectSimpleTelex(_:))),
             ]
             for (title, method, action) in methods {
                 let item = NSMenuItem(title: title, action: action, keyEquivalent: "")
@@ -407,7 +407,7 @@ final class DauInputController: IMKInputController {
                 menu.addItem(item)
             }
             menu.addItem(.separator())
-            menu.addItem(NSMenuItem(title: String(localized: "Cài đặt Dấu…", comment: "Input menu: opens the Dấu app (Settings window)."),
+            menu.addItem(NSMenuItem(title: String(localized: "Dấu Settings…", comment: "Input menu: opens the Dấu app (Settings window)."),
                                     action: #selector(openHostApp(_:)), keyEquivalent: ""))
             return menu
         }

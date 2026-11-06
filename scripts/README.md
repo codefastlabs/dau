@@ -13,6 +13,7 @@ Thư mục theo mục đích:
 | `scripts/assets/` | sinh biểu tượng tạm |
 | `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu) |
 | `scripts/check-docs/` | kiểm tài liệu |
+| `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/probe/` | công cụ thử ném đi: làm nguồn nhập liệu mới hiện trong "+" không cần đăng xuất (`docs/research/M5-INSTALL.md` mục 8.2); không thuộc bản phát hành |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
@@ -21,6 +22,7 @@ Thư mục theo mục đích:
 | Đường dẫn | Làm gì | Tác dụng phụ | Ai chạy | Gọi từ |
 |---|---|---|---|---|
 | `scripts/check-docs/check.sh` | Kiểm tài liệu lệch (đường dẫn, số D/N, cách nói đã bị thay, mã commit, ghi chú nghiên cứu, danh sách script). | none | agent | CLAUDE.md, `.claude/commands/milestone.md`, `.claude/agents/auditor.md` |
+| `scripts/check-l10n/check.sh` | Kiểm mọi `.xcstrings` trong `Apps/` (D41): ngôn ngữ gốc `en`; mọi khoá (trừ `shouldTranslate` false) có bản `en` và `vi` ở trạng thái đã dịch, kể cả từng dạng số nhiều; mỗi bản có đủ `%@`/`%lld` như khoá. Truyền thư mục DerivedData của một lần build xong thì so thêm các khoá trình biên dịch trích từ mã (`*.stringsdata`) với catalog của từng target. | none | agent | docs/ARCHITECTURE.md, docs/GLOSSARY.md |
 | `scripts/dev/dau-version.sh` | Bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không. | none | agent | CLAUDE.md, docs/ARCHITECTURE.md |
 | `scripts/perf/perf-report.sh` | Đọc nhật ký hệ thống, in p50/p99 từng thao tác của bộ gõ theo app. | none | agent | docs/COMPATIBILITY.md, `scripts/selftest/typing/run.sh` |
 | `scripts/build/stamp-build-commit.sh` | Ghi mã commit vào `build/generated/BuildCommit.txt` cho bản build. | builds | agent | `project.yml` (preGenCommand và build phase) |

@@ -94,7 +94,7 @@ struct SettingsHistoryTests {
     @Test("the search's jump to its first match is a step; Back returns to the page before")
     func searchJump() {
         var history = SectionHistory(.typing)
-        let visible = SettingsSection.allCases.filter { $0.matches("gạch chân") }
+        let visible = SettingsSection.allCases.filter { $0.matches("underline") }
         #expect(visible == [.apps])
         history.showFirstMatch(of: visible)
         #expect(history.current == .apps)

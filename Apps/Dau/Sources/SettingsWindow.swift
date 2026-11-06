@@ -45,7 +45,7 @@ struct SettingsWindow: View {
                     ContentUnavailableView.search(text: query.trimmingCharacters(in: .whitespaces))
                 }
             }
-            .searchable(text: $query, placement: .sidebar, prompt: Text("Tìm kiếm"))
+            .searchable(text: $query, placement: .sidebar, prompt: Text("Search"))
             .onChange(of: query) {
                 // Jump to the first match (a step in the history, `showFirstMatch`).
                 history.showFirstMatch(of: visibleSections)

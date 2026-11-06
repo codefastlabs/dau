@@ -115,7 +115,7 @@ enum DebugCapture {
             var found: NSWindow?
             for _ in 0..<50 where found == nil {
                 try? await Task.sleep(for: .milliseconds(200))
-                found = NSApp.windows.first { $0.isVisible && $0.title == String(localized: "Thiết lập Dấu") }
+                found = NSApp.windows.first { $0.isVisible && $0.title == String(localized: "Set Up Dấu") }
             }
             try? await Task.sleep(for: .milliseconds(500))
             guard let flow = onboardingFlow, let window = found else {

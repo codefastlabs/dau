@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 
-@Suite("HostApp (input menu › Cài đặt Dấu…)")
+@Suite("HostApp (input menu › Dấu Settings…)")
 struct HostAppTests {
     @Test("the app an input method bundle is nested in")
     func enclosingApp() {

@@ -246,7 +246,7 @@ struct Chip: View {
 /// "Mới" badge: accent fill with the system's text-on-accent color.
 struct NewBadge: View {
     var body: some View {
-        Text("Mới")
+        Text("New")
             .font(.system(size: 11, weight: .semibold))
             .foregroundStyle(Color(nsColor: .alternateSelectedControlTextColor))
             .padding(.horizontal, 7)
@@ -269,7 +269,7 @@ struct ExampleChips: View {
             Chip(Text(verbatim: example.result), emphasized: true)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("\(keysText) thành \(example.result)"))
+        .accessibilityLabel(Text("\(keysText) becomes \(example.result)"))
     }
 
     private var keysText: String {
@@ -337,29 +337,29 @@ struct NotEnabledBanner: View {
         switch state {
         case .enabled:
             noticeBanner(probe: "banner.enabled", leading: tile(.green, symbol: "checkmark"),
-                         title: Text("Đã bật Dấu"), hint: enabledHint) {
-                Button("Ẩn") { actions?.dismissBanner() }
+                         title: Text("Dấu Is On"), hint: enabledHint) {
+                Button("Hide") { actions?.dismissBanner() }
             }
         case .working:
             noticeBanner(probe: "banner.working", leading: ProgressView().controlSize(.small).frame(width: 28, height: 28).accessibilityHidden(true),
-                         title: Text("Đang chờ bạn bấm \(ui.allow)"),
-                         hint: Text("Hộp thoại nằm trong cửa sổ \(ui.systemSettings). Bấm \(ui.allow) để bật Dấu.")) {
-                Button("Thử lại") { enable() }
+                         title: Text("Waiting for you to click \(ui.allow)"),
+                         hint: Text("The dialog is in the \(ui.systemSettings) window. Click \(ui.allow) to turn on Dấu.")) {
+                Button("Try Again") { enable() }
             }
             .accessibilityAddTraits(.updatesFrequently)
         case .notEnabled, .failed:
             noticeBanner(probe: "banner.notEnabled", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
-                         title: Text("Chưa bật được Dấu"),
-                         hint: Text("Bấm Thử lại rồi \(ui.allow), hoặc tự thêm: \(ui.inputSourcesPath) › \(ui.edit) › + › \(ui.vietnamese) › Dấu.")) {
-                Button("Thử lại") { enable() }
+                         title: Text("Couldn’t Turn On Dấu"),
+                         hint: Text("Click Try Again, then \(ui.allow), or add it yourself: \(ui.inputSourcesPath) › \(ui.edit) › + › \(ui.vietnamese) › Dấu.")) {
+                Button("Try Again") { enable() }
             }
             .onChange(of: status.isEnabled) { _, isEnabled in actions?.inputSourcesChanged(isEnabled: isEnabled) }
         case .idle:
             if status.isEnabled == false {
                 noticeBanner(probe: "banner.idle", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
-                             title: Text("Dấu chưa được bật trong nguồn đầu vào"),
-                             hint: Text("Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt.")) {
-                    Button("Bật lại") { enable() }
+                             title: Text("Dấu isn’t turned on in your input sources"),
+                             hint: Text("You can still change settings, but you can’t type Vietnamese yet.")) {
+                    Button("Turn On") { enable() }
                         .buttonStyle(.borderedProminent)
                 }
             }
@@ -369,14 +369,14 @@ struct NotEnabledBanner: View {
     /// "Chọn Dấu trong menu nhập liệu, hoặc bấm ⌃Space để chuyển giữa Dấu và U.S.": the
     /// real shortcut (N5); without a readable one, only the first half.
     private var enabledHint: Text {
-        guard let actions else { return Text("Chọn Dấu trên menu nguồn đầu vào.") }
+        guard let actions else { return Text("Choose Dấu from the Input menu.") }
         switch (actions.shortcut.shortcut, actions.englishLayout) {
         case (let shortcut?, let layout?):
-            return Text("Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn \(shortcut.inlineText) để chuyển giữa Dấu và “\(layout)”.")
+            return Text("Choose Dấu from the Input menu, or press \(shortcut.inlineText) to switch between Dấu and “\(layout)”.")
         case (let shortcut?, nil):
-            return Text("Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn \(shortcut.inlineText) để chuyển giữa Dấu và bàn phím tiếng Anh.")
+            return Text("Choose Dấu from the Input menu, or press \(shortcut.inlineText) to switch between Dấu and an English keyboard.")
         default:
-            return Text("Chọn Dấu trên menu nguồn đầu vào.")
+            return Text("Choose Dấu from the Input menu.")
         }
     }
 
@@ -420,11 +420,11 @@ struct TamperedBanner: View {
                             .frame(width: 28, height: 28)
                             .background(Color.red, in: RoundedRectangle(cornerRadius: 7, style: .continuous))
                             .accessibilityHidden(true),
-                         title: Text("Bộ gõ Dấu trên máy đã bị thay đổi"),
+                         title: Text("Dấu’s input method on this Mac has been changed"),
                          hint: actions.reinstall == .failed
-                            ? Text("Chưa cài lại được. Hãy gỡ cài đặt Dấu rồi cài lại từ bản tải về.")
-                            : Text("Tệp bộ gõ đã bị thay hoặc sửa sau khi cài. Cài lại để gõ bằng đúng bản của Dấu.")) {
-                Button("Cài lại") { Task { await actions.reinstallInputMethod() } }
+                            ? Text("Couldn’t reinstall. Uninstall Dấu, then install it again from a fresh download.")
+                            : Text("The input method was replaced or modified after it was installed. Reinstall to type with Dấu’s own copy.")) {
+                Button("Reinstall") { Task { await actions.reinstallInputMethod() } }
                     .buttonStyle(.borderedProminent)
                     .disabled(actions.reinstall == .working)
             }

@@ -17,7 +17,7 @@ options:
   bundleIdPrefix: com.codefastlabs.dau
   deploymentTarget:
     macOS: "14.0"
-  developmentLanguage: vi
+  developmentLanguage: en
   createIntermediateGroups: true
   generateEmptyDirectories: true
   groupSortPosition: top

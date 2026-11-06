@@ -8,7 +8,9 @@
 # (do not click while it runs). Needs the Accessibility and Screen Recording permissions
 # of the terminal. Changes no system setting: the scroll bar style and the appearance
 # are arguments of that one launch (`-AppleShowScrollBars` lands in the app's argument
-# domain; `--appearance` is a Debug flag of Dấu), never the global defaults.
+# domain; `--appearance` is a Debug flag of Dấu), never the global defaults. Every launch
+# passes `-AppleLanguages (vi)`: the expected texts are the Vietnamese ones, whatever the
+# Mac's language (the app follows macOS's language list, D41).
 #
 # In-app captures, on a copy of the Debug app re-signed ad hoc without entitlements (so
 # the copy has no App Group and its fake services cannot touch the user's settings):
@@ -107,7 +109,7 @@ codesign --force --sign - --entitlements "$work/ent.plist" "$work/Dau.app" >/dev
 capture() {   # <step name> <Dau arguments…>
   local step=$1 rc=0
   shift
-  "$work/Dau.app/Contents/MacOS/Dau" "$@" >"$work/capture.log" 2>&1 || rc=$?
+  "$work/Dau.app/Contents/MacOS/Dau" -AppleLanguages '(vi)' "$@" >"$work/capture.log" 2>&1 || rc=$?
   if (( rc != 0 )); then
     echo "FAIL capture ($step): Dau $* — exit status $rc"
     tail -5 "$work/capture.log" | sed 's/^/    /'
@@ -156,7 +158,7 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   # leftover as a file to open (`application(_:openFiles:)`). The 8 argument sets measured
   # on Dấu fit this; that SwiftUI then opens no window is not measured. Put every app
   # flag that takes a value (`-AppleShowScrollBars`, `--appearance`) before --settings-window.
-  open -n "$app" --args "$@" --settings-window
+  open -n "$app" --args -AppleLanguages '(vi)' "$@" --settings-window
   local pid=""
   for i in {1..50}; do
     pid=$(comm -13 <(echo "$before") <(pgrep -f "$app/Contents/MacOS/Dau" | sort) | tail -1)

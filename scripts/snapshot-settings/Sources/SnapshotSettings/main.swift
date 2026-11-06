@@ -3,6 +3,7 @@ import SwiftUI
 import DauShared
 
 // Usage: SnapshotSettings <output-dir> [<artboard-dir> [<real-window-dir> [<onboarding-capture-dir>]]]
+//        [-AppleLanguages '(en)']   (default: Vietnamese, as the artboards)
 // - Renders every page in light, dark and high-contrast appearance and the 2×2 grids of
 //   the four sections. No pass criteria: the layout is checked on the real window
 //   (scripts/selftest/settings-window).
@@ -20,6 +21,11 @@ import DauShared
 //   OnboardingEnableWaiting, OnboardingEnableFailed, OnboardingEnableError,
 //   OnboardingEnableDone, OnboardingEnableDoneNoShortcut, Onboarding) and their element frames. There is no dark artboard: the
 //   dark compare puts the light mockup beside the dark window.
+
+// Before anything reads a localization: the app's catalog for Bundle.main, Vietnamese
+// unless -AppleLanguages is given.
+SnapshotLocalization.installForMainBundle()
+print("localization:", Bundle.main.preferredLocalizations.first ?? "none")
 
 var arguments: [String] = []
 var skipNext = false

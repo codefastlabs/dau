@@ -85,20 +85,20 @@ struct SettingsHistoryButtons: View {
             Button {
                 history.goBack()
             } label: {
-                Label("Lùi", systemImage: "chevron.backward")
+                Label("Back", systemImage: "chevron.backward")
             }
-            .help(Text("Lùi"))
+            .help(Text("Back"))
             .disabled(!history.canGoBack(sheetShown: sheetShown))
             Button {
                 history.goForward()
             } label: {
-                Label("Tiến", systemImage: "chevron.forward")
+                Label("Forward", systemImage: "chevron.forward")
             }
-            .help(Text("Tiến"))
+            .help(Text("Forward"))
             .disabled(!history.canGoForward(sheetShown: sheetShown))
         } label: {
             // Names the group for VoiceOver, and in the toolbar's overflow menu.
-            Text("Điều hướng")
+            Text("Navigation")
         }
         .controlGroupStyle(.navigation)
     }
@@ -152,10 +152,10 @@ struct SettingsHistoryCommands: Commands {
 
     var body: some Commands {
         CommandGroup(before: .sidebar) {
-            Button("Lùi") { navigation?.goBack() }
+            Button("Back") { navigation?.goBack() }
                 .keyboardShortcut("[", modifiers: .command)
                 .disabled(navigation?.canGoBack != true)
-            Button("Tiến") { navigation?.goForward() }
+            Button("Forward") { navigation?.goForward() }
                 .keyboardShortcut("]", modifiers: .command)
                 .disabled(navigation?.canGoForward != true)
         }

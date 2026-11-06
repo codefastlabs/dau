@@ -82,12 +82,12 @@ struct OnboardingSidebar: View {
                 }
             }
             .accessibilityElement(children: .contain)
-            .accessibilityLabel(Text("Các bước thiết lập"))
+            .accessibilityLabel(Text("Setup steps"))
             .layoutProbe("onbSteps")
 
             Spacer(minLength: 0)
 
-            Hint(Text("Dấu không cần quyền Trợ năng."))
+            Hint(Text("Dấu doesn’t need Accessibility access."))
         }
         // Mockup: 16 pt inset, the 12 pt traffic lights, then 22 pt to the app name.
         .padding(.top, OnboardingScene.belowTitleBar(50))
@@ -127,7 +127,7 @@ struct StepRow: View {
             }
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Bước \(step.rawValue): \(Text(step.sidebarTitle))"))
+        .accessibilityLabel(Text("Step \(step.rawValue): \(Text(step.sidebarTitle))"))
         .accessibilityValue(state.spoken)
         .accessibilityAddTraits(state == .current ? [.isStaticText, .isSelected] : .isStaticText)
     }
@@ -165,17 +165,17 @@ struct StepBadge: View {
 extension OnboardingFlow.Step {
     var sidebarTitle: LocalizedStringResource {
         switch self {
-        case .oldInputMethods: "Kiểm tra bộ gõ cũ"
-        case .enable: "Bật Dấu"
-        case .typing: "Chọn kiểu gõ"
+        case .oldInputMethods: "Check Other Input Methods"
+        case .enable: "Turn On Dấu"
+        case .typing: "Choose Typing Method"
         }
     }
 
     var sidebarHint: Text {
         switch self {
-        case .oldInputMethods: Text("Để dấu không bị gõ hai lần")
-        case .enable: Text("Thêm vào nguồn đầu vào")
-        case .typing: Text("Gõ thử ngay")
+        case .oldInputMethods: Text("So marks aren’t typed twice")
+        case .enable: Text("Add to input sources")
+        case .typing: Text("Try it right away")
         }
     }
 }
@@ -183,9 +183,9 @@ extension OnboardingFlow.Step {
 extension OnboardingFlow.StepState {
     var spoken: Text {
         switch self {
-        case .done: Text("Đã xong")
-        case .current: Text("Đang làm")
-        case .pending: Text("Chưa làm")
+        case .done: Text("Done")
+        case .current: Text("Current")
+        case .pending: Text("Not started")
         }
     }
 }
@@ -301,19 +301,19 @@ struct ConflictStep: View {
 
     var body: some View {
         let names = flow.conflicts.map(\.name).formatted(.list(type: .and))
-        StepLayout(step: .oldInputMethods, title: Text("Tắt bộ gõ đang chạy"),
-                   subtitle: Text("\(names) đang chạy. Khi hai bộ gõ cùng chạy, dấu bị thêm hai lần và chữ gõ ra bị sai.")) {
+        StepLayout(step: .oldInputMethods, title: Text("Turn Off Other Input Methods"),
+                   subtitle: Text("Running now: \(names). When two input methods run at the same time, marks are added twice and the text comes out wrong.")) {
             VStack(alignment: .leading, spacing: 18) {
                 ForEach(flow.conflicts) { app in
                     ConflictCard(app: app)
                         .layoutProbe(app == flow.conflicts.first ? "onbCard-1" : "onbCard-1-more")
                 }
-                Hint(Text("Dấu tự kiểm tra lại khi bạn quay về cửa sổ này."))
+                Hint(Text("Dấu checks again when you come back to this window."))
             }
         } buttons: {
-            Button("Bỏ qua") { flow.skip() }
-                .accessibilityHint(Text("Tiếp tục khi bộ gõ cũ vẫn đang chạy"))
-            Button("Kiểm tra lại") { flow.recheck() }
+            Button("Skip") { flow.skip() }
+                .accessibilityHint(Text("Continue while the other input method is still running"))
+            Button("Check Again") { flow.recheck() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -358,7 +358,7 @@ struct ConflictCard: View {
 /// "Đang chạy": a capsule on the system orange tint.
 struct RunningChip: View {
     var body: some View {
-        Text("Đang chạy")
+        Text("Running")
             .font(.system(size: 12))
             .foregroundStyle(.primary)
             .padding(.horizontal, 9)
@@ -414,14 +414,14 @@ struct EnableStep: View {
     }
 
     private var addedSubtitle: Text {
-        Text("Dấu sẽ được thêm vào nguồn đầu vào của macOS, cạnh bàn phím bạn đang dùng.")
+        Text("Dấu will be added to your macOS input sources, next to the keyboard you use now.")
     }
 
     // Before the click.
     private var ready: some View {
-        StepLayout(step: .enable, screen: ".ready", title: Text("Bật Dấu"), subtitle: addedSubtitle) {
+        StepLayout(step: .enable, screen: ".ready", title: Text("Turn On Dấu"), subtitle: addedSubtitle) {
             OnboardingCard {
-                Text("Sau khi bật, bạn sẽ thấy")
+                Text("Once it’s on, you’ll see")
                     .font(.system(size: 13, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
                 HStack(spacing: 12) {
@@ -429,7 +429,7 @@ struct EnableStep: View {
                         .fill(.primary, style: FillStyle(eoFill: true))
                         .frame(width: 22, height: 16)
                         .accessibilityHidden(true)
-                    Text("Biểu tượng V trên thanh menu khi đang gõ tiếng Việt")
+                    Text("A V icon in the menu bar while you type Vietnamese")
                         .font(.system(size: 13))
                 }
                 ShortcutLine(reading: flow.shortcut, englishLayout: flow.englishLayout)
@@ -438,14 +438,14 @@ struct EnableStep: View {
             // Title and sentence across the card; the note and the picture of macOS's
             // dialog side by side under them, so the card is as tall as the picture.
             OnboardingCard(spacing: 6) {
-                Text("Khi bạn bấm “Bật Dấu”")
+                Text("When you click “Turn On Dấu”")
                     .font(.system(size: 13, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
-                Text("\(ui.systemSettings) sẽ đóng rồi mở lại và hỏi bạn có cho Dấu bật không. Bấm **\(ui.allow)**.")
+                Text("\(ui.systemSettings) will close, reopen and ask whether to turn on Dấu. Click **\(ui.allow)**.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .center, spacing: 16) {
-                    Hint(Text("macOS hỏi vì bộ gõ nhận mọi phím bạn gõ. Bộ gõ Dấu không có quyền dùng mạng."))
+                    Hint(Text("macOS asks because an input method receives every key you type. Dấu’s input method has no network access."))
                         .frame(maxWidth: .infinity, alignment: .leading)
                     AllowDialogIllustration()
                 }
@@ -455,9 +455,9 @@ struct EnableStep: View {
             }
         } buttons: {
             if flow.canGoBack {
-                Button("Quay lại") { flow.back() }
+                Button("Go Back") { flow.back() }
             }
-            Button("Bật Dấu") { Task { await flow.enable() } }
+            Button("Turn On Dấu") { Task { await flow.enable() } }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -465,7 +465,7 @@ struct EnableStep: View {
 
     // While `enable()` waits for the click.
     private var waiting: some View {
-        StepLayout(step: .enable, screen: ".waiting", title: Text("Bật Dấu"), subtitle: addedSubtitle) {
+        StepLayout(step: .enable, screen: ".waiting", title: Text("Turn On Dấu"), subtitle: addedSubtitle) {
             OnboardingCard {
                 HStack(alignment: .center, spacing: 16) {
                     VStack(alignment: .leading, spacing: 6) {
@@ -473,10 +473,10 @@ struct EnableStep: View {
                             ProgressView()
                                 .controlSize(.small)
                                 .accessibilityHidden(true)
-                            Text("Đang chờ bạn bấm \(ui.allow)")
+                            Text("Waiting for you to click \(ui.allow)")
                                 .font(.system(size: 13, weight: .semibold))
                         }
-                        Text("Hộp thoại nằm trong cửa sổ \(ui.systemSettings). Bấm **\(ui.allow)**, Dấu tự sang bước tiếp theo.")
+                        Text("The dialog is in the \(ui.systemSettings) window. Click **\(ui.allow)** and Dấu moves on to the next step.")
                             .font(.system(size: 13))
                             .fixedSize(horizontal: false, vertical: true)
                     }
@@ -488,15 +488,15 @@ struct EnableStep: View {
                 }
             }
             .layoutProbe("onbCard-2.waiting")
-            Hint(Text("Không thấy hộp thoại, hoặc đã chọn \(ui.dontAllow)? Bấm Thử lại."))
+            Hint(Text("Don’t see the dialog, or chose \(ui.dontAllow)? Click Try Again."))
         } buttons: {
             if flow.canGoBack {
-                Button("Quay lại") { flow.back() }
+                Button("Go Back") { flow.back() }
             }
-            Button("Thử lại") { Task { await flow.enable() } }
+            Button("Try Again") { Task { await flow.enable() } }
         }
         .onAppear {
-            AccessibilityNotification.Announcement(String(localized: "Đang chờ bạn bấm \(ui.allow)")).post()
+            AccessibilityNotification.Announcement(String(localized: "Waiting for you to click \(ui.allow)")).post()
         }
     }
 
@@ -504,23 +504,23 @@ struct EnableStep: View {
     /// is macOS's own (D38). The Apple menu symbol is drawn with the SF Symbol `applelogo`
     /// (macOS 11+), because the private-use glyph U+F8FF is missing from most fonts.
     static func logOutHint(logOut: String) -> Text {
-        Text("Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất (\(Image(systemName: "applelogo")) › \(logOut)) rồi đăng nhập lại một lần.")
+        Text("If an app can’t select Dấu yet, log out (\(Image(systemName: "applelogo")) › \(logOut)) and log back in once.")
     }
 
     /// Plain-text form of the same catalog entry (symbol left out), for tests.
     static func logOutHintPlain(logOut: String) -> String {
-        String(format: String(localized: "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất (%@ › %@) rồi đăng nhập lại một lần."), "", logOut)
+        String(format: String(localized: "If an app can’t select Dấu yet, log out (%@ › %@) and log back in once."), "", logOut)
     }
 
     // `.enabled`.
     private var done: some View {
-        StepLayout(step: .enable, screen: ".done", title: Text("Đã bật Dấu"),
-                   subtitle: Text("“Dấu – Tiếng Việt” đã có trong nguồn đầu vào của macOS.")) {
+        StepLayout(step: .enable, screen: ".done", title: Text("Dấu Is On"),
+                   subtitle: Text("“Dấu – Vietnamese” is now in your macOS input sources.")) {
             OnboardingCard {
                 HStack(alignment: .top, spacing: 12) {
                     ListBadge(kind: .done, size: 28)
                     VStack(alignment: .leading, spacing: 6) {
-                        Text("Chọn Dấu để gõ tiếng Việt")
+                        Text("Choose Dấu to type Vietnamese")
                             .font(.system(size: 13, weight: .semibold))
                             .accessibilityAddTraits(.isHeader)
                         ChooseDauLine(reading: flow.shortcut, englishLayout: flow.englishLayout)
@@ -531,7 +531,7 @@ struct EnableStep: View {
             .layoutProbe("onbCard-2.done")
             Hint(Self.logOutHint(logOut: ui.logOut))
         } buttons: {
-            Button("Tiếp tục") { flow.next() }
+            Button("Continue") { flow.next() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -539,17 +539,17 @@ struct EnableStep: View {
 
     // `.notEnabled` or `.notListed`.
     private var notEnabled: some View {
-        StepLayout(step: .enable, screen: ".failed", title: Text("Chưa bật được Dấu"),
-                   subtitle: Text("macOS chưa thêm Dấu vào nguồn đầu vào. Có thể hộp thoại không hiện, hoặc yêu cầu đã bị từ chối.")) {
+        StepLayout(step: .enable, screen: ".failed", title: Text("Couldn’t Turn On Dấu"),
+                   subtitle: Text("macOS hasn’t added Dấu to your input sources. The dialog may not have appeared, or the request was declined.")) {
             OnboardingCard(spacing: 10) {
-                NumberedLine(number: 1, text: Text("Bấm **Thử lại**, rồi bấm **\(ui.allow)** khi \(ui.systemSettings) hỏi."))
-                NumberedLine(number: 2, text: Text("Hoặc tự thêm: \(ui.inputSourcesPath) › **\(ui.edit)** › **+** › \(ui.vietnamese) › **Dấu**, rồi bấm **\(ui.add)**."))
-                NumberedLine(number: 3, text: Text("Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (menu Apple › **\(ui.logOut)**), rồi mở lại Dấu."))
+                NumberedLine(number: 1, text: Text("Click **Try Again**, then click **\(ui.allow)** when \(ui.systemSettings) asks."))
+                NumberedLine(number: 2, text: Text("Or add it yourself: \(ui.inputSourcesPath) › **\(ui.edit)** › **+** › \(ui.vietnamese) › **Dấu**, then click **\(ui.add)**."))
+                NumberedLine(number: 3, text: Text("If Dấu isn’t in that list, log out and log back in once (Apple menu › **\(ui.logOut)**), then open Dấu again."))
             }
             .layoutProbe("onbCard-2.failed")
         } buttons: {
-            Button("Mở \(ui.systemSettings)") { flow.openSystemSettings() }
-            Button("Thử lại") { Task { await flow.enable() } }
+            Button("Open \(ui.systemSettings)") { flow.openSystemSettings() }
+            Button("Try Again") { Task { await flow.enable() } }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -557,17 +557,17 @@ struct EnableStep: View {
 
     // An error while copying, checking the signature or registering.
     private var installError: some View {
-        StepLayout(step: .enable, screen: ".error", title: Text("Chưa cài được Dấu"),
-                   subtitle: Text("Dấu không chép được bộ gõ vào máy, nên chưa bật được.")) {
+        StepLayout(step: .enable, screen: ".error", title: Text("Couldn’t Install Dấu"),
+                   subtitle: Text("Dấu couldn’t copy its input method to this Mac, so it can’t be turned on yet.")) {
             OnboardingCard(spacing: 10) {
-                NumberedLine(number: 1, text: Text("Bấm **Thử lại**."))
-                NumberedLine(number: 2, text: Text("Nếu vẫn lỗi, tải lại Dấu, kéo vào thư mục **\(ui.applications)**, rồi mở lại."))
+                NumberedLine(number: 1, text: Text("Click **Try Again**."))
+                NumberedLine(number: 2, text: Text("If it still fails, download Dấu again, drag it to the **\(ui.applications)** folder, then open it again."))
             }
             .layoutProbe("onbCard-2.error")
             if let detail = flow.errorDetail {
                 // The error's own text, selectable so it can be copied into a report.
                 VStack(alignment: .leading, spacing: 2) {
-                    Hint(Text("Chi tiết"))
+                    Hint(Text("Details"))
                     Text(verbatim: detail)
                         .font(.system(size: 12))
                         .textSelection(.enabled)
@@ -577,9 +577,9 @@ struct EnableStep: View {
             }
         } buttons: {
             if flow.canGoBack {
-                Button("Quay lại") { flow.back() }
+                Button("Go Back") { flow.back() }
             }
-            Button("Thử lại") { Task { await flow.enable() } }
+            Button("Try Again") { Task { await flow.enable() } }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -630,7 +630,7 @@ struct NumberedLine: View {
                 .padding(.top, 2)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(Text("Bước \(number)"))
+        .accessibilityLabel(Text("Step \(number)"))
         .accessibilityValue(text)
     }
 }
@@ -692,24 +692,24 @@ struct ChooseDauLine: View {
         switch reading {
         case .shortcut(let shortcut):
             if let englishLayout {
-                Text("Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn \(shortcut.inlineText) để chuyển giữa Dấu và “\(englishLayout)”.")
+                Text("Choose Dấu from the Input menu, or press \(shortcut.inlineText) to switch between Dấu and “\(englishLayout)”.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
             } else {
-                Text("Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn \(shortcut.inlineText) để chuyển giữa Dấu và bàn phím tiếng Anh.")
+                Text("Choose Dấu from the Input menu, or press \(shortcut.inlineText) to switch between Dấu and an English keyboard.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
             }
         case .none:
-            Text("Chọn Dấu trên menu nguồn đầu vào. macOS chưa có phím tắt để chuyển nhanh giữa Dấu và bàn phím tiếng Anh.")
+            Text("Choose Dấu from the Input menu. macOS has no shortcut yet to switch quickly between Dấu and an English keyboard.")
                 .font(.system(size: 13))
                 .fixedSize(horizontal: false, vertical: true)
-            SystemSettingsLinkButton(title: String(localized: "Đặt phím tắt trong \(ui.systemSettings)"))
+            SystemSettingsLinkButton(title: String(localized: "Set a Shortcut in \(ui.systemSettings)"))
         case .unknown:
-            Text("Chọn Dấu trên menu nguồn đầu vào.")
+            Text("Choose Dấu from the Input menu.")
                 .font(.system(size: 13))
                 .fixedSize(horizontal: false, vertical: true)
-            SystemSettingsLinkButton(title: String(localized: "Đặt phím tắt trong \(ui.systemSettings)"))
+            SystemSettingsLinkButton(title: String(localized: "Set a Shortcut in \(ui.systemSettings)"))
         }
     }
 }
@@ -733,28 +733,28 @@ struct ShortcutLine: View {
             }
         case .none:
             HStack(spacing: 12) {
-                Text("Chưa có phím tắt để chuyển nhanh sang bàn phím tiếng Anh.")
+                Text("There’s no shortcut yet to switch quickly to an English keyboard.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                SystemSettingsLinkButton(title: String(localized: "Mở \(ui.systemSettings)"))
+                SystemSettingsLinkButton(title: String(localized: "Open \(ui.systemSettings)"))
             }
         case .unknown:
             HStack(spacing: 12) {
-                Text("Không đọc được phím tắt chuyển nguồn đầu vào.")
+                Text("Couldn’t read the input source shortcut.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
                     .frame(maxWidth: .infinity, alignment: .leading)
-                SystemSettingsLinkButton(title: String(localized: "Mở \(ui.systemSettings)"))
+                SystemSettingsLinkButton(title: String(localized: "Open \(ui.systemSettings)"))
             }
         }
     }
 
     private var switchText: Text {
         if let englishLayout {
-            Text("Phím tắt của macOS để chuyển sang “\(englishLayout)” khi gõ tiếng Anh")
+            Text("The macOS shortcut to switch to “\(englishLayout)” for typing English")
         } else {
-            Text("Phím tắt của macOS để chuyển sang bàn phím tiếng Anh")
+            Text("The macOS shortcut to switch to an English keyboard")
         }
     }
 }
@@ -785,7 +785,7 @@ struct OtherSourcesNote: View {
             Image(systemName: "info.circle")
                 .foregroundStyle(.secondary)
                 .accessibilityHidden(true)
-            Hint(Text("Đang bật nguồn đầu vào tiếng Việt khác: \(list). Bạn có thể bỏ bớt trong \(ui.inputSourcesPath) cho gọn danh sách."))
+            Hint(Text("Other Vietnamese input sources are on: \(list). You can remove some in \(ui.inputSourcesPath) to keep the list short."))
         }
         .accessibilityElement(children: .combine)
     }
@@ -821,31 +821,31 @@ struct TypingStep: View {
     var body: some View {
         @Bindable var model = model
         @Bindable var flow = flow
-        StepLayout(step: .typing, title: Text("Chọn kiểu gõ và gõ thử"),
-                   subtitle: Text("Bạn có thể đổi bất cứ lúc nào trong Cài đặt Dấu.")) {
-            SegmentedPicker(String(localized: "Kiểu gõ"), selection: $model.settings.typingMethod,
+        StepLayout(step: .typing, title: Text("Choose a Typing Method and Try It"),
+                   subtitle: Text("You can change this anytime in Dấu Settings.")) {
+            SegmentedPicker(String(localized: "Typing method"), selection: $model.settings.typingMethod,
                             options: DauSettings.TypingMethod.allCases.map { ($0, $0.title) })
                 .layoutProbe("onbSegmented-3")
             OnboardingCard(spacing: 10) {
-                Text("Gõ thử")
+                Text("Try typing")
                     .font(.system(size: 13, weight: .semibold))
-                TextField(text: $flow.tryText, prompt: Text("Gõ ở đây")) {
-                    Text("Gõ thử")
+                TextField(text: $flow.tryText, prompt: Text("Type here")) {
+                    Text("Try typing")
                 }
                 .textFieldStyle(.roundedBorder)
                 .controlSize(.large)
                 .font(.system(size: 16))
-                .accessibilityLabel(Text("Gõ thử"))
+                .accessibilityLabel(Text("Try typing"))
                 .layoutProbe("onbTryField-3")
-                Hint(Text("Gợi ý: \(SettingsSamples.tryIt(model.settings.typingMethod).keys)"))
+                Hint(Text("Try: \(SettingsSamples.tryIt(model.settings.typingMethod).keys)"))
                 if flow.status != .selected {
                     Hint(notActiveText)
                 }
             }
             .layoutProbe("onbCard-3")
         } buttons: {
-            Button("Quay lại") { flow.back() }
-            Button("Bắt đầu gõ") { dismiss() }
+            Button("Go Back") { flow.back() }
+            Button("Start Typing") { dismiss() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
         }
@@ -854,9 +854,9 @@ struct TypingStep: View {
     /// The field types with the current input source, which is not Dấu yet.
     private var notActiveText: Text {
         if let shortcut = flow.shortcut.shortcut {
-            Text("Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào hoặc nhấn \(shortcut.inlineText) rồi gõ thử.")
+            Text("Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu or press \(shortcut.inlineText), then try typing.")
         } else {
-            Text("Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào rồi gõ thử.")
+            Text("Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu, then try typing.")
         }
     }
 }
