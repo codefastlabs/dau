@@ -439,10 +439,13 @@ struct InputMethodBundleFiles: InputMethodFiles {
     /// Default: the user's Trash (`FileManager.trashItem`).
     var trash: (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) }
 
+    /// The input method inside this app.
+    nonisolated static let standardEmbeddedURL = Bundle.main.bundleURL.appendingPathComponent("Contents/Library/Input Methods/DauInputMethod.app")
+    /// The user's Input Methods folder.
+    nonisolated static let standardDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Input Methods")
+
     static func standard() -> InputMethodBundleFiles {
-        InputMethodBundleFiles(
-            embeddedURL: Bundle.main.bundleURL.appendingPathComponent("Contents/Library/Input Methods/DauInputMethod.app"),
-            directory: FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Input Methods"))
+        InputMethodBundleFiles(embeddedURL: standardEmbeddedURL, directory: standardDirectory)
     }
 
     /// Same file name as inside the app (D37: never changes).

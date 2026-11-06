@@ -344,7 +344,8 @@ enum UninstallAlert {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = String(localized: "Couldn’t Remove Dấu")
-        alert.informativeText = String(localized: "You can remove “Dấu – Vietnamese” in \(SystemUINames.system().inputSourcesPath), then try again.")
+        let ui = SystemUINames.system()
+        alert.informativeText = String(localized: "You can remove “\(ui.dauInputSource)” in \(ui.inputSourcesPath), then try again.")
         alert.addButton(withTitle: String(localized: "OK"))
         return alert
     }

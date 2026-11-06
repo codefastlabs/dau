@@ -12,6 +12,11 @@ if CommandLine.arguments.contains("--print-localizations") {
     print(Bundle.main.preferredLocalizations)
     exit(0)
 }
+if CommandLine.arguments.contains("--print-input-source-name") {
+    // Dấu's input source as macOS names it, in the system's languages (D41).
+    print(SystemUINames.system().dauInputSource)
+    exit(0)
+}
 if CommandLine.arguments.contains("--print-input-source-status") {
     switch InputSourceStatus.query() {
     case true?: print("enabled")

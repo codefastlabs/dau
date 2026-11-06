@@ -16,7 +16,7 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41),
 | input source | nguồn đầu vào | khái niệm của macOS; không dùng "nguồn nhập liệu" trong giao diện (D38) |
 | Input menu | menu nguồn đầu vào | menu nguồn đầu vào trên thanh menu |
 | input method | bộ gõ | phần mềm gõ (Dấu, OpenKey…); "bộ gõ Dấu" là tiến trình bộ gõ, khác app Dấu |
-| Dấu – Vietnamese | Dấu – Tiếng Việt | tên nguồn đầu vào; macOS chọn theo ngôn ngữ hệ thống (D41) |
+| Dấu – Vietnamese | Dấu – Tiếng Việt | tên nguồn đầu vào; macOS chọn theo ngôn ngữ hệ thống (D41), nên trong câu luôn là `%@` (`SystemUINames.dauInputSource`), không viết cứng |
 | typing method | kiểu gõ | Telex, VNI, Simple Telex |
 | Simple Telex | Telex đơn giản | D29 |
 | tone mark placement | vị trí dấu thanh | Modern / Classic = kiểu mới / kiểu cũ |

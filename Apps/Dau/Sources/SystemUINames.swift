@@ -7,6 +7,10 @@ enum SystemUIName: String, CaseIterable, Sendable {
     case automaticallySwitchOption
     /// The "Allow … to enable …?" dialog macOS shows: title (two `%@`: the input method's name twice) and body.
     case allowDialogTitle, allowDialogBody
+    /// Dấu's own input source as macOS lists it: "Dấu – Vietnamese" on an English Mac,
+    /// "Dấu – Tiếng Việt" on a Vietnamese one (D41). macOS picks the input method's
+    /// localization by the system's languages, so Dấu's text must too, not by the app's.
+    case dauInputSource
 
     /// The name in English: what the macOS strings are keyed by, and the fallback.
     var english: String {
@@ -28,6 +32,8 @@ enum SystemUIName: String, CaseIterable, Sendable {
         case .automaticallySwitchOption: "Automatically switch to a document’s input source"
         case .allowDialogTitle: "Allow “%1$@” to enable “%2$@”?"
         case .allowDialogBody: "The developer of the input source will be able to access anything you type with this input source. This could include sensitive information such as your credit card number or home address."
+        // The "en" value of the mode name in Apps/DauInputMethod/Resources/InfoPlist.xcstrings.
+        case .dauInputSource: "Dấu – Vietnamese"
         }
     }
 }
@@ -35,6 +41,8 @@ enum SystemUIName: String, CaseIterable, Sendable {
 /// Where a name is in the system's own strings (read only).
 enum SystemUITable: String, CaseIterable, Sendable {
     case systemSettings, systemSettingsInfo, keyboardSettings, generalSettings, loginWindow, folderNames, finderNames
+    /// The input method's `InfoPlist.strings`, per language (key: the input mode ID).
+    case dauInputMethod
 }
 
 /// Names of macOS's interface as the user's macOS shows them (D38), for every sentence
@@ -67,6 +75,9 @@ struct SystemUINames: Sendable {
         case .logOut: (.loginWindow, nil)
         case .applications: (.folderNames, nil)
         case .trash: (.finderNames, nil)
+        // Keyed by the input mode ID (D24, never changes: D37), not by the English value:
+        // an older installed input method may name itself differently, and macOS shows that.
+        case .dauInputSource: (.dauInputMethod, "com.codefastlabs.dau.inputmethod.Dau.vi")
         case .vietnamese: nil
         }
     }
@@ -111,6 +122,8 @@ struct SystemUINames: Sendable {
     var logOut: String { name(.logOut) }
     var vietnamese: String { name(.vietnamese) }
     var automaticallySwitchOption: String { name(.automaticallySwitchOption) }
+    /// "Dấu – Vietnamese" / "Dấu – Tiếng Việt", as macOS's Input menu and list show it.
+    var dauInputSource: String { name(.dauInputSource) }
     /// "Allow “Dấu” to enable “Dấu”?" in the user's language.
     func allowDialogTitle(app: String) -> String {
         String(format: name(.allowDialogTitle), app, app)
@@ -182,7 +195,26 @@ struct SystemUINames: Sendable {
             }
         }
         result[.finderNames] = finder
+        // Dấu's input method: the installed copy is the one macOS lists; before install,
+        // the copy inside the app (same names).
+        let embedded = InputMethodBundleFiles.standardEmbeddedURL
+        let installed = InputMethodBundleFiles.standardDirectory.appendingPathComponent(embedded.lastPathComponent)
+        let inputMethod = (try? installed.checkResourceIsReachable()) == true ? installed : embedded
+        result[.dauInputMethod] = stringsTables(in: inputMethod.appendingPathComponent("Contents/Resources"), file: "InfoPlist.strings")
         return result
+    }
+
+    /// `<language>.lproj/<file>` of a bundle's resources, as `language → key → value`.
+    static func stringsTables(in resources: URL, file: String) -> Table {
+        var table: Table = [:]
+        for entry in (try? FileManager.default.contentsOfDirectory(atPath: resources.path)) ?? [] where entry.hasSuffix(".lproj") {
+            let url = resources.appendingPathComponent(entry).appendingPathComponent(file)
+            if let data = try? Data(contentsOf: url),
+               let plist = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: String] {
+                table[String(entry.dropLast(".lproj".count))] = plist
+            }
+        }
+        return table
     }
 
     nonisolated(unsafe) private static let loadedTables = loadTables()

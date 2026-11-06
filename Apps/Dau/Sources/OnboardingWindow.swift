@@ -515,7 +515,7 @@ struct EnableStep: View {
     // `.enabled`.
     private var done: some View {
         StepLayout(step: .enable, screen: ".done", title: Text("Dấu Is On"),
-                   subtitle: Text("“Dấu – Vietnamese” is now in your macOS input sources.")) {
+                   subtitle: Text("“\(ui.dauInputSource)” is now in your macOS input sources.")) {
             OnboardingCard {
                 HStack(alignment: .top, spacing: 12) {
                     ListBadge(kind: .done, size: 28)
@@ -817,6 +817,7 @@ struct TypingStep: View {
     @Environment(OnboardingFlow.self) private var flow
     @Environment(SettingsModel.self) private var model
     @Environment(\.dismiss) private var dismiss
+    private let ui = SystemUINames.system()
 
     var body: some View {
         @Bindable var model = model
@@ -854,9 +855,9 @@ struct TypingStep: View {
     /// The field types with the current input source, which is not Dấu yet.
     private var notActiveText: Text {
         if let shortcut = flow.shortcut.shortcut {
-            Text("Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu or press \(shortcut.inlineText), then try typing.")
+            Text("Dấu isn’t the current input source: choose “\(ui.dauInputSource)” from the Input menu or press \(shortcut.inlineText), then try typing.")
         } else {
-            Text("Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu, then try typing.")
+            Text("Dấu isn’t the current input source: choose “\(ui.dauInputSource)” from the Input menu, then try typing.")
         }
     }
 }

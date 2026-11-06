@@ -1,3 +1,4 @@
+import Foundation
 import Testing
 @testable import SnapshotSettings
 
@@ -94,5 +95,41 @@ struct SystemUINamesTests {
         #expect(vi.systemSettings == "Cài đặt hệ thống")
         if tables[.finderNames]?["vi"] != nil { #expect(vi.trash == "Thùng rác") }
         #expect(en.trash == "Trash")
+    }
+
+    // The input method's InfoPlist.strings per language (compiled from its catalog).
+    let inputMethod: SystemUINames.Table = [
+        "en": ["CFBundleName": "Dấu", "com.codefastlabs.dau.inputmethod.Dau.vi": "Dấu – Vietnamese"],
+        "vi": ["CFBundleName": "Dấu", "com.codefastlabs.dau.inputmethod.Dau.vi": "Dấu – Tiếng Việt"],
+    ]
+
+    func inputSourceName(_ languages: [String]) -> String {
+        SystemUINames(languages: languages, tables: [.dauInputMethod: inputMethod]) { _, _ in nil }.dauInputSource
+    }
+
+    @Test("Dấu's input source name follows the system's languages, as macOS picks it (D41)")
+    func dauInputSource() {
+        #expect(inputSourceName(["en-VN", "vi-VN"]) == "Dấu – Vietnamese")
+        #expect(inputSourceName(["vi-VN", "en-VN"]) == "Dấu – Tiếng Việt")
+        // No Dấu localization for Japanese: macOS uses the next language Dấu has…
+        #expect(inputSourceName(["ja-JP", "vi-VN"]) == "Dấu – Tiếng Việt")
+        // …or the development language, English.
+        #expect(inputSourceName(["ja-JP"]) == "Dấu – Vietnamese")
+        // Input method not found: the English name.
+        let none = SystemUINames(languages: ["vi"], tables: [:]) { _, _ in nil }
+        #expect(none.dauInputSource == "Dấu – Vietnamese")
+    }
+
+    @Test("the English fallback is the input method catalog's English mode name")
+    func dauInputSourceEnglishMatchesCatalog() throws {
+        let catalog = URL(fileURLWithPath: #filePath)
+            .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().deletingLastPathComponent()
+            .appendingPathComponent("Apps/DauInputMethod/Resources/InfoPlist.xcstrings")
+        let json = try JSONSerialization.jsonObject(with: Data(contentsOf: catalog)) as? [String: Any]
+        let strings = json?["strings"] as? [String: Any]
+        let mode = strings?["com.codefastlabs.dau.inputmethod.Dau.vi"] as? [String: Any]
+        let en = ((mode?["localizations"] as? [String: Any])?["en"] as? [String: Any])?["stringUnit"] as? [String: Any]
+        #expect(en?["value"] as? String == SystemUIName.dauInputSource.english)
     }
 }

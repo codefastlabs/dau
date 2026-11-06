@@ -1106,36 +1106,36 @@
         }
       }
     },
-    "Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu or press %@, then try typing." : {
-      "comment" : "%@ = the shortcut, e.g. ⌃Space. “Dấu – Vietnamese” = the input source name (D41).",
+    "Dấu isn’t the current input source: choose “%@” from the Input menu or press %@, then try typing." : {
+      "comment" : "Onboarding typing step. First %@ = the input source name as macOS shows it, in the system's language (D41, SystemUINames.dauInputSource); second %@ = the shortcut, e.g. ⌃Space.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu or press %@, then try typing."
+            "value" : "Dấu isn’t the current input source: choose “%@” from the Input menu or press %@, then try typing."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào hoặc nhấn %@ rồi gõ thử."
+            "value" : "Dấu chưa phải nguồn đầu vào đang dùng: chọn “%@” trên menu nguồn đầu vào hoặc nhấn %@ rồi gõ thử."
           }
         }
       }
     },
-    "Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu, then try typing." : {
-      "comment" : "“Dấu – Vietnamese” = the input source name (D41).",
+    "Dấu isn’t the current input source: choose “%@” from the Input menu, then try typing." : {
+      "comment" : "Onboarding typing step. %@ = the input source name as macOS shows it, in the system's language (D41, SystemUINames.dauInputSource).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu isn’t the current input source: choose “Dấu – Vietnamese” from the Input menu, then try typing."
+            "value" : "Dấu isn’t the current input source: choose “%@” from the Input menu, then try typing."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào rồi gõ thử."
+            "value" : "Dấu chưa phải nguồn đầu vào đang dùng: chọn “%@” trên menu nguồn đầu vào rồi gõ thử."
           }
         }
       }
@@ -2245,19 +2245,19 @@
         }
       }
     },
-    "Select **Dấu – Vietnamese** in the list on the left, click **–**, then **%@**." : {
-      "comment" : "Uninstall sheet step. Dấu – Vietnamese = the input source name on an English Mac (D41); %@ = macOS's Done button (D38).",
+    "Select **%@** in the list on the left, click **–**, then **%@**." : {
+      "comment" : "Uninstall sheet step. First %@ = the input source name as macOS shows it, in the system's language (D41, SystemUINames.dauInputSource); second %@ = macOS's Done button (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Select **Dấu – Vietnamese** in the list on the left, click **–**, then **%@**."
+            "value" : "Select **%@** in the list on the left, click **–**, then **%@**."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn **Dấu – Tiếng Việt** ở danh sách bên trái, bấm **–**, rồi **%@**."
+            "value" : "Chọn **%@** ở danh sách bên trái, bấm **–**, rồi **%@**."
           }
         }
       }
@@ -3316,19 +3316,19 @@
         }
       }
     },
-    "You can remove “Dấu – Vietnamese” in %@, then try again." : {
-      "comment" : "Uninstall failed. %@ = System Settings › Keyboard › Input Sources (D38); “Dấu – Vietnamese” = the input source name (D41).",
+    "You can remove “%@” in %@, then try again." : {
+      "comment" : "Uninstall failed. First %@ = the input source name as macOS shows it, in the system's language (D41, SystemUINames.dauInputSource); second %@ = System Settings › Keyboard › Input Sources (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You can remove “Dấu – Vietnamese” in %@, then try again."
+            "value" : "You can remove “%@” in %@, then try again."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn có thể bỏ “Dấu – Tiếng Việt” trong %@, rồi thử lại."
+            "value" : "Bạn có thể bỏ “%@” trong %@, rồi thử lại."
           }
         }
       }
@@ -3537,19 +3537,19 @@
         }
       }
     },
-    "“Dấu – Vietnamese” is now in your macOS input sources." : {
-      "comment" : "Onboarding step 2 subtitle. “Dấu – Vietnamese” = the input source name (D41).",
+    "“%@” is now in your macOS input sources." : {
+      "comment" : "Onboarding step 2 subtitle. %@ = the input source name as macOS shows it, in the system's language (D41, SystemUINames.dauInputSource).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Dấu – Vietnamese” is now in your macOS input sources."
+            "value" : "“%@” is now in your macOS input sources."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "“Dấu – Tiếng Việt” đã có trong nguồn đầu vào của macOS."
+            "value" : "“%@” đã có trong nguồn đầu vào của macOS."
           }
         }
       }

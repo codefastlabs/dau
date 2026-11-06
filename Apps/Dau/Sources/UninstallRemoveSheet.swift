@@ -30,7 +30,7 @@ struct UninstallRemoveSheet: View {
             }
             OnboardingCard(spacing: 10) {
                 NumberedLine(number: 1,
-                             text: Text("Select **Dấu – Vietnamese** in the list on the left, click **–**, then **\(ui.done)**."),
+                             text: Text("Select **\(ui.dauInputSource)** in the list on the left, click **–**, then **\(ui.done)**."),
                              isCurrent: true)
             }
             HStack(alignment: .firstTextBaseline, spacing: 8) {
