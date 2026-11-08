@@ -30,3 +30,4 @@ Localizable\.xcstrings`\), tiếng Việt\.	D41: catalog keys are English senten
 Chuỗi giao diện tiếng Việt trong String Catalog	D41: keys are English sentences with a Vietnamese translation (06/11/2026)
 View › Show Sidebar \(⌃⌘S\)	D9: sidebar cố định, không còn lệnh Show/Hide Sidebar (06/11/2026)
 kéo đường chia vẫn thu được sidebar	D9: sidebar cố định bằng NSSplitViewController (06/11/2026)
+Ô chọn ngôn ngữ trong Cài đặt	D41: dùng mục ngôn ngữ riêng từng ứng dụng của macOS, Cài đặt chỉ có hàng chỉ sang đó (08/11/2026)

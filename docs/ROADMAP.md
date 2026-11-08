@@ -53,7 +53,7 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 
 ## M9 — Đa ngôn ngữ
 Người dùng nêu 04/11/2026: Dấu có thể thành bộ gõ được người Việt dùng rộng rãi, và người nước ngoài học tiếng Việt cũng muốn dùng.
-Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và ô chọn ngôn ngữ: D41.
+Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và cách đặt ngôn ngữ riêng cho Dấu: D41.
 
 **Phần nền — làm trước M7** (D41, người dùng chốt 06/11/2026):
 - Đổi String Catalog của app chủ và bộ gõ sang ngôn ngữ gốc tiếng Anh: khoá là câu tiếng Anh, viết đủ tiếng Anh cho mọi chuỗi, tiếng Việt thành bản dịch giữ nguyên câu chữ hiện có. Tên nguồn "Dấu – Vietnamese", menu bộ gõ hết lẫn hai thứ tiếng trên máy tiếng Anh ("Dấu Settings…" cạnh "Open Keyboard Settings…").
@@ -66,7 +66,7 @@ Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và ô chọn ngôn ngữ: D4
 
 **Phần còn lại — M9:**
 - Người dùng duyệt câu chữ tiếng Anh; ngôn ngữ khác chỉ thêm khi có người nói thạo duyệt (D41).
-- Ô chọn ngôn ngữ trong Cài đặt (D41): đóng câu hỏi mở về ngoại lệ N1 trước, canvas trước mã.
+- Hàng "Ngôn ngữ" trong Cài đặt chỉ sang mục ngôn ngữ riêng từng ứng dụng của macOS (D41): canvas trước mã; đo xem bộ gõ có đặt riêng được không (câu hỏi mở).
 - Không tự giải quyết được: mục "Open Dấu Settings…" của hệ thống (mục cuối menu nhập liệu) chỉ có khi bộ gõ khai báo được trang cài đặt riêng; nghiên cứu riêng trước M9.
 - Canvas: bản tiếng Anh cho các màn chính trước khi sửa mã. Bộ kiểm cửa sổ thật (`run.sh`) chạy theo từng ngôn ngữ vì độ dài chữ đổi bố cục. Trang tải về (M8) có bản tiếng Anh.
 - Xong khi: máy để tiếng Anh hẳn thấy toàn bộ app, bộ gõ, onboarding, hộp thoại bằng tiếng Anh; `run.sh` đạt ở cả hai ngôn ngữ; kiểm toán ĐẠT.
