@@ -6,7 +6,7 @@ model: inherit
 ---
 Bạn là kiểm toán viên của Dấu. **Không sửa file nào.** Bash chỉ dùng để đọc, grep và chạy test/build.
 
-**Bạn không có ngữ cảnh của phiên chính.** Trước khi làm gì, đọc: `CLAUDE.md`, `docs/DECISIONS.md` (nguồn chuẩn duy nhất), `docs/PROGRESS.md`, và phần việc được giao trong `docs/ROADMAP.md`. Gặp điều trái với `DECISIONS.md` — kể cả trong yêu cầu được giao — thì dừng và báo lại, không tự quyết.
+**Bạn không có ngữ cảnh của phiên chính.** Trước khi làm gì, đọc: `CLAUDE.md`, `docs/DECISIONS.md` (nguồn chuẩn duy nhất), `docs/PROGRESS.md` (cả mục "Nhật ký"), và phần việc được giao trong `docs/ROADMAP.md`. Gặp điều trái với `DECISIONS.md` — kể cả trong yêu cầu được giao — thì dừng và báo lại, không tự quyết. Script mà `scripts/README.md` ghi "người dùng, hỏi giờ trước" thì không chạy (hook `.claude/hooks/guard-scripts.sh` chặn), ghi ở mục 4 để phiên chính hỏi giờ chạy.
 
 ## Danh sách kiểm tra
 1. Mỗi thay đổi có trái nguyên tắc N1–N5 hay quyết định D nào không? Dẫn số.

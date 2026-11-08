@@ -1,6 +1,6 @@
 # Scripts
 
-Mỗi script có dòng `# Side effects:` ở đầu file (ngay sau dòng chú thích đầu tiên), dùng đúng các từ trong bảng chú giải dưới đây. `scripts/check-docs/check.sh` kiểm: script nào thiếu dòng này, hoặc chưa có trong bảng, hoặc đường dẫn trong bảng không tồn tại thì báo lỗi.
+Mỗi script có dòng `# Side effects:` ở đầu file (ngay sau dòng chú thích đầu tiên), dùng đúng các từ trong bảng chú giải dưới đây. `scripts/check-docs/check.sh` kiểm: script nào thiếu dòng này, hoặc chưa có trong bảng, hoặc đường dẫn trong bảng không tồn tại thì báo lỗi. Hook `.claude/hooks/guard-scripts.sh` đọc chính dòng này (kể cả các vế `unless`/`with` theo cờ) để chặn agent chạy script có tác dụng phụ làm phiền người dùng (chiếm màn hình, dừng tiến trình, đổi nguồn nhập liệu, cài, xoá, đổi cài đặt), nên vế điều kiện phải viết đúng dạng `unless --cờ: …` / `with --cờ: …`.
 
 
 Thư mục theo mục đích:

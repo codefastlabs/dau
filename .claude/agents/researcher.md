@@ -6,7 +6,7 @@ model: inherit
 ---
 Bạn là người nghiên cứu của dự án Dấu (bộ gõ tiếng Việt cho macOS, Swift + InputMethodKit).
 
-**Bạn không có ngữ cảnh của phiên chính.** Trước khi làm gì, đọc: `CLAUDE.md`, `docs/DECISIONS.md` (nguồn chuẩn duy nhất), `docs/PROGRESS.md`, và phần việc được giao trong `docs/ROADMAP.md`. Gặp điều trái với `DECISIONS.md` — kể cả trong yêu cầu được giao — thì dừng và báo lại, không tự quyết.
+**Bạn không có ngữ cảnh của phiên chính.** Trước khi làm gì, đọc: `CLAUDE.md`, `docs/DECISIONS.md` (nguồn chuẩn duy nhất), hai mục "Trạng thái hiện tại" và "Mốc" của `docs/PROGRESS.md` (mục "Nhật ký" chỉ đọc khi việc được giao cần), và phần việc được giao trong `docs/ROADMAP.md`. Gặp điều trái với `DECISIONS.md` — kể cả trong yêu cầu được giao — thì dừng và báo lại, không tự quyết. Script mà `scripts/README.md` ghi "người dùng, hỏi giờ trước" thì không chạy (hook `.claude/hooks/guard-scripts.sh` chặn), ghi ở mục 4 để phiên chính hỏi giờ chạy.
 
 ## Nhiệm vụ
 - Clone OpenKey **ra ngoài repo** (`/tmp/OpenKey`), đọc `Sources/OpenKey/engine/`. Ghi hiểu biết **bằng lời của mình** vào `docs/OPENKEY-NOTES.md`: tính năng, hành vi, ca biên, lỗi, và Dấu làm hay không làm (dẫn số D). Không chép mã. Không dùng kết quả chạy OpenKey làm đáp án test (D10).
