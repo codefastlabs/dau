@@ -1259,6 +1259,23 @@
         }
       }
     },
+    "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu." : {
+      "comment" : "Subtitle of the Language row when macOS picks Dấu's language from the system's list. %@ = macOS's own name of the Applications section of Language & Region, in the system language (D38). “Change…” is the row's button.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo macOS. Muốn đặt riêng cho Dấu: bấm Đổi…, rồi ở mục %@ bấm + và chọn Dấu."
+          }
+        }
+      }
+    },
     "For loanwords and names. Turning this on turns off Consonant shortcuts." : {
       "comment" : "Subtitle of Allow consonants z, f, w, j (VNI, Simple Telex).",
       "localizations" : {
@@ -1565,6 +1582,23 @@
         }
       }
     },
+    "Language" : {
+      "comment" : "Updates & Support row label: the language Dấu's interface shows (D41), read only.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Language"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ngôn ngữ"
+          }
+        }
+      }
+    },
     "May type wrong text when you type very fast" : {
       "comment" : "Subtitle of a suggested app.",
       "localizations" : {
@@ -1838,7 +1872,7 @@
       }
     },
     "Open %@" : {
-      "comment" : "Button or VoiceOver hint. %@ = macOS's own name of System Settings, in the system language (D38).",
+      "comment" : "Button, tooltip or VoiceOver hint. %@ = macOS's own name of System Settings, or of its Language & Region pane, in the system language (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2343,6 +2377,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đặt phím tắt trong %@"
+          }
+        }
+      }
+    },
+    "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the %@ list." : {
+      "comment" : "Subtitle of the Language row when a language is set for Dấu in Language & Region › Applications. %@ = macOS's own name of that Applications section, in the system language (D38). “Change…” is the row's button.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the %@ list."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt riêng cho Dấu. Bấm Đổi… để chọn ngôn ngữ khác, hoặc bỏ Dấu khỏi danh sách %@."
           }
         }
       }

@@ -48,7 +48,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
             ["Input source per window", "Remember the input source for each window",
              "App rules", "Add App", "Underline", "No Underline", "Suggested", "Turn On Underline"]
         case .updates:
-            ["Version", "Check Now", "Automatically check for updates",
+            ["Version", "Check Now", "Language", "Automatically check for updates",
              "Automatically download and install", "Release channel", "Stable", "Beta",
              "Typing goes wrong in an app?", "Report a Problem…", "Go back to the previous version",
              "Remove Dấu from this Mac", "Uninstall…", "Privacy"]

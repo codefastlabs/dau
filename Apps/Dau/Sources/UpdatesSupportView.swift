@@ -4,7 +4,7 @@ import SwiftUI
 /// "Cập nhật & hỗ trợ" (mockup "SettingsAbout"). Updates (Sparkle, D7) and the report
 /// and roll-back actions (D8, D19) arrive in M7, so their controls are disabled and
 /// promise nothing yet (N5). No network access until then. "Gỡ cài đặt…" (D16) works:
-/// `InputMethodActions.confirmUninstall`.
+/// `InputMethodActions.confirmUninstall`. "Ngôn ngữ" (D41): `LanguageRow`.
 struct UpdatesSupportView: View {
     @Environment(\.inputMethodActions) private var actions
 
@@ -32,6 +32,11 @@ struct UpdatesSupportView: View {
                         .disabled(true)
                 }
                 .layoutProbe("firstRow")
+            }
+
+            // A card of its own right under the version card, no header (D41).
+            Section {
+                LanguageRow()
             }
 
             // TODO(M7): bind to Sparkle (D7).

@@ -5,6 +5,10 @@ enum SystemUIName: String, CaseIterable, Sendable {
     case systemSettings, general, loginItemsAndExtensions, keyboard, inputSources
     case edit, add, done, allow, dontAllow, logOut, applications, trash, vietnamese
     case automaticallySwitchOption
+    /// The Language & Region pane, and its "Applications" section, where macOS sets a
+    /// language per app (D41). Not `.applications`: that is Finder's folder name, from
+    /// another table, and the two may differ in a language.
+    case languageAndRegion, languageRegionApplications
     /// The "Allow … to enable …?" dialog macOS shows: title (two `%@`: the input method's name twice) and body.
     case allowDialogTitle, allowDialogBody
     /// Dấu's own input source as macOS lists it: "Dấu – Vietnamese" on an English Mac,
@@ -30,6 +34,8 @@ enum SystemUIName: String, CaseIterable, Sendable {
         case .trash: "Trash"
         case .vietnamese: "Vietnamese"
         case .automaticallySwitchOption: "Automatically switch to a document’s input source"
+        case .languageAndRegion: "Language & Region"
+        case .languageRegionApplications: "Applications"
         case .allowDialogTitle: "Allow “%1$@” to enable “%2$@”?"
         case .allowDialogBody: "The developer of the input source will be able to access anything you type with this input source. This could include sensitive information such as your credit card number or home address."
         // The "en" value of the mode name in Apps/DauInputMethod/Resources/InfoPlist.xcstrings.
@@ -41,6 +47,8 @@ enum SystemUIName: String, CaseIterable, Sendable {
 /// Where a name is in the system's own strings (read only).
 enum SystemUITable: String, CaseIterable, Sendable {
     case systemSettings, systemSettingsInfo, keyboardSettings, generalSettings, loginWindow, folderNames, finderNames
+    /// Language & Region's `Localizable.loctable` and `InfoPlist.loctable`.
+    case localizationSettings, localizationSettingsInfo
     /// The input method's `InfoPlist.strings`, per language (key: the input mode ID).
     case dauInputMethod
 }
@@ -75,6 +83,10 @@ struct SystemUINames: Sendable {
         case .logOut: (.loginWindow, nil)
         case .applications: (.folderNames, nil)
         case .trash: (.finderNames, nil)
+        case .languageAndRegion: (.localizationSettingsInfo, "CFBundleDisplayName")
+        // A fixed key: other keys of that table have the English value "Applications" too
+        // ("Application" is a different key with the same Vietnamese "Ứng dụng").
+        case .languageRegionApplications: (.localizationSettings, "Applications")
         // Keyed by the input mode ID (D24, never changes: D37), not by the English value:
         // an older installed input method may name itself differently, and macOS shows that.
         case .dauInputSource: (.dauInputMethod, "com.codefastlabs.dau.inputmethod.Dau.vi")
@@ -122,6 +134,10 @@ struct SystemUINames: Sendable {
     var logOut: String { name(.logOut) }
     var vietnamese: String { name(.vietnamese) }
     var automaticallySwitchOption: String { name(.automaticallySwitchOption) }
+    /// "Language & Region" / "Ngôn ngữ & Vùng".
+    var languageAndRegion: String { name(.languageAndRegion) }
+    /// The "Applications" section of Language & Region: "Applications" / "Ứng dụng".
+    var languageRegionApplications: String { name(.languageRegionApplications) }
     /// "Dấu – Vietnamese" / "Dấu – Tiếng Việt", as macOS's Input menu and list show it.
     var dauInputSource: String { name(.dauInputSource) }
     /// "Allow “Dấu” to enable “Dấu”?" in the user's language.
@@ -157,7 +173,9 @@ struct SystemUINames: Sendable {
          .systemSettingsInfo: URL(fileURLWithPath: "/System/Applications/System Settings.app/Contents/Resources/InfoPlist.loctable"),
          .keyboardSettings: URL(fileURLWithPath: extensions + "KeyboardSettings.appex/Contents/Resources/Localizable.loctable"),
          .generalSettings: URL(fileURLWithPath: extensions + "GeneralSettings.appex/Contents/Resources/Localizable.loctable"),
-         .loginWindow: URL(fileURLWithPath: "/System/Library/CoreServices/loginwindow.app/Contents/Resources/loginwindow.loctable")]
+         .loginWindow: URL(fileURLWithPath: "/System/Library/CoreServices/loginwindow.app/Contents/Resources/loginwindow.loctable"),
+         .localizationSettings: URL(fileURLWithPath: extensions + "Localization.appex/Contents/Resources/Localizable.loctable"),
+         .localizationSettingsInfo: URL(fileURLWithPath: extensions + "Localization.appex/Contents/Resources/InfoPlist.loctable")]
     }
 
     static let folderNamesDirectory = URL(fileURLWithPath: "/System/Library/CoreServices/SystemFolderLocalizations")

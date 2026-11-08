@@ -133,6 +133,18 @@ struct SidebarSearchTests {
         }
     }
 
+    @Test("the Language row of Updates & Support is found in both languages, and only there")
+    func languageRow() {
+        for query in ["language", "Language", "LANGUAGE"] {
+            #expect(SettingsSection.updates.matches(query), "\(query)")
+        }
+        for query in ["ngôn ngữ", "Ngôn ngữ", "ngon ngu"] {
+            #expect(SettingsSection.updates.matches(query, localize: vi), "\(query)")
+        }
+        #expect(SettingsSection.allCases.filter { $0.matches("language") } == [.updates])
+        #expect(SettingsSection.allCases.filter { $0.matches("ngôn ngữ", localize: vi) } == [.updates])
+    }
+
     @Test("a query no section matches leaves the sidebar empty (system empty state shown)")
     func noMatch() {
         #expect(SettingsSection.allCases.filter { $0.matches("xyzzy") }.isEmpty)
