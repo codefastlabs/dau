@@ -101,6 +101,13 @@ MainActor.assumeIsolated {
             window(.smart, enabled).environment(\.smartAdvancedExpanded, true),
             to: file("smart-advanced"), appearance: appearance,
             size: CGSize(width: windowSize.width, height: windowSize.height + 80))
+        // The Language row waiting for a relaunch (D41, artboard SettingsLanguagePending):
+        // set for Dấu to English while Dấu still shows Vietnamese. The row otherwise reads
+        // the real preferences, so this is the only fixed state.
+        app["updates-language-pending-\(mode)"] = Snapshot.render(
+            window(.updates, enabled).environment(\.languageRowStatus,
+                                                  AppLanguage.Status(current: "vi", next: "en", setForDau: true)),
+            to: file("updates-language-pending"), appearance: appearance, size: windowSize)
     }
 
     Snapshot.grid(SettingsSection.allCases.map { outDir.appendingPathComponent("\($0.rawValue)-light.png") },
@@ -180,6 +187,17 @@ MainActor.assumeIsolated {
                 let appKey = key == "firstCard" && real == nil ? "firstRow" : key
                 rows.append("\(board.page)-\(board.mode) | \(key) | \(f(mock.frames[key])) | \(f((real?.1 ?? shot.frames)[appKey]))")
             }
+        }
+        // The Language row waiting for a relaunch: the 740×560 window of the artboard
+        // (at 80,100 in its 900×760 frame) beside this tool's window.
+        if let mock = Mockup.render(artboards.appendingPathComponent("SettingsLanguagePending.dc.html"),
+                                    size: CGSize(width: 900, height: 760),
+                                    crop: CGRect(x: 80, y: 100, width: 740, height: 560), measure: [:]),
+           let shot = app["updates-language-pending-light"] {
+            Snapshot.sideBySide([mock.image, shot.rep],
+                                to: outDir.appendingPathComponent("updates-language-pending-compare-light.png"))
+        } else {
+            print("cannot render SettingsLanguagePending")
         }
         // The add-rule sheet: the dialog only, against the sheet presented off screen.
         if let full = Mockup.render(artboards.appendingPathComponent("SettingsAppsAdd.dc.html"),

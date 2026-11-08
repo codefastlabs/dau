@@ -1259,6 +1259,23 @@
         }
       }
     },
+    "Follows macOS. Dấu switches to %@ when it reopens; until then it stays in %@." : {
+      "comment" : "Subtitle of the Language row when Dấu follows the macOS language list, which changed while Dấu was open (macOS asks to relaunch and never does it by itself). First %@ = the language Dấu uses after reopening, second %@ = the language it shows now; each named in its own language (“English”, “Tiếng Việt”), as the row's value.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Follows macOS. Dấu switches to %1$@ when it reopens; until then it stays in %2$@."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Theo macOS. Dấu dùng %1$@ sau khi mở lại; đến lúc đó vẫn hiện %2$@."
+          }
+        }
+      }
+    },
     "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu." : {
       "comment" : "Subtitle of the Language row when macOS picks Dấu's language from the system's list. %@ = macOS's own name of the Applications section of Language & Region, in the system language (D38). “Change…” is the row's button.",
       "localizations" : {
@@ -2177,6 +2194,23 @@
         }
       }
     },
+    "Reopen Dấu" : {
+      "comment" : "Language row button, shown while a language change waits for Dấu to reopen: Dấu quits and opens again. Changes no setting.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Reopen Dấu"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở lại Dấu"
+          }
+        }
+      }
+    },
     "Report a Problem…" : {
       "comment" : "Support button (disabled until M7).",
       "localizations" : {
@@ -2394,6 +2428,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đặt riêng cho Dấu. Bấm Đổi… để chọn ngôn ngữ khác, hoặc bỏ Dấu khỏi danh sách %@."
+          }
+        }
+      }
+    },
+    "Set for Dấu only. Dấu switches to %@ when it reopens; until then it stays in %@." : {
+      "comment" : "Subtitle of the Language row when a language is set for Dấu in Language & Region › Applications but Dấu has not reopened yet (macOS asks to relaunch and never does it by itself). First %@ = the language Dấu uses after reopening, second %@ = the language it shows now; each named in its own language (“English”, “Tiếng Việt”), as the row's value.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Set for Dấu only. Dấu switches to %1$@ when it reopens; until then it stays in %2$@."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đặt riêng cho Dấu. Dấu dùng %1$@ sau khi mở lại; đến lúc đó vẫn hiện %2$@."
           }
         }
       }

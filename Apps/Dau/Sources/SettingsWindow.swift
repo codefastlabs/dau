@@ -22,6 +22,7 @@ struct SettingsWindow: View {
     @Environment(\.inputMethodActions) private var actions
     @Environment(\.layoutProbe) private var layoutProbe
     @Environment(\.smartAdvancedExpanded) private var smartAdvancedExpanded
+    @Environment(\.languageRowStatus) private var languageRowStatus
     @Environment(\.openWindow) private var openWindow
 
     init(initialSection: SettingsSection = .typing) {
@@ -31,7 +32,8 @@ struct SettingsWindow: View {
     var body: some View {
         SettingsSplitView(state: state, environment: SettingsEnvironment(
             model: model, inputSource: inputSource, actions: actions, layoutProbe: layoutProbe,
-            smartAdvancedExpanded: smartAdvancedExpanded, openWindow: openWindow))
+            smartAdvancedExpanded: smartAdvancedExpanded, openWindow: openWindow,
+            languageRowStatus: languageRowStatus))
             // The split view reaches the window's top edge, under the toolbar, so the
             // sidebar runs the full height as in System Settings
             // (https://developer.apple.com/documentation/swiftui/view/ignoressafearea(_:edges:)).
@@ -89,6 +91,8 @@ struct SettingsEnvironment: ViewModifier {
     /// The scene's `openWindow` (read-only in `EnvironmentValues`), under a key of its own.
     /// Nil only in tests, which have no scene.
     let openWindow: OpenWindowAction?
+    /// Nil in the app (`LanguageRow` reads the preferences); set by the snapshot tool.
+    var languageRowStatus: AppLanguage.Status? = nil
 
     func body(content: Content) -> some View {
         content
@@ -98,6 +102,7 @@ struct SettingsEnvironment: ViewModifier {
             .environment(\.layoutProbe, layoutProbe)
             .environment(\.smartAdvancedExpanded, smartAdvancedExpanded)
             .environment(\.settingsOpenWindow, openWindow)
+            .environment(\.languageRowStatus, languageRowStatus)
     }
 }
 
