@@ -18,11 +18,12 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 | Agent | Phụ trách |
 |---|---|
-| `researcher` | đọc OpenKey, tài liệu Apple; viết `docs/OPENKEY-NOTES.md` |
+| `researcher` | đọc OpenKey, test của các bộ gõ khác, tài liệu Apple; viết `docs/OPENKEY-NOTES.md` và `docs/research/` |
 | `engine-dev` | `Packages/DauEngine` và test |
 | `imk-dev` | `Apps/DauInputMethod` |
 | `app-ui-dev` | `Apps/Dau` (SwiftUI) |
-| `release-eng` | XcodeGen, CI, ký, notarize, Sparkle, Homebrew, xuất file nhận diện |
+| `release-eng` | XcodeGen, CI, ký, notarize, Sparkle, Homebrew, xuất file nhận diện, triển khai trang web |
+| `web-dev` | mã trang web: trang tải về (M8), trang so sánh cách gõ (M10) |
 | `auditor` | kiểm tra độc lập, chỉ đọc; phải ĐẠT trước khi đóng mốc |
 
 - Lệnh `/milestone M#` chạy trọn một mốc; `/audit` kiểm tra toàn repo.
