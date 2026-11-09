@@ -25,6 +25,7 @@ typeset -A guarded=(
   [scripts/selftest/typing/run.sh]="always"
   [scripts/selftest/settings-window/run.sh]="always"
   [scripts/selftest/app-group.sh]="always"
+  [scripts/research/compare-ims/run.sh]="always"
   [scripts/dev/install-app.sh]="always"
   [scripts/dev/install-input-method.sh]="unless --build-only"
   [scripts/dev/clean-dau.sh]="with --yes"

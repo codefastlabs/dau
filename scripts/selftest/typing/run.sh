@@ -20,6 +20,11 @@
 #                     which IMK does not report to the input method as a deactivation
 #                     (ROADMAP M3). Example (D20, K7): --keys "hoc ⌫j " --expect "học "
 #   --expect "…"      expected text (default: what the sample sentence must give)
+#   --source ID       type with this input source instead of Dấu (an enabled one, such as
+#                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
+#                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
+#                     the verdict still compares with --expect.
+#   --save DIR        also write the text read back from each app to DIR/<app>.txt
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
 #                     Debug input method only: the script writes the bundle ID into the
@@ -82,6 +87,8 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
+SOURCE_ID=""
+SAVE_DIR=""
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
 # Prints the whole leading comment block.
@@ -92,6 +99,8 @@ while [[ $# -gt 0 ]]; do
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
+    --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
+    --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(textedit safari chrome vscode terminal); shift ;;
     textedit|safari|chrome|vscode|terminal|edge|firefox|notes|mail) APPS+=("$1"); shift ;;
@@ -127,6 +136,12 @@ DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
   log_hint "Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (scripts/dev/install-input-method.sh nói rõ các bước)."
   exit 1
 }
+if [[ -n "$SOURCE_ID" ]]; then
+  # Another source in place of Dấu: it must be enabled already (nothing is enabled, N4).
+  (( ${${(f)"$("$INPUT_SOURCE" enabled "$SOURCE_ID")"}[(Ie)$SOURCE_ID]} )) \
+    || log_die "Nguồn $SOURCE_ID chưa được bật (script không tự bật, N4)."
+  DAU_SOURCE="$SOURCE_ID"
+fi
 if [[ "$KEYS" == *"⇄"* ]] && (( ! ${${(f)"$("$INPUT_SOURCE" enabled "$US_SOURCE")"}[(Ie)$US_SOURCE]} )); then
   log_die "⇄ cần nguồn $US_SOURCE đã bật (script không tự bật, N4)."
 fi
@@ -207,7 +222,7 @@ select_dau() {
     return 0
   fi
   local now="$("$INPUT_SOURCE" current 2>/dev/null)"
-  log_error "Dừng: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì."
+  log_error "Dừng: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". nguồn đó chưa được chọn nên không gõ gì."
   log_hint "Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"."
   echo source > "$STOP_FILE"
   return 1
@@ -586,6 +601,7 @@ for app in "${APPS[@]}"; do
     log_error "Dừng $app: không có kết quả (xem thông báo dừng ở trên)."
     break
   fi
+  [[ -n "$SAVE_DIR" ]] && print -r -- "$got" > "$SAVE_DIR/$app.txt"
   got_trimmed="$(printf '%s' "$got" | trim_right)"
   if [[ "$app" == terminal ]]; then
     ok=0; [[ "$got_trimmed" == *"$EXPECT_TRIMMED" ]] && ok=1

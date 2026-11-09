@@ -29,14 +29,14 @@ Bộ gõ của Apple chỉ đo được bằng cách gõ thật, vì không có 
 
 - **Bộ gõ:** Dấu (bản Release đã cài, mặc định theo D15) và Apple Telex.
 - **Dữ liệu** (chỉ dùng phần cả hai cùng hỗ trợ: Telex thứ tự chuẩn, không bỏ dấu tự do, không gõ tắt):
-  - khoảng 150 câu văn xuôi hiện đại, tự viết hoặc lấy từ nguồn có giấy phép, chuyển sang phím Telex bằng script;
-  - khoảng 150 từ tiếng Anh thông dụng và từ trong mã (từ khoá Swift, JavaScript, Python, lệnh terminal), cùng câu trộn Việt–Anh.
+  - 60 câu văn xuôi hiện đại tự viết (`scripts/research/compare-ims/vi-sentences.txt`), 20 câu trộn Việt–Anh (`mixed-sentences.txt`), khoảng 100 từ tiếng Anh và từ trong mã, hầu hết có phím dấu hoặc phím biến đổi của Telex (`en-words.txt`); `cases.py` chuyển sang phím Telex thứ tự chuẩn, tổng khoảng 5.700 phím;
+  - kiểm offline bằng engine của Dấu trước khi gõ thật (09/11/2026): 677/678 từ tiếng Việt đúng, từ còn lại là "taxi" ra "tãi" (D4), nên bộ chuyển phím đúng.
 - **Cách chấm:**
   - Tiếng Việt đúng khi ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa).
   - Tiếng Anh đúng khi giữ nguyên chữ đã gõ. Từ vừa là tiếng Anh vừa là âm tiết tiếng Việt hợp lệ ("car", "as") tính riêng một nhóm, không chấm đúng sai (D4).
   - Đáp án lấy từ chữ gốc, không từ kết quả của bộ gõ nào (D10).
-- **Ứng dụng:** một app thử riêng (NSTextView; không dùng TextEdit) và Chrome. Khoảng cách giữa hai phím 120 ms và 30 ms.
-- **Cách chạy:** `scripts/selftest/typing/run.sh` thêm tuỳ chọn chọn nguồn theo ID. Mọi thứ build xong trước, rồi báo người dùng "sẵn sàng, khoảng 20 phút", chạy một lượt khi được đồng ý, báo lúc bắt đầu và lúc xong. Sau đó chọn lại nguồn đầu vào như trước khi chạy.
+- **Ứng dụng:** trang thử trong Safari (WebKit, đúng ở mọi tốc độ ở M2; dùng thay app thử riêng vì script đã có sẵn) và Chrome. Khoảng cách giữa hai phím 30 ms; 120 ms bỏ, vì ở 30 ms Dấu đã đúng trong cả hai app (M3) và lượt chạy sẽ dài gấp bốn.
+- **Cách chạy:** `scripts/research/compare-ims/run.sh`, gọi `scripts/selftest/typing/run.sh` với tuỳ chọn `--source` (chọn nguồn theo ID) và `--save` (lưu chữ đọc lại). Mọi thứ build xong trước, rồi báo người dùng "sẵn sàng, khoảng 20 phút", chạy một lượt khi được đồng ý, báo lúc bắt đầu và lúc xong. Sau đó chọn lại nguồn đầu vào như trước khi chạy.
 - Lưu mọi ca sai (chuỗi phím và chữ ra) trong `build/`, không commit.
 
 ## Để sau
