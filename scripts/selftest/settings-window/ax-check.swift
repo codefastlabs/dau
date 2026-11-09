@@ -298,8 +298,33 @@ nonisolated(unsafe) let window: AXUIElement = {
 // (run.sh deleted the saved frame, so this is the scene's default size). The window can
 // appear before SwiftUI gives it that size, so the size is read until it stays the same
 // on 3 reads 0.2 s apart (5 s at most); a size still changing then is a HARNESS row.
+let launchFirstSize = frame(window).size
 let launchSizeRead = waitSettled(timeout: 5, interval: 0.2, reads: 3) { frame(window).size }
 let launchSize = launchSizeRead.value
+
+/// What the preferences hold for the window's saved frame, read fresh through cfprefsd.
+/// run.sh deleted it before the launch; an app that opened at the scene's default size has
+/// written its own by now, so "absent" with a window at another size means the app took
+/// its size from somewhere the preferences do not show.
+func savedSettingsFrame() -> String {
+    let domain = "com.codefastlabs.dau" as CFString
+    CFPreferencesAppSynchronize(domain)
+    return (CFPreferencesCopyAppValue("NSWindow Frame settings" as CFString, domain) as? String)?
+        .trimmingCharacters(in: .whitespaces) ?? "absent"
+}
+/// Context for a failed "window size at launch" (it has failed without a known cause):
+/// the first size seen, the saved frame, and any other Dấu process sharing the defaults.
+func launchContext() -> String {
+    let others = NSRunningApplication.runningApplications(withBundleIdentifier: "com.codefastlabs.dau")
+        .filter { $0.processIdentifier != pid }
+        .map { "\($0.processIdentifier) \($0.bundleURL?.path ?? "?")" }
+    return "first read \(fmt(launchFirstSize.width))×\(fmt(launchFirstSize.height)), "
+        + "settled after \(String(format: "%.1f", launchSizeRead.seconds)) s; "
+        + "saved frame: \(savedSettingsFrame()); "
+        + "other Dấu: \(others.isEmpty ? "none" : others.joined(separator: ", "))"
+}
+/// Read right away, before the checker moves or resizes the window (the app then saves it).
+let launchContextAtOpen = launchContext()
 
 let sections = Reference.sections
 /// System: the Always scroll bar's width (check (a)).
@@ -1714,7 +1739,13 @@ if modes.contains("--geometry") {
         harness("-", "window", "wait: window size at launch settles", expected: "the same on 3 reads within 5 s",
                 got: "still changing after \(String(format: "%.1f", launchSizeRead.seconds)) s")
     }
-    check("-", "window", "window size at launch", CGRect(origin: .zero, size: launchSize), CGRect(origin: .zero, size: Reference.windowSize))
+    // A failure carries the state read at the launch (launchContextAtOpen): this row has
+    // failed now and then without a known cause.
+    let launchExpected = Reference.windowSize
+    let launchOk = near(launchSize.width, launchExpected.width) && near(launchSize.height, launchExpected.height)
+    record("-", "window", "window size at launch", expected: fmt(CGRect(origin: .zero, size: launchExpected)),
+           got: fmt(CGRect(origin: .zero, size: launchSize)) + (launchOk ? "" : " (\(launchContextAtOpen))"),
+           ok: launchOk)
     measureLaunchState()
     for screen in displays where moveWindow(to: screen, tag(screen)) {
         for index in sections.indices { measureSection(tag(screen), tag(screen), index) }

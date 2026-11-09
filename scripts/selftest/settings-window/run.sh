@@ -40,7 +40,12 @@
 # deleted, so the window opens at the scene's default size (ax-check reads it before it
 # moves anything); both saved frames, and the sidebar's saved split (AppKit's autosave,
 # left by builds before the fixed sidebar, which has none), are put back as they were at
-# the end.
+# the end. Each real launch also passes `-ApplePersistenceIgnoreState YES` (argument domain,
+# that launch only): an app the script ended with `kill` did not quit normally, so macOS
+# restores its window on the next launch of the bundle ID, at the size it was left at, and
+# "window size at launch" then read that size, not the scene's default. Measured on Dấu:
+# with the restored state present, 740×747 three times without the flag, 740×560 three
+# times with it.
 set -euo pipefail
 here=${0:A:h}
 source "${here:h:h}/lib/log.sh"
@@ -194,7 +199,7 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   # leftover as a file to open (`application(_:openFiles:)`). The 8 argument sets measured
   # on Dấu fit this; that SwiftUI then opens no window is not measured. Put every app
   # flag that takes a value (`-AppleShowScrollBars`, `--appearance`) before --settings-window.
-  open -n "$app" --args -AppleLanguages '(vi)' "$@" --settings-window
+  open -n "$app" --args -ApplePersistenceIgnoreState YES -AppleLanguages '(vi)' "$@" --settings-window
   pid=""
   wait_until 10 new_app_pid "$before" || true
   if [[ -z $pid ]]; then
