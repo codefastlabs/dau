@@ -42,7 +42,7 @@ Ký và máy:
 - Ký bằng Personal Team (Team ID trong D24 (Tên và định danh)), ký tự động "Apple Development". Bản phát hành dùng Developer ID ở M7.
 - Máy này ("Valentino’s MacBook Pro") ký được (09/11: mọi bản build ký hợp lệ).
 - Máy nhà ("Vương's MacBook Pro") dùng chứng chỉ tạo ngày 05/11.
-- Bản đã cài trên máy này: bộ gõ và `/Applications/Dau.app` bản Release 24e61ec (09/11).
+- Bản đã cài trên máy này: bộ gõ và `/Applications/Dau.app` bản Release 7f3af4b (09/11).
 - Xcode 27.2 ở `/Applications/Xcode.app`, nhưng `xcode-select` đang trỏ CommandLineTools. Swift 6.4.
   - Script tự chọn Xcode (`scripts/lib/xcode.sh`).
   - Lệnh gõ tay (`swift test`) cần `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
