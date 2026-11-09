@@ -2,11 +2,19 @@
 # Types one text into real apps, idle and under load, to see whether in-place replacement goes wrong when the app is busy (M6).
 # Side effects: builds, takes the screen, changes input source, changes user settings
 #
-# Usage: scripts/selftest/load/run.sh [--reps N] [--apps "A…"] [--loads "L…"] [--dry-run]
+# Usage: scripts/selftest/load/run.sh [--reps N] [--apps "A…"] [--loads "L…"] [--text std|edit]
+#        [--dry-run | --print keys|expect]
 #   --reps N     repetitions of every condition (default 3)
 #   --apps "A…"  only these apps of the matrix (safari chrome vscode terminal)
 #   --loads "L…" only these loads (idle busy); busy still only in browsers
+#   --text T     std (default): TEXT_KEYS below, Telex in standard order; edit:
+#                EDIT_KEYS, the same kind of sentences typed with free tone placement
+#                (D28), a tone changed (vieetjs), a tone removed (Chaofz), ⌫ inside a
+#                word (D32) and a tone added to a typed word (Hoc ⌫j, D20)
 #   --dry-run    print the matrix and the estimated duration, run nothing
+#   --print P    print the keys or the expected text of --text and exit: for runs this
+#                script cannot do (Release build: no t_ns; another input source), e.g.
+#                typing/run.sh --keys "$(load/run.sh --text edit --print keys)" …
 #
 # The question: at a human pace (--delay 100 --jitter 30), does a busy app make Dấu's
 # in-place replacement (D11, D13) go wrong, and why. Three hypotheses, told apart by the
@@ -79,12 +87,16 @@ REPS=3
 DRY_RUN=0
 ONLY_APPS=""
 ONLY_LOADS=""
+TEXT=std
+PRINT=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --reps) REPS="${2:?--reps cần số lần}"; shift 2 ;;
     --dry-run) DRY_RUN=1; shift ;;
     --apps) ONLY_APPS="${2:?--apps cần danh sách app}"; shift 2 ;;
     --loads) ONLY_LOADS="${2:?--loads cần danh sách tải}"; shift 2 ;;
+    --text) TEXT="${2:?--text cần std hoặc edit}"; shift 2 ;;
+    --print) PRINT="${2:?--print cần keys hoặc expect}"; shift 2 ;;
     -h|--help) log_usage "$SELF"; exit 0 ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
@@ -97,6 +109,22 @@ BUSY=300:1000
 # Checked with DauEngine (default options, D15): these keys give exactly TEXT_EXPECT.
 TEXT_KEYS='Chieeuf nay anh cos ranhr khoong, minhf ddi uoongs caf phee nhes. Deadline cuar project nayf laf thuws saus tuaanf sau. Seeps vuwaf guwir email veef buooir meeting toois qua. Toois nay xem phim treen Netflix hay YouTube ddaay? '
 TEXT_EXPECT='Chiều nay anh có rảnh không, mình đi uống cà phê nhé. Deadline của project này là thứ sáu tuần sau. Sếp vừa gửi email về buổi meeting tối qua. Tối nay xem phim trên Netflix hay YouTube đây? '
+# --text edit (M6, 09/11/2026). Checked with DauEngine the same way (ExternalCasesTests's
+# replay, which also plays ⌫ and D20): these keys give exactly EDIT_EXPECT. "Chao" without
+# a tone is on purpose (Chaofz: z removes the tone).
+EDIT_KEYS='Sasng nay mojot nguoiwf banj guiwr email hoir veef deadline cuar project. Minhf phari vieetjs laji kees hoajch truwocs meeting chieeuf nay. Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf dduwowjc luyeenj ddeeuf mooix ngayf. Chaofz banj, xem video treen YouTube huowsng daanx nhes. '
+EDIT_EXPECT='Sáng nay một người bạn gửi email hỏi về deadline của project. Mình phải viết lại kế hoạch trước meeting chiều nay. Học tiếng Anh không khó, chỉ cần được luyện đều mỗi ngày. Chao bạn, xem video trên YouTube hướng dẫn nhé. '
+case $TEXT in
+  std) ;;
+  edit) TEXT_KEYS=$EDIT_KEYS; TEXT_EXPECT=$EDIT_EXPECT ;;
+  *) log_die 2 "--text phải là std hoặc edit" ;;
+esac
+case $PRINT in
+  "") ;;
+  keys) print -rn -- "$TEXT_KEYS"; exit 0 ;;
+  expect) print -rn -- "$TEXT_EXPECT"; exit 0 ;;
+  *) log_die 2 "--print phải là keys hoặc expect" ;;
+esac
 
 APPS=(safari chrome vscode terminal)
 if [[ -n "$ONLY_APPS" ]]; then
