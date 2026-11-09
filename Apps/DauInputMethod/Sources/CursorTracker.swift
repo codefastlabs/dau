@@ -197,9 +197,8 @@ struct CursorTracker: Equatable {
         let end = selection.location
         guard let known, selection.length == 0, end != NSNotFound, end != known else { return nil }
         let count = min(Self.lateLimit, edits.count)
-        guard count > 0 else { return nil }
         let base = end - snapshot.count
-        for m in 1...count where edits[edits.count - m].cursor == end {
+        for m in stride(from: 1, through: count, by: 1) where edits[edits.count - m].cursor == end {
             var text = snapshot
             var fits = true
             for edit in edits.suffix(m) {
@@ -214,6 +213,37 @@ struct CursorTracker: Equatable {
             }
             if fits, base + text.count == known, accept(text) { return text }
         }
+        // Chrome's cache is not always the text as it was some edits ago: a key let
+        // through is written into the cache at once, at the caret the page last reported
+        // (`insertText` with NSNotFound in `render_widget_host_view_cocoa.mm`), while the
+        // page may still miss the keys before it. So the text read may be the text this
+        // composer typed with any `d` of its latest units missing (1d run: "hoi" + r
+        // answered one behind, and the exact replay above did not fit).
+        let d = known - end
+        if d >= 1, d <= Self.lateLimit, let text = withMissingUnits(snapshot, missing: d), accept(text) {
+            return text
+        }
         return nil
+    }
+
+    /// `snapshot` (ending `missing` units before `known`) is `tail` with `missing` of its
+    /// last `missing + lateLimit` units left out, compared over at least two units: then
+    /// the text before `known` is the start of `snapshot` followed by `tail`. nil if not.
+    private func withMissingUnits(_ snapshot: [UInt16], missing d: Int) -> [UInt16]? {
+        let n = min(snapshot.count, tail.count - d)
+        guard n >= 2 else { return nil }
+        let seen = Array(snapshot.suffix(n))
+        let window = min(tail.count, d + Self.lateLimit)
+        func fits(_ left: [UInt16], dropping: Int, from start: Int) -> Bool {
+            if dropping == 0 { return Array(left.suffix(n)) == seen }
+            for i in stride(from: start, to: left.count, by: 1) {
+                var shorter = left
+                shorter.remove(at: i)
+                if fits(shorter, dropping: dropping - 1, from: i) { return true }
+            }
+            return false
+        }
+        guard fits(tail, dropping: d, from: tail.count - window) else { return nil }
+        return Array(snapshot.dropLast(n)) + Array(tail.suffix(n + d))
     }
 }

@@ -218,7 +218,7 @@ struct InPlaceComposer {
                     result.kind = .reset
                 }
                 result.consumed = false
-                if result.kind == .replace || result.kind == .late {
+                if result.kind == .replace || result.kind == .late || result.kind == .lateGuess {
                     tracker.backspacePassedThrough()
                 } else {
                     // Let the app's own Delete run; the engine no longer knows the word.
@@ -718,29 +718,27 @@ struct InPlaceComposer {
            selection.location != followed {
             let read = readBefore(selection.location, client: client)
             lateRead = (selection.location, read)
-            if let read,
-               let rebuilt = tracker.rebuild(Array(read.utf16), at: selection,
-                                             accept: { Self.word(in: $0) == word }),
-               rebuilt.count >= deleteCount {
-                // Leave out of the range the end of the word that does not change (the
-                // keys the app has not applied yet, mostly): what is replaced is then
-                // text the app has, whatever it does first.
-                let old = Array(rebuilt.suffix(deleteCount))
-                var units = Array(text.utf16)
-                var length = deleteCount
-                while length > 0, let last = units.last, last == old[length - 1],
-                      CursorTracker.isWholeCharacter(last) {
-                    units.removeLast()
-                    length -= 1
+            if let read {
+                let units = Array(read.utf16)
+                if let rebuilt = tracker.rebuild(units, at: selection, accept: { Self.word(in: $0) == word }),
+                   rebuilt.count >= deleteCount {
+                    return replaceAtFollowed(followed, deleteCount: deleteCount, text: text,
+                                             old: Array(rebuilt.suffix(deleteCount)), kind: .late,
+                                             attempt: attempt, client: client)
                 }
-                let range = NSRange(location: followed - deleteCount, length: length)
-                let trimmed = String(decoding: units, as: UTF16.self)
-                if length > 0 || !units.isEmpty { client.insertText(trimmed, replacementRange: range) }
-                tracker.didReplace(range, text: trimmed, cursor: followed)
-                attempt.replacement = range
-                result.kind = .late
-                result.attempt = attempt
-                return result
+                // First replacement of a word, the answer a little behind, and the text read
+                // neither proves a late answer nor holds the whole word before the answer
+                // (which an app that edited the text before the word would show: it has
+                // every key, at other offsets). Every such answer in the 1d run was a late
+                // one; taking it as the position replaced the letter before the word and
+                // also moved `known` back, which hid the next late answer ("kóo").
+                let behind = followed - selection.location
+                if tracker.expected == nil, behind >= 1, behind <= CursorTracker.lateLimit,
+                   Self.word(in: units) != word {
+                    let old = tracker.tail.count >= deleteCount ? Array(tracker.tail.suffix(deleteCount)) : nil
+                    return replaceAtFollowed(followed, deleteCount: deleteCount, text: text, old: old,
+                                             kind: .lateGuess, attempt: attempt, client: client)
+                }
             }
         }
         switch tracker.plan(selection: selection, deleteCount: deleteCount) {
@@ -757,6 +755,32 @@ struct InPlaceComposer {
             result.consumed = false
         }
         result.attempt = attempt
+        return result
+    }
+
+    /// Replaces the last `deleteCount` units before `followed` (`CursorTracker.known`)
+    /// with `text`: the app applies it after the keys it has not applied yet, as it
+    /// applies everything in order. The end of the word that does not change (`old`, the
+    /// text replaced, when known) is left out of the range, so what is replaced is text
+    /// the app has, whatever it does first.
+    private mutating func replaceAtFollowed(_ followed: Int, deleteCount: Int, text: String, old: [UInt16]?,
+                                           kind: PerfLog.Kind, attempt: Attempt,
+                                           client: some InPlaceClient) -> Outcome {
+        var units = Array(text.utf16)
+        var length = deleteCount
+        if let old, old.count == deleteCount {
+            while length > 0, let last = units.last, last == old[length - 1], CursorTracker.isWholeCharacter(last) {
+                units.removeLast()
+                length -= 1
+            }
+        }
+        let range = NSRange(location: followed - deleteCount, length: length)
+        let trimmed = String(decoding: units, as: UTF16.self)
+        if length > 0 || !units.isEmpty { client.insertText(trimmed, replacementRange: range) }
+        tracker.didReplace(range, text: trimmed, cursor: followed)
+        var result = Outcome(consumed: true, kind: kind)
+        result.attempt = attempt
+        result.attempt?.replacement = range
         return result
     }
 

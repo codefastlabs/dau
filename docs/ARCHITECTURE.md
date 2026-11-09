@@ -106,15 +106,20 @@ dau/
 #### App trả lời chậm (M6, `CursorTracker.known`, `CursorTracker.rebuild`)
 
 - Hiện tượng (Chrome, trang bận): app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); D11 (Kiểm tra ngữ cảnh) không bắt được vì vị trí dự đoán (`expected`) chỉ có trong một từ.
-- Chromium: thay với `replacementRange` giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); lời gọi của bộ gõ vào cùng hàng đợi với phím của trang (`MainThreadEventQueue::QueueClosure`).
+- Chromium:
+  - thay với `replacementRange` giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); lời gọi của bộ gõ vào cùng hàng đợi với phím của trang (`MainThreadEventQueue::QueueClosure`);
+  - `selectedRange` và `attributedSubstring` trả từ bộ đệm phía trình duyệt (`_textSelectionRange`, `_availableText` trong `render_widget_host_view_cocoa.mm`), không hỏi trang;
+  - phím đi thẳng (`insertText` với NSNotFound) được ghi ngay vào bộ đệm đó, ở vị trí con trỏ trang báo lần trước, trong khi trang có thể chưa áp các phím trước nó. Chữ đọc được vì vậy có thể là chữ đã gõ thiếu vài đơn vị gần nhất, không phải chữ của một thời điểm cũ.
 - Cách xử lý:
   - `CursorTracker` theo vị trí con trỏ qua ranh giới từ (`known`), cùng vài thao tác gần nhất bộ gõ đã làm hoặc để đi thẳng (`edits`) và chữ chính nó đã gõ ngay trước con trỏ (`tail`).
     - Mất vị trí khi reset (click, mũi tên, phím tắt, Return/Tab, đổi client), và khi ⌫ đi thẳng mà không biết chữ bị xoá.
     - `known` không thay cho `expected`: ở đầu từ, vị trí khác `known` vẫn có thể là app tự sửa chữ (tự sửa chính tả, gạch ngang thông minh).
   - Ở phím thay chữ, nếu `selectedRange` khác `known` và phím trước đủ 50 ms (như D11): đọc chữ trước vị trí app trả một lần (lần đọc của D11 khi lệch, N3).
-    - Nếu chữ đó cộng các thao tác app chưa áp (tối đa `lateLimit`, mỗi thao tác xoá phải gặp đúng chữ nó xoá) ra đúng từ trong engine: thay ở vị trí `known` (kind `late` trong log perf).
+    - App chậm được chứng minh khi (a) chữ đó cộng các thao tác app chưa áp (tối đa `lateLimit`, mỗi thao tác xoá phải gặp đúng chữ nó xoá) ra đúng từ trong engine, hoặc (b) chữ đó là chữ bộ gõ đã gõ (`tail`) thiếu đúng số đơn vị app chậm, trong vài đơn vị gần nhất, so ít nhất hai đơn vị. Khi đó thay ở vị trí `known` (kind `late` trong log perf).
     - Phần cuối từ không đổi được để ngoài vùng thay, nên phần đó không phụ thuộc thứ tự app áp.
-    - Không thì như cũ: trong từ là lệch (D11, dùng lại chữ vừa đọc), đầu từ thì tin `selectedRange`.
+    - Lần thay đầu của từ, app chậm tối đa `lateLimit` mà không chứng minh được, và trước vị trí app trả không có đủ cả từ: vẫn thay ở `known` (kind `late_guess`). App sửa chữ trước từ (gạch ngang thông minh) thì trước vị trí nó trả có đủ cả từ, nên vị trí của app được tin.
+    - Còn lại như cũ: trong từ là lệch (D11, dùng lại chữ vừa đọc), đầu từ thì tin `selectedRange`.
+    - Vị trí lấy từ một `selectedRange` có thể cũ không còn ghi đè `known` trong các ca trên (lượt 1d: ghi đè làm lần trả lời chậm sau trùng với `known` sai, "kóo").
   - Cùng cách đó ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ).
 - Giới hạn: app chậm hơn `lateLimit` thao tác, hoặc phím dưới 50 ms, thì như trước. Kiểm bằng client giả trong `LateAnswerTests`.
 

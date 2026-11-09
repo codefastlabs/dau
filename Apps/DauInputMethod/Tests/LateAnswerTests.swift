@@ -23,7 +23,13 @@ import Testing
 /// `MainThreadEventQueue::QueueClosure`, the queue the page's input events go through
 /// (strict order there not read in the source).
 private final class LateDocument: InPlaceClient {
-    struct State { var text: [UInt16]; var cursor: Int }
+    struct State {
+        var text: [UInt16]
+        var cursor: Int
+        /// Text inserted at the caret by this edit (`insertText` with NSNotFound: a key the
+        /// input method let through, or its own insertion at the caret).
+        var atCaret: [UInt16]? = nil
+    }
     private(set) var states: [State]
     /// Edits the answers are behind by.
     var lag = 0
@@ -38,7 +44,24 @@ private final class LateDocument: InPlaceClient {
     }
 
     var text: String { String(decoding: states[states.count - 1].text, as: UTF16.self) }
-    private var answer: State { states[max(0, states.count - 1 - lag)] }
+    /// Chrome's browser-side cache (`render_widget_host_view_cocoa.mm`): `insertText` with
+    /// NSNotFound also writes the text into the cached text at `_markedRange.location` and
+    /// moves `_textSelectionRange` after it ("temporary hack", until Blink updates the
+    /// cache). With `cacheInsert`, the answer is the state `lag` edits ago plus the latest
+    /// edit, if it was such an insertion, written at that state's caret.
+    /// For one key: answer with this text before the caret instead (a cache state no model
+    /// above gives).
+    var override: String?
+    var cacheInsert = false
+    private var answer: State {
+        if let override { let units = Array(override.utf16); return State(text: units, cursor: units.count) }
+        var state = states[max(0, states.count - 1 - lag)]
+        if cacheInsert, lag > 0, let units = states[states.count - 1].atCaret {
+            state.text.insert(contentsOf: units, at: state.cursor)
+            state.cursor += units.count
+        }
+        return state
+    }
 
     func selectedRange() -> NSRange {
         selections += 1
@@ -72,6 +95,7 @@ private final class LateDocument: InPlaceClient {
             // show this ("ạnn gửi", no stray "n" at the end of the text).
             state.cursor += units.count - range.length
         }
+        state.atCaret = replacementRange.location == NSNotFound ? units : nil
         states.append(state)
     }
 
@@ -93,6 +117,7 @@ private final class LateDocument: InPlaceClient {
             guard state.cursor > 0 else { return }
             state.text.remove(at: state.cursor - 1)
             state.cursor -= 1
+            state.atCaret = nil
             states.append(state)
         case .endWord:
             let n = inserts
@@ -176,6 +201,76 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
+    /// The 1d run (build/load/1d-20261109-225810, not committed), after the first fix:
+    /// at each wrong word the answer was one behind `known` and the read did not prove
+    /// a late answer. Replayed with Chrome's cache as its source shows it: the page two
+    /// edits behind, plus the latest key written into the cache at the page's caret
+    /// (`cacheInsert`). `late` is typed so; then `rest` on time.
+    @Test("words of the 1d log: the answer is the page two keys behind plus the latest key in Chrome's cache",
+          arguments: [
+              // dau-busy-1 "ỏii" (sel 35, known 36).
+              ("gửi email hoi", "r", " veef", "gửi email hỏi về"),
+              // dau-busy-1 "ìnhh" (sel 65, known 66).
+              ("project. Minh", "f", " phari", "project. Mình phải"),
+              // dau-busy-1 "chêeuf" (sel 107, known 108).
+              ("meeting chie", "e", "uf nay", "meeting chiều nay"),
+              // dau-busy-3 "née" (sel 218, known 219).
+              ("daanx nhe", "s", ". ", "dẫn nhé. "),
+              // dau-busy-3 of 1b, "đaaline": the check of a locked word, same cache.
+              ("cuar dea", "d", "line ", "của deadline "),
+          ])
+    func cacheInsertLate(_ keys: String, _ late: String, _ rest: String, _ expected: String) {
+        var s = LateSession()
+        s.doc.cacheInsert = true
+        s.type(keys)
+        s.type(late, lag: 2)
+        s.type(rest)
+        #expect(s.doc.text == expected)
+        // Shown by the text read, not guessed.
+        #expect(!s.kinds.contains(.lateGuess))
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("first replacement, answer one behind, text read proves nothing: replaced at the followed position (late_guess)")
+    func guessAtFirstReplacement() {
+        var s = LateSession()
+        s.type("nguoiwf ban")
+        // One behind, and the text before the answer is neither the word nor the typed
+        // text with a unit missing ("xa").
+        s.doc.override = "người xa"
+        s.type("j")
+        s.doc.override = nil
+        s.type(" guiwr")
+        #expect(s.doc.text == "người bạn gửi")
+        #expect(s.kinds.contains(.lateGuess))
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("first replacement, answer behind but the whole word is before it: the app moved the text, the answer stands")
+    func wholeWordBeforeAnswer() {
+        var s = LateSession()
+        s.type("ab cd vie")
+        // The app shortened the text before the word ("cd" → "c"): the word is all there.
+        s.doc.appEdit("ab c vie")
+        s.type("etj ")
+        #expect(s.doc.text == "ab c việt ")
+        #expect(!s.kinds.contains(.lateGuess) && !s.kinds.contains(.late))
+    }
+
+    @Test("dau-busy-2: không khó — a stale answer taken as the followed position must not hide the next one")
+    func staleAnswerDoesNotMoveKnown() {
+        var s = LateSession()
+        s.doc.cacheInsert = true
+        s.type("tieesng Anh kho")
+        s.type("o", lag: 2)        // sel 131, known 132 in the log: "kôong"
+        s.type("ng⌫g kho")
+        s.type("s", lag: 2)        // sel 137 = the known the first answer left: "kóo"
+        s.type(", ")
+        #expect(s.doc.text == "tiếng Anh không khó, ")
+        #expect(s.overCalls == 0)
+    }
+
     @Test("dau-busy-3: deadline — the D11 check of a word that stopped being Vietnamese reads one key late")
     func lockedWordCheckLate() {
         var s = LateSession()
@@ -224,15 +319,17 @@ struct LateAnswerTests {
     ]
 
     @Test("the load-test strings, answers up to two keys late at random: same text as on time",
-          arguments: [0, 1], Array(UInt64(1)...24))
+          arguments: [0, 1, 2, 3], Array(UInt64(1)...24))
     func wholeStringLate(_ which: Int, _ seed: UInt64) {
-        let (keysToType, expected) = Self.strings[which]
+        // 0, 1: the page's text some edits ago; 2, 3: plus Chrome's cache insert.
+        let (keysToType, expected) = Self.strings[which % 2]
         var onTime = LateSession()
         onTime.type(keysToType)
         #expect(onTime.doc.text == expected)
         // Both in step: after every key the app's real text must be the same.
         var step = LateSession()
         var late = LateSession()
+        late.doc.cacheInsert = which >= 2
         var rng = SplitMix(seed)
         var lags: [Int] = []
         var keys: [Unicode.Scalar] = []

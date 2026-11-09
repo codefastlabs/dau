@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có. Việc đang làm: lượt sửa thứ hai của 1c (imk-dev), từ log 1d ở `build/load/1d-20261109-225810/` máy nhà; xong thì đo lại như 1d.
+Chờ người dùng: giờ chạy lần đo lại 1d (chiếm màn hình, khoảng 5 phút).
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -181,3 +181,7 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Trang rảnh 1/1 đúng. Trang bận vẫn 0/3, nhưng ít từ sai hơn 1b: "ỏii", "ìnhh", "chêeuf"; "kôong kóo"; "née". Phím tới bộ gõ đều (mọi khoảng ≥ 20 ms).
   - Nhánh mới chỉ chạy 1 lần (`count_late` 1, ở busy-3, và ở đó đúng). Ở các từ sai: `selectedRange` khác `known`, lần đọc có chạy, nhưng chữ đọc được không khớp mô hình "app chậm", nên rơi về nhánh tin `selectedRange` (đầu từ), và sau đó `known` đi theo vị trí sai. Vì sao không khớp: chưa rõ; một giả thuyết là `selectedRange` và `attributedSubstring` không trả cùng một trạng thái của chữ. Giao lại imk-dev.
   - Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bản Release (e5201e3).
+- 09/11/2026 — M6 bước 1c, lượt sửa thứ hai (từ log 1d lần 1) — imk-dev, phiên chính.
+  - Cơ chế (mã nguồn Chromium, chưa đo trên bản Chrome đã cài): `selectedRange` và `attributedSubstring` trả từ bộ đệm phía trình duyệt; phím đi thẳng được ghi ngay vào bộ đệm ở vị trí con trỏ trang báo lần trước, nên chữ đọc được có thể thiếu một chữ ở giữa ("…hi" thay vì "…hoi"), không phải ảnh chụp của một lúc cũ. Client giả thêm chế độ đó tái hiện đúng mọi từ sai của 1d lần 1 và "đaaline" của 1b.
+  - Sửa: thêm cách chứng minh app chậm bằng chữ bộ gõ đã gõ; `known` không còn bị ghi đè bởi một `selectedRange` cũ; lần thay đầu của từ, app chậm 1–2 chữ mà không chứng minh được, và trước vị trí app trả không có đủ cả từ: thay ở `known` (kind `late_guess`). Chi tiết: `docs/ARCHITECTURE.md` mục "App trả lời chậm". `late_guess` thay ở vị trí app chưa xác nhận, nên câu chữ của D11 (Kiểm tra ngữ cảnh) cần sửa; đề xuất sau lượt đo.
+  - Kiểm: test IMK 128 đạt (phiên chính chạy lại), check-docs. Chưa đo trên Chrome thật.

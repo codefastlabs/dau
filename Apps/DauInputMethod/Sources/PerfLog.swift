@@ -62,6 +62,11 @@ struct PerfLog {
         /// showed that text plus those edits is the engine's word, and the key replaced
         /// it at the position the input method followed (one insertText).
         case late
+        /// As `late`, but the text read did not prove it: the first replacement of a word,
+        /// the answer at most `CursorTracker.lateLimit` behind, and the whole word not before
+        /// it (which an app that edited the text would show). Replaced at the followed
+        /// position (`InPlaceComposer.replace`).
+        case lateGuess = "late_guess"
     }
 
     /// Off unless `DauPerfLog` is set, in Debug builds too: even without text, one line
