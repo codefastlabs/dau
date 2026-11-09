@@ -27,7 +27,21 @@
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
 #                     the verdict still compares with --expect.
-#   --save DIR        also write the text read back from each app to DIR/<app>.txt
+#   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
+#                     and +MS (never below 0), drawn per key: closer to a human than an
+#                     even pace. With --delay 0 the keys still go one by one.
+#   --busy MS:PERIOD  browsers only (safari chrome edge firefox; any other app is an
+#                     error): the local test page runs a JavaScript loop that blocks the
+#                     page's main thread for MS ms every PERIOD ms (MS < PERIOD), from when
+#                     the page loads until its tab closes. The app stays responsive to the
+#                     window server; only the page (the renderer, which applies the text) is
+#                     late. The clean "busy app" condition of M6.
+#   --save DIR        also write the text read back from each app to DIR/<app>.txt and the
+#                     input method's perf and diag log (ReplaceDiag: positions of each
+#                     replacement) from the start of that app's run (`log show
+#                     --style compact`, numbers and bundle IDs only, D8; lines of other apps
+#                     too, if any typed meanwhile) to DIR/<app>.perf.log, for
+#                     `scripts/perf/perf-report.sh --input`
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
 #                     Debug input method only: the script writes the bundle ID into the
@@ -92,6 +106,8 @@ DELAY_MS=30
 UNDERLINE=0
 SOURCE_ID=""
 SAVE_DIR=""
+JITTER_MS=0
+BUSY=""
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
 # Prints the whole leading comment block.
@@ -104,6 +120,8 @@ while [[ $# -gt 0 ]]; do
     --underline) UNDERLINE=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
+    --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
+    --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
     safari|chrome|vscode|terminal|edge|firefox|notes|mail) APPS+=("$1"); shift ;;
@@ -111,6 +129,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 [[ ${#APPS[@]} -gt 0 ]] || { usage; exit 2; }
+[[ "$JITTER_MS" =~ ^[0-9]+$ ]] || log_die 2 "--jitter phải là số nguyên ms"
+BUSY_MS=0; BUSY_PERIOD=0
+if [[ -n "$BUSY" ]]; then
+  [[ "$BUSY" =~ ^[0-9]+:[0-9]+$ ]] || log_die 2 "--busy phải có dạng MS:PERIOD (số nguyên ms), ví dụ 300:1000"
+  BUSY_MS=${BUSY%%:*}; BUSY_PERIOD=${BUSY##*:}
+  (( BUSY_MS > 0 && BUSY_MS < BUSY_PERIOD )) || log_die 2 "--busy cần 0 < MS < PERIOD"
+  for app in "${APPS[@]}"; do
+    [[ $app == (safari|chrome|edge|firefox) ]] \
+      || log_die 2 "--busy chỉ dùng với trình duyệt (safari chrome edge firefox), không với $app"
+  done
+fi
 US_SOURCE=com.apple.keylayout.US
 if [[ "$KEYS" == *$'\n'* || "$KEYS" == *$'\r'* ]]; then
   log_die 2 "Phím gõ không được có xuống dòng (không bao giờ nhấn Return trong Terminal)."
@@ -200,6 +229,18 @@ cat > "$PAGE" <<HTML
 <!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
 <textarea autofocus spellcheck="false" autocomplete="off" style="width:90%;height:8em"></textarea>
 HTML
+if (( BUSY_MS > 0 )); then
+  # --busy: block the page's main thread for BUSY_MS of every BUSY_PERIOD ms. A timer, not
+  # a loop on keys, so the load does not depend on what is typed.
+  cat >> "$PAGE" <<HTML
+<script>
+setInterval(function () {
+  var end = performance.now() + $BUSY_MS;
+  while (performance.now() < end) {}
+}, $BUSY_PERIOD);
+</script>
+HTML
+fi
 
 [[ "$DELAY_MS" =~ ^[0-9]+$ ]] || log_die 2 "--delay phải là số nguyên ms"
 
@@ -269,15 +310,17 @@ type_keys() { # process [window-title-substring]
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" <<'OSA'
+  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" <<'OSA'
 on run argv
   set s to item 1 of argv
-  set d to ((item 2 of argv) as integer) / 1000
+  set dms to (item 2 of argv) as integer
+  set d to dms / 1000
   set p to item 3 of argv
   set sw to item 4 of argv
+  set j to (item 5 of argv) as integer
   tell application "System Events"
     if (name of first process whose frontmost is true) is not p then error "frontmost changed"
-    if d = 0 and s does not contain "⌫" and s does not contain "⇄" then
+    if d = 0 and j = 0 and s does not contain "⌫" and s does not contain "⇄" then
       keystroke s
     else
       set i to 0
@@ -295,8 +338,15 @@ on run argv
         else
           keystroke (c as text)
         end if
-        -- Fixed on purpose: the pace the user asked for (--delay), between keys.
-        if d > 0 then delay d
+        -- Fixed on purpose: the pace the user asked for (--delay, --jitter), between keys.
+        if j > 0 then
+          -- random number is a scripting addition: run it here, not in System Events.
+          tell current application to set r to random number from (0 - j) to j
+          set pms to dms + r
+          if pms > 0 then delay pms / 1000
+        else if d > 0 then
+          delay d
+        end if
       end repeat
     end if
   end tell
@@ -544,10 +594,14 @@ run_terminal() {
   # time: typing goes on and the comparison reports lost keys.
   wait_settled 8 3 terminal_text "$win" >/dev/null
   select_dau; type_keys Terminal
-  # The keys sit on the prompt's last line after the prompt itself: print that line;
-  # the caller compares by suffix.
+  # The keys sit after the prompt on its last line, or on its last rows when they wrap
+  # (long --keys): print the last non-blank rows joined, the caller compares by suffix.
+  # Under 60 characters, one row as before; longer, enough rows for the text plus a prompt
+  # of up to one row at the 80 columns of a new window of the default profile.
+  local rows=1
+  (( ${#EXPECT} < 60 )) || rows=$(( 2 + ${#EXPECT} / 80 ))
   osascript -e "tell application \"Terminal\" to get contents of selected tab of window id $win" \
-    | grep -v '^[[:space:]]*$' | tail -1
+    | grep -v '^[[:space:]]*$' | tail -$rows | tr -d '\n'
   # ⌃U clears the line; never Return. Then close that window (only the shell runs in it).
   guarded Terminal "" 'tell application "System Events" to keystroke "u" using {control down}' >/dev/null
   # Fixed: lets the shell take ⌃U before its window closes; nothing read in between.
@@ -572,6 +626,8 @@ bundle_id() {
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
+(( JITTER_MS > 0 )) && log_detail "nghỉ giữa phím dao động ±${JITTER_MS} ms"
+(( BUSY_MS > 0 )) && log_detail "trang thử chặn luồng chính ${BUSY_MS} ms mỗi ${BUSY_PERIOD} ms (--busy)"
 for app in "${APPS[@]}"; do
   if stopped; then break; fi
   if [[ $UNDERLINE == 1 ]]; then
@@ -591,6 +647,11 @@ for app in "${APPS[@]}"; do
   got_trimmed="$(printf '%s' "$got" | trim_right)"
   if [[ "$app" == terminal ]]; then
     ok=0; [[ "$got_trimmed" == *"$EXPECT_TRIMMED" ]] && ok=1
+    # A long text wraps over several rows; if Terminal drops the space where a row
+    # breaks, compare again without whitespace (said in the output).
+    if [[ $ok == 0 && ${#EXPECT_TRIMMED} -ge 60 && "${got_trimmed//[[:space:]]/}" == *"${EXPECT_TRIMMED//[[:space:]]/}" ]]; then
+      ok=1; log_detail "(khớp khi bỏ khoảng trắng: Terminal ngắt dòng dài, không tính lỗi)"
+    fi
   else
     ok=0; [[ "$got_trimmed" == "$EXPECT_TRIMMED" ]] && ok=1
     # TextEdit, Notes, Pages… capitalize the first word of a new document by themselves
@@ -604,14 +665,15 @@ for app in "${APPS[@]}"; do
   fi
   if [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
   "$LOG" show --start "$start" --style compact \
-    --predicate "subsystem == \"$IM_ID\" AND category == \"perf\"" > "$WORK/perf.log" 2>/dev/null
+    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
+  [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
   case "$app" in
     safari) filter=Safari ;; chrome) filter=Chrome ;;
     vscode) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac
   "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
-    | grep -E 'count_|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
+    | grep -E 'count_|gap_|lag_us|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
   if [[ $UNDERLINE == 1 ]]; then
     settings_log="$("$LOG" show --start "$start" --style compact \
         --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"

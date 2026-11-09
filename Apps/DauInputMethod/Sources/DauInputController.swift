@@ -73,7 +73,7 @@ final class DauInputController: IMKInputController {
             // the cursor (D4: reset, no restore).
             let committed = resetComposition(client: sender)
             inPlace.noteEvent(at: event.timestamp)
-            record(KeyResult(kind: committed ? .commit : .reset), start: start)
+            record(KeyResult(kind: committed ? .commit : .reset), start: start, eventTime: event.timestamp)
             return false
         default:
             return false
@@ -105,7 +105,7 @@ final class DauInputController: IMKInputController {
         result.selectedRangeNs = timed.selectedRangeNs
         result.insertTextNs = timed.callNs
         result.readNs = timed.readNs
-        record(result, start: start)
+        record(result, start: start, eventTime: event.timestamp)
         #if DEBUG
         // After the timing is recorded, so the extra selectedRange is not measured.
         if perf.enabled, let diag = result.diag { ReplaceDiag.log(diag, kind: result.kind, client: client, app: clientApp) }
@@ -147,7 +147,8 @@ final class DauInputController: IMKInputController {
         return result
     }
 
-    private func record(_ result: KeyResult, start: UInt64) {
+    /// `start`: `PerfLog.now()` when `handle` began; `eventTime`: the event's `timestamp`.
+    private func record(_ result: KeyResult, start: UInt64, eventTime: TimeInterval) {
         var extra = ""
         #if DEBUG
         if perf.enabled {
@@ -162,6 +163,8 @@ final class DauInputController: IMKInputController {
         }
         #endif
         perf.record(result.kind,
+                    startNs: start,
+                    eventNs: PerfLog.eventNs(eventTime),
                     handleNs: PerfLog.now() &- start,
                     selectedRangeNs: result.selectedRangeNs,
                     insertTextNs: result.insertTextNs,

@@ -533,4 +533,5 @@ Quy tắc kèm theo khi gỡ:
   - Ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain: dù không có chữ, giờ và app của từng phím là siêu dữ liệu về cách gõ (D8).
   - `scripts/selftest/typing/run.sh` tự bật lúc chạy và khi xong trả khoá về đúng như cũ (xoá nếu trước đó không có).
   - Đo tay thì bật, đo, rồi xoá (`scripts/perf/perf-report.sh`).
+  - Mỗi dòng phím có `t_ns` (lúc `handle` bắt đầu, đồng hồ `CLOCK_UPTIME_RAW`) và `ev_ns` (thời điểm của chính sự kiện phím); `perf-report.sh` dựng từ đó khoảng cách giữa các phím và độ trễ từ lúc tạo phím tới bộ gõ, cho bài test tải nặng (`scripts/selftest/load/run.sh`).
 - Test hiệu năng engine trong CI. Bài test tải nặng: xem mốc M6 (Hiệu năng dưới tải) trong `ROADMAP.md`.

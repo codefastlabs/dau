@@ -23,6 +23,7 @@ root=${CLAUDE_PROJECT_DIR:-${0:A:h:h:h}}
 # "unless --flag" (unless the flag is given).
 typeset -A guarded=(
   [scripts/selftest/typing/run.sh]="always"
+  [scripts/selftest/load/run.sh]="unless --dry-run"
   [scripts/selftest/settings-window/run.sh]="always"
   [scripts/selftest/app-group.sh]="always"
   [scripts/research/compare-ims/run.sh]="always"

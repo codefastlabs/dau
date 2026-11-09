@@ -10,7 +10,7 @@ Thư mục theo mục đích:
 | `scripts/dev/` | cài, dọn, xem bản bộ gõ trên máy |
 | `scripts/perf/` | đọc số đo từ nhật ký |
 | `scripts/assets/` | sinh biểu tượng tạm |
-| `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu) |
+| `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu): gõ thử một câu (`typing/`), ma trận gõ khi app bận cho M6 (`load/`), cửa sổ Cài đặt, App Group |
 | `scripts/check-docs/` | kiểm tài liệu |
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
@@ -94,6 +94,6 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 
 ## Thư mục khác
 
-- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu; đếm và lọc mục của Dấu trong plist cho `scripts/dev/clean-dau.sh`) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh`, `scripts/dev/doctor.sh` và `scripts/dev/clean-dau.sh` biên dịch qua `scripts/lib/swift-tool.sh`; hưởng tác dụng phụ của script gọi nó.
-- Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift`, `scripts/check-docs/doc-check.swift`, `scripts/design/canvas-index.swift`, `scripts/research/compare-ims/cases.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
+- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu; đếm và lọc mục của Dấu trong plist cho `scripts/dev/clean-dau.sh`) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh`, `scripts/selftest/load/run.sh`, `scripts/dev/doctor.sh` và `scripts/dev/clean-dau.sh` biên dịch qua `scripts/lib/swift-tool.sh`; hưởng tác dụng phụ của script gọi nó.
+- Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift` (cả `scripts/selftest/load/run.sh` dùng), `scripts/check-docs/doc-check.swift`, `scripts/design/canvas-index.swift`, `scripts/research/compare-ims/cases.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
 - `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.

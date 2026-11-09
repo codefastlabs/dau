@@ -1,5 +1,5 @@
 // Small helper for scripts/selftest/app-group.sh, scripts/selftest/typing/run.sh,
-// scripts/dev/doctor.sh and scripts/dev/clean-dau.sh.
+// scripts/selftest/load/run.sh, scripts/dev/doctor.sh and scripts/dev/clean-dau.sh.
 //
 //   input-source current             prints the ID of the selected keyboard input source
 //   input-source select <ID>         selects an input source that is ALREADY enabled

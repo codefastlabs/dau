@@ -12,6 +12,21 @@
 # D20 reads are also counted as d20_<mark|letter>_seeded<0|1>, and diff_<0|1> counts the
 # keys of a seeded word whose result differs from an engine that never read the text.
 #
+# Gaps between keys (M6, app under load). Each key line carries t_ns (CLOCK_UPTIME_RAW when
+# the input method's handle started: the key reached the input method) and ev_ns (the
+# event's own timestamp, same clock: when the key event was made, 0 if unknown). Per app:
+#   gap_<a_lt2ms|b_2to10ms|c_10to20ms|d_ge20ms>   keys by t_ns gap to the app's previous
+#                                                  key line (gaps over 1 s are skipped:
+#                                                  another run, or a pause in typing)
+#   evgap_<same buckets>                           the same with ev_ns: how the keys were
+#                                                  sent. Even evgap with bunched gap = the
+#                                                  app held keys back and let them go together
+#   gap_<lt10|ge10>_<mismatch|resync>              mismatch and resync/resync_pass keys by
+#                                                  their t_ns gap (under/over 10 ms)
+#   lag_us                                         t_ns - ev_ns, p50/p99/max
+# Mouse clicks and shortcuts (⌘A ⌘C…) are key lines too (kind reset/commit) and count in
+# the gaps. Lines written before these fields existed parse as before and give no gap rows.
+#
 # Usage:
 #   scripts/perf/perf-report.sh                      last 1 hour, all apps
 #   scripts/perf/perf-report.sh --last 10m           any `log show --last` value
@@ -83,6 +98,46 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
     # D20 "Thêm dấu cho từ đã gõ": attributedSubstring, and the whole key when it read.
     if (r != "" && r + 0 >= 0) print app, "attributedSubstring_us", r / 1000
     if (kind ~ /^seed/ && h != "") print app, "handle_seed_us", h / 1000
+    # Arrival times (lines from before t_ns/ev_ns existed have neither: no gap rows).
+    t = field("t_ns"); e = field("ev_ns")
+    if (t != "") {
+      timed[app] = 1
+      if (app in last_t) {
+        gap = (t - last_t[app]) / 1e6
+        # Over 1 s: another run, or a word typed after a pause; not a gap between keys.
+        if (gap >= 0 && gap <= 1000) {
+          print app, "gap_" bucket(gap), 1
+          bad = (kind == "mismatch") ? "mismatch" : (kind ~ /^resync/ ? "resync" : "")
+          if (bad != "") print app, (gap < 10 ? "gap_lt10_" : "gap_ge10_") bad, 1
+        }
+      }
+      last_t[app] = t
+      if (e != "" && e + 0 > 0) {
+        lag = (t - e) / 1000
+        if (lag >= 0) print app, "lag_us", lag
+        if (app in last_e) {
+          gap = (e - last_e[app]) / 1e6
+          if (gap >= 0 && gap <= 1000) print app, "evgap_" bucket(gap), 1
+        }
+        last_e[app] = e
+      }
+    }
+  }
+  function bucket(ms) {
+    if (ms < 2) return "a_lt2ms"
+    if (ms < 10) return "b_2to10ms"
+    if (ms < 20) return "c_10to20ms"
+    return "d_ge20ms"
+  }
+  END {
+    # Every bucket for every app with arrival times, zero included, so readers of the
+    # report (scripts/selftest/load/run.sh) always find the four rows.
+    split("a_lt2ms b_2to10ms c_10to20ms d_ge20ms", names, " ")
+    for (app in timed) {
+      for (k = 1; k <= 4; k++) { print app, "gap_" names[k], 0; print app, "evgap_" names[k], 0 }
+      print app, "gap_lt10_mismatch", 0; print app, "gap_lt10_resync", 0
+      print app, "gap_ge10_mismatch", 0; print app, "gap_ge10_resync", 0
+    }
   }
   / event name=/ {
     app = field("app"); name = field("name")
@@ -109,8 +164,8 @@ echo "Đơn vị: µs. p50/p99 theo hạng gần nhất (nearest rank). n = số
 awk '
   function flush(   i50, i99) {
     if (n == 0) return
-    if (metric ~ /^(count_|event_|d20_|diff_)/) {
-      printf "  %-22s %8d\n", metric, n
+    if (metric ~ /^(count_|event_|d20_|diff_|gap_|evgap_)/) {
+      printf "  %-22s %8d\n", metric, sum
     } else {
       i50 = int((50 * n + 99) / 100); if (i50 < 1) i50 = 1
       i99 = int((99 * n + 99) / 100); if (i99 < 1) i99 = 1
@@ -119,11 +174,11 @@ awk '
   }
   {
     if ($1 != app) {
-      flush(); n = 0; metric = ""
+      flush(); n = 0; sum = 0; metric = ""
       app = $1; printf "\n%s\n", app
     }
-    if ($2 != metric) { flush(); n = 0; metric = $2 }
-    n++; v[n] = $3
+    if ($2 != metric) { flush(); n = 0; sum = 0; metric = $2 }
+    n++; v[n] = $3; sum += $3
   }
   END { flush() }
 ' "$TMP"

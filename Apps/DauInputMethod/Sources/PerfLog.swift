@@ -1,7 +1,8 @@
 import Foundation
 import os
 
-/// Timing of one key, for the open question A/B (cost of `selectedRange` per app).
+/// Timing of one key, for the open question A/B (cost of `selectedRange` per app), and
+/// when it arrived (`t_ns`, `ev_ns`), for the gaps between keys under load (M6).
 ///
 /// D8: only numbers, a fixed event kind and the client's bundle ID are logged. Never the
 /// characters typed, the engine output or any text read from the client.
@@ -78,19 +79,33 @@ struct PerfLog {
         clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
     }
 
+    /// `NSEvent.timestamp` (seconds since boot, the same uptime clock as `now()`) in ns,
+    /// or 0 when IMK passed something that is not a usable time (D18: never trap on a
+    /// negative, NaN or huge value).
+    static func eventNs(_ timestamp: TimeInterval) -> UInt64 {
+        guard timestamp.isFinite, timestamp > 0, timestamp < 1e9 else { return 0 }
+        return UInt64(timestamp * 1e9)
+    }
+
     /// - Parameters:
+    ///   - startNs: `now()` when `handle` started (`t_ns`): when the key reached the input
+    ///     method. Gaps between keys, and `t_ns - ev_ns` (time from the event's creation
+    ///     to the input method), tell keys a busy app delivered in a burst from keys sent
+    ///     close together (scripts/perf/perf-report.sh).
+    ///   - eventNs: the event's own time (`ev_ns`, `eventNs(_:)`), 0 if unknown.
     ///   - selectedRangeNs: duration of the `selectedRange()` call, or -1 if not called.
     ///   - insertTextNs: duration of the `insertText` call (or, for `mark`, of the
     ///     `setMarkedText` call), or -1 if not called.
     ///   - readNs: duration of the `attributedSubstring` call (D20), or -1 if not called.
     ///   - extra: D20 fields, each with a leading space (` d20=letter seeded=1 diff=0`);
     ///     only numbers and fixed words, never text (D8).
-    func record(_ kind: Kind, handleNs: UInt64, selectedRangeNs: Int64, insertTextNs: Int64,
+    func record(_ kind: Kind, startNs: UInt64, eventNs: UInt64, handleNs: UInt64,
+                selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, extra: String = "", app: String) {
         #if DEBUG
         guard enabled else { return }
         PerfLog.logger.notice(
-            "key kind=\(kind.rawValue, privacy: .public) handle_ns=\(handleNs, privacy: .public) sel_ns=\(selectedRangeNs, privacy: .public) ins_ns=\(insertTextNs, privacy: .public) read_ns=\(readNs, privacy: .public) app=\(app, privacy: .public)\(extra, privacy: .public)"
+            "key kind=\(kind.rawValue, privacy: .public) t_ns=\(startNs, privacy: .public) ev_ns=\(eventNs, privacy: .public) handle_ns=\(handleNs, privacy: .public) sel_ns=\(selectedRangeNs, privacy: .public) ins_ns=\(insertTextNs, privacy: .public) read_ns=\(readNs, privacy: .public) app=\(app, privacy: .public)\(extra, privacy: .public)"
         )
         #endif
     }
