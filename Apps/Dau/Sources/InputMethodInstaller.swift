@@ -14,7 +14,7 @@ import os
 // - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
 //   process (D37, M5-INSTALL.md section 8.1b);
 // - `InputSourceCaches`: the input source list cache of every app (D37, M5-INSTALL.md
-//   section 0 (b)10, (d)10, section 8.1b round E).
+//   section 9.10, section 10.10, section 8.1b round E).
 //
 // N4: install copies Dấu's own files; enable and uninstall run only from a button the
 // user clicked ("Bật Dấu", "Bật lại", "Tiếp tục gỡ"); upgrade replaces Dấu's own bundle
@@ -121,7 +121,7 @@ struct InputSourceCacheCounts: Equatable, Sendable {
 }
 
 /// The input source list caches of every app (D37; docs/research/M5-INSTALL.md section 0
-/// (b)10, (d)10, section 8.1b round E). Each sandboxed app (System Settings' Keyboard
+/// section 9.10, section 10.10, section 8.1b round E). Each sandboxed app (System Settings' Keyboard
 /// extension too) keeps `com.apple.IntlDataCache.le*` in its own folder of the user cache
 /// folder and uses it as is, even after a relaunch; a missing cache is rebuilt from disk
 /// at the next `TISRegisterInputSource`. The shared cache in the folder's root refreshes
@@ -368,7 +368,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     ///
     /// Heuristic on an undocumented format: a cache that lists the input method is taken
     /// to contain its path, ".../Input Methods/DauInputMethod.app", as UTF-8
-    /// (M5-INSTALL.md section 0 (b)10 found the bundle name in rebuilt caches; the exact
+    /// (M5-INSTALL.md section 9.10 found the bundle name in rebuilt caches; the exact
     /// bytes are not documented and may change).
     private func refreshStaleCaches() {
         let url = files.installedURL
