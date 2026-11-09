@@ -12,12 +12,16 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: chọn hướng tiếp cho lỗi thay tại chỗ khi Chrome bận (nhật ký 09/11, chuỗi thử có sửa dấu).
+Chờ người dùng: không có. Việc tiếp theo: bước 1a của kế hoạch M6.
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
-   - Đã đo (nhật ký 09/11): thay tại chỗ sai 8/9 lượt với chuỗi Telex thứ tự chuẩn, 5/6 với chuỗi có sửa dấu (cả bản Release); gạch chân đúng 9/9 (chuỗi thứ tự chuẩn).
-   - Còn: sửa độ bền của thay chữ tại chỗ (lần thay đầu của một từ, nhánh đọc lại chữ của D11 (Kiểm tra ngữ cảnh)) rồi đo lại bằng chuỗi có sửa dấu; tìm vì sao đối chứng Telex của Apple không biến đổi chữ; rồi người dùng quyết D13.
+   - Đã đo (nhật ký 09/11): thay tại chỗ sai 8/9 lượt với chuỗi Telex thứ tự chuẩn, 5/6 với chuỗi có sửa dấu (cả bản Release). Gạch chân đúng 9/9, mới đo với chuỗi thứ tự chuẩn.
+   - Đã rõ: kiểu sai (a), lần thay đầu của một từ dùng vị trí con trỏ cũ. Chưa rõ: kiểu sai (b), nhánh đọc lại chữ của D11 (Kiểm tra ngữ cảnh) vẫn ra từ sai, có chỗ con trỏ đi trước vị trí chờ đợi.
+   - 1a. Không chiếm màn hình: tìm vì sao đối chứng Telex của Apple ra nguyên chuỗi phím (nhật ký 09/11).
+   - 1b. Một lượt đo, khoảng 15 phút, trên máy đang dùng (log `build/` không mang giữa các máy): Dấu Debug `load/run.sh --text edit --apps chrome --loads "idle busy" --reps 3` (12 ô, cả thay tại chỗ và gạch chân); Dấu Release và Telex của Apple bằng `typing/run.sh --busy 300:1000 --delay 100 --jitter 30 --keys "$(scripts/selftest/load/run.sh --text edit --print keys)"` (Apple thêm `--source`; đáp án của Apple là chữ Apple gõ khi trang rảnh). Cài lại bản Release trong lượt.
+   - 1c. Từ log của 1b, hiểu kiểu (b); sửa độ bền của thay tại chỗ (giao imk-dev). Cách sửa phải nới N3 (Ít lời gọi vào ứng dụng đích) thì hỏi người dùng trước khi đổi `DECISIONS.md`.
+   - 1d. Đo lại như 1b; rồi người dùng quyết D13. Gạch chân là đường lui, chỉ bàn khi sửa không đạt.
 2. Bài tải nặng theo `docs/ROADMAP.md` mục M6.
 3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
 4. Chốt ngưỡng và D12 (Ưu tiên tiến trình) vào `DECISIONS.md` theo số đo (người dùng duyệt).
