@@ -30,6 +30,8 @@
 #      writes ANSI color codes or the "==>" step mark (scripts/README.md, "Đầu ra");
 #   8. hook table: every script whose "# Side effects:" line holds a disturbing effect is
 #      named in .claude/hooks/guard-scripts.sh, so the hook cannot silently miss one.
+#   9. every folder under scripts/ that git tracks has a row in the folder table of
+#      scripts/README.md.
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
 set -uo pipefail
@@ -141,6 +143,12 @@ for p in ${(f)"$(grep -oE '`(Apps|Packages|scripts|docs|\.claude)/[^` ]+`' scrip
   p=${p%/}
   [[ $p == *'*'* || $p == *'<'* || $p == *'{'* || $p == *…* ]] && continue
   [[ -e $p ]] || report "scripts/README.md: đường dẫn không tồn tại: $p"
+done
+
+# 9. Every tracked folder under scripts/ is in scripts/README.md's folder table.
+for d in ${(f)"$(git ls-files scripts | cut -d/ -f2 | sort -u)"}; do
+  [[ -d scripts/$d ]] || continue
+  [[ "$(<scripts/README.md)" == *"| \`scripts/$d/\` |"* ]] || report "scripts/README.md: thư mục scripts/$d/ chưa có dòng trong bảng thư mục"
 done
 
 # 8. Hook table: a script with a disturbing effect must be named in the hook.

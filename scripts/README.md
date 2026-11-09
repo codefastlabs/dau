@@ -15,7 +15,8 @@ Thư mục theo mục đích:
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
-| `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ) |
+| `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`) |
+| `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/ui/canvas/`) |
 
 Mỗi script tự mô tả ở phần đầu file: dòng chú thích đầu, `# Usage:` và `# Side effects:`. Không có bảng liệt kê riêng.
 
@@ -71,7 +72,7 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 | `needs admin password` | cần mật khẩu quản trị (chưa script nào cần) |
 
-"Ai chạy": `agent` chạy được khi tác dụng phụ chỉ gồm `none`, `builds`, `writes repo files`. Còn lại do người dùng chạy, và phải hỏi giờ trước (CLAUDE.md: mọi lần chạy chiếm màn hình, đổi nguồn nhập liệu hay đổi cài đặt đều hỏi trước).
+"Ai chạy": subagent chạy được khi tác dụng phụ chỉ gồm `none`, `builds`, `writes repo files`. Còn lại phiên chính chạy, sau khi người dùng chọn giờ (CLAUDE.md: mọi lần chạy chiếm màn hình, đổi nguồn nhập liệu hay đổi cài đặt đều hỏi giờ trước; hook chặn tới khi người dùng đồng ý). Riêng `clean-dau.sh --yes` (gỡ Dấu khỏi máy) do người dùng tự chạy.
 
 ## `scripts/snapshot-settings`
 

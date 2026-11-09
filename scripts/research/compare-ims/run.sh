@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Types the comparison cases with Dấu and with the macOS Vietnamese Telex input source in
 # Safari and Chrome, then scores both (docs/research/COMPETITOR-COMPARISON.md, part C).
-# Side effects: builds, takes the screen, changes input source
+# Side effects: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/research/compare-ims/run.sh [--delay MS] [dau|apple]...
 #   --delay MS   pause between keys (default 30)

@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Renders the design canvas artboards to PNG and copies their sources into docs/ui/canvas/,
 # so the approved design can be read without access to the canvas on claude.ai.
-# Side effects: builds
+# Side effects: builds, writes repo files
 #
 # Usage: scripts/design/render-canvas.sh <dir>
 #   dir   a local copy of the canvas files: <dir>/project/*.dc.html, <dir>/project/canvas.json
