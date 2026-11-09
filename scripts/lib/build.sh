@@ -20,6 +20,7 @@
 DAU_ROOT="${${(%):-%x}:A:h:h:h}"
 DAU_DERIVED="$DAU_ROOT/build/DerivedData.noindex"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "$DAU_ROOT/scripts/lib/log.sh"
 
 dau_signing_identities() {
   # find-identity -v still lists a revoked identity, tagged CSSMERR_TP_CERT_REVOKED
@@ -31,32 +32,28 @@ dau_signing_identities() {
 
 dau_require_signing_identity() {
   dau_signing_identities >/dev/null && return 0
-  cat >&2 <<EOF
-Không có chứng chỉ "Apple Development" dùng được trong keychain (thiếu, hết hạn hoặc bị
-thu hồi; scripts/dev/dau-version.sh cho biết lý do). Chọn một trong hai cách (CONTRIBUTING.md):
-
-  a) Máy Mac khác dùng cùng Apple ID đang có chứng chỉ hợp lệ: xuất nó kèm khoá riêng ra
-     .p12 ở máy đó (Keychain Access › login › My Certificates › Export), nhập ở máy này.
-  b) Tạo chứng chỉ mới cho máy này. Chứng chỉ của máy Mac kia có thể bị thu hồi. Tự chạy:
-
-     xcodegen generate && DEVELOPER_DIR=$DEVELOPER_DIR \\
-       xcodebuild -project Dau.xcodeproj -scheme DauInputMethod -configuration Release \\
-       -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex \\
-       -allowProvisioningUpdates build
-EOF
+  log_error "Không có chứng chỉ \"Apple Development\" dùng được trong keychain (thiếu, hết hạn hoặc bị thu hồi)."
+  log_hint "scripts/dev/dau-version.sh cho biết lý do. Chọn một trong hai cách (CONTRIBUTING.md):" \
+    "a) Máy Mac khác dùng cùng Apple ID đang có chứng chỉ hợp lệ: xuất nó kèm khoá riêng ra" \
+    "   .p12 ở máy đó (Keychain Access › login › My Certificates › Export), nhập ở máy này." \
+    "b) Tạo chứng chỉ mới cho máy này. Chứng chỉ của máy Mac kia có thể bị thu hồi. Tự chạy:" \
+    "   xcodegen generate && DEVELOPER_DIR=$DEVELOPER_DIR \\" \
+    "     xcodebuild -project Dau.xcodeproj -scheme DauInputMethod -configuration Release \\" \
+    "     -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex \\" \
+    "     -allowProvisioningUpdates build"
   return 1
 }
 
 dau_build() {
   local scheme="$1" config="$2"
   if ! command -v xcodegen >/dev/null 2>&1; then
-    echo "Cần XcodeGen: brew install xcodegen" >&2
+    log_error "Cần XcodeGen: brew install xcodegen"
     return 1
   fi
   dau_require_signing_identity || return 1
-  echo "==> Sinh Dau.xcodeproj"
+  log_step "Sinh Dau.xcodeproj"
   (cd "$DAU_ROOT" && xcodegen generate --quiet) || return 1
-  echo "==> Build $config universal (scheme $scheme)"
+  log_step "Build $config universal (scheme $scheme)"
   xcodebuild \
     -project "$DAU_ROOT/Dau.xcodeproj" \
     -scheme "$scheme" \

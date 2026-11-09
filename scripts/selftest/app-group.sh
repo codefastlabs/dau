@@ -34,7 +34,7 @@
 # App Group suite's synchronize() returns false even when the write goes through
 # (measured 30/10/2026: the input method and a new app process both read it back).
 #
-# Prints PASS or FAIL; exit status 0 only on PASS.
+# Ends with a "✓" verdict or a "✗" verdict plus hints (scripts/lib/log.sh); exit status 0 only on success.
 #
 # Usage: scripts/selftest/app-group.sh [--install] [--no-build]
 #   --install    install the Debug input method before the test (default: use what is installed)
@@ -48,6 +48,7 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 # shellcheck source=../lib/build.sh
 source "$ROOT/scripts/lib/build.sh"
+source "$ROOT/scripts/lib/log.sh"
 DERIVED="$DAU_DERIVED"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
@@ -64,11 +65,11 @@ for arg in "$@"; do
     --no-build) BUILD=0 ;;
     --install) INSTALL=1 ;;
     -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-    *) echo "Tham số không hợp lệ: $arg (dùng --install, --no-build)" >&2; exit 2 ;;
+    *) log_die 2 "Tham số không hợp lệ: $arg (dùng --install, --no-build)" ;;
   esac
 done
 
-fail() { echo "FAIL: $*"; exit 1; }   # the EXIT trap restores the source and the setting
+fail() { log_error "$*"; exit 1; }   # the EXIT trap restores the source and the setting
 
 ORIGINAL_SOURCE=""
 restore_source() {
@@ -76,7 +77,7 @@ restore_source() {
   local now
   now="$("$HELPER" current 2>/dev/null || true)"
   if [[ "$now" != "$ORIGINAL_SOURCE" ]]; then
-    "$HELPER" select "$ORIGINAL_SOURCE" && echo "    đã trả lại nguồn nhập liệu $ORIGINAL_SOURCE"
+    "$HELPER" select "$ORIGINAL_SOURCE" && log_detail "đã trả lại nguồn nhập liệu $ORIGINAL_SOURCE"
   fi
   ORIGINAL_SOURCE=""
 }
@@ -88,9 +89,9 @@ restore_typing_method() {
   local method="$PREVIOUS_METHOD"
   PREVIOUS_METHOD=""
   if "$APP_BIN" --set-typing-method "$method" >/dev/null 2>&1; then
-    echo "    đã trả lại kiểu gõ $method"
+    log_detail "đã trả lại kiểu gõ $method"
   else
-    echo "    CẢNH BÁO: không trả lại được kiểu gõ $method; kiểm tra trong Cài đặt của Dấu" >&2
+    log_warn "Không trả lại được kiểu gõ $method; kiểm tra trong Cài đặt của Dấu"
   fi
 }
 cleanup() { restore_typing_method; restore_source; }
@@ -104,32 +105,33 @@ if [[ "$BUILD" == 1 ]]; then
 fi
 [[ -x "$APP_BIN" ]] || fail "không thấy $APP_BIN (chạy không có --no-build)"
 if [[ "$INSTALL" == 1 ]]; then
-  echo "==> Cài bộ gõ Debug (install-input-method.sh --no-build; bản vừa build ở trên)"
-  install_log="$("$ROOT/scripts/dev/install-input-method.sh" --no-build 2>&1)" || { echo "$install_log"; fail "install-input-method.sh"; }
-  print -r -- "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed 's/^ */    /'
+  log_step "Cài bộ gõ Debug (install-input-method.sh --no-build; bản vừa build ở trên)"
+  install_log="$("$ROOT/scripts/dev/install-input-method.sh" --no-build 2>&1)" || { print -r -- "$install_log"; fail "install-input-method.sh lỗi"; }
+  print -r -- "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed -E 's/^(✓|!|✗)? *//; s/^/    /'
 fi
 [[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/dev/install-input-method.sh)"
 commit_of() { local f="$1/Contents/Resources/BuildCommit.txt"; [[ -f "$f" ]] && cat "$f" || echo "không có mã commit"; }
 if [[ "$INSTALL" == 1 ]]; then
-  echo "==> Bộ gõ thử: bản vừa cài ($(commit_of "$IM_APP"))"
+  log_step "Bộ gõ thử: bản vừa cài ($(commit_of "$IM_APP"))"
 else
-  echo "==> Bộ gõ thử: bản ĐÃ CÀI sẵn, không cài lại (commit $(commit_of "$IM_APP"); Dau.app vừa build: $(commit_of "$PRODUCTS/Dau.app")). Muốn thử bản vừa build: thêm --install."
+  log_step "Bộ gõ thử: bản ĐÃ CÀI sẵn, không cài lại (commit $(commit_of "$IM_APP"); Dau.app vừa build: $(commit_of "$PRODUCTS/Dau.app"))"
+  log_detail "muốn thử bản vừa build: thêm --install"
 fi
 
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_APP/Contents/Info.plist")"
 SUBSYSTEM="$IM_ID"
 
-echo "==> Helper chọn nguồn nhập liệu"
+log_step "Helper chọn nguồn nhập liệu"
 mkdir -p "$(dirname "$HELPER")"
 if [[ ! -x "$HELPER" || "$HELPER_SRC" -nt "$HELPER" ]]; then
   xcrun swiftc -O -o "$HELPER" "$HELPER_SRC" || fail "biên dịch helper"
 fi
 ORIGINAL_SOURCE="$("$HELPER" current)" || fail "không đọc được nguồn nhập liệu hiện tại"
-echo "    nguồn hiện tại: $ORIGINAL_SOURCE"
+log_detail "nguồn hiện tại: $ORIGINAL_SOURCE"
 
 im_running() { pgrep -f "$IM_APP/Contents/MacOS/" >/dev/null; }
 
-echo "==> Bảo đảm bộ gõ đang chạy"
+log_step "Bảo đảm bộ gõ đang chạy"
 for _ in 1 2 3 4; do im_running && break; sleep 0.5; done
 if ! im_running; then
   # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
@@ -144,18 +146,18 @@ if ! im_running; then
   # input method once and did nothing the next time (TIS treats it as no change). The
   # fallback asks LaunchServices to launch the bundle in the background, which is how
   # macOS starts it anyway; no input source is touched.
-  echo "    bộ gõ chưa chạy: chọn lại $DAU_SOURCE"
+  log_detail "bộ gõ chưa chạy: chọn lại $DAU_SOURCE"
   "$HELPER" select "$DAU_SOURCE" || fail "không chọn được $DAU_SOURCE"
   for _ in $(seq 1 12); do im_running && break; sleep 0.25; done
   if ! im_running; then
-    echo "    chọn lại không đủ: mở bộ gõ bằng LaunchServices (open -g -j)"
+    log_detail "chọn lại không đủ: mở bộ gõ bằng LaunchServices (open -g -j)"
     open -g -j "$IM_APP" || fail "open $IM_APP"
     for _ in $(seq 1 20); do im_running && break; sleep 0.25; done
   fi
 fi
 im_running || fail "bộ gõ vẫn chưa chạy sau khi chọn nguồn Dấu"
 IM_PID="$(pgrep -f "$IM_APP/Contents/MacOS/" | head -1)"
-echo "    bộ gõ đang chạy (pid $IM_PID)"
+log_detail "bộ gõ đang chạy (pid $IM_PID)"
 # The Debug input method starts observing right after its event=settings-loaded line.
 loaded=0
 for _ in $(seq 1 30); do
@@ -167,7 +169,7 @@ for _ in $(seq 1 30); do
   sleep 0.5
 done
 [[ "$loaded" == 1 ]] || fail "bộ gõ (pid $IM_PID) chưa nạp cài đặt sau 15 giây"
-echo "    bộ gõ đã nạp cài đặt, bắt đầu thử"
+log_detail "bộ gõ đã nạp cài đặt, bắt đầu thử"
 
 # Prints the settings log lines of the input method since $1 ("YYYY-MM-DD HH:MM:SS").
 im_settings_log() {
@@ -183,52 +185,52 @@ explain() {
     'process == "containermanagerd" OR process == "cfprefsd" OR (process == "kernel" AND eventMessage CONTAINS "Group Containers")' \
     2>/dev/null | grep -E 'REJECTED|rejecting write|deny\(1\) file-write-data .*Group Containers' | sed 's/^/      /' | head -6)"
   if [[ -n "$why" ]]; then
-    echo "    Nhật ký hệ thống:"
-    print -r -- "$why"
+    log_hint "Nhật ký hệ thống:"
+    log_hint "${(@f)why}"
   fi
 }
 
 PASS=1
 VNI_OK=0
 for method in vni telex; do
-  echo "==> Dau --set-typing-method $method"
+  log_step "Dau --set-typing-method $method"
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   out="$("$APP_BIN" --set-typing-method "$method" 2>&1)"
   rc=$?   # not "status": read-only in zsh
-  print -r -- "    app: $out"
-  [[ $rc == 0 ]] || { echo "    app thoát với mã $rc"; PASS=0; }
+  log_detail "app: $out"
+  [[ $rc == 0 ]] || { log_error "app thoát với mã $rc"; PASS=0; }
   if [[ "$method" == vni ]]; then
     prev="$(print -r -- "$out" | sed -n 's/.*previous=\([A-Za-z0-9]*\).*/\1/p' | head -1)"
     case "$prev" in
-      telex|vni|simpleTelex) PREVIOUS_METHOD="$prev"; echo "    kiểu gõ trước khi thử: $prev (sẽ được trả lại ở cuối)" ;;
-      *) echo "    CẢNH BÁO: không đọc được previous= từ app; kiểu gõ trước đó sẽ không được trả lại" ;;
+      telex|vni|simpleTelex) PREVIOUS_METHOD="$prev"; log_detail "kiểu gõ trước khi thử: $prev (sẽ được trả lại ở cuối)" ;;
+      *) log_warn "Không đọc được previous= từ app; kiểu gõ trước đó sẽ không được trả lại" ;;
     esac
   fi
   sleep "$WAIT_SECONDS"
   lines="$(im_settings_log "$start")"
-  echo "    bộ gõ:"
-  if [[ -n "$lines" ]]; then print -r -- "$lines" | sed 's/^.*\] /      /'; else echo "      (không có dòng nào)"; fi
+  log_detail "bộ gõ:"
+  if [[ -n "$lines" ]]; then print -r -- "$lines" | sed 's/^.*\] /        /'; else log_detail "  (không có dòng nào)"; fi
   if [[ "$out" == *"synchronize=failed"* ]]; then
-    echo "    ghi chú: synchronize() trả về false (không phải lỗi, xem đầu script)"
+    log_detail "ghi chú: synchronize() trả về false (không phải lỗi, xem đầu script)"
   fi
   if [[ "$method" == telex ]]; then
     if [[ "$out" == *"previous=vni "* ]]; then
-      echo "    OK: tiến trình app mới đọc lại được vni"
+      log_ok "Tiến trình app mới đọc lại được vni"
     else
-      echo "    LỖI: tiến trình app mới không đọc lại được vni (giá trị không được lưu)"
+      log_error "Tiến trình app mới không đọc lại được vni (giá trị không được lưu)"
       PASS=0
     fi
   fi
   if print -r -- "$lines" | grep -q "event=settings-reloaded .*typingMethod=$method"; then
     if [[ "$method" == telex && "$VNI_OK" == 0 ]]; then
-      echo "    bộ gõ đọc typingMethod=telex, nhưng telex cũng là mặc định khi không đọc được store: không phải bằng chứng"
+      log_error "Bộ gõ đọc typingMethod=telex, nhưng telex cũng là mặc định khi không đọc được store: không phải bằng chứng"
       PASS=0
     else
-      echo "    OK: bộ gõ đọc được typingMethod=$method"
+      log_ok "Bộ gõ đọc được typingMethod=$method"
       [[ "$method" == vni ]] && VNI_OK=1
     fi
   else
-    echo "    LỖI: bộ gõ không đọc được typingMethod=$method"
+    log_error "Bộ gõ không đọc được typingMethod=$method"
     PASS=0
     explain "$start"
   fi
@@ -236,17 +238,15 @@ done
 
 restore_typing_method
 restore_source
-echo
 if [[ "$PASS" == 1 ]]; then
-  echo "PASS: app chủ và bộ gõ dùng chung cài đặt qua App Group"
+  log_ok "App chủ và bộ gõ dùng chung cài đặt qua App Group"
+  log_done
   exit 0
 fi
-cat <<'EOF'
-FAIL: bộ gõ không nhận được cài đặt app chủ vừa lưu.
-  - Nếu nhật ký có "REJECTED … should be prefixed by requestor's team ID" hoặc
-    "rejecting write": bản ký ad-hoc (không có Team ID) không được dùng App Group trên
-    macOS này; cần Team ID (DEVELOPMENT_TEAM trong Config/Signing.xcconfig hoặc Config/Local.xcconfig).
-  - Nếu macOS hiện hộp thoại hỏi cho "Dấu" truy cập dữ liệu của ứng dụng khác: script
-    không bấm được. Bấm "Cho phép" (Allow) rồi chạy lại script.
-EOF
+log_error "Bộ gõ không nhận được cài đặt app chủ vừa lưu."
+log_hint "- Nếu nhật ký có \"REJECTED … should be prefixed by requestor's team ID\" hoặc" \
+  "  \"rejecting write\": bản ký ad-hoc (không có Team ID) không được dùng App Group trên" \
+  "  macOS này; cần Team ID (DEVELOPMENT_TEAM trong Config/Signing.xcconfig hoặc Config/Local.xcconfig)." \
+  "- Nếu macOS hiện hộp thoại hỏi cho \"Dấu\" truy cập dữ liệu của ứng dụng khác: script" \
+  "  không bấm được. Bấm \"Cho phép\" (Allow) rồi chạy lại script."
 exit 1

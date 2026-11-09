@@ -19,6 +19,7 @@
 # docs/research/external-test-inputs/NOTICE.md.
 set -euo pipefail
 here=${0:A:h}
+source "${0:A:h:h:h}/lib/log.sh"
 base=${EXT_IME_DIR:-/tmp/ext-ime}
 mkdir -p $base
 
@@ -49,7 +50,7 @@ fetch() {
 }
 
 for name url sha in $sources; do
-  print -r -- "== $name $sha"
+  log_step "$name $sha"
   fetch $name $url $sha
 done
 
@@ -62,4 +63,5 @@ py manual.py        $base/ibus-bamboo   # also bamboo-core and goxkey (transcrib
 py gonhanh.py       $base/gonhanh.org
 py uvie.py          $base/uvie-rs
 py xkey.py          $base/xkey
-print "Done. Compare with the committed inputs: git diff --stat docs/research/external-test-inputs"
+log_done
+log_hint "So với bản đã commit: git diff --stat docs/research/external-test-inputs"

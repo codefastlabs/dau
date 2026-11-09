@@ -15,6 +15,7 @@
 # Reads only; changes nothing.
 set -u
 root=${0:A:h:h:h}
+source "${0:A:h:h}/lib/log.sh"
 im="$HOME/Library/Input Methods/DauInputMethod.app"
 app="$root/build/DerivedData.noindex/Build/Products/Debug/Dau.app"
 host="/Applications/Dau.app"
@@ -24,13 +25,14 @@ commit_of() { # bundle
   if [[ -f $f ]]; then print -r -- "$(<"$f")"; else print -r -- "(không có mã commit)"; fi
 }
 
-stale_note() { # bundle reinstall-command -> a line when the bundle was built from another commit
+stale_note() { # bundle label reinstall-command -> a warning when the bundle was built from another commit
   local f="$1/Contents/Resources/BuildCommit.txt" built
   [[ -f $f && -n $head ]] || return 0
   built=$(<"$f")
   # Compare commits only: "+" (uncommitted changes) on either side says nothing either way.
   [[ ${built%+} == ${head%+} ]] && return 0
-  print -r -- "  khác repo:       cài lại bằng $2"
+  log_warn "$2 ($built) khác repo ($head)"
+  log_hint "cài lại bằng $3"
 }
 
 signature_of() { # bundle -> "hợp lệ, Team X" or the codesign error
@@ -50,14 +52,14 @@ print -r -- "Repo:              $head"
 
 if [[ -d $im ]]; then
   print -r -- "Bộ gõ đã cài:      $(commit_of "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
-  stale_note "$im" "scripts/dev/install-input-method.sh (hoặc install-app.sh --with-input-method)"
+  stale_note "$im" "Bộ gõ đã cài" "scripts/dev/install-input-method.sh (hoặc install-app.sh --with-input-method)"
   print -r -- "  chữ ký:          $(signature_of "$im")"
 else
   print -r -- "Bộ gõ đã cài:      chưa cài"
 fi
 if [[ -d $host ]]; then
   print -r -- "Dấu.app (/Applications): $(commit_of "$host")"
-  stale_note "$host" "scripts/dev/install-app.sh"
+  stale_note "$host" "Dấu.app" "scripts/dev/install-app.sh"
   print -r -- "  chữ ký:          $(signature_of "$host")"
 fi
 [[ -d $app ]] && print -r -- "Dấu.app (Debug):   $(commit_of "$app")"
@@ -86,6 +88,8 @@ elif [[ -d $im ]]; then
   elif (( started >= written )); then
     print -r -- "Tiến trình bộ gõ:  pid $pid, chạy bản đã cài"
   else
-    print -r -- "Tiến trình bộ gõ:  pid $pid, đang chạy bản CŨ — chuyển nguồn nhập liệu ra rồi vào lại Dấu"
+    print -r -- "Tiến trình bộ gõ:  pid $pid, đang chạy bản CŨ"
+    log_warn "Tiến trình bộ gõ đang chạy bản CŨ (khởi động trước lúc bản đã cài được ghi)"
+    log_hint "chuyển nguồn nhập liệu ra rồi vào lại Dấu"
   fi
 fi

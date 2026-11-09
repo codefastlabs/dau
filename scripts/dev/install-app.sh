@@ -18,6 +18,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# shellcheck source=../lib/log.sh
+source "$ROOT/scripts/lib/log.sh"
 # shellcheck source=../lib/build.sh
 source "$ROOT/scripts/lib/build.sh"
 DERIVED="$DAU_DERIVED"
@@ -31,7 +33,7 @@ for arg in "$@"; do
     --debug) CONFIG=Debug ;;
     --with-input-method) WITH_IM=1 ;;
     -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-    *) echo "Tham số không hợp lệ: $arg (dùng --debug, --with-input-method hoặc không có tham số)" >&2; exit 2 ;;
+    *) log_die 2 "Tham số không hợp lệ: $arg (dùng --debug, --with-input-method hoặc không có tham số)" ;;
   esac
 done
 
@@ -47,9 +49,10 @@ fi
 dau_build Dau "$CONFIG" || exit 1
 
 APP="$DERIVED/Build/Products/$CONFIG/Dau.app"
-[[ -d "$APP" ]] || { echo "Không thấy $APP sau khi build." >&2; exit 1; }
+[[ -d "$APP" ]] || log_die "Không thấy $APP sau khi build."
 if ! codesign --verify --deep --strict "$APP" 2>/dev/null; then
-  echo "Chữ ký của $APP không hợp lệ: không cài. Xem chứng chỉ \"Apple Development\" trong Keychain Access (CONTRIBUTING.md)." >&2
+  log_error "Chữ ký của $APP không hợp lệ: không cài."
+  log_hint "Xem chứng chỉ \"Apple Development\" trong Keychain Access (CONTRIBUTING.md)."
   exit 1
 fi
 BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Contents/Info.plist")
@@ -58,30 +61,32 @@ BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Content
 was_running=0
 if pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; then
   was_running=1
-  echo "==> Thoát Dấu.app đang chạy"
+  log_step "Thoát Dấu.app đang chạy"
   osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true
   for _ in {1..50}; do
     pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1 || break
     sleep 0.2
   done
   if pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; then
-    echo "Dấu.app chưa thoát sau 10 giây: không cài. Thoát app rồi chạy lại." >&2
+    log_error "Dấu.app chưa thoát sau 10 giây: không cài."
+    log_hint "Thoát app rồi chạy lại."
     exit 1
   fi
 fi
 
 if [[ -e "$DEST" ]]; then
-  echo "==> Chuyển bản cũ vào Thùng rác"
+  log_step "Chuyển bản cũ vào Thùng rác"
   osascript -e "tell application \"Finder\" to delete POSIX file \"$DEST\"" >/dev/null
 fi
-echo "==> Chép vào $DEST và đăng ký với LaunchServices"
+log_step "Chép vào $DEST và đăng ký với LaunchServices"
 ditto "$APP" "$DEST"
 "$LSREGISTER" -f "$DEST"
 
 if [[ "$was_running" == 1 ]]; then
-  echo "==> Mở lại Dấu.app"
+  log_step "Mở lại Dấu.app"
   open "$DEST"
 fi
 
-echo
+log_step "Phiên bản đã cài"
 "$ROOT/scripts/dev/dau-version.sh"
+log_done "Đã cài Dấu.app"

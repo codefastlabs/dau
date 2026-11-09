@@ -29,6 +29,7 @@ Thư mục theo mục đích:
 | `scripts/assets/make-app-icon.sh` | Sinh lại biểu tượng app tạm (SVG và iconset). | writes repo files | agent | chạy tay; `project.yml` (chú thích) |
 | `scripts/assets/make-mode-icons.sh` | Sinh lại biểu tượng chế độ gõ "V" tạm của bộ gõ. | writes repo files | agent | chạy tay; `Apps/DauInputMethod/Info.plist` (chú thích) |
 | `scripts/lib/build.sh` | Bước build dùng chung (nạp bằng `source`, không chạy riêng): dừng sớm khi keychain không có chứng chỉ "Apple Development" dùng được và in hai cách sửa; `xcodegen` rồi `xcodebuild` universal vào `build/DerivedData.noindex`. Không bao giờ truyền `-allowProvisioningUpdates` (có thể thu hồi chứng chỉ của máy Mac khác), chỉ in lệnh để người dùng tự chạy. Bước kiểm bản build ở lại script gọi. | builds | agent | `scripts/dev/install-input-method.sh`, `scripts/dev/install-app.sh`, `scripts/selftest/app-group.sh`; `scripts/probe/build-tools.sh` và `scripts/probe/make-variants.sh` (chỉ `dau_signing_identities`) |
+| `scripts/lib/log.sh` | Đầu ra dùng chung (nạp bằng `source`, không chạy riêng): bước, chi tiết, đạt, cảnh báo, lỗi, câu hỏi, dòng kết thúc kèm thời gian; quy ước ở mục "Đầu ra". | none | agent | mọi script `.sh` trong `scripts/` và `.claude/hooks/` |
 | `scripts/dev/install-input-method.sh` | Build và cài bộ gõ vào `~/Library/Input Methods`, dừng tiến trình cũ. Với `--build-only` chỉ build (tác dụng phụ: builds, agent chạy được). | builds, installs input method, kills processes | người dùng, hỏi giờ trước | CLAUDE.md, README.md, CONTRIBUTING.md, docs/COMPATIBILITY.md, `scripts/dev/install-app.sh` (`--with-input-method`), `scripts/selftest/app-group.sh` (`--install`), `scripts/probe/make-variants.sh` (`--build-only --release`) |
 | `scripts/dev/install-app.sh` | Build Dấu.app (Release, hoặc `--debug`) và cài vào `/Applications`: bản cũ vào Thùng rác qua Finder, chép bằng `ditto`, đăng ký với LaunchServices; Dấu.app đang chạy thì thoát bình thường rồi mở lại. `--with-input-method` chạy thêm `install-input-method.sh` cùng cấu hình. | builds, installs app, kills processes, deletes data | người dùng, hỏi giờ trước | CLAUDE.md |
 | `scripts/selftest/app-group.sh` | Thử không cần gõ: cài đặt app chủ lưu có tới được bộ gõ qua App Group không. Chỉ có `--install` mới cài bộ gõ và dừng tiến trình. | builds, changes input source, changes user settings (và với `--install`: installs input method, kills processes) | người dùng, hỏi giờ trước | docs/ARCHITECTURE.md, docs/research/M5-INSTALL.md |
@@ -41,6 +42,38 @@ Thư mục theo mục đích:
 | `scripts/probe/cleanup.sh` | Liệt kê biến thể `DauProbe` đã cài, đăng ký LaunchServices, mục trong `com.apple.inputsources`, tiến trình, và thư mục macOS tạo cho các app thử có sandbox (container, Application Scripts, thư mục cache); với `--yes` thì gỡ (dừng nếu mục còn trong `com.apple.inputsources`), container vào Thùng rác qua Finder; với `--trash` thì xoá hẳn khỏi Thùng rác chỉ các bản thử (hỏi lại, cần Full Disk Access). Không tham số thì chỉ đọc (none, agent chạy được). | kills processes, deletes data, needs admin password (chỉ với `--yes`); deletes data (`--trash`) | người dùng, hỏi giờ trước | docs/research/M5-INSTALL.md (mục 8.2) |
 | `scripts/research/external-tests/extract.sh` | Lấy 10 bộ gõ khác ở commit đã ghim (mạng, vào `/tmp/ext-ime/`), đọc file test của họ bằng các helper Python cùng thư mục (`python3 -I`), ghi lại các TSV chuỗi phím trong `docs/research/external-test-inputs/` (ra đúng từng byte bản đã commit), đáp án của họ vào `build/external-answers/` và số đếm vào `build/external-tests-stats/`. Không build hay chạy gì của các bản clone. Helper `answer_stats.py` (chạy riêng, chỉ đọc) in số đếm cho mục 6 của tài liệu. | writes repo files | agent | docs/research/EXTERNAL-TEST-INPUTS.md, `docs/research/external-test-inputs/NOTICE.md` |
 | `scripts/research/external-tests/compare.sh` | So đầu ra của Dấu (`build/external-dau-output/`, do `ExternalCasesTests` của engine ghi) với đáp án của họ (`build/external-answers/`) theo từng ca của `docs/research/external-test-inputs/`: ghép theo `id`, chuẩn hoá theo `their_note`, so ở dạng NFC, ghi `build/external-review/<nguồn>.tsv` và in hai bảng đếm của mục 9.2 tài liệu. Ca khác nhau giữ lớp A–E, X của lần xét trước nếu phím, đầu ra và đáp án không đổi, còn lại ghi `unreviewed`; `--set FILE` áp lớp xếp tay. Helper `compare.py` cùng thư mục (`python3 -I`). Chỉ ghi vào `build/` (git bỏ qua), không biên dịch gì. | builds | agent | docs/research/EXTERNAL-TEST-INPUTS.md |
+
+## Đầu ra
+
+Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/lib/log.sh` (nạp bằng `source`), để mọi script trông như nhau:
+
+```
+==> Build Release universal (scheme Dau)
+    kiến trúc: arm64 x86_64
+✓ Chữ ký hợp lệ, không có quyền mạng (N2)
+! Bộ gõ đã cài (fa954b8) khác repo (416eddd)
+    cài lại: scripts/dev/install-input-method.sh
+✗ Bản build không phải universal (D1)
+==> Xong · 2 phút 14 giây
+```
+
+| Hàm | Dấu | Luồng | Dùng khi |
+|---|---|---|---|
+| `log_step` | `==>` | stdout | bắt đầu một bước |
+| `log_detail` | 4 dấu cách | stdout | chi tiết của bước đang chạy |
+| `log_ok` | `✓` | stdout | một điều kiện đạt |
+| `log_warn` | `!` | stderr | có điều cần xem, script chạy tiếp |
+| `log_error` | `✗` | stderr | lỗi; script gọi tự quyết dừng hay không |
+| `log_hint` | 4 dấu cách | stderr | cách xử lý cảnh báo hay lỗi ngay trên |
+| `log_die` | `✗` | stderr | lỗi rồi thoát (mã mặc định 1) |
+| `log_ask` | `?` | stderr | câu hỏi trước `read` |
+| `log_done` | `==>` | stdout | dòng cuối của script chạy xong, kèm thời gian từ lúc bắt đầu |
+
+- Mã thoát: 0 đạt; 1 lỗi hoặc kiểm không đạt; 2 gọi sai (tham số lạ, hai cờ không đi cùng nhau). Riêng hook `.claude/hooks/guard-scripts.sh` thoát 2 để chặn lệnh, theo quy ước hook của Claude Code.
+- Màu chỉ có khi luồng đó là terminal; `NO_COLOR=1` tắt màu. Ghi ra file thì còn dấu, không có mã màu, nên vẫn grep được.
+- Tên kỹ thuật (đường dẫn, lệnh, cờ, khoá, bundle ID, số D/N) giữ nguyên trong câu tiếng Việt.
+- Không đi qua `log.sh`: dữ liệu cho máy đọc hay để so (TSV, JSON, nhật ký bước của `step.sh`, bảng số của `perf-report.sh`, các dòng `dau-version.sh` in theo cột); đầu ra của công cụ Swift mà script đọc lại; đầu ra của lệnh khác (`xcodebuild`, `git`, `codesign`).
+- Chỉ `log.sh` được viết mã màu ANSI và dấu `==>` (`scripts/check-docs/check.sh` kiểm).
 
 ## Chú giải tác dụng phụ
 

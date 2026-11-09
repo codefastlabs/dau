@@ -26,11 +26,16 @@ blocked=()
 for seg in ${(f)"$(print -r -- $cmd | perl -pe 's/&&|\|\||[;|&()]/\n/g')"}; do
   words=(${(Q)${(z)seg}})
   # Skip VAR=value assignments, runner words and the runner's own options.
+  # A shell's -n only parses the script (syntax check): not a run.
+  syntax_only=0
   while (( $#words )) && [[ $words[1] == [A-Za-z_][A-Za-z0-9_]#=* || ${runners[(Ie)$words[1]]} -gt 0 ]]; do
     shift words
-    while (( $#words )) && [[ $words[1] == -* ]]; do shift words; done
+    while (( $#words )) && [[ $words[1] == -* ]]; do
+      [[ $words[1] == -[a-z]#n[a-z]# ]] && syntax_only=1
+      shift words
+    done
   done
-  (( $#words )) || continue
+  (( $#words && ! syntax_only )) || continue
   [[ $words[1] == (*/|)scripts/*.sh ]] || continue
   rel=scripts/${words[1]#*scripts/}
   file=$root/$rel
@@ -58,10 +63,9 @@ for seg in ${(f)"$(print -r -- $cmd | perl -pe 's/&&|\|\||[;|&()]/\n/g')"}; do
 done
 
 (( $#blocked )) || exit 0
-{
-  print -r -- "Blocked: scripts the user runs at a time they choose (scripts/README.md, column \"Ai chạy\"):"
-  print -rl -- "  "${^blocked}
-  print -r -- "Subagent: do not run it; list it under item 4 of your report."
-  print -r -- "Main session: ask the user when to run it; once they say yes in chat, rerun with the prefix DAU_USER_APPROVED=1."
-} >&2
+source "$root/scripts/lib/log.sh"
+log_error "Chặn: script người dùng tự chọn giờ chạy (scripts/README.md, cột \"Ai chạy\"):"
+log_hint "${(@)blocked}"
+log_hint "Subagent: không chạy; ghi vào mục 4 của báo cáo."
+log_hint "Phiên chính: hỏi người dùng giờ chạy; khi họ đồng ý trong chat, chạy lại với tiền tố DAU_USER_APPROVED=1."
 exit 2

@@ -27,6 +27,7 @@
 # changes com.apple.inputsources (macOS lets only System Settings write it): the entries go with "–".
 set -u
 setopt null_glob
+source "${0:A:h:h}/lib/log.sh"
 
 DO=0
 TRASH=0
@@ -35,7 +36,7 @@ case "${1:-}" in
   --yes) DO=1 ;;
   --trash) TRASH=1 ;;
   -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-  *) print -u2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá, --trash để xoá hẳn khỏi Thùng rác)"; exit 2 ;;
+  *) log_die 2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá, --trash để xoá hẳn khỏi Thùng rác)" ;;
 esac
 
 # Names macOS gives the folders of a sandboxed app: its bundle ID.
@@ -47,28 +48,28 @@ probe_folders() { # $1: parent folder; prints matching subfolders
 }
 
 if (( TRASH )); then
-  print "Bản thử trong Thùng rác:"
+  log_step "Bản thử trong Thùng rác"
   if ! ls "$HOME/.Trash" >/dev/null 2>&1; then
-    print -u2 "  Không đọc được Thùng rác: Terminal cần quyền Full Disk Access (System Settings › Privacy & Security › Full Disk Access)."
-    print -u2 "  Hoặc mở Thùng rác trong Finder, chọn các mục tên DauProbe…, DauInputMethod…, local.probe.… và chọn Delete Immediately."
+    log_error "Không đọc được Thùng rác: Terminal cần quyền Full Disk Access (System Settings › Privacy & Security › Full Disk Access)."
+    log_hint "Hoặc mở Thùng rác trong Finder, chọn các mục tên DauProbe…, DauInputMethod…, local.probe.… và chọn Delete Immediately."
     exit 1
   fi
   items=()
   for p in "$HOME/.Trash"/DauProbe*.app(N) "$HOME/.Trash"/DauInputMethod*.app(N) "$HOME/.Trash"/local.probe.*(N) "$HOME/.Trash"/com.codefastlabs.dau.inputmethod.DauProbe*(N); do
-    items+=("$p"); print -r -- "  $p"
+    items+=("$p"); log_detail "$p"
   done
-  (( ${#items} )) || { print "  (không có)"; exit 0 }
-  print -n "\nXoá hẳn ${#items} mục này, không lấy lại được? Gõ yes: "
+  (( ${#items} )) || { log_detail "(không có)"; exit 0 }
+  log_ask "Xoá hẳn ${#items} mục này, không lấy lại được? Gõ yes:"
   read -r answer
-  [[ $answer == yes ]] || { print "Không xoá gì."; exit 0 }
+  [[ $answer == yes ]] || { log_detail "Không xoá gì."; exit 0 }
   LSREG=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
   left=0
   for p in $items; do
     [[ $p == *.app ]] && "$LSREG" -u "$p" >/dev/null 2>&1
-    if rm -rf -- "$p"; then print -r -- "  đã xoá: ${p:t}"; else print -r -- "  KHÔNG xoá được: ${p:t}"; (( left++ )); fi
+    if rm -rf -- "$p"; then log_detail "đã xoá: ${p:t}"; else log_error "KHÔNG xoá được: ${p:t}"; (( left++ )); fi
   done
-  (( left )) && { print "\nCòn $left mục: xoá trong Finder (Delete Immediately)."; exit 1 }
-  print "\nXong."
+  (( left )) && { log_hint "Còn $left mục: xoá trong Finder (Delete Immediately)."; exit 1 }
+  log_done
   exit 0
 fi
 
@@ -76,19 +77,19 @@ LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchSe
 USER_DIR="$HOME/Library/Input Methods"
 SYS_DIR="/Library/Input Methods"
 found=0
-note() { print -r -- "  $1"; found=1 }
+note() { log_detail "$1"; found=1 }
 
-print "Biến thể đã cài:"
+log_step "Biến thể đã cài"
 bundles=()
 for d in "$USER_DIR" "$SYS_DIR"; do
   for b in "$d"/DauProbe*.app; do bundles+=("$b"); note "$b"; done
 done
 
-print "Đăng ký LaunchServices (trừ bản dựng trong build/probe.noindex):"
+log_step "Đăng ký LaunchServices (trừ bản dựng trong build/probe.noindex)"
 registered=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E '^path: .*/DauProbe[A-Za-z0-9]+\.app \(0x' | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//' | grep -v '/build/probe\.noindex/' | sort -u)"})
 for r in $registered; do note "$r"; done
 
-print "Mục DauProbe trong com.apple.inputsources › AppleEnabledThirdPartyInputSources:"
+log_step "Mục DauProbe trong com.apple.inputsources › AppleEnabledThirdPartyInputSources"
 entries=$(defaults export com.apple.inputsources - 2>/dev/null | /usr/bin/python3 -I -c '
 import plistlib, sys
 data = plistlib.loads(sys.stdin.buffer.read() or plistlib.dumps({}))
@@ -98,93 +99,94 @@ for e in data.get("AppleEnabledThirdPartyInputSources", []):
 entry_lines=(${(f)entries})
 for e in $entry_lines; do note "$e"; done
 
-print "Tiến trình DauProbe đang chạy:"
+log_step "Tiến trình DauProbe đang chạy"
 procs=(${(f)"$(pgrep -fl 'Contents/MacOS/DauProbe' 2>/dev/null)"})
 for p in $procs; do note "$p"; done
 
-print "Thư mục macOS tạo cho app thử có sandbox:"
+log_step "Thư mục macOS tạo cho app thử có sandbox"
 containers=(${(f)"$(probe_folders "$HOME/Library/Containers")"})
 scripts_dirs=(${(f)"$(probe_folders "$HOME/Library/Application Scripts")"})
 cache_dirs=(${(f)"$([[ -n $CACHE_ROOT ]] && probe_folders "${CACHE_ROOT%/}")"})
 for d in $containers $scripts_dirs $cache_dirs; do note "$d"; done
 
-print "Bản thử trong Thùng rác (xoá hẳn bằng --trash):"
+log_step "Bản thử trong Thùng rác (xoá hẳn bằng --trash)"
 if ls "$HOME/.Trash" >/dev/null 2>&1; then
-  for p in "$HOME/.Trash"/DauProbe*.app(N) "$HOME/.Trash"/DauInputMethod*.app(N) "$HOME/.Trash"/local.probe.*(N) "$HOME/.Trash"/com.codefastlabs.dau.inputmethod.DauProbe*(N); do print -r -- "  $p"; done
+  for p in "$HOME/.Trash"/DauProbe*.app(N) "$HOME/.Trash"/DauInputMethod*.app(N) "$HOME/.Trash"/local.probe.*(N) "$HOME/.Trash"/com.codefastlabs.dau.inputmethod.DauProbe*(N); do log_detail "$p"; done
 else
-  print "  (không đọc được Thùng rác khi Terminal chưa có Full Disk Access)"
+  log_detail "(không đọc được Thùng rác khi Terminal chưa có Full Disk Access)"
 fi
 
-if (( ! found )); then print "\nKhông còn biến thể hay thư mục nào của app thử."; exit 0; fi
+if (( ! found )); then log_ok "Không còn biến thể hay thư mục nào của app thử."; exit 0; fi
 if (( ! DO )); then
-  print "\nChưa xoá gì. Chạy lại với --yes để xoá."
-  (( ${#entry_lines} )) && print "Các mục trong com.apple.inputsources không xoá được bằng script: bỏ bằng \"–\" trong System Settings › Keyboard › Input Sources › Edit… TRƯỚC khi chạy --yes."
+  log_ok "Chưa xoá gì. Chạy lại với --yes để xoá."
+  (( ${#entry_lines} )) && log_warn "Các mục trong com.apple.inputsources không xoá được bằng script: bỏ bằng \"–\" trong System Settings › Keyboard › Input Sources › Edit… TRƯỚC khi chạy --yes."
   exit 0
 fi
 
 # Order matters: with the bundle gone System Settings no longer lists the source, so its entry cannot be
 # removed with "–" and stays behind (measured 03/11/2026, scripts/dev/clean-dau.sh).
 if (( ${#entry_lines} && ${#bundles} )); then
-  print -u2 "\nCòn mục DauProbe trong com.apple.inputsources mà bundle còn cài. Chưa xoá gì."
-  print -u2 "Làm từng bước:"
-  print -u2 "  1. Chọn một bàn phím khác (ví dụ U.S.) trên menu nhập liệu nếu một biến thể đang được chọn."
-  print -u2 "  2. System Settings › Keyboard › Input Sources › Edit…: chọn từng dòng \"Dấu thử …\", bấm \"–\"."
-  print -u2 "  3. Bấm Done, rồi chạy lại: scripts/probe/cleanup.sh --yes"
+  log_error "Còn mục DauProbe trong com.apple.inputsources mà bundle còn cài. Chưa xoá gì."
+  log_hint "Làm từng bước:"
+  log_hint "1. Chọn một bàn phím khác (ví dụ U.S.) trên menu nhập liệu nếu một biến thể đang được chọn."
+  log_hint "2. System Settings › Keyboard › Input Sources › Edit…: chọn từng dòng \"Dấu thử …\", bấm \"–\"."
+  log_hint "3. Bấm Done, rồi chạy lại: scripts/probe/cleanup.sh --yes"
   exit 1
 fi
 
-print "\nĐang xoá…"
+log_step "Đang xoá…"
 unremoved=0
 if (( ${#procs} )); then
   pkill -f 'Contents/MacOS/DauProbe' 2>/dev/null
   sleep 1
   still=(${(f)"$(pgrep -fl 'Contents/MacOS/DauProbe' 2>/dev/null)"})
-  for p in $still; do print -r -- "  KHÔNG dừng được: $p"; (( unremoved++ )); done
+  for p in $still; do log_error "KHÔNG dừng được: $p"; (( unremoved++ )); done
 fi
 # Unregister before the bundles move: LaunchServices follows a bundle into the Trash.
-for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
+for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký: $r"; done
 stamp=$(date +%Y%m%d-%H%M%S)
 for b in $bundles; do
   if [[ $b == "$SYS_DIR"/* ]]; then
     target="$HOME/.Trash/${${b:t}%.app} $stamp.app"
     if sudo mv "$b" "$target" && sudo chown -R "$USER" "$target"; then
-      print -r -- "  vào Thùng rác (sudo): $b"
+      log_detail "vào Thùng rác (sudo): $b"
     else
-      print -r -- "  KHÔNG chuyển được: $b"; (( unremoved++ ))
+      log_error "KHÔNG chuyển được: $b"; (( unremoved++ ))
     fi
   elif osascript -e "tell application \"Finder\" to delete (POSIX file \"$b\" as alias)" >/dev/null 2>&1; then
-    print -r -- "  vào Thùng rác: $b"
+    log_detail "vào Thùng rác: $b"
   else
-    print -r -- "  KHÔNG chuyển được vào Thùng rác (Finder từ chối): $b — kéo vào Thùng rác bằng tay."; (( unremoved++ ))
+    log_error "KHÔNG chuyển được vào Thùng rác (Finder từ chối): $b — kéo vào Thùng rác bằng tay."; (( unremoved++ ))
   fi
 done
 if (( ${#bundles} )); then
   sleep 1
   trashed=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E "^path: +$HOME/\.Trash/.*DauProbe[A-Za-z0-9 -]*\.app \(0x" | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
-  for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký (Thùng rác): $r"; done
+  for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký (Thùng rác): $r"; done
 fi
 # Folders of the sandboxed probe apps. Caches and Application Scripts are plain folders; a container's
 # metadata is protected, so the container goes to the Trash through Finder (the user's own action).
 for d in $scripts_dirs $cache_dirs; do
-  if rm -rf -- "$d"; then print -r -- "  đã xoá: $d"; else print -r -- "  KHÔNG xoá được: $d"; (( unremoved++ )); fi
+  if rm -rf -- "$d"; then log_detail "đã xoá: $d"; else log_error "KHÔNG xoá được: $d"; (( unremoved++ )); fi
 done
 # macOS protects other apps' containers (App Data): a shell deletes one only with Full Disk Access, and
 # Finder driven by AppleScript gets -5000 because it cannot ask for confirmation (measured 04/11/2026).
 container_left=0
 for d in $containers; do
   if rm -rf -- "$d" 2>/dev/null && [[ ! -e $d ]]; then
-    print -r -- "  đã xoá: $d"
+    log_detail "đã xoá: $d"
   elif osascript -e "tell application \"Finder\" to delete (POSIX file \"$d\" as alias)" >/dev/null 2>&1; then
-    print -r -- "  vào Thùng rác: $d"
+    log_detail "vào Thùng rác: $d"
   else
-    print -r -- "  KHÔNG xoá được: $d"; (( unremoved++ )); (( container_left++ ))
+    log_error "KHÔNG xoá được: $d"; (( unremoved++ )); (( container_left++ ))
   fi
 done
 if (( container_left )); then
-  print "\nmacOS bảo vệ container của app khác. Chọn một trong hai:"
-  print "  - Cấp Full Disk Access cho ứng dụng terminal (System Settings › Privacy & Security › Full Disk Access),"
-  print "    mở lại terminal, chạy lại: scripts/probe/cleanup.sh --yes"
-  print "  - Hoặc kéo các thư mục trên vào Thùng rác trong Finder (open ~/Library/Containers); macOS có thể hỏi mật khẩu."
+  log_warn "macOS bảo vệ container của app khác. Chọn một trong hai:"
+  log_hint "- Cấp Full Disk Access cho ứng dụng terminal (System Settings › Privacy & Security › Full Disk Access),"
+  log_hint "  mở lại terminal, chạy lại: scripts/probe/cleanup.sh --yes"
+  log_hint "- Hoặc kéo các thư mục trên vào Thùng rác trong Finder (open ~/Library/Containers); macOS có thể hỏi mật khẩu."
 fi
-if (( unremoved )); then print "\nCHƯA XOÁ HẾT ($unremoved mục). Xử lý tay rồi chạy lại để kiểm."; exit 1; fi
-print "\nXong. Mục còn trong com.apple.inputsources (nếu có) chỉ bỏ được bằng \"–\"; ID đã dùng chỉ \"mới\" lại sau khi dùng một vòng ID khác."
+if (( unremoved )); then log_error "CHƯA XOÁ HẾT ($unremoved mục)."; log_hint "Xử lý tay rồi chạy lại để kiểm."; exit 1; fi
+log_hint "Mục còn trong com.apple.inputsources (nếu có) chỉ bỏ được bằng \"–\"; ID đã dùng chỉ \"mới\" lại sau khi dùng một vòng ID khác."
+log_done

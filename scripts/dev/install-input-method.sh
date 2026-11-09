@@ -18,6 +18,8 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+# shellcheck source=../lib/log.sh
+source "$ROOT/scripts/lib/log.sh"
 # shellcheck source=../lib/build.sh
 source "$ROOT/scripts/lib/build.sh"
 DERIVED="$DAU_DERIVED"
@@ -36,50 +38,46 @@ for arg in "$@"; do
     # per-key log or debug defaults keys (D8). Debug only while testing.
     --release) CONFIG=Release ;;
     -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-    *) echo "Tham số không hợp lệ: $arg (dùng --release, --build-only, --no-build hoặc không có tham số)" >&2; exit 2 ;;
+    *) log_die 2 "Tham số không hợp lệ: $arg (dùng --release, --build-only, --no-build hoặc không có tham số)" ;;
   esac
 done
 
 if [[ "$SKIP_BUILD" == 1 && "$BUILD_ONLY" == 1 ]]; then
-  echo "--no-build và --build-only không đi cùng nhau." >&2
-  exit 2
+  log_die 2 "--no-build và --build-only không đi cùng nhau."
 fi
 if [[ "$SKIP_BUILD" == 0 ]]; then
   dau_build DauInputMethod "$CONFIG" || exit 1
 else
-  echo "==> --no-build: dùng bản build có sẵn trong build/DerivedData.noindex"
+  log_step "--no-build: dùng bản build có sẵn trong build/DerivedData.noindex"
 fi
 
 BUILT="$DERIVED/Build/Products/$CONFIG/$BUNDLE_NAME"
 if [[ ! -d "$BUILT" ]]; then
-  echo "Không tìm thấy $BUILT sau khi build." >&2
-  exit 1
+  log_die "Không tìm thấy $BUILT sau khi build."
 fi
 
-echo "==> Kiểm tra bản build"
+log_step "Kiểm tra bản build"
 ARCHS="$(lipo -archs "$BUILT/Contents/MacOS/$PROCESS_NAME")"
-echo "    kiến trúc: $ARCHS"
+log_detail "kiến trúc: $ARCHS"
 if [[ "$ARCHS" != *arm64* || "$ARCHS" != *x86_64* ]]; then
-  echo "Bản build không phải universal (D1)." >&2
-  exit 1
+  log_die "Bản build không phải universal (D1)."
 fi
 codesign --verify --strict "$BUILT"
 if codesign -d --entitlements - --xml "$BUILT" 2>/dev/null | grep -q "com.apple.security.network"; then
-  echo "Bộ gõ có quyền mạng — trái N2. Dừng." >&2
-  exit 1
+  log_die "Bộ gõ có quyền mạng, trái N2. Dừng."
 fi
-echo "    chữ ký hợp lệ, không có quyền mạng (N2)"
+log_ok "Bản build có chữ ký hợp lệ, không có quyền mạng (N2)"
 if [[ "$CONFIG" == Release ]] && codesign -d --entitlements - --xml "$BUILT" 2>/dev/null | grep -q "get-task-allow"; then
-  echo "Bản Release còn get-task-allow (cho phép gắn debugger). Dừng." >&2
-  exit 1
+  log_die "Bản Release còn get-task-allow (cho phép gắn debugger). Dừng."
 fi
 
 if [[ "$BUILD_ONLY" == 1 ]]; then
-  echo "==> --build-only: không cài. Bản build: $BUILT"
+  log_step "--build-only: không cài. Bản build: $BUILT"
+  log_done "Đã build bộ gõ"
   exit 0
 fi
 
-echo "==> Cài vào $DEST_DIR"
+log_step "Cài vào $DEST_DIR"
 mkdir -p "$DEST_DIR"
 rm -rf "${DEST_DIR:?}/$BUNDLE_NAME"
 ditto "$BUILT" "$DEST_DIR/$BUNDLE_NAME"
@@ -87,43 +85,39 @@ ditto "$BUILT" "$DEST_DIR/$BUNDLE_NAME"
 # this path (an older build had no app icon).
 touch "$DEST_DIR/$BUNDLE_NAME"
 
-echo "==> Dừng tiến trình bộ gõ cũ (nếu đang chạy)"
+log_step "Dừng tiến trình bộ gõ cũ (nếu đang chạy)"
 if killall "$PROCESS_NAME" 2>/dev/null; then
-  echo "    đã dừng $PROCESS_NAME; macOS sẽ chạy bản mới ở lần gõ tiếp theo"
+  log_detail "đã dừng $PROCESS_NAME; macOS sẽ chạy bản mới ở lần gõ tiếp theo"
 else
-  echo "    không có tiến trình $PROCESS_NAME đang chạy"
+  log_detail "không có tiến trình $PROCESS_NAME đang chạy"
 fi
 
-echo
-echo "Đã cài bản $CONFIG của Dấu. Các bước còn lại do bạn làm trên máy:"
-cat <<'EOF'
-
-  1. Dấu đã bật từ trước trên máy này: không phải làm gì thêm. Chuyển nguồn đầu vào ra
-     rồi vào lại Dấu để macOS chạy bản vừa cài.
-  2. Lần đầu trên máy này: bật bằng app chủ (build scheme Dau, mở Dau.app, bấm "Bật Dấu",
-     rồi Allow trong hộp thoại của macOS). App xoá bộ đệm danh sách nguồn đầu vào trước
-     khi đăng ký, nên không cần đăng xuất (D37). Thêm tay bằng "+" trong System Settings
-     có thể không thấy Dấu, vì danh sách đó đọc bộ đệm cũ.
-  3. Bật không được: làm theo màn "Chưa bật được" của app (tự thêm bằng "+"; đăng xuất
-     một lần là đường lui, D37). Một ứng dụng vẫn không chọn được Dấu: đăng xuất rồi đăng
-     nhập lại một lần.
-  4. Dấu chỉ có "Dấu – Tiếng Việt" (D2); gõ tiếng Anh bằng U.S. sẵn có của macOS. Còn
-     "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó bằng "–".
-  5. Chọn "Dấu – Tiếng Việt" trên menu nguồn đầu vào ở thanh menu, hoặc bằng phím tắt
-     chuyển nguồn đầu vào của macOS.
-  6. Tắt các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…) trước khi thử.
-EOF
+log_step "Đã cài bản $CONFIG của Dấu. Các bước còn lại do bạn làm trên máy"
+log_detail \
+  "1. Dấu đã bật từ trước trên máy này: không phải làm gì thêm. Chuyển nguồn đầu vào ra" \
+  "   rồi vào lại Dấu để macOS chạy bản vừa cài." \
+  "2. Lần đầu trên máy này: bật bằng app chủ (build scheme Dau, mở Dau.app, bấm \"Bật Dấu\"," \
+  "   rồi Allow trong hộp thoại của macOS). App xoá bộ đệm danh sách nguồn đầu vào trước" \
+  "   khi đăng ký, nên không cần đăng xuất (D37). Thêm tay bằng \"+\" trong System Settings" \
+  "   có thể không thấy Dấu, vì danh sách đó đọc bộ đệm cũ." \
+  "3. Bật không được: làm theo màn \"Chưa bật được\" của app (tự thêm bằng \"+\"; đăng xuất" \
+  "   một lần là đường lui, D37). Một ứng dụng vẫn không chọn được Dấu: đăng xuất rồi đăng" \
+  "   nhập lại một lần." \
+  "4. Dấu chỉ có \"Dấu – Tiếng Việt\" (D2); gõ tiếng Anh bằng U.S. sẵn có của macOS. Còn" \
+  "   \"Dấu – Tiếng Anh\" từ bản cũ thì bỏ nó bằng \"–\"." \
+  "5. Chọn \"Dấu – Tiếng Việt\" trên menu nguồn đầu vào ở thanh menu, hoặc bằng phím tắt" \
+  "   chuyển nguồn đầu vào của macOS." \
+  "6. Tắt các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…) trước khi thử."
 if [[ "$CONFIG" == Debug ]]; then
-  cat <<'EOF'
-  7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Muốn lấy số đo: bật nhật ký từng phím bằng
-     `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf/perf-report.sh, rồi tắt
-     bằng `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
-EOF
+  log_detail \
+    '7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Muốn lấy số đo: bật nhật ký từng phím bằng' \
+    '   `defaults write -g DauPerfLog -bool true`, gõ, chạy scripts/perf/perf-report.sh, rồi tắt' \
+    '   bằng `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).'
 else
-  echo "  7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Bản Release không ghi nhật ký từng phím (D8)."
+  log_detail "7. Gõ thử theo docs/COMPATIBILITY.md mục 4. Bản Release không ghi nhật ký từng phím (D8)."
 fi
-cat <<'EOF'
-
-Gỡ bản thử: xoá ~/Library/Input Methods/DauInputMethod.app, bỏ "Dấu" bằng "–" trong System Settings › Keyboard › "All Input Sources" (trước khi xoá),
-rồi đăng xuất.
-EOF
+log_step "Gỡ bản thử"
+log_detail \
+  "Xoá ~/Library/Input Methods/DauInputMethod.app, bỏ \"Dấu\" bằng \"–\" trong System Settings › Keyboard ›" \
+  "\"All Input Sources\" (trước khi xoá), rồi đăng xuất."
+log_done "Đã cài bộ gõ"

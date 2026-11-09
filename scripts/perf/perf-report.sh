@@ -23,6 +23,8 @@
 # DAU_IM_BUNDLE_ID.
 set -euo pipefail
 
+source "${0:A:h:h}/lib/log.sh"
+
 LAST="1h"
 APP_FILTER=""
 INPUT=""
@@ -32,7 +34,7 @@ while [[ $# -gt 0 ]]; do
     --app) APP_FILTER="${2:?--app cần tên app hoặc bundle ID}"; shift 2 ;;
     --input) INPUT="${2:?--input cần đường dẫn file}"; shift 2 ;;
     -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-    *) echo "Tham số không hợp lệ: $1" >&2; exit 2 ;;
+    *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
 
@@ -90,12 +92,12 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
 ' | sort -k1,1 -k2,2 -k3,3g > "$TMP"
 
 if [[ ! -s "$TMP" ]]; then
-  echo "Không có số đo nào (subsystem $SUBSYSTEM, --last $LAST${APP_FILTER:+, app $APP_FILTER})."
-  echo "Kiểm tra: bộ gõ bản Debug đã cài và đã gõ thử trong khoảng thời gian này chưa?"
+  log_warn "Không có số đo nào (subsystem $SUBSYSTEM, --last $LAST${APP_FILTER:+, app $APP_FILTER})."
+  log_hint "Kiểm tra: bộ gõ bản Debug đã cài và đã gõ thử trong khoảng thời gian này chưa?"
   if [[ -n "$APP_FILTER" ]]; then
-    echo "--app so khớp một phần bundle ID (không phân biệt hoa thường), không nhận PID."
-    echo "Các app có số đo trong khoảng này:"
-    read_log | grep -o 'app=[^ ]*' | sort -u | sed 's/^app=/  /' || true
+    log_hint "--app so khớp một phần bundle ID (không phân biệt hoa thường), không nhận PID."
+    log_step "Các app có số đo trong khoảng này"
+    read_log | grep -o 'app=[^ ]*' | sort -u | sed 's/^app=//' | while IFS= read -r a; do log_detail "$a"; done || true
   fi
   exit 0
 fi

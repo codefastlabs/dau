@@ -9,12 +9,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$ROOT/Apps/DauInputMethod/Resources"
+source "${0:A:h:h}/lib/log.sh"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
+log_step "Dựng biểu tượng chế độ gõ"
 xcrun swift "$ROOT/scripts/assets/make-mode-icons.swift" "$TMP"
 # One input mode only (D2): "Dấu – Tiếng Việt".
 tiffutil -cathidpicheck "$TMP/V.png" "$TMP/V@2x.png" -out "$OUT/ModeVietnamese.tiff" >/dev/null
-echo "wrote $OUT/ModeVietnamese.tiff"
+log_detail "đã ghi $OUT/ModeVietnamese.tiff"
+log_done "Đã dựng biểu tượng chế độ gõ"

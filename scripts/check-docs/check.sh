@@ -27,14 +27,17 @@
 #   9. scripts list: every scripts/**/*.sh (not .build) starts with "#!/bin/zsh" (one
 #      shell: /bin/bash on macOS is 3.2), has a "# Side effects:" line and
 #      is named, by path in backticks, in scripts/README.md; every repo path in backticks
-#      in scripts/README.md exists.
-# Exit status 0 only if every check passes.
+#      in scripts/README.md exists; no script but scripts/lib/log.sh writes ANSI color
+#      codes or the "==>" step mark (scripts/README.md, "Đầu ra").
+# Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
+# one "✗" line per problem, then a final verdict line.
 set -uo pipefail
 here=${0:A:h}
 root=${here:h:h}
 cd "$root"
+source "$root/scripts/lib/log.sh"
 fail=0
-report() { print -r -- "$1"; fail=1 }
+report() { log_error "$1"; fail=1 }
 
 living=(docs/*.md(N) CLAUDE.md README.md(N) CONTRIBUTING.md(N) .claude/agents/*.md(N) .claude/commands/*.md(N))
 living=(${living:#docs/PROGRESS.md})
@@ -46,13 +49,13 @@ for f in $cited; do
     [[ -z $p ]] && continue
     p=${p%%:*}; p=${p%/}
     [[ $p == *'*'* || $p == *'<'* || $p == *'{'* || $p == *…* ]] && continue
-    [[ -e $p ]] || report "$f: missing path $p"
+    [[ -e $p ]] || report "$f: đường dẫn không tồn tại: $p"
   done
 done
 
 # 2. Line numbers.
 for f in $cited; do
-  grep -nE '[A-Za-z]+\.(swift|plist|yml|json):[0-9]+' $f | while read -r l; do report "$f: line reference: ${l[1,160]}"; done
+  grep -nE '[A-Za-z]+\.(swift|plist|yml|json):[0-9]+' $f | while read -r l; do report "$f: tham chiếu số dòng (hãy nêu tên kiểu hoặc hàm): ${l[1,160]}"; done
 done
 
 # 3. Decision numbers.
@@ -60,14 +63,14 @@ known=(${(f)"$(grep -oE '^- \*\*[DN][0-9]+' docs/DECISIONS.md | grep -oE '[DN][0
 for f in $living; do
   for d in ${(f)"$(grep -oE '\b[DN][0-9]{1,2}\b' $f | sort -u)"}; do
     [[ -z $d ]] && continue
-    (( ${known[(Ie)$d]} )) || report "$f: cites $d, not in DECISIONS.md"
+    (( ${known[(Ie)$d]} )) || report "$f: dẫn $d, không có trong DECISIONS.md"
   done
 done
 
 # 4. Superseded wording.
 grep -vE '^(#|$)' $here/superseded.txt | while IFS=$'\t' read -r pattern why; do
   for f in ${${living:#docs/DECISIONS.md}:#docs/*-TESTING.md}; do
-    grep -nE -- "$pattern" $f | while read -r l; do report "$f: superseded ($why): ${l[1,140]}"; done
+    grep -nE -- "$pattern" $f | while read -r l; do report "$f: cách nói đã bị thay ($why): ${l[1,140]}"; done
   done
 done
 
@@ -77,17 +80,17 @@ script_files=(${script_files:#scripts/check-docs/*})
 script_files=(${script_files:#*/.build/*})
 grep -vE '^(#|$)' $here/superseded.txt | while IFS=$'\t' read -r pattern why; do
   for f in $script_files; do
-    grep -nE '(^|[[:space:]])(#|//)' $f | grep -E -- "$pattern" | while read -r l; do report "$f: superseded ($why): ${l[1,140]}"; done
+    grep -nE '(^|[[:space:]])(#|//)' $f | grep -E -- "$pattern" | while read -r l; do report "$f: cách nói đã bị thay ($why): ${l[1,140]}"; done
   done
 done
 
 # 5. Status section without test counts.
 awk '/^## Trạng thái hiện tại/{on=1; next} /^## /{on=0} on' docs/PROGRESS.md \
-  | grep -nE '[0-9]+ test|test[^.]*[0-9]{2}' | while read -r l; do report "docs/PROGRESS.md status: test count: ${l[1,120]}"; done
+  | grep -nE '[0-9]+ test|test[^.]*[0-9]{2}' | while read -r l; do report "docs/PROGRESS.md, mục trạng thái: có số test: ${l[1,120]}"; done
 
 # 6. No UI measurements outside their single home.
 for f in docs/UI.md docs/UI-CHECKS.md docs/ARCHITECTURE.md; do
-  sed -E 's/`[^`]*`//g' $f | grep -nE '[0-9]{2,} ?pt\b|[0-9]{2,} ?× ?[0-9]{2,}' | while read -r l; do report "$f: UI measurement belongs in Reference.swift: ${l[1,140]}"; done
+  sed -E 's/`[^`]*`//g' $f | grep -nE '[0-9]{2,} ?pt\b|[0-9]{2,} ?× ?[0-9]{2,}' | while read -r l; do report "$f: số đo giao diện phải nằm ở Reference.swift: ${l[1,140]}"; done
 done
 
 # 7. Commit hashes in living docs must exist.
@@ -98,35 +101,41 @@ for f in $living; do
   for h in ${(f)"$(grep -oE '`[^`]*`|\([^)]*\)' $f | grep -oE '\b[0-9a-f]{7,40}\b' | grep '[0-9]' | grep '[a-f]' | sort -u)"}; do
     [[ -z $h ]] && continue
     (( ${foreign_hashes[(Ie)$h]} )) && continue
-    git cat-file -e "${h}^{commit}" 2>/dev/null || report "$f: commit $h not in this repo (old hash? see docs/history/COMMIT-MAP.md)"
+    git cat-file -e "${h}^{commit}" 2>/dev/null || report "$f: commit $h không có trong repo này (hash cũ? xem docs/history/COMMIT-MAP.md)"
   done
 done
 
 # 8. Research notes: a "Hiện trạng" heading up front, no appended "Đính chính".
 for f in docs/research/*.md(N); do
   [[ $f == docs/research/SYSTEM-SETTINGS-REFERENCE.md ]] && continue
-  head -40 $f | grep -qE '^## .*Hiện trạng' || report "$f: no heading \"## … Hiện trạng\" in the first 40 lines"
-  grep -nE '^#+ .*Đính chính' $f | while read -r l; do report "$f: correction heading (edit the text instead of appending): ${l[1,120]}"; done
+  head -40 $f | grep -qE '^## .*Hiện trạng' || report "$f: thiếu tiêu đề \"## … Hiện trạng\" trong 40 dòng đầu"
+  grep -nE '^#+ .*Đính chính' $f | while read -r l; do report "$f: có tiêu đề đính chính (hãy sửa thẳng vào thân bài): ${l[1,120]}"; done
 done
 
 # 9. Scripts list: Side effects line, and listed in scripts/README.md.
 readme=scripts/README.md
 if [[ ! -f $readme ]]; then
-  report "$readme is missing"
+  report "thiếu $readme"
 else
   for s in scripts/**/*.sh(N); do
     [[ $s == */.build/* ]] && continue
-    [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: first line is not #!/bin/zsh"
-    grep -qE '^# Side effects: ' $s || report "$s: no \"# Side effects:\" line"
-    grep -qF -- "\`$s\`" $readme || report "$s: not listed in $readme"
+    [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
+    grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
+    grep -qF -- "\`$s\`" $readme || report "$s: chưa có trong $readme"
+  done
+  for s in scripts/**/*.sh(N) .claude/hooks/*.sh(N); do
+    [[ $s == */.build/* || $s == scripts/lib/log.sh || $s == scripts/check-docs/check.sh ]] && continue
+    grep -nE '\\e\[|\\033\[|\\x1[bB]|tput (setaf|bold|sgr0)|==>' $s | while IFS= read -r l; do
+      report "$s:${l%%:*}: mã màu hoặc dấu \"==>\" nằm ngoài scripts/lib/log.sh"
+    done
   done
   for p in ${(f)"$(grep -oE '`(Apps|Packages|scripts|docs|\.claude)/[^` ]+`' $readme | tr -d '`' | sort -u)"}; do
     [[ -z $p ]] && continue
     p=${p%/}
     [[ $p == *'*'* || $p == *'<'* || $p == *'{'* || $p == *…* ]] && continue
-    [[ -e $p ]] || report "$readme: missing path $p"
+    [[ -e $p ]] || report "$readme: đường dẫn không tồn tại: $p"
   done
 fi
 
-(( fail )) && { print "Doc checks failed."; exit 1 }
-print "Doc checks passed."
+(( fail )) && { log_error "Tài liệu lệch: sửa các chỗ trên rồi chạy lại."; exit 1 }
+log_ok "Tài liệu khớp."

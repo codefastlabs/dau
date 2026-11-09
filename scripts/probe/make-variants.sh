@@ -21,6 +21,7 @@ set -u
 setopt null_glob
 
 ROOT="${0:A:h:h:h}"
+source "${0:A:h:h}/lib/log.sh"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 SRC="$ROOT/build/DerivedData.noindex/Build/Products/Release/DauInputMethod.app"
 OUT_ROOT="$ROOT/build/probe.noindex"
@@ -31,31 +32,31 @@ case "${1:-}" in
   ""|-h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
 esac
 ROUND="$1"; shift
-if [[ ! $ROUND =~ '^[A-Za-z0-9]+$' ]]; then print -u2 "Vòng phải là chữ/số, ví dụ A: $ROUND"; exit 2; fi
+if [[ ! $ROUND =~ '^[A-Za-z0-9]+$' ]]; then log_die 2 "Vòng phải là chữ/số, ví dụ A: $ROUND"; fi
 NS=("$@"); (( ${#NS} )) || NS=(1 2 3 4 5 6 7 8)
-for n in $NS; do [[ $n =~ '^[0-9]+$' ]] || { print -u2 "N phải là số: $n"; exit 2 }; done
+for n in $NS; do [[ $n =~ '^[0-9]+$' ]] || log_die 2 "N phải là số: $n"; done
 
 mkdir -p "$OUT_ROOT"; touch "$USED"
 
 if [[ ! -d $SRC ]]; then
-  print "==> Chưa có bản Release: build"
+  log_step "Chưa có bản Release: build"
   "$ROOT/scripts/dev/install-input-method.sh" --build-only --release || exit 1
 fi
-[[ -d $SRC ]] || { print -u2 "Không thấy $SRC"; exit 1 }
+[[ -d $SRC ]] || log_die "Không thấy $SRC"
 
 # Signing identity of the original build: the leaf certificate it was signed with.
 IDENT_NAME=$(codesign -dvv "$SRC" 2>&1 | sed -n 's/^Authority=\(Apple Development: .*\)$/\1/p' | head -1)
-[[ -n $IDENT_NAME ]] || { print -u2 "Bản gốc không ký bằng danh tính Apple Development."; exit 1 }
+[[ -n $IDENT_NAME ]] || log_die "Bản gốc không ký bằng danh tính Apple Development."
 source "$ROOT/scripts/lib/build.sh"   # dau_signing_identities: skips revoked identities
 IDENT_HASH=$(dau_signing_identities | grep -F "\"$IDENT_NAME\"" | awk '{print $2}' | head -1)
-[[ -n $IDENT_HASH ]] || { print -u2 "Không thấy danh tính dùng được trong keychain: $IDENT_NAME"; exit 1 }
+[[ -n $IDENT_HASH ]] || log_die "Không thấy danh tính dùng được trong keychain: $IDENT_NAME"
 RUNTIME=()
 codesign -dvv "$SRC" 2>&1 | grep -q 'flags=.*runtime' && RUNTIME=(--options runtime)
-print "Danh tính ký: $IDENT_NAME ($IDENT_HASH) ${RUNTIME}"
+log_step "Danh tính ký: $IDENT_NAME ($IDENT_HASH) ${RUNTIME}"
 
 ORIG_ENT=$(mktemp -t probe-ent).plist
 codesign -d --entitlements - --xml "$SRC" > "$ORIG_ENT" 2>/dev/null
-plutil -lint "$ORIG_ENT" >/dev/null || { print -u2 "Không đọc được entitlement bản gốc."; exit 1 }
+plutil -lint "$ORIG_ENT" >/dev/null || log_die "Không đọc được entitlement bản gốc."
 
 failed=0
 for n in $NS; do
@@ -63,13 +64,13 @@ for n in $NS; do
   ID="$PREFIX.$NAME"
   DISPLAY="Dấu thử $ROUND$n"
   if [[ $ID == $PREFIX.Probe* || $ID == com.codefastlabs.dau.probe.* ]]; then
-    print -u2 "TỪ CHỐI $ID: trùng dạng ID đã dùng 03/11."; failed=1; continue
+    log_error "TỪ CHỐI $ID: trùng dạng ID đã dùng 03/11."; failed=1; continue
   fi
   if grep -qxF "$ID" "$USED"; then
-    print -u2 "TỪ CHỐI $ID: đã có trong $USED (mỗi ID chỉ mới một lần cho mỗi tài khoản)."; failed=1; continue
+    log_error "TỪ CHỐI $ID: đã có trong $USED (mỗi ID chỉ mới một lần cho mỗi tài khoản)."; failed=1; continue
   fi
   DEST="$OUT_ROOT/$ROUND/$NAME.app"
-  print "==> $NAME"
+  log_step "$NAME"
   rm -rf "$DEST"; mkdir -p "$OUT_ROOT/$ROUND"
   ditto "$SRC" "$DEST" || { failed=1; continue }
   rm -rf "$DEST/Contents/_CodeSignature"
@@ -131,21 +132,23 @@ PY
 
   # --- checks ---
   ok=1
-  plutil -lint "$DEST/Contents/Info.plist" "$DEST"/Contents/Resources/*.lproj/InfoPlist.strings "$DEST"/Contents/Resources/*.lproj/Localizable.strings >/dev/null || { print -u2 "  plutil -lint lỗi"; ok=0 }
-  codesign --verify --deep --strict "$DEST" 2>&1 || { print -u2 "  codesign --verify lỗi"; ok=0 }
+  plutil -lint "$DEST/Contents/Info.plist" "$DEST"/Contents/Resources/*.lproj/InfoPlist.strings "$DEST"/Contents/Resources/*.lproj/Localizable.strings >/dev/null || { log_error "plutil -lint lỗi"; ok=0 }
+  codesign --verify --deep --strict "$DEST" 2>&1 || { log_error "codesign --verify lỗi"; ok=0 }
   ents=$(codesign -d --entitlements - --xml "$DEST" 2>/dev/null)
-  print -r -- "$ents" | grep -q "${ID}_Connection" || { print -u2 "  entitlement thiếu ${ID}_Connection"; ok=0 }
+  print -r -- "$ents" | grep -q "${ID}_Connection" || { log_error "entitlement thiếu ${ID}_Connection"; ok=0 }
   # Old strings must be gone from Info.plist, .strings and the entitlement (UTF-16 files: convert first).
   leftover=$( { plutil -p "$DEST/Contents/Info.plist"; for s in "$DEST"/Contents/Resources/*.lproj/InfoPlist.strings; do plutil -p "$s"; done; print -r -- "$ents"; } | grep -E 'inputmethod\.Dau\.vi|inputmethod\.Dau_Connection|inputmethod\.Dau"' )
-  [[ -z $leftover ]] || { print -u2 "  còn chuỗi ID của Dấu:\n$leftover"; ok=0 }
-  [[ -x "$DEST/Contents/MacOS/$NAME" ]] || { print -u2 "  thiếu file thực thi"; ok=0 }
+  [[ -z $leftover ]] || { log_error "còn chuỗi ID của Dấu:"; log_hint "${(@f)leftover}"; ok=0 }
+  [[ -x "$DEST/Contents/MacOS/$NAME" ]] || { log_error "thiếu file thực thi"; ok=0 }
   if (( ok )); then
     print "$ID" >> "$USED"
-    print "  OK: $DEST"
-    print "      mode: $ID.vi, tên hiển thị: $DISPLAY"
+    log_ok "$DEST"
+    log_detail "mode: $ID.vi, tên hiển thị: $DISPLAY"
   else
     failed=1
   fi
 done
 rm -f "$ORIG_ENT"
-exit $failed
+(( failed )) && exit 1
+log_done
+exit 0

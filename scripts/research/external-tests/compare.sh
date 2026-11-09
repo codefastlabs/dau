@@ -17,4 +17,6 @@
 # Writes only under build/ (git-ignored; hence "builds", though nothing is compiled). Runs nothing
 # from the other projects.
 set -euo pipefail
+source "${0:A:h:h:h}/lib/log.sh"
 python3 -I ${0:A:h}/compare.py "$@"
+log_done

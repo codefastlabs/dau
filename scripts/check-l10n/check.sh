@@ -24,16 +24,17 @@
 #      of its target, and the reverse, so no text shows its English key untranslated
 #      and no entry is left over.
 # Exit status 0 only if every check passes; the failures are listed one per line.
+# Output (Vietnamese, via scripts/lib/log.sh): "✗" heading, "    " detail lines, verdict line.
 set -uo pipefail
 here=${0:A:h}
 root=${here:h:h}
 cd "$root"
+source "$root/scripts/lib/log.sh"
 fail=0
 
 catalogs=(Apps/**/*.xcstrings(N))
 if (( ${#catalogs} == 0 )); then
-  print -r -- "no .xcstrings under Apps/"
-  exit 1
+  log_die "Không có file .xcstrings nào dưới Apps/"
 fi
 
 allowed=$(grep -vE '^(#|$)' $here/allowed-vietnamese.txt | jq -R . | jq -s .)
@@ -53,20 +54,20 @@ for file in $catalogs; do
     def units: [(if has("stringUnit") then {where: "", unit: .stringUnit} else empty end),
                 (paths(objects and has("stringUnit")) as $p
                  | {where: ($p | map(tostring) | join(".")), unit: (getpath($p).stringUnit)})];
-    (if .sourceLanguage != "en" then "\($file): sourceLanguage is \(.sourceLanguage), expected en" else empty end),
+    (if .sourceLanguage != "en" then "\($file): sourceLanguage là \(.sourceLanguage), phải là en" else empty end),
     (.strings | to_entries[] | select(.value.extractionState == "stale")
-     | "\($file): \(.key): stale (no longer in the code)"),
+     | "\($file): \(.key): stale (mã không còn dùng)"),
     (.strings | to_entries[]
      | .key as $key
      | ([$key] + [.value.localizations.en // {} | .. | .value? // empty | strings] | unique)[]
      | select(vietnamese)
-     | "\($file): \($key): Vietnamese in the key or en text: \(.)"),
+     | "\($file): \($key): có tiếng Việt trong khoá hoặc bản en: \(.)"),
     (.strings | to_entries[]
      | .key as $key
      | ((if ($file | test("InfoPlist")) then [] else [$key] end)
         + [.value.localizations // {} | .. | .value? // empty | strings] | unique)[]
      | select(test("(^|[^.\\p{L}])dau($|[^.\\p{L}])"; "i"))
-     | "\($file): \($key): the name must be written Dấu (D24): \(.)"),
+     | "\($file): \($key): tên phải viết Dấu (D24): \(.)"),
     (.strings | to_entries[] | select(.value.shouldTranslate != false)
      | .key as $key | (.value.localizations // {}) as $loc
      | ($loc.en // {} | units) as $en
@@ -75,21 +76,22 @@ for file in $catalogs; do
         else $key end | specs) as $ref
      | ("en", "vi") as $lang
      | ($loc[$lang] // {} | units) as $units
-     | if ($units | length) == 0 then "\($file): \($key): no \($lang) text"
+     | if ($units | length) == 0 then "\($file): \($key): thiếu bản \($lang)"
        else $units[]
-         | (if .unit.state != "translated" then "\($file): \($key): \($lang)\(if .where == "" then "" else " " + .where end) is \(.unit.state // "without state")" else empty end),
+         | (if .unit.state != "translated" then "\($file): \($key): \($lang)\(if .where == "" then "" else " " + .where end) có trạng thái \(.unit.state // "không có")" else empty end),
            ((.unit.value // "" | specs) as $got
             | if (.where | test("plural")) then
-                (if ($got - $ref) != [] then "\($file): \($key): \($lang) \(.where) has \($got), key has \($ref)" else empty end)
-              elif $got != $ref then "\($file): \($key): \($lang)\(if .where == "" then "" else " " + .where end) has \($got), expected \($ref)"
+                (if ($got - $ref) != [] then "\($file): \($key): \($lang) \(.where) có \($got), khoá có \($ref)" else empty end)
+              elif $got != $ref then "\($file): \($key): \($lang)\(if .where == "" then "" else " " + .where end) có \($got), cần \($ref)"
               else empty end)
        end)
   ' "$file" 2>&1)
   if (( $? != 0 )); then
-    print -r -- "$file: cannot read: $out"
+    log_error "$file: không đọc được: $out"
     fail=1
   elif [[ -n $out ]]; then
-    print -r -- "$out"
+    log_error "Catalog $file có chỗ không đạt:"
+    log_detail "${(@f)out}"
     fail=1
   fi
 done
@@ -101,7 +103,7 @@ if (( $# > 0 )); then
     catalog=Apps/$target/Resources/Localizable.xcstrings
     files=($build/**/$target.build/Objects-normal/**/*.stringsdata(N))
     if (( ${#files} == 0 )); then
-      print -r -- "$target: no .stringsdata under $build (build the scheme first)"
+      log_error "$target: không có .stringsdata dưới $build (build scheme trước)"
       fail=1
       continue
     fi
@@ -111,19 +113,21 @@ if (( $# > 0 )); then
     missing=$(comm -23 <(print -r -- "$extracted") <(print -r -- "$known") | sed '/^$/d')
     unused=$(comm -13 <(print -r -- "$extracted") <(print -r -- "$known") | sed '/^$/d')
     if [[ -n $missing ]]; then
-      print -r -- "$target: in the code, not in $catalog:"
-      print -r -- "$missing" | sed 's/^/  /'
+      log_error "$target: có trong mã, không có trong $catalog:"
+      log_detail "${(@f)missing}"
       fail=1
     fi
     if [[ -n $unused ]]; then
-      print -r -- "$target: in $catalog, not in the code:"
-      print -r -- "$unused" | sed 's/^/  /'
+      log_error "$target: có trong $catalog, không có trong mã:"
+      log_detail "${(@f)unused}"
       fail=1
     fi
   done
 fi
 
 if (( fail == 0 )); then
-  print -r -- "check-l10n: ok (${#catalogs} catalogs)"
+  log_ok "String Catalog khớp (${#catalogs} catalog)."
+else
+  log_error "String Catalog không đạt: sửa các chỗ trên rồi chạy lại."
 fi
 exit $fail

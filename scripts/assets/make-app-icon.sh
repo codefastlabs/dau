@@ -21,14 +21,16 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 BRAND="$ROOT/Resources/Brand"
 GLYPHS="$BRAND/app-icon-glyphs.txt"
 ICONSET="$ROOT/Apps/Dau/Resources/Assets.xcassets/AppIcon.appiconset"
+source "${0:A:h:h}/lib/log.sh"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 
 if [[ "${1:-}" == "outline" ]]; then
-  [[ $# -eq 2 ]] || { echo "usage: $0 outline <font.ttf>" >&2; exit 2; }
+  [[ $# -eq 2 ]] || log_die 2 "Cách dùng: $0 outline <font.ttf>"
   mkdir -p "$BRAND"
   exec xcrun swift "$ROOT/scripts/assets/make-app-icon.swift" outline "$2" "$GLYPHS"
 fi
 
+log_step "Dựng biểu tượng app"
 mkdir -p "$ROOT/Apps/Dau/Resources/Assets.xcassets"
 if [[ ! -f "$ROOT/Apps/Dau/Resources/Assets.xcassets/Contents.json" ]]; then
   printf '{\n  "info" : {\n    "author" : "xcode",\n    "version" : 1\n  }\n}\n' \
@@ -43,12 +45,12 @@ mkdir -p "$TMP/svg" "$TMP/iconset"
 xcrun swift "$ROOT/scripts/assets/make-app-icon.swift" render "$GLYPHS" "$TMP/svg" "$TMP/iconset" ${1:+"$1"}
 rendered=("$TMP"/iconset/*.png(N))
 if (( ${#rendered} == 0 )) || [[ ! -f "$TMP/iconset/Contents.json" ]]; then
-  echo "Render không ra đủ file (không có PNG hoặc Contents.json): giữ nguyên $ICONSET" >&2
-  exit 1
+  log_die "Render không ra đủ file (không có PNG hoặc Contents.json): giữ nguyên $ICONSET"
 fi
 mkdir -p "$ICONSET" "$BRAND"
 old_pngs=("$ICONSET"/*.png(N))
 (( ${#old_pngs} == 0 )) || rm -f "${old_pngs[@]}"
 cp "$TMP"/iconset/* "$ICONSET"/
 cp "$TMP"/svg/* "$BRAND"/
-echo "Đã cập nhật $ICONSET và các SVG trong $BRAND"
+log_detail "đã cập nhật $ICONSET và các SVG trong $BRAND"
+log_done "Đã dựng biểu tượng app"

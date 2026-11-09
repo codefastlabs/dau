@@ -37,13 +37,14 @@
 # session and forgets Dấu only at the next login.
 set -u
 setopt null_glob
+source "${0:A:h:h}/lib/log.sh"
 
 DO=0
 case "${1:-}" in
   "") ;;
   --yes) DO=1 ;;
   -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-  *) print -u2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá)"; exit 2 ;;
+  *) log_die 2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá)" ;;
 esac
 
 # A boundary after "dau": com.codefastlabs.dau and com.codefastlabs.dau.* but not ….daufoo.
@@ -54,24 +55,24 @@ LIB="$HOME/Library"
 LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 found=0
 unremoved=0
-note() { print -r -- "  $1"; found=1 }
+note() { log_detail "$1"; found=1 }
 # Something --yes could not remove: say so, and make the exit status non-zero.
-notremoved() { print -r -- "  $1"; (( unremoved++ )) }
+notremoved() { log_error "$1"; (( unremoved++ )) }
 
 # --- what is there -----------------------------------------------------------------
 
-print "Tiến trình:"
+log_step "Tiến trình"
 procs=(${(f)"$(pgrep -fl "$PROC_PATTERN" 2>/dev/null)"})
 for p in $procs; do note "$p"; done
 
-print "Ứng dụng và bộ gõ:"
+log_step "Ứng dụng và bộ gõ"
 bundles=()
 trashed_names=()
 for b in /Applications/Dau.app "/Applications/Dấu.app" "$LIB/Input Methods/DauInputMethod.app"; do
   [[ -e "$b" ]] && { bundles+=("$b"); note "$b"; }
 done
 
-print "Dữ liệu của app:"
+log_step "Dữ liệu của app"
 data=()
 for d in "$LIB"/Containers/com.{codefastlabs,example}.dau{,.*} \
          "$LIB/Group Containers/"*{codefastlabs,example}.dau{,.*} \
@@ -96,7 +97,7 @@ data = plistlib.loads(sys.stdin.buffer.read() or plistlib.dumps({}))
 n = sum(1 for e in data.get(sys.argv[1], []) if isinstance(e, dict) and re.match(sys.argv[2], str(e.get("Bundle ID", ""))))
 print(n)' "$2" "$ID_PATTERN"
 }
-print "Nguồn nhập liệu:"
+log_step "Nguồn nhập liệu"
 prefs=()
 for spec in "com.apple.inputsources AppleEnabledThirdPartyInputSources" \
             "com.apple.HIToolbox AppleEnabledInputSources" \
@@ -110,29 +111,33 @@ data = plistlib.loads(sys.stdin.buffer.read() or plistlib.dumps({}))
 print(any(re.match(sys.argv[1], str(e.get("Bundle ID", ""))) for e in data.get("AppleSelectedInputSources", []) if isinstance(e, dict)))' "$ID_PATTERN")
 [[ $selected == True ]] && note "Dấu đang là nguồn được chọn: chuyển sang bàn phím khác trước (menu nguồn nhập liệu)."
 
-print "Đăng ký LaunchServices:"
+log_step "Đăng ký LaunchServices"
 registered=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E '^path: .*/(Dau|DauInputMethod)\.app \(0x' | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
 for r in $registered; do note "$r"; done
 
-print "Khoá defaults gỡ lỗi:"
+log_step "Khoá defaults gỡ lỗi"
 keys=()
 for k in DauPerfLog DauDebugForceUnderline; do
   defaults read -g "$k" >/dev/null 2>&1 && { keys+=("$k"); note "-g $k"; }
 done
 
 if (( ! found )); then
-  print "\nKhông còn gì của Dấu. Nếu vừa gỡ, đăng xuất rồi đăng nhập lại một lần."
+  log_ok "Không còn gì của Dấu"
+  log_detail "Nếu vừa gỡ, đăng xuất rồi đăng nhập lại một lần."
   exit 0
 fi
 if (( ! DO )); then
-  print "\nChưa xoá gì. Chạy lại với --yes để xoá những gì xoá được trong danh sách trên."
+  log_step "Chưa xoá gì"
+  log_detail "Chạy lại với --yes để xoá những gì xoá được trong danh sách trên."
   if (( ${prefs[(I)com.apple.inputsources *]} )); then
-    print "Các mục trong com.apple.inputsources không xoá được bằng script (macOS từ chối ghi): bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources") TRƯỚC khi chạy --yes."
+    log_warn "Các mục trong com.apple.inputsources không xoá được bằng script (macOS từ chối ghi)"
+    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\") TRƯỚC khi chạy --yes."
   fi
   exit 0
 fi
 if [[ $selected == True ]]; then
-  print -u2 "\nDấu đang được chọn: chuyển sang bàn phím khác rồi chạy lại."
+  log_error "Dấu đang được chọn"
+  log_hint "Chuyển sang bàn phím khác rồi chạy lại."
   exit 1
 fi
 # Order matters: once the bundle is gone System Settings no longer lists Dấu, so its
@@ -140,15 +145,16 @@ fi
 # (measured 03/11/2026). Stop before touching anything while those entries exist and the
 # bundle is still installed.
 if (( ${prefs[(I)com.apple.inputsources *]} )) && (( ${#bundles} )); then
-  print -u2 "\nDấu còn trong danh sách nguồn nhập liệu đang bật. Bỏ nó trước, rồi chạy lại:"
-  print -u2 "  System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources"): chọn dòng của Dấu, bấm \"–\", bấm Done."
-  print -u2 "Chưa xoá gì: xoá bộ gõ trước thì System Settings không còn hiện Dấu để bỏ."
+  log_error "Dấu còn trong danh sách nguồn nhập liệu đang bật. Chưa xoá gì."
+  log_hint "Bỏ nó trước, rồi chạy lại:" \
+    "System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\"): chọn dòng của Dấu, bấm \"–\", bấm Done." \
+    "Xoá bộ gõ trước thì System Settings không còn hiện Dấu để bỏ."
   exit 1
 fi
 
 # --- remove --------------------------------------------------------------------------
 
-print "\nĐang xoá…"
+log_step "Đang xoá"
 if (( ${#procs} )); then
   # Ask Dấu.app to quit only if it is running: `tell application` would launch it.
   for id in com.codefastlabs.dau com.example.dau; do
@@ -165,15 +171,15 @@ if (( ${#procs} )); then
 fi
 # Unregister before the bundles move: LaunchServices follows a bundle into the Trash and
 # keeps it registered there, so unregistering the old path afterwards misses it.
-for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
+for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký: $r"; done
 for b in $bundles; do
   if osascript -e "tell application \"Finder\" to delete (POSIX file \"$b\" as alias)" >/dev/null 2>&1; then
-    print -r -- "  vào Thùng rác: $b"
+    log_detail "vào Thùng rác: $b"
     trashed_names+=("${b:t}")
   else
     # Never `rm -rf` a bundle: the user can take it back from the Trash, not from here.
     notremoved "KHÔNG chuyển được vào Thùng rác (Finder từ chối hoặc chưa được phép điều khiển): $b"
-    print -r -- "    Kéo $b vào Thùng rác bằng tay."
+    log_hint "Kéo $b vào Thùng rác bằng tay."
   fi
 done
 # A bundle that was never registered gets registered once it lands in the Trash
@@ -181,7 +187,7 @@ done
 if (( ${#bundles} )); then
   sleep 1
   trashed=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E "^path: +$HOME/\.Trash/.*(Dau|DauInputMethod)\.app \(0x" | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
-  for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && print -r -- "  bỏ đăng ký: $r"; done
+  for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký: $r"; done
 fi
 for d in $data; do
   rm -rf -- "$d"
@@ -189,9 +195,9 @@ for d in $data; do
     notremoved "KHÔNG xoá được: ${d#$HOME/}"
     # macOS protects an app's (group) container from other processes, Terminal included.
     [[ $d == */Containers/* || $d == */"Group Containers"/* ]] &&
-      print -r -- "    macOS chặn tiến trình khác xoá container của app: mở Finder › Đi › Đi tới Thư mục… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
+      log_hint "macOS chặn tiến trình khác xoá container của app: mở Finder › Đi › Đi tới Thư mục… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
   else
-    print -r -- "  đã xoá: ${d#$HOME/}"
+    log_detail "đã xoá: ${d#$HOME/}"
   fi
 done
 
@@ -203,7 +209,7 @@ backup_domain() { # domain → 0 if a backup of the domain exists
   [[ -n $backup_dir ]] || backup_dir=$(mktemp -d "${TMPDIR:-/tmp}/dau-clean-backup.XXXXXX") || return 1
   defaults export "$1" "$backup_dir/$1.plist" 2>/dev/null || return 1
   backed_up[$1]=1
-  print -r -- "  sao lưu $1: $backup_dir/$1.plist"
+  log_detail "sao lưu $1: $backup_dir/$1.plist"
 }
 for spec in $prefs; do
   domain=${spec%% *} key=${spec#* }
@@ -212,7 +218,7 @@ for spec in $prefs; do
     # changes nothing): do not try, report what remains.
     left=$(inputsource_entries "$domain" "$key")
     notremoved "KHÔNG xoá được ($left mục của Dấu còn trong $domain › $key): macOS chỉ cho dịch vụ nguồn nhập liệu ghi domain này."
-    print -r -- "    Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources")."
+    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\")."
     continue
   fi
   if ! backup_domain "$domain"; then
@@ -230,22 +236,23 @@ sys.stdout.buffer.write(plistlib.dumps(data))' "$key" "$ID_PATTERN" > "$tmp" && 
   # `defaults import` exits 0 even when the write is refused: read back.
   left=$(inputsource_entries "$domain" "$key")
   if [[ $left == 0 ]]; then
-    print -r -- "  đã bỏ các mục của Dấu: $domain › $key"
+    log_detail "đã bỏ các mục của Dấu: $domain › $key"
   else
     notremoved "KHÔNG bỏ được ($left mục còn lại): $domain › $key. Bản sao lưu: $backup_dir/$domain.plist"
-    print -r -- "    Gỡ bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, "All Input Sources") nếu Dấu còn trong danh sách;"
-    print -r -- "    muốn thử cài lần đầu thật sạch thì dùng một tài khoản macOS mới."
+    log_hint "Gỡ bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\") nếu Dấu còn trong danh sách;" \
+      "muốn thử cài lần đầu thật sạch thì dùng một tài khoản macOS mới."
   fi
 done
 for k in $keys; do
-  if defaults delete -g "$k" 2>/dev/null; then print -r -- "  đã xoá khoá: -g $k"; else notremoved "KHÔNG xoá được khoá: -g $k"; fi
+  if defaults delete -g "$k" 2>/dev/null; then log_detail "đã xoá khoá: -g $k"; else notremoved "KHÔNG xoá được khoá: -g $k"; fi
 done
 
 if (( unremoved )); then
-  print "\nCHƯA XOÁ HẾT: còn $unremoved mục (các dòng KHÔNG … ở trên). Xử lý tay theo hướng dẫn rồi chạy lại để kiểm."
-  print "Sau khi xử lý xong, đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
+  log_error "Chưa xoá hết: còn $unremoved mục (các dòng KHÔNG … ở trên)."
+  log_hint "Xử lý tay theo hướng dẫn rồi chạy lại để kiểm." \
+    "Sau khi xử lý xong, đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
   exit 1
 fi
-print "\nXong."
-(( ${#trashed_names} )) && print "  Dọn Thùng rác nếu muốn (vừa chuyển vào: ${(j:, :)trashed_names})."
-print "  Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
+(( ${#trashed_names} )) && log_detail "Dọn Thùng rác nếu muốn (vừa chuyển vào: ${(j:, :)trashed_names})."
+log_detail "Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
+log_done "Đã xoá dấu vết của Dấu"

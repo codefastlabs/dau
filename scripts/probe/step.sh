@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Runs one step (P0..P7, P3b, Q1..Q5) of the "new input source without logging out" experiments on one variant.
-# Side effects: installs input method, changes input source, kills processes, needs admin password (P6 only); builds the probe tools first
+# Side effects: builds the probe tools first; unless --dry-run: installs input method, changes input source, kills processes, needs admin password (P6 only)
 # Plan: docs/research/M5-INSTALL.md 8.2. Variants come from scripts/probe/make-variants.sh. Run it yourself
 # (it copies into the input method folder, registers, enables, and for P3..P5 stops system processes of
 # THIS login session); the assistant only uses --dry-run.
@@ -43,6 +43,7 @@ zmodload zsh/datetime
 setopt null_glob
 
 ROOT="${0:A:h:h:h}"
+source "${0:A:h:h}/lib/log.sh"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 OUT="$ROOT/build/probe.noindex"
 BIN="$OUT/bin"
@@ -60,15 +61,15 @@ for a in "$@"; do
     --log-stream) STREAM=1 ;;
     --watch) WATCH=1 ;;
     -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
-    -*) print -u2 "Tham số không hợp lệ: $a"; exit 2 ;;
+    -*) log_die 2 "Tham số không hợp lệ: $a" ;;
     *) args+=("$a") ;;
   esac
 done
-(( ${#args} == 2 )) || { print -u2 "Cần <bước> <biến thể>. Xem --help."; exit 2 }
+(( ${#args} == 2 )) || log_die 2 "Cần <bước> <biến thể>. Xem --help."
 STEP=${(U)args[1]}; STEP=${STEP/B/b}
-[[ $STEP == (P0|P1|P2|P3|P3b|P4|P5|P6|P7|Q1|Q2|Q3|Q4|Q5) ]] || { print -u2 "Bước không hợp lệ: ${args[1]} (P0 P1 P2 P3 P3b P4 P5 P6 P7 Q1 Q2 Q3 Q4 Q5)"; exit 2 }
+[[ $STEP == (P0|P1|P2|P3|P3b|P4|P5|P6|P7|Q1|Q2|Q3|Q4|Q5) ]] || log_die 2 "Bước không hợp lệ: ${args[1]} (P0 P1 P2 P3 P3b P4 P5 P6 P7 Q1 Q2 Q3 Q4 Q5)"
 NAME=${args[2]#DauProbe}
-[[ $NAME =~ '^([A-Za-z]+)([0-9]+)$' ]] || { print -u2 "Biến thể không hợp lệ: ${args[2]} (ví dụ DauProbeA1 hoặc A1)"; exit 2 }
+[[ $NAME =~ '^([A-Za-z]+)([0-9]+)$' ]] || log_die 2 "Biến thể không hợp lệ: ${args[2]} (ví dụ DauProbeA1 hoặc A1)"
 ROUND=$match[1]
 VARIANT="DauProbe$NAME"
 PARENT="$PREFIX.$VARIANT"
@@ -94,8 +95,7 @@ run() {
   return $rc
 }
 # runmust: like run, but stops the step when it fails (the copy).
-runmust() { run "$@" || { print -u2 "Lệnh lỗi, dừng bước."; exit 1 } }
-say() { print -r -- "$*"; }
+runmust() { run "$@" || log_die "Lệnh lỗi, dừng bước." }
 tisact() { run "$BIN/tis-act" "$@"; }
 snapshot() {
   if (( DRY )); then print -r -- "\$ $BIN/tis-probe   # một dòng JSON, mọi biến thể đang cài"; return 0; fi
@@ -113,15 +113,15 @@ copy_variant() {
 }
 
 if (( ! DRY )); then
-  [[ -d $SRC ]] || { print -u2 "Không thấy $SRC: chạy scripts/probe/make-variants.sh $ROUND trước."; exit 1 }
+  [[ -d $SRC ]] || log_die "Không thấy $SRC: chạy scripts/probe/make-variants.sh $ROUND trước."
   if [[ $STEP != P3b && -e $DEST ]]; then
-    print -u2 "$DEST đã có. Mỗi biến thể chỉ dùng cho một bước (ID chỉ mới một lần); dùng biến thể khác."; exit 1
+    log_die "$DEST đã có. Mỗi biến thể chỉ dùng cho một bước (ID chỉ mới một lần); dùng biến thể khác."
   fi
   if [[ $STEP == P3b && ! -e "$USER_DIR/$VARIANT.app" ]]; then
-    print -u2 "P3b dùng lại biến thể của P3: $USER_DIR/$VARIANT.app chưa có."; exit 1
+    log_die "P3b dùng lại biến thể của P3: $USER_DIR/$VARIANT.app chưa có."
   fi
   mkdir -p "$LOGDIR"
-  "$ROOT/scripts/probe/build-tools.sh" >/dev/null || { print -u2 "Không dựng được công cụ (scripts/probe/build-tools.sh)."; exit 1 }
+  "$ROOT/scripts/probe/build-tools.sh" >/dev/null || log_die "Không dựng được công cụ (scripts/probe/build-tools.sh)."
 fi
 
 BG=()
@@ -142,8 +142,8 @@ fi
 cleanup_bg() { for p in $BG; do kill $p 2>/dev/null; done }
 trap cleanup_bg EXIT
 
-(( DRY )) && say "# DRY RUN: bước $STEP, biến thể $VARIANT (ID $PARENT), nhật ký $STEPLOG"
-(( DRY )) || say "== Bước $STEP, biến thể $VARIANT, $(now)"
+(( DRY )) && log_step "Chạy thử (--dry-run): bước $STEP, biến thể $VARIANT (ID $PARENT), nhật ký $STEPLOG"
+(( DRY )) || log_step "Bước $STEP, biến thể $VARIANT, $(now)"
 
 case $STEP in
   P0)
@@ -208,7 +208,7 @@ case $STEP in
     run rm -f "$TISACT_LOG"
     run open -W -n --stdout "$TISACT_LOG" --stderr "$TISACT_LOG" "$TISACT_APP" --args enable "$PARENT"
     run cat "$TISACT_LOG"
-    say "Q4: có hộp thoại xin phép không? Ghi đúng câu chữ, bấm Allow."
+    log_hint "Q4: có hộp thoại xin phép không? Ghi đúng câu chữ, bấm Allow."
     ;;
   Q5)
     copy_variant
@@ -217,13 +217,13 @@ case $STEP in
     run rm -f "$TISACT_LOG"
     run open -W -n --stdout "$TISACT_LOG" --stderr "$TISACT_LOG" "$TISACT_APP" --args enable "$PARENT"
     run cat "$TISACT_LOG"
-    say "Q5: có hộp thoại xin phép không? Chụp ảnh hộp thoại, bấm Allow."
+    log_hint "Q5: có hộp thoại xin phép không? Chụp ảnh hộp thoại, bấm Allow."
     ;;
   P3b)
     run rm -f "$TISACT_LOG"
     run open -W -n --stdout "$TISACT_LOG" --stderr "$TISACT_LOG" "$TISACT_APP" --args enable "$PARENT"
     run cat "$TISACT_LOG"
-    say "P3b: NHÌN System Settings NGAY: có hộp thoại \"Allow “Dấu thử” to enable “Dấu thử ${NAME}”?\" (hoặc câu tương tự) không? Có hiện ở đâu, bấm gì? Ghi cả khi KHÔNG hiện."
+    log_hint "P3b: NHÌN System Settings NGAY: có hộp thoại \"Allow “Dấu thử” to enable “Dấu thử ${NAME}”?\" (hoặc câu tương tự) không? Có hiện ở đâu, bấm gì? Ghi cả khi KHÔNG hiện."
     ;;
   P4)
     run pkill -x TextInputMenuAgent
@@ -248,7 +248,7 @@ case $STEP in
     run pkill -x TextInputMenuAgent
     ;;
   P6)
-    (( DRY )) || say "Sẽ hỏi mật khẩu quản trị ngay bây giờ (sudo): gõ trong Terminal này."
+    (( DRY )) || log_warn "Sẽ hỏi mật khẩu quản trị ngay bây giờ (sudo): gõ trong Terminal này."
     copy_variant
     tisact register "$DEST"
     tisact enable "$PARENT"
@@ -262,7 +262,7 @@ case $STEP in
     if (( DRY )); then
       print -r -- "\$ pgrep -fl /Contents/MacOS/$VARIANT   # tiến trình $VARIANT có chạy không"
     else
-      print -r -- "tiến trình $VARIANT:"; pgrep -fl "/Contents/MacOS/$VARIANT" || print "  KHÔNG chạy"
+      log_step "Tiến trình $VARIANT"; pgrep -fl "/Contents/MacOS/$VARIANT" || log_error "KHÔNG chạy"
     fi
     ;;
 esac
@@ -272,7 +272,7 @@ if (( DRY )); then
   print -r -- "\$ sleep 10   # chờ trước bảng kiểm"
   print -r -- "\$ $BIN/tis-probe   # 3 lần, cách nhau 3 s, mỗi dòng ghi thêm vào $PROBELOG"
 else
-  say "Chờ 10 s rồi đọc lại bằng tiến trình mới (3 lần, cách 3 s)…"
+  log_step "Chờ 10 s rồi đọc lại bằng tiến trình mới (3 lần, cách 3 s)…"
   sleep 10
   for i in 1 2 3; do
     snapshot
@@ -283,13 +283,13 @@ fi
 installed=()
 for d in "$USER_DIR" "$SYS_DIR"; do for b in "$d"/DauProbe*.app; do installed+=("$b"); done; done
 (( DRY )) && installed=("$DEST")
-say ""
-say "Biến thể đang cài (tìm từng tên trong danh sách):"
+log_step "Biến thể đang cài (tìm từng tên trong danh sách)"
 for b in $installed; do
   n=${${b:t}%.app}; n=${n#DauProbe}
-  say "  Dấu thử $n   (${b:h})"
+  log_detail "Dấu thử $n   (${b:h})"
 done
-[[ -e "$USER_DIR/DauInputMethod.app" ]] && say "  Dấu – Tiếng Việt   (Dấu thật, $USER_DIR)"
-say ""
-say "Nhìn System Settings › Keyboard › Input Sources › Edit… › '+' › Vietnamese, và menu nhập liệu; ghi HIỆN/KHÔNG cho từng ID"
-say "(cả ID cũ, không chỉ ${VARIANT}: một bước sau có thể làm hiện ID đã cài trước đó). Nhật ký: $STEPLOG"
+[[ -e "$USER_DIR/DauInputMethod.app" ]] && log_detail "Dấu – Tiếng Việt   (Dấu thật, $USER_DIR)"
+log_step "Việc cần làm bằng mắt"
+log_detail "Nhìn System Settings › Keyboard › Input Sources › Edit… › '+' › Vietnamese, và menu nhập liệu; ghi HIỆN/KHÔNG cho từng ID"
+log_detail "(cả ID cũ, không chỉ ${VARIANT}: một bước sau có thể làm hiện ID đã cài trước đó). Nhật ký: $STEPLOG"
+log_done

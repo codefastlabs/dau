@@ -6,6 +6,7 @@
 # variants). Running tis-act has side effects; this script only compiles, signs and verifies.
 set -u
 ROOT="${0:A:h:h:h}"
+source "${0:A:h:h}/lib/log.sh"
 HERE="${0:A:h}"
 export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 OUT="$ROOT/build/probe.noindex"
@@ -17,7 +18,7 @@ case "${1:-}" in -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {
 
 build() { # name
   if [[ ! -x $BIN/$1 || $HERE/$1.swift -nt $BIN/$1 ]]; then
-    xcrun swiftc -O -o "$BIN/$1" "$HERE/$1.swift" || { print -u2 "Không biên dịch được $1"; exit 1 }
+    xcrun swiftc -O -o "$BIN/$1" "$HERE/$1.swift" || log_die "Không biên dịch được $1"
   fi
 }
 build tis-probe
@@ -26,7 +27,7 @@ build tis-act
 
 source "$ROOT/scripts/lib/build.sh"   # dau_signing_identities: skips revoked identities
 IDENT_HASH=$(dau_signing_identities | grep -F "Apple Development:" | awk '{print $2}' | head -1)
-[[ -n $IDENT_HASH ]] || { print -u2 "Không có danh tính Apple Development dùng được trong keychain."; exit 1 }
+[[ -n $IDENT_HASH ]] || log_die "Không có danh tính Apple Development dùng được trong keychain."
 
 if [[ ! -d $APP || $BIN/tis-act -nt $APP/Contents/MacOS/TisAct ]]; then
   rm -rf "$APP"; mkdir -p "$APP/Contents/MacOS"
@@ -59,4 +60,6 @@ PLIST
 fi
 plutil -lint "$APP/Contents/Info.plist" >/dev/null || exit 1
 codesign --verify --deep --strict "$APP" || exit 1
-print "OK: $BIN/tis-probe $BIN/tis-act $BIN/settings-ax $APP"
+log_ok "Công cụ sẵn sàng"
+log_detail "$BIN/tis-probe" "$BIN/tis-act" "$BIN/settings-ax" "$APP"
+log_done
