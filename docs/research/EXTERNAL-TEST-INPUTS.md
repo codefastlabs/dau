@@ -437,7 +437,7 @@ Nguồn tra: GitHub (`gh search repos "vietnamese input method"`), https://githu
 
 ### 9.2 Đếm theo nguồn
 
-Đo 05/11/2026 trên engine sau commit 0a9bb4b, khung test mô phỏng D20 theo cách đọc ở chữ cái đầu tiên và ba ngoại lệ của D20.
+Đo 05/11/2026 trên engine sau commit 0a9bb4b, khung test mô phỏng D20 theo cách đọc ở chữ cái đầu tiên và ba ngoại lệ của D20. Chạy lại ngày 09/11/2026 trên engine sau faff8a3: mọi số trong hai bảng dưới không đổi.
 "Khác" gồm cả lớp X.
 Cột `src:`: ca có tuỳ chọn của nguồn mà Dấu không có (mục 2.2).
 

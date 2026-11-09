@@ -72,6 +72,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - Tên cũ: "Ứng dụng không hỗ trợ thay chữ tại chỗ".
 - 30/10/2026: mặc định mọi app không gạch chân, danh sách chỉ gắn nhãn "Đề xuất" ("chốt 30/10/2026").
 - 30/10/2026: Firefox vào danh sách đề xuất ban đầu ("thêm theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms; người dùng duyệt 30/10/2026").
+- 09/11/2026: câu "từ 10 ms đều đúng" trong lý do viết lại cho khớp số đo: VS Code ở 10 ms sai một lần ở lượt M2 với câu mẫu cũ; luật không đổi.
 
 ### D16. Bảo trì và gỡ cài đặt
 
@@ -177,6 +178,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 04/11/2026: "Bật lần đầu không cần đăng xuất (người dùng chốt 04/11/2026)". "Lý do (đo bằng bản thử rồi bằng Dấu thật 04/11/2026, macOS 27.2, tài khoản đã từng cài Dấu; `docs/research/M5-INSTALL.md` mục 0 (b)9, (b)10 và 8.1b vòng E): danh sách '+' và việc dựng hộp thoại đọc bộ đệm của System Settings, bộ đệm không làm mới khi có nguồn mới đăng ký (trước đây chỉ đăng xuất mới làm mới) …"
 - 05/11/2026: một app vẫn không chọn được Dấu thì hướng dẫn đăng xuất rồi đăng nhập lại ("người dùng chốt 05/11/2026"). "Lý do (đo bằng Dấu thật 05/11/2026, `docs/research/M5-INSTALL.md` (b)12)".
 - 05/11/2026: "Nâng cấp lúc mở app × kiểm chữ ký (người dùng chốt 05/11/2026, từ kiểm toán M5)".
+- 09/11/2026: câu "Chưa làm cho gỡ cài đặt: bộ đệm còn nhớ bộ gõ đã gỡ" viết rõ là gỡ cài đặt chỉ xoá bộ đệm của System Settings (D16), bộ đệm của từng app thì chưa; luật không đổi.
 
 ### D38. Chữ trên giao diện
 

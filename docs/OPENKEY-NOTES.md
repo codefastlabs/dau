@@ -480,11 +480,11 @@ Nguồn chính thức. Header SDK đọc trong Xcode 27.1, `MacOSX27.0.sdk`.
 Kết quả mong đợi viết theo chính tả tiếng Việt và DECISIONS.md, **không** lấy từ OpenKey (D10).
 Cấu hình mặc định theo D15: Telex, kiểu mới, bỏ dấu tự do bật, tự khôi phục bật, nâng cao tắt. Dòng nào khác cấu hình mặc định thì ghi rõ.
 
-Cột "So với OpenKey" theo ba mức:
+Cột "So với OpenKey" có hai giá trị:
 - **Khác (cố ý)**: Dấu cố ý khác OpenKey.
-- **Chờ chốt**: không còn ca nào (`dD` → D34, `duo7c59` → D28, chốt 29/10/2026).
-- Ca do phiên chính thêm theo các quyết định mới gom ở 6.9 (đã duyệt 29/10/2026).
 - Bỏ trống: kết quả được dự đoán là giống OpenKey.
+
+Không còn ca nào chờ chốt (`dD` theo D34, `duo7c59` theo D28, chốt 29/10/2026). Ca do phiên chính thêm theo các quyết định mới gom ở 6.9 (đã duyệt 29/10/2026).
 
 Cột "Ghi chú" dẫn số quyết định khi kết quả do quyết định đó định ra.
 

@@ -12,7 +12,7 @@
 - **Icon ứng dụng trong hàng (02/11/2026):** khung 32 cho hàng có dòng phụ, 24 cho hàng một dòng kèm control; mục "Icon ứng dụng trong hàng".
 - **Nút mở/thu kiểu "Nâng cao" (02/11/2026):** System Settings không có hàng mở/thu nào trong 13 pane đã rà; `DisclosureGroup` trong Form lệch cách vẽ hàng và không mở được qua Accessibility API, nên giữ nút + chevron. Đổi câu lý do trong D9 cần người dùng quyết. Mục "Nút mở/thu kiểu 'Nâng cao'".
 - **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) chưa đo trên cửa sổ thật. Mục "Cần chỉnh / không khớp".
-- **Chưa kiểm chứng:** cửa sổ System Settings có đổi rộng được không (mục "Cửa sổ có đổi rộng được không"; chờ người dùng kéo thử mép phải).
+- **Chưa kiểm chứng:** cửa sổ System Settings có đổi rộng được không (mục "Cửa sổ có đổi rộng được không"). Đo được bằng Accessibility (đặt `AXSize` cho cửa sổ System Settings rồi đọc lại), chiếm màn hình vài giây; chưa hẹn giờ chạy.
 - Tài liệu Apple không công bố các số 704, 20, 12, 37,5; mọi số trong file là số đo trên máy, có thể đổi theo phiên bản macOS (mục "Nguồn API").
 
 ## Chuẩn đối chiếu: System Settings (macOS 27.2)
@@ -171,7 +171,7 @@ Kết luận:
 - AppKit báo cửa sổ **đổi được kích thước** (kích thước ghi được, nút phóng to bật).
 - Các cách đọc trên không tách được chiều ngang với chiều dọc: một cửa sổ chỉ đổi được chiều cao cũng cho đúng các kết quả này.
 - Chưa kiểm chứng được độ rộng có cố định ở 740 hay không mà không kéo thử cửa sổ.
-- Dấu giữ 740–976 (thẻ không chạm giới hạn 704 của Form), chờ người dùng kéo thử mép phải cửa sổ System Settings để chốt.
+- Dấu giữ 740–976 (thẻ không chạm giới hạn 704 của Form), chốt sau khi đo cửa sổ System Settings có đổi rộng được không (đo bằng Accessibility, xem Hiện trạng).
 
 ### Nút mở/thu kiểu "Nâng cao"
 
@@ -220,7 +220,7 @@ Chi tiết từng mục:
 
 - **Độ rộng sidebar**: mặc định 144, System Settings 232. Mặc định làm cụt chữ "Cập nhật & hỗ trợ". Cách gần nhất: `navigationSplitViewColumnWidth(232)`; đặt rồi thì mọi số đo sidebar và lề form trùng System Settings.
 - **Ô tìm ở sidebar**: mặc định không có; dùng `.searchable(placement: .sidebar)` là ra đúng khung của System Settings.
-- **Lề trên form**: 20 so với 12. Chưa tìm được cách giảm bằng API công khai (`contentMargins` chỉ cộng thêm). Theo D9 thì không tự chỉnh thông số hệ thống; giữ 20 hay tìm cách khớp 12 cần người dùng quyết.
+- **Lề trên form**: 20 so với 12. Chưa tìm được cách giảm bằng API công khai (`contentMargins` chỉ cộng thêm). Dấu giữ 20 theo D9 (không chỉnh thông số hệ thống); muốn khớp 12 thì phải đổi D9, việc của người dùng.
 - **Nút trên thanh công cụ**: SwiftUI tự thêm nút ẩn/hiện sidebar; System Settings có Lùi/Tiến thay vào đó.
   - Bỏ nút bằng `.toolbar(removing: .sidebarToggle)` làm thanh công cụ co từ 52 xuống 32 và tiêu đề trang thành chữ tiêu đề cửa sổ; muốn giữ thanh 52 thì để nguyên nút.
   - Đã giải quyết (05/11/2026): cụm Lùi/Tiến bằng `ControlGroup { … }.controlGroupStyle(.navigation)` ở `.navigation` giữ thanh 52 và tiêu đề hệ thống 15 đậm.

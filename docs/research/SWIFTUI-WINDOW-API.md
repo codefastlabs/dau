@@ -53,15 +53,15 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
 - **Thanh công cụ co còn 32 pt khi gỡ nút sidebar: Apple không ghi tài liệu cho hành vi này (mục 2.7).**
   - Cách được tài liệu hỗ trợ để có tiêu đề hệ thống nằm ngay sau cụm nút như System Settings: đặt nút điều hướng ở `ToolbarItemPlacement.navigation`.
   - Tài liệu ghi vị trí đó là "mép đầu thanh công cụ, **trước tiêu đề inline**" (mục 2.4).
-  - Khi chỉ có nút ở `.navigation`, thanh có cao 52 pt và tiêu đề có 15 pt đậm hay không thì phải đo (mục 9).
+  - Khi chỉ có nút ở `.navigation`, thanh vẫn cao 52 pt và tiêu đề hệ thống 15 pt đậm (đo 05/11/2026, `docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
 - **Lùi/Tiến: hệ thống không có sẵn cho `NavigationSplitView` trên macOS (mục 3.1, 3.2).**
   - `NavigationStack` chỉ cho nút Lùi, không có Tiến.
   - Theo Apple, System Settings được dựng bằng SwiftUI, "navigation split view và stack" (WWDC22), nhưng Apple không nói Lùi/Tiến của nó làm thế nào.
   - Cách làm khớp tài liệu: app tự giữ lịch sử chọn mục, đặt hai nút trong `ToolbarItem(placement: .navigation)` (gói bằng `ControlGroup`), và có lệnh trên thanh menu tương ứng (HIG).
 - **Đối chiếu phương án ở mục 7:** hai phần đầu có tài liệu ủng hộ; phần thứ ba (chặn thu gọn bằng `columnVisibility`) không có, và thuộc loại "chống lại người dùng" mà HIG khuyên tránh.
-- **Hai việc mới phát hiện, phải đo (mục 1.5, 6):**
-  - (a) `CommandGroup(replacing: .sidebar) {}` trong `SettingsCommands` có thể bỏ luôn "Enter/Exit Full Screen", vì tài liệu ghi nhóm `.sidebar` gồm cả hai lệnh (mục 1.5).
-  - (b) Câu "sidebar của System Settings không kéo rộng hay ẩn được" trong chú thích của `FixedSidebar` chưa có số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`.
+- **Hai việc phát hiện ngày 05/11, đã giải quyết (mục 1.5, 6):**
+  - (a) Thay cả nhóm `.sidebar` có thể bỏ luôn "Enter/Exit Full Screen". Mã hiện nay không thay nhóm đó mà chỉ thêm Lùi/Tiến vào trước nó (`SettingsHistoryCommands`), nên câu hỏi không còn.
+  - (b) Sidebar của System Settings đã đo ngày 05/11/2026: kéo đường chia và bấm đúp không đổi độ rộng, không thu được (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
 - Mọi phiên bản macOS ghi trong file là phiên bản Apple ghi trên trang tài liệu.
   - D1 (Nền tảng) đặt tối thiểu macOS 14, nên API cần macOS 15 trở lên phải có `if #available`.
 
@@ -96,7 +96,7 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
 - [Tài liệu] `navigationSplitViewColumnWidth(min:ideal:max:)`: "Sets a **flexible**, preferred width…". https://developer.apple.com/documentation/swiftui/view/navigationsplitviewcolumnwidth(min:ideal:max:)
   - Cả hai trang: "Only some platforms enable resizing columns. If you specify a width that the current presentation environment doesn't support, SwiftUI may use a different width for your column."
 - Tài liệu không nói `min`/`max` có giới hạn được việc người dùng kéo trên macOS hay không, cũng không nói gì về thu gọn.
-- [Đo của Dấu] Đường chia vẫn kéo được dù độ rộng cố định, kéo có thể thu gọn sidebar (chú thích của `FixedSidebar`; mục 16 của `docs/UI-CHECKS.md`).
+- [Đo của Dấu, bản dùng `NavigationSplitView` trước mục 10] Đường chia vẫn kéo được dù độ rộng cố định, kéo có thể thu gọn sidebar (chú thích của `FixedSidebar`; mục 16 của `docs/UI-CHECKS.md`).
 - Dùng cho Dấu thế nào:
   - `navigationSplitViewColumnWidth(232)` (một giá trị) đúng với ý "độ rộng cố định" theo tài liệu.
   - Dùng `min = ideal = max` cũng được nhưng tài liệu không hứa thêm gì.
@@ -118,11 +118,10 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
 - [Tài liệu] `CommandGroupPlacement.sidebar` (macOS 11+): "Placement for commands that control the app's sidebar and full-screen modes. By default, this group includes the following commands in macOS: Show/Hide Sidebar, Enter/Exit Full Screen." https://developer.apple.com/documentation/swiftui/commandgroupplacement/sidebar
 - [Tài liệu] `CommandGroup(replacing:addition:)`: "complete replacement of the contents of the indicated group". https://developer.apple.com/documentation/swiftui/commandgroup/init(replacing:addition:)
 - [Suy luận, cần kiểm chứng] Vì thay **toàn bộ** nhóm, `CommandGroup(replacing: .sidebar) {}` có thể bỏ cả "Enter/Exit Full Screen" trong menu View.
-  - [Phải đo] Mở menu View của Dấu (đọc bằng Accessibility API) xem còn mục toàn màn hình không.
+  - [Đã giải quyết] Mã hiện nay không thay nhóm này, chỉ thêm vào (`SettingsHistoryCommands`), nên mục toàn màn hình vẫn còn.
   - Việc cửa sổ Cài đặt có vào toàn màn hình được không còn phụ thuộc `windowResizability` và khung tối đa, nên đo cả hai.
 - [Tài liệu, chưa rõ] Hai trang trên lệch nhau: `SidebarCommands` "optional", còn nhóm `.sidebar` "by default" có Show/Hide Sidebar.
-  - [Phải đo] Không có `SidebarCommands` thì menu View của app có mục "Show/Hide Sidebar" không.
-  - Chú thích trong `SettingsCommands` ngầm cho là có.
+  - Chú thích của `SettingsHistoryCommands` (mã hiện nay, không dùng `SidebarCommands`) ghi menu View không có "Show/Hide Sidebar"; tài liệu này chưa ghi số đo riêng cho điều đó.
 - [HIG] Thanh menu, menu View: "Show/Hide Sidebar — In a window that includes a sidebar, toggles the sidebar's visibility." https://developer.apple.com/design/human-interface-guidelines/the-menu-bar
 
 ### 1.6 HIG: có nên cho người dùng ẩn sidebar trên macOS
@@ -137,7 +136,7 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
   - HIG dùng chữ "consider", không bắt buộc phải cho ẩn.
   - Nhưng **một khi sidebar thu gọn được thì phải có cách mở lại** (nút hoặc lệnh menu kèm phím tắt).
   - Lỗi đã gặp (thu gọn được mà không mở lại được) là đúng trường hợp HIG cảnh báo.
-  - System Settings có cho thu gọn sidebar hay không: [Phải đo] (mục 6).
+  - System Settings không cho thu gọn sidebar (đo ngày 05/11/2026, `docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
 
 ## 2. Thanh công cụ và tiêu đề trên macOS
 
@@ -330,7 +329,7 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
 
 Thay cho phần thứ ba, cách có tài liệu: cho phép thu gọn nhưng luôn mở lại được.
 - Bằng lệnh "Show Sidebar" trong menu View (nhóm `.sidebar` mặc định hoặc `SidebarCommands`) và/hoặc nút sidebar.
-- Chọn cách nào là quyết định giao diện (D9, canvas trước), không thuộc nghiên cứu này.
+- Chọn cách nào là quyết định giao diện (D9, canvas trước), không thuộc nghiên cứu này. Sau đó D9 chọn sidebar cố định bằng split view của chính app (mục 10): sidebar không thu được nên không cần lệnh mở lại.
 
 ## 8. Từng cách vá hiện có và API được hỗ trợ thay cho nó
 
@@ -346,7 +345,9 @@ Về sau: `PageTitle`, `HiddenWindowTitle`, `RemoveToolbarTitle` đã gỡ (05/1
 | `FixedSidebar` (đi tìm `NSSplitView` mà SwiftUI dựng, đặt `canCollapse = false`, độ dày cố định, phủ một view chặn chuột lên đường chia) và `FixedSidebar.discardSavedState` (xoá khoá defaults `NSSplitView Subview Frames settings, SidebarNavigationSplitView`) | Sidebar kéo thu gọn được mà không có cách mở lại | **Không có cách nào có tài liệu** để khoá sidebar của `NavigationSplitView` (mục 1.2, 1.3; [SDK]). Thuộc tính AppKit thì công khai (mục 5), nhưng việc `NavigationSplitView` dựng bằng `NSSplitViewController`, nó làm delegate của `NSSplitView`, và tên khoá autosave đều không có trong tài liệu. Cách có tài liệu: để thu gọn được nhưng luôn mở lại được (lệnh View › Show Sidebar, nút sidebar) | Bằng chứng "không có API": chỉ mục tài liệu SwiftUI và `SwiftUI.swiftinterface` (SDK 27.2) |
 | `CommandGroup(replacing: .sidebar) {}` trong `SettingsCommands` | Bỏ "Show/Hide Sidebar" (⌃⌘S) vì sidebar cố định | API công khai (macOS 11+), nhưng thay **cả nhóm**, mà nhóm gồm cả "Enter/Exit Full Screen" (mục 1.5). Nếu sidebar được thu gọn thì lệnh này chính là cách mở lại mà HIG khuyên giữ | Bỏ mất mục toàn màn hình hay không: [Phải đo] |
 
-## 9. Danh sách đo đề xuất (chưa chạy)
+## 9. Danh sách đo đề xuất ngày 05/11/2026
+
+Danh sách này không được chạy nguyên như vậy. Mục 3 và 4 không còn áp dụng từ khi sidebar không dùng `NavigationSplitView` nữa (mục 10). Phần sidebar của mục 5 đã đo (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Số đo thanh công cụ và tiêu đề của Dấu hiện nay do `scripts/selftest/settings-window/run.sh` kiểm.
 
 Mọi mục dưới đây là thao tác trên cửa sổ thật, chiếm màn hình: hỏi người dùng giờ chạy (CLAUDE.md). Đo trên Dấu thật, không kết luận từ app thử.
 

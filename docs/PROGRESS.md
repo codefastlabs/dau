@@ -15,6 +15,9 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 Chờ người dùng:
 - Duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog).
+- Chiều cao thẻ danh sách 188 ở trang Ứng dụng: lấy từ mockup, System Settings không có số tương ứng; giữ hay đổi (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
+- Câu lý do giữ nút + chevron cho nhóm "Nâng cao" trong D9 (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
+- Hẹn giờ cho một lần đo vài giây: cửa sổ System Settings có đổi rộng được không (phiên chính đo bằng Accessibility); kết quả chốt độ rộng 740–976 của Dấu.
 
 So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
 - Phần B, C xong 09/11.

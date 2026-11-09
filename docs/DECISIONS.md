@@ -108,7 +108,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - Gạch chân (marked text) là đường lui, bật theo quy tắc riêng của từng app (D5 (Quy tắc theo ứng dụng)).
   - **Mặc định mọi app không gạch chân.** Danh sách tương thích chỉ gắn nhãn "Đề xuất" cho app nên bật gạch chân; người dùng tự bật khi gặp lỗi.
   - Danh sách đề xuất ban đầu: VS Code, các app Electron/Chromium và Firefox. Terminal không đề xuất.
-  - **Vì sao:** đo ở M3 (độ tin cậy) bằng câu mẫu `scripts/selftest/typing/run.sh`: thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms (Chrome, Terminal sai ở 0 ms; VS Code ở 0 và 5 ms), từ 10 ms đều đúng; gạch chân sửa được Chrome và VS Code ở 0 ms, Terminal ở 0 ms vẫn lỗi (còn vẽ marked text cũ). Firefox vào danh sách theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms.
+  - **Vì sao:** đo ở M3 (độ tin cậy) bằng câu mẫu `scripts/selftest/typing/run.sh`: thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms (Chrome, Terminal sai ở 0 ms; VS Code ở 0 và 5 ms), từ 10 ms đúng ở lượt đo M3; riêng VS Code ở 10 ms đã sai một lần ở lượt đo M2 với câu mẫu cũ, từ 20 ms đúng ở mọi lượt (`docs/COMPATIBILITY.md` mục 6.2); gạch chân sửa được Chrome và VS Code ở 0 ms, Terminal ở 0 ms vẫn lỗi (còn vẽ marked text cũ). Firefox vào danh sách theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms.
 - **D14. Onboarding.**
   - Bước 1 phát hiện bộ gõ cũ đang chạy (OpenKey, EVKey, GoTiengViet…) qua `NSWorkspace` và hướng dẫn tắt (N4 (Không tự đổi cài đặt hệ thống)).
   - Bước 2 bật Dấu (một nguồn nhập liệu duy nhất, D2 (Chuyển Việt/Anh)).
@@ -265,7 +265,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     4. gọi `TISEnableInputSource` cho mục cha: macOS mở System Settings và hỏi "Allow “Dấu” to enable “…”?".
   - Chỉ tính là bật khi `com.apple.inputsources` › `AppleEnabledThirdPartyInputSources` có mục của Dấu (không tin cờ enabled của TIS).
   - Sau khi đã bật, app quét lại một lượt: bộ đệm nào vẫn không có `DauInputMethod.app` (dựng lại trong khoảng giữa lúc xoá và lúc đăng ký) thì xoá rồi đăng ký lại một lần.
-  - Chưa làm cho gỡ cài đặt: bộ đệm còn nhớ bộ gõ đã gỡ, chưa đo hậu quả.
+  - Gỡ cài đặt chỉ xoá bộ đệm của System Settings (D16 (Bảo trì và gỡ cài đặt)); bộ đệm riêng của từng app vẫn nhớ bộ gõ đã gỡ, chưa đo hậu quả.
   - **Đường lui:** hành vi bộ đệm của System Settings và của từng app (xem "Vì sao") không có tài liệu Apple, bản macOS sau có thể khác. Đọc lại không thấy mục của Dấu thì hướng dẫn tự thêm bằng "+", và nếu "+" không có Dấu thì đăng xuất một lần (Apple DTS 6/2026).
   - **Một app vẫn không chọn được Dấu** (bộ đệm riêng không xoá được, như các thư mục được hệ thống bảo vệ): hướng dẫn đăng xuất rồi đăng nhập lại một lần, ở màn "Đã bật" của onboarding, sheet Báo lỗi và Hỏi đáp của trang tải về.
   - Homebrew cask chỉ khai `app`. Chi tiết: `docs/research/M5-INSTALL.md`.
