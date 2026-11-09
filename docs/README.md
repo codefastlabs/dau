@@ -12,6 +12,7 @@ Mục lục mọi tài liệu trong `docs/`. Cách ghi (mỗi sự kiện ở m�
 | `docs/ARCHITECTURE.md` | thành phần, build, luồng một phím |
 | `docs/ROADMAP.md` | các mốc và tiêu chí hoàn thành |
 | `docs/UI.md` | nội dung từng màn hình (mockup trên canvas) |
+| `docs/ui/canvas/README.md` | bản chụp canvas thiết kế trong repo: ảnh và nguồn từng artboard đã duyệt (sinh bằng `scripts/design/render-canvas.sh`) |
 | `docs/BRAND.md` | biểu tượng, màu, chữ, file nhận diện cần xuất |
 | `docs/PROGRESS.md` | trạng thái hiện tại, bảng mốc, kế hoạch mốc đang làm, số đo, nhật ký theo ngày |
 
@@ -23,6 +24,7 @@ Tra khi cần:
 | `docs/COMPATIBILITY.md` | ma trận ứng dụng: cách thử, kết quả, giới hạn đã biết |
 | `docs/OPENKEY-NOTES.md` | đọc mã OpenKey: tính năng, ca biên, Dấu làm hay không |
 | `docs/GLOSSARY.md` | thuật ngữ Anh–Việt của chuỗi giao diện (input source / nguồn đầu vào…) và cách viết câu tiếng Anh |
+| `docs/TROUBLESHOOTING.md` | sự cố hay gặp khi phát triển (Dấu bị xám, app chưa đăng ký, TextEdit và iCloud…) và cách xử lý |
 | `docs/L10N-REVIEW.md` | bản tạm: câu chữ tiếng Anh chờ người dùng duyệt (M9); xoá khi đã sửa catalog |
 
 ## Nghiên cứu
@@ -50,5 +52,6 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | `docs/history/LOG-M5.md` | nhật ký M5 (30/10–05/11/2026), chuyển từ `PROGRESS.md` khi đóng M5 |
 | `docs/history/LOG-M5-M6.md` | nhật ký giữa M5 và M6 (05–08/11/2026), chuyển từ `PROGRESS.md` ngày 09/11/2026 |
 | `docs/history/DECISIONS-LOG.md` | lịch sử từng nguyên tắc và quyết định của `DECISIONS.md`: ngày, ai chốt, bản trước, cách nói cũ |
+| `docs/history/DOCS-LOG.md` | phần lịch sử (ngày chốt, bản trước, số phiên bản canvas) tách khỏi ARCHITECTURE, UI, ROADMAP, PROGRESS, CONTRIBUTING và file agent khi các file đó chuyển sang chỉ ghi hiện trạng (09/11/2026) |
 | `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
 | `docs/history/KICKOFF.md` | brief khởi động M0–M8 lúc bắt đầu dự án |

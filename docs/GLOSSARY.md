@@ -1,10 +1,10 @@
 # Bảng thuật ngữ Anh–Việt
 
-Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41), để câu tiếng Anh và tiếng Việt gọi một thứ bằng cùng một từ ở mọi màn. Câu tiếng Anh theo thuật ngữ Apple tiếng Anh, câu tiếng Việt theo thuật ngữ Apple tiếng Việt (D38). Thêm từ mới vào đây trước khi viết câu dùng nó. Kiểm mọi khoá có đủ bản `en` và `vi`: `scripts/check-l10n/check.sh`.
+Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (Ngôn ngữ giao diện)), để câu tiếng Anh và tiếng Việt gọi một thứ bằng cùng một từ ở mọi màn. Câu tiếng Anh theo thuật ngữ Apple tiếng Anh, câu tiếng Việt theo thuật ngữ Apple tiếng Việt (D38 (Chữ trên giao diện)). Thêm từ mới vào đây trước khi viết câu dùng nó. Kiểm mọi khoá có đủ bản `en` và `vi`: `scripts/check-l10n/check.sh`.
 
 ## Không dịch
 
-- **Dấu**: giữ nguyên ở mọi ngôn ngữ (D24).
+- **Dấu**: giữ nguyên ở mọi ngôn ngữ (D24 (Tên và định danh)).
 - **Tên giao diện của macOS** (System Settings, Keyboard, Input Sources, Edit…, Add, Done, Allow, Don’t Allow, Log Out, Applications, Trash, Language & Region ("Ngôn ngữ & Vùng") và mục Applications của nó, tên ngôn ngữ Vietnamese, tuỳ chọn "Automatically switch to a document’s input source"): không viết trong câu, luôn là `%@` lấy từ chuỗi của hệ thống (`SystemUINames`, `LayoutNames`; D38).
 - **Nhãn trong app của người khác** (OpenKey "Bảng điều khiển…", "Khởi động cùng macOS", "Thoát"; XKey "Thoát XKey"; Gõ Nhanh "Launch at login"; tên app khác như "Gõ Nhanh"): chép đúng chữ app đó hiện, cả trong câu tiếng Anh.
 - **Ví dụ gõ** (`hoaf binhf`, `hoà`, `thúy`…): dữ liệu, không dịch.
@@ -18,15 +18,15 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41),
 | input method | bộ gõ | phần mềm gõ (Dấu, OpenKey…); "bộ gõ Dấu" là tiến trình bộ gõ, khác app Dấu |
 | Dấu – Vietnamese | Dấu – Tiếng Việt | tên nguồn đầu vào; macOS chọn theo ngôn ngữ hệ thống (D41), nên trong câu luôn là `%@` (`SystemUINames.dauInputSource`), không viết cứng |
 | typing method | kiểu gõ | Telex, VNI, Simple Telex |
-| Simple Telex | Telex đơn giản | D29 |
+| Simple Telex | Telex đơn giản | D29 (Telex đơn giản) |
 | tone mark placement | vị trí dấu thanh | Modern / Classic = kiểu mới / kiểu cũ |
 | mark key | phím dấu | |
 | free mark placement | bỏ dấu tự do | |
-| restore non-Vietnamese words | tự khôi phục từ không phải tiếng Việt | D4 |
-| add marks to typed words | thêm dấu cho từ đã gõ | D20 |
-| consonant shortcuts | gõ tắt phụ âm | D21 |
+| restore non-Vietnamese words | tự khôi phục từ không phải tiếng Việt | D4 (Từ nước ngoài) |
+| add marks to typed words | thêm dấu cho từ đã gõ | D20 (Thêm dấu cho từ đã gõ) |
+| consonant shortcuts | gõ tắt phụ âm | D21 (Gõ tắt phụ âm) |
 | Smart Typing | Thông minh | mục trong sidebar |
-| underline | gạch chân | quy tắc theo app: Underline / No Underline = Có gạch chân / Không gạch chân (D5, D13) |
+| underline | gạch chân | quy tắc theo app: Underline / No Underline = Có gạch chân / Không gạch chân (D5 (Quy tắc theo ứng dụng), D13 (Gạch chân làm đường lui)) |
 | app rules | quy tắc riêng | |
 | Suggested | Đề xuất | nhãn và mục của danh sách tương thích |
 | Dấu Settings | Cài đặt Dấu | tên cửa sổ Cài đặt; menu bộ gõ: "Dấu Settings…" / "Cài đặt Dấu…" |

@@ -40,12 +40,12 @@ Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ 
    scripts/dev/install-input-method.sh
    ```
 
-   Script in ra các bước bật Dấu trong System Settings. Thêm `--release` để dùng hằng ngày (bản Release không ghi nhật ký theo từng phím, D8).
+   Script in ra các bước bật Dấu trong System Settings. Thêm `--release` để dùng hằng ngày (bản Release không ghi nhật ký theo từng phím, D8 (Không telemetry)).
 
 Lưu ý:
 
-- **Bản bạn dựng là bản phát triển (D7)**, không phải bản chính thức. Chỉ quy trình phát hành trên CI ký Developer ID.
-- **Bản của bạn thay bản Dấu đang cài.** Bundle ID giống bản chính thức và không đổi giữa các bản (D37), nên trên một máy chỉ có một bản Dấu. Muốn quay lại bản chính thức thì cài lại từ bản tải về. Liệt kê mọi dấu vết của Dấu trên máy: `scripts/dev/clean-dau.sh` (không tham số thì chỉ đọc).
+- **Bản bạn dựng là bản phát triển (D7 (Cập nhật và loại bản dựng))**, không phải bản chính thức. Chỉ quy trình phát hành trên CI ký Developer ID.
+- **Bản của bạn thay bản Dấu đang cài.** Bundle ID giống bản chính thức và không đổi giữa các bản (D37 (Cài đặt bộ gõ)), nên trên một máy chỉ có một bản Dấu. Muốn quay lại bản chính thức thì cài lại từ bản tải về. Liệt kê mọi dấu vết của Dấu trên máy: `scripts/dev/clean-dau.sh` (không tham số thì chỉ đọc).
 - **Dùng một Apple ID trên hai máy Mac:** mỗi máy tạo một chứng chỉ riêng, và tạo chứng chỉ ở máy này có thể làm chứng chỉ ở máy kia bị thu hồi (bản đã cài báo `CSSMERR_TP_CERT_REVOKED` khi kiểm chữ ký). Cách dùng chung: ở máy đang có chứng chỉ hợp lệ, mở Keychain Access › login › My Certificates, xuất "Apple Development: …" (kèm khoá riêng) ra file `.p12`, rồi nhập file đó ở máy kia.
 
 ## Engine và OpenKey
@@ -57,8 +57,8 @@ Lưu ý:
 
 ## Giao diện
 
-- Giao diện dùng thành phần của macOS, bố cục và khoảng cách theo System Settings (D9). Nội dung từng màn hình: `docs/UI.md`.
-- Chữ trên giao diện viết tiếng Việt (D38), đưa vào String Catalog (`Localizable.xcstrings`), không ghi lời hứa chưa kiểm chứng (N5).
+- Giao diện dùng thành phần của macOS, bố cục và khoảng cách theo System Settings (D9 (Giao diện)). Nội dung từng màn hình: `docs/UI.md`.
+- Chuỗi giao diện đưa vào String Catalog (`Localizable.xcstrings`): khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện); tên giao diện của macOS theo D38 (Chữ trên giao diện)), không ghi lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)).
 - Thay đổi giao diện: mở issue mô tả (kèm ảnh chụp hoặc phác thảo) trước khi viết mã.
 
 ## Quy ước

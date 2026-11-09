@@ -1,6 +1,17 @@
 # Nhận diện thương hiệu
 
-Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh xem trước GitHub" trên canvas (link trong `docs/UI.md`). Quyết định gốc: D24 (tên), D25 (nhận diện).
+Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh xem trước GitHub" trên canvas (link và bản chụp trong repo: `docs/UI.md`, `docs/ui/canvas/README.md`):
+
+- [hướng biểu tượng](ui/canvas/BrandConcepts.png)
+- [hướng dẫn thương hiệu](ui/canvas/BrandGuide.png)
+- [biểu tượng ứng dụng](ui/canvas/AppIcon.png)
+- [nơi hình đại diện xuất hiện](ui/canvas/BrandInUse.png)
+- [biểu tượng trong hệ thống](ui/canvas/MenuBarIcons.png)
+- [biểu tượng bản phát triển](ui/canvas/AppIconDev.png)
+- [ảnh chia sẻ Open Graph](ui/canvas/OgImage.png)
+- [ảnh xem trước GitHub](ui/canvas/GithubPreview.png)
+
+Quyết định gốc: D24 (Tên và định danh) cho tên, D25 (Nhận diện) cho nhận diện.
 
 ## Biểu tượng
 - Chữ "ấ" màu Giấy trên nền Mực; dấu mũ cùng màu chữ, **riêng dấu sắc màu Son** — biểu tượng tự kể tên sản phẩm.
@@ -10,12 +21,24 @@ Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và 
 - Trên nền tối hoặc nền Mực: thêm viền mảnh màu Giấy ~35% để tách biểu tượng khỏi nền.
 
 ## Biểu tượng bản phát triển
-- Quy tắc ở D25 (các loại bản ở D7): biểu tượng chuẩn chỉ cho bản chính thức; mọi bản khác dùng biểu tượng bản phát triển.
-- Chữ "ấ" giữ nguyên như biểu tượng chuẩn (Giấy, dấu sắc Son), trên nền **Chì**; một dải chéo màu **Hổ phách** cắt góc dưới phải, nằm ngoài chữ "a". Kiểu Tối: nền và dải tối hơn một bậc. Kiểu Trong suốt và Phủ màu: macOS bỏ màu, dải còn lại như một hình sáng hơn nền.
-- Mockup: artboard "Nhận diện – biểu tượng bản phát triển" trên canvas. Kiểm bằng mắt ở 16–32 pt và ở kiểu Trong suốt, Phủ màu khi xuất từ Icon Composer (artboard chỉ mô phỏng hai kiểu này).
+- Quy tắc ở D25 (các loại bản ở D7 (Cập nhật và loại bản dựng)): biểu tượng chuẩn chỉ cho bản chính thức; mọi bản khác dùng biểu tượng bản phát triển.
+- Chữ "ấ" giữ nguyên như biểu tượng chuẩn (Giấy, dấu sắc Son), trên nền **Chì**.
+- Một dải chéo màu **Hổ phách** cắt góc dưới phải, nằm ngoài chữ "a".
+- Kiểu Tối: nền và dải tối hơn một bậc.
+- Kiểu Trong suốt và Phủ màu: macOS bỏ màu, dải còn lại như một hình sáng hơn nền.
+- Mockup: artboard [biểu tượng bản phát triển](ui/canvas/AppIconDev.png).
+- Kiểm bằng mắt ở 16–32 pt và ở kiểu Trong suốt, Phủ màu khi xuất từ Icon Composer (artboard chỉ mô phỏng hai kiểu này).
 
 ## Biểu tượng thanh menu (input mode)
-- Một ảnh template đơn sắc: ô bo tròn tô đặc, chữ "V" khoét rỗng, cùng kiểu và cùng cỡ với ô "A" của U.S. (ô 22 × 16 pt, góc bo 4 pt; chữ 9 × 8,5 pt căn giữa; đo trên thanh menu Retina 30/10/2026, `scripts/assets/make-mode-icons.swift`), để macOS tự tô màu theo nền. Cờ `TISIconIsTemplate` phải khai ở cả cấp bundle lẫn cấp input mode; thiếu ở cấp mode thì thanh menu không đổi màu theo từng màn hình và ô chỉ báo ⌃Space dưới con trỏ trống (COMPATIBILITY 6.6, 6.7). Ô chỉ báo vẽ chính ảnh này màu trắng; chữ trần như "A" của U.S. chỉ có cho nguồn của Apple (bảng nhãn dựng sẵn trong macOS, không đọc `TISIconLabels` của bộ gõ ngoài). Không dùng màu thương hiệu (D9). Dấu chỉ có một input mode (D2); khi gõ tiếng Anh bằng ABC/U.S., biểu tượng là của hệ thống.
+- Một ảnh template đơn sắc: ô bo tròn tô đặc, chữ "V" khoét rỗng.
+  - Cùng kiểu và cùng cỡ với ô "A" của U.S.: ô 22 × 16 pt, góc bo 4 pt; chữ 9 × 8,5 pt căn giữa (đo trên thanh menu Retina 30/10/2026, `scripts/assets/make-mode-icons.swift`).
+  - Để macOS tự tô màu theo nền.
+- Cờ `TISIconIsTemplate` phải khai ở cả cấp bundle lẫn cấp input mode.
+  - Thiếu ở cấp mode thì thanh menu không đổi màu theo từng màn hình và ô chỉ báo ⌃Space dưới con trỏ trống (COMPATIBILITY 6.6, 6.7).
+- Ô chỉ báo vẽ chính ảnh này màu trắng.
+  - Chữ trần như "A" của U.S. chỉ có cho nguồn của Apple (bảng nhãn dựng sẵn trong macOS, không đọc `TISIconLabels` của bộ gõ ngoài).
+- Không dùng màu thương hiệu (D9 (Giao diện)).
+- Dấu chỉ có một input mode (D2 (Chuyển Việt/Anh)); khi gõ tiếng Anh bằng ABC/U.S., biểu tượng là của hệ thống.
 
 ## Logo chữ
 - "Dấu" viết bằng Be Vietnam Pro ExtraBold, **một màu**. Không tách dấu sắc ra tô màu riêng: lệch một chút là thành "Dâu".
@@ -49,4 +72,4 @@ App dùng màu và phông của hệ thống (D9); bảng màu này dành cho bi
 | Ảnh nền DMG | theo cửa sổ cài đặt | file DMG phát hành |
 
 ## Thẻ cho website
-`<title>Dấu – Bộ gõ tiếng Việt cho macOS</title>`, `meta description`, `og:title`, `og:description`, `og:image`, `og:locale=vi_VN`, `twitter:card=summary_large_image`. Mô tả và tiêu đề không chứa lời hứa chưa kiểm chứng (N5).
+`<title>Dấu – Bộ gõ tiếng Việt cho macOS</title>`, `meta description`, `og:title`, `og:description`, `og:image`, `og:locale=vi_VN`, `twitter:card=summary_large_image`. Mô tả và tiêu đề không chứa lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)).

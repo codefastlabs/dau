@@ -5,38 +5,110 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 > Từ 02/11/2026 repo ở https://github.com/codefastlabs/dau và lịch sử đã được viết lại: các mã commit ghi trước ngày này là mã cũ, tra `docs/history/COMMIT-MAP.md` để ra mã mới.
 
 ## Trạng thái hiện tại
-- Giữa M5 và M6: M5 đóng 05/11/2026; M6 (hiệu năng dưới tải) chưa bắt đầu, lập kế hoạch ở đầu mốc. Từ 05/11 làm ngoài mốc: phần nền đa ngôn ngữ của M9 (D41; mã xong 06/11, hàng "Ngôn ngữ" xong 08/11, nhật ký ở `docs/history/LOG-M5-M6.md`), rút gọn script và test (09/11, nhật ký dưới đây).
-- Chờ người dùng: duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog).
-- So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10): phần B, C xong 09/11; phần A dừng (dữ liệu công khai không đủ độ chính xác); câu hỏi của D13 chuyển sang bài test tải nặng của M6.
-- Mở: các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm; ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` (d)10).
-- Mở: "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc); chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
-- Mở, chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú D14 vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
-- Việc hoãn: ma trận tương thích còn lại → M6; biểu tượng V, danh sách "+" bằng mắt, VoiceOver đọc đúng tên, VoiceOver/Tab trong Cài đặt (cả hàng "Ngôn ngữ"), máy tiếng Anh hẳn, sheet tối, câu gợi ý của hàng "Gặp ứng dụng gõ bị lỗi?" → M7.
-- Ký: Personal Team (Team ID trong D24), ký tự động "Apple Development"; bản phát hành dùng Developer ID ở M7. Máy này ("Valentino’s MacBook Pro") ký được (09/11: mọi bản build ký hợp lệ); máy nhà ("Vương's MacBook Pro") dùng chứng chỉ tạo ngày 05/11.
+
+Đang ở giữa M5 (Onboarding, cài đặt, gỡ cài đặt) và M6 (hiệu năng dưới tải).
+- M5 đóng 05/11/2026.
+- M6 chưa bắt đầu; kế hoạch lập ở đầu mốc.
+- Từ 05/11 làm ngoài mốc:
+  - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
+  - rút gọn script và test (09/11; nhật ký ở dưới).
+
+Chờ người dùng:
+- Duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog).
+
+So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
+- Phần B, C xong 09/11.
+- Phần A dừng: dữ liệu công khai không đủ độ chính xác.
+- Câu hỏi của D13 (Gạch chân làm đường lui) chuyển sang bài test tải nặng của M6.
+
+Việc còn mở:
+- Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.
+  - Ảnh hưởng chưa đo.
+  - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` (d)10).
+- "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc). Chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
+- Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
+
+Việc hoãn:
+- Về M6: phần còn lại của ma trận tương thích.
+- Về M7 (Phát hành):
+  - biểu tượng V;
+  - danh sách "+" kiểm bằng mắt;
+  - VoiceOver đọc đúng tên;
+  - VoiceOver và Tab trong Cài đặt (cả hàng "Ngôn ngữ");
+  - máy tiếng Anh hẳn;
+  - sheet ở chế độ tối;
+  - câu gợi ý của hàng "Gặp ứng dụng gõ bị lỗi?".
+
+Ký và máy:
+- Ký bằng Personal Team (Team ID trong D24 (Tên và định danh)), ký tự động "Apple Development". Bản phát hành dùng Developer ID ở M7.
+- Máy này ("Valentino’s MacBook Pro") ký được (09/11: mọi bản build ký hợp lệ).
+- Máy nhà ("Vương's MacBook Pro") dùng chứng chỉ tạo ngày 05/11.
 - Bản đã cài trên máy này: bộ gõ và `/Applications/Dau.app` bản Release 24e61ec (09/11).
-- Môi trường: Xcode 27.2 ở `/Applications/Xcode.app` nhưng `xcode-select` đang trỏ CommandLineTools; script tự chọn Xcode (`scripts/lib/xcode.sh`), lệnh gõ tay (`swift test`) cần `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`. Swift 6.4.
+- Xcode 27.2 ở `/Applications/Xcode.app`, nhưng `xcode-select` đang trỏ CommandLineTools. Swift 6.4.
+  - Script tự chọn Xcode (`scripts/lib/xcode.sh`).
+  - Lệnh gõ tay (`swift test`) cần `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
 
 ## Mốc
-| Mốc | Trạng thái | Kiểm toán | Ghi chú |
-|---|---|---|---|
-| M0 Khung dự án | xong | ĐẠT (29/10) | build Debug universal cần `-destination generic/platform=macOS` |
-| M1 Engine | xong | ĐẠT (29/10, lần 2) | Telex, Telex đơn giản, VNI, 75 test; release ~0,15 µs/phím; 0 từ sai / 474 từ, 0 khôi phục nhầm / 15.796 âm tiết, fuzz 800k thao tác không crash |
-| M2 Bộ gõ tối thiểu | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) | cách A; tự gõ 30 ms/phím đúng ở TextEdit, Safari, Chrome, VS Code, Terminal, Telegram (thay Slack); Sublime gõ tay; selectedRange p50 0,2–0,6 ms (Debug). M2-TESTING mục 4 ĐẠT trừ việc hoãn (VoiceOver, biểu tượng V → M3; Telegram Return bỏ qua). Test engine 76, IMK 25 |
-| M3 Độ tin cậy | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) | gạch chân D13 theo quy tắc, mặc định tắt, danh sách đề xuất 13 app (VS Code, Electron/Chromium, Firefox); D20 ở bộ gõ (đọc lại 1–4 ms, chỉ phím dấu đầu khi bộ đệm trống); reset khi đổi nguồn không báo; sửa ⌫ xoá hai lần ở Chromium; ma trận `COMPATIBILITY.md` 11 app đã đo; D17: hệ thống tự đọc khi chuyển nguồn. Test engine 77, IMK 70, DauShared 32 |
-| M4 App Cài đặt | xong | ĐẠT (30/10, lần 3) | DauShared + cửa sổ 4 mục (2d6206e, c731c61); bộ gõ đọc cài đặt chung (0aa4872). App Group chạy với Team ID M58DANM3ZP (958a5a8). Bỏ chế độ Anh, quy tắc theo app chỉ còn gạch chân (9680c68, ea676ae, b23b266). M4-TESTING ĐẠT trừ việc hoãn sang M7 (máy tiếng Anh hẳn, sheet tối, VoiceOver/Tab). Ma trận UI 12/12. Test DauShared 21, IMK 25, snapshot-settings 10 |
-| M5 Onboarding, cài, gỡ | xong | ĐẠT (05/11, lần 1; các mục nên sửa đã xử lý) | onboarding 3 bước; bật không đăng xuất (D37: xoá bộ đệm nguồn đầu vào của mọi app, đăng ký, Allow); gỡ có bước "–" (D16); kiểm chữ ký và Team ID, banner "Cài lại"; tên giao diện macOS theo ngôn ngữ máy (D38); đăng xuất làm mỗi app dựng lại bộ đệm (đo 05/11); snapshot 98 test, `run.sh` đạt trừ lỗi chập chờn "window size at launch"; T4 bỏ |
-| M6 Hiệu năng dưới tải | chưa | — | |
-| M7 Phát hành | chưa | — | |
-| M8 Website | chưa | — | |
-| M9 Đa ngôn ngữ | phần nền xong | — | thêm 04/11; phần nền (D41) xong 06–08/11, còn duyệt câu chữ tiếng Anh |
-| M10 Học cách gõ | chưa | — | thêm 04/11 |
+
+| Mốc | Trạng thái | Kiểm toán |
+|---|---|---|
+| M0 Khung dự án | xong | ĐẠT (29/10) |
+| M1 Engine | xong | ĐẠT (29/10, lần 2) |
+| M2 Bộ gõ tối thiểu | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) |
+| M3 Độ tin cậy | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) |
+| M4 App Cài đặt | xong | ĐẠT (30/10, lần 3) |
+| M5 Onboarding, cài, gỡ | xong | ĐẠT (05/11, lần 1; các mục nên sửa đã xử lý) |
+| M6 Hiệu năng dưới tải | chưa | — |
+| M7 Phát hành | chưa | — |
+| M8 Website | chưa | — |
+| M9 Đa ngôn ngữ | phần nền xong; còn duyệt câu chữ tiếng Anh | — |
+| M10 Học cách gõ | chưa | — |
+
+Ghi chú từng mốc:
+- M0: build Debug universal cần `-destination generic/platform=macOS`.
+- M1:
+  - Telex, Telex đơn giản, VNI; 75 test;
+  - release ~0,15 µs/phím;
+  - 0 từ sai / 474 từ; 0 khôi phục nhầm / 15.796 âm tiết;
+  - fuzz 800k thao tác không crash.
+- M2:
+  - thay chữ tại chỗ, hỏi vị trí ở mỗi phím có thay chữ (cách A, theo `docs/DECISIONS.md`, mục "Vị trí thay chữ");
+  - tự gõ 30 ms/phím đúng ở TextEdit, Safari, Chrome, VS Code, Terminal, Telegram (thay Slack); Sublime gõ tay;
+  - `selectedRange` p50 0,2–0,6 ms (Debug);
+  - M2-TESTING mục 4 ĐẠT trừ việc hoãn (VoiceOver, biểu tượng V → M3; Telegram Return bỏ qua);
+  - test engine 76, IMK 25.
+- M3:
+  - gạch chân (D13) theo quy tắc, mặc định tắt; danh sách đề xuất 13 app (VS Code, Electron/Chromium, Firefox);
+  - D20 (Thêm dấu cho từ đã gõ) ở bộ gõ: đọc lại 1–4 ms, chỉ ở phím dấu đầu khi bộ đệm trống;
+  - reset khi đổi nguồn không báo;
+  - sửa ⌫ xoá hai lần ở Chromium;
+  - ma trận `COMPATIBILITY.md`: 11 app đã đo;
+  - D17 (Trợ năng): hệ thống tự đọc khi chuyển nguồn;
+  - test engine 77, IMK 70, DauShared 32.
+- M4:
+  - DauShared và cửa sổ 4 mục (2d6206e, c731c61); bộ gõ đọc cài đặt chung (0aa4872);
+  - App Group chạy với Team ID M58DANM3ZP (958a5a8);
+  - bỏ chế độ Anh, quy tắc theo app chỉ còn gạch chân (9680c68, ea676ae, b23b266);
+  - M4-TESTING ĐẠT trừ việc hoãn sang M7 (máy tiếng Anh hẳn, sheet tối, VoiceOver/Tab);
+  - ma trận giao diện 12/12;
+  - test DauShared 21, IMK 25, snapshot-settings 10.
+- M5:
+  - onboarding 3 bước;
+  - bật không cần đăng xuất (D37 (Cài đặt bộ gõ): xoá bộ đệm nguồn đầu vào của mọi app, đăng ký, Allow);
+  - gỡ có bước "–" (D16 (Bảo trì và gỡ cài đặt));
+  - kiểm chữ ký và Team ID, banner "Cài lại";
+  - tên giao diện macOS theo ngôn ngữ máy (D38 (Chữ trên giao diện));
+  - đăng xuất làm mỗi app dựng lại bộ đệm (đo 05/11);
+  - snapshot 98 test; `run.sh` đạt trừ lỗi chập chờn "window size at launch";
+  - bỏ lượt đo trên tài khoản macOS mới.
+- M9: phần nền (D41) xong 06–08/11; còn duyệt câu chữ tiếng Anh.
 
 ## Ghi nhớ cho M7 (từ kiểm toán M0)
-- Xem lại gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 khi làm báo lỗi (hoãn từ kiểm toán M3).
-- `.gitignore` bỏ qua `Package.resolved` → ghim phiên bản Sparkle chính xác trong `project.yml`.
-- Thử bỏ `temporary-exception.mach-register.global-name` của bộ gõ khi rà entitlement trước notarize (hoãn từ M3, ARCHITECTURE.md).
+- Xem lại gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 (Chỉ hứa điều đã kiểm chứng) khi làm báo lỗi.
+- `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
+- Thử bỏ `temporary-exception.mach-register.global-name` của bộ gõ khi rà entitlement trước notarize (xem `docs/ARCHITECTURE.md`).
 - Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.
-- M7: đưa phép đếm cấp phát (`malloc_logger`) vào CI (người dùng giữ cho M7, 09/11/2026; chưa làm CI trước đó).
+- Đưa phép đếm cấp phát (`malloc_logger`) vào CI.
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LOG-M5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LOG-M5-M6.md`.
