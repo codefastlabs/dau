@@ -10,7 +10,8 @@
 # switch input source away from Dấu and back, so macOS starts the new one). Also prints
 # whether each installed bundle's signature still verifies (a revoked "Apple Development"
 # certificate, e.g. after the same Apple ID made a new one on another Mac, shows here as
-# CSSMERR_TP_CERT_REVOKED) and the Apple Development identities in the keychain.
+# CSSMERR_TP_CERT_REVOKED) and the Apple Development identities in the keychain. An
+# installed bundle built from another commit than HEAD gets the command that reinstalls it.
 # Reads only; changes nothing.
 set -u
 root=${0:A:h:h:h}
@@ -21,6 +22,15 @@ host="/Applications/Dau.app"
 commit_of() { # bundle
   local f="$1/Contents/Resources/BuildCommit.txt"
   if [[ -f $f ]]; then print -r -- "$(<"$f")"; else print -r -- "(không có mã commit)"; fi
+}
+
+stale_note() { # bundle reinstall-command -> a line when the bundle was built from another commit
+  local f="$1/Contents/Resources/BuildCommit.txt" built
+  [[ -f $f && -n $head ]] || return 0
+  built=$(<"$f")
+  # Compare commits only: "+" (uncommitted changes) on either side says nothing either way.
+  [[ ${built%+} == ${head%+} ]] && return 0
+  print -r -- "  khác repo:       cài lại bằng $2"
 }
 
 signature_of() { # bundle -> "hợp lệ, Team X" or the codesign error
@@ -40,12 +50,14 @@ print -r -- "Repo:              $head"
 
 if [[ -d $im ]]; then
   print -r -- "Bộ gõ đã cài:      $(commit_of "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
+  stale_note "$im" "scripts/dev/install-input-method.sh (hoặc install-app.sh --with-input-method)"
   print -r -- "  chữ ký:          $(signature_of "$im")"
 else
   print -r -- "Bộ gõ đã cài:      chưa cài"
 fi
 if [[ -d $host ]]; then
   print -r -- "Dấu.app (/Applications): $(commit_of "$host")"
+  stale_note "$host" "scripts/dev/install-app.sh"
   print -r -- "  chữ ký:          $(signature_of "$host")"
 fi
 [[ -d $app ]] && print -r -- "Dấu.app (Debug):   $(commit_of "$app")"
