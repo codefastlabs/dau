@@ -45,6 +45,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 
 - Tên cũ: "Cập nhật".
 - 05/11/2026: "Loại bản dựng (người dùng chốt 05/11/2026)."
+- 09/11/2026: câu "`dau-version.sh` cũng trả lời được" (cấu hình build và commit) sửa thành "cho biết commit của từng bản đã cài": script không in cấu hình build; luật không đổi.
 
 ### D8. Không telemetry
 
