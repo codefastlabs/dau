@@ -225,9 +225,23 @@ trap 'exit 143' TERM
 PAGE="$WORK/dau-selftest.html"
 # The window title the guards look for; also the page's <title>.
 PAGE_TITLE="Dấu self test"
+# The title the page shows only while its text area has the keyboard focus (the page
+# sets it). Keys and ⌘A ⌘C are sent only under this title: a window title alone does not
+# say where the focus is, and keys sent while the address bar had it went into the
+# address bar (and its read-back passed, since ⌘A ⌘C copied the same text from there).
+FOCUS_TITLE="$PAGE_TITLE [focus]"
 cat > "$PAGE" <<HTML
 <!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
 <textarea autofocus spellcheck="false" autocomplete="off" style="width:90%;height:8em"></textarea>
+<script>
+var t = document.querySelector("textarea");
+function mark() {
+  document.title = document.hasFocus() && document.activeElement === t ? "$FOCUS_TITLE" : "$PAGE_TITLE";
+}
+["focus", "blur"].forEach(function (e) { t.addEventListener(e, mark); window.addEventListener(e, mark); });
+setInterval(mark, 200);
+mark();
+</script>
 HTML
 if (( BUSY_MS > 0 )); then
   # --busy: block the page's main thread for BUSY_MS of every BUSY_PERIOD ms. A timer, not
@@ -417,29 +431,29 @@ open_test_page() {
 
 run_safari() {
   open_test_page Safari Safari
-  select_dau; type_keys Safari "$PAGE_TITLE"
-  copy_all Safari "$PAGE_TITLE"
+  select_dau; type_keys Safari "$FOCUS_TITLE"
+  copy_all Safari "$FOCUS_TITLE"
   close_test_tab Safari
 }
 
 run_chrome() {
   open_test_page "Google Chrome" "Google Chrome"
-  select_dau; type_keys "Google Chrome" "$PAGE_TITLE"
-  copy_all "Google Chrome" "$PAGE_TITLE"
+  select_dau; type_keys "Google Chrome" "$FOCUS_TITLE"
+  copy_all "Google Chrome" "$FOCUS_TITLE"
   close_test_tab "Google Chrome"
 }
 
 run_edge() {
   open_test_page "Microsoft Edge" "Microsoft Edge"
-  select_dau; type_keys "Microsoft Edge" "$PAGE_TITLE"
-  copy_all "Microsoft Edge" "$PAGE_TITLE"
+  select_dau; type_keys "Microsoft Edge" "$FOCUS_TITLE"
+  copy_all "Microsoft Edge" "$FOCUS_TITLE"
   close_test_tab "Microsoft Edge"
 }
 
 run_firefox() {
   open_test_page Firefox firefox
-  select_dau; type_keys firefox "$PAGE_TITLE"
-  copy_all firefox "$PAGE_TITLE"
+  select_dau; type_keys firefox "$FOCUS_TITLE"
+  copy_all firefox "$FOCUS_TITLE"
   close_test_tab firefox
 }
 

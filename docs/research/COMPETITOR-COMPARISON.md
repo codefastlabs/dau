@@ -9,6 +9,7 @@
   - Câu trộn Việt–Anh: Dấu 184/188 từ, Apple 169/188.
   - Khác biệt chỉ đến từ việc Dấu khôi phục từ không phải tiếng Việt (D4 (Từ nước ngoài)); Apple không khôi phục ("good" ra "gôd", "website" ra "ưebsite").
   - Cả hai cho cùng chữ ở Safari và Chrome.
+  - Script tự gõ lúc đó chưa kiểm focus (sửa 09/11/2026, `docs/COMPATIBILITY.md` mục Hiện trạng): chưa loại được việc một số lượt gõ vào thanh địa chỉ thay vì ô của trang. Chữ của Dấu vẫn trùng engine nên kết quả về chữ đứng được; chỉ chưa chắc là ô nào.
   - Đưa lên website (M10, Học cách gõ) chỉ kèm các giới hạn ở mục đó (N5 (Chỉ hứa điều đã kiểm chứng)).
 - **Phần B xong (09/11/2026).**
   - Chạy lại trên engine HEAD (sau faff8a3): số ca và số theo lớp không đổi so với 05/11 (10.303 ca; khác: A 435, B 1.493, C 73, D 0, E 0, X 4).
@@ -20,7 +21,7 @@
   - Giấy phép ghi "nghiên cứu, phi thương mại, ghi nguồn", chưa rõ có cho công bố số phái sinh không.
   - Bộ Buffalo phải xin qua email; KeyRecs chỉ có độ trễ theo cặp chữ, gõ câu cố định.
   - Không đo trên máy người dùng thay thế (mục "Phần A").
-- **Câu hỏi của phần A có thể đặt sai chỗ (giả thuyết, chưa đo).**
+- **Câu hỏi của phần A đặt sai chỗ (đo ở M6, 09/11/2026, `docs/PROGRESS.md` nhật ký): app bận không dồn phím; lỗi khi Chrome bận là vị trí con trỏ cũ, ở nhịp gõ bình thường.** Giả thuyết ban đầu:
   - Phím dồn dưới 10 ms ở bộ gõ có thể không do người gõ nhanh, mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc.
   - Nếu đúng thì bài test tải nặng của M6 (Hiệu năng dưới tải) mới là chỗ trả lời câu hỏi của D13 (Gạch chân làm đường lui).
 

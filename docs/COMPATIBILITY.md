@@ -2,9 +2,11 @@
 
 Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ tin cậy). Khung lập ngày 30/10/2026 trên máy phát triển: macOS 27.2 (26B123), Apple M1 Pro; kết quả được điền cùng ngày. Dòng nào chưa thử ghi "chưa thử"; không điền ô nào bằng phỏng đoán.
 
-## Hiện trạng (30/10/2026)
+## Hiện trạng (09/11/2026)
 
-- **Thay chữ tại chỗ chỉ sai khi phím đến dồn dưới 10 ms** (đo 29–30/10/2026): Chrome, Edge, VS Code, Firefox, Terminal sai ở 0 ms; từ 10 ms đúng, trừ VS Code: ở 10 ms sai lượt 29/10 (câu mẫu cũ) và đúng lượt 30/10 (câu mẫu mới), từ 20 ms đúng mọi lượt (mục 6.2). TextEdit, Safari đúng ở mọi tốc độ đã đo; Notes đúng ở 30 và 0 ms; Telegram mới đo ở 30 ms (đúng). Bằng chứng: mục 5 (bảng kết quả) và mục 6.2.
+- **Thay chữ tại chỗ sai khi trang Chrome bận, cả ở nhịp gõ bình thường** (đo 09/11/2026, `docs/PROGRESS.md` nhật ký M6): trang thử chặn luồng chính 300 ms mỗi giây, phím cách nhau 100 ± 30 ms, thay tại chỗ sai ở phần lớn các lượt (cả bản Release), gạch chân đúng; Chrome trả vị trí con trỏ cũ khi chưa áp xong phím trước. Các app khác chưa đo khi bận.
+- **Kết quả trình duyệt trước 09/11/2026 chưa chắc là gõ vào ô của trang:** script tự gõ khi đó chỉ kiểm tiêu đề cửa sổ; khi thanh địa chỉ có focus, phím vào thanh địa chỉ và lượt vẫn đạt (⌘A ⌘C chép cùng chữ). Từ 09/11/2026 script chỉ gõ khi ô của trang có focus. Các dòng trình duyệt của mục 5 cần đo lại ở M6.
+- **Khi trang rảnh, thay chữ tại chỗ chỉ sai khi phím đến dồn dưới 10 ms** (đo 29–30/10/2026): Chrome, Edge, VS Code, Firefox, Terminal sai ở 0 ms; từ 10 ms đúng, trừ VS Code: ở 10 ms sai lượt 29/10 (câu mẫu cũ) và đúng lượt 30/10 (câu mẫu mới), từ 20 ms đúng mọi lượt (mục 6.2). TextEdit, Safari đúng ở mọi tốc độ đã đo; Notes đúng ở 30 và 0 ms; Telegram mới đo ở 30 ms (đúng). Bằng chứng: mục 5 (bảng kết quả) và mục 6.2.
 - **Gạch chân (D13 (Gạch chân làm đường lui))** sửa được lỗi phím dồn ở Chrome, Edge, VS Code, Firefox (đúng ở 0 ms); Terminal vẫn sai ở 0 ms nên không đề xuất. Danh sách đề xuất hiện hành (VS Code, app Electron/Chromium, Firefox) và tiêu chí: mục 1 và mục 7.
 - **Backspace (D32 (Backspace)) trong Chromium/Electron:** lỗi xoá hai lần đã sửa ngày 30/10/2026 (82d9ecc); kết quả đo lại ở 6 ứng dụng: mục 6.4.
 - **Terminal không gửi ⌫ cho bộ gõ**, nên D32 không giữ được ở đó và D20 (Thêm dấu cho từ đã gõ) sau ⌫ không chạy. Chưa kiểm chứng lại sau lần phát hiện đầu: mục 6.5.
