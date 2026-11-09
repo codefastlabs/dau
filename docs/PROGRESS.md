@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: giờ chạy bước 1d (chiếm màn hình, khoảng 5 phút). Việc tiếp theo: bước 1d.
+Chờ người dùng: không có. Việc đang làm: lượt sửa thứ hai của 1c (imk-dev), từ log 1d ở `build/load/1d-20261109-225810/` máy nhà; xong thì đo lại như 1d.
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -177,3 +177,7 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Sửa thêm một lỗi có sẵn: khi D11 dựng lại từ mà phím chỉ thêm chữ, chữ bị chèn hai lần (test `resyncAppends`).
   - Số lời gọi tối đa mỗi phím không đổi (1 `selectedRange`, 1 `attributedSubstring`, 1 `insertText`), nhưng lần đọc khi lệch nay có thể xảy ra ở lần thay đầu của từ, và bộ gõ thay ở vị trí nó tự theo dõi khi chữ đọc được cho thấy app chỉ chậm: câu chữ của D11 cần sửa, đề xuất sau khi 1d có số đo. `lateLimit` = 2 (mọi câu trả lời chậm trong 1b chỉ chậm một phím; mô phỏng 200 seed: chậm 0–2 phím 0 sai, chậm 3 phím lùi về cách cũ).
   - Kiểm: test IMK 124 đạt (trước 111; `xcodebuild test -scheme DauInputMethod`, phiên chính chạy lại), build Debug và Release, check-docs. Chưa đo trên Chrome thật (bước 1d).
+- 09/11/2026 — M6 bước 1d, lần 1 (người dùng cho chạy; máy nhà, 22:58–23:01; Dấu Debug e5201e3; log `build/load/1d-20261109-225810/`, không commit) — phiên chính. Lệnh như 1b, chỉ các ô của Dấu (Apple đã đo ở 1b).
+  - Trang rảnh 1/1 đúng. Trang bận vẫn 0/3, nhưng ít từ sai hơn 1b: "ỏii", "ìnhh", "chêeuf"; "kôong kóo"; "née". Phím tới bộ gõ đều (mọi khoảng ≥ 20 ms).
+  - Nhánh mới chỉ chạy 1 lần (`count_late` 1, ở busy-3, và ở đó đúng). Ở các từ sai: `selectedRange` khác `known`, lần đọc có chạy, nhưng chữ đọc được không khớp mô hình "app chậm", nên rơi về nhánh tin `selectedRange` (đầu từ), và sau đó `known` đi theo vị trí sai. Vì sao không khớp: chưa rõ; một giả thuyết là `selectedRange` và `attributedSubstring` không trả cùng một trạng thái của chữ. Giao lại imk-dev.
+  - Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bản Release (e5201e3).
