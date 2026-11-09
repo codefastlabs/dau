@@ -162,7 +162,7 @@ Mong đợi: `windows car tôi yêu tiếng Việt, Sunrise␣` (D4, D26 (Gõ đ
 
 Cách chạy:
 
-- **Ứng dụng có trong script** (`textedit`, `safari`, `chrome`, `vscode`, `terminal`; lượt chạy ma trận thêm `edge`, `firefox`, `notes`, `mail`): chạy lần lượt
+- **Ứng dụng có trong script** (`safari`, `chrome`, `vscode`, `terminal`; TextEdit đã bỏ khỏi script vì tự lưu tài liệu thử lên iCloud Drive, kết quả TextEdit dưới đây là số đo cũ; lượt chạy ma trận thêm `edge`, `firefox`, `notes`, `mail`): chạy lần lượt
   `scripts/selftest/typing/run.sh --delay 30 <app>` và `scripts/selftest/typing/run.sh --delay 0 <app>`.
   - Script cần quyền Trợ năng cho tiến trình chạy nó (gửi phím qua System Events).
   - Script tự mở cửa sổ trống, gõ, đọc lại, đóng không lưu, in PASS/FAIL và số đo.

@@ -7,8 +7,10 @@
 #
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
-#     app:  textedit | safari | chrome | vscode | terminal | edge | firefox | notes | mail
-#           | all (= the first five)
+#     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail
+#           | all (= the first four)
+#     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
+#     (docs/TROUBLESHOOTING.md); Safari's test page is the AppKit/WebKit reference.
 #   --delay MS        pause between keys in ms (default 30). 0 sends the whole string in
 #                     one System Events keystroke (about 1 ms per key): a stress test that
 #                     Chrome, VS Code and Terminal fail with method A (docs/PROGRESS.md);
@@ -102,8 +104,8 @@ while [[ $# -gt 0 ]]; do
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
-    all) APPS+=(textedit safari chrome vscode terminal); shift ;;
-    textedit|safari|chrome|vscode|terminal|edge|firefox|notes|mail) APPS+=("$1"); shift ;;
+    all) APPS+=(safari chrome vscode terminal); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -341,15 +343,6 @@ copy_all() {
 clipboard_has_text() { [[ -n "$("$CLIPBOARD" text 2>/dev/null)" ]]; }
 
 # --- one function per app; each prints the text typed ---------------------------------
-run_textedit() {
-  osascript -e 'tell application "TextEdit"' -e 'activate' -e 'make new document' -e 'end tell' >/dev/null
-  # Not front in time: type_keys's guard reports it and stops the run.
-  wait_until 10 front_ok TextEdit
-  select_dau; type_keys TextEdit
-  osascript -e 'tell application "TextEdit"' -e 'set t to text of front document' \
-    -e 'close front document saving no' -e 'return t' -e 'end tell'
-}
-
 # Safari and Chrome are driven with `open` and System Events keystrokes only: scripting
 # them directly needs a separate Automation permission per browser.
 # Names of the windows of process $1 (System Events; the window name is the tab title).
@@ -578,7 +571,7 @@ log_detail "mỗi app một cửa sổ/tab mới, đóng lại sau khi đọc ch
 log_detail "phím: \"$KEYS\"   mong đợi: \"$EXPECT\"   nghỉ giữa phím: ${DELAY_MS} ms"
 bundle_id() {
   case "$1" in
-    textedit) echo com.apple.TextEdit ;; safari) echo com.apple.Safari ;;
+    safari) echo com.apple.Safari ;;
     chrome) echo com.google.Chrome ;; vscode) echo com.microsoft.VSCode ;;
     terminal) echo com.apple.Terminal ;;
     edge) echo com.microsoft.edgemac ;; firefox) echo org.mozilla.firefox ;;
@@ -619,7 +612,7 @@ for app in "${APPS[@]}"; do
   "$LOG" show --start "$start" --style compact \
     --predicate "subsystem == \"$IM_ID\" AND category == \"perf\"" > "$WORK/perf.log" 2>/dev/null
   case "$app" in
-    textedit) filter=TextEdit ;; safari) filter=Safari ;; chrome) filter=Chrome ;;
+    safari) filter=Safari ;; chrome) filter=Chrome ;;
     vscode) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac

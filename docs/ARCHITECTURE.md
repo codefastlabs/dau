@@ -122,7 +122,7 @@ dau/
   - mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được);
   - khi nhận thì reset từ đang gõ (D4; chế độ gạch chân thì chốt chữ đang hiện).
 - Thông báo đến trong 0,5 s sau `activateServer` của chính controller được coi là tiếng vọng của lần chuyển bằng phím tắt/menu và bị bỏ qua, để phím gõ ngay sau khi chuyển không mất từ.
-- Kịch bản kiểm: `scripts/selftest/typing/run.sh --keys "to⇄cj " textedit`.
+- Kịch bản kiểm: `scripts/selftest/typing/run.sh --keys "to⇄cj " safari`.
   - `⇄` là chọn U.S. rồi Dấu bằng `TISSelectInputSource` từ tiến trình của script; log `source-changed-reset`.
   - Kết quả có và không có bộ nghe: `docs/PROGRESS.md`, bảng Số đo, 30/10/2026.
 - Kịch bản `to` ⇄ `o` không còn phân biệt được: sau reset, D20 đọc lại "to" và `o` cho "tô" đúng như D20 định.
