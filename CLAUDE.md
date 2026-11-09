@@ -1,6 +1,6 @@
 # Dấu — bộ gõ tiếng Việt cho macOS
 
-Dấu là input method tiếng Việt **chỉ dành cho macOS**, dựng trên InputMethodKit (IMK). Nó thay chữ tại chỗ bằng `insertText(_:replacementRange:)` thay vì giả lập phím Backspace như OpenKey. Tên chính thức: **Dấu** (đã chốt). Quy tắc dùng tên và định danh kỹ thuật: xem D24.
+Dấu là input method tiếng Việt **chỉ dành cho macOS**, dựng trên InputMethodKit (IMK). Nó thay chữ tại chỗ bằng `insertText(_:replacementRange:)` thay vì giả lập phím Backspace như OpenKey. Tên chính thức: **Dấu** (đã chốt). Quy tắc dùng tên và định danh kỹ thuật: xem D24 (Tên và định danh).
 
 Đọc theo thứ tự trước khi làm bất cứ việc gì:
 1. `docs/DECISIONS.md` — sổ quyết định (nguồn chuẩn duy nhất).
@@ -47,9 +47,9 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - **Đối chiếu sổ quyết định trước mọi đề xuất hay thay đổi.** Nếu một thay đổi mâu thuẫn với một nguyên tắc (N1–N5) hoặc quyết định (D1–D…) thì dừng lại và nêu mâu thuẫn, không tự ý làm. Nếu một quyết định cần đổi, cập nhật `docs/DECISIONS.md` trong cùng commit, ghi lý do.
 - **Sau mỗi mốc, tự rà soát cơ học:** `scripts/check-docs/check.sh`, rồi grep code và chuỗi giao diện tìm chỗ trái với sổ quyết định (ví dụ: lời hứa về mạng, tính năng đã bỏ, phím tắt riêng).
-- **Kiểm tra chéo các tính năng cùng tác động lên một đầu vào.** Với mỗi cặp tính năng như vậy, liệt kê các đầu vào mà chúng cho kết quả trái nhau và quyết định bên nào thắng, ghi vào `DECISIONS.md` (bài học từ D4).
+- **Kiểm tra chéo các tính năng cùng tác động lên một đầu vào.** Với mỗi cặp tính năng như vậy, liệt kê các đầu vào mà chúng cho kết quả trái nhau và quyết định bên nào thắng, ghi vào `DECISIONS.md` (bài học từ D4 (Từ nước ngoài)).
 - **Đo trước khi tối ưu.** Mọi khẳng định về hiệu năng phải có số đo (os_signpost / Instruments / test hiệu năng).
-- **Không ghi lời hứa chưa kiểm chứng vào giao diện** (N5). Dùng ô trống dạng `[Kết quả bài test tải nặng]`.
+- **Không ghi lời hứa chưa kiểm chứng vào giao diện** (N5 (Chỉ hứa điều đã kiểm chứng)). Dùng ô trống dạng `[Kết quả bài test tải nặng]`.
 - Làm theo mốc trong `docs/ROADMAP.md`, mỗi mốc kết thúc bằng test xanh và một bản tóm tắt ngắn: đã làm gì, đã đo được gì, còn mở gì.
 - Những việc cần tài khoản Apple Developer, chứng chỉ ký, hoặc thao tác trong Cài đặt hệ thống: chuẩn bị sẵn và dừng lại hỏi người dùng.
 
@@ -57,7 +57,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - Swift 6, strict concurrency. Engine là Swift package thuần, **không import Foundation/AppKit**.
 - Dự án Xcode sinh từ `project.yml` bằng XcodeGen, không commit thủ công thay đổi trong `.xcodeproj`.
-- Test bằng Swift Testing. Tên định danh, comment và commit message bằng tiếng Anh; chuỗi giao diện trong String Catalog, khoá là câu tiếng Anh, có bản tiếng Việt (D41; thuật ngữ ở `docs/GLOSSARY.md`).
+- Test bằng Swift Testing. Tên định danh, comment và commit message bằng tiếng Anh; chuỗi giao diện trong String Catalog, khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện); thuật ngữ ở `docs/GLOSSARY.md`).
 - Script trong `scripts/` viết bằng zsh, dòng đầu `#!/bin/zsh` (bash có sẵn trên macOS là bản 3.2); in ra terminal bằng tiếng Việt qua `scripts/lib/log.sh` (`scripts/README.md` mục "Đầu ra").
 - Giấy phép GPLv3 cho toàn bộ repo. Engine là của Dấu, viết từ đầu bằng Swift. Không chép mã từ OpenKey hay UniKey.
 
