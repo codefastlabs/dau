@@ -35,6 +35,7 @@ Mỗi chủ đề một file; kết luận hiện hành ở đầu file, mỗi k
 | `docs/research/SYSTEM-SETTINGS-REFERENCE.md` | số đo giao diện của System Settings dùng làm chuẩn (script kiểm đọc theo) |
 | `docs/research/SWIFTUI-WINDOW-API.md` | API cửa sổ của Apple cho cửa sổ Cài đặt (`NavigationSplitView`, thanh công cụ, tiêu đề, Lùi/Tiến), có nguồn; đối chiếu từng chỗ vá với API chính thức |
 | `docs/research/EXTERNAL-TEST-INPUTS.md` | ca thử (chuỗi phím, không đáp án) gom từ bộ test của 10 bộ gõ tiếng Việt khác, để viết đáp án mù cho engine; ghi công ở `docs/research/external-test-inputs/NOTICE.md` |
+| `docs/research/COMPETITOR-COMPARISON.md` | kế hoạch đo Dấu so với bộ gõ của Apple, OpenKey, Gõ Nhanh (gõ tiếng Việt, từ tiếng Anh, nhịp gõ thật dưới 10 ms); chưa có kết quả |
 
 ## Lưu trữ
 

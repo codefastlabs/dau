@@ -7,6 +7,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 ## Trạng thái hiện tại
 - Giữa M5 và M6: M5 đóng 05/11/2026; M6 (hiệu năng dưới tải) chưa bắt đầu, lập kế hoạch ở đầu mốc. Từ 05/11 làm ngoài mốc: phần nền đa ngôn ngữ của M9 (D41; mã xong 06/11, hàng "Ngôn ngữ" xong 08/11, nhật ký ở `docs/history/LOG-M5-M6.md`), rút gọn script và test (09/11, nhật ký dưới đây).
 - Chờ người dùng: duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog).
+- Chờ người dùng: duyệt kế hoạch so sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, mục 6: cài bộ gõ khác, giờ chạy, một ngày dùng bản Debug).
 - Mở: các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm; ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` (d)10).
 - Mở: "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc); chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
 - Mở, chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú D14 vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
