@@ -6,7 +6,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 ## Trạng thái hiện tại
 - Giữa M5 và M6: M5 đóng 05/11/2026; M6 (hiệu năng dưới tải) chưa bắt đầu, lập kế hoạch ở đầu mốc. Từ 05/11 làm ngoài mốc: phần nền đa ngôn ngữ của M9 (D41; mã xong 06/11, hàng "Ngôn ngữ" xong 08/11, nhật ký ở `docs/history/LOG-M5-M6.md`), rút gọn script và test (09/11, nhật ký dưới đây).
-- Chờ người dùng: duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog); dòng "phép đếm cấp phát vào CI" trong ghi nhớ M7 còn giữ không (09/11 người dùng chưa định làm CI).
+- Chờ người dùng: duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog).
 - Mở: các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm; ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` (d)10).
 - Mở: "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc); chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
 - Mở, chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú D14 vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
@@ -35,7 +35,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - `.gitignore` bỏ qua `Package.resolved` → ghim phiên bản Sparkle chính xác trong `project.yml`.
 - Thử bỏ `temporary-exception.mach-register.global-name` của bộ gõ khi rà entitlement trước notarize (hoãn từ M3, ARCHITECTURE.md).
 - Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.
-- M7: đưa phép đếm cấp phát (`malloc_logger`) vào CI.
+- M7: đưa phép đếm cấp phát (`malloc_logger`) vào CI (người dùng giữ cho M7, 09/11/2026; chưa làm CI trước đó).
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LOG-M5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LOG-M5-M6.md`.
