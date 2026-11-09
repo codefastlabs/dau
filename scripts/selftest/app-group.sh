@@ -168,7 +168,7 @@ for _ in $(seq 1 30); do
   fi
   sleep 0.5
 done
-[[ "$loaded" == 1 ]] || fail "bộ gõ (pid $IM_PID) chưa nạp cài đặt sau 15 giây"
+[[ "$loaded" == 1 ]] || fail "bộ gõ (pid $IM_PID) chưa nạp cài đặt sau 15 giây. Bản Release không ghi dòng event=settings-loaded (D8): nếu bộ gõ đã cài là Release, chạy lại với --install để thử bản Debug."
 log_detail "bộ gõ đã nạp cài đặt, bắt đầu thử"
 
 # Prints the settings log lines of the input method since $1 ("YYYY-MM-DD HH:MM:SS").

@@ -42,7 +42,9 @@ fi
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/svg" "$TMP/iconset"
-xcrun swift "$ROOT/scripts/assets/make-app-icon.swift" render "$GLYPHS" "$TMP/svg" "$TMP/iconset" ${1:+"$1"}
+# The renderer's "wrote …" lines are English; they are shown only when it fails.
+out=$(xcrun swift "$ROOT/scripts/assets/make-app-icon.swift" render "$GLYPHS" "$TMP/svg" "$TMP/iconset" ${1:+"$1"} 2>&1) \
+  || { log_error "Không render được biểu tượng app"; log_hint "${(@f)out}"; exit 1; }
 rendered=("$TMP"/iconset/*.png(N))
 if (( ${#rendered} == 0 )) || [[ ! -f "$TMP/iconset/Contents.json" ]]; then
   log_die "Render không ra đủ file (không có PNG hoặc Contents.json): giữ nguyên $ICONSET"

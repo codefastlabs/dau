@@ -16,8 +16,11 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
 log_step "Dựng biểu tượng chế độ gõ"
-xcrun swift "$ROOT/scripts/assets/make-mode-icons.swift" "$TMP"
+# The tools' own progress lines are English; they are shown only when a step fails.
+out=$(xcrun swift "$ROOT/scripts/assets/make-mode-icons.swift" "$TMP" 2>&1) \
+  || { log_error "Không dựng được ảnh V"; log_hint "${(@f)out}"; exit 1; }
 # One input mode only (D2): "Dấu – Tiếng Việt".
-tiffutil -cathidpicheck "$TMP/V.png" "$TMP/V@2x.png" -out "$OUT/ModeVietnamese.tiff" >/dev/null
+out=$(tiffutil -cathidpicheck "$TMP/V.png" "$TMP/V@2x.png" -out "$OUT/ModeVietnamese.tiff" 2>&1) \
+  || { log_error "tiffutil không ghép được ModeVietnamese.tiff"; log_hint "${(@f)out}"; exit 1; }
 log_detail "đã ghi $OUT/ModeVietnamese.tiff"
 log_done "Đã dựng biểu tượng chế độ gõ"
