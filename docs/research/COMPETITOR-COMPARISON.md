@@ -1,13 +1,12 @@
-# So sánh Dấu với các bộ gõ khác (kế hoạch đo)
+# So sánh Dấu với các bộ gõ khác
 
 ## Hiện trạng (09/11/2026)
 
 - **Phần B xong (09/11/2026):** chạy lại trên engine HEAD (sau faff8a3) thì số ca và số theo lớp không đổi so với 05/11 (10.303 ca; khác: A 435, B 1.493, C 73, D 0, E 0, X 4). Bảng theo chủ đề cho M10 đã có sẵn ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.3–9.5, không dựng bảng mới.
 - **Phần A dừng, không trả lời được bằng dữ liệu công khai (09/11/2026).** Bộ dữ liệu duy nhất tải được công khai, có dấu thời gian từng phím của nhiều người, là bộ 136 triệu lần gõ phím của Đại học Aalto (Dhakal và cộng sự, CHI 2018, https://userinterfaces.aalto.fi/136Mkeystrokes/). Bộ này đo bằng trình duyệt, và chính bài báo ghi độ chính xác của cách đo khoảng 10–15 ms, nên không phân biệt được hai phím cách nhau dưới 10 ms. Bài báo không công bố tỉ lệ cặp phím dưới 10 ms; chỉ số "rollover" trong bài (phím trước còn đang giữ khi nhấn phím sau) là chỉ số khác. Giấy phép ghi "nghiên cứu, phi thương mại, ghi nguồn", chưa rõ có cho công bố số phái sinh không. Bộ Buffalo phải xin qua email; KeyRecs chỉ có độ trễ theo cặp chữ, gõ câu cố định. Không đo trên máy người dùng thay thế (mục Phần A).
 - **Câu hỏi của phần A có thể đặt sai chỗ (giả thuyết, chưa đo).** Phím dồn dưới 10 ms ở bộ gõ có thể không do người gõ nhanh, mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc. Nếu đúng thì bài test tải nặng của M6 mới là chỗ trả lời câu hỏi của D13.
-- **Phần C chưa đo.** Kết quả chưa đo không được đưa lên giao diện hay website (N5).
+- **Phần C đo xong (09/11/2026, macOS 27.2, Dấu Release 24e61ec, 30 ms giữa hai phím, Safari và Chrome; kết quả chi tiết ở mục "Kết quả phần C").** Tiếng Việt: Dấu và Telex của Apple ngang nhau (677/678 từ). Từ tiếng Anh và từ trong mã: Dấu giữ nguyên 88/105, Apple 53/105; câu trộn Việt–Anh: Dấu 184/188 từ, Apple 169/188. Khác biệt chỉ đến từ việc Dấu khôi phục từ không phải tiếng Việt (D4); Apple không khôi phục ("good" ra "gôd", "website" ra "ưebsite"). Cả hai cho cùng chữ ở Safari và Chrome. Đưa lên website (M10) chỉ kèm các giới hạn ở mục đó (N5).
 - Đây là việc nghiên cứu cho M10 (trang "Dấu khác các bộ gõ khác thế nào"), **không thuộc M6 và không chặn phát hành**. Phần A trả lời một câu hỏi của D13.
-- Phiên chính và subagent tự làm mọi bước. Người dùng không phải cài gì, cấp quyền gì hay gõ gì. Việc duy nhất của người dùng là chọn giờ cho một lượt chiếm màn hình khoảng 20 phút (phần C), như CLAUDE.md quy định.
 - Ba câu hỏi: (A) gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms không (D13, `docs/COMPATIBILITY.md` mục 6.2); (B) so với các bộ gõ khác thì Dấu khác ở đâu, ở mức engine; (C) so với bộ gõ tiếng Việt có sẵn của macOS thì tiếng Việt thông dụng và từ tiếng Anh ra sao trong ứng dụng thật.
 
 ## Phần A. Nhịp gõ thật: dùng dữ liệu công khai, không đo trên người dùng
@@ -49,3 +48,26 @@ Các bộ gõ chặn phím (OpenKey, Gõ Nhanh, chế độ chặn phím của X
 2. Chuẩn bị phần C: dữ liệu, đáp án, script, build.
 3. Hỏi giờ, chạy phần C một lượt.
 4. Ghi kết quả vào mục Hiện trạng và thân bài file này. Quyết định nào đáng xem lại (D13, D4) thì nêu kèm số đo.
+
+## Kết quả phần C (09/11/2026)
+
+Chạy `scripts/research/compare-ims/run.sh` một lượt, 22 phút 29 giây, khoảng 5.700 phím mỗi app. Máy phát triển, macOS 27.2; Dấu bản Release 24e61ec, mặc định theo D15; Telex của Apple (`com.apple.inputmethod.VietnameseIM.VietnameseTelex`) với cài đặt sẵn có trên máy. Chữ đọc lại và bảng điểm ở `build/compare-ims/20261109-122753/` (không commit).
+
+| Nhóm | Số từ | Dấu | Telex của Apple |
+|---|---|---|---|
+| Câu tiếng Việt | 678 | 677 | 677 |
+| Câu trộn Việt–Anh | 188 | 184 | 169 |
+| Từ tiếng Anh và từ trong mã | 105 | 88 | 53 |
+
+- Safari và Chrome cho đúng cùng một chữ, với cả hai bộ gõ. Chữ của Dấu trong hai app trùng từng byte với engine chạy offline.
+- **Tiếng Việt:** từ sai duy nhất của cả hai là "taxi" ra "tãi" (âm tiết hợp lệ, tiếng Việt thắng theo D4).
+- **Từ Dấu sai (17), Apple cũng sai y như vậy:**
+  - 7 từ có chữ cái đôi trùng phím dấu mất một chữ: password, coffee, office, assert, offset, session, error (D26, hệ quả đã chấp nhận).
+  - 10 từ vừa là tiếng Anh vừa ra âm tiết tiếng Việt hợp lệ: seems → sếm, see → sê, door → dổ, moon → môn, soon → sôn, horse → hoé, mix → mĩ, box → bõ, max → mã, major → mảo (D4). Trong câu trộn thêm reset → rết, test → tét.
+- **Từ chỉ Apple sai (35 từ đơn, 15 từ trong câu trộn):** từ không phải âm tiết tiếng Việt vẫn bị biến đổi, vì Apple không khôi phục: windows → ưindows, good → gôd, book → bôk, google → gôgle, software → sờtare, work → ửok, push → púh, website → ưebsite, design → déign…
+
+Giới hạn của phép đo này:
+- Một máy, một lượt, chỉ 30 ms giữa hai phím, chỉ Telex thứ tự chuẩn.
+- Dữ liệu do Dấu tự viết. Danh sách từ tiếng Anh cố ý chọn từ có phím dấu hoặc phím biến đổi của Telex (từ không có các phím đó thì bộ gõ nào cũng để nguyên), nên 88/105 và 53/105 không phải tỉ lệ trên tiếng Anh nói chung.
+- Cách chấm bỏ qua vị trí dấu thanh (hoà/hòa coi như nhau), nên không bắt được dấu đặt sai nguyên âm.
+- Không đo bỏ dấu tự do, kiểu đặt dấu, Backspace, D20: chỉ phần cả hai bộ gõ cùng hỗ trợ.
