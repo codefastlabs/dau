@@ -67,6 +67,24 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - Ghi lại hiểu biết **bằng lời của mình** vào `docs/OPENKEY-NOTES.md`: tính năng, hành vi, ca biên, lỗi phát hiện được, và Dấu làm hay không làm (dẫn số quyết định).
 - Kết quả mong đợi trong test viết theo quy tắc chính tả tiếng Việt và `DECISIONS.md`, không lấy từ kết quả chạy OpenKey. Chỗ nào Dấu cố ý khác OpenKey thì ghi rõ trong `OPENKEY-NOTES.md`.
 
+## Cách làm việc đã rút ra
+
+Các luật dưới đây rút từ những lần làm sai trước đây. Chúng nằm trong repo để có hiệu lực ở mọi máy và mọi phiên.
+
+- **Người dùng chỉ làm việc thật sự cần họ:** quyết định, duyệt, chọn giờ cho lượt chạy chiếm màn hình. Mọi việc thử, bấm giao diện (script Accessibility, `screencapture`), cài và dọn do phiên chính làm. Trước khi đưa một bước nào cho người dùng, tìm cách khác (dữ liệu công khai, kết quả đã có, thứ đã bật sẵn trên máy) hoặc bỏ phần đó.
+- **Lượt chạy chiếm màn hình:** build xong mọi thứ trước, báo "sẵn sàng, khoảng N phút", chạy ngay khi người dùng đồng ý, ở tiền cảnh, báo lúc bắt đầu và lúc xong. Một lần đồng ý chỉ có hiệu lực cho lần chạy đó. Không giao lượt chạy chiếm màn hình cho subagent chạy nền.
+- **Dọn sau mỗi lần chạy, kể cả khi dừng giữa chừng:** tiến trình đã mở, tab và server localhost, clipboard, khoá `defaults` có chữ `Dau`, file trong `build/`, bản đã cài. Thoát app bình thường, không Force Quit. Báo đã dọn gì. Không dùng TextEdit để thử gõ (`docs/TROUBLESHOOTING.md`).
+- **Tính offline trước:** câu hỏi nào trả lời được bằng mô phỏng, test đơn vị hay số đã có thì không chạy app thật. Chạy app thật chỉ cho phần không mô phỏng được, ít ca, một lượt. Mỗi bài test phải đáng với cái giá của nó; hỏi điều này trước khi xây công cụ để làm một bài test qua.
+- **Giao việc gọn:** một tính năng một bản giao việc, phủ mọi phần nó chạm tới (cửa sổ, sheet, tài liệu, canvas). Đo một lần rồi dùng lại. Việc nhỏ (vài dòng tài liệu, một artboard) phiên chính tự làm. Việc đo, viết tài liệu, sửa canvas dùng model rẻ hơn.
+- **Phản biện trước khi làm:** với mọi lựa chọn của người dùng, kể cả khi họ bấm nút duyệt đề xuất của phiên chính, nêu ngắn gọn: có cần không, có đúng không (N5), tốn gì, và phương án không đổi gì; thống nhất rồi mới làm.
+- **Câu hỏi không phải quyết định:** tin nhắn cân nhắc giữa các phương án được trả lời bằng đề xuất rồi chờ người dùng chọn. Chưa chọn thì không sửa `DECISIONS.md` hay canvas.
+- **Chẩn đoán:** dựng dòng thời gian các lần chạy đạt và không đạt; nêu ít nhất hai, ba giả thuyết và mỗi giả thuyết dự đoán gì cho từng quan sát; thử phân biệt có đối chứng, lặp ít nhất ba lần. Chỉ giả thuyết giải thích được mọi quan sát mới là nguyên nhân, còn lại ghi "chưa rõ". Lỗi chập chờn không bao giờ đổ cho việc người dùng đang dùng máy.
+- **Bản thử không phải kết luận:** bản thử (bundle đổi ID, app thử) phải tái hiện được một hành vi đã biết của Dấu trước khi tin kết quả của nó. Đọc trạng thái ở chỗ người dùng nhìn thấy (danh sách "+", menu), không chỉ qua TIS từ một tiến trình mới. Nguồn chính thức nói khác quan sát thì nêu cả hai. Commit message và `PROGRESS.md` không khẳng định nhiều hơn điều đã đo.
+- **Giao diện:** đọc tài liệu Apple và HIG trước, ghi API được thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API, và ghi lý do. Trước khi cho người dùng xem bản build giao diện, chạy ma trận cửa sổ thật và `docs/UI-CHECKS.md`, tự xem ảnh. Giao việc giao diện thì đưa file nguồn artboard (`docs/ui/canvas/src/`); artboard thắng bản giao việc. Chiều cao artboard đo từ bản dựng, đệm đáy 40 px như đệm đầu, không ước.
+- **Hướng dẫn bấm cho người dùng:** dùng đúng nhãn macOS đang hiện trên máy họ (đã thấy trên màn hình hoặc ảnh chụp); nhãn nào chưa kiểm thì nói rõ.
+- **Repo là công khai:** ghi quyết định và yêu cầu bằng lời trung tính, không trích lời, giọng hay nhận xét của người dùng. Nhận xét về cách phiên chính làm việc không ghi vào repo. Không đặt giới hạn kích thước hay độ dài cho tài liệu; giữ tài liệu gọn bằng cách sắp xếp nội dung.
+- **Commit khi subagent đang chạy:** dùng `git commit --only <paths>` để không cuốn theo file subagent đã stage; dặn subagent làm như vậy.
+
 ## Lệnh thường dùng (cập nhật khi dự án có thật)
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
