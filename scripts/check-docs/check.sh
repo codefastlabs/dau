@@ -7,7 +7,7 @@
 # Living docs = docs/*.md (except PROGRESS.md's dated log and history/research,
 # which record the past), CLAUDE.md, README.md, CONTRIBUTING.md, .claude/agents, .claude/commands.
 # Checks:
-#   1. repo paths in backticks exist;
+#   1. repo paths in backticks exist (in PROGRESS.md, not in the dated log);
 #   2. no file:line references (line numbers drift; name the type or function);
 #   3. every D# / N# cited exists in docs/DECISIONS.md;
 #   4. no wording listed in superseded.txt (DECISIONS.md and the dated M*-TESTING.md plans may);
@@ -43,8 +43,11 @@ living=(${living:#docs/PROGRESS.md})
 cited=($living docs/PROGRESS.md)
 
 # 1. Paths.
+# PROGRESS.md's dated log records the past: a path removed later stays as it was written.
 for f in $cited; do
-  for p in ${(f)"$(grep -oE '`(Apps|Packages|scripts|docs|\.claude)/[^` ]+`' $f | tr -d '`' | sort -u)"}; do
+  text=$(<$f)
+  [[ $f == docs/PROGRESS.md ]] && text=${text%%$'\n'\#\# Nhật ký*}
+  for p in ${(f)"$(print -r -- $text | grep -oE '`(Apps|Packages|scripts|docs|\.claude)/[^` ]+`' | tr -d '`' | sort -u)"}; do
     [[ -z $p ]] && continue
     p=${p%%:*}; p=${p%/}
     [[ $p == *'*'* || $p == *'<'* || $p == *'{'* || $p == *…* ]] && continue
