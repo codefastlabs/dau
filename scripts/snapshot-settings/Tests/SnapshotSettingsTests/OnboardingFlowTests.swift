@@ -195,58 +195,72 @@ struct OnboardingFlowTests {
         #expect(installer.calls == ["enable"])
     }
 
-    @Test("Quay lại on step 2: shown on ready, waiting and error once step 1 was part of the onboarding; not on done or failed")
-    func backVisibility() async {
-        // Came through step 1, then quit the other input method: step 1 is done.
-        let (flow, detector, installer) = flow([openKey], status: .installed(version: nil))
-        flow.start()
-        #expect(flow.cameThroughOldInputMethods)
-        #expect(!flow.canGoBack)   // step 1 itself
-        detector.found = []
-        flow.refresh()
-        #expect(flow.step == .enable)
-        #expect(flow.enableScreen == .ready)
-        #expect(flow.canGoBack)
-
-        installer.enableWaits = true
-        let run = Task { await flow.enable() }
-        await settle { installer.enableWaiting }
-        #expect(flow.enableScreen == .waiting)
-        #expect(flow.canGoBack)
-        installer.release = .notEnabled
-        await run.value
-        #expect(flow.enableScreen == .notEnabled)
-        #expect(!flow.canGoBack)   // "Chưa bật được" keeps its own buttons
-
-        installer.enableWaits = false
-        installer.failure = .invalidSignature
-        await flow.enable()
-        #expect(flow.enableScreen == .error)
-        #expect(flow.canGoBack)
-
-        installer.failure = nil
-        installer.enableOutcome = .enabled
-        await flow.enable()
-        #expect(flow.enableScreen == .done)
-        #expect(!flow.canGoBack)   // after Dấu is on: no going back
-        flow.next()
-        #expect(flow.canGoBack)    // step 3 → step 2
+    /// Where step 2 is when "Quay lại" is looked at.
+    enum BackState: Sendable { case ready, waiting, notEnabled, error, done, typing }
+    struct BackCase: Sendable, CustomTestStringConvertible {
+        var cameThroughStepOne: Bool
+        var state: BackState
+        var visible: Bool
+        var testDescription: String { "step 1 \(cameThroughStepOne ? "shown" : "never shown"), \(state)" }
     }
 
-    @Test("Quay lại is hidden when step 1 never showed")
-    func noBackWithoutStepOne() async {
-        let (flow, _, installer) = flow(status: .installed(version: nil))
+    @Test("Quay lại on step 2 by state: shown on ready, waiting and error once step 1 was part of the onboarding; not on done or failed; never when step 1 never showed",
+          arguments: [
+              BackCase(cameThroughStepOne: true, state: .ready, visible: true),
+              BackCase(cameThroughStepOne: true, state: .waiting, visible: true),
+              BackCase(cameThroughStepOne: true, state: .notEnabled, visible: false),   // "Chưa bật được" keeps its own buttons
+              BackCase(cameThroughStepOne: true, state: .error, visible: true),
+              BackCase(cameThroughStepOne: true, state: .done, visible: false),         // after Dấu is on: no going back
+              BackCase(cameThroughStepOne: true, state: .typing, visible: true),        // step 3 → step 2
+              BackCase(cameThroughStepOne: false, state: .ready, visible: false),
+              BackCase(cameThroughStepOne: false, state: .waiting, visible: false),
+              BackCase(cameThroughStepOne: false, state: .notEnabled, visible: false),
+              BackCase(cameThroughStepOne: false, state: .error, visible: false),
+              BackCase(cameThroughStepOne: false, state: .done, visible: false),
+          ])
+    func backVisibility(_ c: BackCase) async {
+        let (flow, detector, installer) = flow(c.cameThroughStepOne ? [openKey] : [], status: .installed(version: nil))
         flow.start()
-        #expect(!flow.cameThroughOldInputMethods)
-        #expect(flow.enableScreen == .ready)
-        #expect(!flow.canGoBack)
+        #expect(flow.cameThroughOldInputMethods == c.cameThroughStepOne)
+        if c.cameThroughStepOne {
+            #expect(!flow.canGoBack)   // step 1 itself
+            detector.found = []   // quit the other input method: step 1 is done
+            flow.refresh()
+        }
+        #expect(flow.step == .enable)
+        switch c.state {
+        case .ready: #expect(flow.enableScreen == .ready)
+        case .waiting:
+            installer.enableWaits = true
+            let run = Task { await flow.enable() }
+            await settle { installer.enableWaiting }
+            #expect(flow.enableScreen == .waiting)
+            #expect(flow.canGoBack == c.visible)
+            installer.release = .notEnabled
+            await run.value
+            return
+        case .notEnabled:
+            installer.enableOutcome = .notEnabled
+            await flow.enable()
+            #expect(flow.enableScreen == .notEnabled)
+        case .error:
+            installer.failure = .invalidSignature
+            await flow.enable()
+            #expect(flow.enableScreen == .error)
+        case .done, .typing:
+            await flow.enable()
+            #expect(flow.enableScreen == .done)
+            if c.state == .typing { flow.next(); #expect(flow.step == .typing) }
+        }
+        #expect(flow.canGoBack == c.visible)
+    }
+
+    @Test("Quay lại is ignored when step 1 never showed; an input method started later does not bring step 1 into this onboarding")
+    func noBackWithoutStepOne() {
+        let (flow, _, _) = flow(status: .installed(version: nil))
+        flow.start()
         flow.back()   // ignored
         #expect(flow.step == .enable)
-        installer.failure = .invalidSignature
-        await flow.enable()
-        #expect(flow.enableScreen == .error)
-        #expect(!flow.canGoBack)
-        // An input method started later does not bring step 1 into this onboarding.
         let (later, detector, _) = self.flow(status: .installed(version: nil))
         later.start()
         detector.found = [openKey]

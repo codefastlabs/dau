@@ -270,86 +270,46 @@ struct InputMethodInstallerTests {
 
     // MARK: Enable
 
-    @Test("enable: clear every app's cache, register, quit System Settings, then enable the parent, read back from the stored entries")
-    func enable() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
-        rig.settings.running = true
-        rig.tis.storedAfterReads = 3
-        #expect(try await rig.installer.enable() == .enabled)
-        #expect(rig.tis.log == ["register", "enable \(imID)"])
-        // System Settings' cache is one of the apps' caches: no separate clear.
-        #expect(rig.settings.log == ["terminate"])
-        #expect(rig.caches.log == ["clearCaches", "checkCaches"])
-        #expect(rig.tis.currentID == nil)   // never selected (N4)
+    /// What the caches report around one `enable`, and the calls that must follow.
+    struct CacheScenario: Sendable, CustomTestStringConvertible {
+        var name: String
+        var cleared = InputSourceCacheCounts(removed: 4)
+        var checked: InputSourceCacheCounts
+        var registersAgain = false
+        var testDescription: String { name }
     }
 
-    @Test("enable: the order is clear the caches, register, quit System Settings, enable the parent, check the caches")
-    func enableOrder() async throws {
+    @Test("enable: clear every app's cache, register, quit System Settings, enable the parent (read back from the stored entries), check the caches; a second register only when stale caches were found; cache failures change nothing",
+          arguments: [
+              CacheScenario(name: "caches listed Dấu", checked: InputSourceCacheCounts(checked: 3)),
+              CacheScenario(name: "no stale cache", checked: InputSourceCacheCounts(checked: 5)),
+              CacheScenario(name: "nothing readable", checked: InputSourceCacheCounts()),
+              CacheScenario(name: "stale caches", checked: InputSourceCacheCounts(checked: 5, stale: 2, removed: 4),
+                            registersAgain: true),
+              CacheScenario(name: "caches that cannot be listed, read or removed",
+                            cleared: InputSourceCacheCounts(removed: 0, failed: 7),
+                            checked: InputSourceCacheCounts(checked: 1, stale: 1, removed: 0, failed: 3),
+                            registersAgain: true),
+          ])
+    func enable(_ scenario: CacheScenario) async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.settings.running = true
         let order = Order()
         rig.settings.order = order
         rig.tis.order = order
         rig.caches.order = order
-        rig.tis.storedAfterReads = 1
+        rig.caches.cleared = scenario.cleared
+        rig.caches.checked = scenario.checked
+        rig.tis.storedAfterReads = 3
         #expect(try await rig.installer.enable() == .enabled)
-        #expect(order.log == ["clearCaches", "register", "terminate", "enable \(imID)", "checkCaches"])
+        #expect(order.log == ["clearCaches", "register", "terminate", "enable \(imID)", "checkCaches"]
+                + (scenario.registersAgain ? ["register"] : []))
+        // System Settings' cache is one of the apps' caches: no separate clear.
+        #expect(rig.settings.log == ["terminate"])
         #expect(!rig.settings.running)
-    }
-
-    @Test("enable: the check looks for the installed bundle's folder and file name")
-    func enableCacheMarker() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
-        rig.tis.storedAfterReads = 1
-        _ = try await rig.installer.enable()
+        // The check looks for the installed bundle's folder and file name.
         #expect(rig.caches.markers == ["Input Methods/DauInputMethod.app"])
-    }
-
-    @Test("enable: stale caches found once enabled → register again exactly once, after the check")
-    func enableStaleCaches() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
-        let order = Order()
-        rig.tis.order = order
-        rig.caches.order = order
-        rig.caches.checked = InputSourceCacheCounts(checked: 5, stale: 2, removed: 4)
-        rig.tis.storedAfterReads = 1
-        #expect(try await rig.installer.enable() == .enabled)
-        #expect(order.log == ["clearCaches", "register", "enable \(imID)", "checkCaches", "register"])
-        #expect(rig.caches.log == ["clearCaches", "checkCaches"])
-    }
-
-    @Test("enable: no stale cache → no second register")
-    func enableNoStaleCaches() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
-        rig.caches.checked = InputSourceCacheCounts(checked: 5)
-        rig.tis.storedAfterReads = 1
-        #expect(try await rig.installer.enable() == .enabled)
-        #expect(rig.tis.log == ["register", "enable \(imID)"])
-        // Nothing readable at all: same.
-        let none = Rig(installed: old, sources: FakeTextInputSources.dau())
-        none.caches.checked = InputSourceCacheCounts()
-        none.tis.storedAfterReads = 1
-        #expect(try await none.installer.enable() == .enabled)
-        #expect(none.tis.log == ["register", "enable \(imID)"])
-    }
-
-    @Test("enable: caches that cannot be listed, read or removed change nothing in the outcome")
-    func enableCacheFailures() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
-        rig.caches.cleared = InputSourceCacheCounts(removed: 0, failed: 7)
-        rig.caches.checked = InputSourceCacheCounts(checked: 1, stale: 1, removed: 0, failed: 3)
-        rig.tis.storedAfterReads = 1
-        #expect(try await rig.installer.enable() == .enabled)
-        #expect(rig.tis.log == ["register", "enable \(imID)", "register"])
-
-        let off = Rig(installed: old, sources: FakeTextInputSources.dau())
-        off.caches.cleared = InputSourceCacheCounts(failed: 7)
-        off.tis.enableTakesEffect = false
-        off.installer.enableTimeout = .seconds(1)
-        #expect(try await off.installer.enable() == .notEnabled)
-        // Not enabled: no check, no second register.
-        #expect(off.caches.log == ["clearCaches"])
-        #expect(off.tis.log == ["register", "enable \(imID)"])
+        #expect(rig.tis.currentID == nil)   // never selected (N4)
     }
 
     @Test("enable: TIS says enabled but nothing is stored → not enabled, status not enabled")
@@ -367,15 +327,17 @@ struct InputMethodInstallerTests {
         #expect(rig.installer.status() == .enabled)
     }
 
-    @Test("enable: noErr but nothing stored before the deadline is not enabled, never success")
+    @Test("enable: noErr but nothing stored before the deadline is not enabled, never success; no check, no second register")
     func enableReturnsOkButStillOff() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.caches.cleared = InputSourceCacheCounts(failed: 7)
         rig.tis.enableTakesEffect = false
         rig.tis.enableStatus = noErr
-        rig.installer.enableTimeout = .seconds(2)
+        rig.installer.enableTimeout = .seconds(1)
         #expect(try await rig.installer.enable() == .notEnabled)
         #expect(rig.installer.status() == .installed(version: "0.1.0"))
-        // Undo still knows what was asked for, if macOS stores it later.
+        #expect(rig.caches.log == ["clearCaches"])
+        #expect(rig.tis.log == ["register", "enable \(imID)"])
     }
 
     @Test("enable: stored during the wait (the user clicked Allow) counts")
@@ -418,22 +380,18 @@ struct InputMethodInstallerTests {
         #expect(again.tis.log == ["register", "enable \(imID)"])
     }
 
-    @Test("enable: already stored as enabled → caches cleared before register and checked, no System Settings, no enable call")
-    func enableAlreadyOn() async throws {
+    @Test("enable: already stored as enabled → caches cleared before register and checked, no System Settings, no enable call; stale caches → one more register",
+          arguments: [false, true])
+    func enableAlreadyOn(stale: Bool) async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.settings.running = true
         let order = Order()
         rig.tis.order = order
         rig.caches.order = order
+        if stale { rig.caches.checked = InputSourceCacheCounts(checked: 2, stale: 1, removed: 2) }
         #expect(try await rig.installer.enable() == .enabled)
-        #expect(order.log == ["clearCaches", "register", "checkCaches"])
+        #expect(order.log == ["clearCaches", "register", "checkCaches"] + (stale ? ["register"] : []))
         #expect(rig.settings.log.isEmpty)
-        // An app that rebuilt its cache without Dấu in between: one more register.
-        let stale = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
-        stale.caches.checked = InputSourceCacheCounts(checked: 2, stale: 1, removed: 2)
-        #expect(try await stale.installer.enable() == .enabled)
-        #expect(stale.tis.log == ["register", "register"])
-        #expect(stale.settings.log.isEmpty)
     }
 
     @Test("enable: not installed throws; nothing touched")
@@ -580,32 +538,23 @@ struct InputMethodInstallerTests {
         #expect(rig.files.log.isEmpty)
     }
 
-    @Test("finish: once removed → stop the input method, Trash, data kept")
-    func finish() async throws {
+    @Test("finish: once removed → stop the input method, Trash; data deleted only when the box is ticked", arguments: [false, true])
+    func finish(deleteSettings: Bool) async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         rig.processes.running = true
         rig.tis.userRemovesDau()
-        let report = try await rig.installer.finishUninstall(deleteSettings: false)
+        let report = try await rig.installer.finishUninstall(deleteSettings: deleteSettings)
         #expect(rig.processes.log == ["requestQuit"])
         #expect(rig.files.log == ["trash"])
         // The cache goes after the bundle, so the "+" list drops the row without a name.
         // Only System Settings' cache: the apps' caches are left alone on uninstall.
         #expect(rig.settings.log == ["clearCache"])
         #expect(rig.caches.log.isEmpty)
-        #expect(report == UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: false))
-        #expect(rig.counter.value == 0)
+        #expect(report == UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: deleteSettings))
+        #expect(rig.counter.value == (deleteSettings ? 1 : 0))
         #expect(rig.installer.status() == .notInstalled)
         // TIS is not asked to disable anything.
         #expect(!rig.tis.log.contains { $0.hasPrefix("disable") })
-    }
-
-    @Test("finish: the box deletes the data")
-    func finishWithData() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
-        rig.tis.userRemovesDau()
-        let report = try await rig.installer.finishUninstall(deleteSettings: true)
-        #expect(report.dataDeleted)
-        #expect(rig.counter.value == 1)
     }
 
     @Test("finish: a failed trash throws and deletes no data")

@@ -32,60 +32,53 @@ struct AppLanguageTests {
         #expect(AppLanguage.name(of: "fr") == "Français")
     }
 
-    /// The subtitle in `language`, with the system's name of the Applications section.
-    func subtitle(_ setForDau: Bool, _ language: String, _ applications: String) -> String {
-        let key = AppLanguage.subtitle(setForDau: setForDau, applications: applications).key
-        return String(format: SnapshotLocalization.text(key, language), applications)
+    // Which sentence the row shows (the wording and its translation: scripts/check-l10n).
+    struct SubtitleCase: Sendable, CustomTestStringConvertible {
+        var status: AppLanguage.Status
+        var key: String
+        var testDescription: String { key }
     }
+    static let notPendingFollows = "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu."
+    static let notPendingSet = "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the %@ list."
+    static let pendingFollows = "Follows macOS. Dấu switches to %@ when it reopens; until then it stays in %@."
+    static let pendingSet = "Set for Dấu only. Dấu switches to %@ when it reopens; until then it stays in %@."
 
-    @Test("following macOS: how to set a language for Dấu only, both languages (artboard SettingsLanguage)")
-    func followsMacOS() {
-        #expect(AppLanguage.subtitle(setForDau: false, applications: "x").key
-                == "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu.")
-        #expect(subtitle(false, "vi", "Ứng dụng")
-                == "Theo macOS. Muốn đặt riêng cho Dấu: bấm Đổi…, rồi ở mục Ứng dụng bấm + và chọn Dấu.")
-        #expect(subtitle(false, "en", "Applications")
-                == "Follows macOS. To set a language for Dấu only, click Change…, then under Applications click + and choose Dấu.")
-    }
-
-    @Test("set for Dấu: how to change or remove it; the section name is the system's (artboard SettingsLanguageEn)")
-    func setForDau() {
-        #expect(AppLanguage.subtitle(setForDau: true, applications: "x").key
-                == "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the %@ list.")
-        // Dấu in English on a Vietnamese Mac: the section keeps macOS's Vietnamese name (D38).
-        #expect(subtitle(true, "en", "Ứng dụng")
-                == "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the Ứng dụng list.")
-        #expect(subtitle(true, "vi", "Ứng dụng")
-                == "Đặt riêng cho Dấu. Bấm Đổi… để chọn ngôn ngữ khác, hoặc bỏ Dấu khỏi danh sách Ứng dụng.")
-    }
-
-    @Test("the row's words and button in Vietnamese")
-    func rowWords() {
-        #expect(SnapshotLocalization.text("Language", "vi") == "Ngôn ngữ")
-        #expect(SnapshotLocalization.text("Change…", "vi") == "Đổi…")
-        #expect(String(format: SnapshotLocalization.text("Open %@", "vi"), "Ngôn ngữ & Vùng") == "Mở Ngôn ngữ & Vùng")
+    @Test("the subtitle's sentence follows set-for-Dấu and pending (artboards SettingsLanguage, SettingsLanguageEn, SettingsLanguagePending)",
+          arguments: [
+              SubtitleCase(status: .init(current: "vi", next: "vi", setForDau: false), key: notPendingFollows),
+              SubtitleCase(status: .init(current: "en", next: "en", setForDau: true), key: notPendingSet),
+              SubtitleCase(status: .init(current: "en", next: "vi", setForDau: false), key: pendingFollows),
+              SubtitleCase(status: .init(current: "vi", next: "en", setForDau: true), key: pendingSet),
+          ])
+    func subtitleKey(_ c: SubtitleCase) {
+        #expect(AppLanguage.subtitle(c.status, applications: "x").key == c.key)
+        if !c.status.isPending {
+            #expect(AppLanguage.subtitle(setForDau: c.status.setForDau, applications: "x").key == c.key)
+        }
     }
 
     // MARK: Waiting for a relaunch (D41, artboard SettingsLanguagePending)
 
     static let localizations = ["en", "vi", "Base"]
 
-    @Test("next launch: the list set for Dấu wins over the macOS list")
-    func nextFromAppKey() {
-        #expect(AppLanguage.nextLaunch(available: Self.localizations,
-                                       appDomain: ["en-VN", "vi"], global: ["vi-VN", "en"]) == "en")
-        #expect(AppLanguage.nextLaunch(available: Self.localizations,
-                                       appDomain: ["vi-VN", "en", "en-VN"], global: ["en-US"]) == "vi")
-        // The first language of the list that Dấu has.
-        #expect(AppLanguage.nextLaunch(available: Self.localizations,
-                                       appDomain: ["fr-FR", "vi-VN"], global: ["en"]) == "vi")
+    struct NextCase: Sendable, CustomTestStringConvertible {
+        var appDomain: [String]?
+        var global: [String]
+        var expected: String
+        var testDescription: String { "app \(appDomain ?? []) global \(global) → \(expected)" }
     }
 
-    @Test("next launch: the macOS list when nothing is set for Dấu")
-    func nextFromGlobal() {
-        #expect(AppLanguage.nextLaunch(available: Self.localizations, appDomain: nil, global: ["vi-VN", "en-VN"]) == "vi")
-        #expect(AppLanguage.nextLaunch(available: Self.localizations, appDomain: nil, global: ["en-VN", "vi-VN"]) == "en")
-        #expect(AppLanguage.nextLaunch(available: Self.localizations, appDomain: nil, global: ["de", "vi"]) == "vi")
+    @Test("next launch: the list set for Dấu wins over the macOS list, and the macOS list is used when nothing is set for Dấu; the first language Dấu has",
+          arguments: [
+              NextCase(appDomain: ["en-VN", "vi"], global: ["vi-VN", "en"], expected: "en"),
+              NextCase(appDomain: ["vi-VN", "en", "en-VN"], global: ["en-US"], expected: "vi"),
+              NextCase(appDomain: ["fr-FR", "vi-VN"], global: ["en"], expected: "vi"),
+              NextCase(appDomain: nil, global: ["vi-VN", "en-VN"], expected: "vi"),
+              NextCase(appDomain: nil, global: ["en-VN", "vi-VN"], expected: "en"),
+              NextCase(appDomain: nil, global: ["de", "vi"], expected: "vi"),
+          ])
+    func nextLaunch(_ c: NextCase) {
+        #expect(AppLanguage.nextLaunch(available: Self.localizations, appDomain: c.appDomain, global: c.global) == c.expected)
     }
 
     @Test("next launch: English when no preferred language is one Dấu has, or there is no list")
@@ -134,49 +127,6 @@ struct AppLanguageTests {
         }
     }
 
-    /// The subtitle for `status` in `language`.
-    func subtitle(_ status: AppLanguage.Status, _ language: String, _ applications: String = "Applications") -> String {
-        let resource = AppLanguage.subtitle(status, applications: applications)
-        let format = SnapshotLocalization.text(resource.key, language)
-        let arguments = status.isPending
-            ? [AppLanguage.name(of: status.next), AppLanguage.name(of: status.current)]
-            : [applications]
-        return String(format: format, arguments: arguments)
-    }
-
-    @Test("pending, set for Dấu: first sentence kept, both languages named in themselves (artboard SettingsLanguagePending)")
-    func pendingSetForDau() {
-        let status = AppLanguage.Status(current: "vi", next: "en", setForDau: true)
-        #expect(AppLanguage.subtitle(status, applications: "x").key
-                == "Set for Dấu only. Dấu switches to %@ when it reopens; until then it stays in %@.")
-        #expect(subtitle(status, "vi") == "Đặt riêng cho Dấu. Dấu dùng English sau khi mở lại; đến lúc đó vẫn hiện Tiếng Việt.")
-        #expect(subtitle(AppLanguage.Status(current: "en", next: "vi", setForDau: true), "en")
-                == "Set for Dấu only. Dấu switches to Tiếng Việt when it reopens; until then it stays in English.")
-    }
-
-    @Test("pending, following macOS: first sentence kept, both languages named in themselves")
-    func pendingFollowsMacOS() {
-        let status = AppLanguage.Status(current: "en", next: "vi", setForDau: false)
-        #expect(AppLanguage.subtitle(status, applications: "x").key
-                == "Follows macOS. Dấu switches to %@ when it reopens; until then it stays in %@.")
-        #expect(subtitle(status, "en") == "Follows macOS. Dấu switches to Tiếng Việt when it reopens; until then it stays in English.")
-        #expect(subtitle(AppLanguage.Status(current: "vi", next: "en", setForDau: false), "vi")
-                == "Theo macOS. Dấu dùng English sau khi mở lại; đến lúc đó vẫn hiện Tiếng Việt.")
-    }
-
-    @Test("not pending: exactly the two forms of before")
-    func notPending() {
-        for setForDau in [true, false] {
-            let status = AppLanguage.Status(current: "vi", next: "vi", setForDau: setForDau)
-            #expect(AppLanguage.subtitle(status, applications: "x").key
-                    == AppLanguage.subtitle(setForDau: setForDau, applications: "x").key)
-        }
-    }
-
-    @Test("the Reopen button in Vietnamese")
-    func reopenWords() {
-        #expect(SnapshotLocalization.text("Reopen Dấu", "vi") == "Mở lại Dấu")
-    }
 }
 
 /// "Reopen Dấu" (`AppRelauncher`): the helper waits for the process to end, then runs the

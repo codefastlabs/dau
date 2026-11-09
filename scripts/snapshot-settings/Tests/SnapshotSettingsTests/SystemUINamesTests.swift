@@ -32,30 +32,31 @@ struct SystemUINamesTests {
         }
     }
 
-    @Test("system language English → the English names, whatever the app speaks")
-    func english() {
-        let n = names(["en-VN", "vi-VN"])
-        #expect(n.inputSourcesPath == "System Settings › Keyboard › Input Sources")
-        #expect(n.edit == "Edit…")
-        #expect(n.allow == "Allow")
-        #expect(n.applications == "Applications")
-        #expect(n.vietnamese == "Vietnamese")
+    struct LanguageCase: Sendable, CustomTestStringConvertible {
+        var languages: [String]
+        var inputSourcesPath, edit, allow, applications, vietnamese, trash: String
+        var testDescription: String { languages.joined(separator: ",") }
     }
 
-    @Test("system language Vietnamese → the system's own Vietnamese words, found by the English value")
-    func vietnamese() {
-        let n = names(["vi-VN", "en-VN"])
-        #expect(n.inputSourcesPath == "Cài đặt hệ thống › Bàn phím › Nguồn đầu vào")
-        #expect(n.edit == "Sửa…")
-        #expect(n.allow == "Cho phép")
-        #expect(n.applications == "Ứng dụng")
-        #expect(n.vietnamese == "Tiếng Việt")
+    @Test("system language decides the names, whatever the app speaks: English → English names; Vietnamese → the system's own Vietnamese words, found by the English value (D38)",
+          arguments: [
+              LanguageCase(languages: ["en-VN", "vi-VN"], inputSourcesPath: "System Settings › Keyboard › Input Sources",
+                           edit: "Edit…", allow: "Allow", applications: "Applications", vietnamese: "Vietnamese", trash: "Trash"),
+              LanguageCase(languages: ["vi-VN", "en-VN"], inputSourcesPath: "Cài đặt hệ thống › Bàn phím › Nguồn đầu vào",
+                           edit: "Sửa…", allow: "Cho phép", applications: "Ứng dụng", vietnamese: "Tiếng Việt", trash: "Thùng rác"),
+          ])
+    func languageDecidesNames(_ c: LanguageCase) {
+        let n = names(c.languages)
+        #expect(n.inputSourcesPath == c.inputSourcesPath)
+        #expect(n.edit == c.edit)
+        #expect(n.allow == c.allow)
+        #expect(n.applications == c.applications)
+        #expect(n.vietnamese == c.vietnamese)
+        #expect(n.trash == c.trash)
     }
 
-    @Test("the Trash: the system's own name in the user's language, English when no table has it (D38)")
-    func trash() {
-        #expect(names(["vi-VN"]).trash == "Thùng rác")
-        #expect(names(["en-VN", "vi-VN"]).trash == "Trash")
+    @Test("the Trash is English when no table has it (D38)")
+    func trashFallback() {
         #expect(names(["xx"]).trash == "Trash")
         let none = SystemUINames(languages: ["vi"], tables: [:]) { _, _ in nil }
         #expect(none.trash == "Trash")
