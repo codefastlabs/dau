@@ -192,7 +192,7 @@ OpenKey có **hai** biến thể. Phím dấu, aa/ee/oo, aw/ow/uw, dd và z gi�
 
 Mã không có khác biệt nào khác (đã tìm mọi nhánh theo kiểu gõ trong `Engine.cpp` và `DataType.h`).
 
-Bộ gõ "Telex đơn giản" có sẵn của macOS hoạt động ra sao thì **chưa kiểm chứng**: không tìm thấy tài liệu Apple mô tả. Cần người dùng gõ thử trên máy.
+Bộ gõ "Telex đơn giản" có sẵn của macOS hoạt động ra sao thì **chưa kiểm chứng**: không tìm thấy tài liệu Apple mô tả. Đo được bằng `scripts/research/compare-ims/run.sh` (nguồn `VietnameseSimpleTelex` đã bật sẵn trên máy phát triển) khi trang so sánh M10 cần.
 
 **Dấu (đã chốt, D29):**
 - "Telex đơn giản" = Telex trừ hai điểm:
@@ -466,12 +466,12 @@ Nguồn chính thức. Header SDK đọc trong Xcode 27.1, `MacOSX27.0.sdk`.
   - `attributedSubstring(from:)` có thể trả chuỗi dài hơn hoặc ngắn hơn phạm vi yêu cầu khi phạm vi cắt ngang một cặp surrogate. "Thêm dấu cho từ đã gõ" (D20) phải kiểm tra độ dài.
   - `setMarkedText(_:selectionRange:replacementRange:)`: chuỗi thường sẽ có gạch chân mặc định (D13).
   - `overrideKeyboard(withKeyboardNamed:)`: input method có thể chỉ định bố cục bàn phím dùng để dịch phím, và "nên gọi mỗi lần được kích hoạt".
-    - Suy luận, cần kiểm chứng ở M2: nếu không gọi thì ký tự Dấu nhận được theo bố cục nào, và người dùng Dvorak gõ Telex ra sao.
+    - Chưa đo: nếu không gọi thì ký tự Dấu nhận được theo bố cục nào, và người dùng Dvorak gõ Telex ra sao.
 - `IMKStateSetting.recognizedEvents(_:)` quyết định loại sự kiện bộ gõ nhận được. Nếu cần biết Shift/Caps riêng thì phải xét mask này (suy luận). https://developer.apple.com/documentation/inputmethodkit/imkstatesetting
 - `NSTextInputClient.insertText(_:replacementRange:)` (phía ứng dụng): "chỉ phù hợp cho văn bản do người dùng gõ" và yêu cầu view cho phép sửa. https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
 - Phạm vi `NSRange` tính theo đơn vị UTF-16.
   - Chữ Việt dựng sẵn (NFC) đều nằm trong BMP nên một chữ = một đơn vị.
-  - Nhưng nếu ứng dụng lưu chữ ở dạng tổ hợp (NFD) thì số đơn vị khác số chữ, và `deleteCount` của engine phải đổi cho đúng (suy luận, cần kiểm chứng ở M2/M3).
+  - Nhưng nếu ứng dụng lưu chữ ở dạng tổ hợp (NFD) thì số đơn vị khác số chữ, và `deleteCount` của engine phải đổi cho đúng. Đã xử lý: chữ đọc từ ứng dụng ở dạng NFD được tính đúng khi thay (test `SeedTests`).
 
 ---
 

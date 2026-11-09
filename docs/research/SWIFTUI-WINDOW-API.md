@@ -271,7 +271,7 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
 - Dấu dùng scene `Window` (cửa sổ Cài đặt là giao diện chính của app chủ) với `.windowResizability(.contentSize)`, đúng cách tài liệu tả để giới hạn khung.
   - Mục HIG về cửa sổ cài đặt nói về cửa sổ phụ kiểu thanh nút pane, không nói về bố cục sidebar như System Settings.
 - Ghi nhận, không đề xuất sửa: `SettingsWindow` mở ở mục `.typing` mỗi lần, khác khuyến nghị "Restore the most recently viewed pane".
-  - Có làm hay không là quyết định giao diện, cần người dùng.
+  - Không làm: cửa sổ Cài đặt chỉ có bốn mục, mở ở mục Gõ phím mỗi lần là đủ.
 
 ## 4. `searchable(placement: .sidebar)` trên macOS
 
@@ -313,11 +313,8 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
   - System Settings làm Lùi/Tiến thế nào;
   - sidebar của nó có thu gọn hay kéo rộng được không, làm bằng cách nào;
   - thanh công cụ của nó cấu hình ra sao.
-- [Phải đo] Trên System Settings, chỉ đọc:
-  - (a) có phần tử `AXSplitter` giữa sidebar và pane không, có đổi được giá trị không;
-  - (b) menu View có "Show/Hide Sidebar", "Enter Full Screen", lệnh Lùi/Tiến kèm phím tắt không;
-  - (c) nhãn trợ năng và ký hiệu của cụm Lùi/Tiến.
-  - Kéo thử đường chia là thao tác trên cửa sổ thật, cần hỏi người dùng trước.
+- Đã đo ngày 05/11/2026 (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`): sidebar của System Settings không kéo, không thu được.
+- Không đo thêm menu View và nhãn trợ năng của cụm Lùi/Tiến của System Settings: Dấu đã chọn sidebar cố định và Lùi/Tiến kiểu hệ thống (mục 10), nên các số đó không đổi gì.
 
 ## 7. Đối chiếu phương án (Lùi/Tiến ở `.navigation`, tiêu đề hệ thống, chặn thu gọn bằng `columnVisibility`)
 

@@ -10,9 +10,9 @@
   - Chi tiết và việc đã giải quyết ở mục "Cần chỉnh / không khớp".
 - **Sheet (đo 02/11/2026, sửa 03/11/2026 cho khớp mã):** nút trên `toolbar` cho đúng thanh nút của System Settings, thẻ `Form(.grouped)` cho đúng lề và khoảng cách thẻ; `List` trong `Form(.grouped)` bị tắt cuộn nên danh sách đặt trong `GroupBox`. Chi tiết ở mục "Sheet". Chiều cao thẻ danh sách (188) lấy từ mockup, giữ hay đổi là câu hỏi mở cho người dùng.
 - **Icon ứng dụng trong hàng (02/11/2026):** khung 32 cho hàng có dòng phụ, 24 cho hàng một dòng kèm control; mục "Icon ứng dụng trong hàng".
-- **Nút mở/thu kiểu "Nâng cao" (02/11/2026):** System Settings không có hàng mở/thu nào trong 13 pane đã rà; `DisclosureGroup` trong Form lệch cách vẽ hàng và không mở được qua Accessibility API, nên giữ nút + chevron. Đổi câu lý do trong D9 cần người dùng quyết. Mục "Nút mở/thu kiểu 'Nâng cao'".
+- **Nút mở/thu kiểu "Nâng cao" (02/11/2026):** System Settings không có hàng mở/thu nào trong 13 pane đã rà; `DisclosureGroup` trong Form lệch cách vẽ hàng và không mở được qua Accessibility API, nên giữ nút + chevron; D9 đã ghi đúng lý do này. Mục "Nút mở/thu kiểu 'Nâng cao'".
 - **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) chưa đo trên cửa sổ thật. Mục "Cần chỉnh / không khớp".
-- **Cửa sổ System Settings cố định độ rộng 740, chỉ đổi được chiều cao (đo 09/11/2026):** mục "Cửa sổ có đổi rộng được không". Dấu hiện cho đổi rộng 740–976: lệch với chuẩn đối chiếu của D9 (Giao diện); đổi hay giữ là việc của người dùng.
+- **Cửa sổ System Settings cố định độ rộng 740, chỉ đổi được chiều cao (đo 09/11/2026):** mục "Cửa sổ có đổi rộng được không". Dấu cho đổi rộng 740–976: lệch nhỏ đã biết, không sửa (cửa sổ rộng hơn không làm hỏng bố cục, sửa không đem lại gì cho người dùng).
 - Tài liệu Apple không công bố các số 704, 20, 12, 37,5; mọi số trong file là số đo trên máy, có thể đổi theo phiên bản macOS (mục "Nguồn API").
 
 ## Chuẩn đối chiếu: System Settings (macOS 27.2)
@@ -125,7 +125,7 @@ Kết luận cho sheet của Dấu (sửa 03/11/2026 cho khớp mã):
   - danh sách trong `GroupBox`;
   - `Form(.grouped)` chỉ có thẻ "Khi đang gõ";
   - thanh nút.
-- Chiều cao thẻ danh sách (188) lấy từ mockup, không có số System Settings tương ứng; giữ hay đổi là câu hỏi mở cho người dùng (D9).
+- Chiều cao thẻ danh sách (188) lấy từ mockup, không có số System Settings tương ứng; giữ 188: không có số chuẩn nào để thay, và đổi không giúp gì cho người dùng.
 
 ### Độ rộng tối đa của Form dạng nhóm (lỗi "cột hẹp ở giữa")
 
@@ -174,7 +174,7 @@ Kết luận:
   - Đặt rộng 940: đọc lại 740. Đặt rộng 590: đọc lại 740. Độ rộng **cố định ở 740**.
   - Đặt cao 915: đọc lại 876 (cao hơn 765, thấp hơn giá trị đặt, có lẽ do giới hạn của màn hình). Chiều cao **đổi được**.
   - Trả về 740 × 765 và vị trí cũ, rồi thoát System Settings (trước khi đo nó không chạy).
-- Dấu hiện cho đổi rộng 740–976 (thẻ không chạm giới hạn 704 của Form). Theo chuẩn đối chiếu của D9 thì nên cố định 740 như System Settings; đổi giao diện theo thứ tự canvas trước, mã sau, cần người dùng duyệt.
+- Dấu hiện cho đổi rộng 740–976 (thẻ không chạm giới hạn 704 của Form). Lệch nhỏ đã biết, không sửa: cửa sổ rộng hơn không làm hỏng bố cục, sửa không đem lại gì cho người dùng.
 
 ### Nút mở/thu kiểu "Nâng cao"
 
@@ -197,7 +197,7 @@ Thử `DisclosureGroup(isExpanded:)` (nhãn `LabeledContent("Nâng cao") { tóm 
 Kết luận:
 - Trên macOS 27.2 lý do cũ trong D9 ("DisclosureGroup làm thụt lề sai bố cục") không còn đúng.
 - Nhưng `DisclosureGroup` trong Form vẫn lệch cách System Settings vẽ hàng (không vạch ngăn, hàng con dính vào hàng mở) và không mở được qua trợ năng; System Settings cũng không có hàng mở/thu để làm mẫu.
-- Giữ nút + chevron; đổi câu lý do trong D9 cần người dùng quyết.
+- Giữ nút + chevron; lý do đã ghi trong D9.
 
 ### Mặc định SwiftUI đã khớp
 

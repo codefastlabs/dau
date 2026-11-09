@@ -451,7 +451,7 @@ Trả lời trên macOS 27.2: **không có cách chính đáng và ổn định.
 | Hướng dẫn người dùng bấm "–": app mở Keyboard settings, đọc lại `AppleEnabledThirdPartyInputSources` cho tới khi mục cha hết, rồi mới xoá bundle | **Có** | Lần thử gỡ có bấm "–" (mục 8.1b); msime | Đúng N4, D16 | Một thao tác của người dùng; xoá bundle trước thì mục thành ẩn (lần thử gỡ bản `DauProbeC1` không bấm "–", mục 8.1b) |
 | Mục đã ẩn: cài lại đúng bundle ID để mục hiện lại, bấm "–", rồi xoá bundle | **Có** (bản thử, 04/11/2026: phép hồi sinh mục ẩn, kết quả cuối mục) | Suy ra từ lần thử gỡ bản `DauProbeC1` không bấm "–" (mục còn, chỉ không hiện vì thiếu bundle); đã đo bằng bản thử [Máy/bản thử] | Đúng N4 | msime #3775: "–" "did nothing" khi tiến trình bộ gõ bị chặn khởi động; bản thử không có tiến trình `DauProbeC1` mà "–" vẫn bỏ được (kết quả cuối mục) |
 
-**Đề xuất xếp hạng** (của người nghiên cứu, chờ người dùng quyết):
+**Đề xuất xếp hạng** (của người nghiên cứu, 03/11/2026; không còn cần sau khi D37 (Cài đặt bộ gõ) chốt cách bật không đăng xuất):
 1. Hướng dẫn người dùng bấm "–" làm đường chính của "Gỡ cài đặt".
 2. Cài lại rồi bấm "–" làm đường cứu khi bundle đã bị xoá trước ("cài lại Dấu rồi gỡ bằng nút trong app"); phép hồi sinh mục ẩn đã đạt (kết quả cuối mục).
 3. Không làm tám hướng còn lại (từ tắt bằng `TISDisableInputSource` tới Full Disk Access: mọi hướng trong bảng trừ hai hướng trên). Full Disk Access chỉ đo khi cần trả lời trọn câu hỏi đọc được thì có xoá được không, không đưa vào sản phẩm.
@@ -540,7 +540,7 @@ Chỉ liệt kê điều có nguồn ở trên; nối về D và N chỉ để t
 4. **Đăng xuất:**
    - Trên macOS 27.2, bật lần đầu không cần đăng xuất khi làm theo D37 (mục 2.3, 9.9); đăng xuất rồi đăng nhập là đường lui khi một app vẫn không chọn được Dấu (mục 9.12). Các bản macOS khác chưa đo (mục 10.1).
    - Cho tới khi có số đo trên bản macOS khác và bản ký Developer ID, chữ trên giao diện về đăng xuất chỉ nói điều đã đo (N5); cách an toàn là "nếu không thấy Dấu trong '+', đăng xuất rồi đăng nhập" như phương án chờ.
-   - Artboard `OnboardingLogout` (đọc 03/11/2026) nằm trên canvas, **không** có trong `docs/UI.md`; nó chờ người dùng duyệt và được vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ (`docs/PROGRESS.md`, "Trạng thái hiện tại").
+   - Artboard `OnboardingLogout` được vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ; nó không còn trên trang Thiết kế của canvas (`docs/ui/canvas/README.md`).
    - App không tự đăng xuất (N4) và phải nhớ đang ở bước 2 để lần mở sau làm tiếp; macOS có tuỳ chọn "Reopen windows when logging back in" nên app đang mở có thể được mở lại [Suy luận, cần kiểm chứng].
    - Nút "Đăng xuất…" mở hộp thoại hệ thống cần cách gọi mà không đòi quyền Tự động hoá (AppleScript tới System Events cần quyền đó: chưa kiểm); nếu không thì chỉ hướng dẫn "menu Apple › Đăng xuất…".
 5. **Gỡ:** tắt từ Cài đặt (nút "–") có hiệu lực; `TISDisableInputSource` từ app bị chặn ghi (mục 4), và app không có cách chính đáng nào khác để bỏ mục (mục 4.1).
@@ -581,11 +581,11 @@ Xếp hạng là ước lượng của người nghiên cứu từ bằng chứn
 | **Cài vào `/Library/Input Methods`** (cần quyền quản trị: `.pkg` hoặc `osascript … with administrator privileges`) rồi đăng ký | Trung bình (đáng thử nhất vì có một bằng chứng dương duy nhất) | marinaMoji (mục 2.3); nhưng Squirrel, macSKK, fcitx5, Gureum cũng cài ở đó mà vẫn bảo đăng xuất. Rủi ro: hộp thoại mật khẩu quản trị, gỡ cũng cần quản trị, Homebrew/Sparkle phải xử lý quyền | **D16** (`~/Library/Input Methods`), **D6** (DMG, không `.pkg`), **D37**; cần người dùng chốt nếu thành công |
 | **Làm mới tiến trình/bộ đệm giao diện** sau khi đăng ký và bật: dừng `TextInputMenuAgent` (chờ 0,5 s), `TextInputSwitcher`, `CursorUIViewService`, thoát Cài đặt, dừng extension Bàn phím, xoá `com.apple.IntlDataCache.le*` | Thấp tới trung bình cho **menu**; thấp cho "+" với ID mới | vChewing (mã, không số đo); msime đo trên 27.0/27.0.1: không giúp ID mới, giúp mode mới của ID đã biết. LaunchAgent tự dựng lại tiến trình bị dừng. Đụng tiến trình và bộ đệm hệ thống, thoát Cài đặt có thể làm mất trạng thái đang mở, không có API chính thức, có thể vỡ ở bản macOS sau | **N4** (chỉ chạy khi người dùng bấm một nút rõ ràng, "Làm mới danh sách", có xác nhận); mục 3 ("Không làm") và D37 tránh việc này (đọc 03/11/2026; từ 04/11/2026 D37 xoá bộ đệm của System Settings khi "Bật Dấu", mục 9.9) |
 | **Dựng lại ảnh chụp trong tiến trình**: sau `Register`, tra bằng tiến trình con mới (kiểu Squirrel: mỗi lệnh một tiến trình) và thăm dò đến 20 giây (kiểu tabulador); bật cha, đợi mode xuất hiện, bật mode, đọc lại bằng tiến trình mới | Thấp để làm hiện giao diện, nhưng nên làm để đọc đúng trạng thái | tabulador sửa lỗi tương tự bằng thử lại; Squirrel mỗi lệnh một tiến trình. Không đụng hệ thống | Không |
-| **"Đã bật, chờ đăng xuất" làm đường chính** (đề xuất, chờ người dùng quyết): ghi nhớ trạng thái; mở lại Dấu sau đăng nhập; nút hoặc hướng dẫn đăng xuất | Đúng nếu Apple DTS đúng; không tránh được đăng xuất (câu hỏi mở về đăng xuất còn mở lúc đó, D37 ghi "có thể") | Mục 2.3 | **N4**; artboard `OnboardingLogout` (trên canvas, không có trong `docs/UI.md`) chờ duyệt, vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ |
+| **"Đã bật, chờ đăng xuất" làm đường chính** (đề xuất 03/11/2026, không chọn; D37 chốt cách bật không đăng xuất): ghi nhớ trạng thái; mở lại Dấu sau đăng nhập; nút hoặc hướng dẫn đăng xuất | Đúng nếu Apple DTS đúng; không tránh được đăng xuất (câu hỏi mở về đăng xuất còn mở lúc đó, D37 ghi "có thể") | Mục 2.3 | **N4**; artboard `OnboardingLogout` (trên canvas, không có trong `docs/UI.md`) chờ duyệt, vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ |
 | **Chọn nguồn bằng TIS** (`TISSelectInputSource`) sau khi bật, để `imklaunchagent` dựng tiến trình bộ gõ | Rất thấp | marinaMoji: `-50` (paramErr) dù mode đã bật | **N4** không có câu cấm riêng việc chọn nguồn (mục 6.1 điểm 3); chọn Dấu sau khi bật không gắn với nút nào hiện có, nên chỉ đo như chẩn đoán |
 | **Dừng tiến trình hệ thống, sửa tay**: dừng `imklaunchagent` hoặc `keyboardservicesd`, `killall cfprefsd`, sửa tay `AppleEnabledThirdPartyInputSources` hay `com.apple.HIToolbox` | Rất thấp | msime: không giúp. vChewing: dừng `imklaunchagent` làm app đang gõ mất kết nối. logcg (blog, Mojave): sửa plist rồi dừng `cfprefsd` "thường không được". Nguy hiểm | **N4** vi phạm rõ; **không làm** |
 
-Thứ tự **đề xuất** (của người nghiên cứu, chờ người dùng quyết, chưa chốt):
+Thứ tự **đề xuất** (của người nghiên cứu, 03/11/2026; đã thay bằng D37):
 - Làm hướng dựng lại ảnh chụp và hướng "đã bật, chờ đăng xuất" vì rẻ và không va chạm quyết định nào; đề xuất đưa vào M5.
   - Hướng chờ đăng xuất chỉ nên thành đường chính nếu lần thử trên máy sạch cho thấy phải đăng xuất (D37 ghi "có thể", mục 6.1 điểm 4).
 - Chạy vòng thử bằng bản thử ở mục 8.2 trước (người dùng chốt 04/11/2026: mục tiêu là tránh đăng xuất) để xem hướng nào trong ba hướng đầu có tác dụng, rồi thử lại bằng Dấu thật trên máy sạch (mục này).
@@ -627,11 +627,11 @@ Mẫu ghi một dòng cho mỗi bước: `bước | mã trả về Register/Enab
   - Ghi riêng hai kết quả ("có hiện trong '+'" và "bật được"), và nút "Bật Dấu" vẫn không được hứa bật được (mục 6.1 điểm 1).
 - **Máy vẫn còn mục Dấu cũ** (`scripts/dev/clean-dau.sh` không tham số báo `AppleEnabledThirdPartyInputSources` còn mục Dấu, hoặc Dấu "tự có sẵn" ngay sau đăng nhập): kết quả không dùng được để trả lời câu hỏi về đăng xuất, vì chỉ tài khoản macOS mới là sạch thật (mục 7.2, 2.6); làm lại trên tài khoản mới.
 
-### 7.6 Việc còn lại ngoài vòng thử, và việc cần người dùng chốt
+### 7.6 Việc còn lại ngoài vòng thử
 - Gỡ bản Debug rồi chép lại, **cùng ID** và giữa phiên: TIS có thấy ngay không? Chưa đo.
 - (M7) Bản ký Developer ID đã notarize có quarantine: bộ gõ có chạy không, có bị translocate không; và hộp thoại "Cho phép … bật …?" có hiện với bản đó không.
 - `TISDisableInputSource` lên mode đang được chọn: hệ thống chuyển sang nguồn nào (mục 4, bước 1).
-- Cho phép chạy lần thử trên máy sạch: tạo tài khoản sạch, chiếm màn hình, một lần đăng xuất (người dùng chọn giờ). Vòng thử bằng bản thử (mục 8.2) chạy trước (người dùng chốt 04/11/2026); hướng nào có vẻ được thì thử lại bằng Dấu thật.
+- Lần thử trên máy sạch (tài khoản macOS mới): đã bỏ, không đo (D37). Vòng thử bằng bản thử (mục 8.2) đã chạy thay.
 
 ## 8. Quan sát bằng bản thử (không phải Dấu, không kết luận)
 

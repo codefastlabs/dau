@@ -25,7 +25,7 @@ Việc còn mở:
 - Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.
   - Ảnh hưởng chưa đo.
   - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` mục 10.10).
-- "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc). Chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
+- "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc), chưa tái hiện. Phiên chính thử lại thanh địa chỉ khi chạy ma trận Chrome ở M6.
 - Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
 
 Việc hoãn:
