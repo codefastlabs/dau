@@ -12,7 +12,7 @@
 - **Icon ứng dụng trong hàng (02/11/2026):** khung 32 cho hàng có dòng phụ, 24 cho hàng một dòng kèm control; mục "Icon ứng dụng trong hàng".
 - **Nút mở/thu kiểu "Nâng cao" (02/11/2026):** System Settings không có hàng mở/thu nào trong 13 pane đã rà; `DisclosureGroup` trong Form lệch cách vẽ hàng và không mở được qua Accessibility API, nên giữ nút + chevron; D9 đã ghi đúng lý do này. Mục "Nút mở/thu kiểu 'Nâng cao'".
 - **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) chưa đo trên cửa sổ thật. Mục "Cần chỉnh / không khớp".
-- **Cửa sổ System Settings cố định độ rộng 740, chỉ đổi được chiều cao (đo 09/11/2026):** mục "Cửa sổ có đổi rộng được không". Dấu cho đổi rộng 740–976: lệch nhỏ đã biết, không sửa (cửa sổ rộng hơn không làm hỏng bố cục, sửa không đem lại gì cho người dùng).
+- **Cửa sổ System Settings cố định độ rộng 740, chỉ đổi được chiều cao (đo 09/11/2026):** mục "Cửa sổ có đổi rộng được không". Cửa sổ Cài đặt của Dấu làm theo: rộng cố định 740, chỉ đổi chiều cao (từ 09/11/2026).
 - Tài liệu Apple không công bố các số 704, 20, 12, 37,5; mọi số trong file là số đo trên máy, có thể đổi theo phiên bản macOS (mục "Nguồn API").
 
 ## Chuẩn đối chiếu: System Settings (macOS 27.2)
@@ -174,7 +174,7 @@ Kết luận:
   - Đặt rộng 940: đọc lại 740. Đặt rộng 590: đọc lại 740. Độ rộng **cố định ở 740**.
   - Đặt cao 915: đọc lại 876 (cao hơn 765, thấp hơn giá trị đặt, có lẽ do giới hạn của màn hình). Chiều cao **đổi được**.
   - Trả về 740 × 765 và vị trí cũ, rồi thoát System Settings (trước khi đo nó không chạy).
-- Dấu hiện cho đổi rộng 740–976 (thẻ không chạm giới hạn 704 của Form). Lệch nhỏ đã biết, không sửa: cửa sổ rộng hơn không làm hỏng bố cục, sửa không đem lại gì cho người dùng.
+- Dấu làm theo từ 09/11/2026: cửa sổ Cài đặt rộng cố định 740 (`SettingsScene.minSize`), chỉ đổi chiều cao. Trước đó Dấu cho kéo rộng tới 976.
 
 ### Nút mở/thu kiểu "Nâng cao"
 
@@ -214,7 +214,7 @@ Kết luận:
 - sidebar 232 + ô tìm `.searchable(.sidebar)`;
 - lề trên giữ 20 (D9: không đè thông số hệ thống);
 - nút sidebar bị gỡ như System Settings;
-- cửa sổ 740–976 để không chạm giới hạn 704;
+- cửa sổ rộng cố định 740 như System Settings, nên thẻ không bao giờ chạm giới hạn 704;
 - nút trong hàng chỉ có nút căn phải.
 
 Từ 05/11/2026 thanh công cụ có cụm Lùi/Tiến như System Settings nên tiêu đề hệ thống giữ 15 đậm (trước đó là `PageTitle` tự vẽ).
@@ -233,7 +233,7 @@ Chi tiết từng mục:
   - Sidebar của Dấu (từ 06/11/2026, D9): cố định bằng `NSSplitViewController` của app, chưa đo trên cửa sổ thật (đo trên app thử: `docs/research/SWIFTUI-WINDOW-API.md` mục 10).
 - **Hàng chỉ có `Text`**: cao 36, không phải 37.5 như hàng nhãn + control (System Settings không có hàng nhãn trơn để so).
 - **Hàng chỉ có nút**: SwiftUI căn nút trái; System Settings căn nút phải.
-- **Form rộng**: thẻ không quá 704; với cửa sổ khoảng 740–976 thì không ảnh hưởng.
+- **Form rộng**: thẻ không quá 704; cửa sổ rộng cố định 740 nên không ảnh hưởng.
 
 ### Nguồn API (tài liệu Apple)
 

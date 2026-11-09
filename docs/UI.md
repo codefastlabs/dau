@@ -46,7 +46,7 @@ Chữ của Dấu nói về macOS:
 Khung chung:
 
 - Ba bước. Thanh bước bên trái có trạng thái xong / đang làm / chưa.
-- Cuối thanh bước chỉ có dòng "Dấu không cần quyền Trợ năng." (đã đo 30/10/2026).
+- Cuối thanh bước chỉ có dòng "Dấu không cần quyền điều khiển máy Mac." (không viết tên mục "Trợ năng" của macOS, D38) (đã đo 30/10/2026).
 - Không hứa macOS hỏi mấy lần, vì "Thử lại" sau Don't Allow làm hộp thoại hiện lại (N5 (Chỉ hứa điều đã kiểm chứng)).
 
 ### Bước 1, tắt bộ gõ cũ

@@ -46,11 +46,8 @@ struct SettingsWindow: View {
                     UninstallRemoveSheet(actions: actions)
                 }
             }
-            // System Settings opens at 740 × 560. A grouped Form caps its cards at 704 pt
-            // and centers them once the detail column is wider than 744 pt (measured), so
-            // the window never gets wider than the sidebar plus 744: the cards always
-            // span the column with the Form's own 20 pt margins.
-            .frame(minWidth: SettingsScene.minSize.width, maxWidth: SettingsScene.maxWidth,
+            // Fixed width like System Settings' window (740 pt); only the height changes.
+            .frame(minWidth: SettingsScene.minSize.width, maxWidth: SettingsScene.minSize.width,
                    minHeight: SettingsScene.minSize.height, maxHeight: .infinity)
     }
 }
@@ -437,12 +434,9 @@ enum SettingsScene {
     static let defaultSize = CGSize(width: 740, height: 560)
     /// System Settings' sidebar column, fixed (`SettingsSplitViewController`).
     static let sidebarWidth: CGFloat = 232
-    /// A grouped Form keeps its cards at most 704 pt wide and centers them once the
-    /// detail column is wider than 744 pt (measured on macOS 27.2): the window stops
-    /// there, so the cards always span the column.
-    static let maxWidth: CGFloat = sidebarWidth + 744
-    /// The content's minimum: System Settings' width (narrower would wrap or squeeze
-    /// the rows with a label and a segmented control) and 400 pt under the 52 pt
-    /// toolbar, so the window is at least 740 × 452.
+    /// The window's width is fixed at System Settings' 740 pt, as System Settings' own
+    /// window is (measured on macOS 27.2: setting another width reads back 740); only the
+    /// height changes. At least 400 pt under the 52 pt toolbar, so the window is at least
+    /// 740 × 452.
     static let minSize = CGSize(width: 740, height: 400)
 }

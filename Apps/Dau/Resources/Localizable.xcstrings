@@ -1050,7 +1050,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu không cần quyền Trợ năng."
+            "value" : "Dấu không cần quyền điều khiển máy Mac."
           }
         }
       }
@@ -3515,7 +3515,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@; sau đó Dấu được chuyển vào %@."
+            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@. Sau đó bộ gõ được chuyển vào %@."
           }
         }
       }
