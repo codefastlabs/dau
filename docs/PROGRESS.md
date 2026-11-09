@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: chọn giờ chạy đối chứng bằng Telex của Apple trong Chrome khi trang bận (khoảng 5 phút), trước khi quyết D13 (Gạch chân làm đường lui).
+Chờ người dùng: chọn hướng tiếp cho lỗi thay tại chỗ khi Chrome bận (nhật ký 09/11, chuỗi thử có sửa dấu).
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -131,6 +131,13 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Điều kiện CPU đầy (một `yes` mỗi CPU) không cho thêm thông tin; đã bỏ khỏi script.
   - Dọn: không còn `yes`, `DauPerfLog`, `DauDebugForceUnderline`; Safari, Chrome, VS Code, Terminal để mở.
 - 09/11/2026 — `typing/run.sh` gõ vào thanh địa chỉ của Safari (người dùng thấy trên màn hình, trong các lượt M6 bước 1) — phiên chính — guard chỉ kiểm tiêu đề cửa sổ, không kiểm ô nào có focus; ⌘A ⌘C lúc đọc lại chép chính chữ ở thanh địa chỉ nên lượt đó vẫn "đạt". Không nhấn Return, nhưng chữ thử đã đi qua gợi ý tìm kiếm của Safari. Kết quả Safari của các lượt 09/11 không dùng được (không biết lượt nào gõ vào đâu); lượt Safari chữ rối nặng có thể do gợi ý của thanh địa chỉ. Kết quả Chrome giữ: lỗi chỉ có khi trang bận, mà vòng bận chỉ chặn trang (thanh địa chỉ không bị chặn), nên chữ đã vào trang. Sửa: trang thử tự đổi tiêu đề thành "Dấu self test [focus]" chỉ khi ô gõ có focus; phím và ⌘A ⌘C của trình duyệt chỉ gửi dưới tiêu đề đó. Chưa chạy thật cách sửa này.
+- 09/11/2026 — M6 bước 1, chuỗi thử có sửa dấu (người dùng cho chạy; 11 ô, 18:21–18:29; `build/load/edit-20261109-182149/`, không commit) — phiên chính.
+  - Chuỗi 283 phím: bỏ dấu tự do (D28 (Bỏ dấu tự do)), đổi dấu (`vieetjs`), xoá dấu (`Chaofz`), Backspace (D32 (Backspace)), thêm dấu cho từ đã gõ (D20 (Thêm dấu cho từ đã gõ)), từ tiếng Anh (D4 (Từ nước ngoài)); đáp án tính bằng engine.
+  - Chrome, trang bận 300 ms mỗi giây: Dấu bản Release sai 2/3, bản Debug sai 3/3; trang rảnh (Debug) đúng. Bản Release cũng sai nên lời gọi thêm của log vị trí ở bản Debug không phải nguyên nhân.
+  - Chỗ sai có cả ở các thao tác sửa: thêm dấu cho từ đã gõ không chạy ("Hocj", 2 lượt), xoá dấu hỏng ("Càooz", 2 lượt), cùng các từ hỏng như các lượt trước ("ọoot", "nươiif", "ìnhh", "êeting", "kôong kóo").
+  - Cách sửa focus chạy đúng: mọi ô gõ vào ô của trang thử, không ô nào dừng.
+  - Đối chứng Telex của Apple không dùng được: cả ô trang rảnh lẫn trang bận ra nguyên chuỗi phím (không biến đổi chữ nào), dù script xác nhận nguồn hiện tại là Telex của Apple; sáng cùng ngày cùng cách chọn nguồn thì chạy đúng (phần C). Nguyên nhân chưa rõ.
+  - Đã cài lại bộ gõ bản Release trong lượt; không còn `DauPerfLog`.
 - 09/11/2026 — dữ liệu INP công khai của Chrome cho câu hỏi của D13 — researcher — `docs/research/WEB-INPUT-DELAY.md`.
 
 - 09/11/2026 — rà soát các commit 08/11, sửa hai điểm. (1) Giá trị của hàng "Ngôn ngữ" lặp trong cây trợ năng: đọc AX của Dấu thật (người dùng cho chạy ngay; `install-app.sh` cài 6d772e6+, máy en-VN): giá trị là một AXStaticText "English" chứa thêm một AXStaticText "English" con; hàng phím tắt cùng kiểu thì không lặp. Bỏ `.fixedSize()` vẫn lặp, nên không phải do nó. Sửa: `Text` giá trị thành một phần tử riêng (`.accessibilityElement(children: .ignore)`, nhãn là tên ngôn ngữ), như phím tắt; cài lại, đọc AX: còn một "English". Chưa nghe bằng VoiceOver thật, chưa đọc AX ở trạng thái chờ mở lại (cùng `Text`). Ca này không có test: dựng ngoài màn hình thì SwiftUI không trả cây trợ năng. (2) `dau-version.sh` báo bộ gõ hoặc `/Applications/Dau.app` build từ commit khác HEAD, kèm lệnh cài lại; `install-app.sh` bỏ đoạn so riêng (6d772e6). Snapshot 149 test, check-docs, check-l10n đạt — phiên chính
