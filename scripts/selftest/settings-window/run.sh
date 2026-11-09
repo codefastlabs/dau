@@ -56,31 +56,6 @@ dau_developer_dir
 app=${2:-${here:h:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}
 app=${app:A}
 [[ -d $app ]] || log_die 2 "Không thấy $app (build Debug trước, hoặc truyền đường dẫn Dau.app)"
-
-# Every other running Dấu.app (an installed copy, an older build) is quit normally first and
-# opened again at the end. It shares the defaults domain with the app under test, and while
-# it runs a launch opens at that copy's window size even with the saved frame deleted, so
-# "window size at launch" measured the other copy's window. Quitting first also lets it save
-# its own frame, which the export below then keeps.
-others=()
-for pid in $(pgrep -f '/Dau\.app/Contents/MacOS/Dau$' || true); do
-  exe=$(ps -o comm= -p $pid 2>/dev/null) || continue
-  others+=("${exe%/Contents/MacOS/Dau}")
-done
-others=(${(u)others})
-if (( $#others )); then
-  log_step "Thoát Dấu.app đang chạy (mở lại khi xong)"
-  for b in $others; do
-    log_detail "$b"
-    osascript -e "tell application \"$b\" to quit" >/dev/null 2>&1 || true
-  done
-  other_gone() { ! pgrep -f '/Dau\.app/Contents/MacOS/Dau$' >/dev/null; }
-  wait_until 10 other_gone || log_die "Dấu.app chưa thoát sau 10 giây: thoát app rồi chạy lại."
-fi
-reopen_others() {
-  for b in $others; do open "$b" >/dev/null 2>&1 || log_warn "Không mở lại được $b"; done
-}
-
 work=$(mktemp -d)
 lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchServices.framework/Support/lsregister
 # Running the copy registers it with LaunchServices; unregister it before deleting it,
@@ -120,7 +95,6 @@ cleanup() {
   # Before $work goes: the saved copy of the domain is in it.
   restore_frames
   rm -rf "$work"
-  reopen_others
 }
 trap cleanup EXIT
 mkdir -p "$out"
