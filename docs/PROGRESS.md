@@ -15,9 +15,6 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 Chờ người dùng:
 - Duyệt câu chữ tiếng Anh trong `docs/L10N-REVIEW.md` (bản tạm, xoá khi đã sửa catalog).
-- Chiều cao thẻ danh sách 188 ở trang Ứng dụng: lấy từ mockup, System Settings không có số tương ứng; giữ hay đổi (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
-- Câu lý do giữ nút + chevron cho nhóm "Nâng cao" trong D9 (`docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
-- Cửa sổ Cài đặt của Dấu cho đổi rộng 740–976, còn System Settings cố định 740 (đo 09/11/2026, `docs/research/SYSTEM-SETTINGS-REFERENCE.md`): cố định 740 theo D9 hay giữ.
 
 So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
 - Phần B, C xong 09/11.
