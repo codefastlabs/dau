@@ -75,7 +75,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md`:
   - app: Zalo, Discord, Messages, Pages, Numbers, Ghostty, Zed, Xcode, WebStorm;
   - kiểm lại Terminal không gửi ⌫ cho bộ gõ;
-  - hai bài kiểm của ma trận cho phần lớn app: click chuột rồi gõ tiếp (K5, "Click reset") và mũi tên rồi gõ tiếp (K6, "Mũi tên reset", theo D4 × D20).
+  - hai bài kiểm của ma trận cho phần lớn app: click chuột rồi gõ tiếp (gõ `tooi`, click chỗ khác, gõ `s`: chỉ thêm "s" ở chỗ mới) và mũi tên rồi gõ tiếp (gõ `tooi`, nhấn ←, gõ `s`: ra "tối", vì ← chỉ xoá bộ đệm còn D20 vẫn đặt dấu vào chữ trước con trỏ).
 
 ## M7 — Phát hành
 - Làm trước: phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện).

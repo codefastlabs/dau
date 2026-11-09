@@ -53,5 +53,6 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | `docs/history/LOG-M5-M6.md` | nhật ký giữa M5 và M6 (05–08/11/2026), chuyển từ `PROGRESS.md` ngày 09/11/2026 |
 | `docs/history/DECISIONS-LOG.md` | lịch sử từng nguyên tắc và quyết định của `DECISIONS.md`: ngày, ai chốt, bản trước, cách nói cũ |
 | `docs/history/DOCS-LOG.md` | phần lịch sử (ngày chốt, bản trước, số phiên bản canvas) tách khỏi ARCHITECTURE, UI, ROADMAP, PROGRESS, CONTRIBUTING và file agent khi các file đó chuyển sang chỉ ghi hiện trạng (09/11/2026) |
+| `docs/history/RESEARCH-LOG.md` | đoạn kết luận cũ đã bị thay của các tài liệu nghiên cứu, chuyển ra khi viết lại (09/11/2026) |
 | `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
 | `docs/history/KICKOFF.md` | brief khởi động M0–M8 lúc bắt đầu dự án |

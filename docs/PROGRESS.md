@@ -24,7 +24,7 @@ So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên
 Việc còn mở:
 - Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.
   - Ảnh hưởng chưa đo.
-  - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` (d)10).
+  - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/M5-INSTALL.md` mục 10.10).
 - "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome (hồ sơ công việc). Chờ người dùng bật `DauPerfLog` (chỉ bản Debug) khi gặp lại.
 - Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
 

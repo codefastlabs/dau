@@ -383,7 +383,7 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 - `TISRegisterInputSource`;
 - không bật, không chọn nguồn nào.
 
-**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại", N4; D37, `docs/research/M5-INSTALL.md` mục 0 (b)10, (d)10 và 8.1b):
+**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại", N4; D37, `docs/research/M5-INSTALL.md` mục 9.10, mục 10.10 và 8.1b):
 
 - Mỗi lần gọi, ngay trước `TISRegisterInputSource`, xoá bộ đệm danh sách nguồn nhập liệu:
   - xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con trực tiếp của `DARWIN_USER_CACHE_DIR` (qua `InputSourceCaches.clearAll`);
