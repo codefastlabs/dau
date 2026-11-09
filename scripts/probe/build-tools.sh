@@ -4,11 +4,12 @@
 # Output: build/probe.noindex/bin/tis-probe, bin/tis-act, and TisAct.app (a minimal, non-sandboxed
 # app named "Dấu thử" around tis-act, signed with the same Apple Development identity as the
 # variants). Running tis-act has side effects; this script only compiles, signs and verifies.
-set -u
+set -uo pipefail
 ROOT="${0:A:h:h:h}"
 source "${0:A:h:h}/lib/log.sh"
 HERE="${0:A:h}"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "${0:A:h:h}/lib/xcode.sh"
+dau_developer_dir
 OUT="$ROOT/build/probe.noindex"
 BIN="$OUT/bin"
 APP="$OUT/TisAct.app"

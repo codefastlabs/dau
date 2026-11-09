@@ -15,14 +15,16 @@
 # mach-register entitlement; every other entitlement stays. It is signed again with the Apple
 # Development identity of the original build (hardened runtime if the original has it).
 #
-# Every ID made is appended to build/probe.noindex/used-ids.txt; an ID listed there, or one of the
-# IDs used on 03/11/2026 (…inputmethod.Probe…, com.codefastlabs.dau.probe.…), is refused.
-set -u
+# Every ID made is appended to build/probe.noindex/used-ids.txt; an ID listed there, or one shaped
+# like the IDs of the first probe rounds, made before that list (…inputmethod.Probe…,
+# com.codefastlabs.dau.probe.…), is refused.
+set -uo pipefail
 setopt null_glob
 
 ROOT="${0:A:h:h:h}"
 source "${0:A:h:h}/lib/log.sh"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "${0:A:h:h}/lib/xcode.sh"
+dau_developer_dir
 SRC="$ROOT/build/DerivedData.noindex/Build/Products/Release/DauInputMethod.app"
 OUT_ROOT="$ROOT/build/probe.noindex"
 USED="$OUT_ROOT/used-ids.txt"
@@ -51,7 +53,9 @@ source "$ROOT/scripts/lib/build.sh"   # dau_signing_identities: skips revoked id
 IDENT_HASH=$(dau_signing_identities | grep -F "\"$IDENT_NAME\"" | awk '{print $2}' | head -1)
 [[ -n $IDENT_HASH ]] || log_die "Không thấy danh tính dùng được trong keychain: $IDENT_NAME"
 RUNTIME=()
-codesign -dvv "$SRC" 2>&1 | grep -q 'flags=.*runtime' && RUNTIME=(--options runtime)
+# Matched in the shell, not with `| grep -q`: under pipefail a grep that quits at the
+# first match can fail the pipeline through SIGPIPE on the writer.
+[[ $(codesign -dvv "$SRC" 2>&1) == *flags=*runtime* ]] && RUNTIME=(--options runtime)
 log_step "Danh tính ký: $IDENT_NAME ($IDENT_HASH) ${RUNTIME}"
 
 ORIG_ENT=$(mktemp -t probe-ent).plist
@@ -64,7 +68,7 @@ for n in $NS; do
   ID="$PREFIX.$NAME"
   DISPLAY="Dấu thử $ROUND$n"
   if [[ $ID == $PREFIX.Probe* || $ID == com.codefastlabs.dau.probe.* ]]; then
-    log_error "TỪ CHỐI $ID: trùng dạng ID đã dùng 03/11."; failed=1; continue
+    log_error "TỪ CHỐI $ID: trùng dạng ID của các vòng thử đầu."; failed=1; continue
   fi
   if grep -qxF "$ID" "$USED"; then
     log_error "TỪ CHỐI $ID: đã có trong $USED (mỗi ID chỉ mới một lần cho mỗi tài khoản)."; failed=1; continue
@@ -135,7 +139,7 @@ PY
   plutil -lint "$DEST/Contents/Info.plist" "$DEST"/Contents/Resources/*.lproj/InfoPlist.strings "$DEST"/Contents/Resources/*.lproj/Localizable.strings >/dev/null || { log_error "plutil -lint lỗi"; ok=0 }
   codesign --verify --deep --strict "$DEST" 2>&1 || { log_error "codesign --verify lỗi"; ok=0 }
   ents=$(codesign -d --entitlements - --xml "$DEST" 2>/dev/null)
-  print -r -- "$ents" | grep -q "${ID}_Connection" || { log_error "entitlement thiếu ${ID}_Connection"; ok=0 }
+  [[ $ents == *"${ID}_Connection"* ]] || { log_error "entitlement thiếu ${ID}_Connection"; ok=0 }
   # Old strings must be gone from Info.plist, .strings and the entitlement (UTF-16 files: convert first).
   leftover=$( { plutil -p "$DEST/Contents/Info.plist"; for s in "$DEST"/Contents/Resources/*.lproj/InfoPlist.strings; do plutil -p "$s"; done; print -r -- "$ents"; } | grep -E 'inputmethod\.Dau\.vi|inputmethod\.Dau_Connection|inputmethod\.Dau"' )
   [[ -z $leftover ]] || { log_error "còn chuỗi ID của Dấu:"; log_hint "${(@f)leftover}"; ok=0 }

@@ -12,7 +12,7 @@
 #   - running Dấu / input method processes (Dấu.app is asked to quit if it is running,
 #     then the processes are ended);
 #   - /Applications/Dau.app and ~/Library/Input Methods/DauInputMethod.app, moved to the
-#     Trash through Finder so they can be taken back. If Finder cannot, the script prints
+#     Trash with /usr/bin/trash so they can be taken back. If that fails, the script prints
 #     the path and says to drag it to the Trash yourself: it never deletes a bundle;
 #   - sandbox containers, App Group containers, preference files, saved state, caches,
 #     HTTP storages, Application Support, Logs, and the test preference files
@@ -25,7 +25,7 @@
 #       com.apple.inputsources › AppleEnabledThirdPartyInputSources (where macOS keeps
 #         third-party sources that are enabled): only reported. macOS lets only its input
 #         source service write it (System Policy denies `defaults import`, which still
-#         exits 0, measured 02/11/2026), so the script does not try; remove Dấu with "–"
+#         exits 0), so the script does not try; remove Dấu with "–"
 #         in System Settings › Keyboard › "All Input Sources" (before --yes).
 #   - LaunchServices registrations of any Dau.app / DauInputMethod.app copy;
 #   - the global debug defaults keys DauPerfLog and DauDebugForceUnderline.
@@ -35,7 +35,7 @@
 # changes input source settings and deletes app data, which the assistant does not do on
 # its own. Then log out and back in: macOS keeps a catalog of input sources per login
 # session and forgets Dấu only at the next login.
-set -u
+set -uo pipefail
 setopt null_glob
 source "${0:A:h:h}/lib/log.sh"
 
@@ -142,7 +142,7 @@ if [[ $selected == True ]]; then
 fi
 # Order matters: once the bundle is gone System Settings no longer lists Dấu, so its
 # entries in com.apple.inputsources can no longer be removed with "–" and stay behind
-# (measured 03/11/2026). Stop before touching anything while those entries exist and the
+# (D16). Stop before touching anything while those entries exist and the
 # bundle is still installed.
 if (( ${prefs[(I)com.apple.inputsources *]} )) && (( ${#bundles} )); then
   log_error "Dấu còn trong danh sách nguồn nhập liệu đang bật. Chưa xoá gì."
@@ -173,17 +173,17 @@ fi
 # keeps it registered there, so unregistering the old path afterwards misses it.
 for r in $registered; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký: $r"; done
 for b in $bundles; do
-  if osascript -e "tell application \"Finder\" to delete (POSIX file \"$b\" as alias)" >/dev/null 2>&1; then
+  if /usr/bin/trash -s "$b" >/dev/null 2>&1; then
     log_detail "vào Thùng rác: $b"
     trashed_names+=("${b:t}")
   else
     # Never `rm -rf` a bundle: the user can take it back from the Trash, not from here.
-    notremoved "KHÔNG chuyển được vào Thùng rác (Finder từ chối hoặc chưa được phép điều khiển): $b"
+    notremoved "KHÔNG chuyển được vào Thùng rác: $b"
     log_hint "Kéo $b vào Thùng rác bằng tay."
   fi
 done
-# A bundle that was never registered gets registered once it lands in the Trash
-# (measured 03/11/2026): unregister every copy there too.
+# A bundle that was never registered gets registered once it lands in the Trash:
+# unregister every copy there too.
 if (( ${#bundles} )); then
   sleep 1
   trashed=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E "^path: +$HOME/\.Trash/.*(Dau|DauInputMethod)\.app \(0x" | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})

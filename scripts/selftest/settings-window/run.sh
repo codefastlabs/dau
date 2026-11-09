@@ -48,7 +48,8 @@ focus_only=0
 if [[ ${1:-} == --focus ]]; then focus_only=1; shift; fi
 [[ -n ${1:-} ]] || log_die 2 "Thiếu thư mục kết quả. Dùng: scripts/selftest/settings-window/run.sh [--focus] <output-dir> [Dau.app]"
 out=$1
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "${here:h:h}/lib/xcode.sh"
+dau_developer_dir
 # Absolute: the copy is made from it and pgrep matches its full path (a relative argument
 # never matched the launched process).
 app=${2:-${here:h:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}
@@ -65,30 +66,34 @@ lsregister=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchSe
 frames_domain=com.codefastlabs.dau
 frame_keys=("NSWindow Frame onboarding" "NSWindow Frame settings"
   "NSSplitView Subview Frames settings, SidebarNavigationSplitView")
-typeset -A saved_frames saved_types
+# The whole domain is exported once; each key goes back with its exact value and type:
+# `plutil -extract` prints the value as an XML plist, and `defaults write` takes a value in
+# plist form. A plutil key path splits at ".", so a key with a dot cannot be extracted.
+saved_prefs="$work/saved-prefs.plist"
 for k in $frame_keys; do
-  v=$(defaults read $frames_domain "$k" 2>/dev/null) && saved_frames[$k]=$v \
-    && saved_types[$k]=$(defaults read-type $frames_domain "$k" 2>/dev/null)
+  [[ $k != *.* ]] || log_die "Khoá có dấu chấm, plutil -extract không đọc được: $k"
 done
+defaults export $frames_domain "$saved_prefs"
+# Runs in the EXIT trap, where errexit still applies: no command may stop the loop (a key
+# absent before and after makes `defaults delete` fail).
 restore_frames() {
+  local k value
+  # Never saved (the run stopped before the export): leave the domain alone.
+  [[ -f $saved_prefs ]] || return 0
   for k in $frame_keys; do
-    if (( ${+saved_frames[$k]} )); then
-      # A string is written as is; an array (the split) goes back as the plist text
-      # `defaults read` printed.
-      if [[ ${saved_types[$k]} == *string* ]]; then
-        defaults write $frames_domain "$k" -string "${saved_frames[$k]}"
-      else
-        defaults write $frames_domain "$k" "${saved_frames[$k]}"
-      fi
+    if value=$(plutil -extract "$k" xml1 -o - "$saved_prefs" 2>/dev/null); then
+      defaults write $frames_domain "$k" "$value" \
+        || log_warn "Không trả lại được khoá \"$k\" của $frames_domain"
     else
-      defaults delete $frames_domain "$k" >/dev/null 2>&1
+      defaults delete $frames_domain "$k" >/dev/null 2>&1 || true
     fi
   done
 }
 cleanup() {
-  [[ -d "$work/Dau.app" ]] && "$lsregister" -u "$work/Dau.app" >/dev/null 2>&1
-  rm -rf "$work"
+  [[ -d "$work/Dau.app" ]] && { "$lsregister" -u "$work/Dau.app" >/dev/null 2>&1 || true; }
+  # Before $work goes: the saved copy of the domain is in it.
   restore_frames
+  rm -rf "$work"
 }
 trap cleanup EXIT
 mkdir -p "$out"
@@ -175,7 +180,7 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   local before=$(pgrep -f "$app/Contents/MacOS/Dau" | sort)
   # --settings-window goes last: launched as `--settings-window --appearance light`
   # (or any flag-value pair after it) the app opened no window at all, while
-  # `--appearance light --settings-window` does (measured on Dấu 03/11/2026). AppKit
+  # `--appearance light --settings-window` does (measured on Dấu). AppKit
   # pairs each dash argument with the next one, so `--settings-window` takes
   # `--appearance` and `light` is left alone; a windowless test app was handed that
   # leftover as a file to open (`application(_:openFiles:)`). The 8 argument sets measured

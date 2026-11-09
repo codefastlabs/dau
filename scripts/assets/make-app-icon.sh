@@ -22,7 +22,8 @@ BRAND="$ROOT/Resources/Brand"
 GLYPHS="$BRAND/app-icon-glyphs.txt"
 ICONSET="$ROOT/Apps/Dau/Resources/Assets.xcassets/AppIcon.appiconset"
 source "${0:A:h:h}/lib/log.sh"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "${0:A:h:h}/lib/xcode.sh"
+dau_developer_dir
 
 if [[ "${1:-}" == "outline" ]]; then
   [[ $# -eq 2 ]] || log_die 2 "Cách dùng: $0 outline <font.ttf>"

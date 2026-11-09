@@ -25,10 +25,15 @@
 #      its first 40 lines and no "Đính chính" heading (corrections are edited into the
 #      text, not appended);
 #   9. scripts list: every scripts/**/*.sh (not .build) starts with "#!/bin/zsh" (one
-#      shell: /bin/bash on macOS is 3.2), has a "# Side effects:" line and
-#      is named, by path in backticks, in scripts/README.md; every repo path in backticks
-#      in scripts/README.md exists; no script but scripts/lib/log.sh writes ANSI color
-#      codes or the "==>" step mark (scripts/README.md, "Đầu ra").
+#      shell: /bin/bash on macOS is 3.2), passes `zsh -n`, has a "# Side effects:" line and
+#      is named, by path in backticks, in scripts/README.md; every script but the sourced
+#      files in scripts/lib has a `set` line with -u and one with pipefail (scripts/README.md,
+#      "Mở đầu"); every repo path in backticks in scripts/README.md exists; no script but
+#      scripts/lib/log.sh writes ANSI color codes or the "==>" step mark (scripts/README.md,
+#      "Đầu ra").
+#  10. no dd/mm/yyyy date in the comment lines of scripts/**/*.sh and scripts/**/*.swift
+#      (not scripts/check-docs, scripts/research, scripts/snapshot-settings): a comment keeps
+#      the reason; the dated measurement or story lives in docs/PROGRESS.md or docs/history.
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
 set -uo pipefail
@@ -108,7 +113,7 @@ done
 # 8. Research notes: a "Hiện trạng" heading up front, no appended "Đính chính".
 for f in docs/research/*.md(N); do
   [[ $f == docs/research/SYSTEM-SETTINGS-REFERENCE.md ]] && continue
-  head -40 $f | grep -qE '^## .*Hiện trạng' || report "$f: thiếu tiêu đề \"## … Hiện trạng\" trong 40 dòng đầu"
+  (( $(head -40 $f | grep -cE '^## .*Hiện trạng') )) || report "$f: thiếu tiêu đề \"## … Hiện trạng\" trong 40 dòng đầu"
   grep -nE '^#+ .*Đính chính' $f | while read -r l; do report "$f: có tiêu đề đính chính (hãy sửa thẳng vào thân bài): ${l[1,120]}"; done
 done
 
@@ -120,6 +125,11 @@ else
   for s in scripts/**/*.sh(N); do
     [[ $s == */.build/* ]] && continue
     [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
+    zsh -n $s 2>/dev/null || report "$s: zsh -n báo lỗi cú pháp"
+    if [[ $s != scripts/lib/*.sh ]]; then
+      (( $(grep -cE '^set -[a-z]*u' $s) )) || report "$s: thiếu set -u (scripts/README.md, \"Mở đầu\")"
+      (( $(grep -cE '^set .*pipefail' $s) )) || report "$s: thiếu set -o pipefail (scripts/README.md, \"Mở đầu\")"
+    fi
     grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
     grep -qF -- "\`$s\`" $readme || report "$s: chưa có trong $readme"
   done
@@ -136,6 +146,15 @@ else
     [[ -e $p ]] || report "$readme: đường dẫn không tồn tại: $p"
   done
 fi
+
+# 10. No dates in script comments: the reason stays, the dated story goes to the docs.
+dated_files=(${script_files:#scripts/research/*})
+dated_files=(${dated_files:#scripts/snapshot-settings/*})
+for f in $dated_files; do
+  grep -nE '(^|[[:space:]])(#|//|-- )' $f | grep -E '\b[0-3]?[0-9]/[01]?[0-9]/[0-9]{4}\b' | while IFS= read -r l; do
+    report "$f:${l%%:*}: ngày trong chú thích (giữ lý do, ngày và chuyện đo ghi ở docs/PROGRESS.md hoặc docs/history)"
+  done
+done
 
 (( fail )) && { log_error "Tài liệu lệch: sửa các chỗ trên rồi chạy lại."; exit 1 }
 log_ok "Tài liệu khớp."

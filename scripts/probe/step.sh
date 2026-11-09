@@ -24,7 +24,7 @@
 #   P5  copy; register; enable parent; stop TextInputSwitcher, CursorUIViewService, TextInputMenuAgent, 0.5 s apart.
 #   P6  sudo copy into /Library/Input Methods (root owned); register from this user; enable parent, mode.
 #   P7  like P0, then select the mode; print the status and whether the variant process runs.
-#   Q1..Q3 split P3 (round B, 04/11/2026): copy; register; then ONE of the three refreshes, with
+#   Q1..Q3 split P3 (round B, M5-INSTALL.md 8.2): copy; register; then ONE of the three refreshes, with
 #   System Settings already open on Keyboard before the step:
 #   Q1  quit System Settings only, reopen Keyboard settings.
 #   Q2  delete IntlDataCache.le* only (System Settings stays open), reopen Keyboard settings.
@@ -38,13 +38,14 @@
 # Every command is logged with its time to build/probe.noindex/logs/<round>-steps.log. The variant is
 # copied right BEFORE its step, never earlier. After the step, tis-probe runs three times 3 s apart for
 # EVERY variant now installed, then the script says what to look at in System Settings.
-set -u
+set -uo pipefail
 zmodload zsh/datetime
 setopt null_glob
 
 ROOT="${0:A:h:h:h}"
 source "${0:A:h:h}/lib/log.sh"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "${0:A:h:h}/lib/xcode.sh"
+dau_developer_dir
 OUT="$ROOT/build/probe.noindex"
 BIN="$OUT/bin"
 TISACT_APP="$OUT/TisAct.app"

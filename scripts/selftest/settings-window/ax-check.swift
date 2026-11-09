@@ -350,8 +350,8 @@ func moveWindow(to screen: NSScreen, _ d: String) -> Bool {
     guard drive(d, "window", "move the window to this display", set(window, kAXPositionAttribute, axPoint(origin)))
     else { return false }
     // Every pass measures the default size, whatever size the app opened at: a launch after
-    // the limits pass could open at the minimum size (03/11/2026, the killed app's saved frame
-    // outlived run.sh's delete). Only the geometry launch checks the size at launch.
+    // the limits pass can open at the minimum size (the killed app's saved frame can outlive
+    // run.sh's delete). Only the geometry launch checks the size at launch.
     guard drive(d, "window", "set the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
     else { return false }
     wait(0.6)
@@ -615,10 +615,10 @@ let sheetPage = "add-sheet"
 
 /// The sheet attached to the Settings window: a window has at most one, so the role is the identity.
 func attachedSheet() -> AXUIElement? { children(window).first { role($0) == "AXSheet" } }
-/// The app list, by its accessibility label, not by order. Why the list once read 3 rows
-/// (03/11/2026) is not known: the guess that another outline (the Form) had been read was
-/// not confirmed; at open the sheet held only this outline. "app list settles" prints the
-/// outlines it finds.
+/// The app list, by its accessibility label, not by order. The list has been read with too
+/// few rows for a reason not known (docs/history/LOG-M5.md); reading another outline (the
+/// Form) was not confirmed as the cause: at open the sheet holds only this outline.
+/// "app list settles" prints the outlines it finds.
 func appList(_ sheet: AXUIElement) -> AXUIElement? {
     all(sheet) { role($0) == "AXOutline" && string($0, kAXDescriptionAttribute) == "Ứng dụng" }.first
 }
@@ -1061,8 +1061,8 @@ func rgb(_ c: [CGFloat]) -> String { c.map { String(Int(($0 * 255).rounded())) }
 /// The window as it opens, before the checker selects, moves or types anything: the
 /// sidebar list has the keyboard focus (not its search field, not nothing), so the
 /// selected row (Gõ phím) is drawn with the accent selection, as on the canvas and as
-/// before the fixed sidebar. Measured 06/11/2026 on the first fixed-sidebar build: no
-/// focus, a grey (inactive) selection. Dấu is brought to the front first: a window that
+/// before the fixed sidebar. Without care the list gets no focus at launch, and the
+/// selection is drawn grey (inactive). Dấu is brought to the front first: a window that
 /// is not key draws every selection grey.
 func measureLaunchFocus() {
     let d = "-", p = "launch-focus"
@@ -1364,8 +1364,8 @@ func dividerPoint() -> CGPoint {
 /// The system cursor named by AppKit's resize cursors it matches (hot spot and size;
 /// https://developer.apple.com/documentation/appkit/nscursor/currentsystem), plus its raw
 /// hot spot and size. Best effort: the arrow measured as "hot spot 5,5 size 28×40" on a
-/// test app (06/11/2026) and matched none of AppKit's named cursors, so the check is that
-/// no resize cursor shows.
+/// test app and matched none of AppKit's named cursors, so the check is that no resize
+/// cursor shows.
 func cursorOverDivider() -> (resize: Bool, description: String) {
     guard let current = NSCursor.currentSystem else { return (false, "unreadable") }
     var resize: [(String, NSCursor)] = [("resizeLeftRight", .resizeLeftRight), ("resizeLeft", .resizeLeft),
@@ -1444,8 +1444,8 @@ func measureFixedSidebar() {
     wait(0.03)
     postMouse(.leftMouseUp, point, clicks: 2)
     wait(1.0)
-    // The button must be up again (a test app once stayed with it down after this
-    // double-click, 06/11/2026): one more mouse-up if the session still has it down.
+    // The button must be up again (a test app has stayed with it down after this
+    // double-click): one more mouse-up if the session still has it down.
     if CGEventSource.buttonState(.combinedSessionState, button: .left) {
         postMouse(.leftMouseUp, point, clicks: 2)
         wait(0.5)
@@ -1489,7 +1489,7 @@ func measurePixels(_ d: String, _ tag: String) {
             let r = rel(bar)
             shot["scroller"] = r
             // The bar's accessibility frame is not the lane the page gives up: it measured
-            // 19 pt wide, reaching 1 pt past the window, against the system's 17 (03/11/2026).
+            // 19 pt wide, reaching 1 pt past the window, against the system's 17.
             // So the bar's width is not compared; the card width below holds the lane rule.
             record(d, page, "(a) first card width with the scroll bar", expected: "\(fmt(full)) or \(fmt(full - alwaysBarWidth)) (narrower by the bar)",
                    got: fmt(card.frame.width), ok: near(card.frame.width, full) || near(card.frame.width, full - alwaysBarWidth))

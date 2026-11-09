@@ -79,8 +79,8 @@ enum Reference {
     /// String Catalog.
     static let backLabel = "Lùi"
     static let forwardLabel = "Tiến"
-    /// System Settings' pair is one cluster, 73 × 36 at x 240, y 8. Probe (05/11/2026, a
-    /// test app with the same `ControlGroup`, matched System Settings pixel for pixel):
+    /// System Settings' pair is one cluster, 73 × 36 at x 240, y 8. Probe (a test app
+    /// with the same `ControlGroup`, matched System Settings pixel for pixel):
     /// Back 36 wide at 240, Forward 37 wide at 276, the separator at 276.
     static let backButtonFrame = CGRect(x: 240, y: 8, width: 36, height: 36)
     static let forwardButtonFrame = CGRect(x: 276, y: 8, width: 37, height: 36)
@@ -88,7 +88,7 @@ enum Reference {
     // MARK: Title (System Settings, after the Back/Forward cluster)
 
     /// The system's page title (an AXStaticText in the toolbar) starts here. Probe
-    /// (05/11/2026, the same toolbar in a test app): text frame at x ≈ 317, glyphs from
+    /// (the same toolbar in a test app): text frame at x ≈ 317, glyphs from
     /// ≈ 326; System Settings' glyphs start at ≈ 324 (SYSTEM-SETTINGS-REFERENCE.md). Not
     /// yet measured on Dấu: the first run.sh of the new shell confirms or replaces it.
     static let titleX: CGFloat = 317
@@ -97,7 +97,7 @@ enum Reference {
 
     // MARK: Fixed sidebar and the View menu (System Settings; D9 "Sidebar cố định như System Settings")
 
-    /// System Settings (05/11/2026, SYSTEM-SETTINGS-REFERENCE.md): dragging the divider and
+    /// System Settings (SYSTEM-SETTINGS-REFERENCE.md): dragging the divider and
     /// double-clicking it leave the sidebar at `sidebarWidth`; the pointer over the divider
     /// is the normal arrow. Probe: the divider is dragged from its place to each of these
     /// x (window points): to the left edge, and far right.
@@ -145,8 +145,8 @@ enum Reference {
     /// Search field: x 10, 212 × 28 as System Settings. Deliberate y: Dấu's field is an
     /// `NSSearchField` at the large size with the sidebar's standard 10 pt inset under the
     /// toolbar (D9, fixed sidebar), so it sits at 62 where System Settings' is at 61; D9
-    /// accepts the 1–2 pt rather than an offset tuned to the pixel. Probe (06/11/2026, a
-    /// test app with the same split view): 10,62 212×28.
+    /// accepts the 1–2 pt rather than an offset tuned to the pixel. Probe (a test app
+    /// with the same split view): 10,62 212×28.
     static let sidebarSearchY: CGFloat = 62
     static let sidebarSearchHeight: CGFloat = 28
     static var sidebarSearchFrame: CGRect {
@@ -154,7 +154,7 @@ enum Reference {
     }
     static let sidebarRowHeight: CGFloat = 32
     /// First row's y (below the search field). Deliberate, as the search field: 100,
-    /// System Settings 98 (D9 accepts 1–2 pt). Probe (06/11/2026): 100.
+    /// System Settings 98 (D9 accepts 1–2 pt). Probe: 100.
     static let sidebarFirstRowY: CGFloat = 100
     /// Selection cell of row `i`: x 10, as wide as the column minus both insets.
     static func sidebarRowFrame(_ i: Int) -> CGRect {
@@ -222,7 +222,7 @@ enum Reference {
     static let sheetFormToButtons: CGFloat = 21
     /// Content: apps every macOS install has in /System/Applications and its Utilities
     /// folder, whose visible names are the same in English and Vietnamese (the sheet
-    /// shows localized names; checked on macOS 27.2, 03/11/2026). The sheet must list
+    /// shows localized names; checked on macOS 27.2). The sheet must list
     /// them unless the user stored a rule for one.
     static let alwaysInstalledApps = ["TextEdit", "FaceTime", "QuickTime Player", "Terminal"]
     /// Capture check (g): the uninstall alerts' sheets are at least this big (deliberate
@@ -244,8 +244,8 @@ enum Reference {
     // MARK: Scroll and background checks, (a)–(d) (System for the scroller; the rest deliberate, content or probe)
 
     /// Content: a section taller than the default window, so check (d) has a scroll bar to
-    /// drive. The last in-app captures (03/11/2026, since removed) measured every section
-    /// taller than the default window; this is the one the earlier check (d) scrolled, and
+    /// drive. Every section measured taller than the default window on the in-app
+    /// captures (since removed); this is the one the earlier check (d) scrolled, and
     /// `scrolledProbeStartX` starts right of its title.
     static let scrollingSection = "updates"
     /// Probe: how far check (d) scrolls the page (through the scroll bar's value), and the
@@ -256,7 +256,7 @@ enum Reference {
     static let colorTolerance = 6.0
     /// Mean per-sample color difference allowed in the header once scrolled (of 255). The
     /// system's scroll edge blurs content under the toolbar, it does not hide it. Measured
-    /// 03/11/2026 on Cập nhật & hỗ trợ with the banner, Always bars, 2x: Dấu 6.8 dark / 5.2
+    /// on Cập nhật & hỗ trợ with the banner, Always bars, 2x: Dấu 6.8 dark / 5.2
     /// light; a build without `HardTopScrollEdge` (content sharp over the title, item 9)
     /// 31.8 / 31.2. System Settings (Appearance, General; 1x, dark, same sampling) 18–20.
     /// The limit lies halfway between Dấu and the broken build.

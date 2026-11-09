@@ -1,12 +1,14 @@
 #!/bin/zsh
 # Builds Dấu.app (the host app: Settings, onboarding) and installs it into /Applications.
 # Side effects: builds, installs app, kills processes, deletes data
-# Release unless --debug. The installed copy goes to the Trash through Finder (it can be
-# put back), the new one is copied with ditto and registered with LaunchServices:
-# ditto alone does not register it, and then the input menu's "Cài đặt Dấu…" finds no
-# readable copy and opens nothing (measured 05/11/2026; HostApp now also scans
-# /Applications, but other system lists such as Spotlight and "Open With" still need the
-# registration). A running Dấu.app is quit normally first and opened again at the end.
+# Release unless --debug. The new copy is written next to the installed one first (a
+# hidden sibling in /Applications), so a failed copy leaves the installed app as it was;
+# then the installed copy goes to the Trash with /usr/bin/trash (it can be put back; no
+# Finder, so no Automation prompt) and the new one is renamed into place. It is then
+# registered with LaunchServices: ditto alone does not register it, and Spotlight and
+# "Open With" miss an unregistered copy (HostApp, behind the input menu's "Cài đặt Dấu…",
+# also looks in /Applications itself: docs/ARCHITECTURE.md).
+# A running Dấu.app is quit normally first and opened again at the end.
 #
 # The input method is a separate step (scripts/dev/install-input-method.sh); --with-input-method
 # runs it with the same configuration first. Nothing is enabled or selected (N4).
@@ -18,9 +20,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-# shellcheck source=../lib/log.sh
 source "$ROOT/scripts/lib/log.sh"
-# shellcheck source=../lib/build.sh
 source "$ROOT/scripts/lib/build.sh"
 DERIVED="$DAU_DERIVED"
 DEST="/Applications/Dau.app"
@@ -74,12 +74,27 @@ if pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; then
   fi
 fi
 
-if [[ -e "$DEST" ]]; then
+# Copy first, swap after. The copy's name does not end in .app, so LaunchServices does not
+# take it for an app while it is being written.
+STAGED="${DEST:h}/.${DEST:t}.new-$$"
+trap 'rm -rf "$STAGED"' EXIT
+trap 'exit 130' INT TERM HUP
+log_step "Chép bản mới cạnh $DEST"
+ditto "$APP" "$STAGED"
+if [[ -e "$DEST" || -L "$DEST" ]]; then
   log_step "Chuyển bản cũ vào Thùng rác"
-  osascript -e "tell application \"Finder\" to delete POSIX file \"$DEST\"" >/dev/null
+  if ! /usr/bin/trash -s "$DEST"; then
+    log_error "Không chuyển được $DEST vào Thùng rác: bản đã cài giữ nguyên."
+    log_hint "Kéo $DEST vào Thùng rác bằng tay rồi chạy lại."
+    exit 1
+  fi
 fi
-log_step "Chép vào $DEST và đăng ký với LaunchServices"
-ditto "$APP" "$DEST"
+log_step "Đặt bản mới vào $DEST và đăng ký với LaunchServices"
+if ! mv "$STAGED" "$DEST"; then
+  log_error "Không đổi tên $STAGED thành $DEST."
+  log_hint "Bản cũ nằm trong Thùng rác (Put Back để lấy lại); chạy lại script để cài."
+  exit 1
+fi
 "$LSREGISTER" -f "$DEST"
 
 if [[ "$was_running" == 1 ]]; then

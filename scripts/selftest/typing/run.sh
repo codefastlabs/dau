@@ -43,10 +43,10 @@
 #
 # Edge, Firefox: the same local test page as Safari/Chrome, closed with ⌘W.
 # Notes: a new note (⌘N) in the folder shown; it syncs while it exists. The script
-# empties it, and Notes drops an empty new note (checked 30/10/2026: count unchanged
-# after quitting). Mail: a new message (⌘N), keys go to the body focused through
-# Accessibility, the To field stays empty, Send is never pressed; the body is emptied
-# and the window closed with "Don't Save". Apps launched by the script stay running.
+# empties it, and Notes drops an empty new note (docs/COMPATIBILITY.md, cleanup line).
+# Mail: a new message (⌘N), keys go to the body focused through Accessibility, the To
+# field stays empty, Send is never pressed; the body is emptied and the window closed
+# with "Don't Save". Apps launched by the script stay running.
 #
 # Terminal: the keys go to the shell prompt of a new window. The script never presses
 # Return; it clears the line with ⌃U before closing the window. Keys must not contain
@@ -70,7 +70,8 @@ SELF="${0:A}"   # $0 inside a function is the function name in zsh
 ROOT="${SELF:h:h:h:h}"
 source "$ROOT/scripts/lib/log.sh"
 HERE="$ROOT/scripts/selftest/typing"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "$ROOT/scripts/lib/xcode.sh"
+dau_developer_dir
 BIN="$ROOT/build/selftest"
 LOG=/usr/bin/log
 
@@ -215,7 +216,7 @@ front_guard() { # process [window-title-substring] → AppleScript that errors i
     if fp is not "$1" then error "frontmost is " & fp & ", not $1"
     if "${2:-}" is not "" then
       -- The focused window is the one that receives keys. "front window" can be a
-      -- floating helper window instead (an Edge extension's popup, seen 30/10/2026).
+      -- floating helper window instead (an Edge extension's popup).
       try
         set fw to name of (value of attribute "AXFocusedWindow" of process "$1")
       on error
@@ -228,7 +229,7 @@ OSA
 }
 # Runs AppleScript $3 only if the guard for process $1 (title $2) passes.
 # The check alone is retried for a few seconds first: right after `open`, Safari 27 may
-# briefly report an untitled front window (seen 30/10/2026). Keys are still only sent
+# briefly report an untitled front window. Keys are still only sent
 # once the check passes.
 guarded() {
   local out _
@@ -442,8 +443,8 @@ run_vscode() {
 run_terminal() {
   # Remember the window used here: it is the only one read and closed. When Terminal is
   # not running, launching it opens its startup window, and `do script ""` would open a
-  # second one that is the only one closed, leaving the startup window behind (seen
-  # 09/11/2026). So a Terminal launched here types into its startup window instead.
+  # second one that is the only one closed, leaving the startup window behind. So a
+  # Terminal launched here types into its startup window instead.
   local win="" running
   running="$(osascript -e 'application "Terminal" is running')"
   if [[ "$running" == false ]]; then

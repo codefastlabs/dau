@@ -18,9 +18,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-# shellcheck source=../lib/log.sh
 source "$ROOT/scripts/lib/log.sh"
-# shellcheck source=../lib/build.sh
 source "$ROOT/scripts/lib/build.sh"
 DERIVED="$DAU_DERIVED"
 PROCESS_NAME="DauInputMethod"            # CFBundleExecutable of the input method
@@ -63,11 +61,14 @@ if [[ "$ARCHS" != *arm64* || "$ARCHS" != *x86_64* ]]; then
   log_die "Bản build không phải universal (D1)."
 fi
 codesign --verify --strict "$BUILT"
-if codesign -d --entitlements - --xml "$BUILT" 2>/dev/null | grep -q "com.apple.security.network"; then
+# Matched in the shell, not with `| grep -q`: under pipefail a grep that quits at the first
+# match can fail the pipeline through SIGPIPE on codesign, and the check would pass.
+ENTITLEMENTS="$(codesign -d --entitlements - --xml "$BUILT" 2>/dev/null)"
+if [[ "$ENTITLEMENTS" == *com.apple.security.network* ]]; then
   log_die "Bộ gõ có quyền mạng, trái N2. Dừng."
 fi
 log_ok "Bản build có chữ ký hợp lệ, không có quyền mạng (N2)"
-if [[ "$CONFIG" == Release ]] && codesign -d --entitlements - --xml "$BUILT" 2>/dev/null | grep -q "get-task-allow"; then
+if [[ "$CONFIG" == Release && "$ENTITLEMENTS" == *get-task-allow* ]]; then
   log_die "Bản Release còn get-task-allow (cho phép gắn debugger). Dừng."
 fi
 
@@ -79,11 +80,29 @@ fi
 
 log_step "Cài vào $DEST_DIR"
 mkdir -p "$DEST_DIR"
-rm -rf "${DEST_DIR:?}/$BUNDLE_NAME"
-ditto "$BUILT" "$DEST_DIR/$BUNDLE_NAME"
+# Copy first, swap after: a failed or interrupted copy leaves the installed input method
+# as it was. The copy is a hidden sibling on the same volume, so the swap is two renames;
+# its name does not end in .app, so macOS never takes it for an input method.
+INSTALLED="$DEST_DIR/$BUNDLE_NAME"
+STAGED="$DEST_DIR/.$BUNDLE_NAME.new-$$"
+ASIDE="$DEST_DIR/.$BUNDLE_NAME.old-$$"
+install_cleanup() {
+  rm -rf "$STAGED"
+  # Stopped between the two renames: put the old copy back.
+  if [[ -e "$ASIDE" && ! -e "$INSTALLED" ]]; then mv "$ASIDE" "$INSTALLED"; fi
+  rm -rf "$ASIDE"
+}
+trap install_cleanup EXIT
+trap 'exit 130' INT TERM HUP
+ditto "$BUILT" "$STAGED"
 # ditto keeps the build's dates; a new date makes Finder drop the icon it cached for
-# this path (an older build had no app icon).
-touch "$DEST_DIR/$BUNDLE_NAME"
+# this path.
+touch "$STAGED"
+if [[ -e "$INSTALLED" || -L "$INSTALLED" ]]; then
+  mv "$INSTALLED" "$ASIDE"
+fi
+mv "$STAGED" "$INSTALLED"
+rm -rf "$ASIDE"
 
 log_step "Dừng tiến trình bộ gõ cũ (nếu đang chạy)"
 if killall "$PROCESS_NAME" 2>/dev/null; then

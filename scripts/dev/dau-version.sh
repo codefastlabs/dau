@@ -13,7 +13,7 @@
 # CSSMERR_TP_CERT_REVOKED) and the Apple Development identities in the keychain. An
 # installed bundle built from another commit than HEAD gets the command that reinstalls it.
 # Reads only; changes nothing.
-set -u
+set -uo pipefail
 root=${0:A:h:h:h}
 source "${0:A:h:h}/lib/log.sh"
 im="$HOME/Library/Input Methods/DauInputMethod.app"

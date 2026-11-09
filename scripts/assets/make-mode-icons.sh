@@ -10,7 +10,8 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$ROOT/Apps/DauInputMethod/Resources"
 source "${0:A:h:h}/lib/log.sh"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
+source "${0:A:h:h}/lib/xcode.sh"
+dau_developer_dir
 
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT

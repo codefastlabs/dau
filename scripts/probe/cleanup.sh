@@ -17,7 +17,7 @@
 #                                    landed in the Trash too (same order and reason as scripts/dev/clean-dau.sh).
 #                                    Then remove the probe apps' folders: Application Scripts and cache folders are
 #                                    deleted; a container is deleted when the terminal has Full Disk Access, otherwise
-#                                    sent to the Trash through Finder; if both fail it says how to remove it by hand.
+#                                    sent to the Trash with /usr/bin/trash; if both fail it says how to remove it by hand.
 #   scripts/probe/cleanup.sh --trash delete for good, from the Trash, only DauProbe*.app, DauInputMethod*.app
 #                                    and local.probe.* / com.codefastlabs.dau.inputmethod.DauProbe* (containers moved
 #                                    there by --yes); nothing else in the Trash. The Trash is readable only with Full
@@ -25,7 +25,7 @@
 #
 # It never touches the variants under build/probe.noindex (they are build output, not installed) and never
 # changes com.apple.inputsources (macOS lets only System Settings write it): the entries go with "–".
-set -u
+set -uo pipefail
 setopt null_glob
 source "${0:A:h:h}/lib/log.sh"
 
@@ -124,7 +124,7 @@ if (( ! DO )); then
 fi
 
 # Order matters: with the bundle gone System Settings no longer lists the source, so its entry cannot be
-# removed with "–" and stays behind (measured 03/11/2026, scripts/dev/clean-dau.sh).
+# removed with "–" and stays behind (scripts/dev/clean-dau.sh).
 if (( ${#entry_lines} && ${#bundles} )); then
   log_error "Còn mục DauProbe trong com.apple.inputsources mà bundle còn cài. Chưa xoá gì."
   log_hint "Làm từng bước:"
@@ -153,10 +153,10 @@ for b in $bundles; do
     else
       log_error "KHÔNG chuyển được: $b"; (( unremoved++ ))
     fi
-  elif osascript -e "tell application \"Finder\" to delete (POSIX file \"$b\" as alias)" >/dev/null 2>&1; then
+  elif /usr/bin/trash -s "$b" >/dev/null 2>&1; then
     log_detail "vào Thùng rác: $b"
   else
-    log_error "KHÔNG chuyển được vào Thùng rác (Finder từ chối): $b — kéo vào Thùng rác bằng tay."; (( unremoved++ ))
+    log_error "KHÔNG chuyển được vào Thùng rác: $b — kéo vào Thùng rác bằng tay."; (( unremoved++ ))
   fi
 done
 if (( ${#bundles} )); then
@@ -165,17 +165,17 @@ if (( ${#bundles} )); then
   for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký (Thùng rác): $r"; done
 fi
 # Folders of the sandboxed probe apps. Caches and Application Scripts are plain folders; a container's
-# metadata is protected, so the container goes to the Trash through Finder (the user's own action).
+# metadata is protected (below).
 for d in $scripts_dirs $cache_dirs; do
   if rm -rf -- "$d"; then log_detail "đã xoá: $d"; else log_error "KHÔNG xoá được: $d"; (( unremoved++ )); fi
 done
-# macOS protects other apps' containers (App Data): a shell deletes one only with Full Disk Access, and
-# Finder driven by AppleScript gets -5000 because it cannot ask for confirmation (measured 04/11/2026).
+# macOS protects other apps' containers (App Data): a shell deletes one only with Full Disk Access.
+# Without it, /usr/bin/trash is tried (not yet tried on a protected container; the read-back decides).
 container_left=0
 for d in $containers; do
   if rm -rf -- "$d" 2>/dev/null && [[ ! -e $d ]]; then
     log_detail "đã xoá: $d"
-  elif osascript -e "tell application \"Finder\" to delete (POSIX file \"$d\" as alias)" >/dev/null 2>&1; then
+  elif /usr/bin/trash -s "$d" >/dev/null 2>&1 && [[ ! -e $d ]]; then
     log_detail "vào Thùng rác: $d"
   else
     log_error "KHÔNG xoá được: $d"; (( unremoved++ )); (( container_left++ ))

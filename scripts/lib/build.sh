@@ -19,13 +19,14 @@
 # %x is the file being sourced; :A resolves it, each :h drops one path component.
 DAU_ROOT="${${(%):-%x}:A:h:h:h}"
 DAU_DERIVED="$DAU_ROOT/build/DerivedData.noindex"
-export DEVELOPER_DIR="${DEVELOPER_DIR:-/Applications/Xcode.app/Contents/Developer}"
 source "$DAU_ROOT/scripts/lib/log.sh"
+source "$DAU_ROOT/scripts/lib/xcode.sh"
+dau_developer_dir
 
 dau_signing_identities() {
-  # find-identity -v still lists a revoked identity, tagged CSSMERR_TP_CERT_REVOKED
-  # (seen 05/11/2026), and a new certificate keeps the revoked one's name: drop CSSMERR
-  # lines, never pick by name alone.
+  # find-identity -v still lists a revoked identity, tagged CSSMERR_TP_CERT_REVOKED, and
+  # a new certificate keeps the revoked one's name: drop CSSMERR lines, never pick by
+  # name alone.
   security find-identity -v -p codesigning 2>/dev/null \
     | grep '"Apple Development' | grep -v CSSMERR
 }

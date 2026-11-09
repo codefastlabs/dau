@@ -16,8 +16,7 @@
 #      The input source selected before the test is selected again at the end.
 #   3. Waits for the input method's `event=settings-loaded` line: a process that has just
 #      been launched may take several seconds before it reads the settings and starts
-#      observing (measured 7 s on 30/10/2026), and a change saved before that is not
-#      reported as a reload.
+#      observing, and a change saved before that is not reported as a reload.
 #   4. Runs `Dau --set-typing-method vni` (Debug flag, the app's real signature and App
 #      Group entitlement; the host app is not sandboxed since D37), waits,
 #      and checks the input method's log (subsystem <IM bundle ID>, category settings)
@@ -31,8 +30,9 @@
 # AppleEnabledThirdPartyInputSources (input-source.swift): TIS alone has been wrong.
 #
 # `synchronize=failed` from the app is only reported, not a failure: on macOS 27 the
-# App Group suite's synchronize() returns false even when the write goes through
-# (measured 30/10/2026: the input method and a new app process both read it back).
+# App Group suite's synchronize() returns false even when the write goes through (the
+# input method and a new app process both read it back; docs/DECISIONS.md, "Câu hỏi đã
+# trả lời").
 #
 # Ends with a "✓" verdict or a "✗" verdict plus hints (scripts/lib/log.sh); exit status 0 only on success.
 #
@@ -46,7 +46,6 @@
 set -uo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
-# shellcheck source=../lib/build.sh
 source "$ROOT/scripts/lib/build.sh"
 source "$ROOT/scripts/lib/log.sh"
 DERIVED="$DAU_DERIVED"

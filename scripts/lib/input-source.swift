@@ -5,8 +5,8 @@
 //   input-source enabled <prefix> prints enabled, selectable sources whose ID starts with prefix
 //   input-source recorded         prints the third-party sources macOS records as enabled
 //
-// Trust: measured on macOS 27.2 (02/11/2026), the TIS "enabled" flag read from a fresh
-// process can be wrong (it said enabled after System Settings had removed Dấu). TIS is
+// Trust: the TIS "enabled" flag read from a fresh process can be wrong (it said enabled
+// after System Settings had removed Dấu; docs/research/M5-INSTALL.md 2.6). TIS is
 // only trusted for the CURRENT source (`current`). For every third-party source (ID not
 // starting with com.apple.) `enabled` and `select` also require an entry in
 // com.apple.inputsources › AppleEnabledThirdPartyInputSources, the record System Settings
@@ -44,7 +44,7 @@ func enabledSources() -> [TISInputSource] {
 /// that has one, else its "Bundle ID" (the same IDs TIS uses for those sources). An input
 /// method that has modes is recorded twice, the method itself ("Keyboard Input Method",
 /// not select-capable) and each mode; only the modes are selectable, so the method entry
-/// is left out then (measured 03/11/2026: Dấu added with "+" records both).
+/// is left out then (Dấu added with "+" records both; docs/research/M5-INSTALL.md 2.6).
 func recordedSourceIDs() -> Set<String> {
     let value = CFPreferencesCopyAppValue("AppleEnabledThirdPartyInputSources" as CFString,
                                           "com.apple.inputsources" as CFString)
