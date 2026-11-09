@@ -2,7 +2,10 @@
 
 ## Hiện trạng (09/11/2026)
 
-- **Mới là kế hoạch, chưa đo gì.** File này chưa có kết luận nào. Kết quả chưa đo không được đưa lên giao diện hay website (N5).
+- **Phần B xong (09/11/2026):** chạy lại trên engine HEAD (sau faff8a3) thì số ca và số theo lớp không đổi so với 05/11 (10.303 ca; khác: A 435, B 1.493, C 73, D 0, E 0, X 4). Bảng theo chủ đề cho M10 đã có sẵn ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.3–9.5, không dựng bảng mới.
+- **Phần A dừng, không trả lời được bằng dữ liệu công khai (09/11/2026).** Bộ dữ liệu duy nhất tải được công khai, có dấu thời gian từng phím của nhiều người, là bộ 136 triệu lần gõ phím của Đại học Aalto (Dhakal và cộng sự, CHI 2018, https://userinterfaces.aalto.fi/136Mkeystrokes/). Bộ này đo bằng trình duyệt, và chính bài báo ghi độ chính xác của cách đo khoảng 10–15 ms, nên không phân biệt được hai phím cách nhau dưới 10 ms. Bài báo không công bố tỉ lệ cặp phím dưới 10 ms; chỉ số "rollover" trong bài (phím trước còn đang giữ khi nhấn phím sau) là chỉ số khác. Giấy phép ghi "nghiên cứu, phi thương mại, ghi nguồn", chưa rõ có cho công bố số phái sinh không. Bộ Buffalo phải xin qua email; KeyRecs chỉ có độ trễ theo cặp chữ, gõ câu cố định. Không đo trên máy người dùng thay thế (mục Phần A).
+- **Câu hỏi của phần A có thể đặt sai chỗ (giả thuyết, chưa đo).** Phím dồn dưới 10 ms ở bộ gõ có thể không do người gõ nhanh, mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc. Nếu đúng thì bài test tải nặng của M6 mới là chỗ trả lời câu hỏi của D13.
+- **Phần C chưa đo.** Kết quả chưa đo không được đưa lên giao diện hay website (N5).
 - Đây là việc nghiên cứu cho M10 (trang "Dấu khác các bộ gõ khác thế nào"), **không thuộc M6 và không chặn phát hành**. Phần A trả lời một câu hỏi của D13.
 - Phiên chính và subagent tự làm mọi bước. Người dùng không phải cài gì, cấp quyền gì hay gõ gì. Việc duy nhất của người dùng là chọn giờ cho một lượt chiếm màn hình khoảng 20 phút (phần C), như CLAUDE.md quy định.
 - Ba câu hỏi: (A) gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms không (D13, `docs/COMPATIBILITY.md` mục 6.2); (B) so với các bộ gõ khác thì Dấu khác ở đâu, ở mức engine; (C) so với bộ gõ tiếng Việt có sẵn của macOS thì tiếng Việt thông dụng và từ tiếng Anh ra sao trong ứng dụng thật.
