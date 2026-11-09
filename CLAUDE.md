@@ -85,6 +85,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Giao diện:** đọc tài liệu Apple và HIG trước, ghi API được thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API, và ghi lý do. Trước khi cho người dùng xem bản build giao diện, chạy ma trận cửa sổ thật và `docs/UI-CHECKS.md`, tự xem ảnh. Giao việc giao diện thì đưa file nguồn artboard (`docs/ui/canvas/src/`); artboard thắng bản giao việc. Chiều cao artboard đo từ bản dựng, đệm đáy 40 px như đệm đầu, không ước.
 - **Hướng dẫn bấm cho người dùng:** dùng đúng nhãn macOS đang hiện trên máy họ (đã thấy trên màn hình hoặc ảnh chụp); nhãn nào chưa kiểm thì nói rõ.
 - **Repo là công khai:** ghi quyết định và yêu cầu bằng lời trung tính, không trích lời, giọng hay nhận xét của người dùng. Nhận xét về cách phiên chính làm việc không ghi vào repo. Không đặt giới hạn kích thước hay độ dài cho tài liệu; giữ tài liệu gọn bằng cách sắp xếp nội dung.
+- **Sửa commit chưa push thì gộp vào nó** (`git commit --fixup` rồi `git rebase --autosquash`, hoặc `git reset --soft` khi là các commit cuối), không thêm commit "sửa lại"; lịch sử không giữ câu sai đã được sửa trước khi push.
 - **Commit khi subagent đang chạy:** dùng `git commit --only <paths>` để không cuốn theo file subagent đã stage; dặn subagent làm như vậy.
 
 ## Lệnh thường dùng (cập nhật khi dự án có thật)
