@@ -26,7 +26,8 @@
 #      text, not appended);
 #   9. scripts list: every scripts/**/*.sh (not .build) starts with "#!/bin/zsh" (one
 #      shell: /bin/bash on macOS is 3.2), passes `zsh -n`, has a "# Side effects:" line and
-#      is named, by path in backticks, in scripts/README.md; every script but the sourced
+#      is named, by path in backticks, in scripts/README.md (.claude/hooks/*.sh: the same
+#      checks but this listing); every script but the sourced
 #      files in scripts/lib has a `set` line with -u and one with pipefail (scripts/README.md,
 #      "Mở đầu"); every repo path in backticks in scripts/README.md exists; no script but
 #      scripts/lib/log.sh writes ANSI color codes or the "==>" step mark (scripts/README.md,
@@ -132,6 +133,14 @@ else
     fi
     grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
     grep -qF -- "\`$s\`" $readme || report "$s: chưa có trong $readme"
+  done
+  # Hooks follow the same opening; they are not in the scripts table.
+  for s in .claude/hooks/*.sh(N); do
+    [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
+    zsh -n $s 2>/dev/null || report "$s: zsh -n báo lỗi cú pháp"
+    (( $(grep -cE '^set -[a-z]*u' $s) )) || report "$s: thiếu set -u (scripts/README.md, \"Mở đầu\")"
+    (( $(grep -cE '^set .*pipefail' $s) )) || report "$s: thiếu set -o pipefail (scripts/README.md, \"Mở đầu\")"
+    grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
   done
   for s in scripts/**/*.sh(N) .claude/hooks/*.sh(N); do
     [[ $s == */.build/* || $s == scripts/lib/log.sh || $s == scripts/check-docs/check.sh ]] && continue

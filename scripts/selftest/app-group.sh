@@ -18,8 +18,8 @@
 #      been launched may take several seconds before it reads the settings and starts
 #      observing, and a change saved before that is not reported as a reload.
 #   4. Runs `Dau --set-typing-method vni` (Debug flag, the app's real signature and App
-#      Group entitlement; the host app is not sandboxed since D37), waits,
-#      and checks the input method's log (subsystem <IM bundle ID>, category settings)
+#      Group entitlement; the host app is not sandboxed since D37), waits for the reload
+#      line (10 seconds at most), and checks the input method's log (subsystem <IM bundle ID>, category settings)
 #      for `event=settings-reloaded … typingMethod=vni`. Then the same with telex, which
 #      also checks that a new app process reads vni back (`previous=vni`): the value
 #      reached disk, not only the first process's cache. The typing method found before
@@ -48,13 +48,15 @@ set -uo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 source "$ROOT/scripts/lib/build.sh"
 source "$ROOT/scripts/lib/log.sh"
+source "$ROOT/scripts/lib/wait.sh"
 DERIVED="$DAU_DERIVED"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
 IM_APP="$HOME/Library/Input Methods/DauInputMethod.app"
 HELPER_SRC="$ROOT/scripts/lib/input-source.swift"
 HELPER="$ROOT/build/selftest/input-source"
-WAIT_SECONDS=2
+# How long the input method gets to log the reload after the app saved a setting.
+RELOAD_TIMEOUT=10
 LOG=/usr/bin/log            # zsh has a `log` builtin; always use the binary
 
 BUILD=1
@@ -131,8 +133,7 @@ log_detail "nguồn hiện tại: $ORIGINAL_SOURCE"
 im_running() { pgrep -f "$IM_APP/Contents/MacOS/" >/dev/null; }
 
 log_step "Bảo đảm bộ gõ đang chạy"
-for _ in 1 2 3 4; do im_running && break; sleep 0.5; done
-if ! im_running; then
+if ! wait_until 2 im_running; then
   # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
   # disagree (TIS alone has been wrong on macOS 27.2).
   enabled_ids="$("$HELPER" enabled "$IM_ID")"
@@ -147,27 +148,24 @@ if ! im_running; then
   # macOS starts it anyway; no input source is touched.
   log_detail "bộ gõ chưa chạy: chọn lại $DAU_SOURCE"
   "$HELPER" select "$DAU_SOURCE" || fail "không chọn được $DAU_SOURCE"
-  for _ in $(seq 1 12); do im_running && break; sleep 0.25; done
-  if ! im_running; then
+  if ! wait_until 3 im_running; then
     log_detail "chọn lại không đủ: mở bộ gõ bằng LaunchServices (open -g -j)"
     open -g -j "$IM_APP" || fail "open $IM_APP"
-    for _ in $(seq 1 20); do im_running && break; sleep 0.25; done
+    wait_until 5 im_running
   fi
 fi
 im_running || fail "bộ gõ vẫn chưa chạy sau khi chọn nguồn Dấu"
 IM_PID="$(pgrep -f "$IM_APP/Contents/MacOS/" | head -1)"
 log_detail "bộ gõ đang chạy (pid $IM_PID)"
 # The Debug input method starts observing right after its event=settings-loaded line.
-loaded=0
-for _ in $(seq 1 30); do
-  if "$LOG" show --last 10m --style compact --predicate \
-      "subsystem == \"$SUBSYSTEM\" AND category == \"settings\" AND processID == $IM_PID" \
-      2>/dev/null | grep -q 'event=settings-loaded'; then
-    loaded=1; break
-  fi
-  sleep 0.5
-done
-[[ "$loaded" == 1 ]] || fail "bộ gõ (pid $IM_PID) chưa nạp cài đặt sau 15 giây. Bản Release không ghi dòng event=settings-loaded (D8): nếu bộ gõ đã cài là Release, chạy lại với --install để thử bản Debug."
+# The log is read whole, then matched (no `grep -q` at the end of a pipeline, scripts/README.md "Mở đầu").
+im_loaded() {
+  local lines
+  lines="$("$LOG" show --last 10m --style compact --predicate \
+      "subsystem == \"$SUBSYSTEM\" AND category == \"settings\" AND processID == $IM_PID" 2>/dev/null)"
+  [[ "$lines" == *event=settings-loaded* ]]
+}
+wait_until -i 0.5 15 im_loaded || fail "bộ gõ (pid $IM_PID) chưa nạp cài đặt sau 15 giây. Bản Release không ghi dòng event=settings-loaded (D8): nếu bộ gõ đã cài là Release, chạy lại với --install để thử bản Debug."
 log_detail "bộ gõ đã nạp cài đặt, bắt đầu thử"
 
 # Prints the settings log lines of the input method since $1 ("YYYY-MM-DD HH:MM:SS").
@@ -176,6 +174,17 @@ im_settings_log() {
     --predicate "subsystem == \"$SUBSYSTEM\" AND category == \"settings\"" 2>/dev/null \
     | grep 'event=' || true
 }
+
+# Status 0 when the log lines $1 hold a reload line with typingMethod=$2.
+has_reload() {
+  local line
+  for line in ${(f)1}; do
+    [[ "$line" == *"event=settings-reloaded "*"typingMethod=$2"* ]] && return 0
+  done
+  return 1
+}
+# The same, on the settings log since $1 ("YYYY-MM-DD HH:MM:SS").
+im_reloaded() { has_reload "$(im_settings_log "$1")" "$2"; }
 
 # Explains a failure from the system log since $1: App Group refused, cfprefsd rejected.
 explain() {
@@ -205,7 +214,8 @@ for method in vni telex; do
       *) log_warn "Không đọc được previous= từ app; kiểu gõ trước đó sẽ không được trả lại" ;;
     esac
   fi
-  sleep "$WAIT_SECONDS"
+  # Until the input method logs the reload; on timeout the check below reports it.
+  wait_until -i 0.5 "$RELOAD_TIMEOUT" im_reloaded "$start" "$method"
   lines="$(im_settings_log "$start")"
   log_detail "bộ gõ:"
   if [[ -n "$lines" ]]; then print -r -- "$lines" | sed 's/^.*\] /        /'; else log_detail "  (không có dòng nào)"; fi
@@ -220,7 +230,7 @@ for method in vni telex; do
       PASS=0
     fi
   fi
-  if print -r -- "$lines" | grep -q "event=settings-reloaded .*typingMethod=$method"; then
+  if has_reload "$lines" "$method"; then
     if [[ "$method" == telex && "$VNI_OK" == 0 ]]; then
       log_error "Bộ gõ đọc typingMethod=telex, nhưng telex cũng là mặc định khi không đọc được store: không phải bằng chứng"
       PASS=0

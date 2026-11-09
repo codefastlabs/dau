@@ -41,8 +41,11 @@
 //
 // Results, one row each, `display | page | metric | expected | got | result`:
 // - HARNESS only when the checker cannot run: no Accessibility permission, no window for
-//   the pid, an Accessibility call that errors or times out, or a screenshot the system
-//   will not take. Not a UI result.
+//   the pid, an Accessibility call that errors or times out, a screenshot the system
+//   will not take, or a state the next steps need that does not come in time (rows
+//   "wait: …"). Not a UI result.
+// - Waits are for a state (`waitUntil`, `waitSettled`), not a fixed time; a fixed `wait`
+//   is left only where nothing can be read, and says why.
 // - FAIL for everything the window should show but does not, or shows in a wrong state: a
 //   missing element (card, header, button, "+", search field, scroll bar), a list that
 //   never settles or stays empty, a sheet that does not open, a value off Reference.
@@ -159,7 +162,71 @@ func role(_ e: AXUIElement) -> String { string(e, kAXRoleAttribute) ?? "" }
 func subrole(_ e: AXUIElement) -> String { string(e, kAXSubroleAttribute) ?? "" }
 func enabled(_ e: AXUIElement) -> Bool { (attr(e, kAXEnabledAttribute) as? Bool) ?? false }
 func rowCount(_ e: AXUIElement) -> Int { (attr(e, kAXRowsAttribute) as? [AXUIElement])?.count ?? 0 }
+/// A fixed wait on the main run loop. Only for pacing where nothing can be observed
+/// (between synthesized events, the pointer settling, or a window in which nothing may
+/// change); everything else waits for a state with `waitUntil` or `waitSettled`.
 func wait(_ seconds: Double) { RunLoop.main.run(until: Date().addingTimeInterval(seconds)) }
+
+/// Polls `condition` every `interval` s on the main run loop until it holds or `timeout` s
+/// have passed (it is read once more at the deadline). True when it held.
+@discardableResult
+func waitUntil(timeout: Double, interval: Double = 0.1, _ condition: () -> Bool) -> Bool {
+    let start = Date()
+    while !condition() {
+        guard Date().timeIntervalSince(start) < timeout else { return condition() }
+        wait(interval)
+    }
+    return true
+}
+
+/// Reads `read` every `interval` s until it gives the same value on `reads` reads in a row,
+/// each accepted by `valid`, or `timeout` s have passed. Returns the last value, whether it
+/// settled, and the time taken.
+func waitSettled<T: Equatable>(timeout: Double, interval: Double = 0.2, reads: Int = 3,
+                               valid: (T) -> Bool = { _ in true },
+                               _ read: () -> T) -> (value: T, settled: Bool, seconds: Double) {
+    let start = Date()
+    var last = read(), same = valid(last) ? 1 : 0
+    while same < reads && Date().timeIntervalSince(start) < timeout {
+        wait(interval)
+        let now = read()
+        same = valid(now) && now == last ? same + 1 : (valid(now) ? 1 : 0)
+        last = now
+    }
+    return (last, same >= reads, Date().timeIntervalSince(start))
+}
+
+/// `waitUntil` for a state the next steps rely on without checking it themselves: a
+/// timeout is a HARNESS row (the checker could not bring the window into that state).
+@discardableResult
+func awaitState(_ d: String, _ p: String, _ what: String, timeout: Double, _ condition: () -> Bool) -> Bool {
+    if waitUntil(timeout: timeout, condition) { return true }
+    harness(d, p, "wait: \(what)", expected: "within \(fmt(CGFloat(timeout))) s", got: "not reached")
+    return false
+}
+
+/// `waitSettled` for a frame or layout the next measurements rely on: a value still moving
+/// at the timeout is a HARNESS row.
+@discardableResult
+func awaitSettled<T: Equatable>(_ d: String, _ p: String, _ what: String, timeout: Double = 3,
+                                interval: Double = 0.1, reads: Int = 3, valid: (T) -> Bool = { _ in true },
+                                _ read: () -> T) -> Bool {
+    let r = waitSettled(timeout: timeout, interval: interval, reads: reads, valid: valid, read)
+    if !r.settled {
+        harness(d, p, "wait: \(what) settles", expected: "the same on \(reads) reads within \(fmt(CGFloat(timeout))) s",
+                got: "still changing")
+    }
+    return r.settled
+}
+
+/// Dấu is the frontmost app (its windows draw active and get the keys).
+func appIsFrontmost() -> Bool { (attr(app, kAXFrontmostAttribute) as? Bool) == true }
+/// Brings Dấu to the front through accessibility and waits until it is.
+@discardableResult
+func bringToFront(_ d: String, _ p: String) -> Bool {
+    guard drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue)) else { return false }
+    return awaitState(d, p, "Dấu frontmost", timeout: 3, appIsFrontmost)
+}
 
 func set(_ e: AXUIElement, _ name: String, _ value: CFTypeRef) -> AXError {
     AXUIElementSetAttributeValue(e, name as CFString, value)
@@ -182,11 +249,10 @@ func drive(_ d: String, _ p: String, _ what: String, _ err: AXError) -> Bool {
 /// instead) or HARNESS (an Accessibility call failed meanwhile), and returns nil.
 func require<T>(_ d: String, _ p: String, _ what: String, within seconds: Double = 0,
                 diagnose: () -> String = { "missing" }, find: () -> T?) -> T? {
-    let mark = axErrors.count, start = Date()
+    let mark = axErrors.count
     var found = find()
-    while found == nil && Date().timeIntervalSince(start) < seconds {
-        wait(0.2)
-        found = find()
+    if found == nil {
+        waitUntil(timeout: seconds, interval: 0.2) { found = find(); return found != nil }
     }
     if let found { return found }
     if axErrors.count > mark {
@@ -218,9 +284,9 @@ func standardWindows() -> [AXUIElement] {
 /// title is the page's, so it is no identity; a window without its sidebar still counts
 /// here, and the sidebar lookups then FAIL.
 nonisolated(unsafe) let window: AXUIElement = {
-    for _ in 0..<75 {
-        if let w = standardWindows().first { return w }
-        wait(0.2)
+    var found: AXUIElement?
+    if waitUntil(timeout: 15, interval: 0.2, { found = standardWindows().first; return found != nil }), let found {
+        return found
     }
     let shown = ((attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? [])
         .map { "\(subrole($0)) \"\(string($0, kAXTitleAttribute) ?? "")\" \(fmt(frame($0)))" }
@@ -229,8 +295,11 @@ nonisolated(unsafe) let window: AXUIElement = {
 }()
 
 // Read first, before the checker moves or resizes anything: the size the app opens at
-// (run.sh deleted the saved frame, so this is the scene's default size).
-let launchSize = frame(window).size
+// (run.sh deleted the saved frame, so this is the scene's default size). The window can
+// appear before SwiftUI gives it that size, so the size is read until it stays the same
+// on 3 reads 0.2 s apart (5 s at most); a size still changing then is a HARNESS row.
+let launchSizeRead = waitSettled(timeout: 5, interval: 0.2, reads: 3) { frame(window).size }
+let launchSize = launchSizeRead.value
 
 let sections = Reference.sections
 /// System: the Always scroll bar's width (check (a)).
@@ -338,7 +407,16 @@ func showSection(_ d: String, _ index: Int) -> Bool {
               ((attr(outline, kAXRowsAttribute) as? [AXUIElement]) ?? []).dropFirst(index).first }),
           drive(d, p, "select the section", set(outline, kAXSelectedRowsAttribute, [row] as CFArray))
     else { return false }
-    wait(1.0)
+    // The page is shown when the window carries its title; it is laid out when its Form's
+    // frame, item count and first item stay the same on 3 reads. A title that never comes
+    // is also measured below ("title text" FAILs where it is checked).
+    let title = Reference.sectionTitles[index]
+    awaitState(d, p, "page \"\(title)\" shown", timeout: 5) { windowTitle() == title }
+    awaitSettled(d, p, "page layout", timeout: 3, valid: { $0 != nil }) { () -> String? in
+        guard let area = pageScrollArea() else { return nil }
+        let items = pageItems(area)
+        return "\(fmt(rel(area))) \(items.count) \(items.first.map { fmt($0.frame) } ?? "-")"
+    }
     return true
 }
 
@@ -354,7 +432,7 @@ func moveWindow(to screen: NSScreen, _ d: String) -> Bool {
     // run.sh's delete). Only the geometry launch checks the size at launch.
     guard drive(d, "window", "set the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
     else { return false }
-    wait(0.6)
+    awaitSettled(d, "window", "window frame after the move") { fmt(frame(window)) }
     return true
 }
 
@@ -378,10 +456,8 @@ func screenshot(_ d: String, _ p: String, _ name: String, frames: [String: CGRec
     // The window can be briefly off the on-screen list (for example while another app
     // takes the front): look again a few times.
     var number = windowNumber(w), tries = 1
-    while number == nil && tries < 6 {
-        wait(0.4)
-        tries += 1
-        number = windowNumber(w)
+    if number == nil {
+        waitUntil(timeout: 2, interval: 0.4) { tries += 1; number = windowNumber(w); return number != nil }
     }
     guard let number else {
         harness(d, p, "screenshot \(name)", expected: "window in the on-screen window list", got: "not listed after \(tries) tries")
@@ -595,17 +671,22 @@ func measureSidebarSearch(_ d: String, _ tag: String) {
           drive(d, p, "focus the search field", set(field, kAXFocusedAttribute, kCFBooleanTrue)),
           drive(d, p, "type the query", set(field, kAXValueAttribute, query as CFString))
     else { return }
-    wait(1.0)
+    // The two checks below report a timeout.
+    func emptyStateTexts() -> [AXUIElement] {
+        windowElements { role($0) == "AXStaticText" }
+            .filter { rel($0).maxX <= sidebarWidth && rel($0).minY > Reference.sidebarFirstRowY && label($0).contains(query) }
+    }
+    waitUntil(timeout: 5, interval: 0.2) { rowCount(outline) == 0 && !emptyStateTexts().isEmpty }
     check(d, p, "rows without a match", CGFloat(rowCount(outline)), 0, tolerance: Reference.exact)
-    let texts = windowElements { role($0) == "AXStaticText" }
-        .filter { rel($0).maxX <= sidebarWidth && rel($0).minY > Reference.sidebarFirstRowY && label($0).contains(query) }
+    let texts = emptyStateTexts()
     record(d, p, "empty state", expected: "text naming the query in the sidebar", got: texts.first.map(label) ?? "none", ok: !texts.isEmpty)
     if let bar = require(d, p, "toolbar", find: toolbar) {
         check(d, p, "toolbar height", rel(bar).height, Reference.toolbarHeight)
     }
     _ = screenshot(d, p, "sidebar-search-empty-\(tag)")
     guard drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) else { return }
-    wait(1.0)
+    // The check below reports a timeout.
+    waitUntil(timeout: 5, interval: 0.2) { rowCount(outline) == sections.count }
     check(d, p, "rows after clearing", CGFloat(rowCount(outline)), CGFloat(sections.count), tolerance: Reference.exact)
 }
 
@@ -622,6 +703,7 @@ func attachedSheet() -> AXUIElement? { children(window).first { role($0) == "AXS
 func appList(_ sheet: AXUIElement) -> AXUIElement? {
     all(sheet) { role($0) == "AXOutline" && string($0, kAXDescriptionAttribute) == "Ứng dụng" }.first
 }
+func selectedRows(_ list: AXUIElement) -> [AXUIElement] { (attr(list, kAXSelectedRowsAttribute) as? [AXUIElement]) ?? [] }
 func appRows(_ sheet: AXUIElement) -> [AXUIElement] { appList(sheet).flatMap { attr($0, kAXRowsAttribute) as? [AXUIElement] } ?? [] }
 /// By label; if two carry it, the lower one (the button bar is the sheet's bottom row).
 func sheetButton(_ sheet: AXUIElement, _ title: String) -> AXUIElement? {
@@ -645,7 +727,7 @@ func openSheet(_ d: String) -> AXUIElement? {
         return nil
     }
     // Screenshots of an active window, as the user sees it.
-    drive(d, sheetPage, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
+    bringToFront(d, sheetPage)
     return sheet
 }
 
@@ -658,46 +740,42 @@ func closeSheet(_ d: String) {
     }
     if let cancel = require(d, sheetPage, "Huỷ button to close the sheet", find: { sheetButton(sheet, "Huỷ") }),
        drive(d, sheetPage, "press Huỷ", press(cancel)) {
-        var closed = false
-        for _ in 0..<25 where !closed {
-            wait(0.2)
-            closed = attachedSheet() == nil
-        }
+        let closed = waitUntil(timeout: 5, interval: 0.2) { attachedSheet() == nil }
         record(d, sheetPage, "Huỷ closes the sheet", expected: "closed", got: closed ? "closed" : "still open", ok: closed)
     }
     guard attachedSheet() != nil else { return }
     for down in [true, false] {
         CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap)
     }
-    wait(1.0)
-    if attachedSheet() != nil {
+    if !waitUntil(timeout: 5, interval: 0.2, { attachedSheet() == nil }) {
         record(d, sheetPage, "sheet closed for the next checks", expected: "closed (Huỷ, then Escape)", got: "still open", ok: false)
     }
 }
 
-/// Waits for the app list (it is read off the main thread): the same row count on 3 reads
-/// 0.2 s apart, more than none, within 15 s. Returns that count; nil (recorded FAIL) when
-/// it never settles, stays empty or there is no list.
+/// Reads of the app list's row count that must agree, 0.2 s apart, before it counts as
+/// settled: 2 s without a change. The list has been read at 1 and 13 rows for over a
+/// second before it grew to the full list (docs/history/LOG-M5.md), so a short window
+/// settled on a list still loading.
+let appListSettleReads = 11
+
+/// Waits for the app list (it is read off the main thread): the same row count, more than
+/// none, on `appListSettleReads` reads 0.2 s apart, within 15 s. Returns that count; nil
+/// (recorded FAIL) when it never settles, stays empty or there is no list.
 func settledAppCount(_ d: String, _ sheet: AXUIElement) -> Int? {
     let outlinesAtOpen = all(sheet) { role($0) == "AXOutline" }
         .map { "\(string($0, kAXDescriptionAttribute) ?? "-"):\(rowCount($0))" }
-    let mark = axErrors.count, start = Date()
-    var last = -1, same = 0
-    while same < 3 && Date().timeIntervalSince(start) < 15 {
-        let count = appRows(sheet).count
-        same = count > 0 && count == last ? same + 1 : 0
-        last = count
-        wait(0.2)
-    }
-    let settled = same >= 3
+    let mark = axErrors.count
+    let read = waitSettled(timeout: 15, interval: 0.2, reads: appListSettleReads, valid: { $0 > 0 }) { appRows(sheet).count }
+    let settled = read.settled, last = read.value
+    let expected = "rows, the same on \(appListSettleReads) reads 0.2 s apart, within 15 s"
     let got = (appList(sheet) == nil ? "no outline labelled \"Ứng dụng\"" : "\(last) rows")
-        + " after \(String(format: "%.1f", Date().timeIntervalSince(start))) s; outlines at open: "
+        + " after \(String(format: "%.1f", read.seconds)) s; outlines at open: "
         + (outlinesAtOpen.joined(separator: ", ").nonEmpty ?? "none")
     if !settled && axErrors.count > mark {
-        harness(d, sheetPage, "app list settles", expected: "rows, the same on 3 reads, within 15 s",
+        harness(d, sheetPage, "app list settles", expected: expected,
                 got: got + "; Accessibility error: " + axErrors[mark...].suffix(2).joined(separator: "; "))
     } else {
-        record(d, sheetPage, "app list settles", expected: "rows, the same on 3 reads, within 15 s", got: got, ok: settled)
+        record(d, sheetPage, "app list settles", expected: expected, got: got, ok: settled)
     }
     return settled ? last : nil
 }
@@ -826,17 +904,21 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
         var tries = 0
         while tries < 5 && frame(firstRow).minY >= before - 0.5 {
             tries += 1
-            drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
+            bringToFront(d, p)
             CGWarpMouseCursorPosition(point)
             CGEvent(mouseEventSource: nil, mouseType: .mouseMoved, mouseCursorPosition: point, mouseButton: .left)?.post(tap: .cghidEventTap)
+            // Fixed: time for the window server to put the pointer over the list; no
+            // accessibility state shows it.
             wait(0.5)
             for _ in 0..<10 {
                 let wheel = CGEvent(scrollWheelEvent2Source: nil, units: .pixel, wheelCount: 1, wheel1: -40, wheel2: 0, wheel3: 0)
                 wheel?.location = point
                 wheel?.post(tap: .cghidEventTap)
-                wait(0.05)
+                wait(0.05)   // Fixed: pacing between wheel events.
             }
-            wait(0.5)
+            // The rows moving is what the row below checks; a try that moves nothing
+            // within 1 s goes round again.
+            waitUntil(timeout: 1) { frame(firstRow).minY < before - 0.5 }
         }
         let moved = before - frame(firstRow).minY
         record(d, p, "list scrolls with the wheel", expected: "rows move up", got: "\(fmt(moved)) pt after \(tries) \(tries == 1 ? "try" : "tries")", ok: moved > 0.5)
@@ -855,8 +937,9 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
         var value: CGFloat = 0
         while value < 1 + step && !wanted.isSubset(of: names) {
             drive(d, p, "scroll the list", set(bar, kAXValueAttribute, NSNumber(value: Double(min(value, 1)))))
-            wait(0.25)
-            names.formUnion(visibleNames())
+            // Rows that come into view get their texts as they are laid out: read until
+            // the names stay the same on 2 reads (2 s at most), keep what was read.
+            names.formUnion(waitSettled(timeout: 2, interval: 0.15, reads: 2) { visibleNames() }.value)
             positions += 1
             value += step
         }
@@ -877,13 +960,13 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
             return r.minY >= area.minY - Reference.tolerance && r.maxY <= area.maxY + Reference.tolerance
         }
         // Rows are sized as they appear, so the end moves while they do: push again until
-        // the last app is in view, at most 15 times; the count is in the row.
+        // the last app is in view, at most 15 times; the count is in the row. Each push
+        // waits up to 1 s for the last app to come into view.
         var pushes = 0
         repeat {
             pushes += 1
             drive(d, p, "scroll the list to the end", set(bar, kAXValueAttribute, NSNumber(value: 1.0)))
-            wait(0.4)
-        } while !lastInView() && pushes < 15
+        } while !waitUntil(timeout: 1, lastInView) && pushes < 15
         if let last = require(d, p, "last app row", find: { appRows(sheet).last }) {
             let r = srel(last)
             record(d, p, "last app visible at the end", expected: "inside \(fmt(area))", got: "\(fmt(r)) after \(pushes) \(pushes == 1 ? "push" : "pushes")",
@@ -895,17 +978,23 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
                    ok: r.minY > area.maxY && r.maxY < s.height)
         }
         _ = screenshot(d, p, "apps-add-sheet-bottom-\(tag)")
-        drive(d, p, "scroll the list to the top", set(bar, kAXValueAttribute, NSNumber(value: 0.0)))
-        wait(0.5)
+        if drive(d, p, "scroll the list to the top", set(bar, kAXValueAttribute, NSNumber(value: 0.0))) {
+            awaitState(d, p, "first app in view after scrolling to the top", timeout: 3) {
+                guard let first = appRows(sheet).first else { return false }
+                return srel(first).minY >= area.minY - Reference.tolerance
+            }
+        }
     }
 
     // Search wiring (what matches is AddAppRuleSheetTests): a query no app matches leaves
     // no row; clearing it brings back every row the list settled on.
+    // Each wait ends when the list shows what the check below expects; the check reports
+    // a timeout (5 s).
     if let field, drive(d, p, "type a query", set(field, kAXValueAttribute, "zzzz-no-such-app" as CFString)) {
-        wait(0.8)
+        waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).isEmpty }
         check(d, p, "search with no match", CGFloat(appRows(sheet).count), 0, tolerance: Reference.exact)
         if drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) {
-            wait(0.8)
+            waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).count == total }
             check(d, p, "search cleared", CGFloat(appRows(sheet).count), CGFloat(total), tolerance: Reference.exact)
         }
     }
@@ -915,17 +1004,25 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     // an app out of view).
     guard let row = require(d, p, "first app row", find: { appRows(sheet).first }),
           drive(d, p, "select the first app", set(list, kAXSelectedRowsAttribute, [row] as CFArray)) else { return }
-    wait(0.8)
+    // Thêm turns on with the selection; the check below reports a timeout.
+    waitUntil(timeout: 3, interval: 0.2) { confirm.map(enabled) ?? !selectedRows(list).isEmpty }
     if let confirm {
         record(d, p, "Thêm with selection", expected: "enabled", got: enabled(confirm) ? "enabled" : "disabled", ok: enabled(confirm))
     }
     _ = screenshot(d, p, "apps-add-sheet-selected-\(tag)")
     if let field, let confirm,
        drive(d, p, "type a query", set(field, kAXValueAttribute, "zzzz-no-such-app" as CFString)) {
-        wait(0.8)
+        // The list empties with the query; then Thêm is read once it stays the same on 3
+        // reads (the check below reports what it settled on).
+        waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).isEmpty }
+        _ = waitSettled(timeout: 2, interval: 0.2, reads: 3) { enabled(confirm) }
         record(d, p, "Thêm after search hides selection", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
         if drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) {
-            wait(0.8)
+            // Thêm is already off before the query is cleared, so waiting for "off" would
+            // prove nothing: wait for the full list to come back, then for Thêm to stay
+            // the same on 3 reads.
+            waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).count == total }
+            _ = waitSettled(timeout: 2, interval: 0.2, reads: 3) { enabled(confirm) }
             record(d, p, "Thêm after search cleared", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
         }
     }
@@ -939,7 +1036,10 @@ func sheetShots(_ d: String, _ tag: String) {
         _ = screenshot(d, p, "apps-add-sheet-\(tag)")
         if let row = require(d, p, "first app row", find: { appRows(sheet).first }),
            drive(d, p, "select the first app", set(list, kAXSelectedRowsAttribute, [row] as CFArray)) {
-            wait(0.8)
+            // Selected, and Thêm on with it (drawn in the same update as the row).
+            awaitState(d, p, "first app selected", timeout: 3) {
+                !selectedRows(list).isEmpty && (sheetButton(sheet, "Thêm").map(enabled) ?? true)
+            }
             _ = screenshot(d, p, "apps-add-sheet-selected-\(tag)")
         }
     }
@@ -954,7 +1054,7 @@ func sheetShots(_ d: String, _ tag: String) {
 func measureLimits() {
     let d = "-", p = "window"
     guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(Reference.probeLargeSize))) else { return }
-    wait(0.6)
+    awaitSettled(d, p, "window frame after resizing") { fmt(frame(window)) }
     check(d, p, "max window width", frame(window).width, Reference.maxWindowWidth)
     for index in sections.indices {
         let page = sections[index]
@@ -967,7 +1067,7 @@ func measureLimits() {
         }
     }
     guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(Reference.probeSmallSize))) else { return }
-    wait(0.6)
+    awaitSettled(d, p, "window frame after resizing") { fmt(frame(window)) }
     check(d, p, "min window width", frame(window).width, Reference.minWindowWidth)
     // The content's minimum plus the toolbar.
     check(d, p, "min window height", frame(window).height, Reference.minWindowHeight)
@@ -979,6 +1079,10 @@ func measureLimits() {
 
 /// Back and Forward as the buttons show them now: enabled or not.
 func checkHistoryButtons(_ d: String, _ p: String, _ when: String, back: Bool?, forward: Bool?) {
+    // The buttons follow the page; read them once their states stay the same on 3 reads.
+    _ = waitSettled(timeout: 2, interval: 0.1, reads: 3) {
+        [Reference.backLabel, Reference.forwardLabel].map { historyButton($0).map(enabled) }
+    }
     for (name, want) in [(Reference.backLabel, back), (Reference.forwardLabel, forward)] {
         guard let want else { continue }
         if let button = require(d, p, "toolbar button \"\(name)\"", find: { historyButton(name) }) {
@@ -988,24 +1092,24 @@ func checkHistoryButtons(_ d: String, _ p: String, _ when: String, back: Bool?, 
     }
 }
 
-/// The page shown, by the window's title, within 2 s.
+/// The page shown, by the window's title, within 3 s (the callers used to wait 1 s before
+/// a 2 s poll).
 func checkShown(_ d: String, _ p: String, _ when: String, _ index: Int) {
     let want = Reference.sectionTitles[index]
-    let start = Date()
-    while windowTitle() != want && Date().timeIntervalSince(start) < 2 { wait(0.2) }
+    waitUntil(timeout: 3, interval: 0.2) { windowTitle() == want }
     record(d, p, "page \(when)", expected: want, got: windowTitle(), ok: windowTitle() == want)
 }
 
-/// Posts a key with modifiers to the frontmost app (Dấu, brought to the front first).
+/// Posts a key with modifiers to Dấu, brought to the front first; no key when it does not
+/// come to the front (HARNESS), so nothing lands in another app. The caller waits for what
+/// the key should change.
 func postKey(_ d: String, _ p: String, _ virtualKey: CGKeyCode, _ flags: CGEventFlags) {
-    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
-    wait(0.3)
+    guard bringToFront(d, p) else { return }
     for down in [true, false] {
         let event = CGEvent(keyboardEventSource: nil, virtualKey: virtualKey, keyDown: down)
         event?.flags = flags
         event?.post(tap: .cghidEventTap)
     }
-    wait(1.0)
 }
 
 /// The focused element of the app, through accessibility.
@@ -1066,8 +1170,11 @@ func rgb(_ c: [CGFloat]) -> String { c.map { String(Int(($0 * 255).rounded())) }
 /// is not key draws every selection grey.
 func measureLaunchFocus() {
     let d = "-", p = "launch-focus"
-    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
-    wait(0.8)
+    bringToFront(d, p)
+    awaitState(d, p, "Settings window is the main window", timeout: 3) { (attr(window, kAXMainAttribute) as? Bool) == true }
+    // Fixed: the selection is redrawn in the active style after the window becomes key,
+    // and no accessibility state says when that drawing is done.
+    wait(0.3)
     guard let outline = findSidebarOutline(d, p) else { return }
     let field = require(d, p, "sidebar search field", find: sidebarSearchField)
     record(d, p, "sidebar list has the focus at launch", expected: "the list (AXFocused, or the app's focused element in it)",
@@ -1109,6 +1216,7 @@ func findMenuItemState() -> (ok: Bool, description: String) {
     guard !editTitles.isEmpty, !findTitles.isEmpty, !itemTitles.isEmpty else { return (false, "system menu strings unreadable") }
     func escape() {
         for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
+        // Fixed: pacing between Escapes; a closed submenu shows no state read here.
         wait(0.3)
     }
     func menuItems(_ e: AXUIElement) -> [AXUIElement] {
@@ -1118,18 +1226,22 @@ func findMenuItemState() -> (ok: Bool, description: String) {
     guard let edit = children(bar).first(where: { editTitles.contains(label($0)) }) else {
         return (false, "no Edit menu; menus: " + children(bar).map(label).joined(separator: ", "))
     }
+    func editOpen() -> Bool { (attr(edit, kAXSelectedAttribute) as? Bool) == true }
     guard press(edit) == .success else { return (false, "Edit menu did not open") }
-    wait(0.6)
+    // Open: the menu bar item is selected. Not seen within 2 s: read anyway.
+    waitUntil(timeout: 2, editOpen)
     let editItems = menuItems(edit)
     guard let find = editItems.first(where: { findTitles.contains(label($0)) }) else {
         escape()
         return (false, "no Find submenu; Edit: " + editItems.map(label).filter { !$0.isEmpty }.joined(separator: ", "))
     }
     _ = press(find)
+    // Fixed: no accessibility state seen for an open submenu (its items are listed while
+    // it is closed too); AppKit validates them when it opens.
     wait(0.6)
     let findItems = menuItems(find)
     escape(); escape()
-    if (attr(edit, kAXSelectedAttribute) as? Bool) == true { escape() }
+    if !waitUntil(timeout: 2, { !editOpen() }) { escape() }
     guard let item = findItems.first(where: { itemTitles.contains(label($0)) }) else {
         return (false, "no Find… item; Find: " + findItems.map(label).filter { !$0.isEmpty }.joined(separator: ", "))
     }
@@ -1146,35 +1258,35 @@ func measureKeyboardToSearch() {
     let d = "-", p = "search-keyboard"
     guard let outline = findSidebarOutline(d, p),
           let field = require(d, p, "sidebar search field", find: sidebarSearchField) else { return }
-    func focusList() -> Bool { drive(d, p, "focus the sidebar list", set(outline, kAXFocusedAttribute, kCFBooleanTrue)) }
+    func focusList() -> Bool {
+        drive(d, p, "focus the sidebar list", set(outline, kAXFocusedAttribute, kCFBooleanTrue))
+            && awaitState(d, p, "sidebar list focused", timeout: 2) { listHasFocus(outline) }
+    }
     guard focusList() else { return }
-    wait(0.3)
-    // kVK_Tab 48.
+    // kVK_Tab 48. The rows below report a timeout (2 s).
     postKey(d, p, 48, [])
     var how = "Tab"
-    if !searchHasFocus(field) {
+    if !waitUntil(timeout: 2, { searchHasFocus(field) }) {
         guard focusList() else { return }
-        wait(0.3)
         postKey(d, p, 48, .maskShift)
+        waitUntil(timeout: 2) { searchHasFocus(field) }
         how = "Shift-Tab"
     }
     record(d, p, "Tab from the list reaches the search field", expected: "focused by Tab or Shift-Tab",
            got: searchHasFocus(field) ? "focused by \(how)" : "focused: \(describe(focusedElement()))", ok: searchHasFocus(field))
     guard focusList() else { return }
-    wait(0.3)
     // What ⌘F should hit, read before pressing it, so a failure says why: the menu item's
     // title (system strings, D38), shortcut and whether it is on with the list focused.
     let findItem = findMenuItemState()
     record(d, p, "Edit › Find › Find… before ⌘F", expected: "present, \(Reference.findShortcut.0) with modifiers \(Reference.findShortcut.1), enabled",
            got: findItem.description, ok: findItem.ok)
     guard focusList() else { return }
-    wait(0.3)
-    // kVK_ANSI_F 3 with ⌘: Edit › Find › Find….
+    // kVK_ANSI_F 3 with ⌘: Edit › Find › Find…. The row below reports a timeout (2 s).
     postKey(d, p, 3, .maskCommand)
+    waitUntil(timeout: 2) { searchHasFocus(field) }
     record(d, p, "⌘F from the list focuses the search field", expected: "focused",
            got: searchHasFocus(field) ? "focused" : "focused: \(describe(focusedElement()))", ok: searchHasFocus(field))
     _ = focusList()
-    wait(0.3)
 }
 
 /// At launch, before anything is selected: the window opens on Gõ phím with nothing
@@ -1195,12 +1307,10 @@ func measureHistory() {
     checkHistoryButtons(d, p, "after selecting another section", back: true, forward: false)
     guard let back = require(d, p, "toolbar button \"\(Reference.backLabel)\"", find: { historyButton(Reference.backLabel) }),
           drive(d, p, "press \(Reference.backLabel)", press(back)) else { return }
-    wait(1.0)
     checkShown(d, p, "after \(Reference.backLabel)", 0)
     checkHistoryButtons(d, p, "after \(Reference.backLabel)", back: nil, forward: true)
     guard let forward = require(d, p, "toolbar button \"\(Reference.forwardLabel)\"", find: { historyButton(Reference.forwardLabel) }),
           drive(d, p, "press \(Reference.forwardLabel)", press(forward)) else { return }
-    wait(1.0)
     checkShown(d, p, "after \(Reference.forwardLabel)", 1)
     checkHistoryButtons(d, p, "after \(Reference.forwardLabel)", back: true, forward: false)
     // kVK_ANSI_LeftBracket / RightBracket: "[" and "]" on the ANSI layout.
@@ -1221,7 +1331,6 @@ func measureHistoryUnderSheet() {
     guard last > appsIndex, showSection(d, 0), showSection(d, appsIndex), showSection(d, last),
           let back = require(d, p, "toolbar button \"\(Reference.backLabel)\"", find: { historyButton(Reference.backLabel) }),
           drive(d, p, "press \(Reference.backLabel)", press(back)) else { return }
-    wait(1.0)
     checkShown(d, p, "before the sheet", appsIndex)
     checkHistoryButtons(d, p, "before the sheet", back: true, forward: true)
     guard let add = require(d, p, "toolbar + (\"Thêm ứng dụng\")", find: toolbarAddButton),
@@ -1230,13 +1339,14 @@ func measureHistoryUnderSheet() {
         if attachedSheet() != nil { closeSheet(d) }
         return
     }
-    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
-    wait(0.5)
-    // kVK_ANSI_LeftBracket / RightBracket.
+    // kVK_ANSI_LeftBracket / RightBracket. Under the sheet nothing may change, and no
+    // state shows that a key was ignored: each key gets a fixed 1 s before the rows.
     postKey(d, p, 33, .maskCommand)
+    wait(1.0)
     checkShown(d, p, "under the sheet after ⌘[", appsIndex)
     record(d, p, "sheet after ⌘[", expected: "shown", got: attachedSheet() == nil ? "closed" : "shown", ok: attachedSheet() != nil)
     postKey(d, p, 30, .maskCommand)
+    wait(1.0)
     checkShown(d, p, "under the sheet after ⌘]", appsIndex)
     record(d, p, "sheet after ⌘]", expected: "shown", got: attachedSheet() == nil ? "closed" : "shown", ok: attachedSheet() != nil)
     // The View menu's items while the sheet is up.
@@ -1244,7 +1354,7 @@ func measureHistoryUnderSheet() {
     if let bar = require(d, p, "menu bar", find: { attr(app, kAXMenuBarAttribute).map { $0 as! AXUIElement } }),
        let viewItem = require(d, p, "View menu", find: { children(bar).first { viewTitles.contains(label($0)) } }),
        drive(d, p, "open the View menu", press(viewItem)) {
-        wait(0.6)
+        waitForMenu(viewItem)
         let items = children(viewItem).first { role($0) == "AXMenu" }.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
         for title in [Reference.backLabel, Reference.forwardLabel] {
             let item = items.first { label($0) == title }
@@ -1252,11 +1362,7 @@ func measureHistoryUnderSheet() {
                    got: item.map { enabled($0) ? "enabled" : "disabled" } ?? "missing", ok: item.map { !enabled($0) } ?? false)
         }
         if let menu = children(viewItem).first(where: { role($0) == "AXMenu" }) { _ = AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
-        wait(0.4)
-        if (attr(viewItem, kAXSelectedAttribute) as? Bool) == true {
-            for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
-            wait(0.4)
-        }
+        closeMenu(viewItem)
     }
     closeSheet(d)
     checkShown(d, p, "after the sheet closed", appsIndex)
@@ -1294,7 +1400,7 @@ func measureViewMenu() {
               "menus: " + children(bar).map(label).joined(separator: ", ") }, find: {
               children(bar).first { viewTitles.contains(label($0)) } }),
           drive(d, p, "open the View menu", press(viewItem)) else { return }
-    wait(0.6)
+    waitForMenu(viewItem)
     let menu = children(viewItem).first { role($0) == "AXMenu" }
     let items = menu.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
     func shortcut(_ e: AXUIElement) -> (String, Int) {
@@ -1320,11 +1426,26 @@ func measureViewMenu() {
     record(d, p, "Enter/Exit Full Screen", expected: "an item titled by the system",
            got: fullScreen.map(label) ?? "missing; items: \(listed)", ok: fullScreen != nil)
     if let menu { _ = AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
-    wait(0.4)
-    if (attr(viewItem, kAXSelectedAttribute) as? Bool) == true {
-        for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
-        wait(0.4)
+    closeMenu(viewItem)
+}
+
+/// After pressing a menu bar item: until it is selected (open; 2 s at most, then read
+/// anyway), then until its items' titles and enabled states stay the same on 3 reads
+/// (AppKit validates them as the menu opens).
+func waitForMenu(_ item: AXUIElement) {
+    waitUntil(timeout: 2) { (attr(item, kAXSelectedAttribute) as? Bool) == true }
+    _ = waitSettled(timeout: 2, interval: 0.1, reads: 3) {
+        (children(item).first { role($0) == "AXMenu" }.map { children($0).filter { role($0) == "AXMenuItem" } } ?? [])
+            .map { "\(label($0)) \(enabled($0))" }
     }
+}
+/// After cancelling a menu: until its menu bar item is no longer selected; if it still is
+/// after 2 s, Escape, and the same wait again.
+func closeMenu(_ item: AXUIElement) {
+    func open() -> Bool { (attr(item, kAXSelectedAttribute) as? Bool) == true }
+    if waitUntil(timeout: 2, { !open() }) { return }
+    for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
+    waitUntil(timeout: 2) { !open() }
 }
 
 /// The split group that holds the sidebar: the widest one in the window.
@@ -1390,6 +1511,8 @@ func measureFixedSidebar() {
        let value = attr(divider, kAXValueAttribute) as? NSNumber {
         for delta in Reference.splitterValueDeltas {
             let err = set(divider, kAXValueAttribute, NSNumber(value: value.doubleValue + delta))
+            // Fixed: the check is that nothing changes, and no state shows a change that
+            // did not happen.
             wait(0.5)
             // A refusal is fine (the value cannot change); only the width counts.
             checkSidebarWidth(d, p, "after AXSplitter value \(delta > 0 ? "+" : "")\(Int(delta)) (AXError \(err.rawValue))")
@@ -1398,18 +1521,22 @@ func measureFixedSidebar() {
     // Window resizes.
     for (name, size) in [("widest", Reference.probeLargeSize), ("narrowest", Reference.probeSmallSize)] {
         guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(size))) else { continue }
-        wait(0.6)
+        awaitSettled(d, p, "window frame and sidebar after resizing") { "\(fmt(frame(window))) \(shownSidebarWidth().map(fmt) ?? "-")" }
         checkSidebarWidth(d, p, "at the \(name) window")
     }
-    _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
-    wait(0.6)
+    if drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize))) {
+        awaitSettled(d, p, "window frame after resizing") { fmt(frame(window)) }
+    }
 
-    // Real mouse events.
-    drive(d, p, "bring Dấu to the front", set(app, kAXFrontmostAttribute, kCFBooleanTrue))
-    wait(0.3)
+    // Real mouse events. The fixed waits below are pacing between synthesized mouse
+    // events, or a window in which nothing may change (the sidebar keeps its width):
+    // neither has a state to wait for.
+    bringToFront(d, p)
     let over = dividerPoint()
     CGWarpMouseCursorPosition(over)
     postMouse(.mouseMoved, over)
+    // Fixed: the cursor follows the pointer; nothing to read but the cursor itself, which
+    // must not become a resize cursor.
     wait(0.5)
     let cursor = cursorOverDivider()
     record(d, p, "cursor over the divider", expected: "the arrow (no resize cursor), as System Settings",
@@ -1448,7 +1575,7 @@ func measureFixedSidebar() {
     // double-click): one more mouse-up if the session still has it down.
     if CGEventSource.buttonState(.combinedSessionState, button: .left) {
         postMouse(.leftMouseUp, point, clicks: 2)
-        wait(0.5)
+        waitUntil(timeout: 2) { !CGEventSource.buttonState(.combinedSessionState, button: .left) }
     }
     checkSidebarWidth(d, p, "after double-clicking the divider")
     if let field = require(d, p, "sidebar search field", find: sidebarSearchField) {
@@ -1516,11 +1643,13 @@ func measurePixels(_ d: String, _ tag: String) {
         // The bar's value is a fraction of the scrollable height: try a tenth, then scale
         // to the probe offset.
         guard drive(d, page, "scroll the page", set(scrollBar, kAXValueAttribute, NSNumber(value: 0.1))) else { continue }
-        wait(0.5)
+        // Until the page has moved and stops moving (3 reads); the rows below report
+        // where it ended.
+        _ = waitSettled(timeout: 3, interval: 0.1, reads: 3, valid: { ($0 ?? 0) > 0.5 }, offset)
         if let tenth = offset(), tenth > 0.5 {
             let value = min(1, 0.1 * Reference.scrollProbeOffset / tenth)
             drive(d, page, "scroll the page", set(scrollBar, kAXValueAttribute, NSNumber(value: Double(value))))
-            wait(0.5)
+            _ = waitSettled(timeout: 3, interval: 0.1, reads: 3, offset)
         }
         guard let scrolled = offset() else {
             harness(d, page, "(d) page scrolls with its bar", expected: "≥ \(fmt(Reference.scrollProbeMinOffset)) pt",
@@ -1536,8 +1665,9 @@ func measurePixels(_ d: String, _ tag: String) {
         var scrolledShot = shot
         scrolledShot["scroller"] = lane
         _ = screenshot(d, page, "\(page)-scrolled-\(tag)", frames: scrolledShot)
-        drive(d, page, "scroll the page back", set(scrollBar, kAXValueAttribute, NSNumber(value: 0.0)))
-        wait(0.3)
+        if drive(d, page, "scroll the page back", set(scrollBar, kAXValueAttribute, NSNumber(value: 0.0))) {
+            awaitState(d, page, "page scrolled back to the top", timeout: 3) { (offset() ?? 1) <= 0.5 }
+        }
     }
 }
 
@@ -1580,6 +1710,10 @@ if modes.contains("--focus") && !modes.contains("--geometry"), moveWindow(to: pr
     measureSidebarSearch(tag(primary), "\(tag(primary))-\(appearance)")
 }
 if modes.contains("--geometry") {
+    if !launchSizeRead.settled {
+        harness("-", "window", "wait: window size at launch settles", expected: "the same on 3 reads within 5 s",
+                got: "still changing after \(String(format: "%.1f", launchSizeRead.seconds)) s")
+    }
     check("-", "window", "window size at launch", CGRect(origin: .zero, size: launchSize), CGRect(origin: .zero, size: Reference.windowSize))
     measureLaunchState()
     for screen in displays where moveWindow(to: screen, tag(screen)) {

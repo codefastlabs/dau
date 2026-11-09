@@ -44,6 +44,7 @@
 set -euo pipefail
 here=${0:A:h}
 source "${here:h:h}/lib/log.sh"
+source "${here:h:h}/lib/wait.sh"
 focus_only=0
 if [[ ${1:-} == --focus ]]; then focus_only=1; shift; fi
 [[ -n ${1:-} ]] || log_die 2 "Thiếu thư mục kết quả. Dùng: scripts/selftest/settings-window/run.sh [--focus] <output-dir> [Dau.app]"
@@ -167,6 +168,13 @@ else
   current=light other=dark
 fi
 
+# Sets $pid to a Dấu process from $app that is not in $1 (the pids before the launch).
+new_app_pid() {
+  pid=$(comm -13 <(echo "$1") <(pgrep -f "$app/Contents/MacOS/Dau" | sort) | tail -1)
+  [[ -n $pid ]]
+}
+process_gone() { ! kill -0 "$1" 2>/dev/null; }
+
 real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app arguments…>
   local name=$1 look=$2
   shift 2
@@ -187,12 +195,8 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   # on Dấu fit this; that SwiftUI then opens no window is not measured. Put every app
   # flag that takes a value (`-AppleShowScrollBars`, `--appearance`) before --settings-window.
   open -n "$app" --args -AppleLanguages '(vi)' "$@" --settings-window
-  local pid=""
-  for i in {1..50}; do
-    pid=$(comm -13 <(echo "$before") <(pgrep -f "$app/Contents/MacOS/Dau" | sort) | tail -1)
-    [[ -n $pid ]] && break
-    sleep 0.2
-  done
+  pid=""
+  wait_until 10 new_app_pid "$before" || true
   if [[ -z $pid ]]; then
     # The row is data (docs/UI-CHECKS.md): kept as it is in the result file.
     print -r -- "HARNESS real window ($name): the app did not start; not a UI result" > "$dir.txt"
@@ -203,9 +207,14 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   "$work/ax-check" "$pid" "$dir" "$look" $modes > "$dir.txt" || rc=1
   log_step "$name"
   log_detail "${(@f)$(tail -3 "$dir.txt")}"
-  kill "$pid" 2>/dev/null
-  # Let it quit before the next launch deletes the saved frame again.
-  for i in {1..25}; do kill -0 "$pid" 2>/dev/null || break; sleep 0.2; done
+  kill "$pid" 2>/dev/null || true
+  # Let it quit before the next launch deletes the saved frame again: a process still
+  # running can write its frame after that delete, and the next launch would open at it.
+  if ! wait_until 10 process_gone "$pid"; then
+    print -r -- "HARNESS real window ($name): the app (pid $pid) did not quit within 10 s; the next launch may open at its saved frame" >> "$dir.txt"
+    log_error "App (pid $pid) chưa thoát sau 10 giây; lần mở sau có thể mở theo khung nó vừa lưu."
+    rc=1
+  fi
   return $rc
 }
 
