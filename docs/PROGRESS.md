@@ -12,16 +12,19 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có. Việc tiếp theo: bước 1a của kế hoạch M6.
+Chờ người dùng: không có. Việc tiếp theo: bước 1c, trên máy nhà (log của 1b ở `build/load/1b-20261109-213527/` máy nhà).
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
    - Đã đo (nhật ký 09/11): thay tại chỗ sai 8/9 lượt với chuỗi Telex thứ tự chuẩn, 5/6 với chuỗi có sửa dấu (cả bản Release). Gạch chân đúng 9/9, mới đo với chuỗi thứ tự chuẩn.
    - Đã rõ: kiểu sai (a), lần thay đầu của một từ dùng vị trí con trỏ cũ. Chưa rõ: kiểu sai (b), nhánh đọc lại chữ của D11 (Kiểm tra ngữ cảnh) vẫn ra từ sai, có chỗ con trỏ đi trước vị trí chờ đợi.
-   - 1a. Không chiếm màn hình: tìm vì sao đối chứng Telex của Apple ra nguyên chuỗi phím (nhật ký 09/11).
-   - 1b. Một lượt đo, khoảng 15 phút, trên máy đang dùng (log `build/` không mang giữa các máy): Dấu Debug `load/run.sh --text edit --apps chrome --loads "idle busy" --reps 3` (12 ô, cả thay tại chỗ và gạch chân); Dấu Release và Telex của Apple bằng `typing/run.sh --busy 300:1000 --delay 100 --jitter 30 --keys "$(scripts/selftest/load/run.sh --text edit --print keys)"` (Apple thêm `--source`; đáp án của Apple là chữ Apple gõ khi trang rảnh). Cài lại bản Release trong lượt.
+   - 1a. Xong 09/11 (nhật ký): đối chứng Telex của Apple chạy đúng trên máy nhà ở mọi ô thử; lỗi ra nguyên chuỗi phím của lượt 18:21 chưa rõ nguyên nhân, nên 1b chạy Apple trước mọi lần cài lại và chỉ tin ô Apple khi chữ có dấu vết của Apple.
+   - 1b. Xong 09/11 (nhật ký). Một lượt đo, khoảng 7 phút, trên máy đang dùng (log `build/` không mang giữa các máy). Mọi ô: Chrome, `typing/run.sh --delay 100 --jitter 30 --keys "$(scripts/selftest/load/run.sh --text edit --print keys)" --save <thư mục ô> chrome`, thêm `--busy 300:1000` ở ô trang bận.
+     - Thứ tự: (1) Telex của Apple (`--source com.apple.inputmethod.VietnameseIM.VietnameseTelex`), trang rảnh 1 lần (đáp án của Apple) rồi trang bận 3 lần, trước mọi lần cài lại; chỉ tin ô có dấu vết của Apple (1a). (2) Cài Dấu Debug: trang bận 3 lần (log vị trí cho kiểu (b), đọc bằng `perf-report.sh --input`), trang rảnh 1 lần (đối chứng). (3) Cài lại bản Release.
+     - Không đo: gạch chân (đường lui, chỉ đo khi cách sửa ở 1c không đạt); Dấu Release (09/11 đã sai 2/3, đủ cho biết lời gọi thêm của bản Debug không phải nguyên nhân).
+     - Apple cũng sai khi trang bận thì lỗi không riêng của Dấu, và câu hỏi của D13 đổi.
    - 1c. Từ log của 1b, hiểu kiểu (b); sửa độ bền của thay tại chỗ (giao imk-dev). Cách sửa phải nới N3 (Ít lời gọi vào ứng dụng đích) thì hỏi người dùng trước khi đổi `DECISIONS.md`.
-   - 1d. Đo lại như 1b; rồi người dùng quyết D13. Gạch chân là đường lui, chỉ bàn khi sửa không đạt.
+   - 1d. Đo lại như 1b. Mục tiêu: thay tại chỗ đúng khi trang bận, ít nhất ngang Telex của Apple trong cùng điều kiện. Gạch chân là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn, nên không phải đích của bước này: sửa không đạt thì tìm cách sửa khác. Có số đo rồi thì đề xuất sửa D13 (Gạch chân làm đường lui) và nhãn "Đề xuất" bật gạch chân cho Chrome, VS Code, Firefox trong danh sách tương thích; người dùng duyệt.
 2. Bài tải nặng theo `docs/ROADMAP.md` mục M6.
 3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
 4. Chốt ngưỡng và D12 (Ưu tiên tiến trình) vào `DECISIONS.md` theo số đo (người dùng duyệt).
@@ -53,7 +56,7 @@ Ký và máy:
 - Ký bằng Personal Team (Team ID trong D24 (Tên và định danh)), ký tự động "Apple Development". Bản phát hành dùng Developer ID ở M7.
 - Máy này ("Valentino’s MacBook Pro") ký được (09/11: mọi bản build ký hợp lệ).
 - Máy nhà ("Vương's MacBook Pro") dùng chứng chỉ tạo ngày 05/11.
-- Bản đã cài trên máy này: bộ gõ và `/Applications/Dau.app` bản Release 7f3af4b (09/11).
+- Bản đã cài trên máy này: bộ gõ và `/Applications/Dau.app` bản Release 7f3af4b (09/11). Máy nhà: bộ gõ Release build 09/11 21:23, `/Applications/Dau.app` 16a7350.
 - Xcode 27.2 ở `/Applications/Xcode.app`, nhưng `xcode-select` đang trỏ CommandLineTools. Swift 6.4.
   - Script tự chọn Xcode (`scripts/lib/xcode.sh`).
   - Lệnh gõ tay (`swift test`) cần `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
@@ -153,3 +156,18 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
 - 09/11/2026 — bỏ các chỗ lệch còn lại: bản `vi` của hai câu theo đúng ý bản tiếng Anh ("Dấu không cần quyền điều khiển máy Mac.", không viết cứng tên mục "Trợ năng", D38; "sau đó bộ gõ được chuyển vào Thùng rác"), sửa cả 12 artboard trên canvas (phiên bản 138) và bản chụp `docs/ui/canvas/`; cửa sổ Cài đặt rộng cố định 740 như System Settings, chỉ đổi chiều cao (trước cho kéo tới 976). Build Debug, snapshot 139 test, check-l10n, check-docs đạt; chưa chạy bộ kiểm cửa sổ thật — phiên chính
 - 09/11/2026 — bộ kiểm cửa sổ thật sau khi cố định độ rộng 740 (người dùng cho chạy): lượt đầu 5 dòng không đạt, đều là kiểm cũ chờ cửa sổ kéo rộng tới 976; sửa bộ kiểm (rộng tối đa 740, bỏ dòng thẻ ở cửa sổ rộng nhất, bf5a35b), chạy lại đạt hết (302, 15, 28; 286), 2 phút 2 giây — phiên chính
 - 09/11/2026 — script chỉ còn zsh và Swift biên dịch một lần (`scripts/README.md` mục "Ngôn ngữ", `check-docs` kiểm 11); `scripts/research/external-tests/` giữ Python. Công cụ Swift mới cho đầu ra giống bản Python cũ. Chạy thật đạt: `app-group.sh`, `typing/run.sh` (Safari, Chrome), `compare-ims/run.sh dau`, `clean-dau.sh --yes` rồi cài lại Release. `clean-dau.sh` không xoá được container của bộ gõ ("Operation not permitted"; tiến trình chạy script không có Full Disk Access) — phiên chính, 2 subagent
+- 09/11/2026 — M6 bước 1a: vì sao đối chứng Telex của Apple ra nguyên chuỗi phím lúc 18:21 (máy nhà; log của lượt 18:21 ở máy kia) — phiên chính.
+  - Quan sát cũ: phần C sáng 09/11 (30 ms, không jitter, Telex thứ tự chuẩn) Apple biến đổi đúng; lượt 18:21 (Chrome, 100 ± 30 ms, chuỗi có sửa dấu, trang rảnh và bận) ra nguyên chuỗi phím, dù TIS báo nguồn hiện tại là Apple; trong lượt đó bộ gõ Dấu được cài lại, không còn biết trước hay sau các ô của Apple.
+  - Giả thuyết: H1, sau khi tiến trình bộ gõ bị dừng và macOS lùi về U.S., app gõ bằng U.S. dù TIS báo Apple; H2, nhịp 100 ± 30 ms làm Apple không biến đổi; H3, một phím trong chuỗi có sửa dấu (⌫, chữ hoa) làm Apple ngừng biến đổi.
+  - Lượt phân biệt (người dùng cho chạy; 21:23–21:25, khoảng 1,5 phút; Chrome trang rảnh, `typing/run.sh --source com.apple.inputmethod.VietnameseIM.VietnameseTelex chrome`, phím lấy từ `load/run.sh --text std|edit --print keys`): (a) chuỗi thứ tự chuẩn, `--delay 30`; (b) chuỗi có sửa dấu, `--delay 100 --jitter 30`; (c) `install-input-method.sh --release --no-build` (dừng tiến trình Dấu) rồi lặp (b). Cả ba ô Apple biến đổi chữ, đúng kiểu của Apple: không khôi phục từ tiếng Anh ("mêting"), không có D20 (Thêm dấu cho từ đã gõ) ("Hocj"), "Chaofz" ra "Chao". (b) và (c) ra cùng một chữ.
+  - Kết luận: H2, H3 bị loại trên máy này. H1 chưa kiểm được: ở (c) tiến trình Dấu đã dừng nhưng nguồn hiện tại vẫn là Dấu, macOS không lùi về U.S., nên điều kiện của H1 không dựng lại được. Khác biệt còn lại giữa hai lượt: máy (lượt 18:21 ở máy công việc). Nguyên nhân: chưa rõ.
+  - Cho 1b: đối chứng Apple dùng được trên máy này. Chạy các ô của Apple trước mọi lần cài lại, và chỉ tin ô Apple khi chữ có dấu vết của Apple (như "mêting"), không phải nguyên chuỗi phím.
+  - Sửa: `typing/run.sh --save DIR` tự tạo DIR (lượt này lộ ra: thư mục chưa có thì không ghi được chữ đọc lại).
+  - Máy: Telex của Apple đã bật sẵn, không cần người dùng bật. Bộ gõ đã cài nay là bản Release build trong lượt (mã nguồn bộ gõ như HEAD); Dấu.app vẫn 16a7350 (chưa cài lại). Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã xoá `build/load/`.
+- 09/11/2026 — M6 bước 1b (người dùng cho chạy; máy nhà, 21:35–21:40; log ở `build/load/1b-20261109-213527/`, không commit) — phiên chính. Chrome, chuỗi có sửa dấu, 100 ± 30 ms, trang bận 300 ms mỗi giây; lệnh ở kế hoạch 1b.
+  - Telex của Apple: trang rảnh 1/1 và trang bận 2/3 ra cùng một chữ (chữ của Apple: "mêting", "Hocj"), nên trang bận không làm Apple sai. Ô trang bận đầu tiên ra nguyên chuỗi phím (⌫ vẫn xoá), đúng hiện tượng của lượt 18:21; ô đó không theo sau lần cài lại nào (bản Release cài lúc 21:23, ô (c) của 1a sau đó vẫn đúng), nên H1 của 1a không phải điều kiện cần. Nguyên nhân: chưa rõ.
+  - Dấu Debug: trang rảnh 1/1 đúng; trang bận 0/3: "áng" (mất "S" của "Sáng"), "êeting", "nàyy"; "Hocj" (D20 (Thêm dấu cho từ đã gõ) không chạy); "ạnn", "đaaline", "vêetjs", "chêeuf".
+  - Phím tới bộ gõ đều: mọi khoảng cách từ 20 ms trở lên ở cả 4 ô, độ trễ phím p99 dưới 1,3 ms (H1 của M6 loại lần nữa).
+  - Kiểu (a) thấy rõ trong log vị trí: "bạn" (phím b a n j) ở lần thay đầu của từ có `sel` 21 thay vì 22 (chữ "n" chưa được Chrome áp), nên bộ gõ thay "ba" thành "ạn" và ra "ạnn"; không có vị trí chờ đợi để so (D11 (Kiểm tra ngữ cảnh)), nên không bắt được. Mỗi ô trang bận chỉ có 1–3 dòng resync, ít hơn số từ sai: phần lớn chỗ sai không được D11 phát hiện. Kiểu (b) phân tích ở 1c.
+  - So với mục tiêu của 1d: trong điều kiện này Apple đúng 2/2 lần nó biến đổi chữ, Dấu thay tại chỗ đúng 0/3.
+  - Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`; bộ gõ đã cài lại bản Release (build lúc 21:23, mã bộ gõ như HEAD). Giữ `build/load/1b-20261109-213527/` cho 1c.

@@ -130,6 +130,8 @@ while [[ $# -gt 0 ]]; do
 done
 [[ ${#APPS[@]} -gt 0 ]] || { usage; exit 2; }
 [[ "$JITTER_MS" =~ ^[0-9]+$ ]] || log_die 2 "--jitter phải là số nguyên ms"
+# --save DIR need not exist yet (compare-ims and load/run.sh create theirs; a call by hand may not).
+[[ -z "$SAVE_DIR" ]] || mkdir -p "$SAVE_DIR" || log_die "Không tạo được thư mục $SAVE_DIR"
 BUSY_MS=0; BUSY_PERIOD=0
 if [[ -n "$BUSY" ]]; then
   [[ "$BUSY" =~ ^[0-9]+:[0-9]+$ ]] || log_die 2 "--busy phải có dạng MS:PERIOD (số nguyên ms), ví dụ 300:1000"
