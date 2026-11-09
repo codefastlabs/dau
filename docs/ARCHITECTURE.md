@@ -52,7 +52,7 @@ dau/
 
 - Phụ thuộc DauEngine: để đổi cài đặt sang `EngineOptions` và chạy engine thật cho phần xem trước. Không dùng trong đường nóng của engine.
 - `DauSettings`: Sendable, Codable, mặc định theo D15 (Cài đặt mặc định). `advanced` là một enum nên D22 không thể bật cả hai.
-- `AppRule` (D5 (Quy tắc theo ứng dụng), D13 (Gạch chân làm đường lui)):
+- `AppRule` (D5 (Quy tắc theo ứng dụng), D13 (Gạch chân là đường lui cuối cùng)):
   - gồm bundle ID, tên hiển thị, gạch chân, nguồn "Đề xuất"/người dùng;
   - không có chế độ Việt/Anh.
 - Giải mã `DauSettings` và `AppRule` dễ dãi (D18 (Phòng thủ với IMK)):

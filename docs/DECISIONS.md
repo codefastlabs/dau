@@ -9,7 +9,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 - **N3. Ít lời gọi vào ứng dụng đích.** Tối thiểu lời gọi vào ứng dụng đích khi đang gõ.
   - Mỗi phím tối đa một lần gọi `insertText`.
   - Chỉ hỏi vị trí con trỏ (`selectedRange`) ở phím có thay chữ, không hỏi ở phím đi thẳng.
-  - Ngoại lệ được đọc chữ trước con trỏ một lần để dựng lại từ: lệch vị trí ở phím có thay chữ, và phím dấu/biến đổi đầu tiên trong một từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)).
+  - Ngoại lệ được đọc chữ trước con trỏ một lần để dựng lại từ: lệch vị trí ở phím có thay chữ (kể cả lần thay đầu của một từ, so với vị trí Dấu tự theo dõi), và phím dấu/biến đổi đầu tiên trong một từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)).
   - Ngoại lệ của "Thêm dấu cho từ đã gõ" (D20 (Thêm dấu cho từ đã gõ)): được hỏi vị trí và đọc chữ trước con trỏ ở phím đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ, nếu phím đó là phím dấu/biến đổi hoặc chữ cái, kể cả khi phím đó cuối cùng đi thẳng.
   - **Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ; chi phí đo được của `selectedRange` ghi ở mục "Câu hỏi đã trả lời" (vị trí thay chữ).
 - **N4. Không tự đổi cài đặt hệ thống.** Không tự ý đổi cài đặt hệ thống của người dùng.
@@ -41,7 +41,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - **Giới hạn đã biết — tự sửa chính tả của macOS:** từ macOS 27.2, ở app bật tự sửa chính tả, hệ thống có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt khi phía trước là câu tiếng Việt ("…Sunrise car␣" → "cả"), kể cả khi gõ bằng bàn phím U.S. Việc này xảy ra sau khi Dấu đã trả đúng "car" nên đè lên kết quả gõ đúp ("carr" → "car"). Dấu không tắt tự sửa của hệ thống (N4 (Không tự đổi cài đặt hệ thống)); người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa. Ghi trong ma trận tương thích (`docs/COMPATIBILITY.md` mục 6.1).
   - **Vì sao:** từ điển tiếng Anh chỉ có tác dụng ở đúng nhóm từ trùng, và ở đó nó làm hỏng các từ tiếng Việt rất phổ biến như "cả", "sẽ". Mũi tên, Esc, click và tổ hợp phím chỉ reset vì lúc đó con trỏ có thể đã đi chỗ khác, ghi lại chữ dễ thay sai vùng.
 - **D5. Quy tắc theo ứng dụng.**
-  - Quy tắc riêng của một app chỉ có một nội dung: có/không gạch chân khi gõ trong app đó (D13 (Gạch chân làm đường lui)), luôn áp dụng.
+  - Quy tắc riêng của một app chỉ có một nội dung: có/không gạch chân khi gõ trong app đó (D13 (Gạch chân là đường lui cuối cùng)), luôn áp dụng.
   - Dấu **không** tự đổi Việt/Anh theo app và không có "Nhớ chế độ theo từng ứng dụng".
   - Nhớ nguồn nhập liệu theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt Bàn phím › Nguồn đầu vào, N1 (Không làm lại việc hệ thống đã có)); trang Ứng dụng chỉ dẫn tới tuỳ chọn đó.
   - **Vì sao:** Dấu chỉ có một input mode (D2 (Chuyển Việt/Anh)), nên đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ. Đo được: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng.
@@ -94,21 +94,30 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 - **D11. Kiểm tra ngữ cảnh.**
   - Engine tự theo dõi trạng thái trong bộ nhớ.
   - Ở mỗi phím có thay chữ, hỏi `selectedRange` một lần để lấy vị trí tuyệt đối (N3 (Ít lời gọi vào ứng dụng đích)); phím đi thẳng không hỏi gì, trừ ngoại lệ của D20 (Thêm dấu cho từ đã gõ) ghi ở N3.
-  - Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ.
+  - Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ, trừ khi app chỉ trả lời chậm (ý "App trả lời chậm" bên dưới).
   - **Gợi ý tự hoàn thành:** vùng bôi đen bắt đầu đúng chỗ con trỏ khi Dấu đang giữ một từ là gợi ý tự hoàn thành của app (thanh địa chỉ trình duyệt, Spotlight): thay cả từ lẫn phần gợi ý, như phím thường gõ đè vùng chọn.
   - **Dựng lại khi lệch:** khi lệch, nếu phím trước cách ít nhất 50 ms (như D20) và app cho đọc chữ, Dấu đọc từ ngay trước con trỏ, dựng lại bộ đệm từ chữ thật rồi xử lý phím đó; không đọc được hoặc không có từ thì reset như trên.
+  - **App trả lời chậm:** Dấu tự theo dõi vị trí con trỏ qua các từ, cùng các chữ chính nó vừa gõ.
+    - Khi kiểm: `selectedRange` lùi sau vị trí đó tối đa 2 chữ và phím trước cách ít nhất 50 ms; Dấu đọc chữ trước con trỏ một lần (lần đọc khi lệch ở N3).
+    - Chữ đọc được chứng minh app chỉ chưa áp các phím vừa gõ: thay ở vị trí Dấu theo dõi.
+    - Không chứng minh được, ở lần thay đầu của một từ, và trước vị trí app trả không có đủ cả từ: vẫn thay ở vị trí Dấu theo dõi.
+    - Không chứng minh được, ở giữa từ: như "Dựng lại khi lệch".
+    - Vị trí app trả mà có thể là vị trí cũ thì không ghi đè vị trí Dấu theo dõi.
+    - Phím dồn dưới 50 ms: chưa áp dụng (M6).
   - **Từ đã hết hợp lệ:** từ trong bộ đệm đã hết hợp lệ (D30 (Kiểm tra chính tả), không tính D33 (Độ dài từ)) mà người dùng gõ phím dấu/biến đổi thì đọc chữ trước con trỏ một lần cho từ đó; khác bộ đệm thì dựng lại từ chữ thật rồi xử lý phím (cùng điều kiện 50 ms). Chi phí: tối đa một lần đọc cho mỗi từ không phải tiếng Việt.
   - Chỉ đọc chữ từ ứng dụng (`attributedSubstring`) cho tính năng "Thêm dấu cho từ đã gõ" (D20).
   - **Vì sao:**
     - Gợi ý tự hoàn thành: mọi cách người dùng tự chọn chữ (chuột, ⇧ + mũi tên, ⌘A) đều đã reset bộ đệm trước đó, nên vùng bôi đen như vậy chỉ có thể là gợi ý của app.
     - Dựng lại khi lệch: bấm chuột vào thanh địa chỉ Chrome không được báo cho bộ gõ, nên "tieemf" từng ra "tieemf".
     - Từ đã hết hợp lệ: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ; "tốt", ⌘A, "toots" từng ra "toots" và hỏng tới dấu cách.
+    - App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó sai 3/3 lượt, thay theo vị trí Dấu tự theo dõi đúng 3/3; Telex của Apple cùng điều kiện ra chữ 2/3 lượt (M6, 09–10/11/2026; cơ chế ở `docs/ARCHITECTURE.md` mục "App trả lời chậm").
 - **D12. Ưu tiên tiến trình.** Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm khi bài test tải nặng chứng minh có App Nap hoặc bị xếp vào nhân tiết kiệm điện.
-- **D13. Gạch chân làm đường lui.** Cho ứng dụng không hỗ trợ thay chữ tại chỗ.
-  - Gạch chân (marked text) là đường lui, bật theo quy tắc riêng của từng app (D5 (Quy tắc theo ứng dụng)).
-  - **Mặc định mọi app không gạch chân.** Danh sách tương thích chỉ gắn nhãn "Đề xuất" cho app nên bật gạch chân; người dùng tự bật khi gặp lỗi.
-  - Danh sách đề xuất ban đầu: VS Code, các app Electron/Chromium và Firefox. Terminal không đề xuất.
-  - **Vì sao:** đo ở M3 (độ tin cậy) bằng câu mẫu `scripts/selftest/typing/run.sh`: thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms (Chrome, Terminal sai ở 0 ms; VS Code ở 0 và 5 ms), từ 10 ms đúng ở lượt đo M3; riêng VS Code ở 10 ms đã sai một lần ở lượt đo M2 với câu mẫu cũ, từ 20 ms đúng ở mọi lượt (`docs/COMPATIBILITY.md` mục 6.2); gạch chân sửa được Chrome và VS Code ở 0 ms, Terminal ở 0 ms vẫn lỗi (còn vẽ marked text cũ). Firefox vào danh sách theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms.
+- **D13. Gạch chân là đường lui cuối cùng.**
+  - Thay tại chỗ là cách gõ của Dấu. Gõ sai ở một app là lỗi của Dấu và phải sửa, không giải quyết bằng gạch chân: gạch chân (marked text) là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn.
+  - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được, người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
+  - Nhãn "Đề xuất" trong danh sách tương thích chỉ gắn cho app mà số đo cho thấy thay tại chỗ còn sai ở tốc độ gõ thật; sửa được ở app nào thì bỏ nhãn của app đó.
+  - Hiện còn nhãn: VS Code, các app Electron/Chromium và Firefox (sai khi phím dồn, M3). Terminal không đề xuất.
+  - **Vì sao (nhãn hiện có):** đo ở M3 (độ tin cậy) bằng câu mẫu `scripts/selftest/typing/run.sh`: thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms (Chrome, Terminal sai ở 0 ms; VS Code ở 0 và 5 ms), từ 10 ms đúng ở lượt đo M3; riêng VS Code ở 10 ms đã sai một lần ở lượt đo M2 với câu mẫu cũ, từ 20 ms đúng ở mọi lượt (`docs/COMPATIBILITY.md` mục 6.2); gạch chân sửa được Chrome và VS Code ở 0 ms, Terminal ở 0 ms vẫn lỗi (còn vẽ marked text cũ). Firefox vào danh sách theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms.
 - **D14. Onboarding.**
   - Bước 1 phát hiện bộ gõ cũ đang chạy (OpenKey, EVKey, GoTiengViet…) qua `NSWorkspace` và hướng dẫn tắt (N4 (Không tự đổi cài đặt hệ thống)).
   - Bước 2 bật Dấu (một nguồn nhập liệu duy nhất, D2 (Chuyển Việt/Anh)).
@@ -142,7 +151,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - Gõ đúp trên từ đọc lại vẫn là bỏ dấu theo D26 ("cả" + r → "car").
   - Không giữ "lịch sử từ" để Backspace quay lại sửa như OpenKey: lùi về sau từ rồi gõ phím dấu đã được D20 phủ.
   - **Phạm vi:**
-    - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân làm đường lui)), vì chế độ đó không hỏi vị trí con trỏ.
+    - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
     - Chỉ đọc lại chữ khi phím trước đó trên cùng ô nhập cách ít nhất 50 ms (biên an toàn khi gõ dồn; đo ở 0–30 ms chưa thấy hỏng).
     - Chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").
   - **Khi nào đọc:** mỗi lần đọc tốn một `selectedRange` và một `attributedSubstring` 16 đơn vị UTF-16, ở phím chữ cái hoặc dấu/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng đi thẳng (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
@@ -356,7 +365,7 @@ Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM v
 - **Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính** (xung đột giữa N3 (Ít lời gọi vào ứng dụng đích) và tính đúng đắn; tài liệu khác gọi đây là "câu hỏi A/B", cách A là hỏi ở mỗi phím, cách B là tự cộng dồn vị trí từ một vị trí gốc). `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ.
   - **Trả lời:** hỏi `selectedRange` ở mỗi phím có thay chữ; ghi ở N3 và D11 (Kiểm tra ngữ cảnh).
   - Số đo M2 (bộ gõ tối thiểu; bản Debug, `scripts/selftest/typing`): `selectedRange` p50 ~0,17–0,62 ms. Tỉ lệ trong thời gian một phím có thay chữ (p50): gõ tay 6–8% ở TextEdit, Safari, Chrome và 17% ở Sublime Text; tự gõ 30 ms/phím 10% ở TextEdit, 35–42% ở Safari, Chrome, VS Code, Terminal (ở các app này cả phím chỉ mất ~0,6–1,5 ms). Số đo trên bản Debug, có thêm một lần hỏi chẩn đoán sau mỗi lần thay (`ReplaceDiag.swift`, không có ở Release). Số đo Telegram (thay cho Slack) và các số khác: `docs/history/LOG-M0-M4.md`.
-  - TextEdit, Safari đúng ở mọi tốc độ; Chrome, VS Code, Terminal đúng khi phím cách nhau ≥ 20 ms nhưng sai khi phím dồn (< 10–20 ms) vì các app này áp phím bất đồng bộ nên `selectedRange` là ảnh chụp cũ. Tự cộng dồn vị trí cũng không cứu được (vị trí gốc cũng là ảnh chụp cũ; VS Code đổi gốc toạ độ). Hướng cho app bất đồng bộ: gạch chân theo D13 (Gạch chân làm đường lui). Máy tải nặng: đo ở M6 (hiệu năng dưới tải).
+  - TextEdit, Safari đúng ở mọi tốc độ; Chrome, VS Code, Terminal đúng khi phím cách nhau ≥ 20 ms nhưng sai khi phím dồn (< 10–20 ms) vì các app này áp phím bất đồng bộ nên `selectedRange` là ảnh chụp cũ. App chậm mà phím cách từ 50 ms: Dấu dùng vị trí tự theo dõi, kiểm bằng chữ đọc được (D11, M6). Phím dồn dưới 50 ms: chưa có cách, đang làm ở M6 (hiệu năng dưới tải).
 - **App Group với bản ký ad-hoc** (không Team ID) trên macOS 27: **bị từ chối im lặng** (containermanagerd REJECTED, cfprefsd từ chối ghi), không có hộp thoại; cần Team ID (`scripts/selftest/app-group.sh`). **Bản có Team ID (Personal Team miễn phí, ký "Apple Development"): chạy được**, containermanagerd APPROVED, không hộp thoại, không cần hồ sơ cấp phép vì nhóm có tiền tố Team ID; bộ gõ nhận cài đặt qua thông báo Darwin, tiến trình app mới đọc lại được giá trị. `synchronize()` của suite App Group vẫn trả về false dù ghi thành công, nên không dùng làm dấu hiệu lỗi.
 - **App chủ có sandbox được không** khi phải chép bundle bộ gõ vào `~/Library/Input Methods`? **Không sandbox (D37 (Cài đặt bộ gõ)).**
-- **Chrome/Terminal có cần quyền Accessibility không?** Ít nhất một bộ gõ IMK khác (VietTelex) ghi trong README rằng phải bật Accessibility mới gõ được trong Terminal, iTerm và các trình duyệt Chromium. **Trả lời: không cần.** Bộ gõ không có quyền Trợ năng mà vẫn thay chữ đúng trong Chrome, VS Code, Terminal khi phím cách nhau từ 20 ms (Chrome gõ tay cũng đúng). Lỗi khi phím đến dồn là do các app này áp phím bất đồng bộ, không phải do thiếu quyền; hướng xử lý là gạch chân (D13 (Gạch chân làm đường lui)); Dấu không xin quyền Accessibility (N4 (Không tự đổi cài đặt hệ thống), bảo mật).
+- **Chrome/Terminal có cần quyền Accessibility không?** Ít nhất một bộ gõ IMK khác (VietTelex) ghi trong README rằng phải bật Accessibility mới gõ được trong Terminal, iTerm và các trình duyệt Chromium. **Trả lời: không cần.** Bộ gõ không có quyền Trợ năng mà vẫn thay chữ đúng trong Chrome, VS Code, Terminal khi phím cách nhau từ 20 ms (Chrome gõ tay cũng đúng). Lỗi khi phím đến dồn là do các app này áp phím bất đồng bộ, không phải do thiếu quyền; hướng xử lý là sửa thay tại chỗ (D11, M6), gạch chân chỉ là đường lui cuối cùng (D13 (Gạch chân là đường lui cuối cùng)); Dấu không xin quyền Accessibility (N4 (Không tự đổi cài đặt hệ thống), bảo mật).

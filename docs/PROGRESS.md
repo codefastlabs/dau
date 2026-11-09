@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có. Việc tiếp theo: phiên chính soạn bản sửa D11 (Kiểm tra ngữ cảnh) và D13 (Gạch chân làm đường lui) theo kết quả 1d, người dùng duyệt.
+Chờ người dùng: không có. D11 (Kiểm tra ngữ cảnh) và D13 (Gạch chân là đường lui cuối cùng) đã sửa theo kết quả 1d (người dùng duyệt 10/11). Việc tiếp theo: cho cách "App trả lời chậm" chạy cả khi phím dồn dưới 50 ms (giao imk-dev), rồi đo Chrome, VS Code, Firefox ở 0, 5, 10, 20 ms; app nào đúng thì bỏ nhãn "Đề xuất" (D13).
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -24,7 +24,7 @@ Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
      - Không đo: gạch chân (đường lui, chỉ đo khi cách sửa ở 1c không đạt); Dấu Release (09/11 đã sai 2/3, đủ cho biết lời gọi thêm của bản Debug không phải nguyên nhân).
      - Apple cũng sai khi trang bận thì lỗi không riêng của Dấu, và câu hỏi của D13 đổi.
    - 1c. Mã xong 09/11 (nhật ký), chưa đo thật. Từ log của 1b, hiểu kiểu (b); sửa độ bền của thay tại chỗ (giao imk-dev). Cách sửa phải nới N3 (Ít lời gọi vào ứng dụng đích) thì hỏi người dùng trước khi đổi `DECISIONS.md`.
-   - 1d. Đạt 10/11 với Chrome (nhật ký). Đo lại như 1b. Mục tiêu: thay tại chỗ đúng khi trang bận, ít nhất ngang Telex của Apple trong cùng điều kiện. Gạch chân là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn, nên không phải đích của bước này: sửa không đạt thì tìm cách sửa khác. Có số đo rồi thì đề xuất sửa D13 (Gạch chân làm đường lui) và nhãn "Đề xuất" bật gạch chân cho Chrome, VS Code, Firefox trong danh sách tương thích; người dùng duyệt.
+   - 1d. Đạt 10/11 với Chrome (nhật ký). Đo lại như 1b. Mục tiêu: thay tại chỗ đúng khi trang bận, ít nhất ngang Telex của Apple trong cùng điều kiện. Gạch chân là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn, nên không phải đích của bước này: sửa không đạt thì tìm cách sửa khác. Có số đo rồi thì đề xuất sửa D13 (Gạch chân là đường lui cuối cùng) và nhãn "Đề xuất" bật gạch chân cho Chrome, VS Code, Firefox trong danh sách tương thích; người dùng duyệt.
 2. Bài tải nặng theo `docs/ROADMAP.md` mục M6.
 3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
 4. Chốt ngưỡng và D12 (Ưu tiên tiến trình) vào `DECISIONS.md` theo số đo (người dùng duyệt).
@@ -32,7 +32,7 @@ Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
 - Phần B, C xong 09/11.
 - Phần A dừng: dữ liệu công khai không đủ độ chính xác.
-- Câu hỏi của D13 (Gạch chân làm đường lui) chuyển sang M6 bước 1 (kế hoạch M6 ở trên).
+- Câu hỏi của D13 (Gạch chân là đường lui cuối cùng) chuyển sang M6 bước 1 (kế hoạch M6 ở trên).
 
 Việc còn mở:
 - Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.

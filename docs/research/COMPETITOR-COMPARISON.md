@@ -23,7 +23,7 @@
   - Không đo trên máy người dùng thay thế (mục "Phần A").
 - **Câu hỏi của phần A đặt sai chỗ (đo ở M6, 09/11/2026, `docs/PROGRESS.md` nhật ký): app bận không dồn phím; lỗi khi Chrome bận là vị trí con trỏ cũ, ở nhịp gõ bình thường.** Giả thuyết ban đầu:
   - Phím dồn dưới 10 ms ở bộ gõ có thể không do người gõ nhanh, mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc.
-  - Nếu đúng thì bài test tải nặng của M6 (Hiệu năng dưới tải) mới là chỗ trả lời câu hỏi của D13 (Gạch chân làm đường lui).
+  - Nếu đúng thì bài test tải nặng của M6 (Hiệu năng dưới tải) mới là chỗ trả lời câu hỏi của D13 (Gạch chân là đường lui cuối cùng).
 
 ## Phạm vi
 

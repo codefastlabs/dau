@@ -7,7 +7,8 @@ Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ 
 - **Thay chữ tại chỗ sai khi trang Chrome bận, cả ở nhịp gõ bình thường** (đo 09/11/2026, `docs/PROGRESS.md` nhật ký M6): trang thử chặn luồng chính 300 ms mỗi giây, phím cách nhau 100 ± 30 ms, thay tại chỗ sai ở phần lớn các lượt (cả bản Release), gạch chân đúng; Chrome trả vị trí con trỏ cũ khi chưa áp xong phím trước. Các app khác chưa đo khi bận.
 - **Kết quả trình duyệt trước 09/11/2026 chưa chắc là gõ vào ô của trang:** script tự gõ khi đó chỉ kiểm tiêu đề cửa sổ; khi thanh địa chỉ có focus, phím vào thanh địa chỉ và lượt vẫn đạt (⌘A ⌘C chép cùng chữ). Từ 09/11/2026 script chỉ gõ khi ô của trang có focus. Các dòng trình duyệt của mục 5 cần đo lại ở M6.
 - **Khi trang rảnh, thay chữ tại chỗ chỉ sai khi phím đến dồn dưới 10 ms** (đo 29–30/10/2026): Chrome, Edge, VS Code, Firefox, Terminal sai ở 0 ms; từ 10 ms đúng, trừ VS Code: ở 10 ms sai lượt 29/10 (câu mẫu cũ) và đúng lượt 30/10 (câu mẫu mới), từ 20 ms đúng mọi lượt (mục 6.2). TextEdit, Safari đúng ở mọi tốc độ đã đo; Notes đúng ở 30 và 0 ms; Telegram mới đo ở 30 ms (đúng). Bằng chứng: mục 5 (bảng kết quả) và mục 6.2.
-- **Gạch chân (D13 (Gạch chân làm đường lui))** sửa được lỗi phím dồn ở Chrome, Edge, VS Code, Firefox (đúng ở 0 ms); Terminal vẫn sai ở 0 ms nên không đề xuất. Danh sách đề xuất hiện hành (VS Code, app Electron/Chromium, Firefox) và tiêu chí: mục 1 và mục 7.
+- **Khi trang Chrome bận** (trang chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms; M6, 09–10/11/2026): thay tại chỗ sai 3/3 lượt vì Chrome trả vị trí và chữ cũ hơn phím vừa gõ; từ bcd4e54 đúng 3/3 (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"). Chưa đo VS Code, Firefox, phím dồn khi app bận. Nhật ký: `docs/PROGRESS.md`.
+- **Gạch chân (D13 (Gạch chân là đường lui cuối cùng))** sửa được lỗi phím dồn ở Chrome, Edge, VS Code, Firefox (đúng ở 0 ms); Terminal vẫn sai ở 0 ms nên không đề xuất. Danh sách đề xuất hiện hành (VS Code, app Electron/Chromium, Firefox) và tiêu chí: mục 1 và mục 7.
 - **Backspace (D32 (Backspace)) trong Chromium/Electron:** lỗi xoá hai lần đã sửa ngày 30/10/2026 (82d9ecc); kết quả đo lại ở 6 ứng dụng: mục 6.4.
 - **Terminal không gửi ⌫ cho bộ gõ**, nên D32 không giữ được ở đó và D20 (Thêm dấu cho từ đã gõ) sau ⌫ không chạy. Chưa kiểm chứng lại sau lần phát hiện đầu: mục 6.5.
 - **Tự sửa chính tả của macOS 27.2** có thể đè lên chữ đã giữ, kể cả khi gõ bằng U.S. (D4 (Từ nước ngoài)): mục 6.1.
@@ -22,7 +23,7 @@ Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ 
   - Danh sách có sẵn trong bản build: `Apps/Dau/Resources/CompatibilityList.json`, model `CompatibilityList` trong DauShared (việc làm danh sách tương thích có sẵn trong bản build ở M3).
   - Về sau danh sách được cập nhật riêng bằng file JSON có chữ ký do app chủ tải (D7 (Cập nhật và loại bản dựng)); tiến trình bộ gõ không tải gì (N2 (Bộ gõ không có quyền mạng)).
   - Trong trang Ứng dụng, các quy tắc đến từ danh sách hiện nhãn "Đề xuất" (D5 (Quy tắc theo ứng dụng); `AppRule` nguồn `suggested`).
-- Ai vào danh sách: theo D13 (chốt 30/10/2026).
+- Ai vào danh sách: theo D13 (chốt 30/10/2026, sửa 10/11/2026).
   - Danh sách đề xuất ban đầu là VS Code, các app Electron/Chromium và Firefox.
   - App chưa đo được xếp theo công nghệ giao diện (mục 2, mục 3); app đã đo thì theo số đo ở mục 5.
   - Terminal không đề xuất.
@@ -31,10 +32,10 @@ Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ 
   - Không chép kết quả lên giao diện hay website ("chạy tốt trong mọi app", danh sách logo ứng dụng…) trước khi phiên chính tổng hợp.
   - Website giữ ô trống như `[Kết quả bài test tải nặng]`.
 
-Tiêu chí "cần gạch chân" đã chốt ở D13 (30/10/2026): gạch chân chỉ là đề xuất, không tự bật.
+Tiêu chí nhãn "Đề xuất": D13 (30/10/2026, sửa 10/11/2026). Gạch chân chỉ là đề xuất, không tự bật; nhãn chỉ giữ cho app mà thay tại chỗ còn sai ở tốc độ gõ thật và chưa sửa được.
 
 - Theo số đo M3, thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms; từ 10 ms đều đúng.
-- App sai ở 0–5 ms mà gạch chân sửa được thì được đề xuất (Firefox thêm theo cách này).
+- App sai ở 0–5 ms mà gạch chân sửa được thì được đề xuất (Firefox thêm theo cách này). Các nhãn này xét lại khi M6 sửa xong lỗi phím dồn.
 - Terminal sai ở 0 ms cả khi gạch chân nên không đề xuất.
 
 ## 2. Vì sao ghi công nghệ giao diện

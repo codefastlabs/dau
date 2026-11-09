@@ -44,7 +44,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 ## M3 — Độ tin cậy
 - Reset khi lệch ngữ cảnh.
 - Phòng thủ đầu vào IMK (D18 (Phòng thủ với IMK)).
-- Dự phòng bằng marked text theo danh sách tương thích (D13 (Gạch chân làm đường lui)).
+- Dự phòng bằng marked text theo danh sách tương thích (D13 (Gạch chân là đường lui cuối cùng)).
 - Quy tắc theo ứng dụng (D5 (Quy tắc theo ứng dụng)).
 - Kiểm chứng bằng VoiceOver rằng hệ thống tự đọc tên nguồn nhập liệu khi chuyển (D17 (Trợ năng)).
 - Ma trận tương thích: bảng app × kết quả, lưu trong `docs/COMPATIBILITY.md`.
@@ -67,7 +67,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 ## M6 — Hiệu năng dưới tải
 - Tự gửi phím 20 phím/giây vào trang thử trong Safari, Chrome, VS Code và Telegram trong khi CPU đầy và `memory_pressure` đang chạy.
   - Không dùng TextEdit: nó tự lưu tài liệu thử lên iCloud Drive (`docs/TROUBLESHOOTING.md`).
-  - Chrome và VS Code là hai app áp phím bất đồng bộ: lượt này trả lời câu hỏi của D13 (Gạch chân làm đường lui), app bận có dồn phím dưới 10 ms không (`docs/research/COMPETITOR-COMPARISON.md`, phần A).
+  - Chrome và VS Code là hai app áp phím bất đồng bộ: lượt này trả lời câu hỏi của D13 (Gạch chân là đường lui cuối cùng), app bận có dồn phím dưới 10 ms không (`docs/research/COMPETITOR-COMPARISON.md`, phần A).
 - Chỉ số:
   - văn bản cuối khớp 100%;
   - độ trễ p50/p99 phía bộ gõ;

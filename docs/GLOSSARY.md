@@ -27,7 +27,7 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 | add marks to typed words | thêm dấu cho từ đã gõ | D20 (Thêm dấu cho từ đã gõ) |
 | consonant shortcuts | gõ tắt phụ âm | D21 (Gõ tắt phụ âm) |
 | Smart Typing | Thông minh | mục trong sidebar |
-| underline | gạch chân | quy tắc theo app: Underline / No Underline = Có gạch chân / Không gạch chân (D5 (Quy tắc theo ứng dụng), D13 (Gạch chân làm đường lui)) |
+| underline | gạch chân | quy tắc theo app: Underline / No Underline = Có gạch chân / Không gạch chân (D5 (Quy tắc theo ứng dụng), D13 (Gạch chân là đường lui cuối cùng)) |
 | app rules | quy tắc riêng | |
 | Suggested | Đề xuất | nhãn và mục của danh sách tương thích |
 | Dấu Settings | Cài đặt Dấu | tên cửa sổ Cài đặt; menu bộ gõ: "Dấu Settings…" / "Cài đặt Dấu…" |

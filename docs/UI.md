@@ -181,7 +181,7 @@ Artboard: [Ứng dụng](ui/canvas/SettingsApps.png), [chưa có quy tắc riên
   - Đặt về "Không gạch chân" vẫn giữ quy tắc.
   - Xoá quy tắc (menu chuột phải hoặc Delete) thì app đề xuất trở lại "Đề xuất".
 - "Đề xuất": chỉ hiện khi có app trong danh sách tương thích (cờ `suggestUnderline`) đã cài mà chưa có quy tắc.
-  - Bấm "Bật gạch chân" mới lưu quy tắc (nguồn đề xuất, giữ nhãn "Đề xuất"). Trước đó không lưu gì (D13 (Gạch chân làm đường lui)).
+  - Bấm "Bật gạch chân" mới lưu quy tắc (nguồn đề xuất, giữ nhãn "Đề xuất"). Trước đó không lưu gì (D13 (Gạch chân là đường lui cuối cùng)).
   - Dòng phụ giống nhau ở mọi hàng.
   - Ghi chú trong danh sách tương thích là cho người bảo trì, không hiện (N5).
   - Ghi chú của mục chỉ nói khi nào nên chọn gạch chân, không hứa sửa được (số đo: D13).

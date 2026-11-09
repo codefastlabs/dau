@@ -2,7 +2,7 @@
 
 ## Hiện trạng (09/11/2026)
 
-Câu hỏi: trên các trang web người ta hay gõ, luồng chính của trang bận đủ lâu (từ khoảng 100 ms, bằng khoảng cách hai phím khi gõ bình thường) trong lúc gõ thường xuyên đến đâu? Lý do hỏi: đo ngày 09/11/2026 (`docs/PROGRESS.md`, nhật ký, đo lại riêng Chrome) cho thấy khi luồng chính của trang bận lâu hơn khoảng cách giữa hai phím, Chrome trả `selectedRange` cũ và thay tại chỗ sai; gạch chân (D13 (Gạch chân làm đường lui)) không bị.
+Câu hỏi: trên các trang web người ta hay gõ, luồng chính của trang bận đủ lâu (từ khoảng 100 ms, bằng khoảng cách hai phím khi gõ bình thường) trong lúc gõ thường xuyên đến đâu? Lý do hỏi: đo ngày 09/11/2026 (`docs/PROGRESS.md`, nhật ký, đo lại riêng Chrome) cho thấy khi luồng chính của trang bận lâu hơn khoảng cách giữa hai phím, Chrome trả `selectedRange` cũ và thay tại chỗ sai; gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không bị.
 
 - **Dữ liệu dùng được:** số đo thật từ người dùng Chrome (CrUX), tháng 09/2026, bản desktop, theo origin, lấy qua trang công khai của Treo. Không có tài khoản, không đo trên máy ai.
 - **Dữ liệu CrUX không có mốc 100 ms.** Chỉ có ba nhóm: tốt (≤ 200 ms), cần cải thiện (200–500 ms), kém (> 500 ms), và p75. Tỉ lệ ở mốc 100 ms không lấy được từ nguồn công khai không cần tài khoản.

@@ -16,6 +16,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 30/10/2026: bổ sung ngoại lệ của "Thêm dấu cho từ đã gõ" (D20) ở phím dấu/biến đổi đầu tiên khi bộ đệm trống ("bổ sung 30/10/2026").
 - 02/11/2026: bổ sung ngoại lệ đọc chữ trước con trỏ khi lệch vị trí ở phím có thay chữ và ở phím dấu/biến đổi đầu tiên trong một từ đã hết hợp lệ (D11) ("bổ sung 02/11/2026").
 - 05/11/2026: bổ sung phím chữ cái vào ngoại lệ của D20 ("bổ sung 05/11/2026, E8").
+- 10/11/2026: ngoại lệ đọc chữ khi lệch vị trí nay tính cả lần thay đầu của một từ, so với vị trí Dấu tự theo dõi (D11), người dùng duyệt; số lời gọi tối đa mỗi phím không đổi.
 
 ### N4. Không tự đổi cài đặt hệ thống
 
@@ -67,6 +68,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 02/11/2026: gợi ý tự hoàn thành ("người dùng chốt 02/11/2026; trước đó mọi vùng bôi đen đều tính là lệch, 'gox' trong thanh địa chỉ Chrome").
 - 02/11/2026: dựng lại khi lệch ("người dùng chốt 02/11/2026: bấm chuột vào thanh địa chỉ Chrome không được báo cho bộ gõ, 'tieemf' thành 'tieemf'").
 - 02/11/2026: từ đã hết hợp lệ ("người dùng chốt 02/11/2026: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ, 'tốt', ⌘A, 'toots' ra 'toots' và hỏng tới dấu cách").
+- 10/11/2026: thêm ý "App trả lời chậm" (thay ở vị trí Dấu tự theo dõi khi `selectedRange` lùi tối đa 2 chữ), người dùng duyệt. Bản trước: "Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ." Câu trong "Câu hỏi đã trả lời" (vị trí thay chữ) trước đó: "Tự cộng dồn vị trí cũng không cứu được (vị trí gốc cũng là ảnh chụp cũ; VS Code đổi gốc toạ độ). Hướng cho app bất đồng bộ: gạch chân theo D13".
 
 ### D13. Gạch chân làm đường lui
 
@@ -74,6 +76,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 30/10/2026: mặc định mọi app không gạch chân, danh sách chỉ gắn nhãn "Đề xuất" ("chốt 30/10/2026").
 - 30/10/2026: Firefox vào danh sách đề xuất ban đầu ("thêm theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms; người dùng duyệt 30/10/2026").
 - 09/11/2026: câu "từ 10 ms đều đúng" trong lý do viết lại cho khớp số đo: VS Code ở 10 ms sai một lần ở lượt M2 với câu mẫu cũ; luật không đổi.
+- 10/11/2026: đổi tên thành "Gạch chân là đường lui cuối cùng", người dùng duyệt. Thay tại chỗ là cách gõ của Dấu, gõ sai ở một app là lỗi phải sửa; nhãn "Đề xuất" chỉ giữ cho app mà thay tại chỗ còn sai ở tốc độ gõ thật. Bản trước: "Gạch chân (marked text) là đường lui, bật theo quy tắc riêng của từng app"; "Danh sách đề xuất ban đầu: VS Code, các app Electron/Chromium và Firefox". Do M6 bước 1: Chrome trang bận sai 3/3 khi thay theo vị trí của app, đúng 3/3 khi thay theo vị trí Dấu tự theo dõi.
 
 ### D16. Bảo trì và gỡ cài đặt
 

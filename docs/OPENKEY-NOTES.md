@@ -390,7 +390,7 @@ Lấy từ `_breakCode` và nhánh đầu của `vKeyHandleEvent`.
 - Dấu: cố ý khác OpenKey, không làm (D5).
   - Dấu chỉ có một input mode Tiếng Việt; gõ tiếng Anh bằng U.S. của macOS (D2).
   - Nhớ nguồn nhập liệu theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (N1 (Không làm lại việc hệ thống đã có)).
-  - Quy tắc theo ứng dụng của Dấu chỉ còn lựa chọn gạch chân (D13 (Gạch chân làm đường lui)).
+  - Quy tắc theo ứng dụng của Dấu chỉ còn lựa chọn gạch chân (D13 (Gạch chân là đường lui cuối cùng)).
 
 ### 3.20 Macro, viết hoa đầu câu, bảng mã, chuyển mã
 
