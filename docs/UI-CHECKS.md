@@ -193,11 +193,11 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi.
 ### 1. Nội dung co thành cột hẹp, căn giữa
 
 - **Lỗi:** `Form(.grouped)` giới hạn độ rộng thẻ và căn giữa khi cột chi tiết quá rộng.
-- **Cách kiểm:** "first card" (mỗi mục); "max window width", "min window width", "min window height"; "first card at the widest window" (mỗi mục); (a) trong `always*.txt`.
+- **Cách kiểm:** "first card" (mỗi mục); "max window width", "min window width", "min window height"; (a) trong `always*.txt`.
 - **Đạt khi:**
-  - cửa sổ không rộng quá mức làm Form giới hạn thẻ;
-  - thẻ đầu lấp cột chi tiết trừ lề của Form, cả ở độ rộng tối đa;
-  - kéo cửa sổ dừng đúng ở giới hạn cỡ.
+  - cửa sổ rộng cố định 740 như System Settings, nên Form không bao giờ giới hạn thẻ;
+  - thẻ đầu lấp cột chi tiết trừ lề của Form;
+  - kéo cửa sổ dừng đúng ở giới hạn cỡ (chỉ chiều cao đổi được).
 
 ### 2. Nhảy bố cục khi đổi mục
 

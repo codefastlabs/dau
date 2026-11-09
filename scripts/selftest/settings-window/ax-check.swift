@@ -987,23 +987,13 @@ func sheetShots(_ d: String, _ tag: String) {
 // MARK: - Window limits (--geometry)
 
 /// Resizes the window past its limits (item 1): it stops at Reference's widths and height.
-/// At the widest, every section's first card still starts at the Form's margin and is as
-/// wide as a grouped Form allows (no narrow centered column).
+/// The width is fixed, so the widest window is the default one, whose cards "first card"
+/// already checks.
 func measureLimits() {
     let d = "-", p = "window"
     guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(Reference.probeLargeSize))) else { return }
     awaitSettled(d, p, "window frame after resizing") { fmt(frame(window)) }
     check(d, p, "max window width", frame(window).width, Reference.maxWindowWidth)
-    for index in sections.indices {
-        let page = sections[index]
-        guard showSection(d, index) else { continue }
-        if let area = require(d, page, "page Form (scroll area in the detail column)", find: pageScrollArea),
-           let card = require(d, page, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } }) {
-            record(d, page, "first card at the widest window", expected: "x \(fmt(sidebarWidth + formMargin)), width \(fmt(Reference.formCardMaxWidth))",
-                   got: "x \(fmt(card.frame.minX)), width \(fmt(card.frame.width))",
-                   ok: near(card.frame.minX, sidebarWidth + formMargin) && near(card.frame.width, Reference.formCardMaxWidth))
-        }
-    }
     guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(Reference.probeSmallSize))) else { return }
     awaitSettled(d, p, "window frame after resizing") { fmt(frame(window)) }
     check(d, p, "min window width", frame(window).width, Reference.minWindowWidth)

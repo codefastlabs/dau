@@ -44,14 +44,10 @@ enum Reference {
     /// The content column's minimum height (deliberate); the window adds the toolbar.
     static let contentMinHeight: CGFloat = 400
     static let minWindowHeight: CGFloat = contentMinHeight + toolbarHeight
-    /// System (SwiftUI, measured on macOS 27.2): a grouped Form keeps its cards at most
-    /// 704 wide and centers them in a wider column (SYSTEM-SETTINGS-REFERENCE.md, "Độ rộng
-    /// tối đa của Form dạng nhóm"; UI-CHECKS item 1). So the widest useful column is 704
-    /// plus two margins, and at the widest window the first card is exactly 704.
-    static let formCardMaxWidth: CGFloat = 704
-    static let formColumnMaxWidth: CGFloat = formCardMaxWidth + 2 * formMargin
-    /// Widest window: sidebar + the widest column.
-    static let maxWindowWidth: CGFloat = sidebarWidth + formColumnMaxWidth
+    /// Widest window: System Settings' window has a fixed width (setting another width
+    /// reads back 740, measured on macOS 27.2; SYSTEM-SETTINGS-REFERENCE.md, "Cửa sổ có đổi
+    /// rộng được không"), and so has Dấu's.
+    static let maxWindowWidth: CGFloat = windowWidth
     /// Probe: sizes the real window is asked for to read its limits.
     static let probeLargeSize = CGSize(width: 1400, height: 700)
     static let probeSmallSize = CGSize(width: 600, height: 300)
