@@ -3,14 +3,15 @@
 # Side effects: none
 #
 # Splits the command into simple commands (on ; && || | & and parentheses). When one of
-# them runs scripts/**/*.sh (directly, or through zsh/bash/sh/source/env/time/nohup),
-# parses that script's "# Side effects:" line: clauses split by ";", "unless --flag: …"
-# and "with --flag: …" honoured against that simple command's words, parentheses
-# ignored. Blocks with exit 2 when an effect that disturbs the user's machine applies.
-# Reading a script (cat, grep, sed) is not running it and passes.
+# them runs a script listed in the table below (directly, or through
+# zsh/bash/sh/source/env/time/nohup), blocks with exit 2 if the table says it is blocked
+# for that simple command's arguments. Reading a script (cat, grep, sed) is not running
+# it and passes.
 # A command that contains DAU_USER_APPROVED=1 passes: only the main session writes it,
 # after the user said yes in chat. A speed bump, not a lock: a script run after `cd`
 # into its own folder is not seen.
+# The table is explicit; scripts/check-docs/check.sh fails when a script whose
+# "# Side effects:" line disturbs the user is missing from it.
 set -uo pipefail
 setopt extendedglob
 
@@ -18,8 +19,16 @@ cmd=$(jq -r '.tool_input.command // empty')
 [[ -z $cmd || $cmd == *DAU_USER_APPROVED=1* ]] && exit 0
 
 root=${CLAUDE_PROJECT_DIR:-${0:A:h:h:h}}
-disturbing=('takes the screen' 'kills processes' 'changes input source' 'installs input method'
-            'installs app' 'deletes data' 'changes user settings' 'needs admin password')
+# script -> when blocked: "always", "with --flag" (only when the flag is given),
+# "unless --flag" (unless the flag is given).
+typeset -A guarded=(
+  [scripts/selftest/typing/run.sh]="always"
+  [scripts/selftest/settings-window/run.sh]="always"
+  [scripts/selftest/app-group.sh]="always"
+  [scripts/dev/install-app.sh]="always"
+  [scripts/dev/install-input-method.sh]="unless --build-only"
+  [scripts/dev/clean-dau.sh]="with --yes"
+)
 runners=(zsh bash sh source . env time nohup exec command)
 
 blocked=()
@@ -38,33 +47,20 @@ for seg in ${(f)"$(print -r -- $cmd | perl -pe 's/&&|\|\||[;|&()]/\n/g')"}; do
   (( $#words && ! syntax_only )) || continue
   [[ $words[1] == (*/|)scripts/*.sh ]] || continue
   rel=scripts/${words[1]#*scripts/}
-  file=$root/$rel
-  [[ -f $file ]] || continue
-  header=$(grep -m1 '^# Side effects: ' $file) || continue
-  header=$(print -r -- ${header#\# Side effects: } | sed -E 's/\([^)]*\)//g')
+  rule=${guarded[$rel]-}
+  [[ -n $rule ]] || continue
   args=(${words[2,-1]})
-  applied=()
-  for clause in ${(s:;:)header}; do
-    clause=${clause##[[:space:]]#}
-    if [[ $clause =~ '^(unless|with) ([^:]+): *(.*)$' ]]; then
-      kind=$match[1]; flags=(${(M)${(s: :)match[2]}:#--*}); clause=$match[3]
-      present=0
-      for f in $flags; do
-        (( ${args[(I)$f]} || ${args[(I)$f=*]} )) && present=1
-      done
-      [[ $kind == unless && $present == 1 ]] && continue
-      [[ $kind == with && $present == 0 ]] && continue
-    fi
-    for e in $disturbing; do
-      [[ $clause == *$e* ]] && applied+=($e)
-    done
-  done
-  (( $#applied )) && blocked+=("$rel (${(j:, :)${(@u)applied}})")
+  kind=${rule%% *}; flag=${rule#* }
+  present=0
+  [[ $kind != always ]] && (( ${args[(I)$flag]} )) && present=1
+  [[ $kind == unless && $present == 1 ]] && continue
+  [[ $kind == with && $present == 0 ]] && continue
+  blocked+=("$rel (${rule})")
 done
 
 (( $#blocked )) || exit 0
 source "$root/scripts/lib/log.sh"
-log_error "Chặn: script người dùng tự chọn giờ chạy (scripts/README.md, cột \"Ai chạy\"):"
+log_error "Chặn: script người dùng tự chọn giờ chạy (scripts/README.md, \"Ai chạy\"):"
 log_hint "${(@)blocked}"
 log_hint "Subagent: không chạy; ghi vào mục 4 của báo cáo."
 log_hint "Phiên chính: hỏi người dùng giờ chạy; khi họ đồng ý trong chat, chạy lại với tiền tố DAU_USER_APPROVED=1."

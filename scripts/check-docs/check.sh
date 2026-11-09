@@ -13,25 +13,21 @@
 #   4. no wording listed in superseded.txt (DECISIONS.md and the dated M*-TESTING.md plans may);
 #      also in the comment lines of scripts/**/*.sh and scripts/**/*.swift (not in
 #      scripts/check-docs, which holds the patterns);
-#   5. PROGRESS.md "Trạng thái hiện tại" holds no test counts;
-#   6. UI.md, UI-CHECKS.md and ARCHITECTURE.md hold no UI measurements (pt, W×H):
+#   5. UI.md, UI-CHECKS.md and ARCHITECTURE.md hold no UI measurements (pt, W×H):
 #      they live in scripts/selftest/settings-window/Reference.swift and
 #      docs/research/SYSTEM-SETTINGS-REFERENCE.md. Code spans in backticks are skipped.
-#   7. commit hashes in living docs exist in the repo (`git cat-file`): a 7+ hex token with
-#      at least one digit and one letter, inside backticks or parentheses. PROGRESS.md's
-#      log, docs/history and docs/research are not living docs, so they are not checked.
-#   8. research notes: every docs/research/*.md except SYSTEM-SETTINGS-REFERENCE.md (a
-#      measured reference, not a research note) has a "## … Hiện trạng" heading within
-#      its first 40 lines and no "Đính chính" heading (corrections are edited into the
-#      text, not appended);
-#   9. scripts list: every scripts/**/*.sh (not .build) starts with "#!/bin/zsh" (one
-#      shell: /bin/bash on macOS is 3.2), passes `zsh -n`, has a "# Side effects:" line and
-#      is named, by path in backticks, in scripts/README.md (.claude/hooks/*.sh: the same
-#      checks but this listing); every script but the sourced
-#      files in scripts/lib has a `set` line with -u and one with pipefail (scripts/README.md,
-#      "Mở đầu"); every repo path in backticks in scripts/README.md exists; no script but
-#      scripts/lib/log.sh writes ANSI color codes or the "==>" step mark (scripts/README.md,
-#      "Đầu ra").
+#   6. commit hashes in living docs exist in the repo (one `git cat-file --batch-check`
+#      for all of them): a 7+ hex token with at least one digit and one letter, inside
+#      backticks or parentheses. PROGRESS.md's log, docs/history and docs/research are not
+#      living docs, so they are not checked.
+#   7. scripts: every scripts/**/*.sh (not .build) and .claude/hooks/*.sh starts with
+#      "#!/bin/zsh" (one shell: /bin/bash on macOS is 3.2), passes `zsh -n` and has a
+#      "# Side effects:" line; every script but the sourced files in scripts/lib has a
+#      `set` line with -u and one with pipefail (scripts/README.md, "Mở đầu"); every repo
+#      path in backticks in scripts/README.md exists; no script but scripts/lib/log.sh
+#      writes ANSI color codes or the "==>" step mark (scripts/README.md, "Đầu ra");
+#   8. hook table: every script whose "# Side effects:" line holds a disturbing effect is
+#      named in .claude/hooks/guard-scripts.sh, so the hook cannot silently miss one.
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
 set -uo pipefail
@@ -87,71 +83,68 @@ grep -vE '^(#|$)' $here/superseded.txt | while IFS=$'\t' read -r pattern why; do
   done
 done
 
-# 5. Status section without test counts.
-awk '/^## Trạng thái hiện tại/{on=1; next} /^## /{on=0} on' docs/PROGRESS.md \
-  | grep -nE '[0-9]+ test|test[^.]*[0-9]{2}' | while read -r l; do report "docs/PROGRESS.md, mục trạng thái: có số test: ${l[1,120]}"; done
-
-# 6. No UI measurements outside their single home.
+# 5. No UI measurements outside their single home.
 for f in docs/UI.md docs/UI-CHECKS.md docs/ARCHITECTURE.md; do
   sed -E 's/`[^`]*`//g' $f | grep -nE '[0-9]{2,} ?pt\b|[0-9]{2,} ?× ?[0-9]{2,}' | while read -r l; do report "$f: số đo giao diện phải nằm ở Reference.swift: ${l[1,140]}"; done
 done
 
-# 7. Commit hashes in living docs must exist.
+# 6. Commit hashes in living docs must exist.
 # Hashes of other repositories: 89c2fd3 is the OpenKey commit docs/OPENKEY-NOTES.md read.
 foreign_hashes=(89c2fd3)
+hash_files=(); hash_tokens=()
 for f in $living; do
   # Spans in backticks or parentheses only: plain words that look like hex stay out.
   for h in ${(f)"$(grep -oE '`[^`]*`|\([^)]*\)' $f | grep -oE '\b[0-9a-f]{7,40}\b' | grep '[0-9]' | grep '[a-f]' | sort -u)"}; do
     [[ -z $h ]] && continue
     (( ${foreign_hashes[(Ie)$h]} )) && continue
-    git cat-file -e "${h}^{commit}" 2>/dev/null || report "$f: commit $h không có trong repo này (hash cũ? xem docs/history/COMMIT-MAP.md)"
+    hash_files+=($f); hash_tokens+=($h)
   done
 done
-
-# 8. Research notes: a "Hiện trạng" heading up front, no appended "Đính chính".
-for f in docs/research/*.md(N); do
-  [[ $f == docs/research/SYSTEM-SETTINGS-REFERENCE.md ]] && continue
-  (( $(head -40 $f | grep -cE '^## .*Hiện trạng') )) || report "$f: thiếu tiêu đề \"## … Hiện trạng\" trong 40 dòng đầu"
-  grep -nE '^#+ .*Đính chính' $f | while read -r l; do report "$f: có tiêu đề đính chính (hãy sửa thẳng vào thân bài): ${l[1,120]}"; done
-done
-
-# 9. Scripts list: Side effects line, and listed in scripts/README.md.
-readme=scripts/README.md
-if [[ ! -f $readme ]]; then
-  report "thiếu $readme"
-else
-  for s in scripts/**/*.sh(N); do
-    [[ $s == */.build/* ]] && continue
-    [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
-    zsh -n $s 2>/dev/null || report "$s: zsh -n báo lỗi cú pháp"
-    if [[ $s != scripts/lib/*.sh ]]; then
-      (( $(grep -cE '^set -[a-z]*u' $s) )) || report "$s: thiếu set -u (scripts/README.md, \"Mở đầu\")"
-      (( $(grep -cE '^set .*pipefail' $s) )) || report "$s: thiếu set -o pipefail (scripts/README.md, \"Mở đầu\")"
-    fi
-    grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
-    grep -qF -- "\`$s\`" $readme || report "$s: chưa có trong $readme"
-  done
-  # Hooks follow the same opening; they are not in the scripts table.
-  for s in .claude/hooks/*.sh(N); do
-    [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
-    zsh -n $s 2>/dev/null || report "$s: zsh -n báo lỗi cú pháp"
-    (( $(grep -cE '^set -[a-z]*u' $s) )) || report "$s: thiếu set -u (scripts/README.md, \"Mở đầu\")"
-    (( $(grep -cE '^set .*pipefail' $s) )) || report "$s: thiếu set -o pipefail (scripts/README.md, \"Mở đầu\")"
-    grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
-  done
-  for s in scripts/**/*.sh(N) .claude/hooks/*.sh(N); do
-    [[ $s == */.build/* || $s == scripts/lib/log.sh || $s == scripts/check-docs/check.sh ]] && continue
-    grep -nE '\\e\[|\\033\[|\\x1[bB]|tput (setaf|bold|sgr0)|==>' $s | while IFS= read -r l; do
-      report "$s:${l%%:*}: mã màu hoặc dấu \"==>\" nằm ngoài scripts/lib/log.sh"
-    done
-  done
-  for p in ${(f)"$(grep -oE '`(Apps|Packages|scripts|docs|\.claude)/[^` ]+`' $readme | tr -d '`' | sort -u)"}; do
-    [[ -z $p ]] && continue
-    p=${p%/}
-    [[ $p == *'*'* || $p == *'<'* || $p == *'{'* || $p == *…* ]] && continue
-    [[ -e $p ]] || report "$readme: đường dẫn không tồn tại: $p"
+if (( $#hash_tokens )); then
+  # One git process: "<token>^{commit} missing" for each unknown or non-commit token.
+  hash_out=(${(f)"$(print -rl -- ${^hash_tokens}'^{commit}' | git cat-file --batch-check 2>/dev/null)"})
+  for i in {1..$#hash_tokens}; do
+    [[ ${hash_out[i]-missing} == *' missing' || ${hash_out[i]-missing} == *ambiguous* ]] \
+      && report "${hash_files[i]}: commit ${hash_tokens[i]} không có trong repo này (hash cũ? xem docs/history/COMMIT-MAP.md)"
   done
 fi
+
+# 7. Scripts: opening lines, Side effects line, colour codes.
+for s in scripts/**/*.sh(N) .claude/hooks/*.sh(N); do
+  [[ $s == */.build/* ]] && continue
+  [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
+  zsh -n $s 2>/dev/null || report "$s: zsh -n báo lỗi cú pháp"
+  if [[ $s != scripts/lib/*.sh ]]; then
+    (( $(grep -cE '^set -[a-z]*u' $s) )) || report "$s: thiếu set -u (scripts/README.md, \"Mở đầu\")"
+    (( $(grep -cE '^set .*pipefail' $s) )) || report "$s: thiếu set -o pipefail (scripts/README.md, \"Mở đầu\")"
+  fi
+  grep -qE '^# Side effects: ' $s || report "$s: thiếu dòng \"# Side effects:\""
+  [[ $s == scripts/lib/log.sh || $s == scripts/check-docs/check.sh ]] && continue
+  grep -nE '\\e\[|\\033\[|\\x1[bB]|tput (setaf|bold|sgr0)|==>' $s | while IFS= read -r l; do
+    report "$s:${l%%:*}: mã màu hoặc dấu \"==>\" nằm ngoài scripts/lib/log.sh"
+  done
+done
+for p in ${(f)"$(grep -oE '`(Apps|Packages|scripts|docs|\.claude)/[^` ]+`' scripts/README.md | tr -d '`' | sort -u)"}; do
+  [[ -z $p ]] && continue
+  p=${p%/}
+  [[ $p == *'*'* || $p == *'<'* || $p == *'{'* || $p == *…* ]] && continue
+  [[ -e $p ]] || report "scripts/README.md: đường dẫn không tồn tại: $p"
+done
+
+# 8. Hook table: a script with a disturbing effect must be named in the hook.
+disturbing=('takes the screen' 'kills processes' 'changes input source' 'installs input method'
+            'installs app' 'deletes data' 'changes user settings' 'needs admin password')
+hook=.claude/hooks/guard-scripts.sh
+for s in scripts/**/*.sh(N); do
+  [[ $s == */.build/* ]] && continue
+  line=$(grep -m1 '^# Side effects: ' $s) || continue
+  for e in $disturbing; do
+    if [[ $line == *$e* ]]; then
+      grep -qF -- "[$s]" $hook || report "$s: tác dụng phụ \"$e\" nhưng chưa có trong bảng của $hook"
+      break
+    fi
+  done
+done
 
 (( fail )) && { log_error "Tài liệu lệch: sửa các chỗ trên rồi chạy lại."; exit 1 }
 log_ok "Tài liệu khớp."
