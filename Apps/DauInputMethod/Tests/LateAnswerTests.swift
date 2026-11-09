@@ -3,132 +3,6 @@ import DauEngine
 import DauShared
 import Testing
 
-/// An app that applies every edit in order (keys it types, `insertText` with absolute
-/// ranges) but answers `selectedRange` and `attributedSubstring` from the document as it
-/// was `lag` edits ago: Chrome with a busy page (M6 step 1, log of 09/11/2026: a page
-/// that blocks its main thread 300 ms every second, keys 100 ± 30 ms apart; the
-/// selection the input method got at a replacing key was the cursor before the last key
-/// the app had been sent, and the replacement then applied to the real text).
-///
-/// Unlike `FakeDocument.lag` (a time window after the last edit), the lag here is a
-/// number of edits, set per key, so each word of the log can be replayed exactly.
-///
-/// Order: the app applies the input method's `insertText` after the keys sent before it,
-/// and a replacement that ends before the caret leaves the caret after the text that
-/// follows. Five of the wrong words of the 1b log come out exactly so ("ạnn gửi": the
-/// "n" the app had not applied stayed after the caret). Chromium source (main, read
-/// 09/11/2026): `WebInputMethodControllerImpl::CommitText` with a replacement range
-/// calls `ReplaceTextAndKeepSelection`, which shifts a selection after the range by
-/// the change in length; `WidgetInputHandlerImpl::ImeCommitText` runs through
-/// `MainThreadEventQueue::QueueClosure`, the queue the page's input events go through
-/// (strict order there not read in the source).
-private final class LateDocument: InPlaceClient {
-    struct State {
-        var text: [UInt16]
-        var cursor: Int
-        /// Text inserted at the caret by this edit (`insertText` with NSNotFound: a key the
-        /// input method let through, or its own insertion at the caret).
-        var atCaret: [UInt16]? = nil
-    }
-    private(set) var states: [State]
-    /// Edits the answers are behind by.
-    var lag = 0
-    /// Calls during the current key (N3).
-    var selections = 0, reads = 0, inserts = 0
-    /// An `insertText` whose range is outside the real text (never expected).
-    var badRanges = 0
-
-    init(_ text: String = "") {
-        let units = Array(text.utf16)
-        states = [State(text: units, cursor: units.count)]
-    }
-
-    var text: String { String(decoding: states[states.count - 1].text, as: UTF16.self) }
-    /// Chrome's browser-side cache (`render_widget_host_view_cocoa.mm`): `insertText` with
-    /// NSNotFound also writes the text into the cached text at `_markedRange.location` and
-    /// moves `_textSelectionRange` after it ("temporary hack", until Blink updates the
-    /// cache). With `cacheInsert`, the answer is the state `lag` edits ago plus the latest
-    /// edit, if it was such an insertion, written at that state's caret.
-    /// For one key: answer with this text before the caret instead (a cache state no model
-    /// above gives).
-    var override: String?
-    var cacheInsert = false
-    private var answer: State {
-        if let override { let units = Array(override.utf16); return State(text: units, cursor: units.count) }
-        var state = states[max(0, states.count - 1 - lag)]
-        if cacheInsert, lag > 0, let units = states[states.count - 1].atCaret {
-            state.text.insert(contentsOf: units, at: state.cursor)
-            state.cursor += units.count
-        }
-        return state
-    }
-
-    func selectedRange() -> NSRange {
-        selections += 1
-        return NSRange(location: answer.cursor, length: 0)
-    }
-
-    func text(in range: NSRange) -> String? {
-        reads += 1
-        let units = answer.text
-        guard range.location >= 0, range.length >= 0, range.location + range.length <= units.count else { return nil }
-        return String(decoding: units[range.location..<(range.location + range.length)], as: UTF16.self)
-    }
-
-    func insertText(_ string: String, replacementRange: NSRange) {
-        inserts += 1
-        var state = states[states.count - 1]
-        let range = replacementRange.location == NSNotFound
-            ? NSRange(location: state.cursor, length: 0) : replacementRange
-        guard range.location >= 0, range.location + range.length <= state.text.count else {
-            badRanges += 1
-            return
-        }
-        let units = Array(string.utf16)
-        state.text.replaceSubrange(range.location..<(range.location + range.length), with: units)
-        let end = range.location + range.length
-        if replacementRange.location == NSNotFound || state.cursor < end {
-            state.cursor = range.location + units.count
-        } else {
-            // The caret was after the range (keys the input method had not seen applied
-            // yet): it stays after them, shifted by the change in length. The 1b texts
-            // show this ("ạnn gửi", no stray "n" at the end of the text).
-            state.cursor += units.count - range.length
-        }
-        state.atCaret = replacementRange.location == NSNotFound ? units : nil
-        states.append(state)
-    }
-
-    /// An edit the app makes on its own (autocorrect, smart dashes): the new state.
-    func appEdit(_ text: String) {
-        let units = Array(text.utf16)
-        states.append(State(text: units, cursor: units.count))
-    }
-
-    /// What the app does with a key the input method left to it.
-    func typed(_ route: KeyRoute) {
-        switch route {
-        case .character(let c):
-            let n = inserts
-            insertText(String(Character(c)), replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-            inserts = n
-        case .backspace:
-            var state = states[states.count - 1]
-            guard state.cursor > 0 else { return }
-            state.text.remove(at: state.cursor - 1)
-            state.cursor -= 1
-            state.atCaret = nil
-            states.append(state)
-        case .endWord:
-            let n = inserts
-            insertText("\n", replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-            inserts = n
-        case .ignore:
-            break
-        }
-    }
-}
-
 /// Keys → composer → `LateDocument`, 100 ms apart (the 1b run: 100 ± 30 ms, so every key
 /// is past `InPlaceComposer.settleInterval`).
 private struct LateSession {
@@ -205,7 +79,7 @@ struct LateAnswerTests {
     /// at each wrong word the answer was one behind `known` and the read did not prove
     /// a late answer. Replayed with Chrome's cache as its source shows it: the page two
     /// edits behind, plus the latest key written into the cache at the page's caret
-    /// (`cacheInsert`). `late` is typed so; then `rest` on time.
+    /// (`LateDocument.Cache.chromium`). `late` is typed so; then `rest` on time.
     @Test("words of the 1d log: the answer is the page two keys behind plus the latest key in Chrome's cache",
           arguments: [
               // dau-busy-1 "ỏii" (sel 35, known 36).
@@ -221,7 +95,7 @@ struct LateAnswerTests {
           ])
     func cacheInsertLate(_ keys: String, _ late: String, _ rest: String, _ expected: String) {
         var s = LateSession()
-        s.doc.cacheInsert = true
+        s.doc.cache = .chromium
         s.type(keys)
         s.type(late, lag: 2)
         s.type(rest)
@@ -261,7 +135,7 @@ struct LateAnswerTests {
     @Test("dau-busy-2: không khó — a stale answer taken as the followed position must not hide the next one")
     func staleAnswerDoesNotMoveKnown() {
         var s = LateSession()
-        s.doc.cacheInsert = true
+        s.doc.cache = .chromium
         s.type("tieesng Anh kho")
         s.type("o", lag: 2)        // sel 131, known 132 in the log: "kôong"
         s.type("ng⌫g kho")
@@ -329,7 +203,7 @@ struct LateAnswerTests {
         // Both in step: after every key the app's real text must be the same.
         var step = LateSession()
         var late = LateSession()
-        late.doc.cacheInsert = which >= 2
+        late.doc.cache = which >= 2 ? .chromium : .snapshot
         var rng = SplitMix(seed)
         var lags: [Int] = []
         var keys: [Unicode.Scalar] = []
@@ -377,19 +251,6 @@ struct LateAnswerTests {
         #expect(s.doc.text == "a — việt ")
         #expect(s.doc.badRanges == 0)
         #expect(s.overCalls == 0)
-    }
-}
-
-/// Deterministic generator for the random lags (SplitMix64).
-private struct SplitMix {
-    var state: UInt64
-    init(_ seed: UInt64) { state = seed }
-    mutating func next() -> UInt64 {
-        state &+= 0x9E37_79B9_7F4A_7C15
-        var z = state
-        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
-        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
-        return z ^ (z >> 31)
     }
 }
 

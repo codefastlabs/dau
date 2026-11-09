@@ -108,7 +108,8 @@ struct CursorTrackerTests {
         #expect(t.tail == Array("bá ".utf16))
         t.passedThrough("n")
         #expect(t.known == 4)
-        #expect(t.edits.last == CursorTracker.Edit(cursor: 3, location: 3, deleted: 0, deletedText: [], inserted: Array("n".utf16)))
+        #expect(t.edits.last == CursorTracker.Edit(cursor: 3, location: 3, deleted: 0, deletedText: [], inserted: Array("n".utf16),
+                                                   atCaret: true))
     }
 
     @Test("an answer one edit late: the text read plus that edit, checked by the caller")

@@ -179,6 +179,8 @@ struct InPlaceComposer {
         let settled = isSettled(at: time)
         if let time { lastEventTime = time }
         lateRead = nil
+        // The edits of a key in a burst may all be missing from a late answer (`rebuild`).
+        tracker.keyInBurst = !settled
 
         switch route {
         case .ignore:
@@ -213,7 +215,7 @@ struct InPlaceComposer {
                 // D20 and not yet rewritten, may be deleted mark by mark: no guess.
                 if let lastShown, lastShown.properties.generalCategory != .nonspacingMark, deleteCount >= 1 {
                     result = replace(deleteCount: deleteCount, insert: insert, appending: lastShown,
-                                     selection: nil, client: client, word: wordBefore, settled: settled)
+                                     selection: nil, client: client, word: wordBefore)
                 } else {
                     result.kind = .reset
                 }
@@ -241,7 +243,7 @@ struct InPlaceComposer {
             let wordBefore = engine.isComposing ? engine.shown : nil
             if case .replace(let deleteCount, let insert) = engine.endWord() {
                 result = replace(deleteCount: deleteCount, insert: insert, selection: nil, client: client,
-                                 word: wordBefore, settled: settled)
+                                 word: wordBefore)
             }
             // What the app does with the key is unknown (Tab may focus another field).
             reset(engine: &engine)
@@ -315,7 +317,7 @@ struct InPlaceComposer {
             result = Outcome()
         case .replace(let deleteCount, let insert):
             result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client,
-                             word: wordBefore, settled: settled)
+                             word: wordBefore)
             if result.kind == .mismatch, settled, !readUnavailable, let seen = result.attempt?.selection {
                 // D11: the text changed behind the engine's back (a click the app did not
                 // report, an autocomplete, an app edit). Read the word that is really
@@ -608,7 +610,7 @@ struct InPlaceComposer {
         case .passThrough:
             // D20 does not apply ("viet" + j → "vietj"): the app types the key. The
             // engine keeps the word, so the next keys continue it (D4 baseline = seed).
-            tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)))
+            tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)), atCaret: true)
             return Outcome(consumed: false, kind: .seedPass)
         case .replace(let deleteCount, let insert):
             guard deleteCount <= word.count else {
@@ -665,7 +667,7 @@ struct InPlaceComposer {
         #if DEBUG
         lastSeededWord = word
         #endif
-        tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)))
+        tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)), atCaret: true)
         return Outcome(consumed: false, kind: .seedPass)
     }
 
@@ -688,18 +690,20 @@ struct InPlaceComposer {
     /// `appending`: one more scalar after `insert` (Backspace, see `handle`).
     ///
     /// `word`: the engine's word before this key, when the key may be checked against an
-    /// app that answers late (`settled` as for D11). If `selectedRange` is not where this
-    /// composer followed the cursor to (`CursorTracker.known`), the app may not have
-    /// applied the latest edits yet (Chrome with a busy page, M6: the first replacement
-    /// of a word took "ba" for "an" in "bạn" and gave "ạnn"). One read at the app's
-    /// answer (the D11 read on a mismatch, N3): if that text plus the edits it has not
-    /// applied is `word`, the key replaces at the followed position; the app applies the
-    /// replacement after those edits, as it applies everything in order. Otherwise the
-    /// answer stands: a mismatch inside a word (D11, with this read), or the start of a
-    /// word, where the app may have edited the text (autocorrect, smart dashes).
+    /// app that answers late. If `selectedRange` is not where this composer followed the
+    /// cursor to (`CursorTracker.known`), the app may not have applied the latest edits
+    /// yet (Chrome with a busy page, M6: the first replacement of a word took "ba" for
+    /// "an" in "bạn" and gave "ạnn"; Chrome, VS Code, Firefox with keys in a burst, M3).
+    /// One read at the app's answer (the D11 read on a mismatch, N3), whatever the time
+    /// since the previous key: if that text plus the edits it has not applied is `word`
+    /// (`CursorTracker.rebuild`), the key replaces at the followed position; the app
+    /// applies the replacement after those edits, as it applies everything in order.
+    /// Otherwise the answer stands: a mismatch inside a word (D11, re-read only after
+    /// `settleInterval`), or the start of a word, where the app may have edited the text
+    /// (autocorrect, smart dashes).
     private mutating func replace(deleteCount: Int, insert: TextBuffer, appending extra: Unicode.Scalar? = nil,
                                   selection known: NSRange?, client: some InPlaceClient,
-                                  word: [Unicode.Scalar]? = nil, settled: Bool = false) -> Outcome {
+                                  word: [Unicode.Scalar]? = nil) -> Outcome {
         var result = Outcome(consumed: true)
         if deleteCount == 0 {
             result.kind = .insert
@@ -713,7 +717,7 @@ struct InPlaceComposer {
         if let extra { text.unicodeScalars.append(extra) }
         var attempt = Attempt(deleteCount: deleteCount, selection: selection, expected: tracker.expected,
                               known: tracker.known, insertedLength: text.utf16.count)
-        if let word, settled, !readUnavailable, let followed = tracker.known, followed >= deleteCount,
+        if let word, !readUnavailable, let followed = tracker.known, followed >= deleteCount,
            selection.length == 0, selection.location != NSNotFound, selection.location >= 0,
            selection.location != followed {
             let read = readBefore(selection.location, client: client)
@@ -722,8 +726,7 @@ struct InPlaceComposer {
                 let units = Array(read.utf16)
                 if let rebuilt = tracker.rebuild(units, at: selection, accept: { Self.word(in: $0) == word }),
                    rebuilt.count >= deleteCount {
-                    return replaceAtFollowed(followed, deleteCount: deleteCount, text: text,
-                                             old: Array(rebuilt.suffix(deleteCount)), kind: .late,
+                    return replaceAtFollowed(followed, deleteCount: deleteCount, text: text, kind: .late,
                                              attempt: attempt, client: client)
                 }
                 // First replacement of a word, the answer a little behind, and the text read
@@ -735,9 +738,8 @@ struct InPlaceComposer {
                 let behind = followed - selection.location
                 if tracker.expected == nil, behind >= 1, behind <= CursorTracker.lateLimit,
                    Self.word(in: units) != word {
-                    let old = tracker.tail.count >= deleteCount ? Array(tracker.tail.suffix(deleteCount)) : nil
-                    return replaceAtFollowed(followed, deleteCount: deleteCount, text: text, old: old,
-                                             kind: .lateGuess, attempt: attempt, client: client)
+                    return replaceAtFollowed(followed, deleteCount: deleteCount, text: text, kind: .lateGuess,
+                                             attempt: attempt, client: client)
                 }
             }
         }
@@ -760,24 +762,16 @@ struct InPlaceComposer {
 
     /// Replaces the last `deleteCount` units before `followed` (`CursorTracker.known`)
     /// with `text`: the app applies it after the keys it has not applied yet, as it
-    /// applies everything in order. The end of the word that does not change (`old`, the
-    /// text replaced, when known) is left out of the range, so what is replaced is text
-    /// the app has, whatever it does first.
-    private mutating func replaceAtFollowed(_ followed: Int, deleteCount: Int, text: String, old: [UInt16]?,
+    /// applies everything in order, so the range then ends at its caret. The range always
+    /// ends at `followed`, also when the end of the word does not change: VS Code
+    /// (EditContext) and Firefox move the caret to the end of the replaced range, so a
+    /// range ending before the caret would put the next key inside the word.
+    private mutating func replaceAtFollowed(_ followed: Int, deleteCount: Int, text: String,
                                            kind: PerfLog.Kind, attempt: Attempt,
                                            client: some InPlaceClient) -> Outcome {
-        var units = Array(text.utf16)
-        var length = deleteCount
-        if let old, old.count == deleteCount {
-            while length > 0, let last = units.last, last == old[length - 1], CursorTracker.isWholeCharacter(last) {
-                units.removeLast()
-                length -= 1
-            }
-        }
-        let range = NSRange(location: followed - deleteCount, length: length)
-        let trimmed = String(decoding: units, as: UTF16.self)
-        if length > 0 || !units.isEmpty { client.insertText(trimmed, replacementRange: range) }
-        tracker.didReplace(range, text: trimmed, cursor: followed)
+        let range = NSRange(location: followed - deleteCount, length: deleteCount)
+        client.insertText(text, replacementRange: range)
+        tracker.didReplace(range, text: text)
         var result = Outcome(consumed: true, kind: kind)
         result.attempt = attempt
         result.attempt?.replacement = range

@@ -227,7 +227,7 @@ struct MarkedComposerTests {
         let alphabet: [KeyRoute] = Array("aeiouydwsfrxjzcnghtqkpblmAEO0123456789".unicodeScalars).map { .character($0) }
             + Array(" ,.!?()\"'-".unicodeScalars).map { .character($0) }
             + [.backspace, .backspace, .backspace, .endWord, .ignore]
-        var rng = SplitMix(seed: 0xDA0)
+        var rng = SplitMix(0xDA0)
         for options in [DauSettings.defaults.engineOptions,
                         EngineOptions(inputMethod: .vni),
                         EngineOptions(inputMethod: .simpleTelex, freeMarking: false, autoRestore: false),
@@ -285,18 +285,5 @@ struct MarkedComposerTests {
         #expect(UnderlineMode.isOn(settings: settings, bundleID: "com.apple.TextEdit", debugForced: ["com.apple.TextEdit"]))
         #expect(!UnderlineMode.isOn(settings: settings, bundleID: "?", debugForced: ["?"]))
         #expect(!UnderlineMode.isOn(settings: settings, bundleID: "", debugForced: [""]))
-    }
-}
-
-/// Deterministic generator for the random sequences.
-private struct SplitMix {
-    var state: UInt64
-    init(seed: UInt64) { state = seed }
-    mutating func next() -> UInt64 {
-        state &+= 0x9E37_79B9_7F4A_7C15
-        var z = state
-        z = (z ^ (z >> 30)) &* 0xBF58_476D_1CE4_E5B9
-        z = (z ^ (z >> 27)) &* 0x94D0_49BB_1331_11EB
-        return z ^ (z >> 31)
     }
 }

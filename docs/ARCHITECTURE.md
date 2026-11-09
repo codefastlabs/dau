@@ -105,23 +105,30 @@ dau/
 
 #### App trả lời chậm (M6, `CursorTracker.known`, `CursorTracker.rebuild`)
 
-- Hiện tượng (Chrome, trang bận): app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); D11 (Kiểm tra ngữ cảnh) không bắt được vì vị trí dự đoán (`expected`) chỉ có trong một từ.
-- Chromium:
-  - thay với `replacementRange` giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); lời gọi của bộ gõ vào cùng hàng đợi với phím của trang (`MainThreadEventQueue::QueueClosure`);
+- Hiện tượng:
+  - Chrome trang bận: app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); D11 (Kiểm tra ngữ cảnh) không bắt được vì vị trí dự đoán (`expected`) chỉ có trong một từ.
+  - Phím dồn (Chrome, VS Code, Firefox, `docs/COMPATIBILITY.md` mục 6.2): cùng hiện tượng, app chậm cả loạt phím vừa gõ.
+- Chromium (mã nguồn, chưa đo trên bản đã cài):
+  - thay với `replacementRange` trong ô thường giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); với EditContext (VS Code dùng mặc định, tuỳ chọn `editor.editContext`) con trỏ về cuối vùng vừa thay (`EditContext::CommitText`);
+  - lời gọi của bộ gõ và phím đi qua cùng giao diện `WidgetInputHandler` và vào cùng hàng đợi `MainThreadEventQueue` của trang (chặng qua luồng compositor của phím chưa đọc);
   - `selectedRange` và `attributedSubstring` trả từ bộ đệm phía trình duyệt (`_textSelectionRange`, `_availableText` trong `render_widget_host_view_cocoa.mm`), không hỏi trang;
-  - phím đi thẳng (`insertText` với NSNotFound) được ghi ngay vào bộ đệm đó, ở vị trí con trỏ trang báo lần trước, trong khi trang có thể chưa áp các phím trước nó. Chữ đọc được vì vậy có thể là chữ đã gõ thiếu vài đơn vị gần nhất, không phải chữ của một thời điểm cũ.
+  - mỗi `insertText` với NSNotFound (phím đi thẳng, bộ gõ chèn tại con trỏ) được ghi ngay vào bộ đệm đó ở vị trí con trỏ trang báo lần trước (cái sau đứng trước cái trước), và con trỏ trong bộ đệm thành vị trí đó cộng độ dài cái mới nhất; `insertText` có vùng thay thì không ghi.
+- Firefox (mã nguồn, chưa đo): `selectedRange` và chữ trả từ bộ đệm của tiến trình cha (`ContentCacheInParent`, `IMEInputHandler::mSelectedRange`), chỉ cập nhật khi tiến trình nội dung báo; thay với vùng thay là chọn vùng rồi chèn, con trỏ về cuối vùng vừa thay (`InsertTextAsCommittingComposition`).
 - Cách xử lý:
-  - `CursorTracker` theo vị trí con trỏ qua ranh giới từ (`known`), cùng vài thao tác gần nhất bộ gõ đã làm hoặc để đi thẳng (`edits`) và chữ chính nó đã gõ ngay trước con trỏ (`tail`).
+  - `CursorTracker` theo vị trí con trỏ qua ranh giới từ (`known`), cùng các thao tác gần nhất bộ gõ đã làm hoặc để đi thẳng (`edits`, đánh dấu thao tác chèn tại con trỏ `atCaret`) và chữ chính nó đã gõ ngay trước con trỏ (`tail`).
     - Mất vị trí khi reset (click, mũi tên, phím tắt, Return/Tab, đổi client), và khi ⌫ đi thẳng mà không biết chữ bị xoá.
     - `known` không thay cho `expected`: ở đầu từ, vị trí khác `known` vẫn có thể là app tự sửa chữ (tự sửa chính tả, gạch ngang thông minh).
-  - Ở phím thay chữ, nếu `selectedRange` khác `known` và phím trước đủ 50 ms (như D11): đọc chữ trước vị trí app trả một lần (lần đọc của D11 khi lệch, N3).
-    - App chậm được chứng minh khi (a) chữ đó cộng các thao tác app chưa áp (tối đa `lateLimit`, mỗi thao tác xoá phải gặp đúng chữ nó xoá) ra đúng từ trong engine, hoặc (b) chữ đó là chữ bộ gõ đã gõ (`tail`) thiếu đúng số đơn vị app chậm, trong vài đơn vị gần nhất, so ít nhất hai đơn vị. Khi đó thay ở vị trí `known` (kind `late` trong log perf).
-    - Phần cuối từ không đổi được để ngoài vùng thay, nên phần đó không phụ thuộc thứ tự app áp.
+    - `burst`: số thao tác gần nhất do các phím đến liền nhau dưới 50 ms (`settleInterval`) tạo ra; composer báo cho tracker ở mỗi phím (`keyInBurst`).
+  - Ở phím thay chữ, nếu `selectedRange` khác `known`, ở mọi tốc độ: đọc chữ trước vị trí app trả một lần (lần đọc của D11 khi lệch, N3).
+    - App chậm được chứng minh khi chữ đó, ở một trong hai dạng, cộng các thao tác app chưa áp ra đúng từ trong engine, mỗi thao tác xoá phải gặp đúng chữ nó xoá (`rebuild`): (a) chữ như trước các thao tác đó (Firefox; Chrome khi không có thao tác chèn tại con trỏ); (b) chữ đó cộng thao tác chèn tại con trỏ mới nhất trong số đó (bộ đệm Chromium).
+    - Số thao tác app được chậm: tối đa `lateLimit`, cộng `burst`. Vượt `lateLimit` thì chữ app trả trước các thao tác đó cũng phải là chữ bộ gõ đã gõ ở đó (`tail`), so ít nhất hai đơn vị chữ của app (một, khi phần đọc bắt đầu từ đầu văn bản).
+    - Hoặc chữ đó là chữ bộ gõ đã gõ (`tail`) thiếu đúng số đơn vị app chậm, trong vài đơn vị gần nhất, so ít nhất hai đơn vị (tối đa `lateLimit`).
+    - Khi đó thay ở vị trí `known` (kind `late` trong log perf). Vùng thay luôn kết thúc ở `known`: ở app đưa con trỏ về cuối vùng thay (EditContext, Firefox), vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ.
     - Lần thay đầu của từ, app chậm tối đa `lateLimit` mà không chứng minh được, và trước vị trí app trả không có đủ cả từ: vẫn thay ở `known` (kind `late_guess`). App sửa chữ trước từ (gạch ngang thông minh) thì trước vị trí nó trả có đủ cả từ, nên vị trí của app được tin.
-    - Còn lại như cũ: trong từ là lệch (D11, dùng lại chữ vừa đọc), đầu từ thì tin `selectedRange`.
+    - Còn lại như cũ: trong từ là lệch (D11; dùng lại chữ vừa đọc để dựng lại chỉ khi phím trước đủ 50 ms), đầu từ thì tin `selectedRange`.
     - Vị trí lấy từ một `selectedRange` có thể cũ không còn ghi đè `known` trong các ca trên (lượt 1d: ghi đè làm lần trả lời chậm sau trùng với `known` sai, "kóo").
-  - Cùng cách đó ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ).
-- Giới hạn: app chậm hơn `lateLimit` thao tác, hoặc phím dưới 50 ms, thì như trước. Kiểm bằng client giả trong `LateAnswerTests`.
+  - Cùng cách chứng minh ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ); hai chỗ này vẫn chỉ đọc khi phím trước đủ 50 ms.
+- Giới hạn: app chậm hơn số thao tác trên mà không chứng minh được thì như trước. Ở đầu văn bản, khi app chưa áp phím nào của loạt phím dồn, không có chữ của app để chứng minh: từ đầu tiên có thể sai và vị trí bị mất cho các từ sau. Kiểm bằng client giả trong `LateAnswerTests` và `RapidKeysTests` (mô hình Chrome, VS Code, Firefox theo mã nguồn; thời gian của app chọn cho khớp số đo M3, không phải số đo).
 
 #### Backspace thay tại chỗ (D32)
 
@@ -186,6 +193,7 @@ dau/
   - Đã thử không chờ (`settleInterval` = 0): kết quả ở `docs/PROGRESS.md`, bảng Số đo, 30/10/2026 (mục Phạm vi của D20, ý chờ 50 ms).
   - Vẫn giữ 50 ms làm biên an toàn vì người quay lại sửa từ không gõ nhanh như vậy.
   - Phím dồn dưới 50 ms thì D20 không áp dụng, phím đi thẳng.
+  - Phép kiểm app trả lời chậm (mục "App trả lời chậm") không chờ: nó không dựng từ từ chữ đọc được, chỉ thay ở vị trí bộ gõ tự theo dõi khi chữ đọc được chứng minh app chậm.
 - Chi phí thêm:
   - số đo theo app ở D20 và `docs/PROGRESS.md`, bảng Số đo, 30/10/2026;
   - chỉ tốn ở phím chữ cái hoặc phím dấu đầu tiên ngay sau reset/⌫;

@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có. D11 (Kiểm tra ngữ cảnh) và D13 (Gạch chân là đường lui cuối cùng) đã sửa theo kết quả 1d (người dùng duyệt 10/11). Việc tiếp theo: cho cách "App trả lời chậm" chạy cả khi phím dồn dưới 50 ms (giao imk-dev), rồi đo Chrome, VS Code, Firefox ở 0, 5, 10, 20 ms; app nào đúng thì bỏ nhãn "Đề xuất" (D13).
+Chờ người dùng: giờ chạy lượt đo phím dồn (Chrome, VS Code, Firefox ở 5, 10, 20 ms; hồi quy Chrome trang bận; chiếm màn hình, khoảng 12 phút).
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -192,3 +192,8 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - So với mục tiêu của 1d: cùng điều kiện, Telex của Apple (1b) ra chữ của nó ở 2/3 ô trang bận, ô còn lại ra nguyên chuỗi phím; Dấu thay tại chỗ đúng 3/3.
   - Phạm vi: một máy, Chrome, một kiểu tải (trang chặn 300 ms mỗi giây), nhịp 100 ± 30 ms, 3 lượt. Chưa đo app Electron (VS Code), phím dồn dưới 20 ms, kiểu tải khác.
   - Dọn: không còn tab thử, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bản Release.
+- 10/11/2026 — M6: "App trả lời chậm" cho phím dồn dưới 50 ms — imk-dev, phiên chính. Tiêu chí đạt: đúng ở 5, 10, 20 ms (người gõ nhanh nhấn chồng phím); 0 ms chỉ ghi giới hạn (máy gửi cả chuỗi một lần, không phải tốc độ gõ thật, D13 (Gạch chân là đường lui cuối cùng)).
+  - Nhánh app chậm chạy ở mọi tốc độ (D20, phép kiểm từ đã hết hợp lệ và lần dựng lại của D11 vẫn chờ 50 ms); app được chậm tới 2 thao tác cộng số thao tác của loạt phím dồn, vượt 2 thì chữ của app trước đó phải trùng chữ Dấu đã gõ. Vùng thay luôn kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên cách cắt phần cuối từ cũ làm phím sau rơi vào giữa từ. Chi tiết: `docs/ARCHITECTURE.md` mục "App trả lời chậm".
+  - Mô phỏng (client giả theo mã nguồn Chromium, VS Code, Firefox; thời gian xử lý của app là số chọn để bản cũ sai đúng như M3, không phải số đo; 40 seed × 2 chuỗi): 5, 10, 20 ms 0 sai ở cả ba mô hình (bản cũ: VS Code, Firefox sai ở 5 ms); 0 ms: Chrome 0 sai, VS Code và Firefox còn sai 30/40 với chuỗi std.
+  - Câu chữ của D11 ("phím trước cách ít nhất 50 ms", "tối đa 2 chữ", "Phím dồn dưới 50 ms: chưa áp dụng") và câu tương ứng trong "Câu hỏi đã trả lời" chưa khớp mã mới; đề xuất sửa cùng kết quả đo thật.
+  - Kiểm: test IMK 133 đạt (phiên chính chạy lại), build Debug và Release, check-docs. Chưa đo trên app thật.

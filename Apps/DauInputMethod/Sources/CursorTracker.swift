@@ -33,14 +33,31 @@ struct CursorTracker: Equatable {
     private(set) var tail: [UInt16] = []
     /// The latest edits, oldest first (at most `editLimit`).
     private(set) var edits: [Edit] = []
-    static let editLimit = 16
-    static let tailLimit = 32
-    /// How many edits an app may be behind for `rebuild`. In the 1b run (M6, Chrome with
-    /// a page blocked 300 ms every second, keys 100 ± 30 ms apart) every late answer was
-    /// one key behind. More would also take for late an app whose text was replaced by
-    /// the same letters at the same place (⌘A the input method never sees, then the
-    /// word typed again), which D11 must re-read instead.
+    /// Enough for an app that falls far behind a burst of keys (M6: in the simulation of
+    /// VS Code and Firefox at 0 ms, `RapidKeysTests`, answers were over a hundred edits
+    /// behind); one edit is a few dozen bytes, and `rebuild` replays only the counts
+    /// whose caret matches the answer.
+    static let editLimit = 256
+    /// Long enough to check, past `editLimit` units of edits, the text the app answers
+    /// with before them (`rebuild`, `InPlaceComposer.readLength` units).
+    static let tailLimit = 512
+    /// How many edits an app may be behind for `rebuild` when the keys came at a human
+    /// pace. In the 1b run (M6, Chrome with a page blocked 300 ms every second, keys
+    /// 100 ± 30 ms apart) every late answer was one key behind. More would also take for
+    /// late an app whose text was replaced by the same letters at the same place (⌘A the
+    /// input method never sees, then the word typed again), which D11 must re-read
+    /// instead. Edits made by keys that came in a burst add to it (`burst`), with a
+    /// stricter check.
     static let lateLimit = 2
+
+    /// The key being handled came less than `InPlaceComposer.settleInterval` after the
+    /// previous one (set by the composer for each key).
+    var keyInBurst = false
+    /// How many of the latest edits were made by keys that came in a burst, one after
+    /// the other: no person can click or press ⌘A between them, and an app that applies
+    /// keys late may be behind all of them (M3: Chrome, VS Code, Firefox wrong under
+    /// 10 ms; `docs/COMPATIBILITY.md` 6.2).
+    private(set) var burst = 0
 
     /// One edit of the document made by this composer or by a key it let through.
     struct Edit: Equatable {
@@ -52,6 +69,10 @@ struct CursorTracker: Equatable {
         /// The units removed, when this composer knows them (`tail`).
         var deletedText: [UInt16]?
         var inserted: [UInt16]
+        /// Inserted at the app's caret without a range (`insertText` with NSNotFound: a
+        /// key let through, or this composer's insertion at the cursor). Chromium writes
+        /// such text into the cache it answers from at once (`rebuild`).
+        var atCaret = false
     }
 
     enum Plan: Equatable {
@@ -84,9 +105,11 @@ struct CursorTracker: Equatable {
 
     /// The input method replaced `range` with `text`, the cursor being at the end of
     /// `range` (or `cursor`, when the range ends before it: keys the app applies after).
-    mutating func didReplace(_ range: NSRange, text: String, cursor: Int? = nil) {
+    /// `atCaret`: the text was in fact inserted at the app's caret without a range (a
+    /// key let through at a position read from the app, D20).
+    mutating func didReplace(_ range: NSRange, text: String, cursor: Int? = nil, atCaret: Bool = false) {
         record(cursor: cursor ?? range.location + range.length, location: range.location,
-               deleted: range.length, inserted: Array(text.utf16))
+               deleted: range.length, inserted: Array(text.utf16), atCaret: atCaret)
         expected = known
     }
 
@@ -95,7 +118,7 @@ struct CursorTracker: Equatable {
     mutating func didInsertAtCursor(_ text: String) {
         let length = text.utf16.count
         if let e = expected { expected = e + length }
-        if let k = known { record(cursor: k, location: k, deleted: 0, inserted: Array(text.utf16)) }
+        if let k = known { record(cursor: k, location: k, deleted: 0, inserted: Array(text.utf16), atCaret: true) }
     }
 
     /// The key went to the app unchanged and the app inserts `text`.
@@ -149,14 +172,18 @@ struct CursorTracker: Equatable {
         known = nil
         tail = []
         edits = []
+        burst = 0
     }
 
-    private mutating func record(cursor: Int, location: Int, deleted: Int, inserted: [UInt16]) {
+    private mutating func record(cursor: Int, location: Int, deleted: Int, inserted: [UInt16],
+                                 atCaret: Bool = false) {
         if known != cursor {
             // Not where this composer thought: follow from the app's answer.
             tail = []
             edits = []
+            burst = 0
         }
+        burst = keyInBurst ? min(burst + 1, Self.editLimit) : 0
         let back = cursor - location      // units from the start of the range to the cursor
         var deletedText: [UInt16]?
         if back >= 0, deleted >= 0, deleted <= back, back <= tail.count {
@@ -168,7 +195,7 @@ struct CursorTracker: Equatable {
         }
         if tail.count > Self.tailLimit { tail.removeFirst(tail.count - Self.tailLimit) }
         edits.append(Edit(cursor: cursor, location: location, deleted: deleted,
-                          deletedText: deletedText, inserted: inserted))
+                          deletedText: deletedText, inserted: inserted, atCaret: atCaret))
         if edits.count > Self.editLimit { edits.removeFirst(edits.count - Self.editLimit) }
         known = cursor + inserted.count - deleted
     }
@@ -186,44 +213,86 @@ struct CursorTracker: Equatable {
     // MARK: - An app that answers late
 
     /// The app answered `selection` while it had not applied the last `m` edits yet (its
-    /// cursor then was before them). Returns the text before `known`: `snapshot` (the text
-    /// the app gave, ending at `selection`) with those edits applied, for the first `m`
-    /// (latest edits first, at most `lateLimit`) that fits and that `accept` takes. Every
-    /// edit whose removed text is known must find that text where it applies;
+    /// cursor then was before them). Returns the text before `known`: the text the app
+    /// gave (`snapshot`, ending at `selection`) with those edits applied, for the first
+    /// `m` (latest edits first) that fits and that `accept` takes. nil: not an app
+    /// answering late (or no way to tell).
+    ///
+    /// The text the app gives is one of two forms (sources in `docs/ARCHITECTURE.md`,
+    /// "App trả lời chậm"): the text as it was before those edits (Firefox, and Chrome
+    /// when none of them was inserted at the caret); or that text plus the latest of
+    /// them that was inserted at the caret (`Edit.atCaret`), which Chromium writes into
+    /// its cache at once at the caret the page last reported, the answer then ending
+    /// after it.
+    ///
+    /// Every edit whose removed text is known must find that text where it applies;
     /// `requireDeletedText`: an edit that removes text this composer does not know fails.
-    /// nil: not an app answering late (or no way to tell).
+    /// `m` is at most `lateLimit`, plus the edits made in the latest burst of keys
+    /// (`burst`); past `lateLimit`, the text the app gave before those edits must also be
+    /// the text this composer typed there (`tail`), over at least two units.
     func rebuild(_ snapshot: [UInt16], at selection: NSRange,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
         let end = selection.location
         guard let known, selection.length == 0, end != NSNotFound, end != known else { return nil }
-        let count = min(Self.lateLimit, edits.count)
-        let base = end - snapshot.count
-        for m in stride(from: 1, through: count, by: 1) where edits[edits.count - m].cursor == end {
-            var text = snapshot
-            var fits = true
-            for edit in edits.suffix(m) {
-                let start = edit.location - base, stop = start + edit.deleted
-                guard edit.cursor == base + text.count, start >= 0, stop <= text.count else { fits = false; break }
-                if let removed = edit.deletedText {
-                    guard Array(text[start..<stop]) == removed else { fits = false; break }
-                } else if requireDeletedText && edit.deleted > 0 {
-                    fits = false; break
-                }
-                text.replaceSubrange(start..<stop, with: edit.inserted)
+        let count = min(Self.lateLimit + burst, edits.count)
+        var latestAtCaret: [UInt16]?
+        for m in stride(from: 1, through: count, by: 1) {
+            let first = edits[edits.count - m]
+            if latestAtCaret == nil, first.atCaret, !first.inserted.isEmpty { latestAtCaret = first.inserted }
+            var forms: [[UInt16]] = []
+            if first.cursor == end { forms.append(snapshot) }
+            if let units = latestAtCaret, first.cursor + units.count == end, snapshot.count >= units.count,
+               snapshot.suffix(units.count).elementsEqual(units) {
+                forms.append(Array(snapshot.dropLast(units.count)))
             }
-            if fits, base + text.count == known, accept(text) { return text }
+            for before in forms {
+                guard let text = replay(before, endingAt: first.cursor, last: m, requireDeletedText: requireDeletedText),
+                      first.cursor - before.count + text.count == known else { continue }
+                if m > Self.lateLimit,
+                   !typedHere(text, before: before.count, fromStart: first.cursor == before.count) { continue }
+                if accept(text) { return text }
+            }
         }
-        // Chrome's cache is not always the text as it was some edits ago: a key let
-        // through is written into the cache at once, at the caret the page last reported
-        // (`insertText` with NSNotFound in `render_widget_host_view_cocoa.mm`), while the
-        // page may still miss the keys before it. So the text read may be the text this
-        // composer typed with any `d` of its latest units missing (1d run: "hoi" + r
-        // answered one behind, and the exact replay above did not fit).
+        // Chrome's cache is not always the text as it was some edits ago, plus the latest
+        // key: the page may answer between its own updates (1d run: "hoi" + r answered
+        // one behind, and neither form above fit). So the text read may be the text this
+        // composer typed with any `d` of its latest units missing.
         let d = known - end
         if d >= 1, d <= Self.lateLimit, let text = withMissingUnits(snapshot, missing: d), accept(text) {
             return text
         }
         return nil
+    }
+
+    /// `before` (the app's text, ending at `cursor`) with the last `m` edits applied, or
+    /// nil if one of them does not fit there.
+    private func replay(_ before: [UInt16], endingAt cursor: Int, last m: Int, requireDeletedText: Bool) -> [UInt16]? {
+        let base = cursor - before.count
+        var text = before
+        for edit in edits.suffix(m) {
+            let start = edit.location - base, stop = start + edit.deleted
+            guard edit.cursor == base + text.count, start >= 0, stop <= text.count else { return nil }
+            if let removed = edit.deletedText {
+                guard text[start..<stop].elementsEqual(removed) else { return nil }
+            } else if requireDeletedText && edit.deleted > 0 {
+                return nil
+            }
+            text.replaceSubrange(start..<stop, with: edit.inserted)
+        }
+        return text
+    }
+
+    /// `text` (ending at `known`, its first `count` units read from the app) ends with
+    /// `tail`, and `tail` reaches at least two units into the part read: the app's own
+    /// text, not only this composer's edits, is what was typed there. `fromStart`: the
+    /// part read starts the document; then one unit is enough if `tail` covers all of it.
+    /// With less than that (nothing read, a short `tail`), nothing tells a late answer
+    /// from a text that was replaced (a field cleared and typed again).
+    private func typedHere(_ text: [UInt16], before count: Int, fromStart: Bool) -> Bool {
+        let n = min(text.count, tail.count)
+        let reach = n - (text.count - count)
+        guard reach >= 2 || (fromStart && count >= 1 && reach == count) else { return false }
+        return text.suffix(n).elementsEqual(tail.suffix(n))
     }
 
     /// `snapshot` (ending `missing` units before `known`) is `tail` with `missing` of its

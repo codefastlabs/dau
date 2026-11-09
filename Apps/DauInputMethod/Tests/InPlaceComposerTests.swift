@@ -586,7 +586,7 @@ struct InPlaceComposerTests {
         }
     }
 
-    @Test("stale snapshot right after a ⌫ the app deleted: mismatch, no letter lost beyond the key")
+    @Test("stale snapshot right after a ⌫ the app deleted: the text read shows a late answer, same text as on time")
     func backspaceStale() {
         for var s in Self.sessions() {
             s.type("vieetj")
@@ -595,10 +595,12 @@ struct InPlaceComposerTests {
             s.doc.lag = 0.05
             s.interval = 0.01
             s.type("⌫⌫")
-            // The second ⌫ sees the cursor before the first deletion: D11 resets and the
-            // app deletes one letter, as typed. The tone is lost, never a letter.
-            #expect(s.kinds.suffix(2) == [.pass, .mismatch])
-            #expect(s.doc.text == "vi")
+            // The second ⌫ sees the cursor before the first deletion. The text read there
+            // ("việt") with that deletion is the engine's word, so the app is only late
+            // (M6, keys in a burst): D32 replaces at the followed position, as on time.
+            #expect(s.kinds.suffix(2) == [.pass, .late])
+            #expect(s.doc.text == "vị")
+            #expect(s.overCalls == 0)
         }
     }
 
