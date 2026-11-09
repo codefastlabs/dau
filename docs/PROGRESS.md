@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: giờ chạy lần đo lại 1d (chiếm màn hình, khoảng 5 phút).
+Chờ người dùng: mở khoá Mac để chạy lại lần đo 1d (khoảng 5 phút); trước đó phiên chính đóng các tab "Dấu self test" còn lại trong Chrome.
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -185,3 +185,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Cơ chế (mã nguồn Chromium, chưa đo trên bản Chrome đã cài): `selectedRange` và `attributedSubstring` trả từ bộ đệm phía trình duyệt; phím đi thẳng được ghi ngay vào bộ đệm ở vị trí con trỏ trang báo lần trước, nên chữ đọc được có thể thiếu một chữ ở giữa ("…hi" thay vì "…hoi"), không phải ảnh chụp của một lúc cũ. Client giả thêm chế độ đó tái hiện đúng mọi từ sai của 1d lần 1 và "đaaline" của 1b.
   - Sửa: thêm cách chứng minh app chậm bằng chữ bộ gõ đã gõ; `known` không còn bị ghi đè bởi một `selectedRange` cũ; lần thay đầu của từ, app chậm 1–2 chữ mà không chứng minh được, và trước vị trí app trả không có đủ cả từ: thay ở `known` (kind `late_guess`). Chi tiết: `docs/ARCHITECTURE.md` mục "App trả lời chậm". `late_guess` thay ở vị trí app chưa xác nhận, nên câu chữ của D11 (Kiểm tra ngữ cảnh) cần sửa; đề xuất sau lượt đo.
   - Kiểm: test IMK 128 đạt (phiên chính chạy lại), check-docs. Chưa đo trên Chrome thật.
+- 09/11/2026 — M6 bước 1d, lần đo lại sau lượt sửa thứ hai (người dùng cho chạy, 23:15) — phiên chính. Không có kết quả: màn hình Mac đã khoá và tắt từ 23:14:29, nên Chrome không lên trước được; script không gửi phím nào (mã thoát 3 ở cả 4 ô) nhưng đã mở tới 4 tab "Dấu self test" (3 tab có vòng chặn luồng chính) và không đóng được. Sửa: `typing/run.sh` từ chối chạy khi màn hình khoá (`CGSSessionScreenIsLocked`), trước khi mở app nào; đã chạy thật khi màn hình khoá: dừng ngay, không mở tab. Dọn: bộ gõ đã cài lại bản Release, không còn khoá `defaults` có chữ `Dau`, đã xoá log của lượt; các tab còn lại phiên chính đóng sau khi người dùng mở khoá.

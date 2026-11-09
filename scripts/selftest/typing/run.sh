@@ -142,8 +142,14 @@ if [[ -n "$BUSY" ]]; then
       || log_die 2 "--busy chỉ dùng với trình duyệt (safari chrome edge firefox), không với $app"
   done
 fi
+# A locked screen (or one asleep behind the lock, e.g. a run started from another device)
+# keeps every app from coming to the front: nothing would be typed, and the test pages
+# opened would be left behind. Refuse before opening anything.
+if ioreg -n Root -d1 -a | grep -A1 CGSSessionScreenIsLocked | grep -q '<true/>'; then
+  log_die "Màn hình Mac đang khoá: không mở app, không gõ. Mở khoá rồi chạy lại."
+fi
 US_SOURCE=com.apple.keylayout.US
-if [[ "$KEYS" == *$'\n'* || "$KEYS" == *$'\r'* ]]; then
+if [[ "$KEYS" == *$'\n'*|| "$KEYS" == *$'\r'* ]]; then
   log_die 2 "Phím gõ không được có xuống dòng (không bao giờ nhấn Return trong Terminal)."
 fi
 
