@@ -362,7 +362,7 @@ struct NotEnabledBanner: View {
                 noticeBanner(probe: "banner.idle", leading: tile(.orange, symbol: "exclamationmark.triangle.fill"),
                              title: Text("Dấu isn’t turned on in your input sources"),
                              hint: Text("You can still change settings, but you can’t type Vietnamese yet.")) {
-                    Button("Turn On") { enable() }
+                    Button("Turn On Again") { enable() }
                         .buttonStyle(.borderedProminent)
                 }
             }

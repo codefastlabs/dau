@@ -59,7 +59,7 @@ struct UpdatesSupportView: View {
                     // TODO(M7): report sheet with a pre-filled GitHub issue (D8).
                     Button("Report a Problem…") {}
                 } label: {
-                    Text("Typing goes wrong in an app?")
+                    Text("Problems typing in an app?")
                     Text("Send us a description so we can look into it")
                 }
                 .disabled(true)

@@ -50,7 +50,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .updates:
             ["Version", "Check Now", "Language", "Automatically check for updates",
              "Automatically download and install", "Release channel", "Stable", "Beta",
-             "Typing goes wrong in an app?", "Report a Problem…", "Go back to the previous version",
+             "Problems typing in an app?", "Report a Problem…", "Go back to the previous version",
              "Remove Dấu from this Mac", "Uninstall…", "Privacy"]
         }
     }

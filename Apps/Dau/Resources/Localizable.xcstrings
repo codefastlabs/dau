@@ -35,13 +35,13 @@
         }
       }
     },
-    "%@ will close, reopen and ask whether to turn on Dấu. Click **%@**." : {
+    "%@ will quit, reopen, and ask whether to turn on Dấu. Click **%@**." : {
       "comment" : "First %@ = System Settings, second %@ = Allow, macOS's own names (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "%@ will close, reopen and ask whether to turn on Dấu. Click **%@**."
+            "value" : "%@ will quit, reopen, and ask whether to turn on Dấu. Click **%@**."
           }
         },
         "vi" : {
@@ -286,23 +286,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ứng dụng"
-          }
-        }
-      }
-    },
-    "Apps labeled “Suggested” may type wrong text when you type very fast. Choose “Underline” only if an app garbles text as you type." : {
-      "comment" : "Description of the Suggested section. “Suggested” and “Underline” = the chip and the rule option of those names.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Apps labeled “Suggested” may type wrong text when you type very fast. Choose “Underline” only if an app garbles text as you type."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ứng dụng có nhãn “Đề xuất” có thể gõ sai khi bạn gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ."
           }
         }
       }
@@ -613,13 +596,13 @@
         }
       }
     },
-    "Choose Typing Method" : {
+    "Choose a Typing Method" : {
       "comment" : "Onboarding step 3 name (sidebar).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Choose Typing Method"
+            "value" : "Choose a Typing Method"
           }
         },
         "vi" : {
@@ -783,6 +766,23 @@
         }
       }
     },
+    "Completed" : {
+      "comment" : "VoiceOver value of a finished onboarding step.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Completed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã xong"
+          }
+        }
+      }
+    },
     "Consonant shortcuts" : {
       "comment" : "Advanced toggle (D21).",
       "localizations" : {
@@ -919,23 +919,6 @@
         }
       }
     },
-    "Current" : {
-      "comment" : "VoiceOver value of the current onboarding step.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Current"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang làm"
-          }
-        }
-      }
-    },
     "Current shortcut" : {
       "comment" : "VoiceOver label of the shortcut key caps.",
       "localizations" : {
@@ -966,23 +949,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chi tiết"
-          }
-        }
-      }
-    },
-    "Done" : {
-      "comment" : "VoiceOver value of a finished onboarding step.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Done"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đã xong"
           }
         }
       }
@@ -1072,13 +1038,13 @@
         }
       }
     },
-    "Dấu doesn’t need Accessibility access." : {
+    "Dấu doesn’t need permission to control your Mac." : {
       "comment" : "Onboarding sidebar note.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu doesn’t need Accessibility access."
+            "value" : "Dấu doesn’t need permission to control your Mac."
           }
         },
         "vi" : {
@@ -1429,19 +1395,19 @@
         }
       }
     },
-    "If Dấu isn’t in that list, log out and log back in once (Apple menu › **%@**), then open Dấu again." : {
-      "comment" : "%@ = macOS's Log Out item (D38).",
+    "If Dấu isn’t in that list, log out and log back in once (%@ › **%@**), then open Dấu again." : {
+      "comment" : "First %@ = the Apple menu symbol, second %@ = macOS's Log Out item (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "If Dấu isn’t in that list, log out and log back in once (Apple menu › **%@**), then open Dấu again."
+            "value" : "If Dấu isn’t in that list, log out and log back in once (%@ › **%@**), then open Dấu again."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (menu Apple › **%@**), rồi mở lại Dấu."
+            "value" : "Không thấy Dấu trong danh sách đó: đăng xuất rồi đăng nhập lại một lần (%@ › **%@**), rồi mở lại Dấu."
           }
         }
       }
@@ -1565,6 +1531,23 @@
         }
       }
     },
+    "In progress" : {
+      "comment" : "VoiceOver value of the current onboarding step.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "In progress"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đang làm"
+          }
+        }
+      }
+    },
     "Input source per window" : {
       "comment" : "Apps page section header.",
       "localizations" : {
@@ -1612,23 +1595,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ngôn ngữ"
-          }
-        }
-      }
-    },
-    "May type wrong text when you type very fast" : {
-      "comment" : "Subtitle of a suggested app.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "May type wrong text when you type very fast"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Có thể sai chữ khi gõ rất nhanh"
           }
         }
       }
@@ -1837,13 +1803,13 @@
         }
       }
     },
-    "Once Dấu is gone from the list, the input method is moved to the %@." : {
+    "Once Dấu is gone from the list, the input method is moved to %@." : {
       "comment" : "Uninstall sheet status. %@ = Trash, macOS's own name (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Once Dấu is gone from the list, the input method is moved to the %@."
+            "value" : "Once Dấu is gone from the list, the input method is moved to %@."
           }
         },
         "vi" : {
@@ -1990,6 +1956,23 @@
         }
       }
     },
+    "Problems typing in an app?" : {
+      "comment" : "Support row label.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problems typing in an app?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gặp ứng dụng gõ bị lỗi?"
+          }
+        }
+      }
+    },
     "Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule. [Test results on Google Docs, Notion…]" : {
       "comment" : "Subtitle of the add-marks toggle. “Underline” = the app rule option of that name. The bracketed part is a placeholder until measured (N5).",
       "localizations" : {
@@ -2126,13 +2109,13 @@
         }
       }
     },
-    "Remove Dấu from Input Sources" : {
+    "Remove Dấu from Your Input Sources" : {
       "comment" : "Title of the uninstall sheet: the user removes Dấu in System Settings.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Remove Dấu from Input Sources"
+            "value" : "Remove Dấu from Your Input Sources"
           }
         },
         "vi" : {
@@ -2156,23 +2139,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Gỡ Dấu khỏi máy"
-          }
-        }
-      }
-    },
-    "Remove Dấu from this Mac?" : {
-      "comment" : "Uninstall confirmation alert title.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remove Dấu from this Mac?"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gỡ Dấu khỏi máy?"
           }
         }
       }
@@ -2738,6 +2704,40 @@
         }
       }
     },
+    "Text may come out wrong in apps labeled “Suggested” when you type very fast. Choose “Underline” only if an app garbles text as you type." : {
+      "comment" : "Description of the Suggested section. “Suggested” and “Underline” = the chip and the rule option of those names.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text may come out wrong in apps labeled “Suggested” when you type very fast. Choose “Underline” only if an app garbles text as you type."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng có nhãn “Đề xuất” có thể gõ sai khi bạn gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ."
+          }
+        }
+      }
+    },
+    "Text may come out wrong when you type very fast" : {
+      "comment" : "Subtitle of a suggested app.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Text may come out wrong when you type very fast"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Có thể sai chữ khi gõ rất nhanh"
+          }
+        }
+      }
+    },
     "The dialog is in the %@ window. Click %@ to turn on Dấu." : {
       "comment" : "Banner subtitle. First %@ = System Settings, second %@ = Allow, both macOS's own names (D38).",
       "localizations" : {
@@ -2789,13 +2789,13 @@
         }
       }
     },
-    "The input method was moved to the %@." : {
+    "The input method was moved to %@." : {
       "comment" : "Uninstall result. %@ = Trash, macOS's own name (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "The input method was moved to the %@."
+            "value" : "The input method was moved to %@."
           }
         },
         "vi" : {
@@ -2908,13 +2908,13 @@
         }
       }
     },
-    "To remove the app too, drag Dấu from the %@ folder to the %@." : {
+    "To remove the app too, drag Dấu from the %@ folder to %@." : {
       "comment" : "Uninstall result. First %@ = Applications, second %@ = Trash (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "To remove the app too, drag Dấu from the %@ folder to the %@."
+            "value" : "To remove the app too, drag Dấu from the %@ folder to %@."
           }
         },
         "vi" : {
@@ -2993,13 +2993,13 @@
         }
       }
     },
-    "Try: %@" : {
+    "Try typing: %@" : {
       "comment" : "Hint under the test field. %@ = keys to type, e.g. tooi yeeu tieengs Vieetj.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Try: %@"
+            "value" : "Try typing: %@"
           }
         },
         "vi" : {
@@ -3027,13 +3027,13 @@
         }
       }
     },
-    "Turn On" : {
+    "Turn On Again" : {
       "comment" : "Banner button: turns Dấu on again (macOS asks the user).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Turn On"
+            "value" : "Turn On Again"
           }
         },
         "vi" : {
@@ -3163,23 +3163,6 @@
         }
       }
     },
-    "Typing goes wrong in an app?" : {
-      "comment" : "Support row label.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Typing goes wrong in an app?"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gặp ứng dụng gõ bị lỗi?"
-          }
-        }
-      }
-    },
     "Typing method" : {
       "comment" : "Typing page section header and label of the Telex / VNI / Simple Telex control.",
       "localizations" : {
@@ -3244,6 +3227,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tiếp tục gỡ"
+          }
+        }
+      }
+    },
+    "Uninstall Dấu?" : {
+      "comment" : "Uninstall confirmation alert title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Uninstall Dấu?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gỡ Dấu khỏi máy?"
           }
         }
       }
@@ -3503,13 +3503,13 @@
         }
       }
     },
-    "You’ll remove Dấu from %@ in %@; then Dấu is moved to the %@." : {
+    "You’ll remove Dấu from %@ in %@. Then the input method is moved to %@." : {
       "comment" : "Alert text. %@ in order: Input Sources, System Settings, Trash — macOS's own names (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You’ll remove Dấu from %@ in %@; then Dấu is moved to the %@."
+            "value" : "You’ll remove Dấu from %@ in %@. Then the input method is moved to %@."
           }
         },
         "vi" : {

@@ -25,7 +25,6 @@ Tra khi cần:
 | `docs/OPENKEY-NOTES.md` | đọc mã OpenKey: tính năng, ca biên, Dấu làm hay không |
 | `docs/GLOSSARY.md` | thuật ngữ Anh–Việt của chuỗi giao diện (input source / nguồn đầu vào…) và cách viết câu tiếng Anh |
 | `docs/TROUBLESHOOTING.md` | sự cố hay gặp khi phát triển (Dấu bị xám, app chưa đăng ký, TextEdit và iCloud…) và cách xử lý |
-| `docs/L10N-REVIEW.md` | bản tạm: câu chữ tiếng Anh chờ người dùng duyệt (M9); xoá khi đã sửa catalog |
 
 ## Nghiên cứu
 

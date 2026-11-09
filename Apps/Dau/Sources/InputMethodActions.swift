@@ -296,11 +296,11 @@ enum UninstallAlert {
     /// The confirmation, and its "Xoá cả cài đặt và quy tắc ứng dụng" checkbox (off).
     static func confirmation() -> (NSAlert, NSButton) {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Remove Dấu from this Mac?")
+        alert.messageText = String(localized: "Uninstall Dấu?")
         // macOS lets only the user remove an input source, so the alert says what happens
         // in order (docs/research/M5-INSTALL.md section 4).
         let ui = SystemUINames.system()   // macOS's own names (D38)
-        alert.informativeText = String(localized: "You’ll remove Dấu from \(ui.inputSources) in \(ui.systemSettings); then Dấu is moved to the \(ui.trash).")
+        alert.informativeText = String(localized: "You’ll remove Dấu from \(ui.inputSources) in \(ui.systemSettings). Then the input method is moved to \(ui.trash).")
         let remove = alert.addButton(withTitle: String(localized: "Uninstall"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
@@ -320,7 +320,7 @@ enum UninstallAlert {
         let ui = SystemUINames.system()   // macOS's own names (D38)
         var lines: [String] = []
         if report.movedToTrash {
-            lines.append(String(localized: "The input method was moved to the \(ui.trash)."))
+            lines.append(String(localized: "The input method was moved to \(ui.trash)."))
         }
         if report.stillEnabled {
             lines.append(String(localized: "macOS still lists Dấu among the input sources; you can remove it in \(ui.inputSourcesPath)."))
@@ -328,7 +328,7 @@ enum UninstallAlert {
         if report.dataDeleted {
             lines.append(String(localized: "Settings and app rules were deleted."))
         }
-        lines.append(String(localized: "To remove the app too, drag Dấu from the \(ui.applications) folder to the \(ui.trash)."))
+        lines.append(String(localized: "To remove the app too, drag Dấu from the \(ui.applications) folder to \(ui.trash)."))
         alert.informativeText = lines.joined(separator: " ")
         alert.addButton(withTitle: String(localized: "Quit Dấu"))
         return alert

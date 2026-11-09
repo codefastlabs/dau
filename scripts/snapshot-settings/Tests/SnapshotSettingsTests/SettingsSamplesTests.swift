@@ -122,7 +122,7 @@ struct SidebarSearchTests {
         for query in ["Suggested", "Turn On Underline", "Add App", "underline", "no underline"] {
             #expect(SettingsSection.apps.matches(query), "\(query)")
         }
-        for query in ["Stable", "Typing goes wrong", "Remove Dấu from this Mac"] {
+        for query in ["Stable", "Problems typing", "Remove Dấu from this Mac"] {
             #expect(SettingsSection.updates.matches(query), "\(query)")
         }
         for query in ["Đề xuất", "Bật gạch chân", "Thêm ứng dụng", "gạch chân", "de xuat", "co gach chan"] {

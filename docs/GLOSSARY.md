@@ -7,6 +7,7 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 - **Dấu**: giữ nguyên ở mọi ngôn ngữ (D24 (Tên và định danh)).
 - **Tên giao diện của macOS** (System Settings, Keyboard, Input Sources, Edit…, Add, Done, Allow, Don’t Allow, Log Out, Applications, Trash, Language & Region ("Ngôn ngữ & Vùng") và mục Applications của nó, tên ngôn ngữ Vietnamese, tuỳ chọn "Automatically switch to a document’s input source"): không viết trong câu, luôn là `%@` lấy từ chuỗi của hệ thống (`SystemUINames`, `LayoutNames`; D38).
 - **Nhãn trong app của người khác** (OpenKey "Bảng điều khiển…", "Khởi động cùng macOS", "Thoát"; XKey "Thoát XKey"; Gõ Nhanh "Launch at login"; tên app khác như "Gõ Nhanh"): chép đúng chữ app đó hiện, cả trong câu tiếng Anh.
+- **Gõ Nhanh**: tên app khác, giữ nguyên chữ có dấu tiếng Việt trong câu tiếng Anh.
 - **Ví dụ gõ** (`hoaf binhf`, `hoà`, `thúy`…): dữ liệu, không dịch.
 
 ## Thuật ngữ
@@ -40,5 +41,6 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 ## Cách viết câu tiếng Anh
 
 - Hoa đầu mỗi từ (title case) cho nút, mục menu, tiêu đề cửa sổ, sheet, mục sidebar và lựa chọn của menu chọn; hoa chữ đầu câu (sentence case) cho tên hàng, tiêu đề nhóm, mô tả, câu gợi ý.
+- Tiêu đề ngắn dạng cụm từ (alert, banner) viết Title Case; tiêu đề là câu đầy đủ viết sentence case.
 - Dấu nháy cong “ ” và ’, dấu ba chấm là một ký tự (…), như chuỗi của macOS.
 - Phím Enter của bàn phím Mac gọi là Return.

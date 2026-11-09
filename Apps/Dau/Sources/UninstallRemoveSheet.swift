@@ -20,7 +20,7 @@ struct UninstallRemoveSheet: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             VStack(alignment: .leading, spacing: 6) {
-                Text("Remove Dấu from Input Sources")
+                Text("Remove Dấu from Your Input Sources")
                     .font(.headline)
                     .accessibilityAddTraits(.isHeader)
                 Text("Only you can remove an input source from macOS. \(ui.systemSettings) has the \(ui.inputSources) list open for you.")
@@ -37,7 +37,7 @@ struct UninstallRemoveSheet: View {
                 ProgressView()
                     .controlSize(.small)
                     .accessibilityHidden(true)
-                Text("Once Dấu is gone from the list, the input method is moved to the \(ui.trash).")
+                Text("Once Dấu is gone from the list, the input method is moved to \(ui.trash).")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

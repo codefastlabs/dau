@@ -99,7 +99,7 @@ struct AppRulesView: View {
                     // by the user (30/10/2026).
                     SectionHeader(
                         title: Text("Suggested"),
-                        description: Text("Apps labeled “Suggested” may type wrong text when you type very fast. Choose “Underline” only if an app garbles text as you type."))
+                        description: Text("Text may come out wrong in apps labeled “Suggested” when you type very fast. Choose “Underline” only if an app garbles text as you type."))
                 }
             }
         }
@@ -181,7 +181,7 @@ struct SuggestionRow: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(verbatim: name)
                         .lineLimit(1)
-                    Subtitle(Text("May type wrong text when you type very fast"))
+                    Subtitle(Text("Text may come out wrong when you type very fast"))
                 }
             }
         }

@@ -126,7 +126,7 @@ Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và cách đặt ngôn ngữ 
   - kiểm toán ĐẠT.
 
 **Phần còn lại — M9:**
-- Người dùng duyệt câu chữ tiếng Anh; ngôn ngữ khác chỉ thêm khi có người nói thạo duyệt (D41).
+- Câu chữ tiếng Anh: đã chốt và sửa trong catalog (09/11/2026). Ngôn ngữ khác chỉ thêm khi có người nói thạo duyệt (D41).
 - Hàng "Ngôn ngữ" trong Cài đặt chỉ sang mục ngôn ngữ riêng từng ứng dụng của macOS (D41).
   - Canvas trước, mã sau.
   - Câu hỏi mở: đo xem bộ gõ có đặt ngôn ngữ riêng được không.

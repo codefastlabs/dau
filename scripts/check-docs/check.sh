@@ -11,8 +11,7 @@
 #   2. no file:line references (line numbers drift; name the type or function);
 #   3. every D# / N# cited exists in docs/DECISIONS.md;
 #   3b. the first citation of each D# / N# in a living doc or docs/research/*.md carries its
-#      name, "D4 (Từ nước ngoài)" (decision-names.py; not L10N-REVIEW.md, a temporary list
-#      that numbers its own rows D1–D4);
+#      name, "D4 (Từ nước ngoài)" (decision-names.py);
 #   4. no wording listed in superseded.txt (DECISIONS.md and the dated M*-TESTING.md plans may);
 #      also in the comment lines of scripts/**/*.sh and scripts/**/*.swift (not in
 #      scripts/check-docs, which holds the patterns);
@@ -74,7 +73,7 @@ done
 
 # 3b. Names on first citations.
 named=($living docs/research/*.md(N))
-named=(${named:#docs/DECISIONS.md}); named=(${named:#docs/L10N-REVIEW.md})
+named=(${named:#docs/DECISIONS.md})
 python3 -I scripts/check-docs/decision-names.py $named | while IFS=$'\t' read -r f d found; do
   report "$f: lần dẫn đầu của $d phải kèm tên, dạng \"$d (tên trong DECISIONS.md)\": ${found[1,80]}"
 done

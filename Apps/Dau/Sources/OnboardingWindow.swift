@@ -87,7 +87,7 @@ struct OnboardingSidebar: View {
 
             Spacer(minLength: 0)
 
-            Hint(Text("Dấu doesn’t need Accessibility access."))
+            Hint(Text("Dấu doesn’t need permission to control your Mac."))
         }
         // Mockup: 16 pt inset, the 12 pt traffic lights, then 22 pt to the app name.
         .padding(.top, OnboardingScene.belowTitleBar(50))
@@ -167,7 +167,7 @@ extension OnboardingFlow.Step {
         switch self {
         case .oldInputMethods: "Check Other Input Methods"
         case .enable: "Turn On Dấu"
-        case .typing: "Choose Typing Method"
+        case .typing: "Choose a Typing Method"
         }
     }
 
@@ -183,8 +183,8 @@ extension OnboardingFlow.Step {
 extension OnboardingFlow.StepState {
     var spoken: Text {
         switch self {
-        case .done: Text("Done")
-        case .current: Text("Current")
+        case .done: Text("Completed")
+        case .current: Text("In progress")
         case .pending: Text("Not started")
         }
     }
@@ -485,7 +485,7 @@ struct EnableStep: View {
                 Text("When you click “Turn On Dấu”")
                     .font(.system(size: 13, weight: .semibold))
                     .accessibilityAddTraits(.isHeader)
-                Text("\(ui.systemSettings) will close, reopen and ask whether to turn on Dấu. Click **\(ui.allow)**.")
+                Text("\(ui.systemSettings) will quit, reopen, and ask whether to turn on Dấu. Click **\(ui.allow)**.")
                     .font(.system(size: 13))
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(alignment: .center, spacing: 16) {
@@ -588,7 +588,7 @@ struct EnableStep: View {
             OnboardingCard(spacing: 10) {
                 NumberedLine(number: 1, text: Text("Click **Try Again**, then click **\(ui.allow)** when \(ui.systemSettings) asks."))
                 NumberedLine(number: 2, text: Text("Or add it yourself: \(ui.inputSourcesPath) › **\(ui.edit)** › **+** › \(ui.vietnamese) › **Dấu**, then click **\(ui.add)**."))
-                NumberedLine(number: 3, text: Text("If Dấu isn’t in that list, log out and log back in once (Apple menu › **\(ui.logOut)**), then open Dấu again."))
+                NumberedLine(number: 3, text: Text("If Dấu isn’t in that list, log out and log back in once (\(Image(systemName: "applelogo")) › **\(ui.logOut)**), then open Dấu again."))
             }
             .layoutProbe("onbCard-2.failed")
         } buttons: {
@@ -1053,7 +1053,7 @@ struct TypingStep: View {
                 .font(.system(size: 16))
                 .accessibilityLabel(Text("Try typing"))
                 .layoutProbe("onbTryField-3")
-                Hint(Text("Try: \(SettingsSamples.tryIt(model.settings.typingMethod).keys)"))
+                Hint(Text("Try typing: \(SettingsSamples.tryIt(model.settings.typingMethod).keys)"))
                 if flow.status != .selected {
                     notActive
                 }
