@@ -222,6 +222,19 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
+    @Test("D11: a re-synced word the key only adds to (d + w → dư) is written once")
+    func resyncAppends() {
+        var s = Session()
+        s.type("oo")
+        // The app's text changed behind the input method's back: "x d" now.
+        s.doc.text = "x d"
+        s.doc.cursor = 3
+        s.type("w")
+        #expect(s.doc.text == "x dư")
+        #expect(s.kinds.last == .resync)
+        #expect(s.overCalls == 0)
+    }
+
     @Test("D11: ⌘A the input method never sees — tốt, select all, toots → tốt")
     func selectAllUnseen() {
         var s = Session()

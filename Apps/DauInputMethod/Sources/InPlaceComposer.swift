@@ -20,7 +20,9 @@ protocol InPlaceClient {
 ///   NSNotFound), no `selectedRange`;
 /// - key that replaces text before the cursor: one `selectedRange`, one `insertText`;
 ///   Backspace (D32) that re-places the tone also does, and is still left to the app,
-///   whose own Delete removes the last character (see `handle`);
+///   whose own Delete removes the last character (see `handle`); when the answer is not
+///   where this composer followed the cursor to, one `text(in:)` too, the D11 read on a
+///   mismatch (N3), which also tells an app that answers late (`replace`);
 /// - D20 "Thêm dấu cho từ đã gõ" (see `addMarks`): on a tone or transform key, or a
 ///   plain letter (E8), typed with no word in the engine and an unknown text before the
 ///   cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
@@ -53,6 +55,9 @@ struct InPlaceComposer {
     private var checkedLockedWord = false
     /// Time of the previous key or click on this client (`NSEvent.timestamp`, seconds).
     private var lastEventTime: TimeInterval?
+    /// The read `replace` made at the app's answer this key (location, text or nil if it
+    /// gave none), reused by the D11 re-sync so a key reads at most once (N3).
+    private var lateRead: (location: Int, text: String?)?
 
     /// UTF-16 units read before the cursor for D20: the longest word the engine tracks
     /// is 7 letters (D33), at most 13 scalars when decomposed (NFD: base + 2 marks on up
@@ -74,6 +79,8 @@ struct InPlaceComposer {
         var deleteCount: Int
         var selection: NSRange
         var expected: Int?
+        /// Where the composer followed the cursor to, across words (`CursorTracker.known`).
+        var known: Int?
         var insertedLength: Int
         /// The `replacementRange` sent, or nil when nothing was sent.
         var replacement: NSRange?
@@ -171,6 +178,7 @@ struct InPlaceComposer {
                                     client: some InPlaceClient) -> Outcome {
         let settled = isSettled(at: time)
         if let time { lastEventTime = time }
+        lateRead = nil
 
         switch route {
         case .ignore:
@@ -182,14 +190,16 @@ struct InPlaceComposer {
             let wasComposing = engine.isComposing
             // The character the app's own Delete removes (see below).
             let lastShown = engine.lastShown
+            let wordBefore = engine.isComposing ? engine.shown : nil
             var result = Outcome()
             switch engine.backspace() {
             case .passThrough:
-                // The app deletes one character itself.
-                if wasComposing && engine.isComposing {
+                // The app deletes one character itself: a letter of the word, or with no
+                // word, whatever precedes the cursor.
+                if wasComposing {
                     tracker.backspacePassedThrough()
                 } else {
-                    tracker.invalidate()
+                    tracker.backspaceOutsideWord()
                 }
             case .replace(let deleteCount, let insert):
                 // D32 re-places the tone ("hoà" ⌫ → "hò"). Chromium and Electron run
@@ -203,12 +213,12 @@ struct InPlaceComposer {
                 // D20 and not yet rewritten, may be deleted mark by mark: no guess.
                 if let lastShown, lastShown.properties.generalCategory != .nonspacingMark, deleteCount >= 1 {
                     result = replace(deleteCount: deleteCount, insert: insert, appending: lastShown,
-                                     selection: nil, client: client)
+                                     selection: nil, client: client, word: wordBefore, settled: settled)
                 } else {
                     result.kind = .reset
                 }
                 result.consumed = false
-                if result.kind == .replace {
+                if result.kind == .replace || result.kind == .late {
                     tracker.backspacePassedThrough()
                 } else {
                     // Let the app's own Delete run; the engine no longer knows the word.
@@ -216,7 +226,9 @@ struct InPlaceComposer {
                 }
             }
             if !engine.isComposing {
-                tracker.invalidate()
+                // The position stays known: Delete removed a character this composer
+                // knows (see `CursorTracker.backspaceOutsideWord`), or it forgot it.
+                tracker.endWord()
                 before = .unknown
                 checkedLockedWord = false
             }
@@ -226,8 +238,10 @@ struct InPlaceComposer {
             // Return, Tab, keypad Enter: restore the word if needed (D4), then let the app
             // handle the key itself (send a message, move focus…).
             var result = Outcome()
+            let wordBefore = engine.isComposing ? engine.shown : nil
             if case .replace(let deleteCount, let insert) = engine.endWord() {
-                result = replace(deleteCount: deleteCount, insert: insert, selection: nil, client: client)
+                result = replace(deleteCount: deleteCount, insert: insert, selection: nil, client: client,
+                                 word: wordBefore, settled: settled)
             }
             // What the app does with the key is unknown (Tab may focus another field).
             reset(engine: &engine)
@@ -294,19 +308,26 @@ struct InPlaceComposer {
     private mutating func character(_ scalar: Unicode.Scalar, selection: NSRange?, settled: Bool = false,
                                     engine: inout VietEngine, client: some InPlaceClient) -> Outcome {
         var result: Outcome
+        let wordBefore = engine.isComposing ? engine.shown : nil
         switch engine.handle(scalar) {
         case .passThrough:
-            tracker.passedThrough(length: scalar.utf16.count)
+            tracker.passedThrough(String(Character(scalar)))
             result = Outcome()
         case .replace(let deleteCount, let insert):
-            result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client)
+            result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client,
+                             word: wordBefore, settled: settled)
             if result.kind == .mismatch, settled, !readUnavailable, let seen = result.attempt?.selection {
                 // D11: the text changed behind the engine's back (a click the app did not
                 // report, an autocomplete, an app edit). Read the word that is really
                 // before the cursor and apply the key to it, as D20 does; same snapshot
-                // as the selectedRange just asked, one more call, only on a mismatch.
+                // as the selectedRange just asked, one more call, only on a mismatch
+                // (the read `replace` already made to rule out a late answer, if any).
+                let earlier = lateRead?.location == seen.location ? lateRead : nil
                 reset(engine: &engine)
-                if let synced = seedWord(scalar, selection: seen, engine: &engine, client: client),
+                // A read that gave nothing usable is not made again (N3).
+                if earlier == nil || earlier?.text != nil,
+                   let synced = seedWord(scalar, selection: seen, engine: &engine, client: client,
+                                         alreadyRead: earlier?.text),
                    synced.kind == .seed || synced.kind == .seedPass {
                     var resynced = synced
                     resynced.kind = synced.kind == .seed ? .resync : .resyncPass
@@ -332,10 +353,11 @@ struct InPlaceComposer {
             }
         }
         if !engine.isComposing {
-            tracker.invalidate()
             // The key ended a word (or was punctuation with no word): it is now right
             // before the cursor. After a failed replacement, nothing is known.
-            before = (result.kind == .mismatch || result.kind == .unsupported) ? .unknown : .noWord
+            let failed = result.kind == .mismatch || result.kind == .unsupported
+            if failed { tracker.invalidate() } else { tracker.endWord() }
+            before = failed ? .unknown : .noWord
             checkedLockedWord = false
         }
         return result
@@ -374,7 +396,17 @@ struct InPlaceComposer {
             read = text
             real = Self.trailingWord(text.precomposedStringWithCanonicalMapping)
         }
-        if real == engine.shown { return nil }
+        if real == engine.shown {
+            if tracker.known == nil, selection.length == 0 { tracker.anchor(at: selection.location) }
+            return nil
+        }
+        // The app may answer from before the last keys of this word (Chrome with a busy
+        // page, M6: at "deadline" + d the answer was one key behind "dea"): the word is
+        // still the engine's if the text read plus those keys is.
+        let shown = engine.shown
+        if let read, tracker.rebuild(Array(read.utf16), at: selection, accept: { Self.word(in: $0) == shown }) != nil {
+            return nil
+        }
         // Not the engine's word: forget it, keep the "checked" mark for the new word only
         // if it stays locked, and seed from the real text.
         reset(engine: &engine)
@@ -414,9 +446,34 @@ struct InPlaceComposer {
         pendingShadow = plain
         lastSeededWord = []
         #endif
-        let selection = client.selectedRange()
-        var outcome = seedWord(scalar, selection: selection, engine: &engine, client: client,
-                               rule: letter ? .letter : .mark)
+        var selection = client.selectedRange()
+        var read: String?
+        var didRead = false
+        if let known = tracker.known, selection.length == 0, selection.location != NSNotFound,
+           selection.location >= 0, selection.location != known, !tracker.edits.isEmpty {
+            didRead = true
+            // The app may answer from before the last Delete (Chrome with a busy page, M6:
+            // "Hoc", Space, ⌫, j found no word and gave "Hocj"). Read once at its answer;
+            // if that text with the edits it has not applied yet (each one's removed text
+            // checked against what it read) ends where this composer followed the cursor
+            // to, that is the text before the cursor.
+            read = readBefore(selection.location, client: client)
+            if let text = read,
+               let rebuilt = tracker.rebuild(Array(text.utf16), at: selection,
+                                             requireDeletedText: true, accept: { _ in true }) {
+                let count = min(known, Self.readLength, rebuilt.count)
+                read = String(decoding: rebuilt.suffix(count), as: UTF16.self)
+                selection = NSRange(location: known, length: 0)
+            }
+        }
+        if selection.length == 0, selection.location != NSNotFound, selection.location >= 0 {
+            tracker.anchor(at: selection.location)
+        }
+        // A read that gave nothing usable is not made again (N3): no seed, as `seedWord`
+        // does for such a read.
+        var outcome = didRead && read == nil ? nil
+            : seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read,
+                       rule: letter ? .letter : .mark)
         if outcome == nil {
             // Not seeded (or a key that does not join, D20): the key starts a word as
             // usual (never asks selectedRange again: with an empty engine a key never
@@ -482,8 +539,11 @@ struct InPlaceComposer {
             before = .noWord
             return nil
         }
-        let count = min(location, Self.readLength)
+        // `alreadyRead` ends at `location`; it is shorter than `readLength` only when it
+        // was rebuilt from a late answer (`addMarks`).
+        let count = alreadyRead.map { min($0.utf16.count, location) } ?? min(location, Self.readLength)
         let range = NSRange(location: location - count, length: count)
+        if alreadyRead == nil && readUnavailable { return nil }
         guard let text = alreadyRead ?? client.text(in: range) else {
             readUnavailable = true
             return nil
@@ -548,7 +608,7 @@ struct InPlaceComposer {
         case .passThrough:
             // D20 does not apply ("viet" + j → "vietj"): the app types the key. The
             // engine keeps the word, so the next keys continue it (D4 baseline = seed).
-            tracker.didReplace(NSRange(location: location, length: 0), insertedLength: scalar.utf16.count)
+            tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)))
             return Outcome(consumed: false, kind: .seedPass)
         case .replace(let deleteCount, let insert):
             guard deleteCount <= word.count else {
@@ -556,7 +616,9 @@ struct InPlaceComposer {
                 return Outcome(consumed: false, kind: .mismatch)
             }
             var result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client)
-            if result.kind == .replace {
+            // `.insert`: the key only adds to the word read ("d" + w → "dư"), already
+            // written at the cursor; handling the key again would write it twice.
+            if result.kind == .replace || result.kind == .insert {
                 result.kind = .seed
             } else {
                 reset(engine: &engine)
@@ -603,7 +665,7 @@ struct InPlaceComposer {
         #if DEBUG
         lastSeededWord = word
         #endif
-        tracker.didReplace(NSRange(location: location, length: 0), insertedLength: scalar.utf16.count)
+        tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)))
         return Outcome(consumed: false, kind: .seedPass)
     }
 
@@ -624,8 +686,20 @@ struct InPlaceComposer {
     /// client for `selectedRange` when text before the cursor must be replaced, unless
     /// this key already asked (`selection`).
     /// `appending`: one more scalar after `insert` (Backspace, see `handle`).
+    ///
+    /// `word`: the engine's word before this key, when the key may be checked against an
+    /// app that answers late (`settled` as for D11). If `selectedRange` is not where this
+    /// composer followed the cursor to (`CursorTracker.known`), the app may not have
+    /// applied the latest edits yet (Chrome with a busy page, M6: the first replacement
+    /// of a word took "ba" for "an" in "bạn" and gave "ạnn"). One read at the app's
+    /// answer (the D11 read on a mismatch, N3): if that text plus the edits it has not
+    /// applied is `word`, the key replaces at the followed position; the app applies the
+    /// replacement after those edits, as it applies everything in order. Otherwise the
+    /// answer stands: a mismatch inside a word (D11, with this read), or the start of a
+    /// word, where the app may have edited the text (autocorrect, smart dashes).
     private mutating func replace(deleteCount: Int, insert: TextBuffer, appending extra: Unicode.Scalar? = nil,
-                                  selection known: NSRange?, client: some InPlaceClient) -> Outcome {
+                                  selection known: NSRange?, client: some InPlaceClient,
+                                  word: [Unicode.Scalar]? = nil, settled: Bool = false) -> Outcome {
         var result = Outcome(consumed: true)
         if deleteCount == 0 {
             result.kind = .insert
@@ -638,12 +712,42 @@ struct InPlaceComposer {
         var text = insert.description
         if let extra { text.unicodeScalars.append(extra) }
         var attempt = Attempt(deleteCount: deleteCount, selection: selection, expected: tracker.expected,
-                              insertedLength: text.utf16.count)
+                              known: tracker.known, insertedLength: text.utf16.count)
+        if let word, settled, !readUnavailable, let followed = tracker.known, followed >= deleteCount,
+           selection.length == 0, selection.location != NSNotFound, selection.location >= 0,
+           selection.location != followed {
+            let read = readBefore(selection.location, client: client)
+            lateRead = (selection.location, read)
+            if let read,
+               let rebuilt = tracker.rebuild(Array(read.utf16), at: selection,
+                                             accept: { Self.word(in: $0) == word }),
+               rebuilt.count >= deleteCount {
+                // Leave out of the range the end of the word that does not change (the
+                // keys the app has not applied yet, mostly): what is replaced is then
+                // text the app has, whatever it does first.
+                let old = Array(rebuilt.suffix(deleteCount))
+                var units = Array(text.utf16)
+                var length = deleteCount
+                while length > 0, let last = units.last, last == old[length - 1],
+                      CursorTracker.isWholeCharacter(last) {
+                    units.removeLast()
+                    length -= 1
+                }
+                let range = NSRange(location: followed - deleteCount, length: length)
+                let trimmed = String(decoding: units, as: UTF16.self)
+                if length > 0 || !units.isEmpty { client.insertText(trimmed, replacementRange: range) }
+                tracker.didReplace(range, text: trimmed, cursor: followed)
+                attempt.replacement = range
+                result.kind = .late
+                result.attempt = attempt
+                return result
+            }
+        }
         switch tracker.plan(selection: selection, deleteCount: deleteCount) {
         case .replace(let range):
             attempt.replacement = range
             client.insertText(text, replacementRange: range)
-            tracker.didReplace(range, insertedLength: text.utf16.count)
+            tracker.didReplace(range, text: text)
             result.kind = .replace
         case .unsupported:
             result.kind = .unsupported
@@ -656,10 +760,29 @@ struct InPlaceComposer {
         return result
     }
 
+    /// One read of up to `readLength` UTF-16 units before `location` (D11, D20). nil: the
+    /// client gave no text (then no read again until activation, N3) or text of another
+    /// length (D18).
+    private mutating func readBefore(_ location: Int, client: some InPlaceClient) -> String? {
+        let count = min(location, Self.readLength)
+        guard count > 0 else { return "" }
+        guard let text = client.text(in: NSRange(location: location - count, length: count)) else {
+            readUnavailable = true
+            return nil
+        }
+        return text.utf16.count == count ? text : nil
+    }
+
+    /// The word at the end of `units` (text before the cursor), as `trailingWord` sees it
+    /// in precomposed form (how `checkLockedWord` compares text with the engine).
+    static func word(in units: [UInt16]) -> [Unicode.Scalar] {
+        trailingWord(String(decoding: units, as: UTF16.self).precomposedStringWithCanonicalMapping)
+    }
+
     /// Inserts at the current selection without asking where it is (deleteCount 0).
     private mutating func insertAtCursor(_ insert: TextBuffer, client: some InPlaceClient) {
         let text = insert.description
         client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-        tracker.didInsertAtCursor(length: text.utf16.count)
+        tracker.didInsertAtCursor(text)
     }
 }

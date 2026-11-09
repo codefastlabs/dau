@@ -57,6 +57,11 @@ struct PerfLog {
         /// D11: re-synced as above, but the key does not apply to the word read: it went
         /// to the app unchanged.
         case resyncPass = "resync_pass"
+        /// selectedRange answered from before the input method's latest edits (the app
+        /// had not applied them yet: Chrome with a busy page, M6); one attributedSubstring
+        /// showed that text plus those edits is the engine's word, and the key replaced
+        /// it at the position the input method followed (one insertText).
+        case late
     }
 
     /// Off unless `DauPerfLog` is set, in Debug builds too: even without text, one line

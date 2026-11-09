@@ -100,8 +100,23 @@ dau/
   - click chuột;
   - `activateServer`/`deactivateServer`, `commitComposition`;
   - phím di chuyển con trỏ;
-  - `selectedRange` khác dự đoán;
+  - `selectedRange` khác dự đoán (trừ khi app chỉ trả lời chậm, mục dưới);
   - nguồn nhập liệu đổi mà IMK không báo (xem "Đổi nguồn nhập liệu không qua `activateServer`").
+
+#### App trả lời chậm (M6, `CursorTracker.known`, `CursorTracker.rebuild`)
+
+- Hiện tượng (Chrome, trang bận): app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); D11 (Kiểm tra ngữ cảnh) không bắt được vì vị trí dự đoán (`expected`) chỉ có trong một từ.
+- Chromium: thay với `replacementRange` giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); lời gọi của bộ gõ vào cùng hàng đợi với phím của trang (`MainThreadEventQueue::QueueClosure`).
+- Cách xử lý:
+  - `CursorTracker` theo vị trí con trỏ qua ranh giới từ (`known`), cùng vài thao tác gần nhất bộ gõ đã làm hoặc để đi thẳng (`edits`) và chữ chính nó đã gõ ngay trước con trỏ (`tail`).
+    - Mất vị trí khi reset (click, mũi tên, phím tắt, Return/Tab, đổi client), và khi ⌫ đi thẳng mà không biết chữ bị xoá.
+    - `known` không thay cho `expected`: ở đầu từ, vị trí khác `known` vẫn có thể là app tự sửa chữ (tự sửa chính tả, gạch ngang thông minh).
+  - Ở phím thay chữ, nếu `selectedRange` khác `known` và phím trước đủ 50 ms (như D11): đọc chữ trước vị trí app trả một lần (lần đọc của D11 khi lệch, N3).
+    - Nếu chữ đó cộng các thao tác app chưa áp (tối đa `lateLimit`, mỗi thao tác xoá phải gặp đúng chữ nó xoá) ra đúng từ trong engine: thay ở vị trí `known` (kind `late` trong log perf).
+    - Phần cuối từ không đổi được để ngoài vùng thay, nên phần đó không phụ thuộc thứ tự app áp.
+    - Không thì như cũ: trong từ là lệch (D11, dùng lại chữ vừa đọc), đầu từ thì tin `selectedRange`.
+  - Cùng cách đó ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ).
+- Giới hạn: app chậm hơn `lateLimit` thao tác, hoặc phím dưới 50 ms, thì như trước. Kiểm bằng client giả trong `LateAnswerTests`.
 
 #### Backspace thay tại chỗ (D32)
 

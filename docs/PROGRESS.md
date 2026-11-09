@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có. Việc tiếp theo: bước 1c, trên máy nhà (log của 1b ở `build/load/1b-20261109-213527/` máy nhà).
+Chờ người dùng: giờ chạy bước 1d (chiếm màn hình, khoảng 5 phút). Việc tiếp theo: bước 1d.
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -23,7 +23,7 @@ Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
      - Thứ tự: (1) Telex của Apple (`--source com.apple.inputmethod.VietnameseIM.VietnameseTelex`), trang rảnh 1 lần (đáp án của Apple) rồi trang bận 3 lần, trước mọi lần cài lại; chỉ tin ô có dấu vết của Apple (1a). (2) Cài Dấu Debug: trang bận 3 lần (log vị trí cho kiểu (b), đọc bằng `perf-report.sh --input`), trang rảnh 1 lần (đối chứng). (3) Cài lại bản Release.
      - Không đo: gạch chân (đường lui, chỉ đo khi cách sửa ở 1c không đạt); Dấu Release (09/11 đã sai 2/3, đủ cho biết lời gọi thêm của bản Debug không phải nguyên nhân).
      - Apple cũng sai khi trang bận thì lỗi không riêng của Dấu, và câu hỏi của D13 đổi.
-   - 1c. Từ log của 1b, hiểu kiểu (b); sửa độ bền của thay tại chỗ (giao imk-dev). Cách sửa phải nới N3 (Ít lời gọi vào ứng dụng đích) thì hỏi người dùng trước khi đổi `DECISIONS.md`.
+   - 1c. Mã xong 09/11 (nhật ký), chưa đo thật. Từ log của 1b, hiểu kiểu (b); sửa độ bền của thay tại chỗ (giao imk-dev). Cách sửa phải nới N3 (Ít lời gọi vào ứng dụng đích) thì hỏi người dùng trước khi đổi `DECISIONS.md`.
    - 1d. Đo lại như 1b. Mục tiêu: thay tại chỗ đúng khi trang bận, ít nhất ngang Telex của Apple trong cùng điều kiện. Gạch chân là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn, nên không phải đích của bước này: sửa không đạt thì tìm cách sửa khác. Có số đo rồi thì đề xuất sửa D13 (Gạch chân làm đường lui) và nhãn "Đề xuất" bật gạch chân cho Chrome, VS Code, Firefox trong danh sách tương thích; người dùng duyệt.
 2. Bài tải nặng theo `docs/ROADMAP.md` mục M6.
 3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
@@ -171,3 +171,9 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Kiểu (a) thấy rõ trong log vị trí: "bạn" (phím b a n j) ở lần thay đầu của từ có `sel` 21 thay vì 22 (chữ "n" chưa được Chrome áp), nên bộ gõ thay "ba" thành "ạn" và ra "ạnn"; không có vị trí chờ đợi để so (D11 (Kiểm tra ngữ cảnh)), nên không bắt được. Mỗi ô trang bận chỉ có 1–3 dòng resync, ít hơn số từ sai: phần lớn chỗ sai không được D11 phát hiện. Kiểu (b) phân tích ở 1c.
   - So với mục tiêu của 1d: trong điều kiện này Apple đúng 2/2 lần nó biến đổi chữ, Dấu thay tại chỗ đúng 0/3.
   - Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`; bộ gõ đã cài lại bản Release (build lúc 21:23, mã bộ gõ như HEAD). Giữ `build/load/1b-20261109-213527/` cho 1c.
+- 09/11/2026 — M6 bước 1c: thay tại chỗ khi app trả lời chậm — imk-dev, phiên chính.
+  - Cơ chế (từ log 1b): Chrome áp phím đúng thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, thường thiếu đúng một phím. Kiểu (b) không phải lỗi riêng: vị trí chờ đợi của D11 (Kiểm tra ngữ cảnh) tính từ lần thay đầu đã sai, nên lần dựng lại đọc đúng từ đã hỏng. Chi tiết và cách xử lý: `docs/ARCHITECTURE.md` mục "App trả lời chậm".
+  - Client giả trong `LateAnswerTests` tái hiện đúng chữ của log cho "ạnn", "êeting", "nàyy", "vêetjs", "chêeuf", "Hocj" (đỏ trước khi sửa). "đaaline": mô hình ra "đealine", chữ cụ thể chưa rõ. "áng": "S" chưa từng vào ô, không phải lỗi vị trí, nguyên nhân chưa rõ, cách sửa không đụng tới.
+  - Sửa thêm một lỗi có sẵn: khi D11 dựng lại từ mà phím chỉ thêm chữ, chữ bị chèn hai lần (test `resyncAppends`).
+  - Số lời gọi tối đa mỗi phím không đổi (1 `selectedRange`, 1 `attributedSubstring`, 1 `insertText`), nhưng lần đọc khi lệch nay có thể xảy ra ở lần thay đầu của từ, và bộ gõ thay ở vị trí nó tự theo dõi khi chữ đọc được cho thấy app chỉ chậm: câu chữ của D11 cần sửa, đề xuất sau khi 1d có số đo. `lateLimit` = 2 (mọi câu trả lời chậm trong 1b chỉ chậm một phím; mô phỏng 200 seed: chậm 0–2 phím 0 sai, chậm 3 phím lùi về cách cũ).
+  - Kiểm: test IMK 124 đạt (trước 111; `xcodebuild test -scheme DauInputMethod`, phiên chính chạy lại), build Debug và Release, check-docs. Chưa đo trên Chrome thật (bước 1d).
