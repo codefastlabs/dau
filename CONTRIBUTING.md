@@ -19,6 +19,8 @@ Cảm ơn bạn muốn góp sức. Dấu là phần mềm tự do theo giấy ph
 
 Cần Xcode (README ghi bản đã thử) và XcodeGen (`brew install xcodegen`). Nếu `xcode-select -p` trỏ tới Command Line Tools, đặt `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` trước các lệnh trên.
 
+Chạy `scripts/dev/doctor.sh` trước: lệnh chỉ đọc này liệt kê máy bạn còn thiếu gì (Xcode, XcodeGen, chứng chỉ ký khớp Team, bản đã cài, nguồn nhập liệu) và lệnh sửa từng mục.
+
 ## Build và cài bộ gõ bằng Team của bạn
 
 Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ chấp nhận App Group khi bản dựng được ký bằng một Team ID thật; bản ký ad-hoc không chạy được phần này. Vì vậy bạn cần một Team, nhưng Personal Team miễn phí là đủ, không cần chương trình Apple Developer trả phí và không cần provisioning profile.

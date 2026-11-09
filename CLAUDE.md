@@ -70,6 +70,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 ## Lệnh thường dùng (cập nhật khi dự án có thật)
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
+- `scripts/dev/doctor.sh` — máy mới thiếu gì để build, test, chạy Dấu (Xcode, xcodegen, ký, bản đã cài, nguồn nhập liệu, secure input), kèm lệnh sửa; chỉ đọc, `--tests` để chạy cả test engine.
 - `scripts/dev/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
 - `scripts/dev/clean-dau.sh` — không tham số: liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` (người dùng tự chạy) xoá những gì xoá được để thử cài từ máy sạch — các mục trong `com.apple.inputsources` phải bỏ bằng "–" trong Cài đặt hệ thống › Bàn phím › Nguồn đầu vào — rồi đăng xuất.
 - `scripts/dev/install-input-method.sh` — build và cài bộ gõ bản Debug vào `~/Library/Input Methods`; `--release` cho bản Release.
