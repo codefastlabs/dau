@@ -49,5 +49,6 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | `docs/history/LOG-M0-M4.md` | nhật ký M0–M4 (29–30/10/2026), chuyển từ `PROGRESS.md` khi đóng M4; bảng số đo M1–M3 |
 | `docs/history/LOG-M5.md` | nhật ký M5 (30/10–05/11/2026), chuyển từ `PROGRESS.md` khi đóng M5 |
 | `docs/history/LOG-M5-M6.md` | nhật ký giữa M5 và M6 (05–08/11/2026), chuyển từ `PROGRESS.md` ngày 09/11/2026 |
+| `docs/history/DECISIONS-LOG.md` | lịch sử từng nguyên tắc và quyết định của `DECISIONS.md`: ngày, ai chốt, bản trước, cách nói cũ |
 | `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
 | `docs/history/KICKOFF.md` | brief khởi động M0–M8 lúc bắt đầu dự án |
