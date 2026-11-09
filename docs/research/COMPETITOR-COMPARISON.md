@@ -3,63 +3,46 @@
 ## Hiện trạng (09/11/2026)
 
 - **Mới là kế hoạch, chưa đo gì.** File này chưa có kết luận nào. Kết quả chưa đo không được đưa lên giao diện hay website (N5).
-- Đây là việc nghiên cứu cho M10 (trang "Dấu khác các bộ gõ khác thế nào"), **không thuộc M6 và không chặn phát hành**. Riêng phần A trả lời một câu hỏi của D13 nên làm trước.
-- Ba câu hỏi: (A) khi người thật gõ, có hai phím cách nhau dưới 10 ms mà phím sau phải thay chữ không (D13, `docs/COMPATIBILITY.md` mục 6.2); (B) gõ tiếng Việt thông dụng có đúng như các bộ gõ cùng kiến trúc IMK không; (C) từ tiếng Anh và tên trong mã bị đổi nhiều hay ít.
-- Chờ người dùng duyệt từng phần (mục 4).
+- Đây là việc nghiên cứu cho M10 (trang "Dấu khác các bộ gõ khác thế nào"), **không thuộc M6 và không chặn phát hành**. Phần A trả lời một câu hỏi của D13.
+- Phiên chính và subagent tự làm mọi bước. Người dùng không phải cài gì, cấp quyền gì hay gõ gì. Việc duy nhất của người dùng là chọn giờ cho một lượt chiếm màn hình khoảng 20 phút (phần C), như CLAUDE.md quy định.
+- Ba câu hỏi: (A) gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms không (D13, `docs/COMPATIBILITY.md` mục 6.2); (B) so với các bộ gõ khác thì Dấu khác ở đâu, ở mức engine; (C) so với bộ gõ tiếng Việt có sẵn của macOS thì tiếng Việt thông dụng và từ tiếng Anh ra sao trong ứng dụng thật.
 
-## Phần A. Nhịp gõ thật (làm trước, không chiếm màn hình)
+## Phần A. Nhịp gõ thật: dùng dữ liệu công khai, không đo trên người dùng
 
-- **Cách đo:** dùng bản Debug của Dấu với `DauPerfLog` (D8) trong một ngày làm việc. Nhật ký có giờ, loại phím và app, **không có chữ**. Người dùng gõ như bình thường.
-- **Kết quả cần có:** `scripts/perf/perf-report.sh` thêm bảng phân bố khoảng cách giữa hai phím theo app, và số phím có thay chữ đến dưới 10 ms sau phím trước, tính riêng cho Chrome, VS Code, Terminal.
-- **Không dùng số này để đếm số lần lệch vị trí hay xoá bộ đệm (D11):** bản Debug hỏi thêm vị trí sau mỗi lần thay chữ để chẩn đoán (`ReplaceDiag.swift`, không có ở bản Release), nên hai con số đó có thể khác bản Release. Khoảng cách giữa hai phím thì không bị ảnh hưởng.
-- Đây là số đo của một người, ghi rõ như vậy, không suy rộng. Nếu không có phím thay chữ nào dưới 10 ms thì giữ D13; nếu có thì đưa số đo cho người dùng xem lại D13.
-- Xong thì cài lại bản Release.
+- Tìm bộ dữ liệu nhịp gõ công khai của nhiều người gõ thật (ví dụ bộ dữ liệu 136 triệu lần gõ phím của Đại học Aalto, CHI 2018). Kiểm giấy phép trước khi dùng, chỉ tải về `build/` (không commit), ghi nguồn.
+- **Kết quả:** phân bố khoảng cách giữa hai phím liên tiếp; tỉ lệ cặp phím cách nhau dưới 10 ms, theo tốc độ gõ của người gõ.
+- **Giới hạn:** người trong dữ liệu gõ tiếng Anh. Telex có cặp phím riêng ("ee", "ow", phím dấu ở cuối từ), nên chỉ ước lượng được, ghi rõ như vậy. Đổi D13 hay không là việc của người dùng, dựa trên số này.
+- Không tìm được dữ liệu có giấy phép phù hợp thì ghi lại và dừng phần A. Không thay bằng việc ghi nhật ký trên máy người dùng.
 
-## Phần B và C. So sánh trong ứng dụng (chiếm màn hình)
+## Phần B. Khác biệt ở mức engine: dùng lại số đã có
 
-### Bộ gõ
+- `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9 đã so 10.303 ca với đáp án test của 10 bộ gõ khác (có Gõ Nhanh và XKey; XKey có engine chuyển từ OpenKey). Không đo lại.
+- **Việc cần làm:** gom các ca khác nhau thành bảng theo chủ đề (từ tiếng Anh, đặt dấu, uơ/ươ, Backspace…), mỗi chủ đề vài ví dụ kèm số D, làm nguồn cho trang M10. Chạy offline bằng `scripts/research/external-tests/compare.sh`, không chiếm màn hình.
+- **Giới hạn:** đáp án test của họ cho biết hành vi engine theo cấu hình test, không phải hành vi trong ứng dụng thật với cài đặt mặc định. Ghi rõ như vậy.
 
-Chỉ so với các bộ gõ cùng kiến trúc IMK, vì đó là phép so sánh sát nhất với Dấu:
+## Phần C. So với bộ gõ có sẵn của macOS trong ứng dụng thật
 
-| Bộ gõ | Ghi chú |
-|---|---|
-| Dấu | bản Release đã cài; cài đặt mặc định theo D15 |
-| Bộ gõ tiếng Việt của macOS | có sẵn, thêm bằng "+"; ID nguồn đọc bằng TIS lúc chạy, không ghi từ trí nhớ |
-| XKey ở chế độ IMK | thư mục `XKeyIM` của dự án; cài theo README của XKey |
+Bộ gõ của Apple chỉ đo được bằng cách gõ thật, vì không có engine để chạy riêng. Trên máy này `com.apple.inputmethod.VietnameseIM.VietnameseTelex` đã được bật sẵn (đọc bằng TIS 09/11/2026), nên không phải đổi cài đặt hệ thống.
 
-Để sau: các bộ gõ chặn phím (OpenKey, Gõ Nhanh). Chúng cần quyền Accessibility và gửi Backspace giả, nên muốn đo công bằng thì cần cách đo khác.
-
-### Môi trường
-
-- Chạy trên một **tài khoản macOS riêng** do người dùng tạo, không phải tài khoản làm việc chính, để không cài bộ gõ của người khác vào máy đang dùng.
-- Mỗi lần chỉ chọn một nguồn tiếng Việt. Ghi phiên bản của từng bộ gõ và bản macOS.
-
-### Dữ liệu
-
-Chỉ gõ Telex, chỉ dùng phần mà cả ba bộ gõ đều hỗ trợ: thứ tự chuẩn (dấu thanh ở cuối từ), không bỏ dấu tự do, không gõ tắt.
-
-- **B. Tiếng Việt thông dụng:** khoảng 300 câu văn xuôi hiện đại (tin nhắn, email, ghi chú), từ một nguồn có giấy phép dùng được hoặc tự viết. Chuyển sang phím Telex bằng script, để tần suất từ giống văn bản thật.
-- **C. Tiếng Anh và mã:** khoảng 300 từ tiếng Anh thông dụng (danh sách có giấy phép, ví dụ SCOWL; ghi giấy phép như `external-test-inputs/NOTICE.md`), từ khoá Swift, JavaScript, Python, lệnh terminal, và câu trộn Việt–Anh.
-
-### Cách chấm
-
-- **B đúng khi:** chữ ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa, thuý/thúy).
-- **C đúng khi:** chữ ra giữ nguyên chữ đã gõ. Từ vừa là tiếng Anh vừa là âm tiết tiếng Việt hợp lệ ("car", "as") tính riêng một nhóm, không chấm đúng sai (D4 là lựa chọn thiết kế).
-- Đáp án lấy từ chữ gốc, không từ kết quả của bộ gõ nào (D10).
-
-### Ứng dụng và tốc độ
-
-- Một app thử riêng (NSTextView; không dùng TextEdit vì nó tự lưu tài liệu lên iCloud) và Chrome.
-- Khoảng cách giữa hai phím: 120 ms (gần gõ thường) và 30 ms. Nếu phần A tìm thấy khoảng cách dưới 10 ms thì thêm đúng khoảng cách đó.
-- Gõ bằng `scripts/selftest/typing/run.sh` mở rộng thêm tuỳ chọn chọn nguồn theo ID; khi đo bộ gõ khác thì bỏ phần nhật ký riêng của Dấu.
-- Ước lượng chưa tới 30 phút chiếm màn hình cho cả ba bộ gõ.
+- **Bộ gõ:** Dấu (bản Release đã cài, mặc định theo D15) và Apple Telex.
+- **Dữ liệu** (chỉ dùng phần cả hai cùng hỗ trợ: Telex thứ tự chuẩn, không bỏ dấu tự do, không gõ tắt):
+  - khoảng 150 câu văn xuôi hiện đại, tự viết hoặc lấy từ nguồn có giấy phép, chuyển sang phím Telex bằng script;
+  - khoảng 150 từ tiếng Anh thông dụng và từ trong mã (từ khoá Swift, JavaScript, Python, lệnh terminal), cùng câu trộn Việt–Anh.
+- **Cách chấm:**
+  - Tiếng Việt đúng khi ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa).
+  - Tiếng Anh đúng khi giữ nguyên chữ đã gõ. Từ vừa là tiếng Anh vừa là âm tiết tiếng Việt hợp lệ ("car", "as") tính riêng một nhóm, không chấm đúng sai (D4).
+  - Đáp án lấy từ chữ gốc, không từ kết quả của bộ gõ nào (D10).
+- **Ứng dụng:** một app thử riêng (NSTextView; không dùng TextEdit) và Chrome. Khoảng cách giữa hai phím 120 ms và 30 ms.
+- **Cách chạy:** `scripts/selftest/typing/run.sh` thêm tuỳ chọn chọn nguồn theo ID. Mọi thứ build xong trước, rồi báo người dùng "sẵn sàng, khoảng 20 phút", chạy một lượt khi được đồng ý, báo lúc bắt đầu và lúc xong. Sau đó chọn lại nguồn đầu vào như trước khi chạy.
 - Lưu mọi ca sai (chuỗi phím và chữ ra) trong `build/`, không commit.
 
-## Thứ tự làm và điểm dừng
+## Để sau
 
-1. **Phần A:** người dùng đồng ý dùng bản Debug một ngày; mở rộng `perf-report.sh`; đọc kết quả; cài lại bản Release.
-2. Sinh dữ liệu B, C và đáp án; mở rộng script gõ. Không chiếm màn hình.
-3. **Người dùng** tạo tài khoản macOS riêng, thêm bộ gõ của Apple, cài XKey.
-4. Chạy B, C trong tài khoản đó. **Hỏi giờ chạy.**
-5. Dọn: gỡ XKey, bỏ các nguồn đã thêm; người dùng tự quyết có xoá tài khoản thử không.
-6. Ghi kết quả vào mục Hiện trạng và thân bài file này. Quyết định nào đáng xem lại (D13, D4) thì nêu kèm số đo; đổi quyết định là việc của người dùng.
+Các bộ gõ chặn phím (OpenKey, Gõ Nhanh, chế độ chặn phím của XKey) trong ứng dụng thật: chúng cần cài phần mềm bên ngoài và cấp quyền Accessibility. Chỉ làm khi phần B và C cho thấy cần, và theo cách không cần người dùng làm gì thêm.
+
+## Thứ tự
+
+1. Phần A và B (offline, không chiếm màn hình).
+2. Chuẩn bị phần C: dữ liệu, đáp án, script, build.
+3. Hỏi giờ, chạy phần C một lượt.
+4. Ghi kết quả vào mục Hiện trạng và thân bài file này. Quyết định nào đáng xem lại (D13, D4) thì nêu kèm số đo.
