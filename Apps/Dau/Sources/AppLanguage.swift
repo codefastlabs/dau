@@ -188,11 +188,19 @@ struct LanguageRow: View {
     var body: some View {
         let ui = SystemUINames.system()
         let status = fixedStatus ?? liveStatus
+        let language = AppLanguage.name(of: status.shownLanguage)
         LabeledContent {
             HStack(spacing: 8) {
-                Text(verbatim: AppLanguage.name(of: status.shownLanguage))
+                Text(verbatim: language)
                     .foregroundStyle(.secondary)
                     .fixedSize()
+                    // One element: as a plain Text, macOS 27.2 exposes a static text
+                    // holding a second one with the same value, so VoiceOver can read the
+                    // language twice (AX tree of Dấu 6d772e6, 09/11/2026; not caused by
+                    // `fixedSize`). Same pattern as the shortcut row's keycaps.
+                    .accessibilityElement(children: .ignore)
+                    .accessibilityAddTraits(.isStaticText)
+                    .accessibilityLabel(Text(verbatim: language))
                 if status.showsReopen {
                     Button("Reopen Dấu") { AppRelauncher.reopen() }
                 }
