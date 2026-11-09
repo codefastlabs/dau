@@ -33,7 +33,7 @@ Mỗi mốc kết thúc khi: test xanh, đã tự rà soát với `DECISIONS.md`
 
 ## M6 — Hiệu năng dưới tải
 - App test tự gửi phím 20 phím/giây vào TextEdit, Safari, Telegram trong khi CPU đầy và `memory_pressure` đang chạy.
-- Chỉ số: văn bản cuối khớp 100%; độ trễ p50/p99 phía bộ gõ; bộ nhớ ổn định theo thời gian. So với gõ bằng U.S. và với các bộ gõ khác (kế hoạch đo: `docs/research/COMPETITOR-COMPARISON.md`).
+- Chỉ số: văn bản cuối khớp 100%; độ trễ p50/p99 phía bộ gõ; bộ nhớ ổn định theo thời gian. So với gõ bằng U.S. và với OpenKey.
 - Chốt ngưỡng vào `DECISIONS.md`; quyết định về D12 dựa trên số đo.
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md` (người dùng chốt 30/10/2026): Zalo, Discord, Messages, Pages, Numbers, Ghostty, Zed, Xcode, WebStorm; kiểm lại Terminal không gửi ⌫ cho bộ gõ; K5, K6 cho phần lớn app (K6 theo D4 × D20).
 
