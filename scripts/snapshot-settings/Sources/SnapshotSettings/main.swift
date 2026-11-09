@@ -69,6 +69,7 @@ NSApplication.shared.setActivationPolicy(.accessory)
 MainActor.assumeIsolated {
     // A throwaway suite so snapshots never touch real settings.
     let suite = "dau.snapshot-settings"
+    defer { UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite) }
     UserDefaults(suiteName: suite)?.removePersistentDomain(forName: suite)
     let store = SettingsStore(defaults: UserDefaults(suiteName: suite) ?? .standard, suiteName: suite)
     store.save(Snapshot.sampleSettings())

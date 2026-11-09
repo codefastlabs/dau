@@ -167,7 +167,6 @@ targets:
       - path: Apps/DauInputMethod/Sources/PerfLog.swift
       - path: Apps/DauInputMethod/Sources/EngineSettings.swift
       - path: Apps/DauInputMethod/Sources/HostApp.swift
-      - path: Apps/DauInputMethod/Sources/LegacyModeMemory.swift
       - path: Apps/DauInputMethod/Sources/LaunchOrigin.swift
     dependencies:
       - package: DauEngine
