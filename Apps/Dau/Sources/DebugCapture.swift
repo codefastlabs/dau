@@ -44,9 +44,7 @@ import SwiftUI
 /// scripts/selftest/settings-window on a copy re-signed ad hoc without entitlements:
 /// `--capture-onboarding` (the onboarding window on fixed services),
 /// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào"
-/// sheet, laid out without running anything) and `--capture-banner` (the three banner
-/// states after "Bật lại", laid out without running anything). The
-/// Settings window itself is measured from outside, in the real app (`--settings-window`,
+/// sheet, laid out without running anything). The Settings window itself is measured from outside, in the real app (`--settings-window`,
 /// ax-check.swift).
 @MainActor
 enum DebugCapture {
@@ -57,7 +55,7 @@ enum DebugCapture {
 
     /// The probe closure installed in the onboarding scene while capturing.
     static var probe: (@MainActor @Sendable (String, CGRect) -> Void)? {
-        guard onboardingDirectory != nil || bannerDirectory != nil else { return nil }
+        guard onboardingDirectory != nil else { return nil }
         return { @MainActor name, frame in DebugCapture.frames[name] = frame.isNull ? nil : frame }
     }
 
@@ -294,57 +292,6 @@ enum DebugCapture {
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
                     actions?.showUninstallSheetForCapture(false)
                     try? await Task.sleep(for: .milliseconds(600))
-                }
-            }
-            if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
-                try? data.write(to: directory.appendingPathComponent("frames.json"))
-            }
-            print("captured to \(directory.path)")
-            exit(0)
-        }
-    }
-
-    // MARK: Banner states
-
-    /// `--capture-banner <dir>`: opens the Settings window in the middle of the primary
-    /// display and lays out the banner after "Bật lại" in its three states without running
-    /// anything: waiting for Allow (`banner-waiting-<mode>.png`), not enabled
-    /// (`banner-failed-<mode>.png`) and enabled with the real shortcut
-    /// (`banner-done-<mode>.png`), plus `frames.json` ("banner": the banner row, "window").
-    static let bannerDirectory: URL? = {
-        let args = CommandLine.arguments
-        guard let i = args.firstIndex(of: "--capture-banner"), i + 1 < args.count else { return nil }
-        return URL(fileURLWithPath: args[i + 1], isDirectory: true)
-    }()
-
-    static func startBanner() {
-        guard let directory = bannerDirectory else { return }
-        NSApp.setActivationPolicy(.accessory)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(600))
-            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
-                print("no window"); exit(1)
-            }
-            placeForCapture(window, size: SettingsScene.defaultSize)
-            var report: [String: [String: [Double]]] = [:]
-            let control = InputSourceShortcut(keys: ["⌃", "Space"], globeKey: false)
-            let states: [(String, InputMethodActions.BannerState, InputSourceShortcut.Reading)] = [
-                ("waiting", .working, .unknown),
-                ("failed", .notEnabled, .unknown),
-                ("done", .enabled, .shortcut(control)),
-            ]
-            for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-                NSApp.appearance = NSAppearance(named: name)
-                for (key, state, shortcut) in states {
-                    actions?.showBannerForCapture(state, shortcut: shortcut, englishLayout: "U.S.")
-                    try? await Task.sleep(for: .milliseconds(900))
-                    capture(window, to: directory.appendingPathComponent("banner-\(key)-\(mode).png"))
-                    var entry: [String: [Double]] = ["window": [0, 0, Double(window.frame.width), Double(window.frame.height)]]
-                    if let r = frames.first(where: { $0.key.hasPrefix("banner") })?.value {
-                        entry["banner"] = [Double(r.minX), Double(r.minY), Double(r.width), Double(r.height)]
-                    }
-                    report["banner-\(key)-\(mode)"] = entry
                 }
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {

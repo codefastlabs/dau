@@ -170,12 +170,6 @@ final class InputMethodActions {
         isShowingUninstallSheet = shown
         self.dauIsSelected = dauIsSelected
     }
-    /// Captures (`--capture-banner`): show a banner state, running nothing.
-    func showBannerForCapture(_ state: BannerState, shortcut: InputSourceShortcut.Reading = .unknown, englishLayout: String? = nil) {
-        banner = state
-        self.shortcut = shortcut
-        self.englishLayout = englishLayout
-    }
     #endif
 
     /// The input sources changed: once Dấu is on (e.g. the user added it in Keyboard

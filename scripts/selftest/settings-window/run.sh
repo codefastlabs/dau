@@ -8,7 +8,7 @@
 # appearance, ax-check --focus: the launch focus and accent selection of the sidebar,
 # Tab and ⌘F into the sidebar search, the sidebar search rows on the primary display.
 #
-# Seven app launches, one after the other; each shows a window on screen for a while
+# Six app launches, one after the other; each shows a window on screen for a while
 # (do not click while it runs). Needs the Accessibility and Screen Recording permissions
 # of the terminal. Changes no system setting: the scroll bar style and the appearance
 # are arguments of that one launch (`-AppleShowScrollBars` lands in the app's argument
@@ -21,31 +21,24 @@
 #   1. --capture-onboarding                    onboarding/
 #   2. --capture-onboarding --shortcut none    onboarding-no-shortcut/
 #   3. --capture-uninstall                     uninstall/ (alerts laid out, nothing removed)
-#   3b. --capture-banner                       banner-states/ (banner states laid out)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
 # ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
-# Settings window only. Launch 4 also drives the window shell with real input: ⌘[ ⌘] key
-# events, the View menu opened and closed, the pointer over the sidebar divider, the
-# divider dragged and double-clicked with the mouse (the pointer moves):
+# Settings window only. Launch 4 also sends ⌘[ ⌘] key events and a mouse wheel over the
+# add-rule sheet's list (the pointer moves):
 #   4. When scrolling scroll bars              real/                  ax-check --geometry
 #   5. Always scroll bars                      always/                ax-check --pixels
-#   6. --not-enabled                           banner/                ax-check --banner
-#   7. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
+#   6. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
+# The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (scripts/snapshot-settings).
 # Then check.swift checks the screenshots' pixels and the in-app captures.
 # Tables: <dir>.txt per launch, check.txt (rows ok / FAIL / HARNESS: data, docs/UI-CHECKS.md).
 # Exit status 0 only if every row is ok. The script's own messages are Vietnamese, through
 # scripts/lib/log.sh; the rows shown under each step are the tail of those tables.
 #
-# Before each real launch the saved "NSWindow Frame settings" of com.codefastlabs.dau is
-# deleted, so the window opens at the scene's default size (ax-check reads it before it
-# moves anything); both saved frames, and the sidebar's saved split (AppKit's autosave,
-# left by builds before the fixed sidebar, which has none), are put back as they were at
-# the end. Each real launch also passes `-ApplePersistenceIgnoreState YES` (argument domain,
-# that launch only): an app the script ended with `kill` did not quit normally, so macOS
-# restores its window on the next launch of the bundle ID, at the size it was left at, and
-# "window size at launch" then read that size, not the scene's default. Measured on Dấu:
-# with the restored state present, 740×747 three times without the flag, 740×560 three
-# times with it.
+# ax-check moves and resizes the window, and the app saves its frame: both saved window
+# frames of com.codefastlabs.dau, and the sidebar's saved split (AppKit's autosave, left by
+# builds before the fixed sidebar, which has none), are put back as they were at the end.
+# Every pass sets the window to the default size itself, so the size a launch opens at
+# does not matter.
 set -euo pipefail
 here=${0:A:h}
 source "${here:h:h}/lib/log.sh"
@@ -160,12 +153,9 @@ capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-s
 # "ConfirmDialogs", "UninstallRemoveSource"): laid out, captured, dismissed;
 # nothing is uninstalled.
 capture "uninstall alerts" --capture-uninstall "$out/uninstall"
-# The Settings banner after "Bật lại" (mockup "SettingsBannerStates"): waiting, not
-# enabled, enabled; laid out and captured, nothing is enabled.
-capture "banner states" --capture-banner "$out/banner-states"
 fi
 
-# --- Launches 4–7: the real window ----------------------------------------------------
+# --- Launches 4–6: the real window ----------------------------------------------------
 
 if [[ $(defaults read -g AppleInterfaceStyle 2>/dev/null) == Dark ]]; then
   current=dark other=light
@@ -188,8 +178,6 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   shift
   local dir="$out/$name"
   mkdir -p "$dir"
-  # The window opens at the scene's default size only without a saved frame.
-  defaults delete $frames_domain "NSWindow Frame settings" >/dev/null 2>&1 || true
   local before=$(pgrep -f "$app/Contents/MacOS/Dau" | sort)
   # --settings-window goes last: launched as `--settings-window --appearance light`
   # (or any flag-value pair after it) the app opened no window at all, while
@@ -199,7 +187,7 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   # leftover as a file to open (`application(_:openFiles:)`). The 8 argument sets measured
   # on Dấu fit this; that SwiftUI then opens no window is not measured. Put every app
   # flag that takes a value (`-AppleShowScrollBars`, `--appearance`) before --settings-window.
-  open -n "$app" --args -ApplePersistenceIgnoreState YES -AppleLanguages '(vi)' "$@" --settings-window
+  open -n "$app" --args -AppleLanguages '(vi)' "$@" --settings-window
   pid=""
   wait_until 10 new_app_pid "$before" || true
   if [[ -z $pid ]]; then
@@ -213,11 +201,11 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   log_step "$name"
   log_detail "${(@f)$(tail -3 "$dir.txt")}"
   kill "$pid" 2>/dev/null || true
-  # Let it quit before the next launch deletes the saved frame again: a process still
-  # running can write its frame after that delete, and the next launch would open at it.
+  # Let it quit before the next launch: the next pid lookup must not find it, and the
+  # frames put back at the end must not be written over by it.
   if ! wait_until 10 process_gone "$pid"; then
-    print -r -- "HARNESS real window ($name): the app (pid $pid) did not quit within 10 s; the next launch may open at its saved frame" >> "$dir.txt"
-    log_error "App (pid $pid) chưa thoát sau 10 giây; lần mở sau có thể mở theo khung nó vừa lưu."
+    print -r -- "HARNESS real window ($name): the app (pid $pid) did not quit within 10 s" >> "$dir.txt"
+    log_error "App (pid $pid) chưa thoát sau 10 giây."
     rc=1
   fi
   return $rc
@@ -231,7 +219,6 @@ fi
 
 real_window real $current --geometry -- -AppleShowScrollBars WhenScrolling || result=1
 real_window always $current --pixels -- -AppleShowScrollBars Always || result=1
-real_window banner $current --banner -- -AppleShowScrollBars WhenScrolling --not-enabled || result=1
 real_window always-$other $other --focus --pixels --sheet-shots -- \
   -AppleShowScrollBars Always --appearance $other || result=1
 

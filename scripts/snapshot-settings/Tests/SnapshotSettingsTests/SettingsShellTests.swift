@@ -6,8 +6,8 @@ import DauShared
 
 /// The Settings window's split view (D9, "Sidebar cố định như System Settings"): built
 /// off screen; the focus tests put it in a window that is never shown (not ordered in, no
-/// screen). What the real window does (drag, double-click, cursor, View menu, the
-/// selection's accent color at launch) is measured by scripts/selftest/settings-window.
+/// screen). What only the real window shows (the selection's accent color at launch, the
+/// sidebar width as the window resizes) is measured by scripts/selftest/settings-window.
 @MainActor
 @Suite("Settings window shell")
 struct SettingsShellTests {

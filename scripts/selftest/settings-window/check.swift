@@ -20,8 +20,6 @@
 //       the app name, title, card and buttons where the mockup puts them, and the window
 //       shows no title text; a view missing from a shot is FAIL (the app drops a view's
 //       frame when it disappears).
-//   (h) banner-states/ (Dau --capture-banner): the three banner states after "Bật lại" in
-//   both appearances, shown inside the Form's margins.
 //   (g) uninstall/ (Dau --capture-uninstall): both alerts and both sheets of "Bỏ Dấu khỏi
 //   nguồn đầu vào" in both appearances, not cut.
 // Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
@@ -283,28 +281,6 @@ for key in ["confirm", "done", "remove", "remove-hint"].flatMap({ k in ["light",
     let min = Reference.alertMinSize
     record(at, "(g) alert not cut", expected: "≥ \(fmt(min.width))×\(fmt(min.height))", got: "\(fmt(sheet.width))×\(fmt(sheet.height))",
            ok: sheet.width >= min.width && sheet.height >= min.height)
-}
-
-// MARK: - Banner states (h)
-
-// The banner after "Bật lại" (Dau --capture-banner): waiting, not enabled, enabled, both
-// appearances. The banner row must be shown (a state that fails to draw has no frame),
-// inside the Form's margins and below the toolbar.
-let bannerDir = root.appendingPathComponent("banner-states")
-let bannerShots = loadFrames(bannerDir)?.shots
-for key in ["waiting", "failed", "done"].flatMap({ k in ["light", "dark"].map { "banner-\(k)-\($0)" } }) {
-    let at = "banner-states/\(key)"
-    guard let f = bannerShots?[key], image(bannerDir.appendingPathComponent("\(key).png")) != nil else {
-        harness(at, "(h)", "no capture (see the capture step in run.sh's output)")
-        continue
-    }
-    guard let banner = f["banner"], let window = f["window"] else {
-        record(at, "(h) banner shown", expected: "a banner row", got: "missing (view not shown)", ok: false)
-        continue
-    }
-    let left = Reference.sidebarWidth + Reference.formMargin, right = window.width - Reference.formMargin
-    record(at, "(h) banner inside the Form's margins", expected: "x ≥ \(fmt(left)), right edge ≤ \(fmt(right)), y ≥ \(fmt(Reference.formFirstItemY))",
-           got: fmt(banner), ok: banner.minX >= left - 0.5 && banner.maxX <= right + 0.5 && banner.minY >= Reference.formFirstItemY - 0.5)
 }
 
 print("where | check | expected | got | result")

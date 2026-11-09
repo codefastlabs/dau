@@ -34,8 +34,8 @@ enum Reference {
 
     // MARK: Window size and limits (System Settings; the minimum height is deliberate)
 
-    /// System Settings opens every pane at 740 × 560; Dấu's window opens at this size
-    /// when it has no saved frame (run.sh deletes the saved one before launching).
+    /// System Settings opens every pane at 740 × 560; every pass sets Dấu's window to it
+    /// before measuring (a launch can open at a frame macOS restored).
     static let windowWidth: CGFloat = 740
     static let windowHeight: CGFloat = 560
     static var windowSize: CGSize { CGSize(width: windowWidth, height: windowHeight) }
@@ -95,15 +95,8 @@ enum Reference {
     /// ... and is centered in the toolbar.
     static let titleCenterY: CGFloat = toolbarHeight / 2
 
-    // MARK: Fixed sidebar and the View menu (System Settings; D9 "Sidebar cố định như System Settings")
+    // MARK: System menus (D38: titles read from the system's string tables)
 
-    /// System Settings (SYSTEM-SETTINGS-REFERENCE.md): dragging the divider and
-    /// double-clicking it leave the sidebar at `sidebarWidth`; the pointer over the divider
-    /// is the normal arrow. Probe: the divider is dragged from its place to each of these
-    /// x (window points): to the left edge, and far right.
-    static let dividerDragEndXs: [CGFloat] = [20, 400]
-    /// Probe: the divider's AXSplitter value is set this far from its own, both ways.
-    static let splitterValueDeltas: [Double] = [-100, 100]
     /// System: run.sh launches the app with `-AppleLanguages (vi)`, so the system's own
     /// menu items are in that language; English is accepted too. Read from the
     /// system's string tables, never typed here (D38).
@@ -113,24 +106,17 @@ enum Reference {
         "/System/Library/Frameworks/SwiftUI.framework/Versions/A/Resources/Localizable.loctable",
         "/System/Library/Frameworks/AppKit.framework/Resources/MenuCommands.loctable",
     ]
-    /// Keys (the English text) of the View menu, of the system items it must hold (full
-    /// screen) and of those it must not (Show/Hide Sidebar: the sidebar is fixed).
+    /// Key (the English text) of the View menu: its Back and Forward items are read while
+    /// the add-rule sheet is up.
     static let viewMenuKey = "View"
-    static let sidebarItemKeys = ["Show Sidebar", "Hide Sidebar"]
-    static let fullScreenItemKeys = ["Enter Full Screen", "Exit Full Screen"]
     /// Edit › Find › Find… (the Find submenu of `TextEditingCommands`, added by `DauApp`):
     /// present, ⌘F, enabled while the sidebar list has the focus; ⌘F puts the focus in the
     /// sidebar search field (D9).
     static let editMenuKey = "Edit"
     static let findSubmenuKey = "Find"
     static let findItemKey = "Find…"
+    /// Character and the Accessibility API's modifier mask (0 = ⌘ alone).
     static let findShortcut = ("F", 0)
-    /// Shortcuts: character and the Accessibility API's modifier mask (0 = ⌘ alone,
-    /// 4 = ⌃⌘). Back ⌘[ and Forward ⌘] as System Settings. System: the shortcut of
-    /// SwiftUI's Show/Hide Sidebar, which no View menu item may carry.
-    static let backShortcut = ("[", 0)
-    static let forwardShortcut = ("]", 0)
-    static let sidebarShortcut = ("S", 4)
 
     // MARK: Close button (System Settings)
 
@@ -193,33 +179,15 @@ enum Reference {
     static let headerToCard: CGFloat = 10
     /// A card to the next section header.
     static let cardToHeader: CGFloat = 30
-    /// Card to card (no header between).
-    static let cardGap: CGFloat = 10
 
     // MARK: Controls (System Settings)
 
     static let switchSize = CGSize(width: 36, height: 16)
-    /// Buttons, pop-ups, segmented controls (also the sheet's search field and buttons).
+    /// Buttons, pop-ups, segmented controls.
     static let controlHeight: CGFloat = 24
 
-    // MARK: Add-rule sheet (System Settings' Displays › Advanced… sheet, except where noted)
+    // MARK: Add-rule sheet
 
-    static let sheetWidth: CGFloat = 470
-    /// Cards, the search field's top and right, the buttons' right and bottom, and the
-    /// first item below the Form's top, all 20 from the edge.
-    static let sheetMargin: CGFloat = 20
-    /// Mockup, not System Settings: the app list card's height is the list card of the
-    /// "SettingsAppsAdd" artboard (`AddAppRuleSheet.listHeight`); System Settings' sheets
-    /// have no such list to measure. Whether it stays is an open question for the user
-    /// (D9: System Settings is the layout reference). The list scrolls inside it, so
-    /// "Khi đang gõ" stays in view.
-    static let sheetListHeight: CGFloat = 188
-    /// Buttons are at least 64 wide (a pt of slack is `tolerance`).
-    static let sheetButtonMinWidth: CGFloat = 64
-    static let sheetButtonHeight: CGFloat = controlHeight
-    static let sheetSearchHeight: CGFloat = controlHeight
-    /// Bottom of the Form to the top of the buttons.
-    static let sheetFormToButtons: CGFloat = 21
     /// Content: apps every macOS install has in /System/Applications and its Utilities
     /// folder, whose visible names are the same in English and Vietnamese (the sheet
     /// shows localized names; checked on macOS 27.2). The sheet must list

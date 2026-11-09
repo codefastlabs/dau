@@ -16,7 +16,7 @@ import DauShared
 struct DauApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model = SettingsModel.appGroup()
-    @State private var inputSource = DauApp.makeInputSourceStatus()
+    @State private var inputSource = InputSourceStatus()
     @State private var onboarding: OnboardingFlow
     @State private var actions: InputMethodActions
     private let opensOnboarding: Bool
@@ -40,8 +40,7 @@ struct DauApp: App {
         #if DEBUG
         if CommandLine.arguments.contains("--tampered") { actions.forceTampered(); return }
         // Captures run a re-signed copy: its team does not match the installed one.
-        if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
-            || DebugCapture.bannerDirectory != nil { return }
+        if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil { return }
         #endif
         Task { await actions.checkInstalledAfterUpgrade() }
     }
@@ -54,7 +53,7 @@ struct DauApp: App {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
-            || DebugCapture.bannerDirectory != nil || DebugCapture.settingsWindowOnly { return }
+            || DebugCapture.settingsWindowOnly { return }
         #endif
         actions.startLaunchUpgrade()
     }
@@ -65,8 +64,7 @@ struct DauApp: App {
         var flow = OnboardingFlow(detector: WorkspaceInputMethodDetector(), installer: installer)
         var opens = LaunchRouter.opensOnboarding(installer.status())
         #if DEBUG
-        if DebugCapture.uninstallDirectory != nil || DebugCapture.bannerDirectory != nil
-            || DebugCapture.settingsWindowOnly { opens = false }
+        if DebugCapture.uninstallDirectory != nil || DebugCapture.settingsWindowOnly { opens = false }
         if let step = DebugCapture.onboardingStep {
             // `--onboarding <1|2|3>`: open onboarding at that step.
             flow.forcedStartStep = step
@@ -88,16 +86,6 @@ struct DauApp: App {
         DebugCapture.onboardingFlow = flow
         #endif
         return (flow, opens)
-    }
-
-    private static func makeInputSourceStatus() -> InputSourceStatus {
-        #if DEBUG
-        // `--not-enabled`: show the "Dấu chưa được bật" banner (real-window checks).
-        if CommandLine.arguments.contains("--not-enabled") || DebugCapture.bannerDirectory != nil {
-            return InputSourceStatus(fixed: false)
-        }
-        #endif
-        return InputSourceStatus()
     }
 
     var body: some Scene {
@@ -193,7 +181,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DebugCapture.applyAppearanceOverride()
         DebugCapture.startOnboarding()
         DebugCapture.startUninstall()
-        DebugCapture.startBanner()
         #endif
     }
 

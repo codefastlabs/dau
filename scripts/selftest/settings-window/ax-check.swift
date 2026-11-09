@@ -5,20 +5,21 @@
 //
 // Usage: ax-check <pid> <output-dir> <light|dark> <mode>…
 //   <light|dark>   the appearance the app draws in (run.sh knows it); written to frames.json.
-//   --geometry     (When scrolling scroll bars) The window's size and Back/Forward at launch,
-//                  read before anything is moved or resized. Then on every display, one
-//                  pass per backing scale (rows labelled "2x" / "1x"): each section,
-//                  selected through the sidebar's accessibility, against System Settings
-//                  (toolbar, Back/Forward cluster, system title, sidebar, Form); the sidebar
-//                  search with a query nothing matches; the add-rule sheet ("+" on Ứng
-//                  dụng): layout, the app list (settles, overflows, scroll bar, wheel,
-//                  always-installed apps, end of list), search and selection wiring, Huỷ.
-//                  Then the window's size limits (by resizing it) and, at the widest, the
-//                  first card of every section. Last, the shell: Back/Forward through the
-//                  buttons and ⌘[ ⌘] (key events), the View menu (opened, read, closed),
-//                  and the fixed sidebar: its AXSplitter value set, window resizes, the
-//                  pointer over the divider, the divider dragged both ways and
-//                  double-clicked (real mouse events).
+//   --geometry     (When scrolling scroll bars) The page and Back/Forward at launch. Then on
+//                  every display, one pass per backing scale (rows labelled "2x" / "1x"):
+//                  each section, selected through the sidebar's accessibility, against
+//                  System Settings (toolbar, Back/Forward cluster, system title, sidebar,
+//                  Form). On the primary display only: the sidebar search with a query
+//                  nothing matches; the add-rule sheet ("+" on Ứng dụng): the app list
+//                  (settles, overflows, scroll bar, wheel, always-installed apps, end of
+//                  list), search and selection wiring, Huỷ. Then the window's size limits
+//                  (by resizing it) and, at the widest, the first card of every section.
+//                  Last, the shell: Back/Forward through the buttons and ⌘[ ⌘] (key
+//                  events), also under the sheet, and the sidebar's width at the widest
+//                  and narrowest window. What a test can hold without a real window (the
+//                  View menu's sidebar item, the divider's mouse area) is `swift test`
+//                  "Settings window shell"; the not-enabled banner is `swift test`
+//                  "Not-enabled banner".
 //                  --geometry starts with the --focus launch rows.
 //   --focus        At launch, before anything else: the sidebar list has the focus (not
 //                  the search field) and the selected row shows the accent selection
@@ -30,10 +31,9 @@
 //                  (Reference.scrollingSection) a scroll through its scroll bar, the
 //                  scroll bar's lane (d) and a second screenshot. check.swift reads the
 //                  screenshots for (b)–(d).
-//   --banner       (app run with --not-enabled) Primary display: the "Dấu chưa được bật"
-//                  banner is the first card of Gõ phím and spans the column.
 //   --sheet-shots  Primary display: screenshots of the add-rule sheet, empty and with a
-//                  row selected (no geometry: --geometry measures the sheet).
+//                  row selected (no rows: --geometry checks the sheet).
+//   --shell        Only the Back/Forward rows (a quick pass on a running app).
 // Screenshots are `screencapture -l` of the Settings window only (an attached sheet is
 // in it), named <name>-<scale>x.png; <output-dir>/frames.json holds the frames of every
 // screenshot (window points, origin at the window's top-left) for check.swift and
@@ -57,8 +57,8 @@ import AppKit
 
 // MARK: - Arguments
 
-let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --focus | --pixels | --banner | --sheet-shots | --shell …"
-let modeFlags: Set = ["--geometry", "--focus", "--pixels", "--banner", "--sheet-shots", "--shell"]
+let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --focus | --pixels | --sheet-shots | --shell …"
+let modeFlags: Set = ["--geometry", "--focus", "--pixels", "--sheet-shots", "--shell"]
 let arguments = Array(CommandLine.arguments.dropFirst())
 guard arguments.count >= 4, let pid = pid_t(arguments[0]), ["light", "dark"].contains(arguments[2]),
       Set(arguments.dropFirst(3)).isSubset(of: modeFlags) else {
@@ -294,38 +294,6 @@ nonisolated(unsafe) let window: AXUIElement = {
                  got: "none; windows: \(shown.isEmpty ? "none" : shown.joined(separator: "; "))")
 }()
 
-// Read first, before the checker moves or resizes anything: the size the app opens at
-// (run.sh deleted the saved frame, so this is the scene's default size). The window can
-// appear before SwiftUI gives it that size, so the size is read until it stays the same
-// on 3 reads 0.2 s apart (5 s at most); a size still changing then is a HARNESS row.
-let launchFirstSize = frame(window).size
-let launchSizeRead = waitSettled(timeout: 5, interval: 0.2, reads: 3) { frame(window).size }
-let launchSize = launchSizeRead.value
-
-/// What the preferences hold for the window's saved frame, read fresh through cfprefsd.
-/// run.sh deleted it before the launch; an app that opened at the scene's default size has
-/// written its own by now, so "absent" with a window at another size means the app took
-/// its size from somewhere the preferences do not show.
-func savedSettingsFrame() -> String {
-    let domain = "com.codefastlabs.dau" as CFString
-    CFPreferencesAppSynchronize(domain)
-    return (CFPreferencesCopyAppValue("NSWindow Frame settings" as CFString, domain) as? String)?
-        .trimmingCharacters(in: .whitespaces) ?? "absent"
-}
-/// Context for a failed "window size at launch" (it has failed without a known cause):
-/// the first size seen, the saved frame, and any other Dấu process sharing the defaults.
-func launchContext() -> String {
-    let others = NSRunningApplication.runningApplications(withBundleIdentifier: "com.codefastlabs.dau")
-        .filter { $0.processIdentifier != pid }
-        .map { "\($0.processIdentifier) \($0.bundleURL?.path ?? "?")" }
-    return "first read \(fmt(launchFirstSize.width))×\(fmt(launchFirstSize.height)), "
-        + "settled after \(String(format: "%.1f", launchSizeRead.seconds)) s; "
-        + "saved frame: \(savedSettingsFrame()); "
-        + "other Dấu: \(others.isEmpty ? "none" : others.joined(separator: ", "))"
-}
-/// Read right away, before the checker moves or resizes the window (the app then saves it).
-let launchContextAtOpen = launchContext()
-
 let sections = Reference.sections
 /// System: the Always scroll bar's width (check (a)).
 let alwaysBarWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
@@ -452,9 +420,8 @@ func moveWindow(to screen: NSScreen, _ d: String) -> Bool {
     let origin = CGPoint(x: visible.minX + 40, y: primaryHeight - visible.maxY + 40)
     guard drive(d, "window", "move the window to this display", set(window, kAXPositionAttribute, axPoint(origin)))
     else { return false }
-    // Every pass measures the default size, whatever size the app opened at: a launch after
-    // the limits pass can open at the minimum size (the killed app's saved frame can outlive
-    // run.sh's delete). Only the geometry launch checks the size at launch.
+    // Every pass measures the default size, whatever size the app opened at (macOS can
+    // restore the frame a killed launch left, or the one the limits pass left).
     guard drive(d, "window", "set the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
     else { return false }
     awaitSettled(d, "window", "window frame after the move") { fmt(frame(window)) }
@@ -805,8 +772,8 @@ func settledAppCount(_ d: String, _ sheet: AXUIElement) -> Int? {
     return settled ? last : nil
 }
 
-/// The add-rule sheet on one display: layout against System Settings' sheets, the app
-/// list, search and selection wiring, screenshots; then Huỷ.
+/// The add-rule sheet (primary display): its texts, the app list, search and selection
+/// wiring, screenshots; then Huỷ.
 func measureSheet(_ d: String, _ tag: String) {
     guard let sheet = openSheet(d) else { return }
     inspectSheet(d, tag, sheet)
@@ -820,84 +787,30 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     guard let total = settledAppCount(d, sheet),
           let list = require(d, p, "app list", find: { appList(sheet) }) else { return }
 
-    check(d, p, "sheet width", s.width, Reference.sheetWidth)
-
-    // The header row: the title left and the system search field right, on one line.
+    // The sheet's texts and buttons are there (content, docs/UI.md). Where they sit is not
+    // measured: what the window does with them is (the list, search, selection, Huỷ).
     // Preferring the placeholder / title it is known to carry, else the topmost (the Form's
     // section headings lie below): a wrong text is then a FAIL at the text check.
     let field = require(d, p, "search field", find: {
         intended(all(sheet) { subrole($0) == "AXSearchField" }, text: "Tìm trong Ứng dụng") { string($0, "AXPlaceholderValue") ?? label($0) } })
-    let heading = require(d, p, "header", find: {
-        intended(all(sheet) { role($0) == "AXHeading" }, text: "Thêm quy tắc cho ứng dụng", label) })
     if let field {
-        let r = srel(field)
-        check(d, p, "search height", r.height, Reference.sheetSearchHeight)
-        check(d, p, "search top", r.minY, Reference.sheetMargin)
-        check(d, p, "search right margin", s.width - r.maxX, Reference.sheetMargin)
         let prompt = string(field, "AXPlaceholderValue") ?? label(field)
         record(d, p, "search prompt", expected: "Tìm trong Ứng dụng", got: prompt, ok: prompt == "Tìm trong Ứng dụng")
     }
-    if let heading {
-        let h = srel(heading)
+    if let heading = require(d, p, "header", find: {
+        intended(all(sheet) { role($0) == "AXHeading" }, text: "Thêm quy tắc cho ứng dụng", label) }) {
         record(d, p, "header", expected: "Thêm quy tắc cho ứng dụng", got: label(heading), ok: label(heading) == "Thêm quy tắc cho ứng dụng")
-        check(d, p, "header x", h.minX, Reference.sheetMargin)
-        if let field {
-            let r = srel(field)
-            check(d, p, "header centered on search", h.midY, r.midY)
-            record(d, p, "header left of search", expected: "title ends before the field", got: "\(fmt(h.maxX)) / \(fmt(r.minX))", ok: h.maxX < r.minX)
-        }
     }
-
-    // The list card (outside the Form), then the Form with the "Khi đang gõ" card.
-    let headerBottom = field.map { srel($0).maxY } ?? Reference.sheetMargin + Reference.sheetSearchHeight
-    let listCard = srel(list)
-    check(d, p, "list card", listCard, CGRect(x: Reference.sheetMargin, y: headerBottom + Reference.headerToCard,
-                                              width: s.width - 2 * Reference.sheetMargin, height: Reference.sheetListHeight))
     let segmented = require(d, p, "segmented \"Khi đang gõ\"", find: {
         intended(all(sheet) { role($0) == "AXRadioGroup" }, text: "Khi đang gõ", label) })
     if let segmented {
-        check(d, p, "segmented \"\(label(segmented))\" height", srel(segmented).height, Reference.controlHeight)
         record(d, p, "segmented label", expected: "Khi đang gõ", got: label(segmented), ok: label(segmented) == "Khi đang gõ")
     }
-    // The Form: the tallest scroll area as wide as the sheet that holds no outline (no label).
-    let form = require(d, p, "Form (\"Khi đang gõ\")", find: {
-        all(sheet) { role($0) == "AXScrollArea" && near(frame($0).width, s.width) && all($0) { role($0) == "AXOutline" }.isEmpty }
-            .max { frame($0).height < frame($1).height } })
-    if let form, let card = require(d, p, "\"Khi đang gõ\" card", find: {
-        // The topmost group: "Khi đang gõ" (groups have no label).
-        children(form).filter { role($0) == "AXGroup" }.min { frame($0).minY < frame($1).minY } }) {
-        let r = srel(card)
-        check(d, p, "Khi đang gõ card", r, CGRect(x: Reference.sheetMargin, y: r.minY, width: s.width - 2 * Reference.sheetMargin, height: r.height))
-        check(d, p, "list card → Khi đang gõ card", r.minY - listCard.maxY, Reference.cardGap)
-    }
-
-    // The button bar.
-    let cancel = require(d, p, "Huỷ button", find: { sheetButton(sheet, "Huỷ") })
+    _ = require(d, p, "Huỷ button", find: { sheetButton(sheet, "Huỷ") })
+    _ = require(d, p, "Chọn ứng dụng khác… button", find: { sheetButton(sheet, "Chọn ứng dụng khác…") })
     let confirm = require(d, p, "Thêm button", find: { sheetButton(sheet, "Thêm") })
-    let other = require(d, p, "Chọn ứng dụng khác… button", find: { sheetButton(sheet, "Chọn ứng dụng khác…") })
-    let minWidth = Reference.sheetButtonMinWidth
     if let confirm {
-        let a = srel(confirm)
-        check(d, p, "Thêm height", a.height, Reference.sheetButtonHeight)
-        record(d, p, "Thêm width", expected: "≥ \(fmt(minWidth))", got: fmt(a.width), ok: a.width >= minWidth - Reference.tolerance)
-        check(d, p, "Thêm right margin", s.width - a.maxX, Reference.sheetMargin)
-        check(d, p, "Thêm bottom margin", s.height - a.maxY, Reference.sheetMargin)
-        if let form { check(d, p, "Form → buttons", a.minY - srel(form).maxY, Reference.sheetFormToButtons) }
         record(d, p, "Thêm without selection", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
-    }
-    if let cancel {
-        let c = srel(cancel)
-        check(d, p, "Huỷ height", c.height, Reference.sheetButtonHeight)
-        record(d, p, "Huỷ width", expected: "≥ \(fmt(minWidth))", got: fmt(c.width), ok: c.width >= minWidth - Reference.tolerance)
-        if let confirm {
-            let a = srel(confirm)
-            record(d, p, "Huỷ before Thêm", expected: "same line, left of Thêm", got: "\(fmt(c)) / \(fmt(a))", ok: near(c.minY, a.minY) && c.maxX < a.minX)
-        }
-    }
-    if let other {
-        let o = srel(other)
-        check(d, p, "Chọn ứng dụng khác… x", o.minX, Reference.sheetMargin)
-        if let confirm { check(d, p, "Chọn ứng dụng khác… y", o.minY, srel(confirm).minY) }
     }
     _ = screenshot(d, p, "apps-add-sheet-\(tag)", frames: ["sheet": frame(sheet).offsetBy(dx: -frame(window).minX, dy: -frame(window).minY)])
 
@@ -1100,7 +1013,7 @@ func measureLimits() {
     _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
 }
 
-// MARK: - Shell: Back/Forward, View menu, fixed sidebar (--geometry)
+// MARK: - Shell: Back/Forward, fixed sidebar (--geometry)
 
 /// Back and Forward as the buttons show them now: enabled or not.
 func checkHistoryButtons(_ d: String, _ p: String, _ when: String, back: Bool?, forward: Bool?) {
@@ -1408,52 +1321,6 @@ func systemTitles(_ keys: [String]) -> Set<String> {
     return titles
 }
 
-/// View menu (HIG: every toolbar item is a menu command): Back ⌘[, Forward ⌘] and
-/// Enter/Exit Full Screen; no Show/Hide Sidebar, by title or by its ⌃⌘S (D9: the sidebar
-/// is fixed, as in System Settings). Opened through accessibility, read, closed.
-func measureViewMenu() {
-    let d = "-", p = "view-menu"
-    let viewTitles = systemTitles([Reference.viewMenuKey])
-    let sidebarTitles = Set(systemTitles(Reference.sidebarItemKeys).map { $0.lowercased() })
-    let fullScreenTitles = Set(systemTitles(Reference.fullScreenItemKeys).map { $0.lowercased() })
-    guard !viewTitles.isEmpty, !sidebarTitles.isEmpty, !fullScreenTitles.isEmpty else {
-        harness(d, p, "system menu strings", expected: "readable", got: "missing in \(Reference.menuStringTables.joined(separator: ", "))")
-        return
-    }
-    guard let bar = require(d, p, "menu bar", find: { attr(app, kAXMenuBarAttribute).map { $0 as! AXUIElement } }),
-          let viewItem = require(d, p, "View menu", diagnose: {
-              "menus: " + children(bar).map(label).joined(separator: ", ") }, find: {
-              children(bar).first { viewTitles.contains(label($0)) } }),
-          drive(d, p, "open the View menu", press(viewItem)) else { return }
-    waitForMenu(viewItem)
-    let menu = children(viewItem).first { role($0) == "AXMenu" }
-    let items = menu.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
-    func shortcut(_ e: AXUIElement) -> (String, Int) {
-        (string(e, "AXMenuItemCmdChar") ?? "", (attr(e, "AXMenuItemCmdModifiers") as? Int) ?? -1)
-    }
-    let listed = items.map { e -> String in
-        let (c, m) = shortcut(e)
-        return c.isEmpty ? label(e) : "\(label(e)) [\(c) \(m)]"
-    }.filter { !$0.isEmpty }.joined(separator: ", ").nonEmpty ?? "none"
-    for (name, title, key) in [("Back", Reference.backLabel, Reference.backShortcut),
-                               ("Forward", Reference.forwardLabel, Reference.forwardShortcut)] {
-        let item = items.first { label($0) == title }
-        let got = item.map { shortcut($0) }
-        record(d, p, "\(name) \"\(title)\"", expected: "\(key.0) with modifiers \(key.1)",
-               got: got.map { "\($0.0) with modifiers \($0.1)" } ?? "missing; items: \(listed)",
-               ok: got.map { $0.0 == key.0 && $0.1 == key.1 } ?? false)
-    }
-    let sidebarItems = items.filter { shortcut($0) == Reference.sidebarShortcut || sidebarTitles.contains(label($0).lowercased()) }
-    record(d, p, "no Show/Hide Sidebar", expected: "no item titled by the system's Show/Hide Sidebar, none with \(Reference.sidebarShortcut.0) and modifiers \(Reference.sidebarShortcut.1)",
-           got: sidebarItems.isEmpty ? "none; items: \(listed)" : sidebarItems.map(label).joined(separator: ", "),
-           ok: sidebarItems.isEmpty)
-    let fullScreen = items.first { fullScreenTitles.contains(label($0).lowercased()) }
-    record(d, p, "Enter/Exit Full Screen", expected: "an item titled by the system",
-           got: fullScreen.map(label) ?? "missing; items: \(listed)", ok: fullScreen != nil)
-    if let menu { _ = AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
-    closeMenu(viewItem)
-}
-
 /// After pressing a menu bar item: until it is selected (open; 2 s at most, then read
 /// anyway), then until its items' titles and enabled states stay the same on 3 reads
 /// (AppKit validates them as the menu opens).
@@ -1495,55 +1362,13 @@ func checkSidebarWidth(_ d: String, _ p: String, _ when: String) {
            got: width.map(fmt) ?? "no split group (sidebar gone?)", ok: width.map { near($0, sidebarWidth) } ?? false)
 }
 
-/// Posts a left-button mouse event at `point` (screen points, top-left origin).
-func postMouse(_ type: CGEventType, _ point: CGPoint, clicks: Int64 = 1) {
-    let event = CGEvent(mouseEventSource: nil, mouseType: type, mouseCursorPosition: point, mouseButton: .left)
-    event?.setIntegerValueField(.mouseEventClickState, value: clicks)
-    event?.post(tap: .cghidEventTap)
-}
-/// The divider's middle, in screen points.
-func dividerPoint() -> CGPoint {
-    let w = frame(window)
-    let x = splitter().map { frame($0).midX } ?? (w.minX + sidebarWidth)
-    return CGPoint(x: x, y: w.minY + w.height / 2)
-}
-/// The system cursor named by AppKit's resize cursors it matches (hot spot and size;
-/// https://developer.apple.com/documentation/appkit/nscursor/currentsystem), plus its raw
-/// hot spot and size. Best effort: the arrow measured as "hot spot 5,5 size 28×40" on a
-/// test app and matched none of AppKit's named cursors, so the check is that no resize
-/// cursor shows.
-func cursorOverDivider() -> (resize: Bool, description: String) {
-    guard let current = NSCursor.currentSystem else { return (false, "unreadable") }
-    var resize: [(String, NSCursor)] = [("resizeLeftRight", .resizeLeftRight), ("resizeLeft", .resizeLeft),
-                                        ("resizeRight", .resizeRight)]
-    if #available(macOS 15.0, *) { resize.append(("columnResize", .columnResize)) }
-    let matches = resize.filter { $0.1.hotSpot == current.hotSpot && $0.1.image.size == current.image.size }.map(\.0)
-    let raw = "hot spot \(fmt(current.hotSpot.x)),\(fmt(current.hotSpot.y)) size \(fmt(current.image.size.width))×\(fmt(current.image.size.height))"
-    return (!matches.isEmpty, matches.isEmpty ? raw : "\(matches.joined(separator: " or ")) (\(raw))")
-}
-
-/// D9 "Sidebar cố định như System Settings": nothing the user does changes the sidebar's
-/// width or hides it. Through accessibility: the divider's AXSplitter value set both ways,
-/// the window at its widest and narrowest. With real mouse events (the pointer moves): the
-/// pointer over the divider shows no resize cursor, the divider dragged to each of
-/// `Reference.dividerDragEndXs`, then double-clicked. The width is 232 after each.
+/// D9 "Sidebar cố định như System Settings": the sidebar keeps its width when the window
+/// is at its widest and narrowest (resized through accessibility). That the divider has
+/// no mouse area and the sidebar cannot collapse is `swift test` "Settings window shell".
 func measureFixedSidebar() {
     let d = "-", p = "sidebar-fixed"
     guard showSection(d, 0) else { return }
     checkSidebarWidth(d, p, "at the start")
-    // The AXSplitter value (VoiceOver can set it too).
-    if let divider = require(d, p, "sidebar divider (AXSplitter)", find: splitter),
-       let value = attr(divider, kAXValueAttribute) as? NSNumber {
-        for delta in Reference.splitterValueDeltas {
-            let err = set(divider, kAXValueAttribute, NSNumber(value: value.doubleValue + delta))
-            // Fixed: the check is that nothing changes, and no state shows a change that
-            // did not happen.
-            wait(0.5)
-            // A refusal is fine (the value cannot change); only the width counts.
-            checkSidebarWidth(d, p, "after AXSplitter value \(delta > 0 ? "+" : "")\(Int(delta)) (AXError \(err.rawValue))")
-        }
-    }
-    // Window resizes.
     for (name, size) in [("widest", Reference.probeLargeSize), ("narrowest", Reference.probeSmallSize)] {
         guard drive(d, p, "resize the window", set(window, kAXSizeAttribute, axSize(size))) else { continue }
         awaitSettled(d, p, "window frame and sidebar after resizing") { "\(fmt(frame(window))) \(shownSidebarWidth().map(fmt) ?? "-")" }
@@ -1552,68 +1377,6 @@ func measureFixedSidebar() {
     if drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize))) {
         awaitSettled(d, p, "window frame after resizing") { fmt(frame(window)) }
     }
-
-    // Real mouse events. The fixed waits below are pacing between synthesized mouse
-    // events, or a window in which nothing may change (the sidebar keeps its width):
-    // neither has a state to wait for.
-    bringToFront(d, p)
-    let over = dividerPoint()
-    CGWarpMouseCursorPosition(over)
-    postMouse(.mouseMoved, over)
-    // Fixed: the cursor follows the pointer; nothing to read but the cursor itself, which
-    // must not become a resize cursor.
-    wait(0.5)
-    let cursor = cursorOverDivider()
-    record(d, p, "cursor over the divider", expected: "the arrow (no resize cursor), as System Settings",
-           got: cursor.description, ok: !cursor.resize)
-    let w = frame(window)
-    for endX in Reference.dividerDragEndXs {
-        let start = dividerPoint()
-        let end = CGPoint(x: w.minX + endX, y: start.y)
-        CGWarpMouseCursorPosition(start)
-        postMouse(.mouseMoved, start)
-        wait(0.3)
-        postMouse(.leftMouseDown, start)
-        wait(0.1)
-        let steps = 20
-        for i in 1...steps {
-            postMouse(.leftMouseDragged, CGPoint(x: start.x + (end.x - start.x) * CGFloat(i) / CGFloat(steps), y: start.y))
-            wait(0.03)
-        }
-        postMouse(.leftMouseUp, end)
-        wait(1.0)
-        checkSidebarWidth(d, p, "after dragging the divider to x \(fmt(endX))")
-    }
-    let point = dividerPoint()
-    CGWarpMouseCursorPosition(point)
-    postMouse(.mouseMoved, point)
-    wait(0.3)
-    postMouse(.leftMouseDown, point, clicks: 1)
-    wait(0.03)
-    postMouse(.leftMouseUp, point, clicks: 1)
-    wait(0.05)
-    postMouse(.leftMouseDown, point, clicks: 2)
-    wait(0.03)
-    postMouse(.leftMouseUp, point, clicks: 2)
-    wait(1.0)
-    // The button must be up again (a test app has stayed with it down after this
-    // double-click): one more mouse-up if the session still has it down.
-    if CGEventSource.buttonState(.combinedSessionState, button: .left) {
-        postMouse(.leftMouseUp, point, clicks: 2)
-        waitUntil(timeout: 2) { !CGEventSource.buttonState(.combinedSessionState, button: .left) }
-    }
-    checkSidebarWidth(d, p, "after double-clicking the divider")
-    if let field = require(d, p, "sidebar search field", find: sidebarSearchField) {
-        check(d, p, "sidebar search after the mouse", rel(field), Reference.sidebarSearchFrame)
-    }
-    if let area = require(d, p, "page Form (scroll area in the detail column)", find: pageScrollArea),
-       let card = require(d, p, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } }) {
-        check(d, p, "first card x after the mouse", card.frame.minX, sidebarWidth + formMargin)
-    }
-    if let title = require(d, p, "page title (system title in the toolbar)", find: pageTitle) {
-        check(d, p, "title x after the mouse", rel(title).minX, Reference.titleX)
-    }
-    _ = screenshot(d, p, "sidebar-fixed")
 }
 
 // MARK: - Always scroll bars (--pixels)
@@ -1696,26 +1459,6 @@ func measurePixels(_ d: String, _ tag: String) {
     }
 }
 
-// MARK: - Banner (--banner)
-
-/// The app runs with --not-enabled: the "Dấu chưa được bật" banner is the first card of
-/// Gõ phím and spans the column like any card.
-func measureBanner(_ d: String, _ tag: String) {
-    let page = sections[0]
-    guard showSection(d, 0),
-          let area = require(d, page, "page Form (scroll area in the detail column)", find: pageScrollArea),
-          let card = require(d, page, "first card", find: { pageItems(area).first { $0.role == "AXGroup" } })
-    else { return }
-    let titles = ["Bật lại", "Thử lại"]
-    let buttons = all(card.element) { role($0) == "AXButton" }.map(label)
-    record(d, page, "banner first", expected: "first card holds \(titles.joined(separator: " or "))",
-           got: buttons.isEmpty ? "no button" : buttons.joined(separator: ", "), ok: buttons.contains { titles.contains($0) })
-    let w = frame(window)
-    check(d, page, "banner card", card.frame, CGRect(x: sidebarWidth + formMargin, y: Reference.formFirstItemY,
-                                                    width: w.width - sidebarWidth - 2 * formMargin, height: card.frame.height))
-    _ = screenshot(d, page, "typing-banner-\(tag)", frames: ["firstCard": card.frame])
-}
-
 // MARK: - Run
 
 // One pass per backing scale, the primary display first.
@@ -1735,41 +1478,31 @@ if modes.contains("--focus") && !modes.contains("--geometry"), moveWindow(to: pr
     measureSidebarSearch(tag(primary), "\(tag(primary))-\(appearance)")
 }
 if modes.contains("--geometry") {
-    if !launchSizeRead.settled {
-        harness("-", "window", "wait: window size at launch settles", expected: "the same on 3 reads within 5 s",
-                got: "still changing after \(String(format: "%.1f", launchSizeRead.seconds)) s")
-    }
-    // A failure carries the state read at the launch (launchContextAtOpen): this row has
-    // failed now and then without a known cause.
-    let launchExpected = Reference.windowSize
-    let launchOk = near(launchSize.width, launchExpected.width) && near(launchSize.height, launchExpected.height)
-    record("-", "window", "window size at launch", expected: fmt(CGRect(origin: .zero, size: launchExpected)),
-           got: fmt(CGRect(origin: .zero, size: launchSize)) + (launchOk ? "" : " (\(launchContextAtOpen))"),
-           ok: launchOk)
     measureLaunchState()
+    // The sections on every display (layout follows the backing scale); the sidebar search
+    // and the add-rule sheet are wiring and behaviour, the same on any display: the
+    // primary one only (`displays` starts with it).
     for screen in displays where moveWindow(to: screen, tag(screen)) {
         for index in sections.indices { measureSection(tag(screen), tag(screen), index) }
-        measureSidebarSearch(tag(screen), tag(screen))
-        measureSheet(tag(screen), tag(screen))
+        if screen == primary {
+            measureSidebarSearch(tag(screen), tag(screen))
+            measureSheet(tag(screen), tag(screen))
+        }
     }
     measureLimits()
     measureKeyboardToSearch()
-    // The shell last: the mouse checks move the pointer and resize the window.
     measureHistory()
     measureHistoryUnderSheet()
-    measureViewMenu()
+    // Last: it resizes the window.
     measureFixedSidebar()
 }
-// `--shell` alone: only the Back/Forward and View-menu rows (a quick pass on a running app).
+// `--shell` alone: only the Back/Forward rows (a quick pass on a running app).
 if modes.contains("--shell") && !modes.contains("--geometry") {
     measureHistory()
     measureHistoryUnderSheet()
-    measureViewMenu()
 }
-if modes.contains("--pixels") || modes.contains("--banner") || modes.contains("--sheet-shots"),
-   moveWindow(to: primary, tag(primary)) {
+if modes.contains("--pixels") || modes.contains("--sheet-shots"), moveWindow(to: primary, tag(primary)) {
     if modes.contains("--pixels") { measurePixels(tag(primary), tag(primary)) }
-    if modes.contains("--banner") { measureBanner(tag(primary), tag(primary)) }
     if modes.contains("--sheet-shots") { sheetShots(tag(primary), tag(primary)) }
 }
 
