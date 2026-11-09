@@ -6,19 +6,26 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 ## Trạng thái hiện tại
 
-Đang ở giữa M5 (Onboarding, cài đặt, gỡ cài đặt) và M6 (hiệu năng dưới tải).
+Đang làm M6 (Hiệu năng dưới tải), bắt đầu 09/11/2026.
 - M5 đóng 05/11/2026.
-- M6 chưa bắt đầu; kế hoạch lập ở đầu mốc.
-- Từ 05/11 làm ngoài mốc:
+- Từ 05/11 tới khi bắt đầu M6 làm ngoài mốc:
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có.
+Chờ người dùng: chọn giờ chạy đối chứng bằng Telex của Apple trong Chrome khi trang bận (khoảng 5 phút), trước khi quyết D13 (Gạch chân làm đường lui).
+
+Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
+1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
+   - Đã đo (nhật ký 09/11): thay tại chỗ sai 8/9 lượt với chuỗi Telex thứ tự chuẩn, 5/6 với chuỗi có sửa dấu (cả bản Release); gạch chân đúng 9/9 (chuỗi thứ tự chuẩn).
+   - Còn: sửa độ bền của thay chữ tại chỗ (lần thay đầu của một từ, nhánh đọc lại chữ của D11 (Kiểm tra ngữ cảnh)) rồi đo lại bằng chuỗi có sửa dấu; tìm vì sao đối chứng Telex của Apple không biến đổi chữ; rồi người dùng quyết D13.
+2. Bài tải nặng theo `docs/ROADMAP.md` mục M6.
+3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
+4. Chốt ngưỡng và D12 (Ưu tiên tiến trình) vào `DECISIONS.md` theo số đo (người dùng duyệt).
 
 So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
 - Phần B, C xong 09/11.
 - Phần A dừng: dữ liệu công khai không đủ độ chính xác.
-- Câu hỏi của D13 (Gạch chân làm đường lui) chuyển sang bài test tải nặng của M6.
+- Câu hỏi của D13 (Gạch chân làm đường lui) chuyển sang M6 bước 1 (kế hoạch M6 ở trên).
 
 Việc còn mở:
 - Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.
@@ -113,6 +120,17 @@ Ghi chú từng mốc:
 Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LOG-M5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LOG-M5-M6.md`.
 
 (ngày — việc — agent — kết quả — commit)
+
+- 09/11/2026 — M6 bước 1, công cụ đo — imk-dev, phiên chính — dòng log mỗi phím (Debug, `DauPerfLog`) thêm `t_ns` (lúc phím tới bộ gõ) và `ev_ns` (giờ của sự kiện phím); `perf-report.sh` in phân bố khoảng cách phím và mismatch theo khoảng cách; `typing/run.sh` thêm `--jitter`, `--busy` (trang thử chặn luồng chính) và lưu cả log `diag`; script mới `scripts/selftest/load/run.sh` (`--apps`, `--loads`). Kiểm: test IMK 111 đạt, `perf-report.sh` với log tự tạo ra đúng số tính tay, `check.sh` đạt.
+- 09/11/2026 — M6 bước 1, ba lượt đo (người dùng cho chạy; bộ gõ Debug; `build/load/20261109-161435/`, `-162856/`, `-171006/`, không commit) — phiên chính.
+  - Chrome, trang chặn luồng chính 300 ms mỗi giây, phím cách nhau 100 ± 30 ms: thay tại chỗ sai 8/9 lượt, gạch chân đúng 9/9; trang rảnh: đúng mọi lượt.
+  - Phím tới bộ gõ đều (mọi khoảng từ 20 ms trở lên), nên lỗi không do phím dồn (H1 loại); Chrome trả `selectedRange` cũ khi chưa áp xong phím trước (H2).
+  - Hai kiểu sai trong log vị trí: (a) lần thay đầu của một từ, chưa có vị trí chờ đợi để so (D11 (Kiểm tra ngữ cảnh)), con trỏ chậm một chữ, bộ gõ thay nhầm chữ đứng trước ("mìnhđdi", "anhóco"); (b) D11 bắt được lệch, đọc lại chữ để dựng lại từ, vẫn ra từ sai ("Đaaline", "mêting", "àyy"): cơ chế chưa rõ.
+  - Gõ bằng U.S. cùng điều kiện đúng 3/3: chỉ cho biết trang thử và cách gửi phím không tự làm sai chữ; chưa có đối chứng bằng bộ gõ tiếng Việt khác.
+  - VS Code, Terminal: đúng mọi lượt, trừ một lượt (VS Code gạch chân, app rảnh) mà System Events gửi phím dồn dưới 10 ms; chưa rõ nguyên nhân. Safari: không dùng được (mục thanh địa chỉ bên dưới).
+  - Điều kiện CPU đầy (một `yes` mỗi CPU) không cho thêm thông tin; đã bỏ khỏi script.
+  - Dọn: không còn `yes`, `DauPerfLog`, `DauDebugForceUnderline`; Safari, Chrome, VS Code, Terminal để mở.
+- 09/11/2026 — dữ liệu INP công khai của Chrome cho câu hỏi của D13 — researcher — `docs/research/WEB-INPUT-DELAY.md`.
 
 - 09/11/2026 — rà soát các commit 08/11, sửa hai điểm. (1) Giá trị của hàng "Ngôn ngữ" lặp trong cây trợ năng: đọc AX của Dấu thật (người dùng cho chạy ngay; `install-app.sh` cài 6d772e6+, máy en-VN): giá trị là một AXStaticText "English" chứa thêm một AXStaticText "English" con; hàng phím tắt cùng kiểu thì không lặp. Bỏ `.fixedSize()` vẫn lặp, nên không phải do nó. Sửa: `Text` giá trị thành một phần tử riêng (`.accessibilityElement(children: .ignore)`, nhãn là tên ngôn ngữ), như phím tắt; cài lại, đọc AX: còn một "English". Chưa nghe bằng VoiceOver thật, chưa đọc AX ở trạng thái chờ mở lại (cùng `Text`). Ca này không có test: dựng ngoài màn hình thì SwiftUI không trả cây trợ năng. (2) `dau-version.sh` báo bộ gõ hoặc `/Applications/Dau.app` build từ commit khác HEAD, kèm lệnh cài lại; `install-app.sh` bỏ đoạn so riêng (6d772e6). Snapshot 149 test, check-docs, check-l10n đạt — phiên chính
 - 09/11/2026 — đầu ra thống nhất cho mọi script (người dùng chọn: tiếng Việt, toàn bộ `scripts/`, dấu ✓ ! ✗): `scripts/lib/log.sh` (bước `==>`, chi tiết, đạt, cảnh báo và lỗi ra stderr, câu hỏi, dòng kết thúc kèm thời gian; màu chỉ khi ra terminal, `NO_COLOR` tắt), quy ước ở `scripts/README.md` mục "Đầu ra", `check-docs` chặn mã màu và `==>` ngoài `log.sh`. Ba subagent (sonnet) chuyển 20 script và hook; mã thoát 2 cho gọi sai. Dữ liệu cho máy đọc giữ nguyên (cột của `dau-version.sh`, bảng `perf-report.sh`, nhật ký bước của `step.sh`, hàng `ok`/`FAIL`/`HARNESS` của bộ kiểm cửa sổ). Hook không còn chặn `zsh -n` (chỉ kiểm cú pháp) và `step.sh --dry-run`. Đã chạy: `zsh -n` mọi file, check-docs, check-l10n, `dau-version.sh`, `clean-dau.sh` (chỉ đọc), `perf-report.sh`, `install-input-method.sh --build-only`, `probe/cleanup.sh` (chỉ đọc), `step.sh --dry-run`, `compare.sh`, hook với 6 lệnh mẫu. Chưa chạy (chiếm màn hình hoặc cài): `install-app.sh`, `app-group.sh`, `typing/run.sh`, `settings-window/run.sh`, `clean-dau.sh --yes`, `make-*-icon.sh`, `extract.sh` (mạng) — phiên chính
