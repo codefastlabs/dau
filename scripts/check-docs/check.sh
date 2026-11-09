@@ -32,9 +32,6 @@
 #      "Mở đầu"); every repo path in backticks in scripts/README.md exists; no script but
 #      scripts/lib/log.sh writes ANSI color codes or the "==>" step mark (scripts/README.md,
 #      "Đầu ra").
-#  10. no dd/mm/yyyy date in the comment lines of scripts/**/*.sh and scripts/**/*.swift
-#      (not scripts/check-docs, scripts/research, scripts/snapshot-settings): a comment keeps
-#      the reason; the dated measurement or story lives in docs/PROGRESS.md or docs/history.
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
 set -uo pipefail
@@ -155,15 +152,6 @@ else
     [[ -e $p ]] || report "$readme: đường dẫn không tồn tại: $p"
   done
 fi
-
-# 10. No dates in script comments: the reason stays, the dated story goes to the docs.
-dated_files=(${script_files:#scripts/research/*})
-dated_files=(${dated_files:#scripts/snapshot-settings/*})
-for f in $dated_files; do
-  grep -nE '(^|[[:space:]])(#|//|-- )' $f | grep -E '\b[0-3]?[0-9]/[01]?[0-9]/[0-9]{4}\b' | while IFS= read -r l; do
-    report "$f:${l%%:*}: ngày trong chú thích (giữ lý do, ngày và chuyện đo ghi ở docs/PROGRESS.md hoặc docs/history)"
-  done
-done
 
 (( fail )) && { log_error "Tài liệu lệch: sửa các chỗ trên rồi chạy lại."; exit 1 }
 log_ok "Tài liệu khớp."

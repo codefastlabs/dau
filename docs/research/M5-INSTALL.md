@@ -22,6 +22,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 
 ## 0. Hiện trạng hiểu biết (05/11/2026, macOS 27.2)
 
+- Công cụ thử của mục 8 (`scripts/probe/`: dựng biến thể `DauProbe*`, `tis-probe`, `tis-act`, `step.sh`, `cleanup.sh`, `settings-ax.swift`) đã xoá khỏi repo ngày 09/11/2026 vì vòng thử đã xong; lấy lại bằng `git show 7877c92:scripts/probe/<file>`.
 ### (a) Có nguồn Apple, nguồn ngoài, hoặc file hệ thống
 
 1. **Apple DTS (06/2026, FB23026482):** "without the user logging off the system, System Settings doesn't pick up a new input source any more. I don't see anything that can avoid the logoff." Không nêu hàm TIS, hộp thoại hay cách thay thế. [Apple, diễn đàn 775526] Mục 2.3.
