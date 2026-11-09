@@ -200,7 +200,10 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   "$work/ax-check" "$pid" "$dir" "$look" $modes > "$dir.txt" || rc=1
   log_step "$name"
   log_detail "${(@f)$(tail -3 "$dir.txt")}"
-  kill "$pid" 2>/dev/null || true
+  # Quit that one process normally (NSRunningApplication.terminate, by pid: an installed
+  # Dấu.app may run with the same bundle ID). Not `kill`: an app that did not quit normally
+  # has its window restored at the next launch of the bundle ID, the user's Dấu.app included.
+  osascript -l JavaScript -e "ObjC.import('AppKit'); \$.NSRunningApplication.runningApplicationWithProcessIdentifier($pid).terminate" >/dev/null 2>&1 || true
   # Let it quit before the next launch: the next pid lookup must not find it, and the
   # frames put back at the end must not be written over by it.
   if ! wait_until 10 process_gone "$pid"; then
