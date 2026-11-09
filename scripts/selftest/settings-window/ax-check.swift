@@ -13,7 +13,7 @@
 //                  nothing matches; the add-rule sheet ("+" on Ứng dụng): the app list
 //                  (settles, overflows, scroll bar, wheel, always-installed apps, end of
 //                  list), search and selection wiring, Huỷ. Then the window's size limits
-//                  (by resizing it) and, at the widest, the first card of every section.
+//                  (by resizing it; the width is fixed, only the height changes).
 //                  Last, the shell: Back/Forward through the buttons and ⌘[ ⌘] (key
 //                  events), also under the sheet, and the sidebar's width at the widest
 //                  and narrowest window. What a test can hold without a real window (the

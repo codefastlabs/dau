@@ -72,7 +72,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
   - văn bản cuối khớp 100%;
   - độ trễ p50/p99 phía bộ gõ;
   - bộ nhớ ổn định theo thời gian.
-- So với gõ bằng U.S. và với bộ gõ Telex có sẵn của macOS (`scripts/research/compare-ims/run.sh`).
+- So với gõ bằng U.S. (độ trễ nền) và với bộ gõ Telex có sẵn của macOS (`scripts/research/compare-ims/run.sh` so Dấu với Telex của Apple; phần U.S. cần thêm vào script).
   - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
 - Chốt ngưỡng vào `DECISIONS.md`; quyết định về D12 (Ưu tiên tiến trình) dựa trên số đo.
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md`:
@@ -135,7 +135,7 @@ Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và cách đặt ngôn ngữ 
   - Câu hỏi mở: đo xem bộ gõ có đặt ngôn ngữ riêng được không.
 - Không tự giải quyết được: mục "Open Dấu Settings…" của hệ thống (mục cuối menu nhập liệu) chỉ có khi bộ gõ khai báo được trang cài đặt riêng. Nghiên cứu riêng trước M9.
 - Canvas: bản tiếng Anh cho các màn chính trước khi sửa mã.
-- Bộ kiểm cửa sổ thật (`run.sh`) chạy theo từng ngôn ngữ vì độ dài chữ đổi bố cục.
+- Bộ kiểm cửa sổ thật (`run.sh`) chạy theo từng ngôn ngữ vì độ dài chữ đổi bố cục. Chưa làm: hiện mọi lần mở đều ép tiếng Việt (`-AppleLanguages (vi)`).
 - Trang tải về (M8) có bản tiếng Anh.
 - Xong khi: máy để tiếng Anh hẳn thấy toàn bộ app, bộ gõ, onboarding, hộp thoại bằng tiếng Anh; `run.sh` đạt ở cả hai ngôn ngữ; kiểm toán ĐẠT.
 

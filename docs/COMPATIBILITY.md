@@ -131,11 +131,11 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-input-method.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
 3. Làm theo các bước script in ra.
    - Lần đầu trên máy: bật bằng nút "Bật Dấu" của app chủ rồi Allow, không cần đăng xuất (D37 (Cài đặt bộ gõ)).
-   - Thêm tay (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào › Sửa… › "+" › Tiếng Việt › "Dấu – Tiếng Việt" › Thêm) có thể không thấy Dấu vì danh sách đọc bộ đệm cũ; khi đó đăng xuất rồi đăng nhập lại (`docs/research/M5-INSTALL.md` (b)9, (b)12).
+   - Thêm tay (System Settings › Keyboard › "All Input Sources" › "+" › Vietnamese › "Dấu – Vietnamese" › Add; máy tiếng Việt hiện tên tiếng Việt, D38 (Chữ trên giao diện)) có thể không thấy Dấu vì danh sách đọc bộ đệm cũ; khi đó đăng xuất rồi đăng nhập lại (`docs/research/M5-INSTALL.md` (b)9, (b)12).
    - Dấu chỉ có nguồn này (D2 (Chuyển Việt/Anh)); gõ tiếng Anh bằng U.S. của macOS, nên giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách.
    - Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó.
 4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu.
-   - Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng hoặc cửa sổ nhớ nguồn riêng.
+   - Nếu máy bật "Automatically switch to a document’s input source" (System Settings › Keyboard › "All Input Sources"), mỗi ứng dụng hoặc cửa sổ nhớ nguồn riêng.
    - Khi đó chọn lại Dấu **sau khi** chuyển sang ứng dụng cần thử, và nhìn biểu tượng V trên thanh menu trước khi gõ.
 5. (Tuỳ chọn, để xem lỗi nếu bộ gõ không chạy) mở một cửa sổ Terminal riêng: `/usr/bin/log stream --predicate 'process == "DauInputMethod"'`. Trong zsh, `log` là một lệnh có sẵn khác, nên phải gõ đường dẫn đầy đủ.
 6. Muốn có số đo (mục 4.4): bật nhật ký từng phím **trước khi gõ** bằng `defaults write -g DauPerfLog -bool true`.
@@ -165,7 +165,7 @@ Cách chạy:
 - **Ứng dụng có trong script** (`safari`, `chrome`, `vscode`, `terminal`; TextEdit đã bỏ khỏi script vì tự lưu tài liệu thử lên iCloud Drive, kết quả TextEdit dưới đây là số đo cũ; lượt chạy ma trận thêm `edge`, `firefox`, `notes`, `mail`): chạy lần lượt
   `scripts/selftest/typing/run.sh --delay 30 <app>` và `scripts/selftest/typing/run.sh --delay 0 <app>`.
   - Script cần quyền Trợ năng cho tiến trình chạy nó (gửi phím qua System Events).
-  - Script tự mở cửa sổ trống, gõ, đọc lại, đóng không lưu, in PASS/FAIL và số đo.
+  - Script tự mở cửa sổ trống, gõ, đọc lại, đóng không lưu, in ✓/✗ cho từng app và số đo.
   - `--delay 0` gửi cả chuỗi trong một lệnh (khoảng 1–2 ms/phím): đây là bài thử phím dồn, nhanh hơn người gõ.
   - Có thể thêm `--delay 5`, `--delay 10`, `--delay 20` để tìm ngưỡng.
 - **Ứng dụng khác:** script chưa hỗ trợ.
@@ -399,5 +399,5 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
   - Edge giữ, nay có số đo (sai ở 0 và 5 ms, ⌫ xoá hai lần — nay đã sửa ở thay tại chỗ, mục 6.4 — gạch chân sửa cả hai).
   - Notes không đề xuất (đúng ở 0 ms).
 - Đã xong: tiêu chí đưa một ứng dụng vào danh sách gạch chân đã chốt ở D13 (mục 1): chỉ đề xuất; thay tại chỗ chỉ sai dưới 10 ms.
-- `scripts/selftest/typing/run.sh` biết 9 ứng dụng (thêm Edge, Firefox, Notes, Mail ở lượt chạy ma trận). Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
+- `scripts/selftest/typing/run.sh` biết 8 ứng dụng (thêm Edge, Firefox, Notes, Mail ở lượt chạy ma trận). Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
 - Pages có hai bundle ID trên cùng máy (`com.apple.Pages` và `com.apple.iWork.Pages`); Numbers, Keynote bản mới đổi ID (`com.apple.Numbers`, `com.apple.Keynote`). Nếu các app này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

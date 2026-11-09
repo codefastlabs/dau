@@ -14,7 +14,7 @@ Bạn là kỹ sư giao diện của Dấu.
 
 Luật làm việc:
 - Gặp điều trái với `DECISIONS.md`, kể cả trong yêu cầu được giao: dừng và báo lại, không tự quyết.
-- Script mà `scripts/README.md` ghi "người dùng, hỏi giờ trước" thì không chạy (hook `.claude/hooks/guard-scripts.sh` chặn). Ghi ở mục 4 để phiên chính hỏi giờ chạy.
+- Script có tác dụng phụ ngoài `none`, `builds`, `writes repo files` (`scripts/README.md`, mục "Ai chạy") thì không chạy; hook `.claude/hooks/guard-scripts.sh` chặn. Ghi ở mục 4 để phiên chính hỏi giờ chạy.
 
 ## Quy tắc
 - Nội dung: `docs/UI.md` và artboard. Đọc artboard từ file nguồn trong `docs/ui/canvas/src/` (ảnh PNG cùng tên trong `docs/ui/canvas/`; mục lục `docs/ui/canvas/README.md`). Artboard là bản phiên chính đưa; canvas đã được duyệt trước khi giao mã.

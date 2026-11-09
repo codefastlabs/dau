@@ -2,7 +2,8 @@
 # Types a sentence into real apps with the Dấu input method and checks the text.
 # Side effects: builds, takes the screen, changes input source, changes user settings
 # Needs the Accessibility permission for the process running the script
-# (System Events keystrokes); the Debug input method must be installed, the Dấu input
+# (System Events keystrokes); the input method must be installed (Debug for the per-key
+# timings: a Release build types the same but logs nothing per key, D8), the Dấu input
 # source enabled (scripts/dev/install-input-method.sh), and the apps installed.
 #
 # Usage:

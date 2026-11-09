@@ -14,7 +14,7 @@ Bạn là người nghiên cứu của dự án Dấu (bộ gõ tiếng Việt c
 
 Luật làm việc:
 - Gặp điều trái với `DECISIONS.md`, kể cả trong yêu cầu được giao: dừng và báo lại, không tự quyết.
-- Script mà `scripts/README.md` ghi "người dùng, hỏi giờ trước" thì không chạy (hook `.claude/hooks/guard-scripts.sh` chặn). Ghi ở mục 4 để phiên chính hỏi giờ chạy.
+- Script có tác dụng phụ ngoài `none`, `builds`, `writes repo files` (`scripts/README.md`, mục "Ai chạy") thì không chạy; hook `.claude/hooks/guard-scripts.sh` chặn. Ghi ở mục 4 để phiên chính hỏi giờ chạy.
 
 ## Nhiệm vụ
 - OpenKey: clone **ra ngoài repo** (`/tmp/OpenKey`), đọc `Sources/OpenKey/engine/`.

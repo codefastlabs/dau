@@ -456,7 +456,7 @@ Trả lời trên macOS 27.2: **không có cách chính đáng và ổn định.
 2. Cài lại rồi bấm "–" làm đường cứu khi bundle đã bị xoá trước ("cài lại Dấu rồi gỡ bằng nút trong app"); phép hồi sinh mục ẩn đã đạt (kết quả cuối mục).
 3. Không làm tám hướng còn lại (từ tắt bằng `TISDisableInputSource` tới Full Disk Access: mọi hướng trong bảng trừ hai hướng trên). Full Disk Access chỉ đo khi cần trả lời trọn câu hỏi đọc được thì có xoá được không, không đưa vào sản phẩm.
 
-**Kế hoạch đo** (cho phiên chính hỏi người dùng rồi chạy). Mục tiêu là **mục ẩn của `DauProbeC1`** (bundle đã bỏ; `build/probe.noindex/C/DauProbeC1.app` còn trong thư mục build). Không đụng mục của Dấu thật.
+**Kế hoạch đo** (cho phiên chính hỏi người dùng rồi chạy; công cụ `scripts/probe/` nhắc dưới đây đã xoá ngày 09/11/2026, lấy lại bằng `git show` như mục 0, điểm 17). Mục tiêu là **mục ẩn của `DauProbeC1`** (bundle đã bỏ; `build/probe.noindex/C/DauProbeC1.app` còn trong thư mục build). Không đụng mục của Dấu thật.
 Hai phép đã chạy (xem xét Full Disk Access của Terminal, hồi sinh mục ẩn); các phép còn lại chưa chạy.
 Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế hoạch gốc (K1 là phép hồi sinh mục ẩn, K2 là phép chẩn đoán Full Disk Access).
 
@@ -770,6 +770,8 @@ Lỗi bộ thử đã sửa sau lần làm mới bộ đệm 10:14: `pkill -f Ke
 Các quan sát này không trả lời câu hỏi lần cài đầu có phải đăng xuất không; việc đó trả lời bằng Dấu thật (mục 9.9), xem cả danh sách "+". Kế hoạch thử trên máy sạch ở mục 7 đã bỏ.
 
 ### 8.2 Kế hoạch vòng thử bằng bản thử (tìm cách không phải đăng xuất)
+
+Công cụ `scripts/probe/` nhắc trong mục này đã xoá ngày 09/11/2026 khi vòng thử xong; lấy lại bằng `git show` như mục 0, điểm 17.
 
 Không thuộc lần thử trên máy sạch (mục 7) và chạy **trước** nó (người dùng chốt 04/11/2026: mục tiêu là tìm cách để lần cài đầu không phải đăng xuất; ba hướng đầu và hướng chọn nguồn bằng TIS ở mục 7.1).
 Chạy trên tài khoản đang dùng, vì mỗi bước dùng một ID mới (nguyên lý dưới).

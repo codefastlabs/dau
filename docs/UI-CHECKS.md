@@ -72,7 +72,7 @@ Lệnh: `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
    - Chỉ trên màn hình chính:
      - tìm ở sidebar với chuỗi không khớp (`sidebar-search-empty-*.png`);
      - sheet thêm quy tắc: AXPress nút "+", thử danh sách, ô tìm, chọn hàng, rồi "Huỷ" qua trợ năng; không thêm quy tắc nào; ảnh `apps-add-sheet-*.png`, `-bottom`, `-selected`.
-   - Rồi kéo cỡ cửa sổ qua trợ năng để đọc giới hạn, và đo thẻ đầu mỗi mục ở cửa sổ rộng nhất.
+   - Rồi kéo cỡ cửa sổ qua trợ năng để đọc giới hạn cỡ (rộng cố định 740, chỉ chiều cao đổi được).
    - Cuối cùng là vỏ cửa sổ (D9):
      - Lùi/Tiến bằng AXPress trên nút, rồi bằng phím ⌘[ ⌘] (sự kiện phím), cả khi sheet đang mở;
      - độ rộng sidebar ở cửa sổ rộng nhất và hẹp nhất (đổi cỡ qua trợ năng).

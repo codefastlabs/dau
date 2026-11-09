@@ -192,7 +192,7 @@ OpenKey có **hai** biến thể. Phím dấu, aa/ee/oo, aw/ow/uw, dd và z gi�
 
 Mã không có khác biệt nào khác (đã tìm mọi nhánh theo kiểu gõ trong `Engine.cpp` và `DataType.h`).
 
-Bộ gõ "Telex đơn giản" có sẵn của macOS hoạt động ra sao thì **chưa kiểm chứng**: không tìm thấy tài liệu Apple mô tả. Đo được bằng `scripts/research/compare-ims/run.sh` (nguồn `VietnameseSimpleTelex` đã bật sẵn trên máy phát triển) khi trang so sánh M10 cần.
+Bộ gõ "Telex đơn giản" có sẵn của macOS hoạt động ra sao thì **chưa kiểm chứng**: không tìm thấy tài liệu Apple mô tả. Đo được bằng `scripts/selftest/typing/run.sh --source com.apple.inputmethod.VietnameseIM.VietnameseSimpleTelex` (nguồn này đã bật sẵn trên máy phát triển; `compare-ims/run.sh` chỉ chạy Dấu và Telex của Apple) khi trang so sánh M10 cần.
 
 **Dấu (đã chốt, D29):**
 - "Telex đơn giản" = Telex trừ hai điểm:

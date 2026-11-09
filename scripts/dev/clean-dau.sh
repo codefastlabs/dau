@@ -38,6 +38,7 @@
 set -uo pipefail
 setopt null_glob
 source "${0:A:h:h}/lib/log.sh"
+source "${0:A:h:h}/lib/wait.sh"
 
 DO=0
 case "${1:-}" in
@@ -155,6 +156,7 @@ fi
 # --- remove --------------------------------------------------------------------------
 
 log_step "Đang xoá"
+no_dau_process() { ! pgrep -f "$PROC_PATTERN" >/dev/null 2>&1; }
 if (( ${#procs} )); then
   # Ask Dấu.app to quit only if it is running: `tell application` would launch it.
   for id in com.codefastlabs.dau com.example.dau; do
@@ -162,10 +164,11 @@ if (( ${#procs} )); then
       osascript -e "tell application id \"$id\" to quit" >/dev/null 2>&1
     fi
   done
-  sleep 1
+  # Give the normal quit up to 3 s, then stop what is left and wait for it to go.
+  wait_until 3 no_dau_process
   pkill -f 'Dau\.app/Contents/MacOS/Dau$' 2>/dev/null
   pkill -f 'DauInputMethod\.app/Contents/MacOS/DauInputMethod$' 2>/dev/null
-  sleep 0.5
+  wait_until 2 no_dau_process
   still=(${(f)"$(pgrep -fl "$PROC_PATTERN" 2>/dev/null)"})
   for p in $still; do notremoved "KHÔNG dừng được tiến trình: $p"; done
 fi
@@ -184,8 +187,11 @@ for b in $bundles; do
 done
 # A bundle that was never registered gets registered once it lands in the Trash:
 # unregister every copy there too.
+trashed_registered() { "$LSREGISTER" -dump 2>/dev/null | grep -qE "^path: +$HOME/\.Trash/.*(Dau|DauInputMethod)\.app \(0x"; }
 if (( ${#bundles} )); then
-  sleep 1
+  # LaunchServices registers a bundle in the Trash shortly after the move; wait for that
+  # (at most 3 s; nothing to unregister if it never happens).
+  wait_until -i 0.5 3 trashed_registered
   trashed=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E "^path: +$HOME/\.Trash/.*(Dau|DauInputMethod)\.app \(0x" | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
   for r in $trashed; do "$LSREGISTER" -u "$r" >/dev/null 2>&1 && log_detail "bỏ đăng ký: $r"; done
 fi

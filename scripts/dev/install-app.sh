@@ -21,6 +21,7 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 source "$ROOT/scripts/lib/log.sh"
+source "$ROOT/scripts/lib/wait.sh"
 source "$ROOT/scripts/lib/build.sh"
 DERIVED="$DAU_DERIVED"
 DEST="/Applications/Dau.app"
@@ -63,10 +64,8 @@ if pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; then
   was_running=1
   log_step "Thoát Dấu.app đang chạy"
   osascript -e "tell application id \"$BUNDLE_ID\" to quit" >/dev/null 2>&1 || true
-  for _ in {1..50}; do
-    pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1 || break
-    sleep 0.2
-  done
+  app_gone() { ! pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; }
+  wait_until 10 app_gone
   if pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; then
     log_error "Dấu.app chưa thoát sau 10 giây: không cài."
     log_hint "Thoát app rồi chạy lại."

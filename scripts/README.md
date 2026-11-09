@@ -22,7 +22,7 @@ Mỗi script tự mô tả ở phần đầu file: dòng chú thích đầu, `# 
 
 ## Mở đầu
 
-Mỗi script chạy riêng (không phải file nạp bằng `source` trong `scripts/lib/`) có dòng `set` với `-u` (biến chưa đặt là lỗi) và `-o pipefail` (một lệnh hỏng giữa pipeline làm cả pipeline hỏng). `-e` chỉ bật ở script dừng ngay khi có lỗi; script gom lỗi rồi báo một lượt (ví dụ `check.sh`, `clean-dau.sh`, `typing/run.sh`) để `-e` tắt và tự kiểm mã thoát. Dưới `pipefail`, `grep -q` ở cuối pipeline có thể làm lệnh trước nó hỏng vì SIGPIPE: so trong shell (`[[ $(lệnh) == *mẫu* ]]`) hoặc dùng `grep -c`. Thư mục Xcode lấy qua `dau_developer_dir` (`scripts/lib/xcode.sh`), không viết cứng. `scripts/check-docs/check.sh` kiểm `zsh -n`, `-u` và `pipefail` (cả hook trong `.claude/hooks/`). Chờ một trạng thái bằng `scripts/lib/wait.sh`, không bằng `sleep` cố định; `sleep` chỉ còn ở chỗ không có gì để đọc, kèm chú thích lý do. ShellCheck không đọc zsh nên không có chú thích `# shellcheck`.
+Mỗi script chạy riêng (không phải file nạp bằng `source` trong `scripts/lib/`) có dòng `set` với `-u` (biến chưa đặt là lỗi) và `-o pipefail` (một lệnh hỏng giữa pipeline làm cả pipeline hỏng). `-e` chỉ bật ở script dừng ngay khi có lỗi; script gom lỗi rồi báo một lượt (ví dụ `check.sh`, `clean-dau.sh`, `typing/run.sh`) để `-e` tắt và tự kiểm mã thoát. Dưới `pipefail`, `grep -q` ở cuối pipeline có thể làm lệnh trước nó hỏng vì SIGPIPE: so trong shell (`[[ $(lệnh) == *mẫu* ]]`) hoặc dùng `grep -c`. Thư mục Xcode lấy qua `dau_developer_dir` (`scripts/lib/xcode.sh`), không viết cứng; riêng `dev/doctor.sh` tự tìm vì chính việc tìm Xcode là thứ nó kiểm. `scripts/check-docs/check.sh` kiểm `zsh -n`, `-u` và `pipefail` (cả hook trong `.claude/hooks/`). Chờ một trạng thái bằng `scripts/lib/wait.sh`, không bằng `sleep` cố định; `sleep` chỉ còn ở chỗ không có gì để đọc, kèm chú thích lý do. ShellCheck không đọc zsh nên không có chú thích `# shellcheck`.
 
 ## Đầu ra
 
@@ -50,7 +50,7 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 | `log_ask` | `?` | stderr | câu hỏi trước `read` |
 | `log_done` | `==>` | stdout | dòng cuối của script chạy xong, kèm thời gian từ lúc bắt đầu |
 
-- Mã thoát: 0 đạt; 1 lỗi hoặc kiểm không đạt; 2 gọi sai (tham số lạ, hai cờ không đi cùng nhau). Riêng hook `.claude/hooks/guard-scripts.sh` thoát 2 để chặn lệnh, theo quy ước hook của Claude Code.
+- Mã thoát: 0 đạt; 1 lỗi hoặc kiểm không đạt; 2 gọi sai (tham số lạ, hai cờ không đi cùng nhau). Script có mã riêng thì ghi ở đầu file (`typing/run.sh`: 3 khi app khác ra trước, 4 khi không chọn được nguồn). Riêng hook `.claude/hooks/guard-scripts.sh` thoát 2 để chặn lệnh, theo quy ước hook của Claude Code.
 - Màu chỉ có khi luồng đó là terminal; `NO_COLOR=1` tắt màu. Ghi ra file thì còn dấu, không có mã màu, nên vẫn grep được.
 - Tên kỹ thuật (đường dẫn, lệnh, cờ, khoá, bundle ID, số D/N) giữ nguyên trong câu tiếng Việt.
 - Không đi qua `log.sh`: dữ liệu cho máy đọc hay để so (TSV, JSON, bảng số của `perf-report.sh`, các dòng `dau-version.sh` in theo cột); đầu ra của công cụ Swift mà script đọc lại; đầu ra của lệnh khác (`xcodebuild`, `git`, `codesign`).
@@ -72,7 +72,7 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 | `needs admin password` | cần mật khẩu quản trị (chưa script nào cần) |
 
-"Ai chạy": subagent chạy được khi tác dụng phụ chỉ gồm `none`, `builds`, `writes repo files`. Còn lại phiên chính chạy, sau khi người dùng chọn giờ (CLAUDE.md: mọi lần chạy chiếm màn hình, đổi nguồn nhập liệu hay đổi cài đặt đều hỏi giờ trước; hook chặn tới khi người dùng đồng ý). Riêng `clean-dau.sh --yes` (gỡ Dấu khỏi máy) do người dùng tự chạy.
+"Ai chạy": subagent chạy được khi tác dụng phụ chỉ gồm `none`, `builds`, `writes repo files`. Còn lại phiên chính chạy, sau khi người dùng chọn giờ (CLAUDE.md, mục Điều phối; hook chặn tới khi người dùng đồng ý). Riêng `clean-dau.sh --yes` (gỡ Dấu khỏi máy) do người dùng tự chạy.
 
 ## `scripts/snapshot-settings`
 
@@ -84,6 +84,6 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 
 ## Thư mục khác
 
-- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu) mà `scripts/selftest/app-group.sh` và `scripts/selftest/typing/run.sh` tự biên dịch; hưởng tác dụng phụ của script gọi nó.
+- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh` và `scripts/dev/doctor.sh` tự biên dịch; hưởng tác dụng phụ của script gọi nó.
 - Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
 - `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.

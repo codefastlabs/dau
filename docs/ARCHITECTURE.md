@@ -122,7 +122,7 @@ dau/
   - mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được);
   - khi nhận thì reset từ đang gõ (D4; chế độ gạch chân thì chốt chữ đang hiện).
 - Thông báo đến trong 0,5 s sau `activateServer` của chính controller được coi là tiếng vọng của lần chuyển bằng phím tắt/menu và bị bỏ qua, để phím gõ ngay sau khi chuyển không mất từ.
-- Kịch bản kiểm: `scripts/selftest/typing/run.sh --keys "to⇄cj " safari`.
+- Kịch bản kiểm: `scripts/selftest/typing/run.sh --keys "to⇄cj " safari` (không có `--expect` nên script so với câu mẫu mặc định và báo ✗; thứ cần xem là dòng log `source-changed-reset`).
   - `⇄` là chọn U.S. rồi Dấu bằng `TISSelectInputSource` từ tiến trình của script; log `source-changed-reset`.
   - Kết quả có và không có bộ nghe: `docs/PROGRESS.md`, bảng Số đo, 30/10/2026.
 - Kịch bản `to` ⇄ `o` không còn phân biệt được: sau reset, D20 đọc lại "to" và `o` cho "tô" đúng như D20 định.
@@ -531,6 +531,6 @@ Quy tắc kèm theo khi gỡ:
 - `os_signpost` quanh `engine.handle` và quanh lệnh gọi client; xem bằng Instruments.
 - Nhật ký từng phím (category `perf`, `diag`) và signpost chỉ có ở bản Debug, bị loại khỏi bản Release lúc build (D8 (Không telemetry)).
   - Ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain: dù không có chữ, giờ và app của từng phím là siêu dữ liệu về cách gõ (D8).
-  - `scripts/selftest/typing/run.sh` tự bật lúc chạy và xoá khi xong.
+  - `scripts/selftest/typing/run.sh` tự bật lúc chạy và khi xong trả khoá về đúng như cũ (xoá nếu trước đó không có).
   - Đo tay thì bật, đo, rồi xoá (`scripts/perf/perf-report.sh`).
 - Test hiệu năng engine trong CI. Bài test tải nặng: xem mốc M6 (Hiệu năng dưới tải) trong `ROADMAP.md`.

@@ -185,7 +185,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Biểu tượng chuẩn chỉ có ở bản chính thức, chọn bằng một cờ build mà chỉ quy trình phát hành trên CI đặt. Mặc định, tức mọi bản phát triển (Debug, Release tự dựng, bản người khác build), dùng biểu tượng **bản phát triển**.
     - Biểu tượng bản phát triển giữ chữ "ấ", khác nền và có thêm một dấu hiệu bằng hình để vẫn nhận ra khi macOS bỏ màu (kiểu Trong suốt, Phủ màu của Icon Composer): **nền Chì, dải chéo màu Hổ phách ở góc dưới phải**. Không có chữ, không dùng Son cho dải, không đảo màu. Màu và artboard: `docs/BRAND.md`.
     - Kênh Beta dùng biểu tượng chuẩn, phân biệt bằng số phiên bản ("1.3 beta 2") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
-    - Debug và Release không có hai biểu tượng: trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit, `scripts/dev/dau-version.sh` cũng trả lời được.
+    - Debug và Release không có hai biểu tượng: trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit; `scripts/dev/dau-version.sh` cho biết commit của từng bản đã cài.
     - Bundle ID không đổi theo loại bản (D37 (Cài đặt bộ gõ)).
     - Biểu tượng "V" trên thanh menu giống nhau ở mọi bản (ảnh template, D9).
   - **Vì sao:**

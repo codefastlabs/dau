@@ -4,8 +4,9 @@
 #
 # Usage: scripts/check-docs/check.sh
 #
-# Living docs = docs/*.md (except PROGRESS.md's dated log and history/research,
-# which record the past), CLAUDE.md, README.md, CONTRIBUTING.md, .claude/agents, .claude/commands.
+# Living docs = docs/*.md except PROGRESS.md (history/ and research/ are not docs/*.md),
+# CLAUDE.md, README.md, CONTRIBUTING.md, .claude/agents, .claude/commands. PROGRESS.md is
+# read by checks 1 and 2 only, and only above its dated log.
 # Checks:
 #   1. repo paths in backticks exist (in PROGRESS.md, not in the dated log);
 #   2. no file:line references (line numbers drift; name the type or function);
@@ -26,12 +27,14 @@
 #      "#!/bin/zsh" (one shell: /bin/bash on macOS is 3.2), passes `zsh -n` and has a
 #      "# Side effects:" line; every script but the sourced files in scripts/lib has a
 #      `set` line with -u and one with pipefail (scripts/README.md, "Mở đầu"); every repo
-#      path in backticks in scripts/README.md exists; no script but scripts/lib/log.sh
-#      writes ANSI color codes or the "==>" step mark (scripts/README.md, "Đầu ra");
+#      path in backticks in scripts/README.md exists; no script but scripts/lib/log.sh (and this file, which
+#      names the patterns) writes ANSI color codes or the "==>" step mark (scripts/README.md, "Đầu ra");
 #   8. hook table: every script whose "# Side effects:" line holds a disturbing effect is
 #      named in .claude/hooks/guard-scripts.sh, so the hook cannot silently miss one.
 #   9. every folder under scripts/ that git tracks has a row in the folder table of
 #      scripts/README.md.
+#   10. every option a living doc or docs/research/*.md cites for a script (in the same
+#      code span) exists in that script (script-flags.py).
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
 set -uo pipefail
@@ -149,6 +152,11 @@ done
 for d in ${(f)"$(git ls-files scripts | cut -d/ -f2 | sort -u)"}; do
   [[ -d scripts/$d ]] || continue
   [[ "$(<scripts/README.md)" == *"| \`scripts/$d/\` |"* ]] || report "scripts/README.md: thư mục scripts/$d/ chưa có dòng trong bảng thư mục"
+done
+
+# 10. Options cited for a script exist in it.
+python3 -I scripts/check-docs/script-flags.py $living docs/research/*.md(N) | while IFS=$'\t' read -r f sc opt; do
+  report "$f: $sc không có tuỳ chọn $opt"
 done
 
 # 8. Hook table: a script with a disturbing effect must be named in the hook.

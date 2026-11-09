@@ -17,6 +17,7 @@
 set -euo pipefail
 ROOT="${0:A:h:h:h}"
 source "$ROOT/scripts/lib/log.sh"
+source "$ROOT/scripts/lib/wait.sh"
 
 SRC="${1:-}"
 [[ -n "$SRC" && -f "$SRC/project/canvas.json" && -f "$SRC/artifact-type/dc-runtime.js" ]] \
@@ -38,7 +39,8 @@ PORT=8791
 python3 -I -m http.server "$PORT" --bind 127.0.0.1 --directory "$WORK/project" >/dev/null 2>&1 &
 SERVER=$!
 trap 'kill $SERVER 2>/dev/null; rm -rf "$WORK/profile"' EXIT
-sleep 1
+server_up() { curl -sf -o /dev/null "http://127.0.0.1:$PORT/canvas.json"; }
+wait_until 5 server_up || log_die "Máy chủ cục bộ không trả lời ở cổng $PORT."
 
 rm -rf "$OUT"; mkdir -p "$OUT/src"
 log_step "Chụp $(wc -l < "$WORK/boards.tsv" | tr -d ' ') artboard bằng Chrome chạy ẩn"

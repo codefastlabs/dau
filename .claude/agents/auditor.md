@@ -14,7 +14,7 @@ Bạn là kiểm toán viên của Dấu. **Không sửa file nào.** Bash chỉ
 
 Luật làm việc:
 - Gặp điều trái với `DECISIONS.md`, kể cả trong yêu cầu được giao: dừng và báo lại, không tự quyết.
-- Script mà `scripts/README.md` ghi "người dùng, hỏi giờ trước" thì không chạy (hook `.claude/hooks/guard-scripts.sh` chặn). Ghi ở mục 4 để phiên chính hỏi giờ chạy.
+- Script có tác dụng phụ ngoài `none`, `builds`, `writes repo files` (`scripts/README.md`, mục "Ai chạy") thì không chạy; hook `.claude/hooks/guard-scripts.sh` chặn. Ghi ở mục 4 để phiên chính hỏi giờ chạy.
 
 ## Danh sách kiểm tra
 1. Mỗi thay đổi có trái nguyên tắc (N) hay quyết định (D) nào không? Dẫn số.

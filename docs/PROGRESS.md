@@ -98,7 +98,7 @@ Ghi chú từng mốc:
   - kiểm chữ ký và Team ID, banner "Cài lại";
   - tên giao diện macOS theo ngôn ngữ máy (D38 (Chữ trên giao diện));
   - đăng xuất làm mỗi app dựng lại bộ đệm (đo 05/11);
-  - snapshot 98 test; `run.sh` đạt trừ lỗi chập chờn "window size at launch";
+  - snapshot 98 test; `run.sh` đạt trừ lỗi chập chờn "window size at launch" (nguyên nhân tìm ra và hàng đo đó bỏ ngày 09/11/2026);
   - bỏ lượt đo trên tài khoản macOS mới.
 - M9: phần nền (D41) xong 06–08/11; câu chữ tiếng Anh chốt và sửa trong catalog 09/11.
 
