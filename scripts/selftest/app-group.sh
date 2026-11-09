@@ -49,12 +49,13 @@ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 source "$ROOT/scripts/lib/build.sh"
 source "$ROOT/scripts/lib/log.sh"
 source "$ROOT/scripts/lib/wait.sh"
+source "$ROOT/scripts/lib/swift-tool.sh"
 DERIVED="$DAU_DERIVED"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
 IM_APP="$HOME/Library/Input Methods/DauInputMethod.app"
 HELPER_SRC="$ROOT/scripts/lib/input-source.swift"
-HELPER="$ROOT/build/selftest/input-source"
+HELPER="$ROOT/build/tools/input-source"   # built by dau_swift_tool below
 # How long the input method gets to log the reload after the app saved a setting.
 RELOAD_TIMEOUT=10
 LOG=/usr/bin/log            # zsh has a `log` builtin; always use the binary
@@ -65,7 +66,7 @@ for arg in "$@"; do
   case "$arg" in
     --no-build) BUILD=0 ;;
     --install) INSTALL=1 ;;
-    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+    -h|--help) log_usage "$0"; exit 0 ;;
     *) log_die 2 "Tham số không hợp lệ: $arg (dùng --install, --no-build)" ;;
   esac
 done
@@ -123,10 +124,7 @@ IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_APP/Content
 SUBSYSTEM="$IM_ID"
 
 log_step "Helper chọn nguồn nhập liệu"
-mkdir -p "$(dirname "$HELPER")"
-if [[ ! -x "$HELPER" || "$HELPER_SRC" -nt "$HELPER" ]]; then
-  xcrun swiftc -O -o "$HELPER" "$HELPER_SRC" || fail "biên dịch helper"
-fi
+HELPER="$(dau_swift_tool input-source "$HELPER_SRC")" || fail "biên dịch helper"
 ORIGINAL_SOURCE="$("$HELPER" current)" || fail "không đọc được nguồn nhập liệu hiện tại"
 log_detail "nguồn hiện tại: $ORIGINAL_SOURCE"
 

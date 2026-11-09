@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Regenerates the temporary app icon (docs/BRAND.md "Biểu tượng", D25).
-# Side effects: writes repo files
+# Side effects: builds, writes repo files
 #
 #   scripts/assets/make-app-icon.sh [<preview-dir>]
 #       Render Resources/Brand/AppIcon*.svg and
@@ -23,12 +23,14 @@ GLYPHS="$BRAND/app-icon-glyphs.txt"
 ICONSET="$ROOT/Apps/Dau/Resources/Assets.xcassets/AppIcon.appiconset"
 source "${0:A:h:h}/lib/log.sh"
 source "${0:A:h:h}/lib/xcode.sh"
+source "${0:A:h:h}/lib/swift-tool.sh"
 dau_developer_dir
+TOOL=$(dau_swift_tool make-app-icon "$ROOT/scripts/assets/make-app-icon.swift") || exit 1
 
 if [[ "${1:-}" == "outline" ]]; then
   [[ $# -eq 2 ]] || log_die 2 "Cách dùng: $0 outline <font.ttf>"
   mkdir -p "$BRAND"
-  exec xcrun swift "$ROOT/scripts/assets/make-app-icon.swift" outline "$2" "$GLYPHS"
+  exec "$TOOL" outline "$2" "$GLYPHS"
 fi
 
 log_step "Dựng biểu tượng app"
@@ -44,7 +46,7 @@ TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 mkdir -p "$TMP/svg" "$TMP/iconset"
 # The renderer's "wrote …" lines are English; they are shown only when it fails.
-out=$(xcrun swift "$ROOT/scripts/assets/make-app-icon.swift" render "$GLYPHS" "$TMP/svg" "$TMP/iconset" ${1:+"$1"} 2>&1) \
+out=$("$TOOL" render "$GLYPHS" "$TMP/svg" "$TMP/iconset" ${1:+"$1"} 2>&1) \
   || { log_error "Không render được biểu tượng app"; log_hint "${(@f)out}"; exit 1; }
 rendered=("$TMP"/iconset/*.png(N))
 if (( ${#rendered} == 0 )) || [[ ! -f "$TMP/iconset/Contents.json" ]]; then

@@ -24,6 +24,16 @@ Mỗi script tự mô tả ở phần đầu file: dòng chú thích đầu, `# 
 
 Mỗi script chạy riêng (không phải file nạp bằng `source` trong `scripts/lib/`) có dòng `set` với `-u` (biến chưa đặt là lỗi) và `-o pipefail` (một lệnh hỏng giữa pipeline làm cả pipeline hỏng). `-e` chỉ bật ở script dừng ngay khi có lỗi; script gom lỗi rồi báo một lượt (ví dụ `check.sh`, `clean-dau.sh`, `typing/run.sh`) để `-e` tắt và tự kiểm mã thoát. Dưới `pipefail`, `grep -q` ở cuối pipeline có thể làm lệnh trước nó hỏng vì SIGPIPE: so trong shell (`[[ $(lệnh) == *mẫu* ]]`) hoặc dùng `grep -c`. Thư mục Xcode lấy qua `dau_developer_dir` (`scripts/lib/xcode.sh`), không viết cứng; riêng `dev/doctor.sh` tự tìm vì chính việc tìm Xcode là thứ nó kiểm. `scripts/check-docs/check.sh` kiểm `zsh -n`, `-u` và `pipefail` (cả hook trong `.claude/hooks/`). Chờ một trạng thái bằng `scripts/lib/wait.sh`, không bằng `sleep` cố định; `sleep` chỉ còn ở chỗ không có gì để đọc, kèm chú thích lý do. ShellCheck không đọc zsh nên không có chú thích `# shellcheck`.
 
+## Ngôn ngữ
+
+Dấu viết bằng Swift, nên script chỉ dùng thứ có sẵn khi đã cài Xcode:
+
+- **zsh** cho phần điều phối: gọi lệnh, đọc tham số, in kết quả.
+- **Swift** cho phần cần API của Apple (Accessibility, nguồn nhập liệu, pasteboard, vẽ ảnh) hoặc có logic đáng kể (đọc JSON, plist, so văn bản tiếng Việt). Script gọi bản đã biên dịch qua `dau_swift_tool` (`scripts/lib/swift-tool.sh`), không chạy `swift file.swift`: chạy kiểu thông dịch thì mỗi lần mất khoảng một giây để biên dịch lại.
+- **Công cụ có sẵn của macOS**: `defaults`, `plutil`, `PlistBuddy`, `awk`, `sed`, `osascript` (AppleScript là cách duy nhất để điều khiển app khác).
+
+Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command Line Tools, cũ và không được hứa giữ lâu dài, còn người đóng góp cho một dự án Swift không cần đọc thêm ngôn ngữ khác. Ngoại lệ duy nhất là `scripts/research/external-tests/`: công cụ đọc file test của dự án khác cho tài liệu nghiên cứu, không chạm vào máy hay sản phẩm, giữ nguyên bằng Python. `scripts/check-docs/check.sh` kiểm luật này.
+
 ## Đầu ra
 
 Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/lib/log.sh` (nạp bằng `source`), để mọi script trông như nhau:
@@ -84,6 +94,6 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 
 ## Thư mục khác
 
-- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh` và `scripts/dev/doctor.sh` tự biên dịch; hưởng tác dụng phụ của script gọi nó.
-- Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
+- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu; đếm và lọc mục của Dấu trong plist cho `scripts/dev/clean-dau.sh`) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh`, `scripts/dev/doctor.sh` và `scripts/dev/clean-dau.sh` biên dịch qua `scripts/lib/swift-tool.sh`; hưởng tác dụng phụ của script gọi nó.
+- Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift`, `scripts/check-docs/doc-check.swift`, `scripts/design/canvas-index.swift`, `scripts/research/compare-ims/cases.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
 - `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.

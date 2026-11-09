@@ -64,7 +64,7 @@ Trên máy này `com.apple.inputmethod.VietnameseIM.VietnameseTelex` đã đư�
   - 60 câu văn xuôi hiện đại tự viết (`scripts/research/compare-ims/vi-sentences.txt`).
   - 20 câu trộn Việt–Anh (`mixed-sentences.txt`).
   - Khoảng 100 từ tiếng Anh và từ trong mã, hầu hết có phím dấu hoặc phím biến đổi của Telex (`en-words.txt`).
-  - `cases.py` chuyển sang phím Telex thứ tự chuẩn, tổng khoảng 5.700 phím.
+  - `cases.swift` chuyển sang phím Telex thứ tự chuẩn, tổng khoảng 5.700 phím.
   - Kiểm offline bằng engine của Dấu trước khi gõ thật (09/11/2026): 677/678 từ tiếng Việt đúng, từ còn lại là "taxi" ra "tãi" (D4), nên bộ chuyển phím đúng.
 - **Cách chấm:**
   - Tiếng Việt đúng khi ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa).

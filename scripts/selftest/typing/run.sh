@@ -80,8 +80,8 @@ source "$ROOT/scripts/lib/log.sh"
 source "$ROOT/scripts/lib/wait.sh"
 HERE="$ROOT/scripts/selftest/typing"
 source "$ROOT/scripts/lib/xcode.sh"
+source "$ROOT/scripts/lib/swift-tool.sh"
 dau_developer_dir
-BIN="$ROOT/build/selftest"
 LOG=/usr/bin/log
 
 # "carr" comes first: after Vietnamese text, macOS 27.2 autocorrect turns a typed "car"
@@ -95,7 +95,7 @@ SAVE_DIR=""
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
 # Prints the whole leading comment block.
-usage() { awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$SELF"; }
+usage() { log_usage "$SELF"; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --delay) DELAY_MS="${2:?--delay cần số ms}"; shift 2 ;;
@@ -117,16 +117,8 @@ if [[ "$KEYS" == *$'\n'* || "$KEYS" == *$'\r'* ]]; then
 fi
 
 # --- helpers -------------------------------------------------------------------------
-mkdir -p "$BIN"
-build_helper() { # name source
-  if [[ ! -x "$BIN/$1" || "$2" -nt "$BIN/$1" ]]; then
-    xcrun swiftc -O -o "$BIN/$1" "$2" || log_die "Không biên dịch được $2"
-  fi
-}
-build_helper input-source "$ROOT/scripts/lib/input-source.swift"
-build_helper clipboard "$HERE/clipboard.swift"
-INPUT_SOURCE="$BIN/input-source"
-CLIPBOARD="$BIN/clipboard"
+INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/input-source.swift")" || exit 1
+CLIPBOARD="$(dau_swift_tool clipboard "$HERE/clipboard.swift")" || exit 1
 
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
 [[ -f "$IM_PLIST" ]] || log_die "Chưa cài bộ gõ (scripts/dev/install-input-method.sh)."
@@ -159,7 +151,7 @@ STOP_FILE="$WORK/stop"
 # The 0.3 s after that stays fixed: the input method learns of the switch through a
 # notification this script cannot observe.
 SWITCH_CMD="$(printf 'sw() { %q select "$1" >/dev/null || exit 1; i=0; while [ "$(%q current)" != "$1" ]; do i=$((i+1)); if [ $i -ge 30 ]; then echo source > %q; exit 1; fi; sleep 0.1; done; sleep 0.3; }; sw %q; sw %q' \
-  "$BIN/input-source" "$BIN/input-source" "$STOP_FILE" "$US_SOURCE" "$DAU_SOURCE")"
+  "$INPUT_SOURCE" "$INPUT_SOURCE" "$STOP_FILE" "$US_SOURCE" "$DAU_SOURCE")"
 ORIGINAL_SOURCE="$("$INPUT_SOURCE" current)"
 "$CLIPBOARD" save "$WORK/clipboard.plist" || exit 1
 # The per-key log is off unless DauPerfLog is set (D8); turn it on for this run only.
@@ -605,7 +597,8 @@ for app in "${APPS[@]}"; do
     # (macOS "Capitalize words automatically") when keys come slowly enough: not the
     # input method's doing.
     if [[ $ok == 0 ]]; then
-      capitalized="$(printf '%s' "$EXPECT_TRIMMED" | perl -CS -pe 's/^(.)/\u$1/')"
+      # (U) on the first character needs a UTF-8 locale, whatever the caller's is.
+      () { local LC_ALL=en_US.UTF-8; capitalized="${(U)EXPECT_TRIMMED[1]}${EXPECT_TRIMMED[2,-1]}" }
       [[ "$got_trimmed" == "$capitalized" ]] && { ok=1; log_detail "(chữ đầu viết hoa do app tự viết hoa, không tính lỗi)"; }
     fi
   fi

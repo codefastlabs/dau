@@ -15,6 +15,7 @@ set -euo pipefail
 ROOT="${0:A:h:h:h:h}"
 HERE="${0:A:h}"
 source "$ROOT/scripts/lib/log.sh"
+source "$ROOT/scripts/lib/swift-tool.sh"
 
 APPLE_TELEX=com.apple.inputmethod.VietnameseIM.VietnameseTelex
 DELAY=30
@@ -23,7 +24,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --delay) DELAY="${2:?--delay cần số ms}"; shift 2 ;;
     dau|apple) SOURCES+=("$1"); shift ;;
-    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "${0:A}"; exit 0 ;;
+    -h|--help) log_usage "${0:A}"; exit 0 ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -31,8 +32,9 @@ done
 
 OUT="$ROOT/build/compare-ims/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
-KEYS="$(python3 -I "$HERE/cases.py" keys)"
-EXPECT="$(python3 -I "$HERE/cases.py" expect)"
+CASES=$(dau_swift_tool compare-ims-cases "$HERE/cases.swift") || exit 1
+KEYS="$("$CASES" keys)"
+EXPECT="$("$CASES" expect)"
 
 for src in $SOURCES; do
   mkdir -p "$OUT/$src"
@@ -48,6 +50,6 @@ for src in $SOURCES; do
   fi
 done
 
-python3 -I "$HERE/cases.py" score "$OUT"/*/(safari|chrome).txt | tee "$OUT/score.md"
+"$CASES" score "$OUT"/*/(safari|chrome).txt | tee "$OUT/score.md"
 log_detail "kết quả: $OUT"
 log_done

@@ -10,14 +10,16 @@
 #
 # Renders every artboard on the canvas page "Thiết kế" (not the archive page) with Chrome in
 # headless mode: no window is shown and the screen is not used. The canvas runtime
-# (dc-runtime.js) is the canvas publisher's code: it is served from build/canvas/ for the
-# render only and never copied into the repo. Writes docs/ui/canvas/<name>.png,
-# docs/ui/canvas/src/<name>.dc.html, docs/ui/canvas/canvas.json and docs/ui/canvas/README.md
-# (index by section), replacing what was there. Needs network for the web fonts.
+# (dc-runtime.js) is the canvas publisher's code: it is opened from build/canvas/ as a file://
+# page for the render only and never copied into the repo. --allow-file-access-from-files lets
+# it fetch the page itself and sibling boards, which Chrome otherwise blocks on file://.
+# Writes docs/ui/canvas/<name>.png, docs/ui/canvas/src/<name>.dc.html,
+# docs/ui/canvas/canvas.json and docs/ui/canvas/README.md (index by section), replacing what
+# was there. Needs network for the web fonts.
 set -euo pipefail
 ROOT="${0:A:h:h:h}"
 source "$ROOT/scripts/lib/log.sh"
-source "$ROOT/scripts/lib/wait.sh"
+source "$ROOT/scripts/lib/swift-tool.sh"
 
 SRC="${1:-}"
 [[ -n "$SRC" && -f "$SRC/project/canvas.json" && -f "$SRC/artifact-type/dc-runtime.js" ]] \
@@ -32,29 +34,26 @@ cp "$SRC"/project/*.dc.html "$SRC/project/canvas.json" "$WORK/project/"
 cp "$SRC/artifact-type/dc-runtime.js" "$WORK/project/support.js"
 
 # name<TAB>width<TAB>height for the boards on the "Thiết kế" page, in canvas order.
-python3 -I "${0:A:h}/canvas-index.py" boards "$WORK/project/canvas.json" > "$WORK/boards.tsv"
+INDEX=$(dau_swift_tool canvas-index "${0:A:h}/canvas-index.swift") || exit 1
+"$INDEX" boards "$WORK/project/canvas.json" > "$WORK/boards.tsv"
 (( $(wc -l < "$WORK/boards.tsv") > 0 )) || log_die "canvas.json không có artboard nào trên trang Thiết kế."
 
-PORT=8791
-python3 -I -m http.server "$PORT" --bind 127.0.0.1 --directory "$WORK/project" >/dev/null 2>&1 &
-SERVER=$!
-trap 'kill $SERVER 2>/dev/null; rm -rf "$WORK/profile"' EXIT
-server_up() { curl -sf -o /dev/null "http://127.0.0.1:$PORT/canvas.json"; }
-wait_until 5 server_up || log_die "Máy chủ cục bộ không trả lời ở cổng $PORT."
+trap 'rm -rf "$WORK/profile"' EXIT
 
 rm -rf "$OUT"; mkdir -p "$OUT/src"
 log_step "Chụp $(wc -l < "$WORK/boards.tsv" | tr -d ' ') artboard bằng Chrome chạy ẩn"
 failed=0
 while IFS=$'\t' read -r name w h; do
   "$CHROME" --headless=new --disable-gpu --hide-scrollbars --no-first-run \
-    --user-data-dir="$WORK/profile" --window-size="$w,$h" --virtual-time-budget=8000 \
-    --screenshot="$OUT/${name%.dc.html}.png" "http://127.0.0.1:$PORT/$name" >/dev/null 2>&1 \
+    --user-data-dir="$WORK/profile" --allow-file-access-from-files \
+    --window-size="$w,$h" --virtual-time-budget=8000 \
+    --screenshot="$OUT/${name%.dc.html}.png" "file://$WORK/project/$name" >/dev/null 2>&1 \
     || { log_warn "Không chụp được $name"; failed=1; continue; }
   cp "$WORK/project/$name" "$OUT/src/"
   log_detail "$name (${w}×${h})"
 done < "$WORK/boards.tsv"
 cp "$WORK/project/canvas.json" "$OUT/"
-python3 -I "${0:A:h}/canvas-index.py" readme "$WORK/project/canvas.json" > "$OUT/README.md"
+"$INDEX" readme "$WORK/project/canvas.json" > "$OUT/README.md"
 (( failed == 0 )) || log_die "Có artboard không chụp được (xem trên)."
 log_ok "Xong: $OUT"
 log_done

@@ -7,7 +7,7 @@
 #
 # Read-only on the system: installs nothing, writes no defaults, enables no input source,
 # uses no network, opens no window. The only writes are build artifacts under build/ (the
-# input-source helper, built the way scripts/selftest/typing/run.sh builds it) and .build/
+# input-source helper, in build/tools/ through scripts/lib/swift-tool.sh) and .build/
 # of the Swift package. Marks: ✓ fine, ! worth a look (does not block), ✗ blocks building
 # or testing. Exit 0 when nothing blocks building and testing, 1 otherwise.
 set -uo pipefail
@@ -138,17 +138,12 @@ if [[ ! -f $im/Contents/Info.plist ]]; then
 elif [[ -z $dev_dir ]]; then
   log_detail "Bỏ qua: cần Xcode để biên dịch công cụ đọc nguồn nhập liệu."
 else
-  bin=$root/build/selftest
-  mkdir -p "$bin"
-  src=$root/scripts/lib/input-source.swift
-  if [[ ! -x $bin/input-source || $src -nt $bin/input-source ]]; then
-    xcrun swiftc -O -o "$bin/input-source" "$src" 2>/dev/null
-  fi
-  if [[ ! -x $bin/input-source ]]; then
+  source "$root/scripts/lib/swift-tool.sh"
+  if ! helper=$(dau_swift_tool input-source "$root/scripts/lib/input-source.swift" 2>/dev/null); then
     log_warn "Không biên dịch được scripts/lib/input-source.swift, bỏ qua kiểm tra này."
   else
     im_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$im/Contents/Info.plist" 2>/dev/null)
-    src_out=$("$bin/input-source" enabled "$im_id" 2>&1); rc=$?
+    src_out=$("$helper" enabled "$im_id" 2>&1); rc=$?
     if (( rc == 0 )) && [[ -n $src_out ]]; then
       log_ok "Đã bật: ${src_out//$'\n'/, }"
     elif (( rc == 4 )); then

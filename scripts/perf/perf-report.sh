@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
     --last) LAST="${2:?--last cần giá trị, ví dụ 10m}"; shift 2 ;;
     --app) APP_FILTER="${2:?--app cần tên app hoặc bundle ID}"; shift 2 ;;
     --input) INPUT="${2:?--input cần đường dẫn file}"; shift 2 ;;
-    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+    -h|--help) log_usage "$0"; exit 0 ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done

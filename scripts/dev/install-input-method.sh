@@ -35,7 +35,7 @@ for arg in "$@"; do
     # Day-to-day typing: Release has no get-task-allow (no debugger can attach) and no
     # per-key log or debug defaults keys (D8). Debug only while testing.
     --release) CONFIG=Release ;;
-    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+    -h|--help) log_usage "$0"; exit 0 ;;
     *) log_die 2 "Tham số không hợp lệ: $arg (dùng --release, --build-only, --no-build hoặc không có tham số)" ;;
   esac
 done

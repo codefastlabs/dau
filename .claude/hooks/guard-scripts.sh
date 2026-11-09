@@ -33,7 +33,7 @@ typeset -A guarded=(
 runners=(zsh bash sh source . env time nohup exec command)
 
 blocked=()
-for seg in ${(f)"$(print -r -- $cmd | perl -pe 's/&&|\|\||[;|&()]/\n/g')"}; do
+for seg in ${(f)${cmd//(\&\&|\|\||[;|\&()])/$'\n'}}; do
   words=(${(Q)${(z)seg}})
   # Skip VAR=value assignments, runner words and the runner's own options.
   # A shell's -n only parses the script (syntax check): not a run.

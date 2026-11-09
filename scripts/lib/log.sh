@@ -13,6 +13,7 @@
 #   log_ask TEXT         "? TEXT " with no newline, before a `read` (stderr)
 #   log_done [TEXT]      "==> TEXT · <time since the script started>" (default "Xong")
 #   log_duration SECONDS "8 giây", "2 phút 14 giây"
+#   log_usage FILE       the comment block at the top of FILE, without "# " and the shebang (stdout)
 #
 # Colors only when that stream is a terminal, NO_COLOR is unset (https://no-color.org)
 # and TERM is not "dumb"; the marks stay, so a log written to a file still reads and greps.
@@ -66,4 +67,13 @@ log_duration() { # seconds (may be fractional)
 
 log_done() {
   log_step "${1:-Xong} · $(log_duration $(( EPOCHREALTIME - DAU_LOG_START )))"
+}
+
+log_usage() { # file: prints its leading comment block, for -h/--help
+  local line first=1
+  while IFS= read -r line; do
+    (( first )) && { first=0; continue; }
+    [[ $line == '#'* ]] || break
+    line=${line#\#}; print -r -- "${line# }"
+  done < "$1"
 }

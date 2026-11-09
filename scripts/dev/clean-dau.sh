@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Removes every trace of Dấu from this user account.
-# Side effects: none without --yes (only lists); with --yes: kills processes, deletes data, changes user settings, changes input source
+# Side effects: builds; with --yes also: kills processes, deletes data, changes user settings, changes input source
 # It lets an install test (M5 T4) start from a machine that never had Dấu.
 #
 # Usage:
@@ -22,6 +22,8 @@
 #       com.apple.HIToolbox › AppleEnabledInputSources / AppleInputSourceHistory:
 #         removed with `defaults import`, after the whole domain is exported to a backup
 #         file under the temp directory (its path is printed);
+#       the entries are counted and filtered by scripts/lib/input-source.swift (`count`,
+#       `drop`), built into build/tools/ on the first run;
 #       com.apple.inputsources › AppleEnabledThirdPartyInputSources (where macOS keeps
 #         third-party sources that are enabled): only reported. macOS lets only its input
 #         source service write it (System Policy denies `defaults import`, which still
@@ -39,12 +41,13 @@ set -uo pipefail
 setopt null_glob
 source "${0:A:h:h}/lib/log.sh"
 source "${0:A:h:h}/lib/wait.sh"
+source "${0:A:h:h}/lib/swift-tool.sh"
 
 DO=0
 case "${1:-}" in
   "") ;;
   --yes) DO=1 ;;
-  -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+  -h|--help) log_usage "$0"; exit 0 ;;
   *) log_die 2 "Tham số không hợp lệ: $1 (không tham số để xem, --yes để xoá)" ;;
 esac
 
@@ -91,12 +94,9 @@ for d in "$LIB"/Containers/com.{codefastlabs,example}.dau{,.*} \
 done
 
 # Input source preferences: count Dấu's entries per array, without changing anything.
+INPUT_SOURCE=$(dau_swift_tool input-source "${0:A:h:h}/lib/input-source.swift") || exit 1
 inputsource_entries() { # domain key
-  defaults export "$1" - 2>/dev/null | /usr/bin/python3 -I -c '
-import plistlib, re, sys
-data = plistlib.loads(sys.stdin.buffer.read() or plistlib.dumps({}))
-n = sum(1 for e in data.get(sys.argv[1], []) if isinstance(e, dict) and re.match(sys.argv[2], str(e.get("Bundle ID", ""))))
-print(n)' "$2" "$ID_PATTERN"
+  defaults export "$1" - 2>/dev/null | "$INPUT_SOURCE" count "$2" "$ID_PATTERN"
 }
 log_step "Nguồn nhập liệu"
 prefs=()
@@ -106,11 +106,10 @@ for spec in "com.apple.inputsources AppleEnabledThirdPartyInputSources" \
   n=$(inputsource_entries ${=spec})
   if [[ -n $n && $n != 0 ]]; then prefs+=("$spec"); note "${spec/ / › }: $n mục của Dấu"; fi
 done
-selected=$(defaults export com.apple.HIToolbox - 2>/dev/null | /usr/bin/python3 -I -c '
-import plistlib, re, sys
-data = plistlib.loads(sys.stdin.buffer.read() or plistlib.dumps({}))
-print(any(re.match(sys.argv[1], str(e.get("Bundle ID", ""))) for e in data.get("AppleSelectedInputSources", []) if isinstance(e, dict)))' "$ID_PATTERN")
-[[ $selected == True ]] && note "Dấu đang là nguồn được chọn: chuyển sang bàn phím khác trước (menu nguồn nhập liệu)."
+selected=0
+n=$(inputsource_entries com.apple.HIToolbox AppleSelectedInputSources)
+[[ -n $n && $n != 0 ]] && selected=1
+(( selected )) && note "Dấu đang là nguồn được chọn: chuyển sang bàn phím khác trước (menu nguồn nhập liệu)."
 
 log_step "Đăng ký LaunchServices"
 registered=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E '^path: .*/(Dau|DauInputMethod)\.app \(0x' | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
@@ -136,7 +135,7 @@ if (( ! DO )); then
   fi
   exit 0
 fi
-if [[ $selected == True ]]; then
+if (( selected )); then
   log_error "Dấu đang được chọn"
   log_hint "Chuyển sang bàn phím khác rồi chạy lại."
   exit 1
@@ -199,9 +198,10 @@ for d in $data; do
   rm -rf -- "$d"
   if [[ -e $d ]]; then
     notremoved "KHÔNG xoá được: ${d#$HOME/}"
-    # macOS protects an app's (group) container from other processes, Terminal included.
+    # Seen (09/11/2026): rm gets "Operation not permitted" on a container when the process
+    # running the script has no Full Disk Access. Not tried with that permission granted.
     [[ $d == */Containers/* || $d == */"Group Containers"/* ]] &&
-      log_hint "macOS chặn tiến trình khác xoá container của app: mở Finder › Đi › Đi tới Thư mục… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
+      log_hint "Tiến trình chạy script có thể thiếu Full Disk Access (System Settings › Privacy & Security). Hoặc mở Finder › Đi › Đi tới Thư mục… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
   else
     log_detail "đã xoá: ${d#$HOME/}"
   fi
@@ -232,12 +232,7 @@ for spec in $prefs; do
     continue
   fi
   tmp=$(mktemp)
-  defaults export "$domain" - | /usr/bin/python3 -I -c '
-import plistlib, re, sys
-data = plistlib.loads(sys.stdin.buffer.read())
-key, pattern = sys.argv[1], sys.argv[2]
-data[key] = [e for e in data.get(key, []) if not (isinstance(e, dict) and re.match(pattern, str(e.get("Bundle ID", ""))))]
-sys.stdout.buffer.write(plistlib.dumps(data))' "$key" "$ID_PATTERN" > "$tmp" && defaults import "$domain" "$tmp" 2>/dev/null
+  defaults export "$domain" - | "$INPUT_SOURCE" drop "$key" "$ID_PATTERN" > "$tmp" && defaults import "$domain" "$tmp" 2>/dev/null
   rm -f "$tmp"
   # `defaults import` exits 0 even when the write is refused: read back.
   left=$(inputsource_entries "$domain" "$key")

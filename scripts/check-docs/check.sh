@@ -12,7 +12,7 @@
 #   2. no file:line references (line numbers drift; name the type or function);
 #   3. every D# / N# cited exists in docs/DECISIONS.md;
 #   3b. the first citation of each D# / N# in a living doc or docs/research/*.md carries its
-#      name, "D4 (Từ nước ngoài)" (decision-names.py);
+#      name, "D4 (Từ nước ngoài)" (doc-check.swift names);
 #   4. no wording listed in superseded.txt (DECISIONS.md and the dated M*-TESTING.md plans may);
 #      also in the comment lines of scripts/**/*.sh and scripts/**/*.swift (not in
 #      scripts/check-docs, which holds the patterns);
@@ -34,7 +34,11 @@
 #   9. every folder under scripts/ that git tracks has a row in the folder table of
 #      scripts/README.md.
 #   10. every option a living doc or docs/research/*.md cites for a script (in the same
-#      code span) exists in that script (script-flags.py).
+#      code span) exists in that script (doc-check.swift flags).
+#   11. script languages (scripts/README.md, "Ngôn ngữ"): outside scripts/research/external-tests,
+#      no tracked .py/.pl/.rb file, no code line of a scripts/**/*.sh or hook that runs
+#      python, perl or ruby, and no `swift <file>.swift` run interpreted (use dau_swift_tool).
+# Checks 3b and 10 run doc-check.swift, compiled once into build/tools/ (scripts/lib/swift-tool.sh).
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
 set -uo pipefail
@@ -42,6 +46,8 @@ here=${0:A:h}
 root=${here:h:h}
 cd "$root"
 source "$root/scripts/lib/log.sh"
+source "$root/scripts/lib/swift-tool.sh"
+doc_check=$(dau_swift_tool doc-check $here/doc-check.swift) || exit 1
 fail=0
 report() { log_error "$1"; fail=1 }
 
@@ -79,7 +85,7 @@ done
 # 3b. Names on first citations.
 named=($living docs/research/*.md(N))
 named=(${named:#docs/DECISIONS.md})
-python3 -I scripts/check-docs/decision-names.py $named | while IFS=$'\t' read -r f d found; do
+$doc_check names $named | while IFS=$'\t' read -r f d found; do
   report "$f: lần dẫn đầu của $d phải kèm tên, dạng \"$d (tên trong DECISIONS.md)\": ${found[1,80]}"
 done
 
@@ -155,8 +161,22 @@ for d in ${(f)"$(git ls-files scripts | cut -d/ -f2 | sort -u)"}; do
 done
 
 # 10. Options cited for a script exist in it.
-python3 -I scripts/check-docs/script-flags.py $living docs/research/*.md(N) | while IFS=$'\t' read -r f sc opt; do
+$doc_check flags $living docs/research/*.md(N) | while IFS=$'\t' read -r f sc opt; do
   report "$f: $sc không có tuỳ chọn $opt"
+done
+
+# 11. Script languages.
+exempt=scripts/research/external-tests/
+for f in ${(f)"$(git ls-files 'scripts/*.py' 'scripts/*.pl' 'scripts/*.rb' '.claude/*.py' '.claude/*.pl' '.claude/*.rb')"}; do
+  [[ -z $f || $f == $exempt* || ! -e $f ]] && continue
+  report "$f: script ngoài zsh và Swift (scripts/README.md, \"Ngôn ngữ\")"
+done
+for s in scripts/**/*.sh(N) .claude/hooks/*.sh(N); do
+  [[ $s == $exempt* || $s == */.build/* || $s == scripts/check-docs/check.sh ]] && continue
+  grep -nvE '^[[:space:]]*#' $s | grep -E '(^|[^[:alnum:]_./-])(/usr/bin/)?(python3?|perl|ruby)([[:space:]]|$)|(^|[[:space:]])(xcrun )?swift [^[:space:]]+\.swift' \
+    | while IFS= read -r l; do
+      report "$s:${l%%:*}: chạy Python/Perl/Ruby hoặc Swift thông dịch (scripts/README.md, \"Ngôn ngữ\")"
+    done
 done
 
 # 8. Hook table: a script with a disturbing effect must be named in the hook.

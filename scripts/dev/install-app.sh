@@ -33,7 +33,7 @@ for arg in "$@"; do
   case "$arg" in
     --debug) CONFIG=Debug ;;
     --with-input-method) WITH_IM=1 ;;
-    -h|--help) awk 'NR==1{next} /^#/{sub(/^# ?/,""); print; next} {exit}' "$0"; exit 0 ;;
+    -h|--help) log_usage "$0"; exit 0 ;;
     *) log_die 2 "Tham số không hợp lệ: $arg (dùng --debug, --with-input-method hoặc không có tham số)" ;;
   esac
 done
