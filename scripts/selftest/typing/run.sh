@@ -440,9 +440,22 @@ run_vscode() {
 }
 
 run_terminal() {
-  # Remember the window opened here: it is the only one read and closed.
-  local win
-  win="$(osascript -e 'tell application "Terminal"' -e 'activate' -e 'do script ""' \
+  # Remember the window used here: it is the only one read and closed. When Terminal is
+  # not running, launching it opens its startup window, and `do script ""` would open a
+  # second one that is the only one closed, leaving the startup window behind (seen
+  # 09/11/2026). So a Terminal launched here types into its startup window instead.
+  local win="" running
+  running="$(osascript -e 'application "Terminal" is running')"
+  if [[ "$running" == false ]]; then
+    osascript -e 'tell application "Terminal" to activate' >/dev/null || return 0
+    for _ in $(seq 1 25); do
+      win="$(osascript -e 'tell application "Terminal" to if (count of windows) > 0 then return id of front window' 2>/dev/null)"
+      [[ -n "$win" ]] && break
+      sleep 0.2
+    done
+  fi
+  # Already running, or set to open no window at launch: a new window of our own.
+  [[ -n "$win" ]] || win="$(osascript -e 'tell application "Terminal"' -e 'activate' -e 'do script ""' \
     -e 'return id of front window' -e 'end tell')" || return 0
   # Wait for the shell prompt: keys sent before the shell is ready (a slow zsh theme
   # takes ~3 s) are lost and never reach the input method.
