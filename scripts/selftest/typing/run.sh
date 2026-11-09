@@ -69,6 +69,7 @@ set -uo pipefail
 SELF="${0:A}"   # $0 inside a function is the function name in zsh
 ROOT="${SELF:h:h:h:h}"
 source "$ROOT/scripts/lib/log.sh"
+source "$ROOT/scripts/lib/wait.sh"
 HERE="$ROOT/scripts/selftest/typing"
 source "$ROOT/scripts/lib/xcode.sh"
 dau_developer_dir
@@ -126,14 +127,21 @@ DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
   log_hint "Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (scripts/dev/install-input-method.sh nói rõ các bước)."
   exit 1
 }
-if [[ "$KEYS" == *"⇄"* ]] && ! "$INPUT_SOURCE" enabled "$US_SOURCE" | grep -qx "$US_SOURCE"; then
+if [[ "$KEYS" == *"⇄"* ]] && (( ! ${${(f)"$("$INPUT_SOURCE" enabled "$US_SOURCE")"}[(Ie)$US_SOURCE]} )); then
   log_die "⇄ cần nguồn $US_SOURCE đã bật (script không tự bật, N4)."
 fi
-# ⇄: U.S., then back to Dấu, from this (unsandboxed) process.
-SWITCH_CMD="$(printf '%q select %q; sleep 0.3; %q select %q; sleep 0.3' \
-  "$BIN/input-source" "$US_SOURCE" "$BIN/input-source" "$DAU_SOURCE")"
 
 WORK="$(mktemp -d)"
+# Written when the run must stop: "front" (another app came to the front) or "source"
+# (the input source did not become the one selected).
+STOP_FILE="$WORK/stop"
+# ⇄: U.S., then back to Dấu, from this (unsandboxed) process. AppleScript's `do shell
+# script` runs it with /bin/sh. Each select waits (3 s at most) until TIS reports the new
+# source as current; if it never does, "source" goes into the stop file and the keys stop.
+# The 0.3 s after that stays fixed: the input method learns of the switch through a
+# notification this script cannot observe.
+SWITCH_CMD="$(printf 'sw() { %q select "$1" >/dev/null || exit 1; i=0; while [ "$(%q current)" != "$1" ]; do i=$((i+1)); if [ $i -ge 30 ]; then echo source > %q; exit 1; fi; sleep 0.1; done; sleep 0.3; }; sw %q; sw %q' \
+  "$BIN/input-source" "$BIN/input-source" "$STOP_FILE" "$US_SOURCE" "$DAU_SOURCE")"
 ORIGINAL_SOURCE="$("$INPUT_SOURCE" current)"
 "$CLIPBOARD" save "$WORK/clipboard.plist" || exit 1
 # The per-key log is off unless DauPerfLog is set (D8); turn it on for this run only.
@@ -188,16 +196,17 @@ HTML
 # Selects Dấu and checks it is the current source (TIS is trusted for the current source
 # only). Stops the run (status 4) with a message if not. Prints nothing on stdout: it runs
 # inside the command substitution that collects an app's text.
+is_current_source() { [[ "$("$INPUT_SOURCE" current 2>/dev/null)" == "$1" ]]; }
 select_dau() {
   stopped && return 1
   "$INPUT_SOURCE" select "$DAU_SOURCE" >&2
-  sleep 0.3
-  local now="" _
-  for _ in 1 2 3 4 5; do
-    now="$("$INPUT_SOURCE" current 2>/dev/null)"
-    [[ "$now" == "$DAU_SOURCE" ]] && return 0
-    sleep 0.2
-  done
+  if wait_until 3 is_current_source "$DAU_SOURCE"; then
+    # Fixed: the input method is activated for the focused app after the switch, and
+    # nothing outside it shows when that is done.
+    sleep 0.3
+    return 0
+  fi
+  local now="$("$INPUT_SOURCE" current 2>/dev/null)"
   log_error "Dừng: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". Dấu chưa được chọn nên không gõ gì."
   log_hint "Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"."
   echo source > "$STOP_FILE"
@@ -208,7 +217,6 @@ select_dau() {
 # browsers, that the test page is the front tab of its focused window), in the same osascript as the keys: if
 # the user switches app while the script runs, nothing is typed into their window. A
 # failed check stops the whole run (exit 3).
-STOP_FILE=""   # set below, in $WORK
 front_guard() { # process [window-title-substring] → AppleScript that errors if not front
   cat <<OSA
   tell application "System Events"
@@ -227,16 +235,16 @@ front_guard() { # process [window-title-substring] → AppleScript that errors i
   end tell
 OSA
 }
+# The guard alone: status 0 when process $1 is frontmost (with $2 in its focused window's
+# title, if given). Sends nothing.
+front_ok() { osascript -e "$(front_guard "$1" "${2:-}")" -e 'return' >/dev/null 2>&1; }
 # Runs AppleScript $3 only if the guard for process $1 (title $2) passes.
 # The check alone is retried for a few seconds first: right after `open`, Safari 27 may
 # briefly report an untitled front window. Keys are still only sent
 # once the check passes.
 guarded() {
-  local out _
-  for _ in 1 2 3 4 5 6 7 8; do
-    osascript -e "$(front_guard "$1" "$2")" -e 'return' >/dev/null 2>&1 && break
-    sleep 0.4
-  done
+  local out
+  wait_until -i 0.4 3.2 front_ok "$1" "$2"
   if ! out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)"; then
     log_error "Dừng: $out — không gửi phím nào nữa"
     echo front > "$STOP_FILE"
@@ -251,7 +259,7 @@ type_keys() { # process [window-title-substring]
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" <<'OSA' || { log_error "Dừng: app đổi giữa chừng"; echo front > "$STOP_FILE"; return 1; }
+  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" <<'OSA'
 on run argv
   set s to item 1 of argv
   set d to ((item 2 of argv) as integer) / 1000
@@ -277,13 +285,25 @@ on run argv
         else
           keystroke (c as text)
         end if
+        -- Fixed on purpose: the pace the user asked for (--delay), between keys.
         if d > 0 then delay d
       end repeat
     end if
   end tell
 end run
 OSA
-  sleep 0.8   # let asynchronous apps catch up before reading
+  then
+    if [[ "$(cat "$STOP_FILE" 2>/dev/null)" == source ]]; then
+      log_error "Dừng: sau ⇄, nguồn nhập liệu không thành nguồn vừa chọn trong 3 giây; không gõ tiếp."
+    else
+      log_error "Dừng: app đổi giữa chừng"; echo front > "$STOP_FILE"
+    fi
+    return 1
+  fi
+  # Fixed: apps that apply text asynchronously (browsers, Electron) may still be
+  # catching up with the last keys, and their text can only be read through ⌘A ⌘C,
+  # which changes the selection; no state to poll for that is common to every app.
+  sleep 0.8
 }
 
 # ⌘A ⌘C in the focused text field of process $1 (front tab title $2), then the plain
@@ -292,19 +312,25 @@ copy_all() {
   stopped && return 1
   # Empty the clipboard first so a failed copy cannot return an earlier run's text.
   printf '' | pbcopy
+  # The 0.2 s between ⌘A and ⌘C stays fixed: the selection is not read anywhere.
   guarded "$1" "${2:-}" 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.2
     keystroke "c" using {command down}
-    delay 0.3
   end tell' >/dev/null || return 1
+  # The copy lands on the clipboard emptied above. No text after 3 s: the copy failed or
+  # the field is empty, and the comparison reports it.
+  wait_until 3 clipboard_has_text
   "$CLIPBOARD" text
 }
+clipboard_has_text() { [[ -n "$("$CLIPBOARD" text 2>/dev/null)" ]]; }
 
 # --- one function per app; each prints the text typed ---------------------------------
 run_textedit() {
   osascript -e 'tell application "TextEdit"' -e 'activate' -e 'make new document' -e 'end tell' >/dev/null
-  sleep 0.8; select_dau; type_keys TextEdit
+  # Not front in time: type_keys's guard reports it and stops the run.
+  wait_until 10 front_ok TextEdit
+  select_dau; type_keys TextEdit
   osascript -e 'tell application "TextEdit"' -e 'set t to text of front document' \
     -e 'close front document saving no' -e 'return t' -e 'end tell'
 }
@@ -323,36 +349,45 @@ close_test_tab() {
     # Only when the browser is frontmost with the test page in front.
     guarded "$1" "$PAGE_TITLE" 'tell application "System Events" to keystroke "w" using {command down}' \
       >/dev/null || break
-    sleep 0.6
-    [[ "$(window_names "$1")" == *"$PAGE_TITLE"* ]] || return 0
+    wait_until 3 test_page_closed "$1" && return 0
   done
   log_warn "Còn tab \"$PAGE_TITLE\" trong $1, đóng tay giúp"
 }
 
+test_page_closed() { [[ "$(window_names "$1")" != *"$PAGE_TITLE"* ]]; }
+
+# Opens the test page in browser $1 (app name) and waits until process $2 is frontmost
+# with the page in its focused window (the title comes from the loaded page). Not there in
+# time: type_keys's guard reports it and stops the run.
+open_test_page() {
+  open -a "$1" "$PAGE"
+  wait_until -i 0.3 15 front_ok "$2" "$PAGE_TITLE"
+}
+
 run_safari() {
-  open -a Safari "$PAGE"
-  sleep 2.5; select_dau; type_keys Safari "$PAGE_TITLE"
+  open_test_page Safari Safari
+  select_dau; type_keys Safari "$PAGE_TITLE"
   copy_all Safari "$PAGE_TITLE"
   close_test_tab Safari
 }
 
 run_chrome() {
-  open -a "Google Chrome" "$PAGE"
-  sleep 2.5; select_dau; type_keys "Google Chrome" "$PAGE_TITLE"
+  open_test_page "Google Chrome" "Google Chrome"
+  select_dau; type_keys "Google Chrome" "$PAGE_TITLE"
   copy_all "Google Chrome" "$PAGE_TITLE"
   close_test_tab "Google Chrome"
 }
 
 run_edge() {
-  open -a "Microsoft Edge" "$PAGE"
-  sleep 3; select_dau; type_keys "Microsoft Edge" "$PAGE_TITLE"
+  open_test_page "Microsoft Edge" "Microsoft Edge"
+  select_dau; type_keys "Microsoft Edge" "$PAGE_TITLE"
   copy_all "Microsoft Edge" "$PAGE_TITLE"
   close_test_tab "Microsoft Edge"
 }
 
 run_firefox() {
-  open -a Firefox "$PAGE"
-  sleep 3; select_dau; type_keys firefox "$PAGE_TITLE"
+  open_test_page Firefox firefox
+  select_dau; type_keys firefox "$PAGE_TITLE"
   copy_all firefox "$PAGE_TITLE"
   close_test_tab firefox
 }
@@ -360,11 +395,15 @@ run_firefox() {
 # Notes: a new note (⌘N) in the folder shown; read with ⌘A ⌘C, then emptied. Notes
 # discards an empty new note, so no note is kept (the note syncs while it exists).
 run_notes() {
-  open -a Notes; sleep 2.5
+  open -a Notes
+  wait_until -i 0.3 15 front_ok Notes
   guarded Notes "" 'tell application "System Events" to keystroke "n" using {command down}' \
     >/dev/null || return 0
+  # Fixed: the new note takes the focus with no change the script can read without
+  # Automation permission for Notes (the window title stays the folder's).
   sleep 1; select_dau; type_keys Notes
   copy_all Notes
+  # The delay between the keys stays fixed: pacing, nothing read in between.
   guarded Notes "" 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.1
@@ -376,22 +415,47 @@ run_notes() {
 # To field stays empty and Send is never pressed. Read with ⌘A ⌘C, emptied, closed with
 # ⌘W; if Mail asks to save the draft, "Don't Save"/"Delete" is chosen.
 MAIL_COMPOSE="New Message"
+MAIL_BODY='UI element 1 of scroll area 1 of group 1 of group 1 of front window'
+mail_body_focused() {
+  [[ "$(osascript -e "tell application \"System Events\" to tell process \"Mail\" to get value of attribute \"AXFocused\" of $MAIL_BODY" 2>/dev/null)" == true ]]
+}
 run_mail() {
-  open -a Mail; sleep 2
+  open -a Mail
+  wait_until -i 0.3 15 front_ok Mail
   guarded Mail "" 'tell application "System Events" to keystroke "n" using {command down}' \
     >/dev/null || return 0
-  sleep 2
-  guarded Mail "$MAIL_COMPOSE" 'tell application "System Events" to tell process "Mail"
-    set value of attribute "AXFocused" of UI element 1 of scroll area 1 of group 1 of group 1 of front window to true
-  end tell' >/dev/null || return 0
-  sleep 0.3; select_dau; type_keys Mail "$MAIL_COMPOSE"
+  wait_until -i 0.3 10 front_ok Mail "$MAIL_COMPOSE"
+  guarded Mail "$MAIL_COMPOSE" "tell application \"System Events\" to tell process \"Mail\"
+    set value of attribute \"AXFocused\" of $MAIL_BODY to true
+  end tell" >/dev/null || return 0
+  # Not focused in time: the keys go wherever Mail put the focus, and the comparison
+  # reports it.
+  wait_until 3 mail_body_focused
+  select_dau; type_keys Mail "$MAIL_COMPOSE"
   copy_all Mail "$MAIL_COMPOSE"
   discard_front_document Mail "$MAIL_COMPOSE"
+}
+
+# Status 0 when process $1 has no window titled with $2 left without a sheet: the window
+# closed, or it asks whether to save.
+document_closed_or_asking() {
+  [[ "$(osascript - "$1" "$2" <<'OSA' 2>/dev/null
+on run argv
+  tell application "System Events" to tell process (item 1 of argv)
+    repeat with w in windows
+      if name of w contains (item 2 of argv) and (count of sheets of w) = 0 then return "open"
+    end repeat
+  end tell
+  return "done"
+end run
+OSA
+)" == done ]]
 }
 
 # Empties the focused text (⌘A ⌫), closes the front window (⌘W) of process $1 whose
 # title contains $2, and answers a save prompt with the button that discards.
 discard_front_document() {
+  # The short delays between the keys stay fixed: pacing, nothing read in between.
   guarded "$1" "$2" 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.1
@@ -399,7 +463,8 @@ discard_front_document() {
     delay 0.3
     keystroke "w" using {command down}
   end tell' >/dev/null || return 0
-  sleep 1
+  # Until the window is gone or shows its save sheet; the step below says which.
+  wait_until 5 document_closed_or_asking "$1" "$2"
   osascript - "$1" "$2" <<'OSA' >/dev/null 2>&1 || log_warn "Còn cửa sổ \"$2\" của $1, đóng tay giúp (không lưu)"
 on run argv
   set p to item 1 of argv
@@ -425,12 +490,17 @@ OSA
 }
 
 run_vscode() {
-  open -a "Visual Studio Code"; sleep 2
-  osascript -e 'tell application "Visual Studio Code" to activate' -e 'delay 0.5' \
-    -e 'tell application "System Events" to keystroke "n" using {command down}' >/dev/null
-  sleep 1.2; select_dau; type_keys Code Untitled
+  open -a "Visual Studio Code"
+  osascript -e 'tell application "Visual Studio Code" to activate' >/dev/null
+  wait_until -i 0.3 15 front_ok Code
+  guarded Code "" 'tell application "System Events" to keystroke "n" using {command down}' \
+    >/dev/null || return 0
+  # Not there in time: type_keys's guard reports it and stops the run.
+  wait_until -i 0.3 10 front_ok Code Untitled
+  select_dau; type_keys Code Untitled
   copy_all Code Untitled
-  # Empty the untitled editor so ⌘W closes it without asking to save.
+  # Empty the untitled editor so ⌘W closes it without asking to save. The delays between
+  # the keys stay fixed: pacing, nothing read in between.
   guarded Code Untitled 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.1
@@ -440,38 +510,46 @@ run_vscode() {
   end tell' >/dev/null
 }
 
+# Sets $win to Terminal's front window, if it has one.
+terminal_front_window() {
+  win="$(osascript -e 'tell application "Terminal" to if (count of windows) > 0 then return id of front window' 2>/dev/null)"
+  [[ -n "$win" ]]
+}
+# The non-blank text of Terminal window $1 (empty while the shell has printed nothing).
+terminal_text() {
+  local text
+  text="$(osascript -e "tell application \"Terminal\" to get contents of selected tab of window id $1" 2>/dev/null)"
+  [[ "$text" == *[^[:space:]]* ]] && print -r -- "$text"
+}
+
 run_terminal() {
   # Remember the window used here: it is the only one read and closed. When Terminal is
   # not running, launching it opens its startup window, and `do script ""` would open a
   # second one that is the only one closed, leaving the startup window behind. So a
   # Terminal launched here types into its startup window instead.
-  local win="" running
+  local running
+  win=""
   running="$(osascript -e 'application "Terminal" is running')"
   if [[ "$running" == false ]]; then
     osascript -e 'tell application "Terminal" to activate' >/dev/null || return 0
-    for _ in $(seq 1 25); do
-      win="$(osascript -e 'tell application "Terminal" to if (count of windows) > 0 then return id of front window' 2>/dev/null)"
-      [[ -n "$win" ]] && break
-      sleep 0.2
-    done
+    wait_until 5 terminal_front_window
   fi
   # Already running, or set to open no window at launch: a new window of our own.
   [[ -n "$win" ]] || win="$(osascript -e 'tell application "Terminal"' -e 'activate' -e 'do script ""' \
     -e 'return id of front window' -e 'end tell')" || return 0
   # Wait for the shell prompt: keys sent before the shell is ready (a slow zsh theme
-  # takes ~3 s) are lost and never reach the input method.
-  for _ in $(seq 1 30); do
-    osascript -e "tell application \"Terminal\" to get contents of selected tab of window id $win" \
-      2>/dev/null | grep -q '[^[:space:]]' && break
-    sleep 0.2
-  done
-  sleep 0.7; select_dau; type_keys Terminal
+  # takes ~3 s) are lost and never reach the input method. Ready: the window shows some
+  # text and it stays the same on 3 reads (a theme may redraw its prompt). Not settled in
+  # time: typing goes on and the comparison reports lost keys.
+  wait_settled 8 3 terminal_text "$win" >/dev/null
+  select_dau; type_keys Terminal
   # The keys sit on the prompt's last line after the prompt itself: print that line;
   # the caller compares by suffix.
   osascript -e "tell application \"Terminal\" to get contents of selected tab of window id $win" \
     | grep -v '^[[:space:]]*$' | tail -1
   # ⌃U clears the line; never Return. Then close that window (only the shell runs in it).
   guarded Terminal "" 'tell application "System Events" to keystroke "u" using {control down}' >/dev/null
+  # Fixed: lets the shell take ⌃U before its window closes; nothing read in between.
   sleep 0.2
   osascript -e "tell application \"Terminal\" to close window id $win" >/dev/null 2>&1
 }
@@ -493,7 +571,6 @@ bundle_id() {
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
-STOP_FILE="$WORK/stop"
 for app in "${APPS[@]}"; do
   if stopped; then break; fi
   if [[ $UNDERLINE == 1 ]]; then
@@ -501,6 +578,8 @@ for app in "${APPS[@]}"; do
   fi
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   got="$("run_$app")"
+  # Fixed: the input method's perf lines reach the log store asynchronously, and how many
+  # to expect is not known, so there is nothing to wait for.
   sleep 0.3
   if stopped; then
     # Another app came to the front, or Dấu could not be selected: no verdict for this app.
@@ -531,9 +610,9 @@ for app in "${APPS[@]}"; do
   "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
     | grep -E 'count_|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
   if [[ $UNDERLINE == 1 ]]; then
-    if "$LOG" show --start "$start" --style compact \
-        --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null \
-        | grep -q "event=underline-on app=$(bundle_id "$app")"; then
+    settings_log="$("$LOG" show --start "$start" --style compact \
+        --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"
+    if [[ "$settings_log" == *"event=underline-on app=$(bundle_id "$app")"* ]]; then
       log_detail "underline-on"
     else
       log_warn "Không thấy underline-on (bộ gõ chưa nhận khoá ép?)"
