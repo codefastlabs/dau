@@ -106,6 +106,8 @@ final class LateDocument: InPlaceClient {
     var override: String?
     /// Calls during the current key (N3).
     var selections = 0, reads = 0, inserts = 0
+    /// The text the latest read gave (nil: none).
+    private(set) var lastRead: String?
     /// An `insertText` whose range is outside the real text (never expected).
     var badRanges = 0
     /// An `insertText` whose range starts past the text the app holds (`Origin.word`):
@@ -159,7 +161,9 @@ final class LateDocument: InPlaceClient {
     func text(in range: NSRange) -> String? {
         reads += 1
         let units = answer.text
+        lastRead = nil
         guard range.location >= 0, range.length >= 0, range.location + range.length <= units.count else { return nil }
+        lastRead = String(decoding: units[range.location..<(range.location + range.length)], as: UTF16.self)
         return String(decoding: units[range.location..<(range.location + range.length)], as: UTF16.self)
     }
 

@@ -218,29 +218,93 @@ struct CursorEditorTests {
         #expect(s.overCalls == 0)
     }
 
+    // MARK: A burst from the start of a word (run of 12:42): not fixed
+
+    /// The run c20 of 12:42 (Cursor 3.29.15, Dấu Debug 1c6326a, a new document, 20 ms
+    /// between keys, replayed here with its key times; build/load/fix3-20261110-124244,
+    /// not committed): "anh ddi owr
+    /// ddaau " gave "anh di ở đâu". At "d" + d (key 6) the answer was right (sel 1) and
+    /// was taken for a late one (`late`, known 5, range 4,1, which the app drops).
+    ///
+    /// Every key since the position was anchored at 0 came in one burst, and the text
+    /// read, "d", is the latest key: what Chromium's cache answers when the page of a
+    /// new document has applied none of the keys (`CursorTracker.typedHere`, the edits
+    /// start the document; `sameAnswerAsLateNewDocument`). (In the run of 11:44 the
+    /// same keys came out right: a probe word typed first left no followed position.)
+    @Test("known limit, the 20 ms run of the Cursor log from a new document: the second key of the second word, taken for a late answer as measured")
+    func burstFromStartOfWord() {
+        var s = EditorSession()
+        // Milliseconds between the keys of the run (`ev_ns` of the perf log).
+        let gaps: [Double] = [0, 45, 8, 33, 25, 28, 27, 90, 29, 30, 38, 24, 26, 25, 31, 80, 27, 32]
+        for (route, gap) in zip(routes("anh ddi owr ddaau "), gaps) { s.key(route, after: gap / 1000) }
+        let key = s.outcomes[5]
+        #expect(key.kind == .late)
+        #expect(key.attempt?.selection.location == 1)
+        #expect(key.attempt?.known == 5)
+        #expect(key.attempt?.replacement == NSRange(location: 4, length: 1))
+        // The rest of the log: replace at keys 10, 11, 14, 16, nothing else.
+        #expect(s.kinds.enumerated().filter { $0.element == .replace }.map { $0.offset + 1 } == [10, 11, 14, 16])
+        #expect(s.doc.text == "anh di ở đâu ")
+        withKnownIssue("a burst from the start of a word in a word-origin app (measured, not fixed)") {
+            #expect(s.doc.text == "anh đi ở đâu ")
+        }
+        #expect(s.overCalls == 0)
+    }
+
+    /// Why that key cannot be told from a late app with what the input method has: the
+    /// same keys at the same times in a new document of an app that counts from the
+    /// start of the document, uses Chromium's cache and has applied none of them (VS
+    /// Code's new document, measured for the first word: sel 1, known 4, `late`,
+    /// `RapidKeysTests.firstWordOfEmptyDocument`) give the same answer, the same text
+    /// read and the same followed position. Replacing at the followed position is right
+    /// there and dropped in Cursor; replacing at the answer is right in Cursor and
+    /// replaces the first letter of the document there.
+    @Test("a word-origin app on time and a late new document of a document-origin app: same answer, same text read, same followed position")
+    func sameAnswerAsLateNewDocument() {
+        var cursor = EditorSession()
+        cursor.type("anh dd", every: 0.02)
+
+        let doc = LateDocument()
+        doc.cache = .chromium
+        doc.replace = .caretAfterText
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        var last = InPlaceComposer.Outcome()
+        func type(_ keys: String, behind: Bool) {
+            for route in routes(keys) {
+                now += 0.02
+                doc.lag = behind ? doc.states.count - 1 : 0
+                last = composer.handle(route, time: now, engine: &engine, client: doc)
+                if !last.consumed { doc.typed(route) }
+            }
+        }
+        type("anh dd", behind: true)
+
+        let here = cursor.outcomes[5]
+        #expect(here.attempt?.selection == last.attempt?.selection)
+        #expect(here.attempt?.known == last.attempt?.known)
+        #expect(cursor.doc.lastRead == doc.lastRead)
+        #expect(cursor.doc.lastRead == "d")
+        #expect(here.kind == .late && last.kind == .late)
+        type("i ", behind: false)
+        #expect(doc.text == "anh đi ")
+    }
+
     // MARK: Predicted by the model, not seen in a run
 
-    /// The same mistake as group 1 (a right answer taken for a late one) when every key
-    /// since the position was anchored at the start of the app's text came in one burst
-    /// (`CursorTracker.typedHere`, the first word of a new document): in this app every
-    /// word starts at 0, so the answer of an app that is on time is the answer
-    /// Chromium's cache gives when the page has applied none of the keys.
-    ///
-    /// Not seen in Cursor: in the run c20-short of 11:44 "anh ddi" at 20 ms came out
-    /// right; the log has known -1 at that key (the position was not anchored at the
-    /// first key of the string), so the condition of this case was not met there. Kept
-    /// as what the model gives; the code is not changed for it.
-    @Test("predicted by the model, not seen in a run: a burst from a position anchored at 0, a right answer taken for a late one",
-          arguments: [
-              ("anh ddi ", "anh đi "),
-              ("chieeuf nay anh cos ", "chiều nay anh có "),
-          ])
-    func burstFromAnchorTakenForLate(_ keys: String, _ expected: String) {
+    /// A word that starts with the first letter of the text typed since the position
+    /// was anchored at 0, every key in one burst: the answer of the app on time, one
+    /// letter of the word short in Chromium's cache form, reads that letter where the
+    /// text typed starts, which is enough at the start of a document
+    /// (`CursorTracker.typedHere`). Not seen in a run.
+    @Test("predicted by the model, not seen in a run: a word starting as the text does, in a burst from a position anchored at 0")
+    func wordStartingAsTheText() {
         var s = EditorSession()
-        s.type(keys, every: 0.02)
+        s.type("chieeuf nay anh cos ", every: 0.02)
         #expect(s.kinds.contains(.late))
         withKnownIssue("a right answer of a word-origin app taken for a late one (model only)") {
-            #expect(s.doc.text == expected)
+            #expect(s.doc.text == "chiều nay anh có ")
         }
         #expect(s.overCalls == 0)
     }
