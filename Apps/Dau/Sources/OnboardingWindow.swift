@@ -4,7 +4,7 @@ import SwiftUI
 import DauShared
 
 // The onboarding window (D14, docs/UI.md "Onboarding", mockup artboards
-// "OnboardingConflict", "OnboardingEnable", "Onboarding"): a 230 pt sidebar with the app
+// "OnboardingMoveToApplications", "OnboardingConflict", "OnboardingEnable", "Onboarding"): a 230 pt sidebar with the app
 // icon, the name and the three steps, and the current step on the right. 720 × 500 pt,
 // no title text. System controls and colors only (D9).
 
@@ -197,14 +197,18 @@ struct OnboardingStepView: View {
 
     var body: some View {
         Group {
-            switch flow.step {
-            case .oldInputMethods:
-                switch flow.oldInputMethodsScreen {
-                case .conflict: ConflictStep()
-                case .done: ConflictDoneStep()
+            if flow.needsMoveToApplications {
+                MoveToApplicationsStep()
+            } else {
+                switch flow.step {
+                case .oldInputMethods:
+                    switch flow.oldInputMethodsScreen {
+                    case .conflict: ConflictStep()
+                    case .done: ConflictDoneStep()
+                    }
+                case .enable: EnableStep()
+                case .typing: TypingStep()
                 }
-            case .enable: EnableStep()
-            case .typing: TypingStep()
             }
         }
         // No side margin here: `StepLayout` puts it inside the scroll area, so the scroll
@@ -294,6 +298,34 @@ struct OnboardingCard<Content: View>: View {
     var body: some View {
         SettingsCard(padding: 16) {
             VStack(alignment: .leading, spacing: spacing) { content }
+        }
+    }
+}
+
+// MARK: Before step 1
+
+/// "Chuyển Dấu vào Applications" (artboard OnboardingMoveToApplications; D37): this copy of
+/// Dấu is not the owner copy and no input method is installed, so it installs nothing and
+/// says how to get the copy that will. The folder's name is macOS's own (D38). Its probes
+/// are named as a screen of step 1 (`onbTitle-1.move`): it shows before that step.
+struct MoveToApplicationsStep: View {
+    @Environment(OnboardingFlow.self) private var flow
+    private var ui: SystemUINames { SystemUINames.system() }
+
+    var body: some View {
+        StepLayout(step: .oldInputMethods, screen: ".move", title: Text("Move Dấu to \(ui.applications)"),
+                   subtitle: Text("The \(ui.applications) folder doesn’t have this copy of Dấu yet, so Dấu hasn’t installed its input method.")) {
+            OnboardingCard(spacing: 10) {
+                NumberedLine(number: 1, text: Text("Click **Quit Dấu**."))
+                NumberedLine(number: 2, text: Text("Drag Dấu to the **\(ui.applications)** folder."))
+                NumberedLine(number: 3, text: Text("Open Dấu from the **\(ui.applications)** folder."))
+            }
+            .layoutProbe("onbCard-1.move")
+        } buttons: {
+            Button("Open \(ui.applications) Folder") { flow.openApplicationsFolder() }
+            Button("Quit Dấu") { flow.quit() }
+                .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
         }
     }
 }

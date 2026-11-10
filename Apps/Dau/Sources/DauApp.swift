@@ -11,8 +11,9 @@ import DauShared
 /// the onboarding window opens instead (`LaunchRouter`); "Help › Setup Guide…" opens it at
 /// any time.
 ///
-/// At launch, an older input method in ~/Library/Input Methods is replaced by the one
-/// inside the app (D7, D37: `upgradeIfNeeded`); nothing happens when none is installed.
+/// At launch, the owner copy replaces an input method in ~/Library/Input Methods that
+/// differs from the one inside it (D37: `reconcile`); nothing happens when none is
+/// installed, when its signature is wrong, or when this copy is not the owner copy.
 struct DauApp: App {
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     @State private var model = SettingsModel.appGroup()
@@ -31,7 +32,7 @@ struct DauApp: App {
         DebugCapture.actions = actions
         #endif
         opensOnboarding = opens
-        DauApp.upgradeAtLaunch(actions)
+        DauApp.reconcileAtLaunch(actions)
         DauApp.checkInstalled(actions)
     }
 
@@ -42,20 +43,21 @@ struct DauApp: App {
         // Captures run a re-signed copy: its team does not match the installed one.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil { return }
         #endif
-        Task { await actions.checkInstalledAfterUpgrade() }
+        // After the launch has gone on: the check validates the whole installed bundle.
+        Task { @MainActor in actions.checkInstalled() }
     }
 
-    /// D7: replace an older installed input method. The user just opened Dấu (or the
-    /// updater relaunched it), so no word is being typed; the input method still ends
-    /// its word before it quits (InputMethodLifecycle).
+    /// D37: keep the installed input method equal to the one inside the owner copy. The
+    /// user just opened Dấu (or the updater relaunched it), so no word is being typed
+    /// (D7); the input method still ends its word before it quits (InputMethodLifecycle).
     @MainActor
-    private static func upgradeAtLaunch(_ actions: InputMethodActions) {
+    private static func reconcileAtLaunch(_ actions: InputMethodActions) {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
             || DebugCapture.settingsWindowOnly { return }
         #endif
-        actions.startLaunchUpgrade()
+        actions.startLaunchReconcile()
     }
 
     /// The onboarding flow on the real services, and whether it opens at launch.

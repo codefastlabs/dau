@@ -50,7 +50,7 @@ final class InputMethodActions {
     @ObservationIgnored private let readEnglishLayout: () -> String?
     @ObservationIgnored private var bannerTask: Task<EnableOutcome, Error>?
     @ObservationIgnored private var bannerAttempt = 0
-    @ObservationIgnored private var launchUpgrade: Task<Void, Never>?
+    @ObservationIgnored private var launchReconcile: Task<Void, Never>?
 
     init(installer: InputMethodInstaller,
          openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard,
@@ -115,41 +115,47 @@ final class InputMethodActions {
         banner = .idle
     }
 
-    /// D7: replaces an older installed input method with the one in the app (at launch).
-    /// The signature check (`checkInstalledAfterUpgrade`) waits for it.
-    func startLaunchUpgrade() {
-        guard launchUpgrade == nil else { return }
+    /// D37, at launch: the owner copy replaces an installed input method that differs
+    /// from the one inside it (`reconcile`), then the signature is checked. A copy with
+    /// a wrong signature is not replaced, so the check shows "Cài lại" for it.
+    func startLaunchReconcile() {
+        guard launchReconcile == nil else { return }
         let installer = self.installer
-        launchUpgrade = Task { @MainActor in
+        launchReconcile = Task { @MainActor [weak self] in
             do {
-                let outcome = try await installer.upgradeIfNeeded()
-                installLogger.notice("event=launch-upgrade outcome=\(String(describing: outcome), privacy: .public)")
+                let outcome = try await installer.reconcile()
+                installLogger.notice("event=launch-reconcile outcome=\(String(describing: outcome), privacy: .public)")
             } catch {
-                installLogger.error("event=launch-upgrade-failed error=\(String(describing: error), privacy: .public)")
+                installLogger.error("event=launch-reconcile-failed error=\(String(describing: error), privacy: .public)")
             }
+            self?.checkInstalled()
         }
     }
 
-    /// D37: the signature check, once the launch upgrade has finished (an old copy the
-    /// upgrade replaces must not raise "Cài lại"); at once when none was started or it is
-    /// done, so every activation checks.
-    func checkInstalledAfterUpgrade() async {
-        await launchUpgrade?.value
-        checkInstalled()
+    /// The launch reconcile, when one was started (tests wait for it).
+    func launchReconcileFinished() async {
+        await launchReconcile?.value
     }
 
     /// Checks the installed input method's signature (at launch and whenever the app
-    /// becomes active). Use `checkInstalledAfterUpgrade` from the app.
+    /// becomes active). A copy that is not the owner copy checks nothing and shows no
+    /// banner (D37).
     func checkInstalled() {
         guard reinstall != .working else { return }
+        guard installer.isOwnerCopy else {
+            installedTampered = false
+            reinstall = .idle
+            return
+        }
         installedTampered = !installer.installedIsGenuine()
         if !installedTampered { reinstall = .idle }
     }
 
     /// "Cài lại" on the tampered banner: installs the app's own copy (signature checked
     /// before it is swapped in); the replaced one quits, its bundle on disk having changed.
+    /// Only the owner copy (D37): the banner does not show otherwise.
     func reinstallInputMethod() async {
-        guard reinstall != .working else { return }
+        guard reinstall != .working, installer.isOwnerCopy else { return }
         reinstall = .working
         do {
             try await installer.install()

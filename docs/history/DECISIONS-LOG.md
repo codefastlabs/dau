@@ -194,6 +194,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 05/11/2026: một app vẫn không chọn được Dấu thì hướng dẫn đăng xuất rồi đăng nhập lại ("người dùng chốt 05/11/2026"). "Lý do (đo bằng Dấu thật 05/11/2026, `docs/research/M5-INSTALL.md` (b)12)".
 - 05/11/2026: "Nâng cấp lúc mở app × kiểm chữ ký (người dùng chốt 05/11/2026, từ kiểm toán M5)".
 - 09/11/2026: câu "Chưa làm cho gỡ cài đặt: bộ đệm còn nhớ bộ gõ đã gỡ" viết rõ là gỡ cài đặt chỉ xoá bộ đệm của System Settings (D16), bộ đệm của từng app thì chưa; luật không đổi.
+- 10/11/2026: thêm "bản chủ" (bản trong Applications, nhận ra bằng mã băm chữ ký), chỉ bản chủ cài và thay bộ gõ, bộ gõ đã cài là bản nhúng của bản chủ; người dùng duyệt 10/11/2026. Bản trước: bản Dấu.app nào cũng cài được, và lúc mở app chỉ thay khi `CFBundleVersion` của bản nhúng lớn hơn. Cùng ngày, ý 05/11 đổi thành "Chữ ký sai thì không tự thay"; bản trước, nguyên văn: "Nâng cấp trước, kiểm chữ ký sau: khi bộ gõ đã cài vừa cũ hơn vừa có chữ ký sai, app nâng cấp trước; kiểm chữ ký và Team ID chạy sau khi nâng cấp xong, nên banner 'Cài lại' chỉ hiện khi bản đã cài sau đó vẫn sai." D19 thêm câu bộ gõ lùi theo bản chủ.
 
 ### D38. Chữ trên giao diện
 

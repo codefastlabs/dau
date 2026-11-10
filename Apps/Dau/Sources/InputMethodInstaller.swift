@@ -14,12 +14,15 @@ import os
 // - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
 //   process (D37, INPUT-METHOD-INSTALL.md section 8.1b);
 // - `InputSourceCaches`: the input source list cache of every app (D37, INPUT-METHOD-INSTALL.md
-//   section 9.10, section 10.10, section 8.1b round E).
+//   section 9.10, section 10.10, section 8.1b round E);
+// - `OwnerCopyCheck`: whether the running copy of Dấu is the owner copy of the installed
+//   input method (D37).
 //
 // N4: install copies Dấu's own files; enable and uninstall run only from a button the
-// user clicked ("Bật Dấu", "Bật lại", "Tiếp tục gỡ"); upgrade replaces Dấu's own bundle
-// (D7). Dấu never selects itself as the input source, and never switches its own input
-// source off: macOS blocks that from an app, the user removes it in System Settings.
+// user clicked ("Bật Dấu", "Bật lại", "Tiếp tục gỡ"); `reconcile` replaces Dấu's own
+// bundle (D7, D37). Only the owner copy copies or replaces the input method (D37). Dấu
+// never selects itself as the input source, and never switches its own input source off:
+// macOS blocks that from an app, the user removes it in System Settings.
 
 let installLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Dau", category: "install")
 
@@ -28,7 +31,7 @@ let installLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "Dau", cat
 /// What the installer needs from an input method bundle's Info.plist.
 struct InputMethodBundleInfo: Equatable, Sendable {
     let bundleID: String
-    /// CFBundleVersion, compared to decide on an upgrade.
+    /// CFBundleVersion, for the log. Never compared (D37).
     let version: String?
     /// CFBundleShortVersionString, for display.
     let shortVersion: String?
@@ -53,6 +56,9 @@ protocol InputMethodFiles {
     /// False when an installed copy is there but its signature is invalid or not by this
     /// app's team: replaced or modified after install. True when nothing is installed.
     var installedIsGenuine: Bool { get }
+    /// The installed copy's code directory hash equals the embedded one's at every
+    /// architecture (D37). False when either cannot be read.
+    var installedMatchesEmbedded: Bool { get }
     /// Copies the embedded bundle to a staging folder next to the destination, clears
     /// quarantine, checks the signature, then swaps it in place in one rename.
     func installEmbedded() throws
@@ -136,11 +142,22 @@ protocol InputSourceCaches {
     func removeCaches(notMentioning marker: String) -> InputSourceCacheCounts
 }
 
+/// Code directory hash (cdhash) of each architecture slice of a bundle's main executable,
+/// keyed "<cputype>/<cpusubtype>" (a universal bundle has one per slice).
+typealias CodeHashes = [String: Data]
+
+/// Whether the running copy of Dấu is the owner copy of the installed input method (D37).
+@MainActor
+protocol OwnerCopyCheck {
+    var runningCopyIsOwner: Bool { get }
+}
+
 // MARK: - Installer
 
 @MainActor
 final class SystemInputMethodInstaller: InputMethodInstaller {
     private let files: InputMethodFiles
+    private let owner: OwnerCopyCheck
     private let sources: TextInputSources
     private let processes: InputMethodProcesses
     private let settings: SystemSettingsControl
@@ -162,12 +179,13 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     private let pollInterval: Duration = .milliseconds(100)
     private let enablePollInterval: Duration = .milliseconds(250)
 
-    init(files: InputMethodFiles, sources: TextInputSources, processes: InputMethodProcesses,
+    init(files: InputMethodFiles, owner: OwnerCopyCheck, sources: TextInputSources, processes: InputMethodProcesses,
          settings: SystemSettingsControl, caches: InputSourceCaches,
          deleteSharedData: @escaping @MainActor () -> Bool,
          openInputSources: @escaping @MainActor () -> Void = { SystemSettings.openInputSources() },
          pause: @escaping @MainActor (Duration) async -> Void = { try? await Task.sleep(for: $0) }) {
         self.files = files
+        self.owner = owner
         self.sources = sources
         self.processes = processes
         self.settings = settings
@@ -180,6 +198,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     /// The installer on the real system.
     static func standard() -> SystemInputMethodInstaller {
         SystemInputMethodInstaller(files: InputMethodBundleFiles.standard(),
+                                   owner: ApplicationsOwnerCopy.standard(),
                                    sources: SystemTextInputSources(),
                                    processes: SystemInputMethodProcesses(),
                                    settings: SystemSettingsProcess(),
@@ -197,7 +216,14 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         return sources.current()?.id == mode ? .selected : .enabled
     }
 
+    var isOwnerCopy: Bool { owner.runningCopyIsOwner }
+
     func install() async throws {
+        // D37: only the owner copy copies the input method, whoever calls.
+        guard owner.runningCopyIsOwner else {
+            installLogger.notice("event=install-refused reason=not-owner-copy")
+            throw InputMethodInstallerError.notOwnerCopy
+        }
         guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
         try files.installEmbedded()
         installLogger.notice("event=installed version=\(embedded.version ?? "?", privacy: .public)")
@@ -274,8 +300,10 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         return genuine
     }
 
-    func upgradeIfNeeded() async throws -> UpgradeOutcome {
-        guard let embedded = files.embedded, files.isInstalled else { return .notInstalled }
+    func reconcile() async throws -> ReconcileOutcome {
+        guard owner.runningCopyIsOwner else { return .notOwnerCopy }
+        guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
+        guard files.isInstalled else { return .notInstalled }
         guard let installed = files.installed else {
             return .skipped("installed bundle unreadable")
         }
@@ -284,14 +312,20 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             // install, which needs the user (and a logout), not a silent swap.
             return .skipped("bundle ID \(installed.bundleID)")
         }
-        guard let new = embedded.version, Self.isNewer(new, than: installed.version) else { return .upToDate }
+        // D37: a copy with a wrong signature or another team is never replaced silently;
+        // the "Cài lại" banner shows and the user decides.
+        guard files.installedIsGenuine else {
+            installLogger.error("event=reconcile-bad-signature")
+            return .badSignature
+        }
+        guard !files.installedMatchesEmbedded else { return .alreadyCurrent }
         try files.installEmbedded()
         // The old process keeps the old code mapped: ask it to quit; macOS launches the
         // new bundle at the next key. Then register again (harmless, keeps TIS current).
         await stopInputMethod(embedded.bundleID)
         let status = sources.register(files.installedURL)
-        installLogger.notice("event=upgraded from=\(installed.version ?? "?", privacy: .public) to=\(new, privacy: .public) register=\(status)")
-        return .upgraded(from: installed.version, to: new)
+        installLogger.notice("event=reconcile-replaced from=\(installed.version ?? "?", privacy: .public) to=\(embedded.version ?? "?", privacy: .public) register=\(status)")
+        return .replaced
     }
 
     func isListedInInputSources() -> Bool {
@@ -420,12 +454,6 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         installLogger.error("event=still-running")
         return false
     }
-
-    /// CFBundleVersion order ("1.10" > "1.9"); an unreadable installed version is older.
-    nonisolated static func isNewer(_ candidate: String, than installed: String?) -> Bool {
-        guard let installed else { return true }
-        return candidate.compare(installed, options: .numeric) == .orderedDescending
-    }
 }
 
 // MARK: - Files
@@ -436,6 +464,8 @@ struct InputMethodBundleFiles: InputMethodFiles {
     let directory: URL
     /// Signature check of the staged copy (default: valid, same team as this app).
     var verify: (URL) -> Bool = CodeSignature.isValidAndSameTeam
+    /// The code directory hashes of a bundle, every architecture; nil when unreadable.
+    var codeHashes: (URL) -> CodeHashes? = CodeSignature.codeHashes
     /// Default: the user's Trash (`FileManager.trashItem`).
     var trash: (URL) throws -> Void = { try FileManager.default.trashItem(at: $0, resultingItemURL: nil) }
 
@@ -457,6 +487,10 @@ struct InputMethodBundleFiles: InputMethodFiles {
         (try? installedURL.checkResourceIsReachable()) == true
     }
     var installedIsGenuine: Bool { !isInstalled || verify(installedURL) }
+    var installedMatchesEmbedded: Bool {
+        guard let installed = codeHashes(installedURL), let embedded = codeHashes(embeddedURL) else { return false }
+        return CodeSignature.sameCode(installed, embedded)
+    }
 
     nonisolated static func info(at url: URL) -> InputMethodBundleInfo? {
         let plist = url.appendingPathComponent("Contents/Info.plist")
@@ -537,6 +571,34 @@ enum CodeSignature {
         return theirs == ours
     }
 
+    /// The code directory hash (cdhash) of every architecture slice of the bundle at
+    /// `url` (D37). nil when the bundle, its executable or one slice's signature cannot be
+    /// read (not signed): nothing is claimed about such a bundle. The hash is read, the
+    /// signature is not validated here (`isValidAndSameTeam` does that).
+    static func codeHashes(of url: URL) -> CodeHashes? {
+        guard let slices = MachOSlices.read(bundle: url), !slices.isEmpty else { return nil }
+        var hashes: CodeHashes = [:]
+        for slice in slices {
+            // Both the type and the subtype: a file may hold two slices of one type
+            // (arm64 and arm64e).
+            let attributes = [kSecCodeAttributeArchitecture: NSNumber(value: slice.cpuType),
+                              kSecCodeAttributeSubarchitecture: NSNumber(value: slice.cpuSubtype)] as CFDictionary
+            var code: SecStaticCode?
+            var info: CFDictionary?
+            guard SecStaticCodeCreateWithPathAndAttributes(url as CFURL, [], attributes, &code) == errSecSuccess, let code,
+                  SecCodeCopySigningInformation(code, [], &info) == errSecSuccess,
+                  let hash = (info as? [String: Any])?[kSecCodeInfoUnique as String] as? Data, !hash.isEmpty else { return nil }
+            hashes["\(slice.cpuType)/\(slice.cpuSubtype)"] = hash
+        }
+        return hashes
+    }
+
+    /// The same code at every architecture: the same slices, each with the same hash.
+    /// Nothing to compare is not the same.
+    static func sameCode(_ a: CodeHashes, _ b: CodeHashes) -> Bool {
+        !a.isEmpty && a == b
+    }
+
     private static func teamID(of code: SecStaticCode) -> String? {
         var info: CFDictionary?
         guard SecCodeCopySigningInformation(code, SecCSFlags(rawValue: SecCSFlags.RawValue(kSecCSSigningInformation)), &info) == errSecSuccess,
@@ -550,6 +612,117 @@ enum CodeSignature {
         guard SecCodeCopySelf([], &me) == errSecSuccess, let me,
               SecCodeCopyStaticCode(me, [], &staticMe) == errSecSuccess, let staticMe else { return nil }
         return teamID(of: staticMe)
+    }
+}
+
+/// The architecture slices of a bundle's main executable, read from the Mach-O headers
+/// (<mach-o/fat.h>, <mach-o/loader.h>), fresh from disk (no `Bundle` cache).
+enum MachOSlices {
+    struct Slice: Equatable, Sendable {
+        let cpuType: Int32
+        let cpuSubtype: Int32
+    }
+
+    /// nil when the bundle has no readable Info.plist or executable.
+    static func read(bundle url: URL) -> [Slice]? {
+        let plist = url.appendingPathComponent("Contents/Info.plist")
+        guard let data = try? Data(contentsOf: plist),
+              let dict = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+              let name = dict["CFBundleExecutable"] as? String, !name.isEmpty else { return nil }
+        return read(executable: url.appendingPathComponent("Contents/MacOS").appendingPathComponent(name))
+    }
+
+    static func read(executable url: URL) -> [Slice]? {
+        guard let handle = try? FileHandle(forReadingFrom: url) else { return nil }
+        defer { try? handle.close() }
+        guard let header = try? handle.read(upToCount: 4096) else { return nil }
+        return parse(header)
+    }
+
+    /// `header`: the first bytes of the file. A universal file lists its slices big-endian
+    /// (`fat_header`, then `fat_arch` or `fat_arch_64` entries); a thin one is one slice
+    /// (`mach_header`, little-endian on every Mac this runs on).
+    static func parse(_ header: Data) -> [Slice]? {
+        let bytes = [UInt8](header)
+        func word(_ offset: Int, bigEndian: Bool) -> UInt32? {
+            guard offset >= 0, offset + 4 <= bytes.count else { return nil }
+            let four = bytes[offset..<offset + 4]
+            return (bigEndian ? Array(four) : four.reversed()).reduce(0) { $0 << 8 | UInt32($1) }
+        }
+        guard let magic = word(0, bigEndian: true) else { return nil }
+        switch magic {
+        case 0xCAFE_BABE, 0xCAFE_BABF:
+            let entrySize = magic == 0xCAFE_BABE ? 20 : 32
+            guard let count = word(4, bigEndian: true), count > 0, count <= 64 else { return nil }
+            var slices: [Slice] = []
+            for index in 0..<Int(count) {
+                guard let type = word(8 + index * entrySize, bigEndian: true),
+                      let subtype = word(12 + index * entrySize, bigEndian: true) else { return nil }
+                slices.append(Slice(cpuType: Int32(bitPattern: type), cpuSubtype: Int32(bitPattern: subtype)))
+            }
+            return slices
+        case 0xCFFA_EDFE, 0xCEFA_EDFE:   // MH_MAGIC_64, MH_MAGIC as stored little-endian
+            guard let type = word(4, bigEndian: false), let subtype = word(8, bigEndian: false) else { return nil }
+            return [Slice(cpuType: Int32(bitPattern: type), cpuSubtype: Int32(bitPattern: subtype))]
+        default:
+            return nil
+        }
+    }
+}
+
+// MARK: - Owner copy
+
+/// The owner copy of the installed input method (D37): the bundle with Dấu's bundle ID
+/// directly inside the first of `directories` that holds one (/Applications, then
+/// ~/Applications). Found by bundle ID, never by file name. The running copy is the owner
+/// when its code directory hashes equal that bundle's at every architecture; the path it
+/// runs from is never looked at (D37: macOS may run an app from a random path).
+/// Directories and the hash readers are parameters so tests run on a temp folder.
+struct ApplicationsOwnerCopy: OwnerCopyCheck {
+    let bundleID: String
+    let directories: [URL]
+    /// The running copy's code directory hashes; nil when unreadable.
+    let runningHashes: () -> CodeHashes?
+    var hashes: (URL) -> CodeHashes? = CodeSignature.codeHashes
+
+    /// /Applications, then Applications in the real home folder (the app is not sandboxed).
+    nonisolated static let standardDirectories = [
+        URL(fileURLWithPath: "/Applications", isDirectory: true),
+        FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Applications", isDirectory: true),
+    ]
+
+    static func standard() -> ApplicationsOwnerCopy {
+        ApplicationsOwnerCopy(bundleID: Bundle.main.bundleIdentifier ?? "",
+                              directories: standardDirectories,
+                              // Reads the running copy's own bundle on disk to get every
+                              // architecture; where that bundle sits decides nothing.
+                              runningHashes: { CodeSignature.codeHashes(of: Bundle.main.bundleURL) })
+    }
+
+    /// The bundles with `bundleID` directly inside the first directory that has one, by
+    /// name. Usually one; two copies in the same folder are both candidates.
+    func candidates() -> [URL] {
+        guard !bundleID.isEmpty else { return [] }
+        let fm = FileManager.default
+        for directory in directories {
+            let items = (try? fm.contentsOfDirectory(at: directory, includingPropertiesForKeys: [.isSymbolicLinkKey])) ?? []
+            let found = items.filter { item in
+                // The bundle itself, not a link to one elsewhere.
+                item.pathExtension == "app"
+                    && (try? item.resourceValues(forKeys: [.isSymbolicLinkKey]))?.isSymbolicLink != true
+                    && InputMethodBundleFiles.info(at: item)?.bundleID == bundleID
+            }.sorted { $0.lastPathComponent < $1.lastPathComponent }
+            if !found.isEmpty { return found }
+        }
+        return []
+    }
+
+    var runningCopyIsOwner: Bool {
+        let candidates = candidates()
+        guard !candidates.isEmpty, let running = runningHashes() else { return false }
+        return candidates.contains { url in
+            hashes(url).map { CodeSignature.sameCode($0, running) } ?? false
+        }
     }
 }
 

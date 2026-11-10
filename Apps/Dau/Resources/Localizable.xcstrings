@@ -681,6 +681,23 @@
         }
       }
     },
+    "Click **Quit Dấu**." : {
+      "comment" : "Step of the “Move Dấu to Applications” onboarding screen. “Quit Dấu” = the button.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click **Quit Dấu**."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm **Thoát Dấu**."
+          }
+        }
+      }
+    },
     "Click **Try Again**, then click **%@** when %@ asks." : {
       "comment" : "First %@ = Allow, second %@ = System Settings (D38).",
       "localizations" : {
@@ -966,6 +983,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Không thấy hộp thoại, hoặc đã chọn %@? Bấm Thử lại."
+          }
+        }
+      }
+    },
+    "Drag Dấu to the **%@** folder." : {
+      "comment" : "Step of the “Move Dấu to Applications” onboarding screen. %@ = Applications, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Drag Dấu to the **%@** folder."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kéo Dấu vào thư mục **%@**."
           }
         }
       }
@@ -1633,6 +1667,23 @@
         }
       }
     },
+    "Move Dấu to %@" : {
+      "comment" : "Onboarding title, shown when this copy of Dấu is not the one in the Applications folder and the input method is not installed. %@ = Applications, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move Dấu to %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chuyển Dấu vào %@"
+          }
+        }
+      }
+    },
     "Navigation" : {
       "comment" : "VoiceOver name of the Back/Forward button group in the Settings toolbar.",
       "localizations" : {
@@ -1871,6 +1922,40 @@
         }
       }
     },
+    "Open %@ Folder" : {
+      "comment" : "Button of the “Move Dấu to Applications” onboarding screen: shows the folder in Finder. %@ = Applications, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open %@ Folder"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở thư mục %@"
+          }
+        }
+      }
+    },
+    "Open Dấu from the **%@** folder." : {
+      "comment" : "Step of the “Move Dấu to Applications” onboarding screen. %@ = Applications, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open Dấu from the **%@** folder."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở Dấu từ thư mục **%@**."
+          }
+        }
+      }
+    },
     "Or add it yourself: %@ › **%@** › **+** › %@ › **Dấu**, then click **%@**." : {
       "comment" : "%@ in order: System Settings › Keyboard › Input Sources; Edit…; Vietnamese; Add — macOS's own names (D38).",
       "localizations" : {
@@ -2008,7 +2093,7 @@
       }
     },
     "Quit Dấu" : {
-      "comment" : "Button of the uninstall result alert.",
+      "comment" : "Button of the uninstall result alert and of the “Move Dấu to Applications” onboarding screen.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2734,6 +2819,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Có thể sai chữ khi gõ rất nhanh"
+          }
+        }
+      }
+    },
+    "The %@ folder doesn’t have this copy of Dấu yet, so Dấu hasn’t installed its input method." : {
+      "comment" : "Onboarding subtitle of “Move Dấu to Applications”. %@ = Applications, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The %@ folder doesn’t have this copy of Dấu yet, so Dấu hasn’t installed its input method."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Thư mục %@ chưa có bản Dấu này, nên Dấu chưa cài bộ gõ."
           }
         }
       }

@@ -35,6 +35,7 @@ Lệnh: `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
 1. `--capture-onboarding` → `onboarding/`.
    - Dịch vụ giả: OpenKey đang chạy, Dấu đã cài chưa bật.
    - Các ảnh theo bước:
+     - trước bước 1, chuyển Dấu vào Applications (`0-move`; dịch vụ giả lúc đó: không phải bản chủ, bộ gõ chưa cài);
      - bước 1;
      - bước 2 trước khi bấm (`2`);
      - bước 1 sau "Quay lại" khi OpenKey đã tắt (`1-done`);

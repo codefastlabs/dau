@@ -397,7 +397,7 @@ Cách tìm app chủ:
 
 Bản Debug có các nhóm cờ (mọi cờ nằm trong `#if DEBUG`; danh sách đủ ở nơi định nghĩa, không chép ở đây):
 
-- chạy không mở cửa sổ, in một giá trị rồi thoát: các cờ `--print-…` ở đầu `main.swift`, và `--set-typing-method` ở `DebugSettingsCommand`;
+- chạy không mở cửa sổ, in một giá trị rồi thoát: các cờ `--print-…` ở đầu `main.swift`, và `--set-typing-method` ở `DebugSettingsCommand` (lệnh `--reconcile-input-method` không thuộc nhóm này: nó có ở cả bản Release, xem mục "Cài, bật, thay, gỡ bộ gõ");
 - chụp cần dịch vụ giả và các cờ chọn màn hình, trạng thái để chụp (`--capture-…`, `--onboarding`, `--shortcut`, `--active`, `--tampered`): `DebugCapture.swift`, `DauApp.swift`;
 - cho lần mở app thật để đo từ ngoài (`--settings-window`, `--appearance`): `DebugCapture.swift`.
 
@@ -417,18 +417,38 @@ Bản Debug có các nhóm cờ (mọi cờ nằm trong `#if DEBUG`; danh sách 
 
 Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M7 (xem `docs/UI.md`).
 
-#### Cài, bật, nâng cấp, gỡ bộ gõ
+Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bước bằng màn `MoveToApplicationsStep` khi bản đang chạy không phải bản chủ và bộ gõ chưa cài (D37; mục "Cài, bật, thay, gỡ bộ gõ"). Cờ này đọc lại cùng mọi trạng thái khác mỗi lần cửa sổ được đưa lên trước. Hai nút đi qua `OwnerCopyGuide`: mở thư mục Applications trong Finder, thoát app.
+
+#### Cài, bật, thay, gỡ bộ gõ
 
 `InputMethodInstaller.swift`, theo `docs/research/INPUT-METHOD-INSTALL.md` mục 2–4.
 
-- `SystemInputMethodInstaller` đi qua năm giao diện hẹp để test bằng đồ giả (`scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift`):
+- `SystemInputMethodInstaller` đi qua sáu giao diện hẹp để test bằng đồ giả (`scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift`):
   - `InputMethodFiles`: bundle trong app và bản ở `~/Library/Input Methods`;
   - `TextInputSources`: TIS;
   - `InputMethodProcesses`: tiến trình bộ gõ;
   - `SystemSettingsControl`: bộ đệm và tiến trình Cài đặt hệ thống;
-  - `InputSourceCaches`: bộ đệm danh sách nguồn nhập liệu của từng app (bản thật `UserInputSourceCaches` nhận thư mục gốc làm tham số nên test chạy trên thư mục tạm).
+  - `InputSourceCaches`: bộ đệm danh sách nguồn nhập liệu của từng app (bản thật `UserInputSourceCaches` nhận thư mục gốc làm tham số nên test chạy trên thư mục tạm);
+  - `OwnerCopyCheck`: bản đang chạy có phải bản chủ không (bản thật `ApplicationsOwnerCopy`, xem "Bản chủ" bên dưới).
 
-**Cài** (onboarding bước 2, trước khi bật):
+**Bản chủ** (luật ở D37):
+
+- `ApplicationsOwnerCopy` nhận bundle ID của app chủ, danh sách thư mục theo thứ tự (`standardDirectories`) và hai hàm đọc mã băm làm tham số, nên test chạy trên thư mục tạm.
+- Tìm bundle theo `CFBundleIdentifier` trong `Info.plist` của các mục `.app` nằm trực tiếp trong thư mục, không theo tên file; liên kết tượng trưng không tính. Thư mục đầu tiên có bundle như vậy quyết định; thư mục đó có hai bundle thì trùng một trong hai là đủ.
+- Mã băm đọc bằng `CodeSignature.codeHashes`, chỉ dùng API công khai của Security:
+  - `MachOSlices` đọc danh sách kiến trúc từ đầu file thực thi (đọc thẳng từ đĩa, không qua bộ đệm của `Bundle`);
+  - mỗi kiến trúc một `SecStaticCodeCreateWithPathAndAttributes` (loại và loại con của CPU), rồi lấy `kSecCodeInfoUnique` từ `SecCodeCopySigningInformation`;
+  - một kiến trúc không đọc được (bundle không ký) thì cả bundle là "không biết": không trùng với gì, không phải bản chủ.
+- `CodeSignature.sameCode`: cùng tập kiến trúc và cùng mã băm ở từng kiến trúc.
+- Mã băm của bản đang chạy đọc từ bundle của chính nó trên đĩa, để có mọi kiến trúc; bundle đó nằm ở đâu không tham gia kết luận.
+- `InputMethodInstaller.isOwnerCopy` đọc lại mỗi lần hỏi, không lưu: chép đúng bản đang chạy vào Applications thì bản đang chạy thành bản chủ.
+- Bản không phải bản chủ:
+  - `install()` ném `InputMethodInstallerError.notOwnerCopy` trước khi đụng tới file, ai gọi cũng vậy;
+  - `OnboardingFlow.enable` không gọi `install()`, chỉ bật bộ gõ đã cài; chưa cài thì hiện màn "chuyển Dấu vào Applications" (mục "Onboarding");
+  - `InputMethodActions.checkInstalled` không kiểm chữ ký, không hiện banner "Cài lại"; `reinstallInputMethod` không làm gì;
+  - bật, cài đặt và gỡ đi các đường như bản chủ.
+
+**Cài** (chỉ bản chủ; onboarding bước 2 trước khi bật, và nút "Cài lại"):
 
 - chép `Contents/Library/Input Methods/DauInputMethod.app` vào thư mục tạm ẩn, không đuôi `.app`, cùng thư mục đích (`.DauInputMethod-staging-<uuid>`);
 - gỡ `com.apple.quarantine`;
@@ -470,17 +490,41 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 
 **Kiểm bộ gõ đã cài** (D37):
 
-- mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`: chữ ký hợp lệ và cùng Team ID với app chủ);
+- mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`: chữ ký hợp lệ và cùng Team ID với app chủ); chỉ bản chủ hỏi;
 - không khớp thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng trong app (chữ ký bản mới cũng được kiểm trước khi đổi chỗ).
 
-**Nâng cấp** (D7, lúc app mở):
+**Giữ bộ gõ đã cài trùng bản nhúng** (luật ở D37; lúc app mở, `InputMethodActions.startLaunchReconcile` gọi `SystemInputMethodInstaller.reconcile`, xong thì `checkInstalled`):
 
-- bản cài cùng bundle ID và `CFBundleVersion` của bản trong app lớn hơn (so số) → chép tạm + đổi chỗ như trên, dừng tiến trình cũ, đăng ký lại;
-- không đụng trạng thái bật/chọn;
-- khác bundle ID thì bỏ qua (D37: định danh không đổi);
-- chưa cài thì không làm gì (lần cài đầu do người dùng bấm);
-- chưa chờ "lúc không gõ" (D7): app vừa được mở nên người dùng không gõ ở app khác; bộ gõ vẫn chốt từ trước khi thoát;
+- `reconcile` xét theo thứ tự và trả `ReconcileOutcome`:
+  1. không phải bản chủ → `notOwnerCopy`, không đọc gì thêm;
+  2. app không có bộ gõ nhúng → ném `InputMethodInstallerError.unavailable`;
+  3. chưa cài → `notInstalled`;
+  4. bản đã cài không đọc được `Info.plist` hoặc khác bundle ID → `skipped`;
+  5. `InputMethodFiles.installedIsGenuine` sai → `badSignature`, không thay (banner "Cài lại" do `checkInstalled` hiện);
+  6. `InputMethodFiles.installedMatchesEmbedded` (mã băm mọi kiến trúc, `CodeSignature.sameCode`) → `alreadyCurrent`;
+  7. còn lại → `replaced`: chép tạm và đổi chỗ như mục "Cài", dừng tiến trình cũ, đăng ký lại.
+- Không đụng trạng thái bật/chọn. `CFBundleVersion` chỉ dùng để ghi nhật ký.
+- Chưa chờ "lúc không gõ" (D7): app vừa được mở nên người dùng không gõ ở app khác; bộ gõ vẫn chốt từ trước khi thoát.
 - Sparkle (M7) sẽ gọi đúng hàm này.
+
+**Lệnh `Dau --reconcile-input-method`** (`ReconcileCommand`, có trong cả bản Debug và Release; `main.swift` gọi trước khi dựng app):
+
+- chạy đúng `reconcile` ở trên rồi thoát; không tạo `NSApplication` nên không có cửa sổ hay biểu tượng Dock, vòng lặp chính (`RunLoop.main`) chạy các bước chờ của bộ cài;
+- chạy thẳng file thực thi trong bundle (không qua `open`) để nhận dòng kết quả và mã thoát;
+- in đúng một dòng ra stdout, dạng `reconcile-input-method: <từ>: <giải thích>`;
+- mã thoát (`ReconcileCommand.Status`):
+
+| Mã thoát | Từ | Nghĩa |
+|---|---|---|
+| 0 | `already-current` | bộ gõ đã cài trùng bản nhúng |
+| 1 | `failed` | lỗi: app không có bộ gõ nhúng, chép hỏng, bản nhúng sai chữ ký |
+| 3 | `replaced` | đã thay bằng bản nhúng |
+| 4 | `not-installed` | bộ gõ chưa cài, không làm gì |
+| 5 | `not-owner-copy` | bản đang chạy không phải bản chủ, không làm gì |
+| 6 | `bad-signature` | bộ gõ đã cài sai chữ ký hoặc khác Team ID, không thay |
+| 7 | `skipped` | bản đã cài khác bundle ID hoặc không đọc được, không thay |
+
+Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug.
 
 **Dừng bộ gõ:**
 

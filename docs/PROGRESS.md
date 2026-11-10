@@ -12,7 +12,16 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-BETWEEN-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: không có việc nào.
+Đang làm ngoài mốc từ 10/11: "bản chủ" của bộ gõ, D37 (Cài đặt bộ gõ), và gộp script cài về một đường.
+- Xong: sổ quyết định (D37, D19 (Quay về bản trước), câu hỏi mở về `~/Applications`), nhật ký sổ, `superseded.txt`. Chưa commit: commit cùng thay đổi mã.
+- Thứ tự còn lại:
+  1. Artboard onboarding "chuyển Dấu vào Applications" (bản không phải bản chủ, bộ gõ chưa cài), người dùng duyệt.
+  2. Mã app chủ: nhận ra bản chủ bằng mã băm chữ ký; lúc mở app thay bộ gõ khi khác bản nhúng (mọi kiến trúc), chữ ký sai thì chỉ hiện banner; bản không phải bản chủ không cài, không thay, không kiểm; một lệnh không mở cửa sổ chạy đúng hàm lúc mở app rồi thoát, có trong cả bản Release. 
+  3. Script: `scripts/dev/install-app.sh` là script cài duy nhất (thêm `--build-only`, `--no-build`), phép kiểm bundle bộ gõ chuyển vào `scripts/lib/build.sh`, xoá `scripts/dev/install-input-method.sh`; sửa nơi gọi, hook và tài liệu. Đối chiếu bảy bước script cũ in ra với onboarding và tài liệu trước khi xoá.
+  4. `auditor`, rồi một lượt cài thật (dừng tiến trình bộ gõ, thoát Dấu.app: hỏi giờ trước).
+- Giữ nguyên trong đợt này: cách `HostApp` tìm app chủ.
+
+Chờ người dùng: duyệt artboard ở bước 1.
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 

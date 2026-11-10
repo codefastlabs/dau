@@ -42,3 +42,5 @@ Chỉ đọc chữ từ ứng dụng \(`attributedSubstring`\) cho tính năng	D
 Telex của Apple cùng điều kiện ra chữ 2/3 lượt	D11: two valid control cells, the third was a broken measurement (10/11/2026)
 Chưa có dấu hiệu App Nap	D12: App Nap and efficiency cores were not measured directly (10/11/2026)
 Hiện còn nhãn: Edge	D13: Edge no longer carries the label (10/11/2026)
+Nâng cấp trước, kiểm chữ ký sau	D37: a wrong signature is never replaced silently; the owner copy keeps the installed input method equal to its embedded one (10/11/2026)
+`CFBundleVersion` của (bản trong app lớn hơn|bộ gõ nằm trong app với bản đã cài)	D37: the installed input method is compared with the embedded one by code hash at every architecture, build numbers are not compared (10/11/2026)

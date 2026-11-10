@@ -325,7 +325,7 @@ So với các bộ gõ trên, cách của Dấu (chỉ bật khi người dùng 
 ## 3. Nâng cấp (bộ gõ đang chạy)
 
 Trình tự đề xuất, ráp từ McBopomofo, vChewing, XKey và D7:
-1. App chủ khởi động lại sau khi Sparkle cập nhật. Nó so `CFBundleVersion` của bộ gõ nằm trong app với bản đã cài.
+1. App chủ khởi động lại sau khi Sparkle cập nhật. Nó so bộ gõ nằm trong app với bản đã cài (bằng mã băm chữ ký, không bằng số phiên bản: D37).
 2. Chờ lúc người dùng không gõ (D7).
 3. Kiểm chữ ký bản trong app: Team ID đúng, chữ ký hợp lệ.
 4. Chép vào một thư mục tạm **trên cùng ổ đĩa** (trong `~/Library/Input Methods`, tên tạm không đuôi `.app` để TIS không quét), rồi **đổi chỗ cả khối** (`FileManager.replaceItemAt`, hoặc đổi tên cái cũ rồi đặt cái mới).

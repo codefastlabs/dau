@@ -6,12 +6,16 @@ import Observation
 /// call its actions; services come in through protocols (`OldInputMethodDetector`,
 /// `InputMethodInstaller`) so tests drive it with fakes.
 ///
+/// Before the steps, "Chuyển Dấu vào Applications" (artboard OnboardingMoveToApplications):
+/// while this copy of Dấu is not the owner copy and no input method is installed (D37).
+/// It only guides: open the Applications folder, quit Dấu. No step has started then.
+///
 /// Steps:
 /// 1. "Tắt bộ gõ cũ trước đã": only while another Vietnamese input method is running.
 ///    Rechecked when the window becomes active; skipping is allowed. "Quay lại" from
 ///    step 2 shows it again: "Đã tắt bộ gõ cũ" when none runs any more, the conflict
 ///    screen when one runs again.
-/// 2. "Bật Dấu": install if needed, then enable: macOS asks the user to allow it, so the
+/// 2. "Bật Dấu": install if needed (the owner copy only, D37), then enable: macOS asks the user to allow it, so the
 ///    step waits ("Đang chờ"), then shows the result read back from Text Input Sources
 ///    (N4, N5): enabled → "Đã bật"; still off or not listed → "Chưa bật được" with the
 ///    ways around it (retry, add it by hand, one logout, D37). No undo: Dấu cannot
@@ -32,6 +36,11 @@ final class OnboardingFlow {
     /// Other input methods running now (installed but not running ones do not clash).
     private(set) var conflicts: [DetectedInputMethod] = []
     private(set) var status: InputMethodStatus = .unknown
+    /// This copy of Dấu is not the owner copy and no input method is installed (D37):
+    /// the window shows "Chuyển Dấu vào Applications" instead of the steps. Read again
+    /// with everything else, so it follows the system (the user moved Dấu, or another
+    /// copy installed the input method).
+    private(set) var needsMoveToApplications = false
     private(set) var shortcut: InputSourceShortcut.Reading = .unknown
     /// Name of the keyboard layout used for English, e.g. "U.S."; nil if unknown.
     private(set) var englishLayout: String?
@@ -110,6 +119,8 @@ final class OnboardingFlow {
     @ObservationIgnored private let readShortcut: () -> InputSourceShortcut.Reading
     @ObservationIgnored private let readEnglishLayout: () -> String?
     @ObservationIgnored private let openKeyboardSettings: () -> Void
+    @ObservationIgnored private let applicationsFolderOpener: @MainActor () -> Void
+    @ObservationIgnored private let quitter: @MainActor () -> Void
     /// The running `enable()` and which call it belongs to: "Thử lại" and "Quay lại"
     /// cancel it, and a call that was replaced leaves the state alone.
     @ObservationIgnored private var enableTask: Task<EnableOutcome, Error>?
@@ -118,12 +129,16 @@ final class OnboardingFlow {
     init(detector: OldInputMethodDetector, installer: InputMethodInstaller,
          shortcut: @escaping () -> InputSourceShortcut.Reading = InputSourceShortcut.read,
          englishLayout: @escaping () -> String? = InputSourceStatus.englishLayoutName,
-         openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard) {
+         openKeyboardSettings: @escaping () -> Void = SystemSettings.openKeyboard,
+         openApplicationsFolder: @escaping @MainActor () -> Void = OwnerCopyGuide.openApplicationsFolder,
+         quit: @escaping @MainActor () -> Void = OwnerCopyGuide.quit) {
         self.detector = detector
         self.installer = installer
         self.readShortcut = shortcut
         self.readEnglishLayout = englishLayout
         self.openKeyboardSettings = openKeyboardSettings
+        self.applicationsFolderOpener = openApplicationsFolder
+        self.quitter = quit
     }
 
     /// Starts over: step 1 if another input method is running, else step 2.
@@ -158,7 +173,7 @@ final class OnboardingFlow {
 
     /// Step 1, "Bỏ qua": go on with the other input method still running.
     func skip() {
-        guard step == .oldInputMethods else { return }
+        guard step == .oldInputMethods, !needsMoveToApplications else { return }
         cameBackToOldInputMethods = false
         step = .enable
     }
@@ -169,7 +184,9 @@ final class OnboardingFlow {
     /// OnboardingEnableError) and only when step 1 was part of this onboarding. Once Dấu
     /// is on, and on "Chưa bật được", the screen keeps its own buttons as drawn.
     var canGoBack: Bool {
-        switch step {
+        // "Chuyển Dấu vào Applications" has no previous pane.
+        guard !needsMoveToApplications else { return false }
+        return switch step {
         case .oldInputMethods: false
         case .enable:
             switch enableScreen {
@@ -197,6 +214,7 @@ final class OnboardingFlow {
     /// "Tiếp tục": step 1 → 2 once no old input method runs ("Đã tắt bộ gõ cũ"); step
     /// 2 → 3 once Dấu is enabled.
     func next() {
+        guard !needsMoveToApplications else { return }
         switch step {
         case .oldInputMethods:
             guard conflicts.isEmpty else { return }
@@ -213,9 +231,11 @@ final class OnboardingFlow {
 
     /// Step 2, "Bật Dấu" and "Thử lại": installs first when needed, then waits for macOS
     /// to store Dấu as enabled. A run still waiting is cancelled first (the new one makes
-    /// macOS ask again).
+    /// macOS ask again). A copy that is not the owner copy never installs (D37): with
+    /// nothing installed it shows "Chuyển Dấu vào Applications" and this does nothing;
+    /// with the input method installed it only enables.
     func enable() async {
-        guard step == .enable, !status.isEnabled else { return }
+        guard step == .enable, !status.isEnabled, !needsMoveToApplications else { return }
         enableTask?.cancel()
         attempt += 1
         let mine = attempt
@@ -223,7 +243,7 @@ final class OnboardingFlow {
         problem = nil
         errorDetail = nil
         let installer = self.installer
-        let install = status == .notInstalled
+        let install = status == .notInstalled && installer.isOwnerCopy
         let task = Task { @MainActor () throws -> EnableOutcome in
             if install { try await installer.install() }
             return try await installer.enable()
@@ -258,6 +278,13 @@ final class OnboardingFlow {
     /// "Mở System Settings" on the "Chưa bật được" screen (N4: only opens the pane).
     func openSystemSettings() { openKeyboardSettings() }
 
+    /// "Mở thư mục Applications" on "Chuyển Dấu vào Applications": shows the folder in
+    /// Finder. Dấu never moves itself.
+    func openApplicationsFolder() { applicationsFolderOpener() }
+
+    /// "Thoát Dấu" on "Chuyển Dấu vào Applications": a normal quit.
+    func quit() { quitter() }
+
     private func cancelEnable() {
         enableTask?.cancel()
         enableTask = nil
@@ -266,6 +293,8 @@ final class OnboardingFlow {
     }
 
     func state(of step: Step) -> StepState {
+        // "Chuyển Dấu vào Applications" comes before step 1: no step has started.
+        if needsMoveToApplications { return .pending }
         if step == self.step { return .current }
         switch step {
         case .oldInputMethods:
@@ -291,6 +320,9 @@ final class OnboardingFlow {
         }
         otherSources = detector.otherVietnameseSources()
         status = installer.status()
+        let needsMove = status == .notInstalled && !installer.isOwnerCopy
+        if needsMove && !needsMoveToApplications { cancelEnable() }
+        needsMoveToApplications = needsMove
         shortcut = readShortcut()
         englishLayout = readEnglishLayout()
     }

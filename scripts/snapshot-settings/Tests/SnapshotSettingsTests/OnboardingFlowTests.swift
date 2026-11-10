@@ -435,6 +435,100 @@ struct OnboardingFlowTests {
         #expect(flow.englishLayout == "U.S.")
     }
 
+    // MARK: Before step 1: "Chuyển Dấu vào Applications" (D37)
+
+    @Test("not the owner copy and nothing installed: the move screen before step 1, no step started, nothing installs")
+    func moveToApplications() async {
+        let (flow, _, installer) = flow([openKey], status: .notInstalled)
+        installer.ownerCopy = false
+        flow.start()
+        #expect(flow.needsMoveToApplications)
+        // Before step 1, even with another input method running: this copy will be quit.
+        for step in OnboardingFlow.Step.allCases { #expect(flow.state(of: step) == .pending) }
+        #expect(!flow.canGoBack)
+        // None of the steps' actions does anything from this screen.
+        let step = flow.step
+        flow.skip(); flow.next(); flow.back()
+        await flow.enable()
+        #expect(flow.step == step)
+        #expect(installer.calls.isEmpty)
+        #expect(flow.needsMoveToApplications)
+        #expect(LaunchRouter.opensOnboarding(installer.status()))
+    }
+
+    @Test("the move screen's buttons: one opens the Applications folder, one quits; nothing else happens")
+    func moveToApplicationsButtons() {
+        final class Pressed { var folder = 0, quit = 0 }
+        let pressed = Pressed()
+        let installer = FakeInputMethodInstaller(.notInstalled)
+        installer.ownerCopy = false
+        let flow = OnboardingFlow(detector: FakeInputMethodDetector(), installer: installer,
+                                  shortcut: { .unknown }, englishLayout: { nil }, openKeyboardSettings: {},
+                                  openApplicationsFolder: { pressed.folder += 1 }, quit: { pressed.quit += 1 })
+        flow.start()
+        #expect(flow.needsMoveToApplications)
+        flow.openApplicationsFolder()
+        #expect((pressed.folder, pressed.quit) == (1, 0))
+        flow.quit()
+        #expect((pressed.folder, pressed.quit) == (1, 1))
+        #expect(installer.calls.isEmpty)
+    }
+
+    @Test("the owner copy, or a copy that finds the input method installed, never sees the move screen; a copy that is not the owner only enables")
+    func moveToApplicationsOnlyWhenNeeded() async {
+        let (owner, _, ownerInstaller) = flow(status: .notInstalled)
+        owner.start()
+        #expect(!owner.needsMoveToApplications)
+        await owner.enable()
+        #expect(ownerInstaller.calls == ["install", "enable"])
+
+        for status in [InputMethodStatus.installed(version: nil), .enabled, .selected, .unknown] {
+            let (flow, _, installer) = flow(status: status)
+            installer.ownerCopy = false
+            flow.start()
+            #expect(!flow.needsMoveToApplications)
+        }
+
+        // Installed by the owner copy, not enabled: step 2 enables without copying.
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        installer.ownerCopy = false
+        flow.start()
+        #expect(flow.step == .enable)
+        #expect(flow.state(of: .enable) == .current)
+        await flow.enable()
+        #expect(installer.calls == ["enable"])
+        #expect(flow.enableScreen == .done)
+    }
+
+    @Test("the move screen follows the system: it goes once this copy is the owner copy or the input method got installed, and comes when the input method goes away")
+    func moveToApplicationsFollowsTheSystem() async {
+        let (flow, _, installer) = flow([openKey], status: .notInstalled)
+        installer.ownerCopy = false
+        flow.start()
+        #expect(flow.needsMoveToApplications)
+        // The user copied this very build to Applications while it runs: the hashes match.
+        installer.ownerCopy = true
+        flow.refresh()
+        #expect(!flow.needsMoveToApplications)
+        #expect(flow.step == .oldInputMethods)
+        #expect(flow.state(of: .oldInputMethods) == .current)
+
+        // Not the owner copy, waiting for Allow, and the input method is removed meanwhile
+        // (another copy uninstalled it): the wait ends, the move screen shows.
+        let (waiting, _, waitingInstaller) = self.flow(status: .installed(version: nil))
+        waitingInstaller.ownerCopy = false
+        waitingInstaller.enableWaits = true
+        waiting.start()
+        let run = Task { await waiting.enable() }
+        await settle { waitingInstaller.enableWaiting }
+        waitingInstaller.current = .notInstalled
+        waiting.refresh()
+        #expect(waiting.needsMoveToApplications)
+        #expect(!waiting.isWorking)
+        await run.value
+        #expect(waitingInstaller.calls == ["enable"])
+    }
+
     @Test("launch opens onboarding only when Dấu is known to be missing or off")
     func launch() {
         #expect(LaunchRouter.opensOnboarding(.notInstalled))

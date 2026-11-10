@@ -71,6 +71,7 @@ enum DebugCapture {
 
     /// `--capture-onboarding <dir>`: the onboarding window on fixed services (OpenKey
     /// running, Dấu installed but not enabled). Writes `onboarding-<step>-<mode>.png` for
+    /// "Chuyển Dấu vào Applications" (`0-move`: not the owner copy, nothing installed),
     /// steps 1, 2 before "Bật Dấu" (`2`), 1 after "Quay lại" with OpenKey quit
     /// (`1-done`), 2 with an unreadable shortcut and another
     /// Vietnamese source on (`2-notes`), 2 waiting for Allow (`2-waiting`), 2 when macOS
@@ -145,7 +146,20 @@ enum DebugCapture {
                 let installer = onboardingInstaller
                 let detector = onboardingDetector
                 let shots: [(String, @MainActor () async -> Void)] = [
-                    ("1", { flow.show(.oldInputMethods) }),
+                    // Before step 1: this copy is not the owner copy and nothing is
+                    // installed (D37).
+                    ("0-move", {
+                        installer?.ownerCopy = false
+                        installer?.current = .notInstalled
+                        flow.refresh()
+                    }),
+                    // Back to the fixed services: the owner copy, Dấu installed, not enabled.
+                    ("1", {
+                        installer?.ownerCopy = true
+                        installer?.current = .installed(version: nil)
+                        flow.refresh()
+                        flow.show(.oldInputMethods)
+                    }),
                     // As in the mockup: the user quit OpenKey, step 1 is done.
                     ("2", { detector?.found = []; flow.refresh(); flow.show(.enable) }),
                     // "Quay lại" from there: step 1 says OpenKey is off.

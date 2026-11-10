@@ -3,7 +3,7 @@ import Carbon
 
 // Services the onboarding window (D14) and the Settings window call through protocols,
 // so previews, captures and tests run on fakes: detecting other Vietnamese input methods
-// (NSWorkspace, Text Input Sources) and installing, enabling, upgrading and removing
+// (NSWorkspace, Text Input Sources) and installing, enabling, reconciling and removing
 // Dấu's input method (`SystemInputMethodInstaller`, InputMethodInstaller.swift).
 
 // MARK: - Other Vietnamese input methods (step 1)
@@ -156,6 +156,8 @@ enum InputMethodInstallerError: Error, Equatable {
     /// it yet, so nothing is deleted (a bundle gone before that leaves an entry that can
     /// no longer be removed).
     case stillListed
+    /// This copy of Dấu is not the owner copy: it never copies the input method (D37).
+    case notOwnerCopy
 }
 
 /// What Text Input Sources reports after "Bật Dấu" (N4: re-read, never assumed).
@@ -170,13 +172,21 @@ enum EnableOutcome: Equatable, Sendable {
     case notListed
 }
 
-/// What `upgradeIfNeeded` did (D7, D37).
-enum UpgradeOutcome: Equatable, Sendable {
+/// What `reconcile` did (D37).
+enum ReconcileOutcome: Equatable, Sendable {
+    /// The installed input method differed from the one inside the app and was replaced.
+    case replaced
+    /// The installed input method is the one inside the app, at every architecture.
+    case alreadyCurrent
     /// Nothing installed (the first install is the user's, from onboarding).
     case notInstalled
-    case upToDate
-    case upgraded(from: String?, to: String)
-    /// Not replaced: the installed bundle has another identity (D37: IDs never change).
+    /// This copy of Dấu is not the owner copy: nothing read, nothing touched.
+    case notOwnerCopy
+    /// The installed copy's signature is invalid or by another team: not replaced; the
+    /// "Cài lại" banner shows and the user decides.
+    case badSignature
+    /// Not replaced: the installed bundle has another identity (D37: IDs never change)
+    /// or cannot be read.
     case skipped(String)
 }
 
@@ -195,6 +205,10 @@ extension InputMethodInstallerError {
             String(localized: "macOS reported an error while copying or registering the input method.")
         case .stillListed:
             String(localized: "Dấu is still in the input sources.")
+        case .notOwnerCopy:
+            // No screen leads here (a copy that is not the owner copy shows "Move Dấu to
+            // Applications" instead of installing); the line says what is true anyway.
+            String(localized: "The input method hasn’t been copied to this Mac.")
         }
     }
 }
@@ -209,7 +223,7 @@ struct UninstallReport: Equatable, Sendable {
     var dataDeleted = false
 }
 
-/// Installs, enables, upgrades and removes Dấu's input method. The user starts enable
+/// Installs, enables, reconciles and removes Dấu's input method. The user starts enable
 /// and uninstall (N4); results are read back from Text Input Sources (N5). Dấu cannot
 /// switch its own input source off (macOS blocks `TISDisableInputSource` from an app,
 /// docs/research/INPUT-METHOD-INSTALL.md section 4): only the user removes it, in System
@@ -217,8 +231,13 @@ struct UninstallReport: Equatable, Sendable {
 @MainActor
 protocol InputMethodInstaller: AnyObject {
     func status() -> InputMethodStatus
+    /// Whether this running copy of Dấu is the owner copy of the installed input method
+    /// (D37). Only the owner copy copies, replaces or checks it; any copy enables,
+    /// changes settings and uninstalls.
+    var isOwnerCopy: Bool { get }
     /// Copies the input method bundled in the app to ~/Library/Input Methods and
-    /// registers it.
+    /// registers it. Throws `notOwnerCopy`, nothing touched, when this copy is not the
+    /// owner copy.
     func install() async throws
     /// Adds "Dấu – Tiếng Việt" to the user's input sources, then reads it back. Waits for
     /// the user to allow it in macOS's dialog; throws `CancellationError` when the task
@@ -229,8 +248,12 @@ protocol InputMethodInstaller: AnyObject {
     /// writable by any process of the user, and macOS keeps feeding keys to an enabled
     /// input source whatever bundle sits there.
     func installedIsGenuine() -> Bool
-    /// Replaces an older installed input method with the one in the app (D7).
-    func upgradeIfNeeded() async throws -> UpgradeOutcome
+    /// Keeps the installed input method equal to the one inside the owner copy (D37):
+    /// replaces it when its code differs at any architecture, never when its signature
+    /// is wrong, and does nothing when none is installed or this is not the owner copy.
+    /// The enabled and selected state is left alone. Runs at launch and from
+    /// `Dau --reconcile-input-method`.
+    func reconcile() async throws -> ReconcileOutcome
     /// Whether one of Dấu's entries is stored among the input sources (the same reading
     /// as `waitUntilRemovedFromInputSources`). True when it cannot tell (no bundle in the
     /// app), so uninstall takes the usual path and reports the error there.
@@ -267,9 +290,10 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
     /// `finishUninstall` throws this (a failure after the wait).
     var finishFailure: InputMethodInstallerError?
     var genuine = true
-    /// `upgradeIfNeeded` takes a moment, then replaces a bad installed copy with a good one
-    /// (`genuine` becomes true): the ordering test of the launch upgrade and the check.
-    var upgradeRepairs = false
+    /// This copy is the owner copy (D37). False: `install` throws, `reconcile` reports it.
+    var ownerCopy = true
+    /// What `reconcile` reports as the owner copy with a good installed input method.
+    var reconcileOutcome: ReconcileOutcome = .alreadyCurrent
     private(set) var calls: [String] = []
 
     init(_ status: InputMethodStatus = .notInstalled, failure: InputMethodInstallerError? = nil) {
@@ -279,8 +303,11 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
 
     func status() -> InputMethodStatus { current }
 
+    var isOwnerCopy: Bool { ownerCopy }
+
     func install() async throws {
         calls.append("install")
+        guard ownerCopy else { throw InputMethodInstallerError.notOwnerCopy }
         if let failure { throw failure }
         genuine = true
         if current == .notInstalled || current == .unknown { current = .installed(version: nil) }
@@ -307,15 +334,13 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
 
     func installedIsGenuine() -> Bool { genuine }
 
-    func upgradeIfNeeded() async throws -> UpgradeOutcome {
-        calls.append("upgrade")
+    func reconcile() async throws -> ReconcileOutcome {
+        calls.append("reconcile")
         if let failure { throw failure }
-        if upgradeRepairs {
-            try await Task.sleep(for: .milliseconds(30))
-            genuine = true
-            return .upgraded(from: nil, to: "2")
-        }
-        return .upToDate
+        guard ownerCopy else { return .notOwnerCopy }
+        if current == .notInstalled || current == .unknown { return .notInstalled }
+        // As the real one: a copy with a bad signature is never replaced.
+        return genuine ? reconcileOutcome : .badSignature
     }
 
     func isListedInInputSources() -> Bool { stillListed }
@@ -340,6 +365,23 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         if stillListed { throw InputMethodInstallerError.stillListed }
         current = .notInstalled
         return uninstallReport
+    }
+}
+
+// MARK: - "Move Dấu to Applications" (D37)
+
+/// What the buttons of the onboarding screen for a copy that is not the owner copy do.
+/// Dấu only guides (N4): it never moves itself.
+@MainActor
+enum OwnerCopyGuide {
+    /// Shows the Applications folder in Finder.
+    static func openApplicationsFolder() {
+        NSWorkspace.shared.open(ApplicationsOwnerCopy.standardDirectories[0])
+    }
+
+    /// A normal quit.
+    static func quit() {
+        NSApp.terminate(nil)
     }
 }
 

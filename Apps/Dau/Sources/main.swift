@@ -4,6 +4,10 @@ import Foundation
 // language is English and macOS picks the first language Dấu has, else English. A
 // -AppleLanguages argument on the command line still picks the language, for checks.
 
+// `--reconcile-input-method` (Debug and Release): what the app does to the installed
+// input method at launch (D37), without a window; prints one line and exits.
+ReconcileCommand.runIfRequested()
+
 #if DEBUG
 // Debug checks that run in the built app without opening a window: each
 // prints one value and exits.

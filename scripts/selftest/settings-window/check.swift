@@ -218,11 +218,11 @@ for (style, dirName) in windowDirs {
 /// The system's Always scroll bar width (what a scrolling step gives up when the bars are Always).
 let alwaysScrollerWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
 
-// Mockup positions ("OnboardingConflict", "OnboardingConflictDone", "OnboardingEnable", "OnboardingEnableNotes",
+// Mockup positions ("OnboardingMoveToApplications", "OnboardingConflict", "OnboardingConflictDone", "OnboardingEnable", "OnboardingEnableNotes",
 // "OnboardingEnableWaiting", "OnboardingEnableFailed", "OnboardingEnableError",
 // "OnboardingEnableDone", "OnboardingEnableDoneNoShortcut", "Onboarding"; window at
 // 50,40 in the artboard), the same in every step and both appearances.
-let onboardingShots = ["1", "2", "1-done", "2-notes", "2-waiting", "2-failed", "2-error", "2-done", "2-done-noshortcut", "3"]
+let onboardingShots = ["0-move", "1", "2", "1-done", "2-notes", "2-waiting", "2-failed", "2-error", "2-done", "2-done-noshortcut", "3"]
     .flatMap { step in ["light", "dark"].map { "onboarding-\(step)-\($0)" } }
 for dirName in ["onboarding", "onboarding-no-shortcut"] {
     guard let (shots, _) = loadFrames(root.appendingPathComponent(dirName)) else {

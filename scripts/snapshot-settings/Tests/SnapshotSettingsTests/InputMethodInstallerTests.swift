@@ -157,6 +157,9 @@ final class FakeFiles: InputMethodFiles {
     var isInstalled: Bool { installed != nil }
     var genuine = true
     var installedIsGenuine: Bool { !isInstalled || genuine }
+    /// The installed copy's code equals the embedded one's at every architecture.
+    var matches = false
+    var installedMatchesEmbedded: Bool { isInstalled && matches }
     var installError: InputMethodInstallerError?
     var trashError: InputMethodInstallerError?
     var log: [String] = []
@@ -166,6 +169,7 @@ final class FakeFiles: InputMethodFiles {
         if let installError { throw installError }
         installed = embedded
         genuine = true
+        matches = true
     }
 
     func moveInstalledToTrash() throws {
@@ -175,9 +179,16 @@ final class FakeFiles: InputMethodFiles {
     }
 }
 
+/// Whether the running copy is the owner copy (D37).
+@MainActor
+final class FakeOwner: OwnerCopyCheck {
+    var runningCopyIsOwner = true
+}
+
 @MainActor
 struct Rig {
     let files = FakeFiles()
+    let owner = FakeOwner()
     let tis = FakeTextInputSources()
     let processes = FakeProcesses()
     let settings = FakeSettings()
@@ -193,7 +204,7 @@ struct Rig {
         self.keyboardOpened = keyboardOpened
         self.pauses = pauses
         let tis = self.tis
-        installer = SystemInputMethodInstaller(files: files, sources: tis, processes: processes,
+        installer = SystemInputMethodInstaller(files: files, owner: owner, sources: tis, processes: processes,
                                                settings: settings, caches: caches,
                                                deleteSharedData: { counter.value += 1; return true },
                                                openInputSources: { keyboardOpened.value += 1 },
@@ -415,50 +426,110 @@ struct InputMethodInstallerTests {
         #expect(try await again.installer.enable() == .enabled)
     }
 
-    // MARK: Upgrade
+    // MARK: Reconcile (D37): the launch rule and `Dau --reconcile-input-method`
 
-    @Test("upgrade: newer build → copy, stop the old process, register; IDs and enabled state kept")
-    func upgrade() async throws {
-        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+    @Test("reconcile: the owner copy replaces an installed input method whose code differs: copy, stop the old process, register; enabled state kept; build numbers are not compared",
+          arguments: ["1", "2", "10"])
+    func reconcileReplaces(installedVersion: String) async throws {
+        let installed = InputMethodBundleInfo(bundleID: imID, version: installedVersion, shortVersion: nil, modeIDs: [modeID])
+        let rig = Rig(installed: installed, sources: FakeTextInputSources.dau(enabled: true))
+        rig.tis.currentID = modeID
         rig.processes.running = true
-        #expect(try await rig.installer.upgradeIfNeeded() == .upgraded(from: "1", to: "2"))
+        #expect(try await rig.installer.reconcile() == .replaced)
         #expect(rig.files.log == ["copy"])
         #expect(rig.processes.log == ["requestQuit"])
         #expect(rig.tis.log == ["register"])
-        #expect(rig.installer.status() == .enabled)
+        // Neither enabled nor selected changes.
+        #expect(rig.installer.status() == .selected)
+        // A second run finds nothing to do.
+        #expect(try await rig.installer.reconcile() == .alreadyCurrent)
+        #expect(rig.files.log == ["copy"])
     }
 
-    @Test("upgrade: an input method that ignores the request is ended after the timeout")
-    func upgradeForceQuit() async throws {
+    @Test("reconcile: an input method that ignores the request is ended after the timeout")
+    func reconcileForceQuit() async throws {
         let rig = Rig(installed: old)
         rig.processes.running = true
         rig.processes.honoursQuit = false
-        _ = try await rig.installer.upgradeIfNeeded()
+        #expect(try await rig.installer.reconcile() == .replaced)
         #expect(rig.processes.log == ["requestQuit", "forceQuit"])
         #expect(!rig.processes.running)
     }
 
-    @Test("upgrade: same or older version, nothing installed, another bundle ID → untouched")
-    func noUpgrade() async throws {
-        let same = Rig(installed: InputMethodBundleInfo(bundleID: imID, version: "2", shortVersion: nil, modeIDs: [modeID]))
-        #expect(try await same.installer.upgradeIfNeeded() == .upToDate)
-        let newer = Rig(installed: InputMethodBundleInfo(bundleID: imID, version: "10", shortVersion: nil, modeIDs: [modeID]))
-        #expect(try await newer.installer.upgradeIfNeeded() == .upToDate)
+    @Test("reconcile: same code, nothing installed, another bundle ID, an unreadable bundle → untouched")
+    func reconcileLeavesAlone() async throws {
+        // An older build number with the same code is not replaced: versions are not compared.
+        let same = Rig(installed: old)
+        same.files.matches = true
+        #expect(try await same.installer.reconcile() == .alreadyCurrent)
         let none = Rig()
-        #expect(try await none.installer.upgradeIfNeeded() == .notInstalled)
+        #expect(try await none.installer.reconcile() == .notInstalled)
         let other = Rig(installed: InputMethodBundleInfo(bundleID: "com.example.other", version: "1", shortVersion: nil, modeIDs: []))
-        #expect(try await other.installer.upgradeIfNeeded() == .skipped("bundle ID com.example.other"))
-        for rig in [same, newer, none, other] {
+        #expect(try await other.installer.reconcile() == .skipped("bundle ID com.example.other"))
+        for rig in [same, none, other] {
             #expect(rig.files.log.isEmpty && rig.tis.log.isEmpty && rig.processes.log.isEmpty)
         }
     }
 
-    @Test("version order is numeric")
-    func versions() {
-        #expect(SystemInputMethodInstaller.isNewer("10", than: "9"))
-        #expect(SystemInputMethodInstaller.isNewer("1.10", than: "1.9"))
-        #expect(!SystemInputMethodInstaller.isNewer("1", than: "1"))
-        #expect(SystemInputMethodInstaller.isNewer("1", than: nil))
+    @Test("reconcile: a wrong signature or another team is never replaced, even when the code differs (the banner asks)")
+    func reconcileBadSignature() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
+        rig.files.genuine = false
+        rig.processes.running = true
+        #expect(try await rig.installer.reconcile() == .badSignature)
+        #expect(rig.files.log.isEmpty && rig.tis.log.isEmpty && rig.processes.log.isEmpty)
+        #expect(!rig.installer.installedIsGenuine())
+        // The user's "Cài lại" installs as before.
+        try await rig.installer.install()
+        #expect(rig.files.log == ["copy"])
+        #expect(try await rig.installer.reconcile() == .alreadyCurrent)
+    }
+
+    @Test("reconcile: a copy that is not the owner copy does nothing, whatever is installed")
+    func reconcileNotOwner() async throws {
+        let differs = Rig(installed: old)
+        let bad = Rig(installed: old)
+        bad.files.genuine = false
+        let none = Rig()
+        let noBundle = Rig(installed: old)
+        noBundle.files.embedded = nil
+        for rig in [differs, bad, none, noBundle] {
+            rig.owner.runningCopyIsOwner = false
+            rig.processes.running = true
+            #expect(try await rig.installer.reconcile() == .notOwnerCopy)
+            #expect(rig.files.log.isEmpty && rig.tis.log.isEmpty && rig.processes.log.isEmpty)
+        }
+    }
+
+    @Test("reconcile: the owner copy without an input method inside, or a failed copy, is an error; nothing registered")
+    func reconcileFails() async {
+        let noBundle = Rig(installed: old)
+        noBundle.files.embedded = nil
+        await #expect(throws: InputMethodInstallerError.unavailable) { try await noBundle.installer.reconcile() }
+        let failing = Rig(installed: old)
+        failing.files.installError = .invalidSignature
+        await #expect(throws: InputMethodInstallerError.invalidSignature) { try await failing.installer.reconcile() }
+        #expect(failing.tis.log.isEmpty && failing.processes.log.isEmpty)
+    }
+
+    @Test("a copy that is not the owner copy never copies the input method: install throws, nothing touched; enable and uninstall still work")
+    func notOwnerNeverCopies() async throws {
+        let rig = Rig()
+        rig.owner.runningCopyIsOwner = false
+        #expect(!rig.installer.isOwnerCopy)
+        await #expect(throws: InputMethodInstallerError.notOwnerCopy) { try await rig.installer.install() }
+        #expect(rig.files.log.isEmpty && rig.tis.log.isEmpty)
+
+        // Installed by the owner copy: this copy enables it ("Bật lại") without copying.
+        let installed = Rig(installed: old, sources: FakeTextInputSources.dau())
+        installed.owner.runningCopyIsOwner = false
+        #expect(try await installed.installer.enable() == .enabled)
+        #expect(installed.files.log.isEmpty)
+        // And removes it once the user took it out of the input sources.
+        installed.tis.userRemovesDau()
+        let report = try await installed.installer.finishUninstall(deleteSettings: false)
+        #expect(report.movedToTrash)
+        #expect(installed.files.log == ["trash"])
     }
 
     // MARK: Uninstall (D16): prepare, wait for the user, finish
@@ -749,6 +820,61 @@ struct TamperedInputMethodTests {
         #expect(actions.reinstall == .failed)
     }
 
+    @Test("launch: a copy with a wrong signature is not replaced by the launch reconcile; the banner shows (D37)")
+    func launchKeepsBadCopy() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        installer.genuine = false
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.startLaunchReconcile()
+        actions.startLaunchReconcile()   // once per launch
+        await actions.launchReconcileFinished()
+        #expect(installer.calls == ["reconcile"])
+        #expect(actions.installedTampered)
+        // Every activation checks: a copy the user reinstalled clears the banner.
+        installer.genuine = true
+        actions.checkInstalled()
+        #expect(!actions.installedTampered)
+    }
+
+    @Test("launch: a replaced copy raises no banner; a failed reconcile still checks")
+    func launchReplaces() async {
+        let installer = FakeInputMethodInstaller(.enabled)
+        installer.reconcileOutcome = .replaced
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.startLaunchReconcile()
+        await actions.launchReconcileFinished()
+        #expect(!actions.installedTampered)
+        #expect(installer.status() == .enabled)
+
+        let failing = FakeInputMethodInstaller(.enabled, failure: .failed("disk full"))
+        failing.genuine = false
+        let failingActions = InputMethodActions(installer: failing, openKeyboardSettings: {})
+        failingActions.startLaunchReconcile()
+        await failingActions.launchReconcileFinished()
+        #expect(failingActions.installedTampered)
+    }
+
+    @Test("a copy that is not the owner copy does not check the installed input method: no banner, and Cài lại installs nothing (D37)")
+    func notOwnerChecksNothing() async {
+        let installer = FakeInputMethodInstaller(.enabled)
+        installer.genuine = false
+        installer.ownerCopy = false
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {},
+                                         shortcut: { .unknown }, englishLayout: { nil })
+        actions.startLaunchReconcile()
+        await actions.launchReconcileFinished()
+        actions.checkInstalled()
+        #expect(!actions.installedTampered)
+        await actions.reinstallInputMethod()
+        #expect(installer.calls == ["reconcile"])
+        #expect(actions.reinstall == .idle)
+        // "Bật lại" still works from such a copy.
+        installer.current = .installed(version: nil)
+        #expect(await actions.enableFromBanner() == false)
+        #expect(installer.calls == ["reconcile", "enable"])
+        #expect(actions.banner == .enabled)
+    }
+
     @Test("the real files check: nothing installed counts as genuine")
     func notInstalled() {
         let files = FakeFiles()
@@ -871,32 +997,6 @@ struct UninstallFlowTests {
         #expect(installer.calls == ["prepareUninstall", "wait"])
         actions.cancelUninstall()
         #expect(await run.value == .cancelled)
-    }
-
-    @Test("the signature check waits for the launch upgrade: a copy the upgrade repairs raises no banner (D37)")
-    func checkAfterUpgrade() async {
-        let installer = FakeInputMethodInstaller(.installed(version: nil))
-        installer.genuine = false
-        installer.upgradeRepairs = true
-        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
-        actions.startLaunchUpgrade()
-        await actions.checkInstalledAfterUpgrade()
-        #expect(!actions.installedTampered)
-        // Every activation checks: a copy that turns bad later shows the banner.
-        installer.genuine = false
-        await actions.checkInstalledAfterUpgrade()
-        #expect(actions.installedTampered)
-    }
-
-    @Test("still bad after the upgrade: the banner shows (D37)")
-    func checkAfterUpgradeStillBad() async {
-        let installer = FakeInputMethodInstaller(.installed(version: nil))
-        installer.genuine = false
-        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
-        actions.startLaunchUpgrade()
-        await actions.checkInstalledAfterUpgrade()
-        #expect(actions.installedTampered)
-        #expect(installer.calls == ["upgrade"])
     }
 
     @Test("a failed preparation or finish ends in the failure alert, no sheet left")
