@@ -131,9 +131,12 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 ### 4.1 Chuẩn bị
 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
-2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-input-method.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
-3. Làm theo các bước script in ra.
-   - Lần đầu trên máy: bật bằng nút "Bật Dấu" của app chủ rồi Allow, không cần đăng xuất (D37 (Cài đặt bộ gõ)).
+2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-app.sh --debug`.
+   - Script build bản Debug của Dấu.app (bộ gõ nằm trong app), kiểm bản build, đặt app vào `/Applications`; app đó thay bộ gõ đã cài bằng bản nằm trong nó và dừng tiến trình bộ gõ cũ (D37 (Cài đặt bộ gõ)).
+   - Gần cuối là kết quả của `scripts/dev/dau-version.sh`. Nó báo tiến trình bộ gõ đang chạy bản cũ thì chuyển nguồn nhập liệu ra rồi vào lại Dấu.
+   - Thử xong, cài lại bản Release để gõ hằng ngày: `scripts/dev/install-app.sh`.
+3. Bật nguồn nhập liệu (đã bật từ trước thì bỏ qua bước này).
+   - Lần đầu trên máy: script không cài bộ gõ và không bật gì (N4 (Không tự đổi cài đặt hệ thống)). Mở Dấu trong `/Applications`, bấm "Bật Dấu" rồi Allow, không cần đăng xuất (D37). Bản Dấu.app mở từ thư mục build không cài được bộ gõ: nó không phải bản chủ.
    - Thêm tay (System Settings › Keyboard › "All Input Sources" › "+" › Vietnamese › "Dấu – Vietnamese" › Add; máy tiếng Việt hiện tên tiếng Việt, D38 (Chữ trên giao diện)) có thể không thấy Dấu vì danh sách đọc bộ đệm cũ; khi đó đăng xuất rồi đăng nhập lại (`docs/research/INPUT-METHOD-INSTALL.md` (b)9, (b)12).
    - Dấu chỉ có nguồn này (D2 (Chuyển Việt/Anh)); gõ tiếng Anh bằng U.S. của macOS, nên giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách.
    - Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó.

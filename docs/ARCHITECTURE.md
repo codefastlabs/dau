@@ -331,7 +331,8 @@ Cách tìm app chủ:
 - Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) không đổi: vẫn là TIFF template khai trong Info.plist (`docs/COMPATIBILITY.md` 6.6, 6.7).
   - TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template = 1 ở cả bundle và mode; ảnh thanh menu khớp sau khi cài.
 - Bản Release không có `get-task-allow` (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO`), nên không tiến trình nào gắn debugger vào bộ gõ để đọc từ đang gõ.
-  - Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-input-method.sh --release` cho việc gõ hằng ngày).
+  - Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-app.sh --debug`; không có `--debug` là bản Release cho việc gõ hằng ngày).
+  - `dau_check_input_method` (`scripts/lib/build.sh`) kiểm điều này, cùng universal và không có quyền mạng, trên bộ gõ nhúng trong bản build trước khi `scripts/dev/install-app.sh` cài.
 - Entitlements: App Sandbox, App Group, tạm thêm `temporary-exception.mach-register.global-name` cho tên kết nối IMK (theo mẫu IMK có sandbox).
   - Chưa thử bỏ đi để biết có cần không: hoãn sang M7, xét cùng lượt rà entitlement trước khi notarize.
   - **Không** `com.apple.security.network.client`.
@@ -525,6 +526,8 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 | 7 | `skipped` | bản đã cài khác bundle ID hoặc không đọc được, không thay |
 
 Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug.
+
+`scripts/dev/install-app.sh` (script cài duy nhất khi phát triển) gọi lệnh này từ bản vừa đặt vào `/Applications`, nên script không tự chép bộ gõ: mã 0 và 3 là đạt; mã 4 không phải lỗi (lần cài đầu là nút "Bật Dấu"); các mã còn lại script thoát khác 0.
 
 **Dừng bộ gõ:**
 

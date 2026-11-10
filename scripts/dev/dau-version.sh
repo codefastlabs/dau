@@ -25,14 +25,15 @@ commit_of() { # bundle
   if [[ -f $f ]]; then print -r -- "$(<"$f")"; else print -r -- "(không có mã commit)"; fi
 }
 
-stale_note() { # bundle label reinstall-command -> a warning when the bundle was built from another commit
+stale=0
+stale_note() { # bundle label -> a warning when the bundle was built from another commit
   local f="$1/Contents/Resources/BuildCommit.txt" built
   [[ -f $f && -n $head ]] || return 0
   built=$(<"$f")
   # Compare commits only: "+" (uncommitted changes) on either side says nothing either way.
   [[ ${built%+} == ${head%+} ]] && return 0
   log_warn "$2 ($built) khác repo ($head)"
-  log_hint "cài lại bằng $3"
+  stale=1
 }
 
 signature_of() { # bundle -> "hợp lệ, Team X" or the codesign error
@@ -52,16 +53,18 @@ print -r -- "Repo:              $head"
 
 if [[ -d $im ]]; then
   print -r -- "Bộ gõ đã cài:      $(commit_of "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
-  stale_note "$im" "Bộ gõ đã cài" "scripts/dev/install-input-method.sh (hoặc install-app.sh --with-input-method)"
+  stale_note "$im" "Bộ gõ đã cài"
   print -r -- "  chữ ký:          $(signature_of "$im")"
 else
   print -r -- "Bộ gõ đã cài:      chưa cài"
 fi
 if [[ -d $host ]]; then
   print -r -- "Dấu.app (/Applications): $(commit_of "$host")"
-  stale_note "$host" "Dấu.app" "scripts/dev/install-app.sh"
+  stale_note "$host" "Dấu.app"
   print -r -- "  chữ ký:          $(signature_of "$host")"
 fi
+# One command installs both: the app replaces the input method (D37).
+(( stale )) && log_hint "cài lại bằng scripts/dev/install-app.sh"
 [[ -d $app ]] && print -r -- "Dấu.app (Debug):   $(commit_of "$app")"
 
 # Apple Development identities: valid, or why not (revoked, expired).

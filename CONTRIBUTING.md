@@ -33,19 +33,21 @@ Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ 
    ```
 
    `Config/Local.xcconfig` bị git bỏ qua, nên Team của bạn không lọt vào commit. Không sửa Team trong `project.yml` hay `Config/Signing.xcconfig`.
-3. Sinh project và cài bản Debug:
+3. Build và cài Dấu.app vào `/Applications`:
 
    ```sh
-   xcodegen generate
-   scripts/dev/install-input-method.sh
+   scripts/dev/install-app.sh
    ```
 
-   Script in ra các bước bật Dấu trong System Settings. Thêm `--release` để dùng hằng ngày (bản Release không ghi nhật ký theo từng phím, D8 (Không telemetry)).
+   Script sinh project, build bản Release của Dấu.app (bộ gõ nằm trong app), kiểm bản build rồi đặt app vào `/Applications`; bản Dấu.app cũ ở đó vào Thùng rác. Chỉ bản Dấu.app trong thư mục Applications cài và thay bộ gõ (D37 (Cài đặt bộ gõ)): bản mở từ thư mục build không cài được.
+4. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu", rồi Allow trong hộp thoại của macOS. Không cần đăng xuất; không bật được thì làm theo màn "Chưa bật được Dấu" của app. Script không cài bộ gõ lần đầu và không bật gì (N4 (Không tự đổi cài đặt hệ thống)).
+5. Các lần sau: chạy lại `scripts/dev/install-app.sh`. Dấu.app vừa cài tự thay bộ gõ đã cài bằng bản nằm trong nó và không đổi danh sách nguồn đầu vào đã bật. Gõ hằng ngày dùng bản Release; `scripts/dev/install-app.sh --debug` cài bản Debug, bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry); cách đo: `docs/COMPATIBILITY.md` mục 4).
 
 Lưu ý:
 
 - **Bản bạn dựng là bản phát triển (D7 (Cập nhật và loại bản dựng))**, không phải bản chính thức. Bản chính thức sẽ chỉ do quy trình phát hành ký Developer ID tạo ra; quy trình đó (kèm CI) là việc của M7 trong `docs/ROADMAP.md`, chưa có.
-- **Bản của bạn thay bản Dấu đang cài.** Bundle ID giống bản chính thức và không đổi giữa các bản (D37 (Cài đặt bộ gõ)), nên trên một máy chỉ có một bản Dấu. Khi đã có bản phát hành (M7), muốn quay lại bản chính thức thì cài lại từ bản đó. Liệt kê mọi dấu vết của Dấu trên máy: `scripts/dev/clean-dau.sh` (không tham số thì chỉ đọc).
+- **Bản của bạn thay bản Dấu đang cài.** Bundle ID giống bản chính thức và không đổi giữa các bản (D37), nên trên một máy chỉ có một bản Dấu. Khi đã có bản phát hành (M7), muốn quay lại bản chính thức thì cài lại từ bản đó.
+- **Gỡ bản bạn dựng:** dùng "Gỡ cài đặt" trong Dấu (D16 (Bảo trì và gỡ cài đặt)). Liệt kê mọi dấu vết của Dấu trên máy: `scripts/dev/clean-dau.sh` (không tham số thì chỉ đọc); phần đầu script ghi cách đưa tài khoản về như chưa từng cài (bỏ Dấu bằng "–" trong System Settings trước, rồi đăng xuất).
 - **Dùng một Apple ID trên hai máy Mac:** mỗi máy tạo một chứng chỉ riêng, và tạo chứng chỉ ở máy này có thể làm chứng chỉ ở máy kia bị thu hồi (bản đã cài báo `CSSMERR_TP_CERT_REVOKED` khi kiểm chữ ký). Cách dùng chung: ở máy đang có chứng chỉ hợp lệ, mở Keychain Access › login › My Certificates, xuất "Apple Development: …" (kèm khoá riêng) ra file `.p12`, rồi nhập file đó ở máy kia.
 
 ## Engine và OpenKey

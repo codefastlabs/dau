@@ -121,8 +121,13 @@ fi
 # --- Installed build ---------------------------------------------------------------------
 log_step "Bản đã cài (so với HEAD, qua scripts/dev/dau-version.sh)"
 im="$HOME/Library/Input Methods/DauInputMethod.app"
-[[ -d $im ]] || log_warn "Bộ gõ chưa cài trong ~/Library/Input Methods." "scripts/dev/install-input-method.sh   (thêm --release để dùng hằng ngày)"
-[[ -d /Applications/Dau.app ]] || log_warn "Chưa có Dấu.app trong /Applications." "scripts/dev/install-app.sh   (thêm --with-input-method để cài cả bộ gõ)"
+if [[ ! -d /Applications/Dau.app ]]; then
+  log_warn "Chưa có Dấu.app trong /Applications."
+  log_hint "scripts/dev/install-app.sh   (bản Release; rồi mở Dấu và bấm \"Bật Dấu\" để cài bộ gõ lần đầu)"
+elif [[ ! -d $im ]]; then
+  log_warn "Bộ gõ chưa cài trong ~/Library/Input Methods."
+  log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (lần cài đầu do bạn bấm, N4)."
+fi
 ver=$("$root/scripts/dev/dau-version.sh" 2>&1)
 print -r -- "$ver" | sed 's/^/    /'
 if [[ $ver == *"khác repo"* || $ver == *"đang chạy bản CŨ"* || $ver == *"KHÔNG hợp lệ"* || $ver == *"KHÔNG dùng được"* ]]; then

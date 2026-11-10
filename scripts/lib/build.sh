@@ -1,15 +1,19 @@
 #!/bin/zsh
 # Shared build step for the scripts that build Dấu with xcodebuild (sourced, not run).
 # Side effects: builds
-# Callers: scripts/dev/install-input-method.sh, scripts/dev/install-app.sh, scripts/selftest/app-group.sh.
-# Each caller keeps its own checks of the result (per target: N2 applies to the input
-# method only), this file only holds what must be identical everywhere:
+# Callers: scripts/dev/install-app.sh, scripts/selftest/app-group.sh.
+# This file holds what must be identical everywhere:
 #
 #   dau_signing_identities        the usable "Apple Development" identities, one
 #                                 find-identity line each ("N) <SHA-1> "<name>"")
 #   dau_require_signing_identity  stop early when the keychain has no usable
 #                                 "Apple Development" identity (revoked, expired, missing)
 #   dau_build SCHEME CONFIG       xcodegen, then xcodebuild universal into $DAU_DERIVED
+#   dau_check_input_method BUNDLE CONFIG
+#                                 the checks of an input method bundle (the one inside a
+#                                 built Dau.app): universal (D1), valid signature, no
+#                                 network entitlement (N2), and for Release no
+#                                 get-task-allow. Status 1 with the reason when one fails.
 #
 # It never passes -allowProvisioningUpdates: that flag can create a new certificate and
 # revoke the one of another Mac on the same Apple ID (docs/history/LOG-M5.md), so it is
@@ -38,7 +42,7 @@ dau_require_signing_identity() {
     "   .p12 ở máy đó (Keychain Access › login › My Certificates › Export), nhập ở máy này." \
     "b) Tạo chứng chỉ mới cho máy này. Chứng chỉ của máy Mac kia có thể bị thu hồi. Tự chạy:" \
     "   xcodegen generate && DEVELOPER_DIR=$DEVELOPER_DIR \\" \
-    "     xcodebuild -project Dau.xcodeproj -scheme DauInputMethod -configuration Release \\" \
+    "     xcodebuild -project Dau.xcodeproj -scheme Dau -configuration Release \\" \
     "     -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex \\" \
     "     -allowProvisioningUpdates build"
   return 1
@@ -62,4 +66,45 @@ dau_build() {
     -derivedDataPath "$DAU_DERIVED" \
     -quiet \
     build
+}
+
+dau_check_input_method() {
+  local bundle="$1" config="$2" binary archs entitlements
+  binary="$bundle/Contents/MacOS/${bundle:t:r}"
+  if [[ ! -f "$binary" ]]; then
+    log_error "Không thấy bộ gõ ở $bundle."
+    return 1
+  fi
+  archs="$(lipo -archs "$binary" 2>/dev/null)"
+  log_detail "kiến trúc bộ gõ: ${archs:-không đọc được}"
+  if [[ "$archs" != *arm64* || "$archs" != *x86_64* ]]; then
+    log_error "Bộ gõ không phải universal (D1)."
+    return 1
+  fi
+  if ! codesign --verify --strict "$bundle" 2>/dev/null; then
+    log_error "Chữ ký của bộ gõ ($bundle) không hợp lệ."
+    return 1
+  fi
+  # Matched in the shell, not with `| grep -q`: under pipefail a grep that quits at the first
+  # match can fail the pipeline through SIGPIPE on codesign, and the check would pass.
+  # The input method is sandboxed (D37), so an empty answer means the entitlements were
+  # not read, never "no network entitlement".
+  entitlements="$(codesign -d --entitlements - --xml "$bundle" 2>/dev/null)" || entitlements=""
+  if [[ "$entitlements" != *com.apple.security.app-sandbox* ]]; then
+    log_error "Không đọc được entitlements của bộ gõ (không thấy App Sandbox): chưa kiểm được N2."
+    return 1
+  fi
+  if [[ "$entitlements" == *com.apple.security.network* ]]; then
+    log_error "Bộ gõ có quyền mạng, trái N2."
+    return 1
+  fi
+  if [[ "$config" == Release && "$entitlements" == *get-task-allow* ]]; then
+    log_error "Bộ gõ bản Release còn get-task-allow (cho phép gắn debugger)."
+    return 1
+  fi
+  if [[ "$config" == Release ]]; then
+    log_ok "Bộ gõ: universal (D1), chữ ký hợp lệ, không có quyền mạng (N2), không có get-task-allow"
+  else
+    log_ok "Bộ gõ: universal (D1), chữ ký hợp lệ, không có quyền mạng (N2)"
+  fi
 }

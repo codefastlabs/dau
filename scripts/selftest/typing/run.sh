@@ -4,7 +4,8 @@
 # Needs the Accessibility permission for the process running the script
 # (System Events keystrokes); the input method must be installed (Debug for the per-key
 # timings: a Release build types the same but logs nothing per key, D8), the Dấu input
-# source enabled (scripts/dev/install-input-method.sh), and the apps installed.
+# source enabled (scripts/dev/install-app.sh, with --debug for a Debug build; the first
+# time, "Bật Dấu" in Dấu.app), and the apps installed.
 #
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
@@ -170,14 +171,14 @@ INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/input-source.swif
 CLIPBOARD="$(dau_swift_tool clipboard "$HERE/clipboard.swift")" || exit 1
 
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
-[[ -f "$IM_PLIST" ]] || log_die "Chưa cài bộ gõ (scripts/dev/install-input-method.sh)."
+[[ -f "$IM_PLIST" ]] || log_die "Chưa cài bộ gõ: chạy scripts/dev/install-app.sh, rồi mở Dấu trong /Applications và bấm \"Bật Dấu\"."
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_PLIST")"
 DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
 # disagree (TIS alone has been wrong on macOS 27.2).
 [[ -n "$DAU_SOURCE" ]] || {
   log_error "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)."
-  log_hint "Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (scripts/dev/install-input-method.sh nói rõ các bước)."
+  log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (không bật được: docs/COMPATIBILITY.md mục 4.1)."
   exit 1
 }
 if [[ -n "$SOURCE_ID" ]]; then

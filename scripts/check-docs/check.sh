@@ -31,8 +31,9 @@
 #      backticks or parentheses. PROGRESS.md's log, docs/history and docs/research are not
 #      living docs, so they are not checked.
 #   7. scripts: every scripts/**/*.sh (not .build), .claude/hooks/*.sh and .githooks/* starts with
-#      "#!/bin/zsh" (one shell: /bin/bash on macOS is 3.2), passes `zsh -n` and has a
-#      "# Side effects:" line; every script but the sourced files in scripts/lib has a
+#      "#!/bin/zsh" (one shell: /bin/bash on macOS is 3.2), passes `zsh -n`, assigns to
+#      none of zsh's read-only parameters `status` and `pipestatus` (`zsh -n` does not see
+#      that; the script dies at that line) and has a "# Side effects:" line; every script but the sourced files in scripts/lib has a
 #      `set` line with -u and one with pipefail (scripts/README.md, "Mở đầu"); every repo
 #      path in backticks in scripts/README.md exists; no script but scripts/lib/log.sh (and this file, which
 #      names the patterns) writes ANSI color codes or the "==>" step mark (scripts/README.md, "Đầu ra");
@@ -178,6 +179,9 @@ for s in scripts/**/*.sh(N) .claude/hooks/*.sh(N) .githooks/*(N.); do
   [[ $s == */.build/* ]] && continue
   [[ "$(head -1 $s)" == '#!/bin/zsh' ]] || report "$s: dòng đầu không phải #!/bin/zsh"
   zsh -n $s 2>/dev/null || report "$s: zsh -n báo lỗi cú pháp"
+  grep -nE '^[[:space:]]*((local|typeset|integer|readonly)[[:space:]]+(-[A-Za-z]+[[:space:]]+)*)?(status|pipestatus)(=|[[:space:]]|$)' $s | while IFS= read -r l; do
+    report "$s:${l%%:*}: gán vào biến chỉ đọc của zsh (status, pipestatus); đặt tên khác"
+  done
   if [[ $s != scripts/lib/*.sh ]]; then
     (( $(grep -cE '^set -[a-z]*u' $s) )) || report "$s: thiếu set -u (scripts/README.md, \"Mở đầu\")"
     (( $(grep -cE '^set .*pipefail' $s) )) || report "$s: thiếu set -o pipefail (scripts/README.md, \"Mở đầu\")"

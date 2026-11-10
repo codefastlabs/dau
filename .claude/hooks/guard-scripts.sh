@@ -28,8 +28,7 @@ typeset -A guarded=(
   [scripts/selftest/settings-window/run.sh]="always"
   [scripts/selftest/app-group.sh]="always"
   [scripts/research/compare-ims/run.sh]="always"
-  [scripts/dev/install-app.sh]="always"
-  [scripts/dev/install-input-method.sh]="unless --build-only"
+  [scripts/dev/install-app.sh]="unless --build-only"
   [scripts/dev/clean-dau.sh]="with --yes"
 )
 runners=(zsh bash sh source . env time nohup exec command)

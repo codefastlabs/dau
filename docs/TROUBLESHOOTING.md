@@ -11,7 +11,7 @@ Các sự cố đã gặp trên máy phát triển, nguyên nhân đã xác đ�
 ## "Cài đặt Dấu…" trong menu bộ gõ không mở gì
 
 - **Nguyên nhân:** Dấu.app được chép vào `/Applications` bằng `ditto` hay Finder mà chưa đăng ký với LaunchServices. Bộ gõ chạy sandbox nên tìm app chủ qua LaunchServices, và chỉ thấy các bản trong DerivedData.
-- **Xử lý:** cài bằng `scripts/dev/install-app.sh` (chép bản mới cạnh bản cũ, chuyển bản cũ vào Thùng rác, đổi tên, chạy `lsregister -f`, mở lại app nếu nó đang chạy). Cài tay thì chạy `lsregister -f /Applications/Dau.app` sau khi chép; trong nhật ký của bộ gõ phải thấy `event=host-app-open`.
+- **Xử lý:** cài bằng `scripts/dev/install-app.sh` (chép bản mới cạnh bản cũ, chuyển bản cũ vào Thùng rác, đổi tên, chạy `lsregister -f`, để app thay bộ gõ đã cài, mở lại app nếu nó đang chạy). Cài tay thì chạy `lsregister -f /Applications/Dau.app` sau khi chép; trong nhật ký của bộ gõ phải thấy `event=host-app-open`.
 
 ## Thử gõ bằng TextEdit để lại file trên iCloud Drive
 

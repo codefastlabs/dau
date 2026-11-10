@@ -1,14 +1,18 @@
 #!/bin/zsh
 # Self test, without typing, of the settings path from the host app to the input method.
-# Side effects: builds, changes input source, changes user settings; with --install also: installs input method, kills processes
+# Side effects: builds, changes input source, changes user settings; with --install also: installs app, installs input method, kills processes, deletes data
 # Does a setting saved by the host app reach the input method through the App Group
 # suite and the Darwin notification?
 #
 #   1. Builds Debug (universal) into build/DerivedData.noindex (scheme Dau, which includes
 #      the input method). By default the input method already installed in
 #      ~/Library/Input Methods is used as it is and the script says so; only with
-#      --install is the Debug build installed first (scripts/dev/install-input-method.sh --no-build,
-#      which also stops the old input method process), so the build is not made twice.
+#      --install is the Debug build installed first (scripts/dev/install-app.sh with --debug
+#      and --no-build, so the build is not made twice): the Debug Dấu.app goes into
+#      /Applications (the old copy to the Trash) and replaces the installed input method
+#      with the Debug one inside it, stopping the old input method process. The Debug
+#      build then stays installed: the script ends by saying to put the Release build
+#      back (scripts/dev/install-app.sh).
 #   2. Makes sure the input method runs. macOS launches it on demand, when a client
 #      activates it; if it is not running, the helper reselects the Dấu input source,
 #      which must already be enabled (the helper never enables or disables a source, N4),
@@ -37,7 +41,8 @@
 # Ends with a "✓" verdict or a "✗" verdict plus hints (scripts/lib/log.sh); exit status 0 only on success.
 #
 # Usage: scripts/selftest/app-group.sh [--install] [--no-build]
-#   --install    install the Debug input method before the test (default: use what is installed)
+#   --install    install the Debug Dấu.app and its input method before the test (default: use
+#                what is installed); install the Release build again afterwards
 #   --no-build   do not build; use build/DerivedData.noindex as it is (with --install, install
 #                that build)
 #
@@ -96,7 +101,15 @@ restore_typing_method() {
     log_warn "Không trả lại được kiểu gõ $method; kiểm tra trong Cài đặt của Dấu"
   fi
 }
-cleanup() { restore_typing_method; restore_source; }
+# Said last, on every way out: --install leaves the Debug build on this Mac.
+INSTALLED_DEBUG=0
+remind_release() {
+  [[ "$INSTALLED_DEBUG" == 1 ]] || return 0
+  INSTALLED_DEBUG=0
+  log_warn "Dấu.app và bộ gõ đang cài là bản Debug (do --install)."
+  log_hint "Cài lại bản Release: scripts/dev/install-app.sh"
+}
+cleanup() { restore_typing_method; restore_source; remind_release; }
 trap cleanup EXIT
 trap 'exit 130' INT
 trap 'exit 143' TERM
@@ -107,11 +120,14 @@ if [[ "$BUILD" == 1 ]]; then
 fi
 [[ -x "$APP_BIN" ]] || fail "không thấy $APP_BIN (chạy không có --no-build)"
 if [[ "$INSTALL" == 1 ]]; then
-  log_step "Cài bộ gõ Debug (install-input-method.sh --no-build; bản vừa build ở trên)"
-  install_log="$("$ROOT/scripts/dev/install-input-method.sh" --no-build 2>&1)" || { print -r -- "$install_log"; fail "install-input-method.sh lỗi"; }
-  print -r -- "$install_log" | grep -E 'kiến trúc|chữ ký|đã dừng|không có tiến trình' | sed -E 's/^(✓|!|✗)? *//; s/^/    /'
+  log_step "Cài Dấu.app và bộ gõ bản Debug (install-app.sh --debug --no-build; bản vừa build ở trên)"
+  # Set before the call: a run that fails halfway may already have swapped the app.
+  INSTALLED_DEBUG=1
+  install_log="$("$ROOT/scripts/dev/install-app.sh" --debug --no-build 2>&1)" || { print -r -- "$install_log"; fail "install-app.sh lỗi"; }
+  # The check results and the line of the app's reconcile command.
+  print -r -- "$install_log" | grep -E 'kiến trúc|^✓|^!|reconcile-input-method' | sed -E 's/^(✓|!) *//; s/^ *//; s/^/    /'
 fi
-[[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP (chạy với --install, hoặc scripts/dev/install-input-method.sh)"
+[[ -d "$IM_APP" ]] || fail "chưa cài $IM_APP: lần cài đầu là nút \"Bật Dấu\" trong Dấu.app ở /Applications (scripts/dev/install-app.sh đặt app vào đó, không cài bộ gõ lần đầu)"
 commit_of() { local f="$1/Contents/Resources/BuildCommit.txt"; [[ -f "$f" ]] && cat "$f" || echo "không có mã commit"; }
 if [[ "$INSTALL" == 1 ]]; then
   log_step "Bộ gõ thử: bản vừa cài ($(commit_of "$IM_APP"))"
@@ -138,7 +154,7 @@ if ! wait_until 2 im_running; then
   DAU_SOURCE="$(print -r -- "$enabled_ids" | grep '\.vi$' | head -1)"
   [[ -n "$DAU_SOURCE" ]] || DAU_SOURCE="$(print -r -- "$enabled_ids" | head -1)"
   if [[ -z "$DAU_SOURCE" ]]; then
-    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Thêm bằng \"+\" trong System Settings › Keyboard › \"All Input Sources\" (xem install-input-method.sh), rồi chạy lại."
+    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Mở Dấu trong /Applications, bấm \"Bật Dấu\", rồi chạy lại."
   fi
   # Measured (macOS 27.0.1): reselecting the already selected Dấu source launched the
   # input method once and did nothing the next time (TIS treats it as no change). The
@@ -245,6 +261,7 @@ done
 
 restore_typing_method
 restore_source
+remind_release
 if [[ "$PASS" == 1 ]]; then
   log_ok "App chủ và bộ gõ dùng chung cài đặt qua App Group"
   log_done

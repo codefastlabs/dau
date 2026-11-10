@@ -44,3 +44,5 @@ Chưa có dấu hiệu App Nap	D12: App Nap and efficiency cores were not measur
 Hiện còn nhãn: Edge	D13: Edge no longer carries the label (10/11/2026)
 Nâng cấp trước, kiểm chữ ký sau	D37: a wrong signature is never replaced silently; the owner copy keeps the installed input method equal to its embedded one (10/11/2026)
 `CFBundleVersion` của (bản trong app lớn hơn|bộ gõ nằm trong app với bản đã cài)	D37: the installed input method is compared with the embedded one by code hash at every architecture, build numbers are not compared (10/11/2026)
+install-input-method\.sh	scripts/dev/install-input-method.sh removed: scripts/dev/install-app.sh is the only install script, the owner copy replaces the input method (D37, 10/11/2026)
+--with-input-method	install-app.sh always lets the app replace the input method; the option is gone (D37, 10/11/2026)

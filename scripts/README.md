@@ -43,7 +43,7 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
     kiến trúc: arm64 x86_64
 ✓ Chữ ký hợp lệ, không có quyền mạng (N2)
 ! Bộ gõ đã cài (fa954b8) khác repo (416eddd)
-    cài lại: scripts/dev/install-input-method.sh
+    cài lại bằng scripts/dev/install-app.sh
 ✗ Bản build không phải universal (D1)
 ==> Xong · 2 phút 14 giây
 ```
@@ -73,7 +73,7 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 | `none` | chỉ đọc; không ghi gì ngoài file tạm |
 | `builds` | chạy xcodegen, xcodebuild hoặc swiftc; ghi vào `build/` hoặc thư mục tạm, không đổi file được theo dõi bởi git |
 | `writes repo files` | ghi đè file được theo dõi bởi git trong repo (xem bằng `git diff`) |
-| `installs input method` | chép bộ gõ vào `~/Library/Input Methods` |
+| `installs input method` | thay bộ gõ trong `~/Library/Input Methods` (script không tự chép: Dấu.app vừa cài thay nó, D37) |
 | `installs app` | chép Dấu.app vào `/Applications` và đăng ký với LaunchServices |
 | `kills processes` | dừng tiến trình đang chạy (bộ gõ, Dấu.app, app do script tự mở) |
 | `takes the screen` | mở app, gõ phím hoặc bấm chuột tự động: người dùng không dùng máy được trong lúc chạy |
