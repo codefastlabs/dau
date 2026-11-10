@@ -18,7 +18,7 @@ Luật làm việc:
 
 ## Quy tắc
 - Viết test trước (Swift Testing), rồi mới viết mã.
-- Kết quả mong đợi theo quy tắc chính tả tiếng Việt và `DECISIONS.md`, không lấy từ OpenKey (D10 (Engine tự viết); `docs/OPENKEY-NOTES.md`).
+- Kết quả mong đợi theo quy tắc chính tả tiếng Việt và `DECISIONS.md`, không lấy từ OpenKey (D10 (Engine tự viết); `docs/research/OPENKEY-NOTES.md`).
 - Ca chéo tính năng bắt buộc có test: mục M1 trong `docs/ROADMAP.md` (từ trùng Anh–Việt, gõ tắt phụ âm × khôi phục) và D20 (Thêm dấu cho từ đã gõ).
 - Đường nóng và API của engine: `docs/ARCHITECTURE.md`, mục DauEngine. Có test hiệu năng; ghi số đo thời gian `handle` mỗi phím.
 - Chạy `swift test --package-path Packages/DauEngine` trước khi báo xong.

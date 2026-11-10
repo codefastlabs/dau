@@ -14,7 +14,7 @@
   - Đưa lên website (M10, Học cách gõ) chỉ kèm các giới hạn ở mục đó (N5 (Chỉ hứa điều đã kiểm chứng)).
 - **Phần B xong (09/11/2026).**
   - Chạy lại trên engine HEAD (sau faff8a3): số ca và số theo lớp không đổi so với 05/11 (10.303 ca; khác: A 435, B 1.493, C 73, D 0, E 0, X 4).
-  - Bảng theo chủ đề cho M10 đã có sẵn ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.3–9.5, không dựng bảng mới.
+  - Bảng theo chủ đề cho M10 đã có sẵn ở `docs/research/external-test-inputs/README.md` mục 9.3–9.5, không dựng bảng mới.
 - **Phần A dừng, không trả lời được bằng dữ liệu công khai (09/11/2026).**
   - Bộ dữ liệu duy nhất tải được công khai, có dấu thời gian từng phím của nhiều người, là bộ 136 triệu lần gõ phím của Đại học Aalto (Dhakal và cộng sự, CHI 2018, https://userinterfaces.aalto.fi/136Mkeystrokes/).
   - Bộ này đo bằng trình duyệt, và chính bài báo ghi độ chính xác của cách đo khoảng 10–15 ms, nên không phân biệt được hai phím cách nhau dưới 10 ms.
@@ -52,8 +52,8 @@ Trạng thái: dừng (xem Hiện trạng).
 
 Trạng thái: xong (xem Hiện trạng).
 
-- `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9 đã so 10.303 ca với đáp án test của 10 bộ gõ khác (có Gõ Nhanh và XKey; XKey có engine chuyển từ OpenKey). Không đo lại.
-- **Kết quả:** bảng khác biệt theo chủ đề (từ tiếng Anh, đặt dấu, uơ/ươ, Backspace…), mỗi chủ đề có ví dụ và số D, đã có ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.3–9.5; trang M10 dùng bảng đó. Chạy lại offline bằng `scripts/research/external-tests/compare.sh`, không chiếm màn hình.
+- `docs/research/external-test-inputs/README.md` mục 9 đã so 10.303 ca với đáp án test của 10 bộ gõ khác (có Gõ Nhanh và XKey; XKey có engine chuyển từ OpenKey). Không đo lại.
+- **Kết quả:** bảng khác biệt theo chủ đề (từ tiếng Anh, đặt dấu, uơ/ươ, Backspace…), mỗi chủ đề có ví dụ và số D, đã có ở `docs/research/external-test-inputs/README.md` mục 9.3–9.5; trang M10 dùng bảng đó. Chạy lại offline bằng `scripts/research/external-tests/compare.sh`, không chiếm màn hình.
 - **Giới hạn:** đáp án test của họ cho biết hành vi engine theo cấu hình test, không phải hành vi trong ứng dụng thật với cài đặt mặc định. Ghi rõ như vậy.
 
 ## Phần C. So với bộ gõ có sẵn của macOS trong ứng dụng thật

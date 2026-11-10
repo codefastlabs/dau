@@ -748,8 +748,8 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
 
 ## 8. Đối chiếu với test của XKey (05/11/2026)
 
-XKey (macOS, MIT, commit ghi ở `docs/research/EXTERNAL-TEST-INPUTS.md` mục 5.10) ghi trong mã rằng engine của họ là bản chuyển engine OpenKey sang Swift, nên test của XKey cho thấy hành vi kiểu OpenKey ở những chỗ XKey chưa đổi.
-Các điểm dưới đây rút từ lần so ca thử (`docs/research/EXTERNAL-TEST-INPUTS.md` mục 9, lớp A: Dấu cố ý khác); khác biệt với các bộ gõ khác chỉ ghi ở tài liệu đó.
+XKey (macOS, MIT, commit ghi ở `docs/research/external-test-inputs/README.md` mục 5.10) ghi trong mã rằng engine của họ là bản chuyển engine OpenKey sang Swift, nên test của XKey cho thấy hành vi kiểu OpenKey ở những chỗ XKey chưa đổi.
+Các điểm dưới đây rút từ lần so ca thử (`docs/research/external-test-inputs/README.md` mục 9, lớp A: Dấu cố ý khác); khác biệt với các bộ gõ khác chỉ ghi ở tài liệu đó.
 Cột OpenKey lấy từ đọc mã (chưa chạy); cột XKey là đáp án trong test của họ; cột Dấu là đầu ra của engine Dấu (chạy 05/11/2026).
 Theo D10, test của XKey chỉ dùng để tìm ca đáng xem lại, không làm đáp án.
 

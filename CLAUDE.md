@@ -18,7 +18,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 | Agent | Phụ trách |
 |---|---|
-| `researcher` | đọc OpenKey, test của các bộ gõ khác, tài liệu Apple; viết `docs/OPENKEY-NOTES.md` và `docs/research/` |
+| `researcher` | đọc OpenKey, test của các bộ gõ khác, tài liệu Apple; viết `docs/research/` (ghi chú OpenKey: `docs/research/OPENKEY-NOTES.md`) |
 | `engine-dev` | `Packages/DauEngine` và test |
 | `imk-dev` | `Apps/DauInputMethod` |
 | `app-ui-dev` | `Apps/Dau` (SwiftUI) |
@@ -31,7 +31,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - Giao song song các việc độc lập (ví dụ M1 engine song song với M0 khung dự án; M4 giao diện song song M3 khi model cài đặt chung đã xong).
 - Mỗi việc xong → kiểm chứng lại bằng lệnh thật → `scripts/check-docs/check.sh` (đổi chuỗi giao diện thì thêm `scripts/check-l10n/check.sh`) → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test hoặc kiểm tra tài liệu đỏ.
 - **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ; bật nguồn nhập liệu, đăng xuất, cấp quyền, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `DECISIONS.md`; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/selftest/settings-window/run.sh`, mở app thật, gõ thử tự động; tác dụng phụ của từng script: `scripts/README.md`): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Hook `.claude/hooks/guard-scripts.sh` chặn các script này; người dùng đồng ý trong chat rồi mới chạy lại với tiền tố `DAU_USER_APPROVED=1`. Trong lúc chờ, tiếp tục các việc không bị chặn.
-- **Giao diện làm theo thứ tự: canvas trước, mã sau.** Sửa artboard trên canvas, cho người dùng xem và duyệt, rồi mới giao sửa mã; mã xong thì đối chiếu lại với artboard. Không sửa giao diện mà artboard chưa có. Người dùng duyệt artboard xong thì lưu các file canvas bằng công cụ Artifact (`read` với `paths`) rồi chạy `scripts/design/render-canvas.sh <thư mục đã lưu>` để cập nhật bản chụp trong `docs/ui/canvas/`, cùng commit với thay đổi.
+- **Giao diện làm theo thứ tự: canvas trước, mã sau.** Sửa artboard trên canvas, cho người dùng xem và duyệt, rồi mới giao sửa mã; mã xong thì đối chiếu lại với artboard. Không sửa giao diện mà artboard chưa có. Người dùng duyệt artboard xong thì lưu các file canvas bằng công cụ Artifact (`read` với `paths`) rồi chạy `scripts/design/render-canvas.sh <thư mục đã lưu>` để cập nhật bản chụp trong `docs/canvas/`, cùng commit với thay đổi.
 - Ngữ cảnh dài: trước khi ngữ cảnh đầy, ghi trạng thái vào `docs/PROGRESS.md` để có thể tiếp tục ở phiên sau.
 
 ## Nguồn chuẩn
@@ -64,7 +64,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 ## OpenKey là tài liệu tham khảo, không phải đáp án
 
 - Khi cần hiểu tường tận một tính năng (quy tắc đặt dấu, chính tả, khôi phục, gõ tắt…), clone OpenKey **ra ngoài repo** (ví dụ `/tmp/OpenKey`) và đọc mã nguồn, chủ yếu `Sources/OpenKey/engine/`.
-- Ghi lại hiểu biết **bằng lời của mình** vào `docs/OPENKEY-NOTES.md`: tính năng, hành vi, ca biên, lỗi phát hiện được, và Dấu làm hay không làm (dẫn số quyết định).
+- Ghi lại hiểu biết **bằng lời của mình** vào `docs/research/OPENKEY-NOTES.md`: tính năng, hành vi, ca biên, lỗi phát hiện được, và Dấu làm hay không làm (dẫn số quyết định).
 - Kết quả mong đợi trong test viết theo quy tắc chính tả tiếng Việt và `DECISIONS.md`, không lấy từ kết quả chạy OpenKey. Chỗ nào Dấu cố ý khác OpenKey thì ghi rõ trong `OPENKEY-NOTES.md`.
 
 ## Cách làm việc đã rút ra
@@ -77,7 +77,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Tính offline trước:** câu hỏi nào trả lời được bằng mô phỏng, test đơn vị hay số đã có thì không chạy app thật. Chạy app thật chỉ cho phần không mô phỏng được, ít ca, một lượt. Mỗi bài test phải đáng với cái giá của nó; hỏi điều này trước khi xây công cụ để làm một bài test qua.
 - **Giao việc gọn:** một tính năng một bản giao việc, phủ mọi phần nó chạm tới (cửa sổ, sheet, tài liệu, canvas). Đo một lần rồi dùng lại. Việc nhỏ (vài dòng tài liệu, một artboard) phiên chính tự làm. Việc đo, viết tài liệu, sửa canvas dùng model rẻ hơn.
 - **Làm quân sư, không làm người chuyển lời:** gặp thứ thừa, vô ích hay sai trong tài liệu (việc "chờ người dùng" về chi tiết vặt, phép đo không ai cần, câu lỗi thời) thì xử lý ngay trong lượt đó: xoá, gộp, hoặc chốt theo nguyên tắc đã có, rồi báo ngắn đã làm gì. Chỉ đưa cho người dùng những quyết định thật sự đổi sản phẩm hoặc cần quyền của họ, kèm đề xuất. Không biến một việc dọn dẹp thành việc mới cho người dùng.
-- **Không để lệch, dù nhỏ:** hai bản tiếng Anh và tiếng Việt phải nói cùng một ý; mã, catalog, canvas (cả bản chụp `docs/ui/canvas/`) và tài liệu phải khớp nhau. Thấy lệch thì sửa hết các nơi ngay trong lượt đó, không ghi "lệch nhỏ, giữ nguyên".
+- **Không để lệch, dù nhỏ:** hai bản tiếng Anh và tiếng Việt phải nói cùng một ý; mã, catalog, canvas (cả bản chụp `docs/canvas/`) và tài liệu phải khớp nhau. Thấy lệch thì sửa hết các nơi ngay trong lượt đó, không ghi "lệch nhỏ, giữ nguyên".
 - **Phản biện trước khi làm:** với mọi lựa chọn của người dùng, kể cả khi họ bấm nút duyệt đề xuất của phiên chính, nêu ngắn gọn: có cần không, có đúng không (N5), tốn gì, và phương án không đổi gì; thống nhất rồi mới làm.
 - **Câu hỏi không phải quyết định:** tin nhắn cân nhắc giữa các phương án được trả lời bằng đề xuất rồi chờ người dùng chọn. Chưa chọn thì không sửa `DECISIONS.md` hay canvas.
 - **Chốt theo số đo đã có:** số máy hay số lượt đo ít không phải lý do hoãn chốt một tính năng hay quyết định, và không ghi quyết định là "tạm" hay "chờ đo thêm" vì lý do đó. Phạm vi phép đo (máy nào, mấy lượt) ghi cạnh con số; đo thêm mà số mới nói khác thì sửa quyết định.
@@ -86,7 +86,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Đo độ đúng khi gõ:** đối chứng là bộ gõ tiếng Việt khác trong cùng điều kiện (Telex của Apple), không phải bàn phím U.S. Chuỗi thử gõ như người dùng thật: bỏ dấu tự do, đổi và xoá dấu, ⌫ giữa từ, thêm dấu cho từ đã gõ, từ tiếng Anh; không chỉ Telex thứ tự chuẩn. Biết chắc phím vào ô nào trước khi tin "đạt", và biết chắc bộ gõ nào đang xử lý phím trong ô đó: nguồn do macOS báo hay biểu tượng trên thanh menu chưa đủ, bộ gõ đối chứng phải được chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô gõ đã có focus, không bằng API từ tiến trình của script (`typing/run.sh`, `cycle_to_source`), và chỉ chuyển khi nguồn cần gõ chưa phải nguồn hiện tại; ô đối chứng ra nguyên chuỗi phím là đo hỏng, không phải kết quả. Bước kiểm tự nó cũng là phép đo: phím gửi dồn, chữ gạch chân chưa chốt, hay một từ thử không phải tiếng Việt đều cho kết quả sai về bộ gõ. Chạy thẳng ô phân biệt được các giả thuyết, kèm đối chứng, thay vì cả ma trận. Mọi thứ cần để dựng lại một lượt đo (chuỗi phím, đáp án, lệnh) nằm trong repo, không trong thư mục tạm.
 - **Sửa lỗi trước, đường lui sau:** gặp lỗi của Dấu thì đề xuất cách sửa trước; đường lui (như gạch chân, D13 (Gạch chân là đường lui cuối cùng)) chỉ bàn khi sửa không đạt.
 - **Tự phản biện trước khi giao:** kế hoạch, bản giao việc, bản tóm tắt, commit đều tự soát trước khi đưa người dùng: chỉ tới thứ có thật trong repo, không tự mâu thuẫn, không nói quá số đo, không chép lại điều đã ghi ở nơi khác.
-- **Giao diện:** đọc tài liệu Apple và HIG trước, ghi API được thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API, và ghi lý do. Trước khi cho người dùng xem bản build giao diện, chạy ma trận cửa sổ thật và `docs/UI-CHECKS.md`, tự xem ảnh. Giao việc giao diện thì đưa file nguồn artboard (`docs/ui/canvas/src/`); artboard thắng bản giao việc. Chiều cao artboard đo từ bản dựng, đệm đáy 40 px như đệm đầu, không ước.
+- **Giao diện:** đọc tài liệu Apple và HIG trước, ghi API được thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API, và ghi lý do. Trước khi cho người dùng xem bản build giao diện, chạy ma trận cửa sổ thật và `docs/UI-CHECKS.md`, tự xem ảnh. Giao việc giao diện thì đưa file nguồn artboard (`docs/canvas/src/`); artboard thắng bản giao việc. Chiều cao artboard đo từ bản dựng, đệm đáy 40 px như đệm đầu, không ước.
 - **Hướng dẫn bấm cho người dùng:** dùng đúng nhãn macOS đang hiện trên máy họ (đã thấy trên màn hình hoặc ảnh chụp); nhãn nào chưa kiểm thì nói rõ.
 - **Repo là công khai:** ghi quyết định và yêu cầu bằng lời trung tính, không trích lời, giọng hay nhận xét của người dùng. Không ghi máy nào ở đâu hay của ai, tên máy, tên tài khoản hay nơi làm việc; các máy phát triển gọi theo chip (máy M1, máy M3 Max). Nhận xét về cách phiên chính làm việc không ghi vào repo. Không đặt giới hạn kích thước hay độ dài cho tài liệu; giữ tài liệu gọn bằng cách sắp xếp nội dung.
 - **Sửa commit chưa push thì gộp vào nó** (`git commit --fixup` rồi `git rebase --autosquash`, hoặc `git reset --soft` khi là các commit cuối), không thêm commit "sửa lại"; lịch sử không giữ câu sai đã được sửa trước khi push.
@@ -102,7 +102,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - `scripts/dev/install-app.sh` — build và cài Dấu.app bản Release vào `/Applications` (đăng ký LaunchServices, thoát rồi mở lại app đang chạy); `--with-input-method` cài cả bộ gõ.
 - `swift test --package-path Packages/DauEngine` — test engine.
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings` — test của app chủ (giao diện dựng từ `Apps/Dau/Sources`).
-- `scripts/check-docs/check.sh` — kiểm tài liệu lệch: đường dẫn, số dòng, số D/N và tên ở lần dẫn đầu, cách nói đã bị thay, số đo giao diện, mã commit, quy ước đầu script, bảng hook, bảng thư mục `scripts/`, tuỳ chọn script được dẫn (danh sách đủ ở đầu script).
+- `scripts/check-docs/check.sh` — kiểm tài liệu lệch: đường dẫn (cả `docs/research/`), liên kết tương đối, mục lục `docs/README.md`, tên kiểu trong `ARCHITECTURE.md`, số dòng, số D/N và tên ở lần dẫn đầu, cách nói đã bị thay, số đo giao diện, mã commit, quy ước đầu script, bảng hook, bảng thư mục `scripts/`, tuỳ chọn script được dẫn (danh sách đủ ở đầu script); `.githooks/pre-commit` chạy nó trước mỗi commit khi đã bật bằng `git config core.hooksPath .githooks`.
 - `scripts/selftest/typing/run.sh` — gõ thử trong app thật bằng Dấu hoặc nguồn khác (`--source`), chiếm màn hình.
-- `scripts/design/render-canvas.sh <thư mục>` — chụp canvas thành bản trong `docs/ui/canvas/` (Chrome chạy ẩn, cần mạng cho phông).
+- `scripts/design/render-canvas.sh <thư mục>` — chụp canvas thành bản trong `docs/canvas/` (Chrome chạy ẩn, cần mạng cho phông).
 - `scripts/check-l10n/check.sh` — kiểm String Catalog: ngôn ngữ gốc `en`, mọi khoá có bản `en` và `vi` (D41); truyền thư mục build để so khoá trong mã với catalog.

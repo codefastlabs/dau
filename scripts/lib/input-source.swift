@@ -13,7 +13,7 @@
 //                                    those entries left out of array <key>
 //
 // Trust: the TIS "enabled" flag read from a fresh process can be wrong (it said enabled
-// after System Settings had removed Dấu; docs/research/M5-INSTALL.md 2.6). TIS is
+// after System Settings had removed Dấu; docs/research/INPUT-METHOD-INSTALL.md 2.6). TIS is
 // only trusted for the CURRENT source (`current`). For every third-party source (ID not
 // starting with com.apple.) `enabled` and `select` also require an entry in
 // com.apple.inputsources › AppleEnabledThirdPartyInputSources, the record System Settings
@@ -53,7 +53,7 @@ func enabledSources() -> [TISInputSource] {
 /// that has one, else its "Bundle ID" (the same IDs TIS uses for those sources). An input
 /// method that has modes is recorded twice, the method itself ("Keyboard Input Method",
 /// not select-capable) and each mode; only the modes are selectable, so the method entry
-/// is left out then (Dấu added with "+" records both; docs/research/M5-INSTALL.md 2.6).
+/// is left out then (Dấu added with "+" records both; docs/research/INPUT-METHOD-INSTALL.md 2.6).
 func recordedSourceIDs() -> Set<String> {
     let value = CFPreferencesCopyAppValue("AppleEnabledThirdPartyInputSources" as CFString,
                                           "com.apple.inputsources" as CFString)

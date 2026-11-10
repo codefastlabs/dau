@@ -6,7 +6,7 @@ import notify
 /// Trash (uninstall). The host posts a Darwin notification; the input method commits
 /// the word it shows (underline mode) and exits, and macOS launches the new bundle at
 /// the next key. No signal to any system process (`imklaunchagent` and the like are
-/// never touched, docs/research/M5-INSTALL.md section 3).
+/// never touched, docs/research/INPUT-METHOD-INSTALL.md section 3).
 ///
 /// The name is derived from the input method's bundle ID, which never changes between
 /// versions (D37), so an old input method hears a new host app.

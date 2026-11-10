@@ -18,7 +18,7 @@ Bộ gõ tiếng Việt cho macOS, mã nguồn mở (GPLv3), miễn phí trọn 
 | Người muốn đóng góp | [CONTRIBUTING.md](CONTRIBUTING.md), rồi `docs/ARCHITECTURE.md` |
 | Người duy trì, bắt đầu một phiên làm việc (kể cả trên máy khác) | `docs/PROGRESS.md`, rồi thứ tự đọc trong [CLAUDE.md](CLAUDE.md) |
 | AI agent (Claude Code) | [CLAUDE.md](CLAUDE.md): thứ tự đọc, cách điều phối, các luật làm việc đã rút ra |
-| Người xem thiết kế | [`docs/ui/canvas/README.md`](docs/ui/canvas/README.md): ảnh chụp mọi màn hình đã duyệt |
+| Người xem thiết kế | [`docs/canvas/README.md`](docs/canvas/README.md): ảnh chụp mọi màn hình đã duyệt |
 
 **Máy mới:** chạy `scripts/dev/doctor.sh` trước. Lệnh này không cài hay đổi gì trên hệ thống (chỉ ghi vào `build/` và `.build/`, dòng `# Side effects: builds` trong script) và liệt kê máy còn thiếu gì để build, test và chạy Dấu (Xcode, XcodeGen, chứng chỉ ký, bản đã cài, nguồn nhập liệu) kèm lệnh sửa từng mục. Sự cố hay gặp khi phát triển: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md). Mục lục mọi tài liệu: [`docs/README.md`](docs/README.md).
 

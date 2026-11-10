@@ -16,7 +16,7 @@ Thư mục theo mục đích:
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
 | `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`) |
-| `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/ui/canvas/`) |
+| `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/canvas/`) |
 
 Mỗi script tự mô tả ở phần đầu file: dòng chú thích đầu, `# Usage:` và `# Side effects:`. Không có bảng liệt kê riêng.
 
@@ -97,3 +97,5 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 - `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu; đếm và lọc mục của Dấu trong plist cho `scripts/dev/clean-dau.sh`) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh`, `scripts/selftest/load/run.sh`, `scripts/selftest/load/heavy.sh`, `scripts/dev/doctor.sh` và `scripts/dev/clean-dau.sh` biên dịch qua `scripts/lib/swift-tool.sh`; hưởng tác dụng phụ của script gọi nó.
 - Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift` (cả `scripts/selftest/load/run.sh` dùng), `scripts/check-docs/doc-check.swift`, `scripts/design/canvas-index.swift`, `scripts/research/compare-ims/cases.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
 - `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.
+- `scripts/check-docs/not-ours.txt`: đường dẫn tài liệu được dẫn dù không phải file của repo (file của dự án khác, công cụ đã xoá, file mỗi máy tự tạo), do `check.sh` đọc.
+- `scripts/check-docs/system-names.txt`: tên của Apple xuất hiện trong `docs/ARCHITECTURE.md` (không có trong mã của Dấu), do `check.sh` đọc.

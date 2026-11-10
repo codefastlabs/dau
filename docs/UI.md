@@ -4,10 +4,10 @@ Mỗi phần của giao diện có một nguồn:
 
 - **Trông như thế nào:** canvas mockup https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln (mục, thứ tự, icon, trạng thái).
   - Canvas trên claude.ai là nơi sửa thiết kế. Sửa canvas trước mỗi thay đổi giao diện, người dùng duyệt rồi mới sửa mã (D9 (Giao diện)).
-  - `docs/ui/canvas` là bản chụp chỉ đọc của canvas trong repo, sinh lại bằng `scripts/design/render-canvas.sh`:
-    - `docs/ui/canvas/README.md`: mục lục.
-    - `docs/ui/canvas/<Tên>.png`: ảnh từng artboard.
-    - `docs/ui/canvas/src/<Tên>.dc.html`: nguồn của artboard (agent đọc file này).
+  - `docs/canvas` là bản chụp chỉ đọc của canvas trong repo, sinh lại bằng `scripts/design/render-canvas.sh`:
+    - `docs/canvas/README.md`: mục lục.
+    - `docs/canvas/<Tên>.png`: ảnh từng artboard.
+    - `docs/canvas/src/<Tên>.dc.html`: nguồn của artboard (agent đọc file này).
   - Canvas có hai trang. "Thiết kế" là nơi sửa. "Lưu trữ 06/11 (không sửa)" giữ mockup gốc trước khi cập nhật theo giao diện đã dựng, chỉ để đối chiếu (artboard tên `Archive-…`).
 - **Bố cục, khoảng cách, control:** System Settings của macOS hiện hành (D9).
   - Số đo ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md`.
@@ -24,7 +24,7 @@ Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho
 
 ## Menu nguồn đầu vào (hệ thống vẽ)
 
-Artboard: [Menu nguồn đầu vào](ui/canvas/Main.png).
+Artboard: [Menu nguồn đầu vào](canvas/Main.png).
 
 - Không có status item riêng.
 - Dấu có một input mode (D2 (Chuyển Việt/Anh)). Gõ tiếng Anh bằng nguồn U.S. (hoặc nguồn tiếng Anh khác) của người dùng.
@@ -55,12 +55,12 @@ Khung chung:
 
 ### Bước 1, tắt bộ gõ cũ
 
-Artboard: [bước 1](ui/canvas/OnboardingConflict.png).
+Artboard: [bước 1](canvas/OnboardingConflict.png).
 
-- Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/M5-INSTALL.md` mục 5). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
+- Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong `docs/research/INPUT-METHOD-INSTALL.md` mục 5). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
 - Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng. App chưa kiểm thì ghi chung "Thoát <tên>" và đường dẫn Mục đăng nhập (N5).
 - Tự kiểm tra lại khi cửa sổ được kích hoạt. Cho phép bỏ qua.
-- **Đã tắt bộ gõ cũ** ([`OnboardingConflictDone`](ui/canvas/OnboardingConflictDone.png)): màn bước 1 khi người dùng bấm "Quay lại" ở bước 2 mà không còn bộ gõ cũ nào chạy.
+- **Đã tắt bộ gõ cũ** ([`OnboardingConflictDone`](canvas/OnboardingConflictDone.png)): màn bước 1 khi người dùng bấm "Quay lại" ở bước 2 mà không còn bộ gõ cũ nào chạy.
   - Thẻ liệt kê các bộ gõ cũ đã phát hiện trong lượt onboarding này, mỗi bộ gõ có nhãn xanh "Đã tắt".
   - Nút duy nhất "Tiếp tục" sang bước 2; thanh bước vẫn ở bước 1.
   - Có bộ gõ cũ chạy lại (kiểm tra lại khi cửa sổ được kích hoạt) thì hiện lại màn tắt bộ gõ cũ.
@@ -69,7 +69,7 @@ Artboard: [bước 1](ui/canvas/OnboardingConflict.png).
 
 - Chép bộ gõ vào `~/Library/Input Methods` và đăng ký.
 - Chỉ bật nguồn đầu vào khi người dùng bấm "Bật Dấu" (N4 (Không tự đổi cài đặt hệ thống), D37 (Cài đặt bộ gõ)).
-- macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn: [`OnboardingEnable`](ui/canvas/OnboardingEnable.png), [`OnboardingEnableNotes`](ui/canvas/OnboardingEnableNotes.png), [`OnboardingEnableWaiting`](ui/canvas/OnboardingEnableWaiting.png), [`OnboardingEnableDone`](ui/canvas/OnboardingEnableDone.png), [`OnboardingEnableDoneNoShortcut`](ui/canvas/OnboardingEnableDoneNoShortcut.png), [`OnboardingEnableFailed`](ui/canvas/OnboardingEnableFailed.png), [`OnboardingEnableError`](ui/canvas/OnboardingEnableError.png).
+- macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn: [`OnboardingEnable`](canvas/OnboardingEnable.png), [`OnboardingEnableNotes`](canvas/OnboardingEnableNotes.png), [`OnboardingEnableWaiting`](canvas/OnboardingEnableWaiting.png), [`OnboardingEnableDone`](canvas/OnboardingEnableDone.png), [`OnboardingEnableDoneNoShortcut`](canvas/OnboardingEnableDoneNoShortcut.png), [`OnboardingEnableFailed`](canvas/OnboardingEnableFailed.png), [`OnboardingEnableError`](canvas/OnboardingEnableError.png).
 - Tên màn hình của macOS viết tiếng Anh như trên máy người dùng (System Settings › Keyboard › Input Sources).
 - Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5).
 - Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
@@ -88,37 +88,37 @@ Artboard: [bước 1](ui/canvas/OnboardingConflict.png).
 
 - Vẽ bằng keycap như trang Gõ phím, mỗi phím một keycap, đọc từ cài đặt hệ thống (N5).
 - Không có dòng phụ nào nói phím tắt "hiện đúng trên máy".
-- Câu gợi ý ở bước 3 dùng keycap nhỏ theo cỡ chữ gợi ý ([`OnboardingNotSelected`](ui/canvas/OnboardingNotSelected.png)).
+- Câu gợi ý ở bước 3 dùng keycap nhỏ theo cỡ chữ gợi ý ([`OnboardingNotSelected`](canvas/OnboardingNotSelected.png)).
 - VoiceOver đọc cả câu, phím tắt viết bằng chữ.
 
-**Trước khi bấm** ([`OnboardingEnable`](ui/canvas/OnboardingEnable.png)):
+**Trước khi bấm** ([`OnboardingEnable`](canvas/OnboardingEnable.png)):
 
 - Thẻ "Sau khi bật, bạn sẽ thấy".
 - Thẻ nói trước điều sắp xảy ra (System Settings đóng rồi mở lại, hộp thoại hỏi), kèm hình thu nhỏ hộp thoại của macOS (minh hoạ, ẩn với VoiceOver).
 - Phím tắt không đọc được thì hàng phím tắt là một dòng nói vậy kèm nút mở System Settings, không có keycap rỗng.
 - Nhắc nhẹ (biểu tượng thông tin) khi có nguồn tiếng Việt kiểu IMK khác đang bật (D14), không chặn.
 
-**Đang chờ** ([`OnboardingEnableWaiting`](ui/canvas/OnboardingEnableWaiting.png)): trong lúc `enable()` chờ mục lưu của Dấu.
+**Đang chờ** ([`OnboardingEnableWaiting`](canvas/OnboardingEnableWaiting.png)): trong lúc `enable()` chờ mục lưu của Dấu.
 
 - Thẻ trạng thái có vòng xoay.
 - "Thử lại" huỷ lần chờ đang chạy rồi bật lại (macOS hỏi lại).
 - "Quay lại" (nếu có, xem trên) cũng huỷ, không để lần chờ nào chạy tiếp.
 - Màn tự chuyển sang "đã bật" khi macOS ghi mục.
 
-**Đã bật** ([`OnboardingEnableDone`](ui/canvas/OnboardingEnableDone.png)): nút duy nhất "Tiếp tục".
+**Đã bật** ([`OnboardingEnableDone`](canvas/OnboardingEnableDone.png)): nút duy nhất "Tiếp tục".
 
 - Câu chọn Dấu nêu **phím tắt thật** đọc từ cài đặt hệ thống, không viết cứng (N5), vẽ bằng keycap.
-- Chưa đặt phím tắt thì nói vậy và có nút đặt phím tắt trong System Settings ([`OnboardingEnableDoneNoShortcut`](ui/canvas/OnboardingEnableDoneNoShortcut.png)).
+- Chưa đặt phím tắt thì nói vậy và có nút đặt phím tắt trong System Settings ([`OnboardingEnableDoneNoShortcut`](canvas/OnboardingEnableDoneNoShortcut.png)).
 - Không đọc được phím tắt thì chỉ nói chọn trong menu nhập liệu, không khẳng định gì về phím tắt, kèm cùng nút.
 - Dưới thẻ có một dòng gợi ý: một ứng dụng chưa chọn được Dấu thì đăng xuất ( › Log Out) rồi đăng nhập lại một lần (D37).
 
-**Chưa bật được** ([`OnboardingEnableFailed`](ui/canvas/OnboardingEnableFailed.png)): hết hạn chờ, hoặc macOS không liệt kê Dấu.
+**Chưa bật được** ([`OnboardingEnableFailed`](canvas/OnboardingEnableFailed.png)): hết hạn chờ, hoặc macOS không liệt kê Dấu.
 
 - Ba cách theo thứ tự: Thử lại; tự thêm trong System Settings; đăng xuất một lần.
 - Không tự mở Cài đặt, có nút "Mở System Settings".
 - Nếu sau đó Dấu xuất hiện (người dùng tự thêm), cửa sổ nhận ra và sang "đã bật".
 
-**Lỗi cài** ([`OnboardingEnableError`](ui/canvas/OnboardingEnableError.png)): lỗi chép, kiểm chữ ký, đăng ký.
+**Lỗi cài** ([`OnboardingEnableError`](canvas/OnboardingEnableError.png)): lỗi chép, kiểm chữ ký, đăng ký.
 
 - Màn riêng "Chưa cài được Dấu", hai cách xử lý.
 - Dòng "Chi tiết" là mô tả thật của lỗi (chọn được để chép).
@@ -126,14 +126,14 @@ Artboard: [bước 1](ui/canvas/OnboardingConflict.png).
 
 ### Bước 3, chọn kiểu gõ và gõ thử
 
-Artboard: [bước 3](ui/canvas/Onboarding.png), [Dấu chưa là nguồn đang dùng](ui/canvas/OnboardingNotSelected.png).
+Artboard: [bước 3](canvas/Onboarding.png), [Dấu chưa là nguồn đang dùng](canvas/OnboardingNotSelected.png).
 
 - Ví dụ gõ thử phải đúng quy tắc của kiểu gõ đang chọn.
 - Dấu chưa phải nguồn đang dùng thì có câu gợi ý cách chọn Dấu, kèm phím tắt thật bằng keycap nếu đọc được (N5).
 
 ## Cửa sổ Cài đặt
 
-Artboard: các artboard "Cài đặt – …" ([Gõ phím](ui/canvas/SettingsTyping.png), [Thông minh](ui/canvas/SettingsSmart.png), [Ứng dụng](ui/canvas/SettingsApps.png), [Cập nhật & hỗ trợ](ui/canvas/SettingsAbout.png)).
+Artboard: các artboard "Cài đặt – …" ([Gõ phím](canvas/SettingsTyping.png), [Thông minh](canvas/SettingsSmart.png), [Ứng dụng](canvas/SettingsApps.png), [Cập nhật & hỗ trợ](canvas/SettingsAbout.png)).
 
 - Thanh công cụ có cụm Lùi/Tiến trước tiêu đề trang, như System Settings.
   - Có lịch sử các mục đã xem.
@@ -143,7 +143,7 @@ Artboard: các artboard "Cài đặt – …" ([Gõ phím](ui/canvas/SettingsTyp
   - không kéo rộng hẹp, không thu gọn;
   - menu View không có mục ẩn/hiện sidebar.
 - Edit › Find › Find… (⌘F) đưa con trỏ vào ô tìm của sidebar (D9).
-- Ô tìm của sidebar khớp tên mục và mọi chữ nhìn thấy trong mục (tiêu đề hàng, tiêu đề nhóm, lựa chọn, nút), không phân biệt hoa thường, dấu, "đ"/"d" ([`SettingsSearchEmpty`](ui/canvas/SettingsSearchEmpty.png)).
+- Ô tìm của sidebar khớp tên mục và mọi chữ nhìn thấy trong mục (tiêu đề hàng, tiêu đề nhóm, lựa chọn, nút), không phân biệt hoa thường, dấu, "đ"/"d" ([`SettingsSearchEmpty`](canvas/SettingsSearchEmpty.png)).
   - Không mục nào khớp thì sidebar hiện trạng thái trống của hệ thống, trang đang mở giữ nguyên.
 - Mô tả của một nhóm nằm dưới tiêu đề nhóm, trên thẻ (như System Settings).
 
@@ -157,7 +157,7 @@ Artboard: các artboard "Cài đặt – …" ([Gõ phím](ui/canvas/SettingsTyp
 
 ### Thông minh
 
-Artboard: [Thông minh](ui/canvas/SettingsSmart.png), [mở "Nâng cao"](ui/canvas/SettingsSmartAdvanced.png).
+Artboard: [Thông minh](canvas/SettingsSmart.png), [mở "Nâng cao"](canvas/SettingsSmartAdvanced.png).
 
 - Tự khôi phục từ không phải tiếng Việt (D4 (Từ nước ngoài)).
   - Ví dụ trong ghi chú phải khớp hành vi engine: từ trùng thì tiếng Việt thắng, gõ đúp phím dấu để giữ chữ gốc.
@@ -171,7 +171,7 @@ Artboard: [Thông minh](ui/canvas/SettingsSmart.png), [mở "Nâng cao"](ui/canv
 
 ### Ứng dụng
 
-Artboard: [Ứng dụng](ui/canvas/SettingsApps.png), [chưa có quy tắc riêng](ui/canvas/SettingsAppsEmpty.png).
+Artboard: [Ứng dụng](canvas/SettingsApps.png), [chưa có quy tắc riêng](canvas/SettingsAppsEmpty.png).
 
 - "Nhớ nguồn đầu vào theo từng cửa sổ" là tuỳ chọn của macOS.
   - Dấu chỉ đọc trạng thái, không ghi.
@@ -189,9 +189,9 @@ Artboard: [Ứng dụng](ui/canvas/SettingsApps.png), [chưa có quy tắc riên
 
 ### Cập nhật & hỗ trợ
 
-Artboard: [Cập nhật & hỗ trợ](ui/canvas/SettingsAbout.png).
+Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 
-- **Hàng "Ngôn ngữ"** (D41; artboard [theo macOS](ui/canvas/SettingsLanguage.png), [Dấu đặt riêng English, macOS tiếng Việt](ui/canvas/SettingsLanguageEn.png), [đã đổi sang English, chưa mở lại Dấu](ui/canvas/SettingsLanguagePending.png)):
+- **Hàng "Ngôn ngữ"** (D41; artboard [theo macOS](canvas/SettingsLanguage.png), [Dấu đặt riêng English, macOS tiếng Việt](canvas/SettingsLanguageEn.png), [đã đổi sang English, chưa mở lại Dấu](canvas/SettingsLanguagePending.png)):
   - Thẻ riêng ngay dưới thẻ phiên bản. Dấu chỉ đọc, không ghi.
   - Giá trị là ngôn ngữ Dấu đang hiện, viết bằng chính ngôn ngữ đó.
   - Câu phụ có hai dạng:
@@ -206,7 +206,7 @@ Artboard: [Cập nhật & hỗ trợ](ui/canvas/SettingsAbout.png).
   - Tên mục của macOS theo D38.
   - Không nhắc menu bộ gõ khi chưa đo (câu hỏi mở về bộ gõ, N5).
 - Trạng thái kiểm tra cập nhật và cách cài bản mới để ô trống cho tới M7 (Phát hành) (N5).
-- **Bản phát triển** (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện); artboard [bản phát triển](ui/canvas/SettingsAboutDev.png)):
+- **Bản phát triển** (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện); artboard [bản phát triển](canvas/SettingsAboutDev.png)):
   - thẻ đầu trang dùng biểu tượng bản phát triển và thêm dòng "Bản phát triển · Debug" (hoặc "· Release");
   - dòng phiên bản cuối sidebar thêm "· Debug"/"· Release";
   - bản chính thức không có dòng này; Beta hiện số phiên bản dạng "1.3 beta 2".
@@ -215,14 +215,14 @@ Artboard: [Cập nhật & hỗ trợ](ui/canvas/SettingsAbout.png).
 
 ### Sheet thêm quy tắc (nút +)
 
-Artboard: [thêm quy tắc](ui/canvas/SettingsAppsAdd.png), [chưa chọn](ui/canvas/SettingsAppsAddEmpty.png).
+Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/SettingsAppsAddEmpty.png).
 
 - Danh sách: ứng dụng chưa có quy tắc đã lưu. App trong danh sách tương thích mang nhãn "Đề xuất" và giữ nhãn khi thêm.
 - "Thêm" chỉ bật khi ứng dụng đang chọn còn trong danh sách đang lọc. Gõ tìm làm ẩn ứng dụng đang chọn thì bỏ chọn.
 
 ## Trạng thái bổ sung
 
-- **Dấu chưa được bật** (người dùng gỡ khỏi nguồn đầu vào; artboard [`SettingsNotEnabled`](ui/canvas/SettingsNotEnabled.png), [`SettingsBannerStates`](ui/canvas/SettingsBannerStates.png)): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4).
+- **Dấu chưa được bật** (người dùng gỡ khỏi nguồn đầu vào; artboard [`SettingsNotEnabled`](canvas/SettingsNotEnabled.png), [`SettingsBannerStates`](canvas/SettingsBannerStates.png)): banner đầu mọi mục Cài đặt. "Bật lại" bật Dấu rồi đọc lại trạng thái (N4).
   - Đang chờ người dùng bấm Allow: banner có vòng xoay; "Thử lại" huỷ lần chờ rồi bật lại.
   - Bật được:
     - banner xác nhận nêu phím tắt thật (như onboarding, N5; không đọc được thì không nêu);
@@ -230,11 +230,11 @@ Artboard: [thêm quy tắc](ui/canvas/SettingsAppsAdd.png), [chưa chọn](ui/ca
     - không có Hoàn tác (app không tự tắt được Dấu).
   - macOS vẫn để tắt hoặc lỗi: banner nói chưa bật được, kèm cách tự thêm trong System Settings và "Thử lại" (không tự mở System Settings).
   - Chưa cài hoặc macOS chưa liệt kê Dấu: mở cửa sổ thiết lập.
-- **Bộ gõ trên máy đã bị thay** (artboard [`SettingsTampered`](ui/canvas/SettingsTampered.png)): chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước.
+- **Bộ gõ trên máy đã bị thay** (artboard [`SettingsTampered`](canvas/SettingsTampered.png)): chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước.
   - Banner đỏ đầu mọi mục Cài đặt, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên.
   - Cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
-- **Chế độ tối** ([`SettingsDark`](ui/canvas/SettingsDark.png)): Cài đặt và onboarding đều có (màu hệ thống).
-- **Gỡ cài đặt** (D16 (Bảo trì và gỡ cài đặt); artboard [`ConfirmDialogs`](ui/canvas/ConfirmDialogs.png), [`UninstallRemoveSource`](ui/canvas/UninstallRemoveSource.png)):
+- **Chế độ tối** ([`SettingsDark`](canvas/SettingsDark.png)): Cài đặt và onboarding đều có (màu hệ thống).
+- **Gỡ cài đặt** (D16 (Bảo trì và gỡ cài đặt); artboard [`ConfirmDialogs`](canvas/ConfirmDialogs.png), [`UninstallRemoveSource`](canvas/UninstallRemoveSource.png)):
   - macOS chỉ cho người dùng tự bỏ một nguồn đầu vào, nên gỡ có ba bước.
   - Dấu không có trong nguồn đầu vào (chưa bật, hoặc người dùng đã tự bỏ) thì sau alert xác nhận gỡ luôn, không mở System Settings, không hiện sheet (D16).
   - Tên Thùng rác trong alert và sheet theo ngôn ngữ macOS (D38).
@@ -253,7 +253,7 @@ Artboard: [thêm quy tắc](ui/canvas/SettingsAppsAdd.png), [chưa chọn](ui/ca
   - App không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác.
   - Bộ gõ không bao giờ bị xoá khi mục lưu còn: bundle mất trước thì mục còn lại không gỡ được.
 - **Xác nhận quay về bản trước:** D19 (Quay về bản trước).
-- **Khi gõ trong ứng dụng** (artboard [`TypingStates`](ui/canvas/TypingStates.png)):
+- **Khi gõ trong ứng dụng** (artboard [`TypingStates`](canvas/TypingStates.png)):
   - không gạch chân (mặc định);
   - có gạch chân (từ đang gõ được gạch, chốt khi kết thúc từ);
   - gõ tiếng Anh bằng U.S. (chỉ báo của hệ thống);
@@ -263,7 +263,7 @@ Artboard: [thêm quy tắc](ui/canvas/SettingsAppsAdd.png), [chưa chọn](ui/ca
 
 ### Thẻ cập nhật (M7)
 
-Artboard: [Trạng thái thẻ cập nhật](ui/canvas/UpdateStates.png).
+Artboard: [Trạng thái thẻ cập nhật](canvas/UpdateStates.png).
 
 Sáu trạng thái:
 
@@ -278,7 +278,7 @@ Mọi câu hứa ở đây phải kiểm chứng ở M7 (N5).
 
 ### Thông báo cập nhật (M7)
 
-Artboard: [Thông báo cập nhật](ui/canvas/Update.png).
+Artboard: [Thông báo cập nhật](canvas/Update.png).
 
 - Icon app, "Đã có Dấu x.y.z", mô tả, "Có gì mới".
 - Dòng "Đã xác minh chữ ký số của bản cập nhật".
@@ -287,7 +287,7 @@ Artboard: [Thông báo cập nhật](ui/canvas/Update.png).
 
 ### Báo ứng dụng gõ lỗi (M7)
 
-Artboard: [Báo ứng dụng gõ lỗi](ui/canvas/Report.png).
+Artboard: [Báo ứng dụng gõ lỗi](canvas/Report.png).
 
 - Đầu sheet có ô gợi ý "Ứng dụng không chọn được Dấu?": đăng xuất rồi đăng nhập lại một lần; thoát rồi mở lại ứng dụng thì chưa đủ; vẫn lỗi thì gửi báo lỗi (D37).
 - Các trường: Ứng dụng (tự điền), Trang web (không bắt buộc), Loại lỗi (Mất chữ | Lặp chữ | Sai dấu | Khác), Ví dụ đã gõ.
@@ -297,7 +297,7 @@ Artboard: [Báo ứng dụng gõ lỗi](ui/canvas/Report.png).
 
 ### Trang tải về (M8, Website)
 
-Artboard: [máy tính](ui/canvas/Landing.png), [điện thoại](ui/canvas/LandingMobile.png).
+Artboard: [máy tính](canvas/Landing.png), [điện thoại](canvas/LandingMobile.png).
 
 - Phông Be Vietnam Pro, nền Giấy, màu nhấn Mực (D25, `docs/BRAND.md`).
 - Một mã nguồn responsive cho máy tính và điện thoại.

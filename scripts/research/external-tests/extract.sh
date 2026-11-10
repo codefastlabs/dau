@@ -15,7 +15,7 @@
 #   build/external-tests-stats/<source>.json          counts and skip reasons (git-ignored)
 # With the pinned commits it re-creates the committed TSVs byte for byte
 # (git diff --stat docs/research/external-test-inputs is empty afterwards).
-# Method, notation, licences: docs/research/EXTERNAL-TEST-INPUTS.md; attribution:
+# Method, notation, licences: docs/research/external-test-inputs/README.md; attribution:
 # docs/research/external-test-inputs/NOTICE.md.
 set -euo pipefail
 here=${0:A:h}

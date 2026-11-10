@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Renders the design canvas artboards to PNG and copies their sources into docs/ui/canvas/,
+# Renders the design canvas artboards to PNG and copies their sources into docs/canvas/,
 # so the approved design can be read without access to the canvas on claude.ai.
 # Side effects: builds, writes repo files
 #
@@ -13,8 +13,8 @@
 # (dc-runtime.js) is the canvas publisher's code: it is opened from build/canvas/ as a file://
 # page for the render only and never copied into the repo. --allow-file-access-from-files lets
 # it fetch the page itself and sibling boards, which Chrome otherwise blocks on file://.
-# Writes docs/ui/canvas/<name>.png, docs/ui/canvas/src/<name>.dc.html,
-# docs/ui/canvas/canvas.json and docs/ui/canvas/README.md (index by section), replacing what
+# Writes docs/canvas/<name>.png, docs/canvas/src/<name>.dc.html,
+# docs/canvas/canvas.json and docs/canvas/README.md (index by section), replacing what
 # was there. Needs network for the web fonts.
 set -euo pipefail
 ROOT="${0:A:h:h:h}"
@@ -28,7 +28,7 @@ CHROME="/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 [[ -x "$CHROME" ]] || log_die "Không thấy Google Chrome ở /Applications."
 
 WORK="$ROOT/build/canvas"
-OUT="$ROOT/docs/ui/canvas"
+OUT="$ROOT/docs/canvas"
 rm -rf "$WORK"; mkdir -p "$WORK/project" "$WORK/profile"
 cp "$SRC"/project/*.dc.html "$SRC/project/canvas.json" "$WORK/project/"
 cp "$SRC/artifact-type/dc-runtime.js" "$WORK/project/support.js"

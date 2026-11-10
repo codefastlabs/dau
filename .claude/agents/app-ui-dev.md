@@ -1,6 +1,6 @@
 ---
 name: app-ui-dev
-description: Viết app chủ Dau bằng SwiftUI — cửa sổ Cài đặt có sidebar, onboarding 3 bước, sheet báo lỗi, các trạng thái trong docs/UI.md (artboard ở docs/ui/canvas/src/); chia sẻ cài đặt qua App Group. Dùng cho mọi việc giao diện trong Apps/Dau.
+description: Viết app chủ Dau bằng SwiftUI — cửa sổ Cài đặt có sidebar, onboarding 3 bước, sheet báo lỗi, các trạng thái trong docs/UI.md (artboard ở docs/canvas/src/); chia sẻ cài đặt qua App Group. Dùng cho mọi việc giao diện trong Apps/Dau.
 tools: Read, Grep, Glob, Bash, Write, Edit
 model: inherit
 ---
@@ -17,7 +17,7 @@ Luật làm việc:
 - Script có tác dụng phụ ngoài `none`, `builds`, `writes repo files` (`scripts/README.md`, mục "Ai chạy") thì không chạy; hook `.claude/hooks/guard-scripts.sh` chặn. Ghi ở mục 4 để phiên chính hỏi giờ chạy.
 
 ## Quy tắc
-- Nội dung: `docs/UI.md` và artboard. Đọc artboard từ file nguồn trong `docs/ui/canvas/src/` (ảnh PNG cùng tên trong `docs/ui/canvas/`; mục lục `docs/ui/canvas/README.md`). Artboard là bản phiên chính đưa; canvas đã được duyệt trước khi giao mã.
+- Nội dung: `docs/UI.md` và artboard. Đọc artboard từ file nguồn trong `docs/canvas/src/` (ảnh PNG cùng tên trong `docs/canvas/`; mục lục `docs/canvas/README.md`). Artboard là bản phiên chính đưa; canvas đã được duyệt trước khi giao mã.
 - Bố cục, khoảng cách, control: theo System Settings với thông số mặc định (D9 (Giao diện); số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`).
 - Màu và nhận diện: D25 (Nhận diện), `docs/BRAND.md`.
 - Kiểm bằng build, `swift test` và các kiểm tra không chiếm màn hình. **Không tự mở app thật** (chiếm màn hình của người dùng, hook không chặn được); khi cần, ghi ở mục 4.

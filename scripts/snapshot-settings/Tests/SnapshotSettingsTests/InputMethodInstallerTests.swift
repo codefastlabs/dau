@@ -2,7 +2,7 @@ import Foundation
 import Testing
 @testable import SnapshotSettings
 
-// The installer's state machine (D14, D16, D37; docs/research/M5-INSTALL.md sections
+// The installer's state machine (D14, D16, D37; docs/research/INPUT-METHOD-INSTALL.md sections
 // 2–4) on fake Text Input Sources, a fake process list and fake bundle files: the order
 // of the system calls, read-backs, and failure paths. No test touches the real input
 // sources or ~/Library/Input Methods; the file tests run in a temp folder.

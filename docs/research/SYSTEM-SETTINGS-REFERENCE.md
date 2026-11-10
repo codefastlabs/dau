@@ -11,7 +11,7 @@
 - **Sheet (đo 02/11/2026, sửa 03/11/2026 cho khớp mã):** nút trên `toolbar` cho đúng thanh nút của System Settings, thẻ `Form(.grouped)` cho đúng lề và khoảng cách thẻ; `List` trong `Form(.grouped)` bị tắt cuộn nên danh sách đặt trong `GroupBox`. Chi tiết ở mục "Sheet". Chiều cao thẻ danh sách (188) lấy từ mockup, không có số System Settings tương ứng; đã chốt giữ 188 (mục "Sheet").
 - **Icon ứng dụng trong hàng (02/11/2026):** khung 32 cho hàng có dòng phụ, 24 cho hàng một dòng kèm control; mục "Icon ứng dụng trong hàng".
 - **Nút mở/thu kiểu "Nâng cao" (02/11/2026):** System Settings không có hàng mở/thu nào trong 13 pane đã rà; `DisclosureGroup` trong Form lệch cách vẽ hàng và không mở được qua Accessibility API, nên giữ nút + chevron; D9 đã ghi đúng lý do này. Mục "Nút mở/thu kiểu 'Nâng cao'".
-- **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) đã kiểm trên cửa sổ thật bằng `scripts/selftest/settings-window/run.sh` (trang `sidebar-fixed`, `docs/UI-CHECKS.md` mục "Sidebar kéo thu lại được"; lượt đạt 06/11/2026 ở `docs/history/LOG-M5-M6.md`). Mục "Cần chỉnh / không khớp".
+- **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) đã kiểm trên cửa sổ thật bằng `scripts/selftest/settings-window/run.sh` (trang `sidebar-fixed`, `docs/UI-CHECKS.md` mục "Sidebar kéo thu lại được"; lượt đạt 06/11/2026 ở `docs/history/LOG-BETWEEN-M5-M6.md`). Mục "Cần chỉnh / không khớp".
 - **Cửa sổ System Settings cố định độ rộng 740, chỉ đổi được chiều cao (đo 09/11/2026):** mục "Cửa sổ có đổi rộng được không". Cửa sổ Cài đặt của Dấu làm theo: rộng cố định 740, chỉ đổi chiều cao (từ 09/11/2026).
 - Tài liệu Apple không công bố các số 704, 20, 12, 37,5; mọi số trong file là số đo trên máy, có thể đổi theo phiên bản macOS (mục "Nguồn API").
 
@@ -230,7 +230,7 @@ Chi tiết từng mục:
   - Đo trên Dấu (`run.sh` 05/11/2026): nút Lùi 239.5,8 36×36, Tiến 275.5,8 37×36, khung tiêu đề x 316.5 (1x: 317).
   - System Settings đo cùng ngày: 240,8 36×36 và 276,8 37×36, vạch ngăn x 276, nét tiêu đề từ x 324 (≈ 326 là số của app thử, `scripts/selftest/settings-window/Reference.swift`).
   - Sidebar của System Settings (05/11/2026): kéo đường chia 200 pt sang hai bên và bấm đúp không đổi độ rộng, không thu được, con trỏ là mũi tên.
-  - Sidebar của Dấu (từ 06/11/2026, D9): cố định bằng `NSSplitViewController` của app, đã kiểm trên cửa sổ thật bằng `run.sh` (trang `sidebar-fixed`, `docs/UI-CHECKS.md`; lượt đạt 06/11/2026, `docs/history/LOG-M5-M6.md`); đo trên app thử: `docs/research/SWIFTUI-WINDOW-API.md` mục 10.
+  - Sidebar của Dấu (từ 06/11/2026, D9): cố định bằng `NSSplitViewController` của app, đã kiểm trên cửa sổ thật bằng `run.sh` (trang `sidebar-fixed`, `docs/UI-CHECKS.md`; lượt đạt 06/11/2026, `docs/history/LOG-BETWEEN-M5-M6.md`); đo trên app thử: `docs/research/SWIFTUI-WINDOW-API.md` mục 10.
 - **Hàng chỉ có `Text`**: cao 36, không phải 37.5 như hàng nhãn + control (System Settings không có hàng nhãn trơn để so).
 - **Hàng chỉ có nút**: SwiftUI căn nút trái; System Settings căn nút phải.
 - **Form rộng**: thẻ không quá 704; cửa sổ rộng cố định 740 nên không ảnh hưởng.

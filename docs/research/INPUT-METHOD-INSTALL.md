@@ -1,4 +1,4 @@
-# M5 — Cài, bật, nâng cấp, gỡ bộ gõ; phát hiện bộ gõ cũ (nghiên cứu hợp nhất)
+# Cài, bật, nâng cấp, gỡ bộ gõ; phát hiện bộ gõ cũ (nghiên cứu hợp nhất)
 
 Hợp nhất ngày 03/11/2026 từ ba nghiên cứu phục vụ M5 (Onboarding, cài đặt, gỡ cài đặt):
 - nghiên cứu cài, nâng cấp, gỡ (30/10);
@@ -540,7 +540,7 @@ Chỉ liệt kê điều có nguồn ở trên; nối về D và N chỉ để t
 4. **Đăng xuất:**
    - Trên macOS 27.2, bật lần đầu không cần đăng xuất khi làm theo D37 (mục 2.3, 9.9); đăng xuất rồi đăng nhập là đường lui khi một app vẫn không chọn được Dấu (mục 9.12). Các bản macOS khác chưa đo (mục 10.1).
    - Cho tới khi có số đo trên bản macOS khác và bản ký Developer ID, chữ trên giao diện về đăng xuất chỉ nói điều đã đo (N5); cách an toàn là "nếu không thấy Dấu trong '+', đăng xuất rồi đăng nhập" như phương án chờ.
-   - Artboard `OnboardingLogout` được vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ; nó không còn trên trang Thiết kế của canvas (`docs/ui/canvas/README.md`).
+   - Artboard `OnboardingLogout` được vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ; nó không còn trên trang Thiết kế của canvas (`docs/canvas/README.md`).
    - App không tự đăng xuất (N4) và phải nhớ đang ở bước 2 để lần mở sau làm tiếp; macOS có tuỳ chọn "Reopen windows when logging back in" nên app đang mở có thể được mở lại [Suy luận, cần kiểm chứng].
    - Nút "Đăng xuất…" mở hộp thoại hệ thống cần cách gọi mà không đòi quyền Tự động hoá (AppleScript tới System Events cần quyền đó: chưa kiểm); nếu không thì chỉ hướng dẫn "menu Apple › Đăng xuất…".
 5. **Gỡ:** tắt từ Cài đặt (nút "–") có hiệu lực; `TISDisableInputSource` từ app bị chặn ghi (mục 4), và app không có cách chính đáng nào khác để bỏ mục (mục 4.1).
@@ -592,40 +592,7 @@ Thứ tự **đề xuất** (của người nghiên cứu, 03/11/2026; đã thay
 - Nếu hướng cài vào `/Library/Input Methods` cho kết quả "hiện ngay, không đăng xuất", đó là thay đổi D16/D6/D37 và phải qua người dùng.
 - Nếu hướng làm mới tiến trình/bộ đệm làm menu hiện ra mà không cần "+", cân nhắc nút "Làm mới danh sách" (vẫn trong N4), kèm ghi chú phát hành cho từng bản macOS.
 
-### 7.2 Chuẩn bị (một lần)
-1. Tạo tài khoản macOS mới (chưa từng cài Dấu hay biến thể nào; `docs/PROGRESS.md` 02/11/2026: chỉ dịch vụ nguồn nhập liệu ghi được `com.apple.inputsources`, nên muốn máy sạch thật thì dùng tài khoản mới, mục 2.6), đăng nhập, chờ khoảng một phút cho phiên ổn định. Không cài gì vào `~/Library/Input Methods` trước.
-2. Chạy `scripts/dev/clean-dau.sh` (không tham số, chỉ liệt kê) làm mốc "không có Dấu".
-3. Mở Terminal thứ hai chạy nhật ký liên tục, ghi vào file có giờ:
-   `/usr/bin/log stream --info --debug --style compact --predicate 'process IN {"imklaunchagent","TextInputMenuAgent","TextInputSwitcher","keyboardservicesd","CursorUIViewService","cfprefsd","KeyboardSettings"} OR eventMessage CONTAINS[c] "inputsource" OR eventMessage CONTAINS[c] "codefastlabs.dau"' > ~/dau-t4-log.txt`
-   - Tên tiến trình và bộ lọc [Suy luận, cần kiểm chứng]: chỉnh khi chạy; dữ liệu `<private>` bị che nếu không cài hồ sơ ghi nhật ký.
-   - `KeyboardSettings` thêm vào để bắt dòng "Invalid value on inputSourceToBeEnabled", mục 2.2.
-   - Tên file `~/dau-t4-log.txt` giữ nguyên như kế hoạch gốc ("t4" là tên cũ của lần thử trên máy sạch này).
-4. Ghi giờ đồng hồ vào một file ghi chú mỗi khi bắt đầu một bước, để đối chiếu với nhật ký.
-
-### 7.3 Các bước thử
-Mục 7 có hai bước (đối chứng bằng Dấu thật, và đăng xuất); các bước của vòng thử bằng bản thử có bảng riêng ở mục 8.2.
-Mỗi bước: cài, làm đúng chuỗi, chờ 10 giây, rồi chạy bảng kiểm 7.4. Đặt kết quả là `HIỆN` (xuất hiện trong menu/"+"/danh sách bên trái) hoặc `KHÔNG`.
-
-| Bước | ID | Chuỗi gọi | Mục đích | Mức xâm lấn |
-|---|---|---|---|---|
-| Đối chứng | **Dấu thật** | **Đối chứng**: đúng luồng "Bật Dấu" của app hiện tại (chép bằng đổi tên nguyên khối, `Register`, đợi 1 s, bật cha, đọc lại cùng tiến trình). **Nhìn "+" bằng mắt**, cả menu, danh sách trái, ⌃Space. Chụp `defaults export com.apple.inputsources -` trước và sau lệnh bật | Tái hiện lần thử cài đầu 02/11 (mục 9.5) trên máy sạch; trả lời câu hỏi mở về đăng xuất (mục 10.1) cho Dấu | Không |
-| Đăng xuất | (tất cả) | **Đăng xuất, đăng nhập lại (lần duy nhất).** Chạy `scripts/dev/clean-dau.sh` (không tham số) ngay khi vào, rồi nhìn giao diện | Xác nhận đối chứng: ID nào hiện sau đăng nhập, ID nào đã được bật sẵn | Không |
-
-### 7.4 Bảng kiểm sau mỗi bước
-1. Cài đặt › Bàn phím › Nguồn nhập liệu › Sửa…: danh sách bên trái, và hộp thoại "+" (tìm "Dấu" ở nhóm tiếng Việt và ô tìm kiếm) (chụp ảnh). **Nhìn bằng mắt.**
-2. Menu nhập liệu trên thanh menu, và công tắc ⌃Space (hoặc phím chuyển nguồn): có "Dấu" không (chụp ảnh).
-3. Có hộp thoại "Cho phép … bật …?" của hệ thống hiện không; Cài đặt có tự mở không; hiện ở đâu; bấm gì (ghi lại cả khi không hiện).
-4. `scripts/dev/clean-dau.sh` (không tham số): mục Dấu trong `com.apple.inputsources`, tiến trình, bundle, đăng ký LaunchServices. Ghi thêm `AppleInputSourceUpdateTime` từ `defaults export com.apple.inputsources -`.
-5. Nhật ký `/usr/bin/log stream` trong khoảng giờ của bước: các dòng của `imklaunchagent`, `TextInputMenuAgent`, `cfprefsd`, `KeyboardSettings` (nhất là "Invalid value on inputSourceToBeEnabled") và nhật ký `com.codefastlabs.dau` của app (`event=register`, `event=enable`).
-
-Mẫu ghi một dòng cho mỗi bước: `bước | mã trả về Register/Enable | "+" | menu | ⌃Space | hộp thoại / Cài đặt tự mở | tuỳ chọn có (Y/N) | ghi chú`.
-
-### 7.5 Cách đọc kết quả
-- **Đối chứng đã HIỆN ngay (không đăng xuất):** câu trả lời cho Dấu là "không cần" trên bản macOS đó; ghi bản macOS.
-- **Chỉ bước đăng xuất làm hiện:** xác nhận kết luận của Apple DTS cho Dấu; đề xuất làm hướng dựng lại ảnh chụp và hướng "đã bật, chờ đăng xuất" (mục 7.1, chờ người dùng quyết) và đóng việc này.
-- **Đối chứng hiện trong "+" nhưng nguồn vẫn không bật được** (bật từ app trả 0, mục cha còn `enabled=0`, hoặc người dùng thêm bằng "+" rồi vẫn không dùng được): đây là hành vi của Enable ở mục 2.2, không phải câu trả lời cho câu hỏi về đăng xuất.
-  - Ghi riêng hai kết quả ("có hiện trong '+'" và "bật được"), và nút "Bật Dấu" vẫn không được hứa bật được (mục 6.1 điểm 1).
-- **Máy vẫn còn mục Dấu cũ** (`scripts/dev/clean-dau.sh` không tham số báo `AppleEnabledThirdPartyInputSources` còn mục Dấu, hoặc Dấu "tự có sẵn" ngay sau đăng nhập): kết quả không dùng được để trả lời câu hỏi về đăng xuất, vì chỉ tài khoản macOS mới là sạch thật (mục 7.2, 2.6); làm lại trên tài khoản mới.
+Các bước của lần thử đã bỏ (mục 7.2–7.5 cũ: chuẩn bị, các bước, bảng kiểm, cách đọc kết quả) nằm ở `docs/history/PLANS.md`.
 
 ### 7.6 Việc còn lại ngoài vòng thử
 - Gỡ bản Debug rồi chép lại, **cùng ID** và giữa phiên: TIS có thấy ngay không? Chưa đo.
@@ -794,7 +761,7 @@ Nguyên lý:
   - Các bước sau có thể làm tiến trình giao diện nạp lại danh mục và vô tình làm hiện cả biến thể trước đó (và Dấu thật).
   - Vì vậy sau **mỗi** bước phải chạy lại `tis-probe` và nhìn giao diện cho **mọi ID đã cài**, không chỉ ID đang thử. Nếu một ID cũ bỗng hiện ra sau bước N, bước N là thủ phạm (ghi lại).
 
-Các bước (bảng kiểm như mục 7.4, thêm: một công cụ đọc `tis-probe` chạy bằng tiến trình mới: ID nào có, enabled / enableCapable / selectCapable / selected, ba lần cách nhau 3 s; `pgrep -fl DauProbe`; thông báo `kTISNotifyEnabledKeyboardInputSourcesChanged` qua `tis-probe --watch`).
+Các bước (bảng kiểm như mục 7.4 cũ, nay ở `docs/history/PLANS.md`, thêm: một công cụ đọc `tis-probe` chạy bằng tiến trình mới: ID nào có, enabled / enableCapable / selectCapable / selected, ba lần cách nhau 3 s; `pgrep -fl DauProbe`; thông báo `kTISNotifyEnabledKeyboardInputSourcesChanged` qua `tis-probe --watch`).
 - Cần mật khẩu quản trị ở bước cài vào `/Library/Input Methods` (người dùng tự gõ).
 - Dừng tiến trình của phiên ở ba bước làm mới (LaunchAgent, macOS tự chạy lại), người dùng cho phép lúc chạy.
 - Bước trần trên chỉ trên tài khoản thử.
@@ -811,7 +778,7 @@ Các bước (bảng kiểm như mục 7.4, thêm: một công cụ đọc `tis-
 | **Kiểu vChewing** | Dừng `TextInputMenuAgent`, chờ 0,5 s, sau đó `Register`, bật mode (rồi cha nếu cần), đọc lại. Rồi một lần thử thứ hai: đã `Register` xong, dừng `TextInputMenuAgent` lần nữa và nhìn menu | Hướng làm mới tiến trình/bộ đệm giao diện, phần menu | Vừa: LaunchAgent của phiên, tự dựng lại |
 | **Dừng ba tiến trình giao diện cùng lúc** | `Register`, bật cha, rồi dừng **cùng lúc** `TextInputSwitcher`, `CursorUIViewService`, `TextInputMenuAgent` (ba lần cách nhau 0,5 s) | Làm mới tối đa, không đụng `imklaunchagent` | Vừa |
 | **Cài vào `/Library/Input Methods`** | `sudo` chép vào **`/Library/Input Methods/`** (chủ sở hữu root), `Register` từ tiến trình người dùng, bật cha, bật mode. Đo thêm cho câu hỏi mở "cài cho riêng mình hay cho cả máy" (`docs/DECISIONS.md`): có tài khoản thứ hai thì đăng nhập vào đó xem "+" có biến thể này ngay không; nếu người dùng thêm biến thể này bằng "+" rồi chép thêm cùng biến thể vào `~/Library/Input Methods`, tiến trình chạy từ đường dẫn nào | Hướng cài vào `/Library/Input Methods`; cài cho cả máy | Cần mật khẩu quản trị (người dùng tự gõ); bản ở `/Library` gỡ cũng cần mật khẩu |
-| **Chọn nguồn bằng TIS** | Như bước đối chứng ở mục 7.3 rồi, **sau cùng**, `TISSelectInputSource` cho mode: ghi mã trả về, xem biến thể có chạy không (`pgrep`), `TISCopyCurrentKeyboardInputSource` đổi không | Hướng chọn nguồn bằng TIS, chẩn đoán | Nhẹ; chỉ để đo, không đưa vào Dấu (N4) |
+| **Chọn nguồn bằng TIS** | Như bước đối chứng ở mục 7.3 cũ (`docs/history/PLANS.md`) rồi, **sau cùng**, `TISSelectInputSource` cho mode: ghi mã trả về, xem biến thể có chạy không (`pgrep`), `TISCopyCurrentKeyboardInputSource` đổi không | Hướng chọn nguồn bằng TIS, chẩn đoán | Nhẹ; chỉ để đo, không đưa vào Dấu (N4) |
 | **Trần trên** (không có biến thể riêng) | **Chỉ chẩn đoán, không bao giờ vào Dấu**: sau khi mọi bước trên đã đo, dừng `imklaunchagent` và `keyboardservicesd` rồi nhìn lại mọi ID | Biết có cách làm hiện mà không đăng xuất hay không, và xem tiến trình nào là chủ | Cao: có thể làm hỏng gõ phím trong tài khoản thử; làm cuối cùng |
 
 Cách đọc:

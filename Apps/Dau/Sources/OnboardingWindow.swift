@@ -682,7 +682,7 @@ struct NumberedLine: View {
 /// A small picture of macOS's "Allow … to enable …?" dialog, so the user knows what to
 /// look for. Not a control: hidden from VoiceOver. System colors only (D9); the text is
 /// the dialog's own wording. Drawn like the real dialog at about 0.75 scale (measured on
-/// macOS 27.2, docs/research/M5-INSTALL.md section 8.1b; artboards OnboardingEnable*,
+/// macOS 27.2, docs/research/INPUT-METHOD-INSTALL.md section 8.1b; artboards OnboardingEnable*,
 /// canvas version 105): no icon, everything left-aligned, the whole body shown, two
 /// equal capsule buttons with "Allow" (the default) blue on the right.
 struct AllowDialogIllustration: View {

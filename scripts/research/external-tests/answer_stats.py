@@ -1,5 +1,5 @@
 """Heuristic count of their expected outputs that break Vietnamese orthography
-(docs/research/EXTERNAL-TEST-INPUTS.md section 6). Reads build/external-answers/ and the
+(docs/research/external-test-inputs/README.md section 6). Reads build/external-answers/ and the
 public TSVs; prints counts only (SHOW=1 also prints sample answers to the terminal, for the
 person doing the comparison step, never for the engine developer). Writes nothing.
 Usage: python3 -I scripts/research/external-tests/answer_stats.py [source ...]"""

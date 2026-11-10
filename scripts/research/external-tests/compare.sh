@@ -13,7 +13,7 @@
 # (git-ignored; it holds their answers). A disagreement keeps the class (A–E, X) of the previous
 # review file when keys, Dấu output and their expected text are unchanged; otherwise it is
 # "unreviewed" (with the old class in rule_notes). Prints the per-source counts and the
-# per-class table of docs/research/EXTERNAL-TEST-INPUTS.md section 9.2.
+# per-class table of docs/research/external-test-inputs/README.md section 9.2.
 # Writes only under build/ (git-ignored; hence "builds", though nothing is compiled). Runs nothing
 # from the other projects.
 set -euo pipefail

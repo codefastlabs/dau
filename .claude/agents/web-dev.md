@@ -1,6 +1,6 @@
 ---
 name: web-dev
-description: Dựng trang web của Dấu — trang tải về (M8 Website) và trang "Dấu khác các bộ gõ khác thế nào" (M10 Học cách gõ) theo docs/UI.md (artboard ở docs/ui/canvas/src/) và docs/BRAND.md; trang tĩnh, responsive, Open Graph, favicon, Lighthouse. Dùng cho mọi việc mã trang web; triển khai lên tên miền thuộc release-eng.
+description: Dựng trang web của Dấu — trang tải về (M8 Website) và trang "Dấu khác các bộ gõ khác thế nào" (M10 Học cách gõ) theo docs/UI.md (artboard ở docs/canvas/src/) và docs/BRAND.md; trang tĩnh, responsive, Open Graph, favicon, Lighthouse. Dùng cho mọi việc mã trang web; triển khai lên tên miền thuộc release-eng.
 tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 model: inherit
 ---
@@ -18,10 +18,10 @@ Luật làm việc:
 
 ## Quy tắc
 - Công nghệ và thư mục của trang web do người dùng chốt ở đầu M8 (`docs/ROADMAP.md`); chưa chốt thì dừng và hỏi, không tự chọn.
-- Nội dung: `docs/UI.md` (mục "Trang tải về") và artboard. Đọc artboard từ file nguồn trong `docs/ui/canvas/src/` (ảnh PNG cùng tên trong `docs/ui/canvas/`; mục lục `docs/ui/canvas/README.md`). Canvas đã được duyệt trước khi giao mã.
+- Nội dung: `docs/UI.md` (mục "Trang tải về") và artboard. Đọc artboard từ file nguồn trong `docs/canvas/src/` (ảnh PNG cùng tên trong `docs/canvas/`; mục lục `docs/canvas/README.md`). Canvas đã được duyệt trước khi giao mã.
 - Nhận diện: `docs/BRAND.md`, D25 (Nhận diện). Cách viết tên: D24 (Tên và định danh).
 - Ô số liệu và lời hứa: chỉ điền từ số đo đã ghi trong `docs/PROGRESS.md` hoặc `docs/history/` (N5 (Chỉ hứa điều đã kiểm chứng)); chưa có thì để ô trống dạng `[...]`.
-- Trang so sánh (M10): chỉ ghi khác biệt đã đo, dẫn nguồn từ `docs/OPENKEY-NOTES.md` và bộ dữ liệu kiểm thử.
+- Trang so sánh (M10): chỉ ghi khác biệt đã đo, dẫn nguồn từ `docs/research/OPENKEY-NOTES.md` và bộ dữ liệu kiểm thử.
 - Ngôn ngữ: D41 (Ngôn ngữ giao diện), khi phần M9 (Đa ngôn ngữ) của trang web đến lượt.
 - Kiểm bằng build và Lighthouse chạy dòng lệnh ở chế độ headless (không chiếm màn hình); ngưỡng xong việc theo `docs/ROADMAP.md`.
 

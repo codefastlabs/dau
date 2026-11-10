@@ -51,7 +51,7 @@ Lưu ý:
 ## Engine và OpenKey
 
 - Engine là mã của Dấu, viết từ đầu bằng Swift, không import Foundation hay AppKit.
-- **Không chép mã từ OpenKey hay UniKey.** OpenKey chỉ là tài liệu tham khảo để hiểu hành vi; ghi hiểu biết bằng lời của bạn vào `docs/OPENKEY-NOTES.md`.
+- **Không chép mã từ OpenKey hay UniKey.** OpenKey chỉ là tài liệu tham khảo để hiểu hành vi; ghi hiểu biết bằng lời của bạn vào `docs/research/OPENKEY-NOTES.md`.
 - Kết quả mong đợi trong test viết theo chính tả tiếng Việt và `docs/DECISIONS.md`, không lấy từ kết quả chạy OpenKey.
 - Khẳng định về hiệu năng cần số đo (`swift test -c release` chạy test hiệu năng của engine).
 
@@ -66,7 +66,8 @@ Lưu ý:
 - Swift 6, strict concurrency. Test bằng Swift Testing.
 - Tên định danh, comment và commit message bằng tiếng Anh; commit theo [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`…).
 - `Dau.xcodeproj` được sinh từ `project.yml`: sửa `project.yml`, không sửa và không commit `.xcodeproj`.
-- Sửa tài liệu trong `docs/` thì chạy `scripts/check-docs/check.sh`; nó bắt đường dẫn sai, số quyết định không tồn tại, cách nói đã bị thay.
+- Sửa tài liệu trong `docs/` thì chạy `scripts/check-docs/check.sh`; nó bắt đường dẫn và liên kết sai, file chưa có trong mục lục, tên kiểu không còn trong mã, số quyết định không tồn tại, cách nói đã bị thay.
+- Bật hook chạy phép kiểm này trước mỗi commit, một lần cho mỗi bản clone: `git config core.hooksPath .githooks`.
 
 ## Gửi PR
 

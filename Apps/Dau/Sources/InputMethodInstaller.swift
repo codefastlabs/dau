@@ -4,7 +4,7 @@ import DauShared
 import Security
 import os
 
-// The real `InputMethodInstaller` (M5, D14, D16, D37; docs/research/M5-INSTALL.md
+// The real `InputMethodInstaller` (M5, D14, D16, D37; docs/research/INPUT-METHOD-INSTALL.md
 // sections 2–4). It talks to the system through narrow interfaces, so the order of
 // operations and every failure path are tested with fakes
 // (scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift):
@@ -12,8 +12,8 @@ import os
 // - `TextInputSources`: register, enable, read back;
 // - `InputMethodProcesses`: is the input method running, ask it to quit;
 // - `SystemSettingsControl`: System Settings' Keyboard cache and the System Settings
-//   process (D37, M5-INSTALL.md section 8.1b);
-// - `InputSourceCaches`: the input source list cache of every app (D37, M5-INSTALL.md
+//   process (D37, INPUT-METHOD-INSTALL.md section 8.1b);
+// - `InputSourceCaches`: the input source list cache of every app (D37, INPUT-METHOD-INSTALL.md
 //   section 9.10, section 10.10, section 8.1b round E).
 //
 // N4: install copies Dấu's own files; enable and uninstall run only from a button the
@@ -93,7 +93,7 @@ protocol InputMethodProcesses: AnyObject {
     func forceQuit(bundleID: String)
 }
 
-/// What "Bật Dấu" and uninstall need from System Settings (D37, docs/research/M5-INSTALL.md
+/// What "Bật Dấu" and uninstall need from System Settings (D37, docs/research/INPUT-METHOD-INSTALL.md
 /// section 8.1b): the enable request is only handled when System Settings has to open the
 /// Keyboard extension, and its input source cache must be rebuilt to drop a removed source.
 @MainActor
@@ -120,7 +120,7 @@ struct InputSourceCacheCounts: Equatable, Sendable {
     var failed = 0
 }
 
-/// The input source list caches of every app (D37; docs/research/M5-INSTALL.md section 0
+/// The input source list caches of every app (D37; docs/research/INPUT-METHOD-INSTALL.md section 0
 /// section 9.10, section 10.10, section 8.1b round E). Each sandboxed app (System Settings' Keyboard
 /// extension too) keeps `com.apple.IntlDataCache.le*` in its own folder of the user cache
 /// folder and uses it as is, even after a relaunch; a missing cache is rebuilt from disk
@@ -340,7 +340,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         // System Settings' input source cache still holds the removed bundle: the "+"
         // list keeps a row without a name (and TIS keeps listing it) until the cache is
         // rebuilt, which used to take a logout. Deleting it makes System Settings rebuild
-        // it at once (D37, docs/research/M5-INSTALL.md section 8.1b, rounds U).
+        // it at once (D37, docs/research/INPUT-METHOD-INSTALL.md section 8.1b, rounds U).
         let cache = settings.clearKeyboardCache()
         installLogger.notice("event=uninstall-cache-cleared removed=\(cache.removed) failed=\(cache.failed)")
 
@@ -368,7 +368,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     ///
     /// Heuristic on an undocumented format: a cache that lists the input method is taken
     /// to contain its path, ".../Input Methods/DauInputMethod.app", as UTF-8
-    /// (M5-INSTALL.md section 9.10 found the bundle name in rebuilt caches; the exact
+    /// (INPUT-METHOD-INSTALL.md section 9.10 found the bundle name in rebuilt caches; the exact
     /// bytes are not documented and may change).
     private func refreshStaleCaches() {
         let url = files.installedURL

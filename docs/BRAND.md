@@ -1,15 +1,15 @@
 # Nhận diện thương hiệu
 
-Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh xem trước GitHub" trên canvas (link và bản chụp trong repo: `docs/UI.md`, `docs/ui/canvas/README.md`):
+Mockup: các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh xem trước GitHub" trên canvas (link và bản chụp trong repo: `docs/UI.md`, `docs/canvas/README.md`):
 
-- [hướng biểu tượng](ui/canvas/BrandConcepts.png)
-- [hướng dẫn thương hiệu](ui/canvas/BrandGuide.png)
-- [biểu tượng ứng dụng](ui/canvas/AppIcon.png)
-- [nơi hình đại diện xuất hiện](ui/canvas/BrandInUse.png)
-- [biểu tượng trong hệ thống](ui/canvas/MenuBarIcons.png)
-- [biểu tượng bản phát triển](ui/canvas/AppIconDev.png)
-- [ảnh chia sẻ Open Graph](ui/canvas/OgImage.png)
-- [ảnh xem trước GitHub](ui/canvas/GithubPreview.png)
+- [hướng biểu tượng](canvas/BrandConcepts.png)
+- [hướng dẫn thương hiệu](canvas/BrandGuide.png)
+- [biểu tượng ứng dụng](canvas/AppIcon.png)
+- [nơi hình đại diện xuất hiện](canvas/BrandInUse.png)
+- [biểu tượng trong hệ thống](canvas/MenuBarIcons.png)
+- [biểu tượng bản phát triển](canvas/AppIconDev.png)
+- [ảnh chia sẻ Open Graph](canvas/OgImage.png)
+- [ảnh xem trước GitHub](canvas/GithubPreview.png)
 
 Quyết định gốc: D24 (Tên và định danh) cho tên, D25 (Nhận diện) cho nhận diện.
 
@@ -26,7 +26,7 @@ Quyết định gốc: D24 (Tên và định danh) cho tên, D25 (Nhận diện)
 - Một dải chéo màu **Hổ phách** cắt góc dưới phải, nằm ngoài chữ "a".
 - Kiểu Tối: nền và dải tối hơn một bậc.
 - Kiểu Trong suốt và Phủ màu: macOS bỏ màu, dải còn lại như một hình sáng hơn nền.
-- Mockup: artboard [biểu tượng bản phát triển](ui/canvas/AppIconDev.png).
+- Mockup: artboard [biểu tượng bản phát triển](canvas/AppIconDev.png).
 - Kiểm bằng mắt ở 16–32 pt và ở kiểu Trong suốt, Phủ màu khi xuất từ Icon Composer (artboard chỉ mô phỏng hai kiểu này).
 
 ## Biểu tượng thanh menu (input mode)

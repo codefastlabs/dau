@@ -17,8 +17,27 @@ dau/
 ├─ Apps/
 │  ├─ DauInputMethod/          # bundle input method (IMK), sandbox, KHÔNG có quyền mạng (N2 (Bộ gõ không có quyền mạng))
 │  └─ Dau/                     # app chủ SwiftUI, KHÔNG sandbox (D37 (Cài đặt bộ gõ)): Cài đặt, onboarding, cài/nâng cấp/gỡ bộ gõ, cập nhật (Sparkle), báo lỗi
-└─ docs/                      # gồm OPENKEY-NOTES.md, viết ở mốc M1 (Engine)
+└─ docs/                      # mục lục: docs/README.md
 ```
+
+## Luồng một phím (chế độ Tiếng Việt)
+
+1. IMK gọi `handle(event, client)` trên main thread. Bỏ qua event nil/bất thường (D18 (Phòng thủ với IMK)).
+2. Phím điều khiển (mũi tên, ⌘-tổ hợp, Esc…) → reset engine, trả `false` cho hệ thống xử lý. Không khôi phục từ ở bước này (D4 (Từ nước ngoài)).
+   - Backspace → engine bỏ chữ cuối đang hiển thị và đặt lại dấu (D32 (Backspace)).
+   - Thay tại chỗ luôn trả `false` để ứng dụng tự xoá chữ cuối (khi dấu phải dời, bộ gõ thay phần trước nó trong cùng phím, xem mục DauInputMethod).
+3. Ký tự → `engine.handle(scalar)`:
+   - `passThrough` → trả `false`.
+   - `replace(n, s)` → `client.insertText(s, replacementRange: vùng n ký tự trước con trỏ)`, trả `true`.
+   - Engine rỗng, phím dấu/biến đổi hoặc chữ cái, chưa biết chữ trước con trỏ → D20 (Thêm dấu cho từ đã gõ): đọc từ trước con trỏ, `seed`, rồi như trên; phím chỉ nối theo D20 và ba ngoại lệ của nó (xem mục DauInputMethod).
+4. Ký tự kết thúc từ (Space, dấu câu, Enter, Tab — D4) → nếu từ không phải âm tiết tiếng Việt hợp lệ thì khôi phục phím gốc (D4), commit, reset.
+
+Ở chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)), bước 3–4 khác:
+
+- chữ của từ đi vào marked text (`setMarkedText`) thay cho thay chữ tại chỗ, không hỏi `selectedRange`;
+- kết thúc từ và mọi sự kiện reset chốt marked text bằng một `insertText` (xem mục DauInputMethod).
+
+## Chi tiết từng thành phần
 
 ### DauEngine
 
@@ -400,7 +419,7 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 
 #### Cài, bật, nâng cấp, gỡ bộ gõ
 
-`InputMethodInstaller.swift`, theo `docs/research/M5-INSTALL.md` mục 2–4.
+`InputMethodInstaller.swift`, theo `docs/research/INPUT-METHOD-INSTALL.md` mục 2–4.
 
 - `SystemInputMethodInstaller` đi qua năm giao diện hẹp để test bằng đồ giả (`scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift`):
   - `InputMethodFiles`: bundle trong app và bản ở `~/Library/Input Methods`;
@@ -420,7 +439,7 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 - `TISRegisterInputSource`;
 - không bật, không chọn nguồn nào.
 
-**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại", N4; D37, `docs/research/M5-INSTALL.md` mục 9.10, mục 10.10 và 8.1b):
+**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại", N4; D37, `docs/research/INPUT-METHOD-INSTALL.md` mục 9.10, mục 10.10 và 8.1b):
 
 - Mỗi lần gọi, ngay trước `TISRegisterInputSource`, xoá bộ đệm danh sách nguồn nhập liệu:
   - xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con trực tiếp của `DARWIN_USER_CACHE_DIR` (qua `InputSourceCaches.clearAll`);
@@ -442,7 +461,7 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 - Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()` và "Thử lại"/"Quay lại" huỷ nó (lần chạy bị thay không đụng trạng thái).
 - Mã trả về của TIS không bao giờ được coi là bằng chứng.
 
-**Không có Hoàn tác:** `TISDisableInputSource` từ app bị macOS chặn (`docs/research/M5-INSTALL.md` mục 4), nên app không tự tắt được Dấu; chỉ người dùng bỏ Dấu trong System Settings.
+**Không có Hoàn tác:** `TISDisableInputSource` từ app bị macOS chặn (`docs/research/INPUT-METHOD-INSTALL.md` mục 4), nên app không tự tắt được Dấu; chỉ người dùng bỏ Dấu trong System Settings.
 
 **Trạng thái "đã bật"** (`status()`, banner qua `InputSourceStatus.query`, onboarding):
 
@@ -529,7 +548,7 @@ Quy tắc kèm theo khi gỡ:
 
 #### Danh sách tương thích, bộ gõ cũ
 
-- Danh sách tương thích có sẵn trong app (`Resources/CompatibilityList.json`, xem DauShared); M7: Sparkle 2 + tải danh sách có chữ ký (D7).
+- Danh sách tương thích có sẵn trong app (`Apps/Dau/Resources/CompatibilityList.json`, xem DauShared); M7: Sparkle 2 + tải danh sách có chữ ký (D7).
 - Phát hiện bộ gõ cũ (D14 (Onboarding)):
   - bộ gõ chặn phím đang chạy trong phiên người dùng (`NSWorkspace.shared.runningApplications`, so bundle ID trong `KnownInputMethods`) là xung đột, hiện bước 1;
   - nguồn tiếng Việt kiểu IMK khác đang bật (Telex/VNI của Apple, XKeyIM; đọc TIS, ngôn ngữ `vi`, khác Dấu) chỉ được nhắc nhẹ ở bước 2.
@@ -547,23 +566,6 @@ Quy tắc kèm theo khi gỡ:
   - Cả Dấu.app và bộ gõ chép file này vào Resources nên bản build được ký lại khi mã đổi.
   - App hiện "Dấu x.y.z (mã)" ở đáy sidebar và thẻ đầu Cập nhật & hỗ trợ.
   - `scripts/dev/dau-version.sh` so mã của bộ gõ đã cài, Dấu.app và repo, và cho biết tiến trình bộ gõ đang chạy có phải bản đã cài không.
-
-## Luồng một phím (chế độ Tiếng Việt)
-
-1. IMK gọi `handle(event, client)` trên main thread. Bỏ qua event nil/bất thường (D18).
-2. Phím điều khiển (mũi tên, ⌘-tổ hợp, Esc…) → reset engine, trả `false` cho hệ thống xử lý. Không khôi phục từ ở bước này (D4).
-   - Backspace → engine bỏ chữ cuối đang hiển thị và đặt lại dấu (D32).
-   - Thay tại chỗ luôn trả `false` để ứng dụng tự xoá chữ cuối (khi dấu phải dời, bộ gõ thay phần trước nó trong cùng phím, xem mục DauInputMethod).
-3. Ký tự → `engine.handle(scalar)`:
-   - `passThrough` → trả `false`.
-   - `replace(n, s)` → `client.insertText(s, replacementRange: vùng n ký tự trước con trỏ)`, trả `true`.
-   - Engine rỗng, phím dấu/biến đổi hoặc chữ cái, chưa biết chữ trước con trỏ → D20: đọc từ trước con trỏ, `seed`, rồi như trên; phím chỉ nối theo D20 và ba ngoại lệ của nó (xem mục DauInputMethod).
-4. Ký tự kết thúc từ (Space, dấu câu, Enter, Tab — D4) → nếu từ không phải âm tiết tiếng Việt hợp lệ thì khôi phục phím gốc (D4), commit, reset.
-
-Ở chế độ gạch chân (D13), bước 3–4 khác:
-
-- chữ của từ đi vào marked text (`setMarkedText`) thay cho thay chữ tại chỗ, không hỏi `selectedRange`;
-- kết thúc từ và mọi sự kiện reset chốt marked text bằng một `insertText` (xem mục DauInputMethod).
 
 ## Đo lường
 

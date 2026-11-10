@@ -51,7 +51,7 @@ Các dữ kiện chi phối:
   - Nếu client không hỗ trợ TSMDocumentAccess thì `selectedRange` trả `NSNotFound` và `replacementRange` bị bỏ qua.
   - Header cũng ghi client như vậy "cực kỳ hiếm" và hệ thống văn bản Cocoa có hỗ trợ.
   - Bộ gõ đếm trường hợp này là `unsupported`.
-  - Trang tài liệu web của `IMKTextInput` trả 404 (đã ghi ở `docs/OPENKEY-NOTES.md` mục 5).
+  - Trang tài liệu web của `IMKTextInput` trả 404 (đã ghi ở `docs/research/OPENKEY-NOTES.md` mục 5).
   - Phía ứng dụng: https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange() và https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
 - Lỗi đã đo được ở M2 (Bộ gõ tối thiểu) không phải `unsupported` mà là **ứng dụng áp phím bất đồng bộ**.
   - Chrome, VS Code, Terminal trả một vị trí cũ khi phím đến dồn (mục 6.2).
@@ -134,7 +134,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 2. Trong Terminal, ở thư mục repo, chạy `scripts/dev/install-input-method.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
 3. Làm theo các bước script in ra.
    - Lần đầu trên máy: bật bằng nút "Bật Dấu" của app chủ rồi Allow, không cần đăng xuất (D37 (Cài đặt bộ gõ)).
-   - Thêm tay (System Settings › Keyboard › "All Input Sources" › "+" › Vietnamese › "Dấu – Vietnamese" › Add; máy tiếng Việt hiện tên tiếng Việt, D38 (Chữ trên giao diện)) có thể không thấy Dấu vì danh sách đọc bộ đệm cũ; khi đó đăng xuất rồi đăng nhập lại (`docs/research/M5-INSTALL.md` (b)9, (b)12).
+   - Thêm tay (System Settings › Keyboard › "All Input Sources" › "+" › Vietnamese › "Dấu – Vietnamese" › Add; máy tiếng Việt hiện tên tiếng Việt, D38 (Chữ trên giao diện)) có thể không thấy Dấu vì danh sách đọc bộ đệm cũ; khi đó đăng xuất rồi đăng nhập lại (`docs/research/INPUT-METHOD-INSTALL.md` (b)9, (b)12).
    - Dấu chỉ có nguồn này (D2 (Chuyển Việt/Anh)); gõ tiếng Anh bằng U.S. của macOS, nên giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách.
    - Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó.
 4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu.
@@ -300,7 +300,7 @@ Ghi chú về TextEdit (backspace, click reset, mũi tên reset):
   - Notes, Mail, Firefox đã thoát; Edge (do lượt thử mở) còn chạy, không cửa sổ.
   - Nguồn nhập liệu và clipboard được script khôi phục; khoá `DauDebugForceUnderline` đã xoá.
 
-## 6. Giới hạn đã biết
+## 6. Giới hạn đã biết và lỗi đã sửa
 
 ### 6.1 Tự sửa chính tả của macOS đè lên chữ đã giữ (D4) — ghi ngày 30/10/2026
 

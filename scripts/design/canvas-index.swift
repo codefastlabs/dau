@@ -2,7 +2,7 @@
 // builds this file once with scripts/lib/swift-tool.sh.
 //
 //   canvas-index boards canvas.json   name<TAB>width<TAB>height, design page only
-//   canvas-index readme canvas.json   docs/ui/canvas/README.md (index by section)
+//   canvas-index readme canvas.json   docs/canvas/README.md (index by section)
 //
 // Boards on the archive page ("page": "archive") are left out. Order: the canvas order.
 // A board's section is the part of its title before " – " ("Cài đặt – bản tối" → "Cài đặt").

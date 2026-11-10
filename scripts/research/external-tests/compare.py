@@ -1,4 +1,4 @@
-"""Step 3 of docs/research/EXTERNAL-TEST-INPUTS.md: join the key sequences, Dấu's output and the
+"""Step 3 of docs/research/external-test-inputs/README.md: join the key sequences, Dấu's output and the
 other projects' expected output per case, normalise by `their_note`, and count agreement.
 Called by compare.sh (python3 -I). Reads only TSVs; writes build/external-review/<source>.tsv.
 

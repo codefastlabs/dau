@@ -3,7 +3,7 @@ import Testing
 @testable import DauEngine
 
 /// Step 2 of "test inputs from other Vietnamese input methods"
-/// (docs/research/EXTERNAL-TEST-INPUTS.md): replays the key sequences of
+/// (docs/research/external-test-inputs/README.md): replays the key sequences of
 /// `docs/research/external-test-inputs/*.tsv` through the engine and checks
 /// invariants derived from DECISIONS.md. The other projects' expected outputs are
 /// never read (D10); the checks below need no per-case answer.
@@ -63,7 +63,7 @@ struct ExternalCasesTests {
         return cases
     }
 
-    /// Maps `method` and the Dấu-side options (docs/research/EXTERNAL-TEST-INPUTS.md 2.2).
+    /// Maps `method` and the Dấu-side options (docs/research/external-test-inputs/README.md 2.2).
     static func engineOptions(_ c: ExternalCase) -> EngineOptions {
         var o = EngineOptions()
         switch c.method {

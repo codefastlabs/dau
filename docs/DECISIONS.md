@@ -89,7 +89,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Nút "Nâng cao": System Settings không có hàng mở/thu nào, còn `DisclosureGroup` trong Form không có vạch ngăn dưới hàng mở và không có AXPress cho trợ năng (đo trên macOS 27.2).
     - Sidebar cố định: kéo thu sidebar bị giật và System Settings không cho thu. SwiftUI không có API khoá sidebar của `NavigationSplitView`, nên dùng `NSSplitViewController` của chính app. Đã loại: duyệt cây view tìm `NSSplitView` mà `NavigationSplitView` dựng, phủ view lên đường chia.
 - **D10. Engine tự viết.** Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation).
-  - OpenKey chỉ là tài liệu tham khảo: đọc mã nguồn để hiểu tính năng và ca biên, ghi vào `docs/OPENKEY-NOTES.md`; không nhúng mã, không dùng kết quả chạy OpenKey làm đáp án test.
+  - OpenKey chỉ là tài liệu tham khảo: đọc mã nguồn để hiểu tính năng và ca biên, ghi vào `docs/research/OPENKEY-NOTES.md`; không nhúng mã, không dùng kết quả chạy OpenKey làm đáp án test.
   - UniKey không dùng.
 - **D11. Kiểm tra ngữ cảnh.**
   - Engine tự theo dõi trạng thái trong bộ nhớ.
@@ -137,9 +137,9 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Người dùng không bấm "–" thì không gỡ gì.
   - **Dấu đã cài nhưng không có trong nguồn đầu vào:** không có mục nào để bỏ, nên sau alert xác nhận thì gỡ luôn; không mở System Settings, không hiện sheet bấm "–".
   - **Vì sao:**
-    - Chỉ System Settings ghi được danh sách nguồn đang bật, app không tự bỏ được (`docs/research/M5-INSTALL.md` mục 4.1).
+    - Chỉ System Settings ghi được danh sách nguồn đang bật, app không tự bỏ được (`docs/research/INPUT-METHOD-INSTALL.md` mục 4.1).
     - App không tự chuyển bàn phím vì trên macOS 27.2 nút "–" bấm được cả khi Dấu đang được chọn và macOS tự chuyển sang nguồn khác (đo bằng Dấu thật).
-    - Đã cân nhắc và loại gỡ tự động không cần "–" (xoá bộ gõ và bộ đệm, đo bằng bản thử ở `docs/research/M5-INSTALL.md` mục 8.1b): mọi chỗ người dùng thấy đều sạch nhưng mục "đã bật" của Dấu còn ẩn trong `com.apple.inputsources`, và cài lại thì macOS bật Dấu ngay không hỏi (mục 4.1). Dấu chọn máy sạch và việc gỡ do chính người dùng xác nhận bằng "–".
+    - Đã cân nhắc và loại gỡ tự động không cần "–" (xoá bộ gõ và bộ đệm, đo bằng bản thử ở `docs/research/INPUT-METHOD-INSTALL.md` mục 8.1b): mọi chỗ người dùng thấy đều sạch nhưng mục "đã bật" của Dấu còn ẩn trong `com.apple.inputsources`, và cài lại thì macOS bật Dấu ngay không hỏi (mục 4.1). Dấu chọn máy sạch và việc gỡ do chính người dùng xác nhận bằng "–".
 - **D17. Trợ năng.**
   - Chuyển Việt/Anh là chuyển nguồn nhập liệu của hệ thống, VoiceOver tự đọc tên nguồn (N1 (Không làm lại việc hệ thống đã có)); Dấu không tự thông báo thêm.
   - Kiểm chứng bằng VoiceOver: hệ thống có đọc khi chuyển nguồn (đã kiểm ở M3, `docs/history/LOG-M0-M4.md`); đọc đúng tên "Dấu – Tiếng Việt" chưa xác nhận, kiểm ở M7 (phát hành).
@@ -171,7 +171,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - **Sau sự kiện reset của D4:** sự kiện reset của D4 (mũi tên, click, đổi nguồn, ⌘/⌃/⌥) chỉ xoá bộ đệm, không chặn D20. Phím dấu kế tiếp có thể đặt dấu vào chữ ngay trước con trỏ ("tooi" rồi ← thì con trỏ ở "tô|i"; gõ "s": phần trước con trỏ "tô" thành "tố", chữ "i" sau con trỏ giữ nguyên, cả từ là "tối"; "to" đổi nguồn rồi về, "o" → "tô"). Muốn không có hành vi này thì tắt công tắc D20.
   - **Vì sao:**
     - Chi phí mỗi lần đọc (bản Debug, trung vị `selectedRange` + `attributedSubstring`): TextEdit 0,4 + 1,0 ms, Safari 0,6 + 3,7 ms, Chrome 0,3 + 0,8 ms, VS Code 0,3 + 0,7 ms.
-    - Chữ cái gõ sát chữ có sẵn: chọn bằng mô phỏng engine trên 10.303 ca ngoài và các tình huống sửa chữ, so với chỉ đọc ở phím dấu và với luôn nối (luôn nối làm hỏng 34 ca gõ từ mới sát từ cũ): `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.8.
+    - Chữ cái gõ sát chữ có sẵn: chọn bằng mô phỏng engine trên 10.303 ca ngoài và các tình huống sửa chữ, so với chỉ đọc ở phím dấu và với luôn nối (luôn nối làm hỏng 34 ca gõ từ mới sát từ cũ): `docs/research/external-test-inputs/README.md` mục 9.8.
     - Ba ngoại lệ: trên cùng 10.303 ca, (a) không đổi ca nào, (b) đổi 2, (c) đổi 24 (một chuỗi của gonhanh, nay "sắcđẹp"), không bất biến nào hỏng.
 - **D21. Gõ tắt phụ âm.** Thuộc nhóm Nâng cao, mặc định tắt.
   - Chỉ áp dụng khi kết thúc từ (ranh giới theo D4 (Từ nước ngoài)) và chỉ khi kết quả là âm tiết tiếng Việt hợp lệ; nếu không thì D4 khôi phục.
@@ -213,7 +213,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - "ww" trên "ưa" cũng bỏ móc như mọi nguyên âm khác ("huaww" → "huaw").
   - Ngoại lệ chữ ư từ một phím w đứng riêng (D23 (w → qu chỉ ở VNI)): khi sau chữ ư đó đã có nguyên âm khác, nó không bị phím w sau bỏ móc ("ww" → "w" vẫn theo D26); phím w đó là chữ cái, kết thúc từ thì D4 khôi phục ("Warwick", "waxwing" giữ nguyên).
   - **Hệ quả đã chấp nhận:** từ tiếng Anh có chữ cái lặp trùng phím dấu mất một chữ nếu gõ bình thường ("password" → "pasword", "coffee" → "cofee"); muốn giữ thì gõ chữ đó 3 lần ("passsword", "cofffee").
-  - **Giới hạn đã biết** (ca thử của bộ gõ khác, `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9): từ tiếng Anh có chữ cái lặp trùng phím dấu hoặc phím biến đổi mất cả dấu lẫn một chữ ("worry" → "ưory", "express" → "êps", "versus" → "veus"). Giữ nguyên hành vi; gõ tiếng Anh bằng U.S. (D2 (Chuyển Việt/Anh)).
+  - **Giới hạn đã biết** (ca thử của bộ gõ khác, `docs/research/external-test-inputs/README.md` mục 9): từ tiếng Anh có chữ cái lặp trùng phím dấu hoặc phím biến đổi mất cả dấu lẫn một chữ ("worry" → "ưory", "express" → "êps", "versus" → "veus"). Giữ nguyên hành vi; gõ tiếng Anh bằng U.S. (D2 (Chuyển Việt/Anh)).
   - **Vì sao:**
     - Đã cân nhắc khôi phục theo phím gốc thay vì chữ hiển thị: gõ "password" tự nhiên được, nhưng các từ vừa là tiếng Anh vừa là âm tiết hợp lệ có phím dấu giữa từ (test, best, list, most, post) không còn cách nào gõ ở chế độ Tiếng Việt. Loại, vì mọi từ phải gõ được.
     - Ngoại lệ chữ ư: đã loại cách áp D26 ở đây, vì "Warwick" → "Waick", "waxwing" → "waing", mất chữ không khôi phục được.
@@ -223,19 +223,19 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Phím d sau nguyên âm vẫn biến d đầu từ thành đ ("did" → "đi"; từ trùng thì tiếng Việt thắng theo D4 (Từ nước ngoài)).
     - Phím biến đổi (aa, ee, oo, w, dd; VNI 6, 7, 8, 9) và phím dấu tác dụng lên nguyên âm/phụ âm phù hợp trong từ, không cần đứng sát ("tuongw" → "tương"; VNI "duo7c59" → "được").
   - **Khi tắt:** phím dấu chỉ có tác dụng khi gõ ngay sau nguyên âm (dấu đã đặt vẫn tự dời khi gõ thêm nguyên âm: "hof" + a → "hoà"); phím biến đổi nguyên âm (w, aa, ee, oo; VNI 6, 7, 8) vẫn tác dụng từ xa ("tuongw" → "tương"), và d → đ chỉ khi hai d liền nhau ("did" giữ "did").
-  - **Phím biến đổi khác loại** (ca thử của bộ gõ khác, `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9): gõ lên nguyên âm đã có dấu phụ khác thì đổi sang dấu mới, kể cả trên cụm hai nguyên âm: "aaw" → "ă", "owo" → "ô", "ươ" + o → "uô" ("cuoiwo" → "cuôi").
+  - **Phím biến đổi khác loại** (ca thử của bộ gõ khác, `docs/research/external-test-inputs/README.md` mục 9): gõ lên nguyên âm đã có dấu phụ khác thì đổi sang dấu mới, kể cả trên cụm hai nguyên âm: "aaw" → "ă", "owo" → "ô", "ươ" + o → "uô" ("cuoiwo" → "cuôi").
 - **D29. Telex đơn giản.** Telex đơn giản là Telex trừ hai điểm:
   - w chỉ biến đổi khi trong từ có a, o, u để nhận dấu trăng/móc (theo D28 (Bỏ dấu tự do), không cần đứng sát: "tuongw" → "tương"); nếu không có thì w là chữ w, không thành ư ("web", "www" gõ thoải mái).
   - Không có `[ ]` (như D27 (Không có phím gõ nhanh ơ, ư)).
   - Không có gõ tắt w → qu (D23 (w → qu chỉ ở VNI)).
-  - Theo Simple Telex 1 của OpenKey (xem `docs/OPENKEY-NOTES.md` 3.5).
+  - Theo Simple Telex 1 của OpenKey (xem `docs/research/OPENKEY-NOTES.md` 3.5).
 - **D30. Kiểm tra chính tả.** Kiểm tra chính tả luôn chạy trong engine, không có công tắc riêng: khi từ đã sai chính tả thì ngừng biến đổi phím tiếp theo.
   - Trong lúc gõ chỉ xét từ có còn là **tiền tố** của một âm tiết hợp lệ hay không ("viêt", "hoc", "tră" vẫn biến đổi tiếp: "vieetj" → "việt", "hocj" → "học", "trawngf" → "trằng"); quy tắc đầy đủ của D31 (Âm tiết tiếng Việt hợp lệ) chỉ áp khi kết thúc từ.
   - Sau Backspace (D32 (Backspace)), trạng thái sai chính tả được tính lại từ chữ còn hiển thị.
   - Công tắc "Tự khôi phục từ không phải tiếng Việt" chỉ điều khiển việc khôi phục khi kết thúc từ.
   - **Dấu thanh trên vần tắc:** "tiền tố hợp lệ" xét chữ cái của âm tiết; dấu thanh chỉ kiểm theo D31 khi kết thúc từ. Vì vậy huyền, hỏi, ngã trên vần có âm cuối p, t, c, ch vẫn được nhận giữa từ ("hoc" + f hiện "hòc"); kết thúc từ thì D4 (Từ nước ngoài) khôi phục ("metric", "catr" giữ nguyên).
     - Hệ quả đã chấp nhận: giữa từ tiếng Anh có thể nháy chữ có dấu ("mẻt…"); khi tắt tự khôi phục, chữ sai chính tả ở lại.
-  - **Vì sao:** nhận dấu thanh trên vần tắc giữa từ để sửa dấu bằng phím dấu khác ("hocfj" → "học", "matfs" → "mát") và bỏ dấu tự do (D28 (Bỏ dấu tự do): "cafts" → "cát") vẫn chạy (`docs/research/EXTERNAL-TEST-INPUTS.md` mục 9). Đã loại phương án cho phím đó đi thẳng như chữ cái: hỏng cả ba cách gõ trên.
+  - **Vì sao:** nhận dấu thanh trên vần tắc giữa từ để sửa dấu bằng phím dấu khác ("hocfj" → "học", "matfs" → "mát") và bỏ dấu tự do (D28 (Bỏ dấu tự do): "cafts" → "cát") vẫn chạy (`docs/research/external-test-inputs/README.md` mục 9). Đã loại phương án cho phím đó đi thẳng như chữ cái: hỏng cả ba cách gõ trên.
 - **D31. Âm tiết tiếng Việt hợp lệ.** Định nghĩa dùng cho D4 (Từ nước ngoài), D20 (Thêm dấu cho từ đã gõ), D21 (Gõ tắt phụ âm), D30 (Kiểm tra chính tả), theo chính tả chuẩn:
   - Phụ âm đầu thuộc danh sách chuẩn, có thêm "p" (pin, pa-tê).
   - Quy tắc phân bố c/k/q, g/gh, ng/ngh: gh, ngh chỉ đứng trước i, e, ê; c, g, ng không đứng trước i, e, ê, y; k đứng trước i, e, ê, y và — nới cho địa danh, xem bên dưới — trước mọi nguyên âm; c không đứng trước oa, oă, oe, uy, uê, uâ vì chính tả viết qu; q luôn đi với u.
@@ -249,7 +249,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - b, m, p, v đi với âm đệm o, u hợp lệ (buýt, boa, voan; "more" → "moẻ" theo D4, gõ đúp để giữ chữ gốc).
   - **Nới cho địa danh:** k đứng trước mọi nguyên âm (Kon Tum, Bắc Kạn, Kơ Tu), phụ âm đầu "kr" (Krông Pắc), và âm cuối k **chỉ sau ă**, cùng ràng buộc dấu như c (Đắk Lắk). Không dùng danh sách ngoại lệ (cùng tinh thần D4).
     - Vần "ăk" chỉ nhận khi ă đã có trước k ("Lawks" → "Lắk"); gõ phím biến đổi sau k ("lakws") không biến đổi.
-  - Ba điểm "qu", âm đệm sau b, m, p, v và hai vần "oao", "uêu" đến từ ca thử của bộ gõ khác (`docs/research/EXTERNAL-TEST-INPUTS.md` mục 9).
+  - Ba điểm "qu", âm đệm sau b, m, p, v và hai vần "oao", "uêu" đến từ ca thử của bộ gõ khác (`docs/research/external-test-inputs/README.md` mục 9).
   - **Vì sao:**
     - Nới cho địa danh: đo trên 428 từ tiếng Anh, 6 từ đổi (karma → kẩm, Kansas → Kâns, Kris → Krí, hawks → hắk, gawks → gắk, awkward → akward); chấp nhận. Đã loại phương án cho âm cuối k ở mọi vần: hỏng 19 từ (ask → ák, task, desk, mask…).
     - "ăk" chỉ khi ă có trước k: cho "ak" là tiền tố hợp lệ sẽ làm "asks", "tasks", "masks" mất một chữ s (D26 (Gõ đúp phím dấu)).
@@ -260,7 +260,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - **Vì sao:** tránh lệch hai bộ đệm như OpenKey.
 - **D33. Độ dài từ.** Từ dài hơn âm tiết dài nhất (7 chữ cái, như "nghiêng") thì khôi phục ngay về chuỗi phím đã gõ (nếu đã biến đổi, không chờ kết thúc từ) và để mọi phím còn lại đi thẳng tới hết từ.
   - Khi tắt công tắc "Tự khôi phục từ không phải tiếng Việt" thì chỉ ngừng biến đổi, không khôi phục (cùng ý nghĩa công tắc ở D30 (Kiểm tra chính tả)).
-  - Xoá hết từ bằng Backspace thì hết trạng thái đi thẳng, như khoá gõ đúp của D26 (Gõ đúp phím dấu): "permission" + 10 ⌫ + "vieetj" → "việt" (ca thử: `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.8).
+  - Xoá hết từ bằng Backspace thì hết trạng thái đi thẳng, như khoá gõ đúp của D26 (Gõ đúp phím dấu): "permission" + 10 ⌫ + "vieetj" → "việt" (ca thử: `docs/research/external-test-inputs/README.md` mục 9.8).
   - **Vì sao:** nhờ vậy bộ đệm có dung lượng cố định, không cấp phát thêm, không mất chữ.
 - **D34. Chữ hoa với phím biến đổi.** Phím biến đổi và phím dấu không đổi kiểu hoa của chữ; chữ hoa/thường theo chữ cái gõ đầu tiên ("dD" → "đ", "Dd" → "Đ", "aA" → "â").
 - **D35. "uơ" và "ươ".** Móc trên cặp u-o (Telex "uow"/"uwo", VNI "uo7") cho "uơ" khi cặp đứng cuối từ ("huơ", "thuở") và tự thành "ươ" khi gõ thêm chữ sau ("uown" → "ươn", "nguwowif" → "người").
@@ -284,14 +284,14 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - Gỡ cài đặt chỉ xoá bộ đệm của System Settings (D16 (Bảo trì và gỡ cài đặt)); bộ đệm riêng của từng app vẫn nhớ bộ gõ đã gỡ, chưa đo hậu quả.
   - **Đường lui:** hành vi bộ đệm của System Settings và của từng app (xem "Vì sao") không có tài liệu Apple, bản macOS sau có thể khác. Đọc lại không thấy mục của Dấu thì hướng dẫn tự thêm bằng "+", và nếu "+" không có Dấu thì đăng xuất một lần (Apple DTS 6/2026).
   - **Một app vẫn không chọn được Dấu** (bộ đệm riêng không xoá được, như các thư mục được hệ thống bảo vệ): hướng dẫn đăng xuất rồi đăng nhập lại một lần, ở màn "Đã bật" của onboarding, sheet Báo lỗi và Hỏi đáp của trang tải về.
-  - Homebrew cask chỉ khai `app`. Chi tiết: `docs/research/M5-INSTALL.md`.
+  - Homebrew cask chỉ khai `app`. Chi tiết: `docs/research/INPUT-METHOD-INSTALL.md`.
   - **Kiểm chữ ký:** mỗi lần mở app và mỗi lần app được đưa lên trước, app kiểm chữ ký và Team ID của bộ gõ đã cài; không khớp thì hiện banner "Cài lại".
   - **Nâng cấp trước, kiểm chữ ký sau:** khi bộ gõ đã cài vừa cũ hơn vừa có chữ ký sai, app nâng cấp trước; kiểm chữ ký và Team ID chạy sau khi nâng cấp xong, nên banner "Cài lại" chỉ hiện khi bản đã cài sau đó vẫn sai.
   - **Vì sao:**
     - Không sandbox: app phải chép bộ gõ vào `~/Library/Input Methods`, nâng cấp tại chỗ và dừng tiến trình bộ gõ cũ. App có sandbox thì file chép ra luôn bị gắn cờ quarantine mà app không gỡ được, và không dừng được app khác (Apple DTS; không bộ gõ tham khảo nào làm vậy).
-    - Bật không cần đăng xuất (đo bằng bản thử rồi bằng Dấu thật, macOS 27.2, tài khoản đã từng cài Dấu; `docs/research/M5-INSTALL.md` mục 9.9, mục 9.10 và 8.1b): danh sách "+" và việc dựng hộp thoại đọc bộ đệm của System Settings; bộ đệm không làm mới khi có nguồn mới đăng ký (không xoá thì chỉ đăng xuất mới làm mới); yêu cầu bật gửi lúc trang Keyboard đang mở sẵn bị bỏ qua im lặng.
+    - Bật không cần đăng xuất (đo bằng bản thử rồi bằng Dấu thật, macOS 27.2, tài khoản đã từng cài Dấu; `docs/research/INPUT-METHOD-INSTALL.md` mục 9.9, mục 9.10 và 8.1b): danh sách "+" và việc dựng hộp thoại đọc bộ đệm của System Settings; bộ đệm không làm mới khi có nguồn mới đăng ký (không xoá thì chỉ đăng xuất mới làm mới); yêu cầu bật gửi lúc trang Keyboard đang mở sẵn bị bỏ qua im lặng.
     - Mỗi app có sandbox cũng giữ bộ đệm riêng, dùng nguyên bộ đệm có sẵn kể cả khi mở lại app: Telegram dựng bộ đệm lúc chưa có Dấu thì không chọn được Dấu, gõ vẫn ra bộ gõ khác. Xoá bộ đệm trước khi đăng ký thì app đang chạy dựng lại ở lần đăng ký và dùng được nguồn mới, không cần mở lại (bản thử).
-    - Đăng xuất là đường lui cho app còn lại (đo bằng Dấu thật, `docs/research/M5-INSTALL.md` mục 9.12): sau một lần đăng nhập mới, mỗi app có sandbox dựng lại bộ đệm của nó ở lần đầu đọc nguồn đầu vào; thoát rồi mở lại app thì không.
+    - Đăng xuất là đường lui cho app còn lại (đo bằng Dấu thật, `docs/research/INPUT-METHOD-INSTALL.md` mục 9.12): sau một lần đăng nhập mới, mỗi app có sandbox dựng lại bộ đệm của nó ở lần đầu đọc nguồn đầu vào; thoát rồi mở lại app thì không.
     - Kiểm chữ ký: thư mục `~/Library/Input Methods` tài khoản người dùng ghi được, nên bundle có thể bị thay; macOS có chặn bundle bị thay hay vẫn đưa phím cho nó thì chưa đo.
 - **D38. Chữ trên giao diện.**
   - Chữ của Dấu theo ngôn ngữ giao diện của Dấu (D41 (Ngôn ngữ giao diện)).
@@ -306,7 +306,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - Trang tải về có liên kết "Ủng hộ dự án" ở chân trang.
   - Tài khoản Sponsors của tổ chức `codefastlabs` và tài khoản ngân hàng nhận chuyển khoản do người dùng mở và lo phần thuế, pháp lý (việc cần tài khoản).
   - Còn mở: có đặt liên kết trong app hay không (canvas trước).
-- **D40. Chữ dựng sẵn và phím z.** (ca thử của bộ gõ khác, `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9)
+- **D40. Chữ dựng sẵn và phím z.** (ca thử của bộ gõ khác, `docs/research/external-test-inputs/README.md` mục 9)
   - Chữ tiếng Việt dựng sẵn đến như một phím (bàn phím khác, dán từng chữ) được coi là một chữ cái của từ đang gõ ("chuýên" → "chuyến").
   - Ký tự không thuộc bảng chữ (ß…) kết thúc từ.
   - Phím z (Telex) khi từ chưa có dấu thanh là chữ z, không bỏ mũ/móc ("kongoz" → "kongoz").
@@ -337,7 +337,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 
 ## Đã biết nhưng không làm
 
-Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết và cố ý không làm; lý do nằm ở quyết định được dẫn, không chép lại ở đây. Muốn làm một mục thì sửa quyết định đó trước, như mọi quyết định khác. Cột "Bộ gõ khác có" theo `docs/OPENKEY-NOTES.md`, "—" là chưa đối chiếu.
+Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết và cố ý không làm; lý do nằm ở quyết định được dẫn, không chép lại ở đây. Muốn làm một mục thì sửa quyết định đó trước, như mọi quyết định khác. Cột "Bộ gõ khác có" theo `docs/research/OPENKEY-NOTES.md`, "—" là chưa đối chiếu.
 
 | Tính năng | Bộ gõ khác có | Vì sao Dấu không làm |
 |---|---|---|
@@ -367,8 +367,8 @@ Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM v
   - Hiện biết: trên macOS 27.2 (bản thử rồi Dấu thật) có hộp thoại xin phép, và không cần đăng xuất nếu làm theo D37 (Cài đặt bộ gõ).
   - Còn phải đo trên macOS 14–26 và bản ký Developer ID; không đo trên tài khoản macOS mới.
   - Cách làm hiện hành: sau "Bật Dấu" đọc lại trạng thái từ `com.apple.inputsources`, không tin TIS của chính tiến trình; chưa bật thì mở Cài đặt › Bàn phím và hướng dẫn bấm "+" (N4 (Không tự đổi cài đặt hệ thống), D37).
-  - Nguồn: Apple DTS nói cần đăng xuất, một dự án khác nói không. Chi tiết: `docs/research/M5-INSTALL.md` mục 0, 2.2, 2.3.
-- **Cài cho riêng mình hay cho cả máy** (làm sau M5 (onboarding, cài đặt, gỡ cài đặt)): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` (như D16 (Bảo trì và gỡ cài đặt) hiện nay) hoặc `/Library/Input Methods` để mọi tài khoản trên máy dùng được. Chưa thiết kế; khi làm phải sửa D16, D37 (Cài đặt bộ gõ), có thể cả D6 (Phát hành) (`.pkg` hay app chủ xin quyền quản trị) và D7 (Cập nhật và loại bản dựng) (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không. `docs/research/M5-INSTALL.md` mục 8.2 có một bước đo một phần các câu này.
+  - Nguồn: Apple DTS nói cần đăng xuất, một dự án khác nói không. Chi tiết: `docs/research/INPUT-METHOD-INSTALL.md` mục 0, 2.2, 2.3.
+- **Cài cho riêng mình hay cho cả máy** (làm sau M5 (onboarding, cài đặt, gỡ cài đặt)): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` (như D16 (Bảo trì và gỡ cài đặt) hiện nay) hoặc `/Library/Input Methods` để mọi tài khoản trên máy dùng được. Chưa thiết kế; khi làm phải sửa D16, D37 (Cài đặt bộ gõ), có thể cả D6 (Phát hành) (`.pkg` hay app chủ xin quyền quản trị) và D7 (Cập nhật và loại bản dựng) (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không. `docs/research/INPUT-METHOD-INSTALL.md` mục 8.2 có một bước đo một phần các câu này.
 - **Hộp thoại App Group:** truy cập App Group giữa app chủ và bộ gõ có phát sinh hộp thoại hệ thống không? Bản có Team ID: không có hộp thoại; còn phải kiểm lại với bản ký Developer ID ở M7.
 - Độ ổn định của "Thêm dấu cho từ đã gõ" trên các web editor (Google Docs, Notion…).
 - **Loại bản dựng** (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện); chốt ở M7): kênh Beta có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID; artboard "Cập nhật & hỗ trợ (bản phát triển)" hiện vẫn vẽ phần Cập nhật như bản chính thức). Tên nguồn nhập liệu "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37 (Cài đặt bộ gõ)).

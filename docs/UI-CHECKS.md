@@ -169,7 +169,7 @@ Lệnh: `swift run --package-path scripts/snapshot-settings SnapshotSettings <ra
   - Chỉ dùng để xem nội dung; số đo lấy từ `real.txt`.
 - Bố cục và số đo theo System Settings, không theo mockup: bảng này không có tiêu chí đạt.
 - Đối số thứ tư `<thư-mục-chụp-onboarding>` (vd. `<ra-run.sh>/onboarding`) ghi thêm `onboarding-<bước>-compare-{light,dark}.png`.
-  - So với artboard [OnboardingConflict](ui/canvas/OnboardingConflict.png), [OnboardingConflictDone](ui/canvas/OnboardingConflictDone.png), [OnboardingEnable](ui/canvas/OnboardingEnable.png), [OnboardingEnableNotes](ui/canvas/OnboardingEnableNotes.png), [OnboardingEnableWaiting](ui/canvas/OnboardingEnableWaiting.png), [OnboardingEnableFailed](ui/canvas/OnboardingEnableFailed.png), [OnboardingEnableError](ui/canvas/OnboardingEnableError.png), [OnboardingEnableDone](ui/canvas/OnboardingEnableDone.png), [OnboardingEnableDoneNoShortcut](ui/canvas/OnboardingEnableDoneNoShortcut.png), [Onboarding](ui/canvas/Onboarding.png).
+  - So với artboard [OnboardingConflict](canvas/OnboardingConflict.png), [OnboardingConflictDone](canvas/OnboardingConflictDone.png), [OnboardingEnable](canvas/OnboardingEnable.png), [OnboardingEnableNotes](canvas/OnboardingEnableNotes.png), [OnboardingEnableWaiting](canvas/OnboardingEnableWaiting.png), [OnboardingEnableFailed](canvas/OnboardingEnableFailed.png), [OnboardingEnableError](canvas/OnboardingEnableError.png), [OnboardingEnableDone](canvas/OnboardingEnableDone.png), [OnboardingEnableDoneNoShortcut](canvas/OnboardingEnableDoneNoShortcut.png), [Onboarding](canvas/Onboarding.png).
   - Không có artboard tối: mockup sáng cạnh app tối.
 
 ### 4. Test

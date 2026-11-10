@@ -16,7 +16,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 ## M1 — Engine
 - Trước khi viết engine:
   - đọc mã nguồn OpenKey (clone ngoài repo);
-  - lập `docs/OPENKEY-NOTES.md`: danh sách đầy đủ tính năng của engine, hành vi từng tính năng, ca biên, lỗi tìm thấy, và Dấu làm hay không làm (dẫn số D);
+  - lập `docs/research/OPENKEY-NOTES.md`: danh sách đầy đủ tính năng của engine, hành vi từng tính năng, ca biên, lỗi tìm thấy, và Dấu làm hay không làm (dẫn số D);
   - đối chiếu với `DECISIONS.md`; có mâu thuẫn mới thì nêu ra trước khi code.
 - `VietEngine`:
   - Telex trước, rồi VNI và Telex đơn giản;
@@ -96,11 +96,18 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Xuất bộ file nhận diện theo `docs/BRAND.md` và gắn thẻ meta cho website. Bộ file gồm: biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, favicon, ảnh Open Graph, ảnh xem trước GitHub, nền DMG.
 - Việc cần tài khoản Apple Developer: chuẩn bị sẵn, dừng lại để người dùng thực hiện.
 - Kiểm tra trước phát hành (cần người):
-  - VoiceOver và Tab ("Điều hướng bàn phím") qua cửa sổ Cài đặt;
+  - VoiceOver và Tab ("Điều hướng bàn phím") qua cửa sổ Cài đặt, cả hàng "Ngôn ngữ";
   - VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn (M3 mới xác nhận là hệ thống có đọc);
   - biểu tượng "V" trên thanh menu đơn sắc, đổi màu theo nền sáng/tối;
   - máy để tiếng Anh hẳn (menu app, tên "Dấu" trong Finder);
-  - các sheet ở chế độ tối.
+  - các sheet ở chế độ tối;
+  - danh sách "+" của System Settings có Dấu (nhìn bằng mắt).
+- Việc ghi lại từ kiểm toán M0:
+  - Xem lại gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 (Chỉ hứa điều đã kiểm chứng) khi làm báo lỗi.
+  - `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
+  - Thử bỏ `temporary-exception.mach-register.global-name` của bộ gõ khi rà entitlement trước notarize (xem `docs/ARCHITECTURE.md`).
+  - Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.
+  - Đưa phép đếm cấp phát (`malloc_logger`) vào CI.
 
 ## M8 — Website
 - Dựng trang tải về theo `docs/UI.md` (mục "Trang tải về") và `docs/BRAND.md`: trang tĩnh, responsive, thẻ meta và ảnh Open Graph, favicon.
@@ -148,7 +155,7 @@ Mục đích: người dùng biết và học được cách gõ, và biết kh�
   - không lưu gì về chữ đã gõ (D8 (Không telemetry)).
 - Trên trang web: trang "Dấu khác các bộ gõ khác thế nào".
   - Chỉ ghi khác biệt đã đo được (N5).
-  - Nguồn: `docs/OPENKEY-NOTES.md` và bộ dữ liệu kiểm thử (đặt dấu kiểu mới/cũ, bỏ dấu tự do, khôi phục từ nước ngoài, uơ/ươ…).
+  - Nguồn: `docs/research/OPENKEY-NOTES.md` và bộ dữ liệu kiểm thử (đặt dấu kiểu mới/cũ, bỏ dấu tự do, khôi phục từ nước ngoài, uơ/ươ…).
   - Dẫn mục "Đã biết nhưng không làm" của `docs/DECISIONS.md`.
 - Canvas trước, mã sau. Nội dung có bản tiếng Việt và tiếng Anh nếu M9 đã xong.
 - Xong khi: người dùng duyệt nội dung trên canvas; mọi ví dụ trong phần học có test engine tương ứng; kiểm toán ĐẠT.

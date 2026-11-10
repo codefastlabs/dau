@@ -73,7 +73,7 @@ Mục đích: lấy **chuỗi phím** trong bộ test của các bộ gõ tiến
 2. Chạy engine của Dấu trên các ca đó; ca nào Dấu khác đáp án của chính Dấu là lỗi của Dấu. (Đã làm bằng bất biến thay cho đáp án từng ca, xem Hiện trạng.)
 3. Chỉ sau bước 2, người so sánh mới mở `build/external-answers/` và đánh dấu các ca Dấu khác họ.
    - Mỗi ca khác nhau được xét theo DECISIONS.md. Kết quả là một trong ba:
-     - Dấu cố ý khác (ghi vào `docs/OPENKEY-NOTES.md` hoặc ghi chú test);
+     - Dấu cố ý khác (ghi vào `docs/research/OPENKEY-NOTES.md` hoặc ghi chú test);
      - đáp án của Dấu sai;
      - cần quyết định mới (hỏi người dùng).
    - Đáp án của họ không bao giờ được chép thẳng vào test.

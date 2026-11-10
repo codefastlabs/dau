@@ -1,6 +1,6 @@
 # Ghi công nguồn của các file đầu vào test
 
-Các file `*.tsv` trong thư mục này chứa **chuỗi phím** lấy từ bộ test của các dự án dưới đây, **không có kết quả mong đợi** của họ (đáp án của họ chỉ nằm trong `build/external-answers/`, không commit). Cách lấy, ký hiệu và lý do giữ/bỏ: `docs/research/EXTERNAL-TEST-INPUTS.md`. Script tạo lại các file: `scripts/research/external-tests/extract.sh`.
+Các file `*.tsv` trong thư mục này chứa **chuỗi phím** lấy từ bộ test của các dự án dưới đây, **không có kết quả mong đợi** của họ (đáp án của họ chỉ nằm trong `build/external-answers/`, không commit). Cách lấy, ký hiệu và lý do giữ/bỏ: `docs/research/external-test-inputs/README.md`. Script tạo lại các file: `scripts/research/external-tests/extract.sh`.
 
 Với nguồn MIT và BSD-3-Clause, thông báo bản quyền và toàn văn giấy phép được chép nguyên từ file giấy phép của họ ở đúng commit ghi dưới đây. Với nguồn GPL chỉ ghi tên giấy phép và đường dẫn, vì Dấu phát hành theo GPLv3 (văn bản ở file `LICENSE` của repo Dấu).
 
