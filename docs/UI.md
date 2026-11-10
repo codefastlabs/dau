@@ -78,14 +78,14 @@ Artboard: [bước 1](canvas/OnboardingConflict.png).
 
 - Chép bộ gõ vào `~/Library/Input Methods` và đăng ký.
 - Chỉ bật nguồn đầu vào khi người dùng bấm "Bật Dấu" (N4 (Không tự đổi cài đặt hệ thống), D37 (Cài đặt bộ gõ)).
-- macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn: [`OnboardingEnable`](canvas/OnboardingEnable.png), [`OnboardingEnableNotes`](canvas/OnboardingEnableNotes.png), [`OnboardingEnableWaiting`](canvas/OnboardingEnableWaiting.png), [`OnboardingEnableDone`](canvas/OnboardingEnableDone.png), [`OnboardingEnableDoneNoShortcut`](canvas/OnboardingEnableDoneNoShortcut.png), [`OnboardingEnableFailed`](canvas/OnboardingEnableFailed.png), [`OnboardingEnableError`](canvas/OnboardingEnableError.png).
+- macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn: [`OnboardingEnable`](canvas/OnboardingEnable.png), [`OnboardingEnableNotes`](canvas/OnboardingEnableNotes.png), [`OnboardingEnableWaiting`](canvas/OnboardingEnableWaiting.png), [`OnboardingEnableDone`](canvas/OnboardingEnableDone.png), [`OnboardingEnableDoneNoShortcut`](canvas/OnboardingEnableDoneNoShortcut.png), [`OnboardingEnableFailed`](canvas/OnboardingEnableFailed.png), [`OnboardingEnableError`](canvas/OnboardingEnableError.png), [`OnboardingEnableTampered`](canvas/OnboardingEnableTampered.png).
 - Tên màn hình của macOS viết tiếng Anh như trên máy người dùng (System Settings › Keyboard › Input Sources).
 - Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5).
 - Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
 
 **Quay lại** (D14 (Onboarding)): nút phụ kiểu hệ thống bên trái nút chính (D9).
 
-- Có trên các màn trước khi Dấu được bật: trước khi bấm, đang chờ, lỗi cài.
+- Có trên các màn trước khi Dấu được bật: trước khi bấm, đang chờ, lỗi cài, bộ gõ đã bị thay.
 - Chỉ có khi bước 1 đã hiện trong lượt onboarding này. Bước 1 không hiện (không có bộ gõ cũ) thì không có nút, để nút không dẫn tới một màn trống.
 - Bấm thì:
   - huỷ lần chờ đang chạy (cùng cách "Thử lại" huỷ);
@@ -131,7 +131,14 @@ Artboard: [bước 1](canvas/OnboardingConflict.png).
 
 - Màn riêng "Chưa cài được Dấu", hai cách xử lý.
 - Dòng "Chi tiết" là mô tả thật của lỗi (chọn được để chép).
-- Nút "Thử lại" bật lại từ đầu.
+- Nút "Thử lại" bật lại từ đầu; lỗi đến từ "Cài lại" (mục dưới) thì "Thử lại" cài lại.
+
+**Bộ gõ đã bị thay** ([`OnboardingEnableTampered`](canvas/OnboardingEnableTampered.png)): thay cho màn "Trước khi bấm" khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và chữ ký của nó không hợp lệ hoặc khác Team ID (D37).
+
+- Cùng tiêu đề, câu dẫn và nút "Cài lại" với banner của cửa sổ Cài đặt (mục "Bộ gõ trên máy đã bị thay"); không có thẻ.
+- "Cài lại" chỉ cài bản nhúng của app, không bật: cài xong và chữ ký đúng thì hiện màn "Trước khi bấm"; lỗi thì hiện màn "Lỗi cài".
+- Kiểm lại khi cửa sổ được kích hoạt; đang chờ Allow mà phát hiện thì huỷ lần chờ.
+- Bản không phải bản chủ không kiểm chữ ký nên không có màn này. Dấu đã bật thì bước 2 vẫn là "Đã bật", banner của cửa sổ Cài đặt lo.
 
 ### Bước 3, chọn kiểu gõ và gõ thử
 

@@ -60,8 +60,13 @@ protocol InputMethodFiles {
     /// architecture (D37). False when either cannot be read.
     var installedMatchesEmbedded: Bool { get }
     /// Copies the embedded bundle to a staging folder next to the destination, clears
-    /// quarantine, checks the signature, then swaps it in place in one rename.
+    /// quarantine, checks the signature, then swaps it in place in one rename (or moves
+    /// it there when nothing is installed).
     func installEmbedded() throws
+    /// The same, but only ever swaps with an installed bundle that is there at the
+    /// rename: returns false, nothing installed and no staging folder left, when there
+    /// is none (any more). Never installs anew.
+    func replaceInstalledWithEmbedded() throws -> Bool
     func moveInstalledToTrash() throws
 }
 
@@ -237,6 +242,13 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     func enable() async throws -> EnableOutcome {
         guard let embedded = files.embedded else { throw InputMethodInstallerError.unavailable }
         guard files.isInstalled else { throw InputMethodInstallerError.failed("not installed") }
+        // D37: Dấu never turns on an input method it knows is not its own, whoever calls;
+        // the user reinstalls first. Before anything is cleared or registered. A copy
+        // that is not the owner copy does not check the installed input method.
+        if owner.runningCopyIsOwner, !files.installedIsGenuine {
+            installLogger.error("event=enable-refused reason=bad-signature")
+            return .needsReinstall
+        }
         let bundleID = embedded.bundleID, mode = embedded.vietnameseModeID
 
         // Every app's input source cache goes right before registering: an app keeps a
@@ -319,7 +331,13 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             return .badSignature
         }
         guard !files.installedMatchesEmbedded else { return .alreadyCurrent }
-        try files.installEmbedded()
+        // Swap only: if another process uninstalled the input method since the checks
+        // above (D16), nothing is installed again, stopped or registered (D37: the first
+        // install is the user's).
+        guard try files.replaceInstalledWithEmbedded() else {
+            installLogger.notice("event=reconcile-gone")
+            return .notInstalled
+        }
         // The old process keeps the old code mapped: ask it to quit; macOS launches the
         // new bundle at the next key. Then register again (harmless, keeps TIS current).
         await stopInputMethod(embedded.bundleID)
@@ -505,28 +523,48 @@ struct InputMethodBundleFiles: InputMethodFiles {
     }
 
     func installEmbedded() throws {
+        _ = try stageAndRename(swapOnly: false)
+    }
+
+    func replaceInstalledWithEmbedded() throws -> Bool {
+        try stageAndRename(swapOnly: true)
+    }
+
+    /// Stages the embedded bundle and puts it at `installedURL`. `swapOnly`: only by
+    /// swapping with a bundle that is there; false when there is none. Otherwise a
+    /// missing destination gets the staged copy. True when the embedded bundle is in place.
+    private func stageAndRename(swapOnly: Bool) throws -> Bool {
         let fm = FileManager.default
         guard (try? embeddedURL.checkResourceIsReachable()) == true else {
             throw InputMethodInstallerError.unavailable
         }
-        try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+        if swapOnly {
+            // Nothing to swap with: no folder made, nothing staged.
+            guard isInstalled else { return false }
+        } else {
+            try fm.createDirectory(at: directory, withIntermediateDirectories: true)
+        }
         // Hidden, no ".app": Text Input Sources does not pick up the staging copy.
         let staging = directory.appendingPathComponent(".DauInputMethod-staging-\(UUID().uuidString)")
         defer { try? fm.removeItem(at: staging) }
         try fm.copyItem(at: embeddedURL, to: staging)
         Quarantine.clear(staging)
         guard verify(staging) else { throw InputMethodInstallerError.invalidSignature }
-        if fm.fileExists(atPath: installedURL.path) {
-            // One atomic swap: the running process never sees half a bundle. The old
-            // bundle ends up at `staging` and is removed by the defer above.
-            guard renamex_np(staging.path, installedURL.path, UInt32(RENAME_SWAP)) == 0 else {
-                throw InputMethodInstallerError.failed("swap errno \(errno)")
-            }
-        } else {
-            guard renamex_np(staging.path, installedURL.path, UInt32(RENAME_EXCL)) == 0 else {
-                throw InputMethodInstallerError.failed("rename errno \(errno)")
-            }
+        // One atomic swap: the running process never sees half a bundle. The old bundle
+        // ends up at `staging` and is removed by the defer above. The rename itself says
+        // whether the destination is there (ENOENT), so nothing can slip in between a
+        // check and the rename.
+        if renamex_np(staging.path, installedURL.path, UInt32(RENAME_SWAP)) == 0 { return true }
+        let swapError = errno
+        guard swapError == ENOENT else {
+            throw InputMethodInstallerError.failed("swap errno \(swapError)")
         }
+        // The destination is gone (the staged copy is still there: the defer removes it).
+        guard !swapOnly else { return false }
+        guard renamex_np(staging.path, installedURL.path, UInt32(RENAME_EXCL)) == 0 else {
+            throw InputMethodInstallerError.failed("rename errno \(errno)")
+        }
+        return true
     }
 
     func moveInstalledToTrash() throws {

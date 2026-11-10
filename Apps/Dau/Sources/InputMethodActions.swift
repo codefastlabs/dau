@@ -32,6 +32,10 @@ final class InputMethodActions {
     private(set) var dauIsSelected = false
     /// Captures fix `dauIsSelected`: the sheet does not read the real one then.
     @ObservationIgnored private var selectionPinned = false
+    #if DEBUG
+    /// Captures fix `installedTampered` (`forceTampered`): `checkInstalled` leaves it alone.
+    @ObservationIgnored private var tamperedPinned = false
+    #endif
 
     /// The installed input method is not the one this app installs (`installedIsGenuine`).
     private(set) var installedTampered = false
@@ -66,7 +70,8 @@ final class InputMethodActions {
 
     /// "Bật lại" and "Thử lại". Returns true when the onboarding window should take over:
     /// the input method is not installed, or macOS does not list it yet. A run still
-    /// waiting for the user's Allow is cancelled first.
+    /// waiting for the user's Allow is cancelled first. An installed copy with a wrong
+    /// signature is not enabled (D37): the "Cài lại" banner shows instead.
     func enableFromBanner() async -> Bool {
         bannerTask?.cancel()
         bannerAttempt += 1
@@ -103,6 +108,11 @@ final class InputMethodActions {
         case .success(.notListed):
             banner = .idle
             return true
+        case .success(.needsReinstall):
+            // D37: nothing was enabled. The tampered banner, with "Cài lại", shows above
+            // this one, which goes back to "Bật lại" for after the reinstall.
+            installedTampered = true
+            banner = .idle
         case .failure:
             banner = .failed
         }
@@ -141,6 +151,10 @@ final class InputMethodActions {
     /// becomes active). A copy that is not the owner copy checks nothing and shows no
     /// banner (D37).
     func checkInstalled() {
+        #if DEBUG
+        // `--tampered`: the banner stays for the capture, whatever is installed.
+        if tamperedPinned { return }
+        #endif
         guard reinstall != .working else { return }
         guard installer.isOwnerCopy else {
             installedTampered = false
@@ -168,8 +182,12 @@ final class InputMethodActions {
     }
 
     #if DEBUG
-    /// Captures (`--tampered`): show the banner without touching the installed copy.
-    func forceTampered() { installedTampered = true }
+    /// Captures (`--tampered`): show the banner without touching the installed copy, and
+    /// keep it: no later check (the launch reconcile's, an activation's) reads the real one.
+    func forceTampered() {
+        tamperedPinned = true
+        installedTampered = true
+    }
     /// Captures (`--capture-uninstall`): show or hide the uninstall sheet, running nothing.
     func showUninstallSheetForCapture(_ shown: Bool, dauIsSelected: Bool = false) {
         selectionPinned = shown

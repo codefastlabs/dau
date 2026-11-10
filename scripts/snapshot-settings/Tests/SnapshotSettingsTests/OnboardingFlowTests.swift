@@ -529,6 +529,120 @@ struct OnboardingFlowTests {
         #expect(waitingInstaller.calls == ["enable"])
     }
 
+    // MARK: Installed with a wrong signature (D37 × D14; artboard OnboardingEnableTampered)
+
+    @Test("installed, not on, wrong signature, owner copy: step 2 shows Cài lại instead of Bật Dấu; Cài lại installs and enables nothing, then Bật Dấu shows and enables")
+    func tamperedAsksToReinstall() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        installer.genuine = false
+        flow.start()
+        #expect(LaunchRouter.opensOnboarding(installer.status()))
+        #expect(flow.step == .enable)
+        #expect(flow.installedTampered)
+        #expect(flow.enableScreen == .tampered)
+        #expect(!flow.canGoBack)   // step 1 never showed
+        await flow.reinstall()
+        #expect(installer.calls == ["install"])
+        #expect(!flow.installedTampered && !flow.isReinstalling)
+        #expect(flow.enableScreen == .ready)
+        #expect(flow.status == .installed(version: nil))
+        await flow.enable()
+        #expect(installer.calls == ["install", "enable"])
+        #expect(flow.enableScreen == .done)
+    }
+
+    @Test("the Cài lại screen follows the system on activation, and has Quay lại by the rule of step 2")
+    func tamperedFollowsSystem() async {
+        let (flow, detector, installer) = flow([openKey], status: .installed(version: nil))
+        flow.start()
+        flow.skip()
+        #expect(flow.enableScreen == .ready)
+        // Replaced while the window was in the back.
+        installer.genuine = false
+        flow.refresh()
+        #expect(flow.enableScreen == .tampered)
+        #expect(flow.canGoBack)
+        flow.back()
+        #expect(flow.step == .oldInputMethods)
+        detector.found = []
+        flow.next()
+        #expect(flow.enableScreen == .tampered)
+        // Put right outside Dấu: the usual screen is back.
+        installer.genuine = true
+        flow.refresh()
+        #expect(flow.enableScreen == .ready)
+        #expect(installer.calls.isEmpty)
+    }
+
+    @Test("Bật Dấu never enables a copy with a wrong signature: one replaced after the last check, or while waiting for Allow, leads to Cài lại")
+    func tamperedNeverEnabled() async {
+        // Replaced after the screen was read: the installer refuses, the screen follows.
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        flow.start()
+        #expect(flow.enableScreen == .ready)
+        installer.genuine = false
+        await flow.enable()
+        #expect(installer.calls == ["enable"])
+        #expect(installer.status() == .installed(version: nil))
+        #expect(flow.enableScreen == .tampered)
+        #expect(flow.problem == nil)
+
+        // Found on activation while a wait for Allow runs: the wait is cancelled.
+        let (waiting, _, waitingInstaller) = self.flow(status: .installed(version: nil))
+        waiting.start()
+        waitingInstaller.enableWaits = true
+        let task = Task { await waiting.enable() }
+        for _ in 0..<400 where !waitingInstaller.enableWaiting { try? await Task.sleep(for: .milliseconds(5)) }
+        #expect(waiting.enableScreen == .waiting)
+        waitingInstaller.genuine = false
+        waiting.refresh()
+        #expect(waiting.enableScreen == .tampered)
+        await task.value
+        #expect(!waiting.isWorking)
+        #expect(waitingInstaller.status() == .installed(version: nil))
+    }
+
+    @Test("a failed Cài lại shows the install error with its detail; Thử lại reinstalls, never enables")
+    func tamperedReinstallFails() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil), failure: .invalidSignature)
+        installer.genuine = false
+        flow.start()
+        await flow.reinstall()
+        #expect(flow.enableScreen == .error)
+        #expect(flow.errorDetail == InputMethodInstallerError.invalidSignature.detail)
+        #expect(flow.installedTampered)
+        // The window coming to the front keeps the error.
+        flow.refresh()
+        #expect(flow.enableScreen == .error)
+        installer.failure = nil
+        await flow.enable()   // "Thử lại"
+        #expect(installer.calls == ["install", "install"])
+        #expect(flow.enableScreen == .ready)
+        #expect(flow.errorDetail == nil)
+    }
+
+    @Test("a copy that is not the owner copy does not check the signature: Bật Dấu as before; an enabled Dấu never shows Cài lại in onboarding (D37)")
+    func tamperedNotOwnerOrEnabled() async {
+        let (flow, _, installer) = flow(status: .installed(version: nil))
+        installer.genuine = false
+        installer.ownerCopy = false
+        flow.start()
+        #expect(!flow.installedTampered)
+        #expect(flow.enableScreen == .ready)
+        await flow.reinstall()   // no screen leads here; nothing happens
+        #expect(installer.calls.isEmpty)
+        await flow.enable()
+        #expect(installer.calls == ["enable"])
+        #expect(flow.enableScreen == .done)
+
+        // Already on: the Settings window's banner asks, step 2 stays done.
+        let (enabled, _, enabledInstaller) = self.flow(status: .enabled)
+        enabledInstaller.genuine = false
+        enabled.start()
+        #expect(!enabled.installedTampered)
+        #expect(enabled.enableScreen == .done)
+    }
+
     @Test("launch opens onboarding only when Dấu is known to be missing or off")
     func launch() {
         #expect(LaunchRouter.opensOnboarding(.notInstalled))

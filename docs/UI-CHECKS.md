@@ -40,6 +40,7 @@ Lệnh: `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
      - bước 2 trước khi bấm (`2`);
      - bước 1 sau "Quay lại" khi OpenKey đã tắt (`1-done`);
      - bước 2 khi không đọc được phím tắt và có nguồn tiếng Việt khác (`2-notes`);
+     - bước 2 khi bộ gõ đã cài có chữ ký sai (`2-tampered`; dịch vụ giả lúc đó: chữ ký không khớp; màn này không có thẻ);
      - bước 2 đang chờ Allow (`2-waiting`);
      - bước 2 chưa bật được (`2-failed`);
      - bước 2 lỗi cài (`2-error`);

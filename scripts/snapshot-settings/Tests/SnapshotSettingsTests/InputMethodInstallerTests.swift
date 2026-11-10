@@ -162,6 +162,8 @@ final class FakeFiles: InputMethodFiles {
     var installedMatchesEmbedded: Bool { isInstalled && matches }
     var installError: InputMethodInstallerError?
     var trashError: InputMethodInstallerError?
+    /// Another process removes the installed bundle while the swap-only copy is staged.
+    var goneDuringReplace = false
     var log: [String] = []
 
     func installEmbedded() throws {
@@ -170,6 +172,17 @@ final class FakeFiles: InputMethodFiles {
         installed = embedded
         genuine = true
         matches = true
+    }
+
+    func replaceInstalledWithEmbedded() throws -> Bool {
+        log.append("copy")
+        if let installError { throw installError }
+        if goneDuringReplace { installed = nil }
+        guard installed != nil else { return false }
+        installed = embedded
+        genuine = true
+        matches = true
+        return true
     }
 
     func moveInstalledToTrash() throws {
@@ -485,6 +498,40 @@ struct InputMethodInstallerTests {
         #expect(try await rig.installer.reconcile() == .alreadyCurrent)
     }
 
+    @Test("reconcile: the installed bundle removed by another process after the checks (uninstall, D16) is not installed again: nothing stopped, nothing registered")
+    func reconcileGoneMeanwhile() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.files.goneDuringReplace = true
+        rig.processes.running = true
+        #expect(try await rig.installer.reconcile() == .notInstalled)
+        #expect(!rig.files.isInstalled)
+        #expect(rig.tis.log.isEmpty && rig.processes.log.isEmpty)
+        // The user's own install still installs anew.
+        try await rig.installer.install()
+        #expect(rig.files.isInstalled)
+    }
+
+    @Test("enable: the owner copy never turns on an installed input method with a wrong signature: needsReinstall, nothing cleared, registered or enabled; after Cài lại it enables (D37)")
+    func enableRefusesBadSignature() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.files.genuine = false
+        rig.settings.running = true
+        #expect(try await rig.installer.enable() == .needsReinstall)
+        #expect(rig.tis.log.isEmpty && rig.caches.log.isEmpty && rig.settings.log.isEmpty && rig.files.log.isEmpty)
+        #expect(rig.installer.status() == .installed(version: "0.1.0"))
+        try await rig.installer.install()
+        #expect(try await rig.installer.enable() == .enabled)
+    }
+
+    @Test("enable: a copy that is not the owner copy does not check the signature and enables as before (D37)")
+    func enableNotOwnerDoesNotCheck() async throws {
+        let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
+        rig.files.genuine = false
+        rig.owner.runningCopyIsOwner = false
+        #expect(try await rig.installer.enable() == .enabled)
+        #expect(rig.files.log.isEmpty)
+    }
+
     @Test("reconcile: a copy that is not the owner copy does nothing, whatever is installed")
     func reconcileNotOwner() async throws {
         let differs = Rig(installed: old)
@@ -790,6 +837,60 @@ struct InputMethodInstallerTests {
         let missing = InputMethodBundleFiles(embeddedURL: root.appendingPathComponent("nope.app"), directory: dir)
         #expect(missing.embedded == nil)
         #expect(throws: InputMethodInstallerError.unavailable) { try missing.installEmbedded() }
+        #expect(throws: InputMethodInstallerError.unavailable) { try missing.replaceInstalledWithEmbedded() }
+    }
+
+    @Test("files: the swap-only path (reconcile) replaces a bundle that is there and never installs anew: nothing installed, or removed while the copy is staged → false, nothing installed, no staging left, no folder made")
+    func filesSwapOnly() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("dau-installer-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        func makeBundle(_ url: URL, version: String) throws {
+            let contents = url.appendingPathComponent("Contents")
+            try fm.createDirectory(at: contents.appendingPathComponent("MacOS"), withIntermediateDirectories: true)
+            let info: [String: Any] = ["CFBundleIdentifier": imID, "CFBundleVersion": version]
+            try PropertyListSerialization.data(fromPropertyList: info, format: .xml, options: 0)
+                .write(to: contents.appendingPathComponent("Info.plist"))
+            try Data(version.utf8).write(to: contents.appendingPathComponent("MacOS/DauInputMethod"))
+        }
+        let embedded = root.appendingPathComponent("App/DauInputMethod.app")
+        try makeBundle(embedded, version: "2")
+        let dir = root.appendingPathComponent("Input Methods")
+        var files = InputMethodBundleFiles(embeddedURL: embedded, directory: dir)
+        var staged = 0
+        files.verify = { _ in staged += 1; return true }
+
+        // Nothing installed: nothing staged, the folder is not even made.
+        #expect(try files.replaceInstalledWithEmbedded() == false)
+        #expect(staged == 0)
+        #expect(!fm.fileExists(atPath: dir.path))
+
+        // An installed bundle is swapped for the embedded one.
+        try makeBundle(files.installedURL, version: "1")
+        #expect(try files.replaceInstalledWithEmbedded())
+        #expect(files.installed?.version == "2")
+        #expect(try fm.contentsOfDirectory(atPath: dir.path) == ["DauInputMethod.app"])
+
+        // Another process removes the installed bundle after the copy was staged and
+        // before the rename (the signature check runs in between): not installed again.
+        try makeBundle(files.installedURL, version: "1")
+        let installedURL = files.installedURL
+        var stagedNames: [String] = []
+        files.verify = { url in
+            stagedNames.append(url.lastPathComponent)
+            try? fm.removeItem(at: installedURL)
+            return true
+        }
+        #expect(try files.replaceInstalledWithEmbedded() == false)
+        #expect(stagedNames.count == 1)
+        #expect(!files.isInstalled)
+        #expect(try fm.contentsOfDirectory(atPath: dir.path).isEmpty)
+
+        // The user's install in the same race still installs.
+        try makeBundle(files.installedURL, version: "1")
+        try files.installEmbedded()
+        #expect(files.installed?.version == "2")
+        #expect(try fm.contentsOfDirectory(atPath: dir.path) == ["DauInputMethod.app"])
     }
 }
 
@@ -873,6 +974,38 @@ struct TamperedInputMethodTests {
         #expect(await actions.enableFromBanner() == false)
         #expect(installer.calls == ["reconcile", "enable"])
         #expect(actions.banner == .enabled)
+    }
+
+    @Test("--tampered (captures): the forced banner survives the launch reconcile's check and later activations")
+    func forcedBannerStays() async {
+        let installer = FakeInputMethodInstaller(.enabled)
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {})
+        actions.forceTampered()
+        actions.startLaunchReconcile()
+        await actions.launchReconcileFinished()
+        #expect(actions.installedTampered)
+        actions.checkInstalled()
+        #expect(actions.installedTampered)
+    }
+
+    @Test("Bật lại on an installed copy with a wrong signature enables nothing: the Cài lại banner shows; after Cài lại, Bật lại enables (D37)")
+    func bannerEnableRefused() async {
+        let installer = FakeInputMethodInstaller(.installed(version: nil))
+        let actions = InputMethodActions(installer: installer, openKeyboardSettings: {},
+                                         shortcut: { .unknown }, englishLayout: { nil })
+        actions.checkInstalled()
+        #expect(!actions.installedTampered)
+        // Replaced after the last check.
+        installer.genuine = false
+        #expect(await actions.enableFromBanner() == false)
+        #expect(installer.status() == .installed(version: nil))
+        #expect(actions.installedTampered)
+        #expect(actions.banner == .idle)
+        await actions.reinstallInputMethod()
+        #expect(!actions.installedTampered)
+        #expect(await actions.enableFromBanner() == false)
+        #expect(actions.banner == .enabled)
+        #expect(installer.calls == ["enable", "install", "enable"])
     }
 
     @Test("the real files check: nothing installed counts as genuine")

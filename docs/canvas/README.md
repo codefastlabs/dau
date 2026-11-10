@@ -14,6 +14,7 @@
 - [Chào mừng – bước 2: bật Dấu](OnboardingEnable.png) · [nguồn](src/OnboardingEnable.dc.html)
 - [Chào mừng – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác](OnboardingEnableNotes.png) · [nguồn](src/OnboardingEnableNotes.dc.html)
 - [Chào mừng – bước 2: chưa cài được](OnboardingEnableError.png) · [nguồn](src/OnboardingEnableError.dc.html)
+- [Chào mừng – bước 2: bộ gõ trên máy đã bị thay đổi (cài lại trước khi bật)](OnboardingEnableTampered.png) · [nguồn](src/OnboardingEnableTampered.dc.html)
 - [Chào mừng – bước 2: chờ bấm Allow](OnboardingEnableWaiting.png) · [nguồn](src/OnboardingEnableWaiting.dc.html)
 - [Chào mừng – bước 2: chưa bật được](OnboardingEnableFailed.png) · [nguồn](src/OnboardingEnableFailed.dc.html)
 - [Chào mừng – bước 2: đã bật](OnboardingEnableDone.png) · [nguồn](src/OnboardingEnableDone.dc.html)

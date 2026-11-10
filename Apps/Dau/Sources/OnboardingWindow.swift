@@ -468,14 +468,16 @@ struct OtherAppIcon: View {
 
 // MARK: Step 2
 
-/// Step 2 has five screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
+/// Step 2 has six screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
 /// "Bật Dấu" (`OnboardingEnable`, `OnboardingEnableNotes`), waiting for the user to click
 /// Allow (`OnboardingEnableWaiting`), done (`OnboardingEnableDone`,
-/// `OnboardingEnableDoneNoShortcut`), "Chưa bật được" (`OnboardingEnableFailed`) and an
-/// install error (`OnboardingEnableError`). The first card of each is the `onbCard-2`
-/// probe.
+/// `OnboardingEnableDoneNoShortcut`), "Chưa bật được" (`OnboardingEnableFailed`), an
+/// install error (`OnboardingEnableError`) and "Cài lại" in place of "Bật Dấu" while the
+/// installed input method's signature is wrong (`OnboardingEnableTampered`). The first
+/// card of each is the `onbCard-2` probe; the last one has no card.
 struct EnableStep: View {
     @Environment(OnboardingFlow.self) private var flow
+    @Environment(\.inputMethodActions) private var actions
     /// macOS's own names (D38), in the system's language.
     private var ui: SystemUINames { SystemUINames.system() }
 
@@ -486,6 +488,7 @@ struct EnableStep: View {
         case .done: done
         case .notEnabled: notEnabled
         case .error: installError
+        case .tampered: tampered
         }
     }
 
@@ -658,6 +661,36 @@ struct EnableStep: View {
             Button("Try Again") { Task { await flow.enable() } }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
+        }
+    }
+}
+
+extension EnableStep {
+    /// The owner copy found the installed input method's signature invalid or by another
+    /// team (artboard OnboardingEnableTampered; D37): Dấu does not turn that one on. The
+    /// title, the sentence and the button are the Settings banner's (`TamperedBanner`).
+    /// "Cài lại" installs the app's own copy; then the step shows "Bật Dấu" as usual.
+    var tampered: some View {
+        StepLayout(step: .enable, screen: ".tampered",
+                   title: Text("Dấu’s input method on this Mac has been changed"),
+                   subtitle: Text("The input method was replaced or modified after it was installed. Reinstall to type with Dấu’s own copy.")) {
+            EmptyView()
+        } buttons: {
+            if flow.canGoBack {
+                Button("Go Back") { flow.back() }
+                    .disabled(flow.isReinstalling)
+            }
+            Button("Reinstall") {
+                Task {
+                    await flow.reinstall()
+                    // The Settings window's banner reads the same bundle: it follows now,
+                    // not at the next activation.
+                    actions?.checkInstalled()
+                }
+            }
+            .buttonStyle(.borderedProminent)
+            .keyboardShortcut(.defaultAction)
+            .disabled(flow.isReinstalling)
         }
     }
 }

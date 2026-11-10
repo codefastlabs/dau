@@ -74,7 +74,8 @@ enum DebugCapture {
     /// "Chuyển Dấu vào Applications" (`0-move`: not the owner copy, nothing installed),
     /// steps 1, 2 before "Bật Dấu" (`2`), 1 after "Quay lại" with OpenKey quit
     /// (`1-done`), 2 with an unreadable shortcut and another
-    /// Vietnamese source on (`2-notes`), 2 waiting for Allow (`2-waiting`), 2 when macOS
+    /// Vietnamese source on (`2-notes`), 2 when the installed input method's signature is
+    /// wrong (`2-tampered`), 2 waiting for Allow (`2-waiting`), 2 when macOS
     /// left Dấu off (`2-failed`), 2 on an install error (`2-error`), 2 once enabled
     /// (`2-done`), 2 enabled with no shortcut set (`2-done-noshortcut`) and 3, light and
     /// dark, plus `frames.json`.
@@ -140,6 +141,7 @@ enum DebugCapture {
                 onboardingInstaller?.current = .installed(version: nil)
                 onboardingInstaller?.enableWaits = false
                 onboardingInstaller?.failure = nil
+                onboardingInstaller?.genuine = true
                 shortcutNow = shortcutArgument
                 flow.start()
                 flow.tryText = ""
@@ -172,10 +174,17 @@ enum DebugCapture {
                         detector?.otherSources = ["Tiếng Việt – Telex"]
                         flow.refresh()
                     }),
-                    // "Bật Dấu" is waiting for the click on macOS's dialog.
-                    ("2-waiting", {
+                    // The installed input method's signature is wrong: "Cài lại" instead
+                    // of "Bật Dấu" (D37).
+                    ("2-tampered", {
                         shortcutNow = shortcutArgument
                         detector?.otherSources = []
+                        installer?.genuine = false
+                        flow.refresh()
+                    }),
+                    // Genuine again; "Bật Dấu" is waiting for the click on macOS's dialog.
+                    ("2-waiting", {
+                        installer?.genuine = true
                         flow.refresh()
                         installer?.enableWaits = true
                         Task { @MainActor in await flow.enable() }
@@ -369,6 +378,11 @@ enum DebugCapture {
     /// `--settings-window`: open the Settings window at launch, never the onboarding,
     /// and leave the installed input method alone (real-window checks).
     static let settingsWindowOnly = CommandLine.arguments.contains("--settings-window")
+
+    /// `--tampered`: the Settings window shows the "Cài lại" banner whatever is installed
+    /// (`InputMethodActions.forceTampered`), and the installed input method is left alone:
+    /// no launch reconcile, no signature check.
+    static let tampered = CommandLine.arguments.contains("--tampered")
 
     /// `--appearance light|dark`: this app only draws in that appearance (the real-window
     /// checks capture the sheet in the appearance the system is not in). The system

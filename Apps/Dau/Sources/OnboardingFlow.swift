@@ -19,7 +19,9 @@ import Observation
 ///    step waits ("Đang chờ"), then shows the result read back from Text Input Sources
 ///    (N4, N5): enabled → "Đã bật"; still off or not listed → "Chưa bật được" with the
 ///    ways around it (retry, add it by hand, one logout, D37). No undo: Dấu cannot
-///    switch itself off, only the user can.
+///    switch itself off, only the user can. While the owner copy finds the installed
+///    input method's signature wrong, the step shows "Cài lại" instead of "Bật Dấu"
+///    (artboard OnboardingEnableTampered; D37): reinstall first, then enable.
 /// 3. "Chọn kiểu gõ và gõ thử".
 @MainActor
 @Observable
@@ -48,6 +50,12 @@ final class OnboardingFlow {
     private(set) var otherSources: [String] = []
     /// `enable()` is running: installing, or waiting for the user to click Allow.
     private(set) var isWorking = false
+    /// This copy is the owner copy and the installed input method's signature is invalid
+    /// or by another team (D37): step 2 asks to reinstall before Dấu can be turned on.
+    /// Read again with everything else; a copy that is not the owner copy never checks.
+    private(set) var installedTampered = false
+    /// "Cài lại" is running.
+    private(set) var isReinstalling = false
     /// What went wrong with the last action, shown on step 2.
     private(set) var problem: Problem?
     /// Step 1 was part of this onboarding: another input method was running when it
@@ -93,10 +101,15 @@ final class OnboardingFlow {
         case notEnabled
         /// An install error (copy, signature, registration): "Chưa cài được Dấu".
         case error
+        /// The installed input method's signature is wrong: "Cài lại" instead of "Bật
+        /// Dấu" (artboard OnboardingEnableTampered; D37).
+        case tampered
     }
 
     var enableScreen: EnableScreen {
         if status.isEnabled { return .done }
+        // A reinstall that failed shows the install error, whose "Thử lại" reinstalls.
+        if isReinstalling || (installedTampered && problem != .failed) { return .tampered }
         if isWorking { return .waiting }
         switch problem {
         case .notEnabled?, .notListed?: return .notEnabled
@@ -179,9 +192,10 @@ final class OnboardingFlow {
     }
 
     /// "Quay lại" (HIG: an assistant's previous pane). Step 2 offers it before Dấu is on
-    /// (before "Bật Dấu", while waiting for Allow, after an install error; artboards
-    /// OnboardingEnable, OnboardingEnableNotes, OnboardingEnableWaiting,
-    /// OnboardingEnableError) and only when step 1 was part of this onboarding. Once Dấu
+    /// (before "Bật Dấu", before "Cài lại", while waiting for Allow, after an install
+    /// error; artboards OnboardingEnable, OnboardingEnableNotes, OnboardingEnableTampered,
+    /// OnboardingEnableWaiting, OnboardingEnableError) and only when step 1 was part of
+    /// this onboarding. Once Dấu
     /// is on, and on "Chưa bật được", the screen keeps its own buttons as drawn.
     var canGoBack: Bool {
         // "Chuyển Dấu vào Applications" has no previous pane.
@@ -190,7 +204,7 @@ final class OnboardingFlow {
         case .oldInputMethods: false
         case .enable:
             switch enableScreen {
-            case .ready, .waiting, .error: cameThroughOldInputMethods
+            case .ready, .waiting, .error, .tampered: cameThroughOldInputMethods
             case .done, .notEnabled: false
             }
         case .typing: true
@@ -202,7 +216,8 @@ final class OnboardingFlow {
     /// input methods again: "Đã tắt bộ gõ cũ" (artboard OnboardingConflictDone) when none
     /// runs, the conflict screen when one does, never an empty list.
     func back() {
-        guard canGoBack, let previous = Step(rawValue: step.rawValue - 1) else { return }
+        // A reinstall is a short file operation that cannot be cancelled: it ends first.
+        guard canGoBack, !isReinstalling, let previous = Step(rawValue: step.rawValue - 1) else { return }
         cancelEnable()
         problem = nil
         errorDetail = nil
@@ -233,9 +248,15 @@ final class OnboardingFlow {
     /// to store Dấu as enabled. A run still waiting is cancelled first (the new one makes
     /// macOS ask again). A copy that is not the owner copy never installs (D37): with
     /// nothing installed it shows "Chuyển Dấu vào Applications" and this does nothing;
-    /// with the input method installed it only enables.
+    /// with the input method installed it only enables. While the installed input method's
+    /// signature is wrong nothing is enabled (D37): "Thử lại" after a failed reinstall
+    /// reinstalls, and an `enable()` that finds it only now shows "Cài lại".
     func enable() async {
-        guard step == .enable, !status.isEnabled, !needsMoveToApplications else { return }
+        guard step == .enable, !status.isEnabled, !needsMoveToApplications, !isReinstalling else { return }
+        if installedTampered {
+            await reinstall()
+            return
+        }
         enableTask?.cancel()
         attempt += 1
         let mine = attempt
@@ -258,12 +279,41 @@ final class OnboardingFlow {
         case .success(.enabled): break
         case .success(.notEnabled): problem = .notEnabled
         case .success(.notListed): problem = .notListed
+        case .success(.needsReinstall): installedTampered = true
         case .failure(let error):
             problem = .failed
             errorDetail = Self.describe(error)
             installLogger.error("event=enable-failed error=\(String(describing: error), privacy: .public)")
         }
         status = installer.status()
+        if status.isEnabled { problem = nil }
+    }
+
+    /// Step 2, "Cài lại" (artboard OnboardingEnableTampered; D37): installs the owner
+    /// copy's own input method over the one whose signature is wrong, and enables nothing.
+    /// Once the installed copy is genuine the step shows "Bật Dấu" as usual; an error
+    /// shows the install error screen.
+    func reinstall() async {
+        guard step == .enable, installedTampered, !isReinstalling, !status.isEnabled else { return }
+        cancelEnable()
+        isReinstalling = true
+        problem = nil
+        errorDetail = nil
+        do {
+            try await installer.install()
+        } catch {
+            problem = .failed
+            errorDetail = Self.describe(error)
+            installLogger.error("event=onboarding-reinstall-failed error=\(String(describing: error), privacy: .public)")
+        }
+        isReinstalling = false
+        status = installer.status()
+        installedTampered = readInstalledTampered()
+        if installedTampered, problem == nil {
+            // Installed without an error, and still not Dấu's own: say so, never "Bật Dấu".
+            problem = .failed
+            errorDetail = InputMethodInstallerError.invalidSignature.detail
+        }
         if status.isEnabled { problem = nil }
     }
 
@@ -313,6 +363,13 @@ final class OnboardingFlow {
         if step == .oldInputMethods { cameThroughOldInputMethods = true }
     }
 
+    /// D37: only the owner copy checks, only an installed input method that is not on
+    /// yet (once it is on, the Settings window's banner asks). `status` is read first.
+    private func readInstalledTampered() -> Bool {
+        guard case .installed = status, installer.isOwnerCopy else { return false }
+        return !installer.installedIsGenuine()
+    }
+
     private func readSystem() {
         conflicts = detector.detect().filter(\.isRunning)
         for app in conflicts where !foundOldInputMethods.contains(where: { $0.bundleID == app.bundleID }) {
@@ -323,6 +380,12 @@ final class OnboardingFlow {
         let needsMove = status == .notInstalled && !installer.isOwnerCopy
         if needsMove && !needsMoveToApplications { cancelEnable() }
         needsMoveToApplications = needsMove
+        if !isReinstalling {
+            let tampered = readInstalledTampered()
+            // No wait for Allow outlives the screen: nothing is enabled while it shows.
+            if tampered && !installedTampered { cancelEnable() }
+            installedTampered = tampered
+        }
         shortcut = readShortcut()
         englishLayout = readEnglishLayout()
     }

@@ -134,8 +134,8 @@ enum AppLanguage {
 /// A small shell, started before quitting, waits until this process is gone and then
 /// opens the same bundle. Not `NSWorkspace.openApplication` with
 /// `createsNewApplicationInstance`: that starts the second Dấu while this one still runs
-/// (same bundle ID: two Settings windows for a moment, and two launch-time upgrade checks
-/// of the input method, `DauApp.upgradeAtLaunch`). Waiting for the exit keeps one Dấu at a
+/// (same bundle ID: two Settings windows for a moment, and two launch-time reconciles
+/// of the input method, `DauApp.reconcileAtLaunch`). Waiting for the exit keeps one Dấu at a
 /// time, and `open` then launches it as Finder would.
 enum AppRelauncher {
     /// `$1`: the process to wait for; `$2`: the app bundle; `$3`: the opener. Gives up

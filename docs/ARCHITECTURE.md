@@ -420,6 +420,12 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 
 Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bước bằng màn `MoveToApplicationsStep` khi bản đang chạy không phải bản chủ và bộ gõ chưa cài (D37; mục "Cài, bật, thay, gỡ bộ gõ"). Cờ này đọc lại cùng mọi trạng thái khác mỗi lần cửa sổ được đưa lên trước. Hai nút đi qua `OwnerCopyGuide`: mở thư mục Applications trong Finder, thoát app.
 
+Ở bước 2, `OnboardingFlow.installedTampered` đổi màn "Bật Dấu" thành màn "Cài lại" (`OnboardingFlow.EnableScreen.tampered`, view `EnableStep.tampered`; luật ở D37):
+
+- đọc cùng mọi trạng thái khác (lúc mở và mỗi lần cửa sổ được đưa lên trước): đúng khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và `InputMethodInstaller.installedIsGenuine` sai; phát hiện lúc đang chờ Allow thì huỷ lần chờ;
+- `OnboardingFlow.reinstall` gọi `install()`, không gọi `enable()`; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu", lỗi thì hiện màn lỗi cài, nơi "Thử lại" (`OnboardingFlow.enable`) cài lại chứ không bật;
+- `OnboardingFlow.enable` nhận `EnableOutcome.needsReinstall` (bộ gõ bị thay sau lần đọc cuối) thì cũng sang màn này.
+
 #### Cài, bật, thay, gỡ bộ gõ
 
 `InputMethodInstaller.swift`, theo `docs/research/INPUT-METHOD-INSTALL.md` mục 2–4.
@@ -446,6 +452,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 - Bản không phải bản chủ:
   - `install()` ném `InputMethodInstallerError.notOwnerCopy` trước khi đụng tới file, ai gọi cũng vậy;
   - `OnboardingFlow.enable` không gọi `install()`, chỉ bật bộ gõ đã cài; chưa cài thì hiện màn "chuyển Dấu vào Applications" (mục "Onboarding");
+  - `enable()` không kiểm chữ ký bộ gõ đã cài, onboarding không có màn "Cài lại";
   - `InputMethodActions.checkInstalled` không kiểm chữ ký, không hiện banner "Cài lại"; `reinstallInputMethod` không làm gì;
   - bật, cài đặt và gỡ đi các đường như bản chủ.
 
@@ -454,7 +461,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 - chép `Contents/Library/Input Methods/DauInputMethod.app` vào thư mục tạm ẩn, không đuôi `.app`, cùng thư mục đích (`.DauInputMethod-staging-<uuid>`);
 - gỡ `com.apple.quarantine`;
 - kiểm chữ ký bản tạm (hợp lệ mọi kiến trúc, cùng Team ID với app chủ);
-- đổi chỗ vào `DauInputMethod.app` bằng một lần `renamex_np(RENAME_SWAP)` (chưa có thì `RENAME_EXCL`);
+- đổi chỗ vào `DauInputMethod.app` bằng một lần `renamex_np(RENAME_SWAP)`; lần đổi chỗ báo đích không có (`ENOENT`) thì `InputMethodFiles.installEmbedded` chuyển bản tạm vào bằng `RENAME_EXCL`, còn `InputMethodFiles.replaceInstalledWithEmbedded` (đường thay của `reconcile`) không cài, xoá bản tạm và trả về sai;
 - xoá bản cũ;
 - dừng tiến trình cũ nếu đang chạy;
 - `TISRegisterInputSource`;
@@ -462,6 +469,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 
 **Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại", N4; D37, `docs/research/INPUT-METHOD-INSTALL.md` mục 9.10, mục 10.10 và 8.1b):
 
+- Trước mọi việc khác, bản chủ kiểm `InputMethodFiles.installedIsGenuine`: sai thì trả `EnableOutcome.needsReinstall`, không xoá bộ đệm, không đăng ký, không bật (luật ở D37). `OnboardingFlow` hiện màn "Cài lại", `InputMethodActions.enableFromBanner` hiện `TamperedBanner`. Bản không phải bản chủ không kiểm.
 - Mỗi lần gọi, ngay trước `TISRegisterInputSource`, xoá bộ đệm danh sách nguồn nhập liệu:
   - xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con trực tiếp của `DARWIN_USER_CACHE_DIR` (qua `InputSourceCaches.clearAll`);
   - mỗi app có sandbox giữ bộ đệm riêng ở đó, extension Bàn phím của Cài đặt hệ thống là một trong số đó;
@@ -492,7 +500,9 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 **Kiểm bộ gõ đã cài** (D37):
 
 - mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`: chữ ký hợp lệ và cùng Team ID với app chủ); chỉ bản chủ hỏi;
-- không khớp thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng trong app (chữ ký bản mới cũng được kiểm trước khi đổi chỗ).
+- không khớp thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng trong app (chữ ký bản mới cũng được kiểm trước khi đổi chỗ);
+- Dấu chưa bật thì onboarding hiện cùng thông báo ở bước 2 (mục "Onboarding"), và `enable()` không bật bộ gõ đó (mục "Bật");
+- cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật nữa, và lượt `reconcile` lúc mở app không chạy.
 
 **Giữ bộ gõ đã cài trùng bản nhúng** (luật ở D37; lúc app mở, `InputMethodActions.startLaunchReconcile` gọi `SystemInputMethodInstaller.reconcile`, xong thì `checkInstalled`):
 
@@ -503,7 +513,9 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
   4. bản đã cài không đọc được `Info.plist` hoặc khác bundle ID → `skipped`;
   5. `InputMethodFiles.installedIsGenuine` sai → `badSignature`, không thay (banner "Cài lại" do `checkInstalled` hiện);
   6. `InputMethodFiles.installedMatchesEmbedded` (mã băm mọi kiến trúc, `CodeSignature.sameCode`) → `alreadyCurrent`;
-  7. còn lại → `replaced`: chép tạm và đổi chỗ như mục "Cài", dừng tiến trình cũ, đăng ký lại.
+  7. còn lại → chép tạm và chỉ đổi chỗ với bản đang có (`InputMethodFiles.replaceInstalledWithEmbedded`, mục "Cài"):
+     - đổi được → `replaced`: dừng tiến trình cũ, đăng ký lại (mã trả về của lần đăng ký chỉ ghi nhật ký);
+     - bản đã cài không còn ở lúc đổi chỗ (tiến trình khác vừa gỡ, D16 (Bảo trì và gỡ cài đặt)) → `notInstalled`: không cài lại, không dừng tiến trình, không đăng ký.
 - Không đụng trạng thái bật/chọn. `CFBundleVersion` chỉ dùng để ghi nhật ký.
 - Chưa chờ "lúc không gõ" (D7): app vừa được mở nên người dùng không gõ ở app khác; bộ gõ vẫn chốt từ trước khi thoát.
 - Sparkle (M7) sẽ gọi đúng hàm này.
@@ -520,7 +532,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 | 0 | `already-current` | bộ gõ đã cài trùng bản nhúng |
 | 1 | `failed` | lỗi: app không có bộ gõ nhúng, chép hỏng, bản nhúng sai chữ ký |
 | 3 | `replaced` | đã thay bằng bản nhúng |
-| 4 | `not-installed` | bộ gõ chưa cài, không làm gì |
+| 4 | `not-installed` | bộ gõ chưa cài, hoặc vừa bị gỡ trong lúc lệnh chạy; không làm gì |
 | 5 | `not-owner-copy` | bản đang chạy không phải bản chủ, không làm gì |
 | 6 | `bad-signature` | bộ gõ đã cài sai chữ ký hoặc khác Team ID, không thay |
 | 7 | `skipped` | bản đã cài khác bundle ID hoặc không đọc được, không thay |

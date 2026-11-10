@@ -17,11 +17,13 @@ enum ReconcileCommand {
         /// The installed input method already is the one inside this copy.
         case alreadyCurrent = 0
         /// An error: nothing inside the app to install, or the copy, the signature check
-        /// of the new bundle or the registration failed.
+        /// of the new bundle or the swap failed. A registration that fails after the swap
+        /// is not one: `reconcile` logs its status and still reports `replaced`.
         case failed = 1
         /// The installed input method differed and was replaced.
         case replaced = 3
-        /// No input method is installed: nothing done (the first install is the user's).
+        /// No input method is installed, or it went away while the command ran: nothing
+        /// done (the first install is the user's).
         case notInstalled = 4
         /// This copy of Dấu is not the owner copy: nothing read, nothing touched.
         case notOwnerCopy = 5

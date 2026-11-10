@@ -39,7 +39,7 @@ struct DauApp: App {
     @MainActor
     private static func checkInstalled(_ actions: InputMethodActions) {
         #if DEBUG
-        if CommandLine.arguments.contains("--tampered") { actions.forceTampered(); return }
+        if DebugCapture.tampered { actions.forceTampered(); return }
         // Captures run a re-signed copy: its team does not match the installed one.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil { return }
         #endif
@@ -55,7 +55,7 @@ struct DauApp: App {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
-            || DebugCapture.settingsWindowOnly { return }
+            || DebugCapture.settingsWindowOnly || DebugCapture.tampered { return }
         #endif
         actions.startLaunchReconcile()
     }

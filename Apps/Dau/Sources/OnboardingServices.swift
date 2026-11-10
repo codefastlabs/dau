@@ -170,6 +170,9 @@ enum EnableOutcome: Equatable, Sendable {
     /// Text Input Sources does not list Dấu at all: macOS shows a new input method only
     /// after a logout (D37), when none of the ways around it worked.
     case notListed
+    /// The owner copy found the installed input method's signature invalid or by another
+    /// team: nothing was registered or enabled (D37). The interface leads to "Cài lại".
+    case needsReinstall
 }
 
 /// What `reconcile` did (D37).
@@ -178,7 +181,9 @@ enum ReconcileOutcome: Equatable, Sendable {
     case replaced
     /// The installed input method is the one inside the app, at every architecture.
     case alreadyCurrent
-    /// Nothing installed (the first install is the user's, from onboarding).
+    /// Nothing installed (the first install is the user's, from onboarding), or the
+    /// installed bundle went away while this ran (another process uninstalled it):
+    /// reconcile only swaps with a bundle that is there, it never installs anew.
     case notInstalled
     /// This copy of Dấu is not the owner copy: nothing read, nothing touched.
     case notOwnerCopy
@@ -241,7 +246,9 @@ protocol InputMethodInstaller: AnyObject {
     func install() async throws
     /// Adds "Dấu – Tiếng Việt" to the user's input sources, then reads it back. Waits for
     /// the user to allow it in macOS's dialog; throws `CancellationError` when the task
-    /// is cancelled.
+    /// is cancelled. The owner copy never enables an installed input method whose
+    /// signature is wrong (D37): it returns `needsReinstall`, nothing touched. A copy
+    /// that is not the owner copy does not check.
     func enable() async throws -> EnableOutcome
     /// Whether the installed input method is the one this app installs (valid signature
     /// by the same team); true when none is installed. ~/Library/Input Methods is
@@ -317,6 +324,8 @@ final class FakeInputMethodInstaller: InputMethodInstaller {
         calls.append("enable")
         if let failure { throw failure }
         guard current != .notInstalled else { throw InputMethodInstallerError.failed("not installed") }
+        // As the real one: the owner copy never enables a copy with a bad signature.
+        if ownerCopy, !genuine { return .needsReinstall }
         var outcome = enableOutcome
         if enableWaits {
             enableWaiting = true

@@ -219,11 +219,13 @@ for (style, dirName) in windowDirs {
 let alwaysScrollerWidth = NSScroller.scrollerWidth(for: .regular, scrollerStyle: .legacy)
 
 // Mockup positions ("OnboardingMoveToApplications", "OnboardingConflict", "OnboardingConflictDone", "OnboardingEnable", "OnboardingEnableNotes",
-// "OnboardingEnableWaiting", "OnboardingEnableFailed", "OnboardingEnableError",
+// "OnboardingEnableTampered", "OnboardingEnableWaiting", "OnboardingEnableFailed", "OnboardingEnableError",
 // "OnboardingEnableDone", "OnboardingEnableDoneNoShortcut", "Onboarding"; window at
 // 50,40 in the artboard), the same in every step and both appearances.
-let onboardingShots = ["0-move", "1", "2", "1-done", "2-notes", "2-waiting", "2-failed", "2-error", "2-done", "2-done-noshortcut", "3"]
+let onboardingShots = ["0-move", "1", "2", "1-done", "2-notes", "2-tampered", "2-waiting", "2-failed", "2-error", "2-done", "2-done-noshortcut", "3"]
     .flatMap { step in ["light", "dark"].map { "onboarding-\(step)-\($0)" } }
+// Screens the artboard draws without a card ("OnboardingEnableTampered": title, sentence, buttons).
+let onboardingShotsWithoutCard = Set(["2-tampered"].flatMap { step in ["light", "dark"].map { "onboarding-\(step)-\($0)" } })
 for dirName in ["onboarding", "onboarding-no-shortcut"] {
     guard let (shots, _) = loadFrames(root.appendingPathComponent(dirName)) else {
         harness(dirName, "(f)", "no frames.json (see the capture step in run.sh's output)")
@@ -260,9 +262,11 @@ for dirName in ["onboarding", "onboarding-no-shortcut"] {
         let scrolls = f["onbDivider"] != nil
         let cardWidths = scrolls ? [Reference.onboardingCardWidth, Reference.onboardingCardWidth - alwaysScrollerWidth]
                                  : [Reference.onboardingCardWidth]
-        place("onbCard", { r in near(r.minX, Reference.onboardingCardX) && cardWidths.contains { w in near(r.width, w) } },
-              expected: "x \(fmt(Reference.onboardingCardX)), width \(fmt(Reference.onboardingCardWidth))"
-                + (scrolls ? " or \(fmt(Reference.onboardingCardWidth - alwaysScrollerWidth)) (scrolls, Always scroll bar)" : ""))
+        if !onboardingShotsWithoutCard.contains(key) {
+            place("onbCard", { r in near(r.minX, Reference.onboardingCardX) && cardWidths.contains { w in near(r.width, w) } },
+                  expected: "x \(fmt(Reference.onboardingCardX)), width \(fmt(Reference.onboardingCardWidth))"
+                    + (scrolls ? " or \(fmt(Reference.onboardingCardWidth - alwaysScrollerWidth)) (scrolls, Always scroll bar)" : ""))
+        }
         place("onbButtons", { near($0.maxX, Reference.onboardingButtonsMaxX) && near($0.maxY, Reference.onboardingButtonsMaxY) },
               expected: "ending at \(fmt(Reference.onboardingButtonsMaxX)),\(fmt(Reference.onboardingButtonsMaxY))")
     }
