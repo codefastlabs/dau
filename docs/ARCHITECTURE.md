@@ -514,7 +514,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
   5. `InputMethodFiles.installedIsGenuine` sai → `badSignature`, không thay (banner "Cài lại" do `checkInstalled` hiện);
   6. `InputMethodFiles.installedMatchesEmbedded` (mã băm mọi kiến trúc, `CodeSignature.sameCode`) → `alreadyCurrent`;
   7. còn lại → chép tạm và chỉ đổi chỗ với bản đang có (`InputMethodFiles.replaceInstalledWithEmbedded`, mục "Cài"):
-     - đổi được → `replaced`: dừng tiến trình cũ, đăng ký lại (mã trả về của lần đăng ký chỉ ghi nhật ký);
+     - đổi được → `replaced`: dừng tiến trình cũ, đăng ký lại (mã trả về của lần đăng ký chỉ ghi nhật ký, kết quả vẫn là `replaced`: bản trên đĩa đã đúng, bộ gõ đã được đăng ký từ trước, và mã trả về của TIS không là bằng chứng; `install()` thì ném lỗi khi đăng ký trả lỗi, vì ở lần cài đầu bước bật cần lần đăng ký đó);
      - bản đã cài không còn ở lúc đổi chỗ (tiến trình khác vừa gỡ, D16 (Bảo trì và gỡ cài đặt)) → `notInstalled`: không cài lại, không dừng tiến trình, không đăng ký.
 - Không đụng trạng thái bật/chọn. `CFBundleVersion` chỉ dùng để ghi nhật ký.
 - Chưa chờ "lúc không gõ" (D7): app vừa được mở nên người dùng không gõ ở app khác; bộ gõ vẫn chốt từ trước khi thoát.

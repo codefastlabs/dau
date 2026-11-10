@@ -140,12 +140,14 @@ log_step "Chép bản mới cạnh $DEST"
 ditto "$APP" "$STAGED"
 if [[ -e "$DEST" || -L "$DEST" ]]; then
   log_step "Chuyển bản cũ vào Thùng rác"
+  # Set before the move: stopped while trash runs, install_cleanup still sees that
+  # /Applications lost its copy (it only speaks when $DEST is gone).
+  old_trashed=1
   if ! /usr/bin/trash -s "$DEST"; then
     log_error "Không chuyển được $DEST vào Thùng rác: bản đã cài giữ nguyên."
     log_hint "Kéo $DEST vào Thùng rác bằng tay rồi chạy lại."
     exit 1
   fi
-  old_trashed=1
 fi
 log_step "Đặt bản mới vào $DEST và đăng ký với LaunchServices"
 if ! mv "$STAGED" "$DEST"; then

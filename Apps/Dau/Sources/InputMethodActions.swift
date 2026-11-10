@@ -170,6 +170,10 @@ final class InputMethodActions {
     /// Only the owner copy (D37): the banner does not show otherwise.
     func reinstallInputMethod() async {
         guard reinstall != .working, installer.isOwnerCopy else { return }
+        #if DEBUG
+        // Captures (`--tampered`): the banner is pinned; "Cài lại" never touches the real copy.
+        if tamperedPinned { return }
+        #endif
         reinstall = .working
         do {
             try await installer.install()
