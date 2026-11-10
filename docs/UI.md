@@ -16,13 +16,13 @@ Mỗi phần của giao diện có một nguồn:
   - Canvas viết tiếng Việt.
   - Câu mới giao cho mã kèm câu tiếng Anh làm khoá.
 - **File này:** chỉ ghi hành vi, trạng thái, quy tắc và lý do, tức những gì hình vẽ và mã không tự nói ra.
-  - Không liệt kê chữ hay bố cục của phần đã có mã.
+  - Không liệt kê chữ hay bố cục của phần đã có mã; tên nút, nhãn hay màn hình được nêu chỉ để tả hành vi, chữ chuẩn là String Catalog trong mã.
   - Phần chưa có mã (cuối file) tạm mô tả nội dung cho tới khi dựng.
   - Lịch sử (ngày duyệt, phiên bản canvas): `docs/history/DOCS-LOG.md`.
 
 Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho khớp.
 
-## Menu nguồn nhập liệu (hệ thống vẽ)
+## Menu nguồn đầu vào (hệ thống vẽ)
 
 Artboard: [Menu nguồn đầu vào](ui/canvas/Main.png).
 
@@ -46,7 +46,11 @@ Chữ của Dấu nói về macOS:
 Khung chung:
 
 - Ba bước. Thanh bước bên trái có trạng thái xong / đang làm / chưa.
-- Cuối thanh bước chỉ có dòng "Dấu không cần quyền điều khiển máy Mac." (không viết tên mục "Trợ năng" của macOS, D38) (đã đo 30/10/2026).
+- Cuối thanh bước chỉ có dòng "Dấu không cần quyền điều khiển máy Mac." (không viết tên mục "Trợ năng" của macOS, D38).
+- Mọi bước dùng chung một khung:
+  - tiêu đề, mô tả và nội dung cuộn được;
+  - hàng nút cố định ở đáy, có đường kẻ phía trên khi nội dung bị che;
+  - nhờ vậy nội dung dài không tràn ra ngoài cửa sổ.
 - Không hứa macOS hỏi mấy lần, vì "Thử lại" sau Don't Allow làm hộp thoại hiện lại (N5 (Chỉ hứa điều đã kiểm chứng)).
 
 ### Bước 1, tắt bộ gõ cũ
@@ -64,12 +68,8 @@ Artboard: [bước 1](ui/canvas/OnboardingConflict.png).
 ### Bước 2, bật Dấu
 
 - Chép bộ gõ vào `~/Library/Input Methods` và đăng ký.
-- Chỉ bật nguồn nhập liệu khi người dùng bấm "Bật Dấu" (N4 (Không tự đổi cài đặt hệ thống), D37 (Cài đặt bộ gõ)).
+- Chỉ bật nguồn đầu vào khi người dùng bấm "Bật Dấu" (N4 (Không tự đổi cài đặt hệ thống), D37 (Cài đặt bộ gõ)).
 - macOS hỏi người dùng có cho Dấu bật không (hộp thoại "Allow"), nên bước có nhiều màn: [`OnboardingEnable`](ui/canvas/OnboardingEnable.png), [`OnboardingEnableNotes`](ui/canvas/OnboardingEnableNotes.png), [`OnboardingEnableWaiting`](ui/canvas/OnboardingEnableWaiting.png), [`OnboardingEnableDone`](ui/canvas/OnboardingEnableDone.png), [`OnboardingEnableDoneNoShortcut`](ui/canvas/OnboardingEnableDoneNoShortcut.png), [`OnboardingEnableFailed`](ui/canvas/OnboardingEnableFailed.png), [`OnboardingEnableError`](ui/canvas/OnboardingEnableError.png).
-- Mọi bước dùng chung một khung:
-  - tiêu đề, mô tả và nội dung cuộn được;
-  - hàng nút cố định ở đáy, có đường kẻ phía trên khi nội dung bị che;
-  - nhờ vậy nội dung dài không tràn ra ngoài cửa sổ.
 - Tên màn hình của macOS viết tiếng Anh như trên máy người dùng (System Settings › Keyboard › Input Sources).
 - Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5).
 - Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
@@ -150,7 +150,7 @@ Artboard: các artboard "Cài đặt – …" ([Gõ phím](ui/canvas/SettingsTyp
 ### Gõ phím
 
 - Thẻ xem trước tính bằng engine thật, cập nhật ngay theo kiểu gõ và vị trí dấu.
-- Chuyển Việt ↔ Anh là chuyển nguồn nhập liệu.
+- Chuyển Việt ↔ Anh là chuyển nguồn đầu vào.
   - Hàng phím tắt hiện phím tắt hệ thống hiện tại.
   - Nút "Đổi…" mở Cài đặt Bàn phím (N4).
   - Không có phím chuyển riêng (D2).
@@ -173,7 +173,7 @@ Artboard: [Thông minh](ui/canvas/SettingsSmart.png), [mở "Nâng cao"](ui/canv
 
 Artboard: [Ứng dụng](ui/canvas/SettingsApps.png), [chưa có quy tắc riêng](ui/canvas/SettingsAppsEmpty.png).
 
-- "Nhớ nguồn nhập liệu theo từng cửa sổ" là tuỳ chọn của macOS.
+- "Nhớ nguồn đầu vào theo từng cửa sổ" là tuỳ chọn của macOS.
   - Dấu chỉ đọc trạng thái, không ghi.
   - Không đọc được thì không hiện chữ (N5).
   - Nút "Đổi…" mở Cài đặt Bàn phím (D5 (Quy tắc theo ứng dụng), N4).

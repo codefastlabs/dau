@@ -5,8 +5,8 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 ## Không dịch
 
 - **Dấu**: giữ nguyên ở mọi ngôn ngữ (D24 (Tên và định danh)).
-- **Tên giao diện của macOS** (System Settings, Keyboard, Input Sources, Edit…, Add, Done, Allow, Don’t Allow, Log Out, Applications, Trash, Language & Region ("Ngôn ngữ & Vùng") và mục Applications của nó, tên ngôn ngữ Vietnamese, tuỳ chọn "Automatically switch to a document’s input source"): không viết trong câu, luôn là `%@` lấy từ chuỗi của hệ thống (`SystemUINames`, `LayoutNames`; D38).
-- **Nhãn trong app của người khác** (OpenKey "Bảng điều khiển…", "Khởi động cùng macOS", "Thoát"; XKey "Thoát XKey"; Gõ Nhanh "Launch at login"; tên app khác như "Gõ Nhanh"): chép đúng chữ app đó hiện, cả trong câu tiếng Anh.
+- **Tên giao diện của macOS** (mọi case của enum `SystemUIName`; danh sách đủ ở `docs/ARCHITECTURE.md`, mục "Tên giao diện của macOS trong chữ của Dấu"): không viết trong câu, luôn là `%@` lấy từ chuỗi của hệ thống (`SystemUINames`, `LayoutNames`; D38).
+- **Nhãn trong app của người khác** (OpenKey "Bảng điều khiển…", "Khởi động cùng macOS", "Thoát"; XKey "Thoát XKey"; Gõ Nhanh "Launch at login"): chép đúng chữ app đó hiện, cả trong câu tiếng Anh.
 - **Gõ Nhanh**: tên app khác, giữ nguyên chữ có dấu tiếng Việt trong câu tiếng Anh.
 - **Ví dụ gõ** (`hoaf binhf`, `hoà`, `thúy`…): dữ liệu, không dịch.
 

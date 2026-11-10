@@ -42,7 +42,7 @@ Chuyển từ `docs/PROGRESS.md` ngày 03/11/2026 khi M0–M4 đã đóng; file 
 - 29/10/2026 — header che nội dung cuộn (scrollEdgeEffectStyle .hard) + thanh cuộn nằm trong cửa sổ (trước nằm ngoài vì ScrollView macOS 26 trải dưới sidebar), chừa cột scroller khi luôn hiện để không nhảy — app-ui-dev (da3ae8d)
 - 29/10/2026 — bỏ khoảng chừa 17 pt (gây dải hở phải); scroll view tới mép cửa sổ; ma trận cửa sổ thật `scripts/check-settings-window/run.sh` + `docs/UI-CHECKS.md` — app-ui-dev (62a07f5, 9e0dbf3). Chốt: thanh cuộn legacy làm mục có cuộn hẹp 17 pt như macOS chuẩn (x/y không đổi)
 - 29/10/2026 — người dùng xác nhận giao diện Cài đặt (mép phải, thanh cuộn) đã ổn
-- 29/10/2026 — đẩy repo công khai lên https://github.com/thevuong/dau (nhánh main, theo yêu cầu người dùng); đã quét lịch sử không có khoá/token — phiên chính
+- 29/10/2026 — đẩy repo công khai lên repo ở tài khoản cũ (nhánh main, theo yêu cầu người dùng); đã quét lịch sử không có khoá/token — phiên chính
 - 29/10/2026 — người dùng cấp quyền Trợ năng cho Claude; phiên chính tự gõ thử bằng System Events: TextEdit đúng; VS Code và Terminal SAI (lệch dự đoán con trỏ → reset). Slack không cài. Chờ chẩn đoán (imk-dev)
 - 29/10/2026 — kiểm toán M4 lần 1 — auditor — CHƯA ĐẠT; ma trận UI mã 0, test 25/76/30/9 xanh. Giao app-ui-dev sửa N5 + mã chết + ARCHITECTURE; imk-dev thêm "Cài đặt Dấu…" sau chẩn đoán VS Code/Terminal; hỏi người dùng D9/D25 (ngoại lệ màu, banner cam, nút Nâng cao)
 - 29/10/2026 — người dùng chốt: không ngoại lệ màu (icon sidebar dùng màu hệ thống), banner cam hệ thống, chấp nhận nút "Nâng cao" ghép — ghi vào D9 — phiên chính
@@ -98,3 +98,35 @@ Chuyển từ `docs/PROGRESS.md` ngày 09/11/2026.
 | 30/10/2026 | D20 chi phí thêm mỗi phím có đọc (Debug, tự gõ 120 ms/phím, n=6 mỗi app) | `selectedRange` trung vị µs: TextEdit 394, Safari 625, Chrome 327, VS Code 347; `attributedSubstring` trung vị (min–max) µs: TextEdit 1.023 (570–11.189), Safari 3.683 (2.702–12.788), Chrome 765 (484–1.216), VS Code 680 (512–2.537). Chỉ ở phím dấu ngay sau reset/⌫; câu mẫu không đọc lần nào | `run.sh --delay 120 --keys "hoc ⌫j tooi ⌫s carr ⌫s hoc ⌫f viet ⌫j xin chao ⌫f "`, log perf kind `seed`/`seed_pass`, trường `read_ns`; 4 app PASS, Terminal ra "hocj…" (⌫ không tới bộ gõ) |
 | 30/10/2026 | D20 không chờ (thử, `settleInterval` = 0) | 0/10/30 ms: TextEdit, Safari, Chrome đúng; VS Code 0 ms không áp dụng (ảnh chụp cũ, không thấy từ), 10/30 ms đúng; không ca nào hỏng chữ. Chốt chờ 50 ms; 30 ms/phím ra "hocj tôis" ở Safari, Chrome (PASS) | `run.sh --delay N` (N = 0, 10, 30) `--keys "hoc ⌫j tooi ⌫s carr ⌫s hoc ⌫f "` |
 | 30/10/2026 | Reset khi đổi nguồn không qua `activateServer` | `to⇄cj␣` (⇄ = U.S. rồi Dấu bằng `TISSelectInputSource` từ tiến trình script): có bộ nghe `kTISNotifySelectedKeyboardInputSourceChanged` → "tocj" (TextEdit, Safari PASS); tắt bộ nghe (đối chứng) → "tọc" | `run.sh --keys "to⇄cj " --expect "tocj " textedit` |
+
+## Ghi chú từng mốc M0–M4
+
+Chuyển từ `docs/PROGRESS.md` ngày 10/11/2026.
+
+- M0: build Debug universal cần `-destination generic/platform=macOS`.
+- M1:
+  - Telex, Telex đơn giản, VNI; 75 test;
+  - release ~0,15 µs/phím;
+  - 0 từ sai / 474 từ; 0 khôi phục nhầm / 15.796 âm tiết;
+  - fuzz 800k thao tác không crash.
+- M2:
+  - thay chữ tại chỗ, hỏi vị trí ở mỗi phím có thay chữ (cách A, theo `docs/DECISIONS.md`, mục "Vị trí thay chữ");
+  - tự gõ 30 ms/phím đúng ở TextEdit, Safari, Chrome, VS Code, Terminal, Telegram (thay Slack); Sublime gõ tay;
+  - `selectedRange` p50 0,2–0,6 ms (Debug);
+  - M2-TESTING mục 4 ĐẠT trừ việc hoãn (VoiceOver, biểu tượng V → M3; Telegram Return bỏ qua);
+  - test engine 76, IMK 25.
+- M3:
+  - gạch chân (D13) theo quy tắc, mặc định tắt; danh sách đề xuất 13 app (VS Code, Electron/Chromium, Firefox);
+  - D20 (Thêm dấu cho từ đã gõ) ở bộ gõ: đọc lại 1–4 ms, chỉ ở phím dấu đầu khi bộ đệm trống;
+  - reset khi đổi nguồn không báo;
+  - sửa ⌫ xoá hai lần ở Chromium;
+  - ma trận `COMPATIBILITY.md`: 11 app đã đo;
+  - D17 (Trợ năng): hệ thống tự đọc khi chuyển nguồn;
+  - test engine 77, IMK 70, DauShared 32.
+- M4:
+  - DauShared và cửa sổ 4 mục (2d6206e, c731c61); bộ gõ đọc cài đặt chung (0aa4872);
+  - App Group chạy với Team ID M58DANM3ZP (958a5a8);
+  - bỏ chế độ Anh, quy tắc theo app chỉ còn gạch chân (9680c68, ea676ae, b23b266);
+  - M4-TESTING ĐẠT trừ việc hoãn sang M7 (máy tiếng Anh hẳn, sheet tối, VoiceOver/Tab);
+  - ma trận giao diện 12/12;
+  - test DauShared 21, IMK 25, snapshot-settings 10.

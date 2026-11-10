@@ -1,6 +1,6 @@
 # Kiến trúc
 
-Tài liệu này tả cấu trúc: thành phần nào làm gì, gọi nhau ra sao, luồng một phím đi qua đâu. Số đo không nằm ở đây: số đo theo ngày ở `docs/PROGRESS.md` (bảng Số đo; mốc đã đóng ở `docs/history/`), số đo giao diện ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md`. Lịch sử các thay đổi của tài liệu: `docs/history/DOCS-LOG.md`.
+Tài liệu này tả cấu trúc: thành phần nào làm gì, gọi nhau ra sao, luồng một phím đi qua đâu. Số đo không nằm ở đây (các hằng số kèm tên trong mã là giá trị cấu hình, không phải số đo): số đo theo ngày ở `docs/PROGRESS.md` (mốc đang làm) và `docs/history/` (mốc đã đóng; bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`), số đo giao diện ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md`. Lịch sử các thay đổi của tài liệu: `docs/history/DOCS-LOG.md`.
 
 ## Các thành phần
 
@@ -24,7 +24,7 @@ dau/
 
 - `struct VietEngine: Sendable` giữ từ đang gõ trong bộ đệm dung lượng cố định.
   - Bộ đệm là `TextBuffer`: tối đa 32 scalar, lưu trong `SIMD32<UInt32>` (`InlineArray` cần macOS 26).
-  - Không cấp phát mỗi phím (số đo: `docs/PROGRESS.md`, bảng Số đo, 29/10/2026).
+  - Không cấp phát mỗi phím (số đo: bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`, dòng cấp phát).
 - API: mọi hàm `mutating`, trả `Action`.
   - `handle(_ key: Unicode.Scalar)`:
     - chữ cái/chữ số nối vào từ;
@@ -68,7 +68,7 @@ dau/
   - Mỗi mục có: các bundle ID của một app (một app có thể có nhiều ID), tên, cờ `suggestUnderline`, ghi chú cho người bảo trì (không hiện lên giao diện, N5 (Chỉ hứa điều đã kiểm chứng)). Cả danh sách có `version`.
   - Giải mã dễ dãi (D18): khoá lạ bị bỏ qua; mục hỏng hoặc không có bundle ID bị bỏ mà không mất các mục khác; file hỏng thành danh sách rỗng.
   - Bản có sẵn là `Apps/Dau/Resources/CompatibilityList.json` trong app chủ.
-    - Nội dung ở M3 (Độ tin cậy): VS Code, các app Electron/Chromium của `docs/COMPATIBILITY.md` và Firefox (61daeec), không có Terminal (D13).
+    - Mục nào có `suggestUnderline` = true thì hiện ở "Đề xuất"; app nào có mặt, cờ của nó và lý do nằm ở chính file JSON (`about`, `note` của từng mục), không chép lại ở đây. Terminal không có trong danh sách (D13).
     - Test trong DauShared đọc chính file này.
   - `DauSettings.suggestions(from:isInstalled:)` dựng các hàng mục "Đề xuất":
     - là app đề xuất đã cài mà chưa có quy tắc đã lưu, theo thứ tự danh sách;
@@ -95,7 +95,7 @@ dau/
   - nếu `replace`: hỏi `selectedRange` một lần để có vị trí tuyệt đối, rồi gọi `insertText(_:replacementRange:)` đúng một lần;
   - phím đi thẳng không hỏi gì;
   - đây là cách đã chốt trong `DECISIONS.md` (mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính"; N3);
-  - bản Debug có thêm một lần hỏi sau khi thay để chẩn đoán (`ReplaceDiag.swift`); số đo M2 (Bộ gõ tối thiểu) làm trên Debug có lời gọi thừa này.
+  - bản Debug có thêm một lần hỏi sau khi thay để chẩn đoán (`ReplaceDiag.swift`); số đo trên bản Debug có lời gọi thừa này.
 - Reset engine khi:
   - click chuột;
   - `activateServer`/`deactivateServer`, `commitComposition`;
@@ -103,7 +103,7 @@ dau/
   - `selectedRange` khác dự đoán (trừ khi app chỉ trả lời chậm, mục dưới);
   - nguồn nhập liệu đổi mà IMK không báo (xem "Đổi nguồn nhập liệu không qua `activateServer`").
 
-#### App trả lời chậm (M6, `CursorTracker.known`, `CursorTracker.rebuild`)
+#### App trả lời chậm (`CursorTracker.known`, `CursorTracker.rebuild`)
 
 - Hiện tượng:
   - Chrome trang bận: app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); D11 (Kiểm tra ngữ cảnh) không bắt được vì vị trí dự đoán (`expected`) chỉ có trong một từ.
@@ -123,19 +123,19 @@ dau/
   - Ở phím thay chữ, nếu `selectedRange` khác `known`, ở mọi tốc độ: đọc chữ trước vị trí app trả một lần (lần đọc của D11 khi lệch, N3).
     - App chậm được chứng minh khi chữ đó, ở một trong hai dạng, cộng các thao tác app chưa áp ra đúng từ trong engine, mỗi thao tác xoá phải gặp đúng chữ nó xoá (`rebuild`): (a) chữ như trước các thao tác đó (Firefox; Chrome khi không có thao tác chèn tại con trỏ); (b) chữ đó cộng thao tác chèn tại con trỏ mới nhất trong số đó (bộ đệm Chromium).
     - Số thao tác app được chậm: tối đa `lateLimit`, cộng `burst`. Vượt `lateLimit` thì chữ app trả trước các thao tác đó cũng phải là chữ bộ gõ đã gõ ở đó (`tail`), so ít nhất hai đơn vị chữ của app (một, khi phần đọc bắt đầu từ đầu văn bản).
-      - Vượt `lateLimit` thì mọi thao tác xoá trong số đó phải biết chữ bị xoá. Thao tác thay làm ở vị trí app trả (khác `known`) bắt đầu lại `tail` và không biết chữ nó xoá: dựng lại qua nó thì khớp với mọi chữ và ghi chữ của bộ gõ đè lên, nên phép so với `tail` không còn so chữ của app. Ở trình soạn thảo của Cursor, vị trí app trả (đúng) trùng với vị trí của lần thay trước trong từ của nó, và phép dựng lại như vậy từng coi app đúng giờ là app chậm.
-      - Trong `lateLimit`, chữ dựng lại và `tail` phải trùng nhau ở phần cả hai cùng có: chỗ nào bộ gõ biết mình đã gõ gì thì chữ của app không được nói khác. Ở trình soạn thảo của Cursor, sau một từ một chữ cái có thay chữ, vị trí app trả (đúng) cách `known` đúng hai đơn vị, và chữ của từ mới cộng hai thao tác cuối từng ra đúng từ trong engine dù ở đó bộ gõ đã gõ chữ khác ("ở đâu" ra "ở dâu").
+      - Vượt `lateLimit` thì mọi thao tác xoá trong số đó phải biết chữ bị xoá. Thao tác thay làm ở vị trí app trả (khác `known`) bắt đầu lại `tail` và không biết chữ nó xoá: dựng lại qua nó thì khớp với mọi chữ và ghi chữ của bộ gõ đè lên, nên phép so với `tail` không còn so chữ của app. Ở trình soạn thảo của Cursor, vị trí app trả (đúng) trùng với vị trí của lần thay trước trong từ của nó, nên phép dựng lại như vậy coi app đúng giờ là app chậm.
+      - Trong `lateLimit`, chữ dựng lại và `tail` phải trùng nhau ở phần cả hai cùng có: chỗ nào bộ gõ biết mình đã gõ gì thì chữ của app không được nói khác. Ở trình soạn thảo của Cursor, sau một từ một chữ cái có thay chữ, vị trí app trả (đúng) cách `known` đúng hai đơn vị, và chữ của từ mới cộng hai thao tác cuối có thể ra đúng từ trong engine dù ở đó bộ gõ đã gõ chữ khác ("ở đâu" ra "ở dâu").
       - Riêng khi các thao tác đó bắt đầu từ đầu văn bản (trước chúng app không có chữ nào để so, `tail` là toàn bộ chữ trước con trỏ) và phím đang xử lý cũng thuộc loạt phím dồn (`keyInBurst`): coi là app chậm mà không cần chữ của app (`typedHere`). Đây là từ đầu tiên của tài liệu mới mà app chưa kịp áp phím nào (VS Code, lượt đo phím dồn ở `docs/PROGRESS.md`). Sau một quãng nghỉ thì không áp dụng, vì người dùng có thể đã bấm chuột mà IMK không báo.
     - Hoặc chữ đó là chữ bộ gõ đã gõ (`tail`) thiếu đúng số đơn vị app chậm, trong vài đơn vị gần nhất, so ít nhất hai đơn vị (tối đa `lateLimit`).
       - Đơn vị thiếu phải đứng sau ít nhất một đơn vị đã so: bộ đệm Chromium thiếu phần trang chưa báo, nằm sau chữ nó đã có. Chữ đọc được là `tail` mất các đơn vị đầu là app chỉ giữ từ đang gõ (trình soạn thảo của Cursor sau một từ một chữ cái: đọc được "co" ở chỗ đã gõ "ừ co").
     - Khi đó thay ở vị trí `known` (kind `late` trong log perf). Vùng thay luôn kết thúc ở `known`: ở app đưa con trỏ về cuối vùng thay (EditContext, Firefox), vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ.
     - Lần thay đầu của từ, app chậm tối đa `lateLimit` mà không chứng minh được, và trước vị trí app trả không có đủ cả từ: vẫn thay ở `known` (kind `late_guess`). App sửa chữ trước từ (gạch ngang thông minh) thì trước vị trí nó trả có đủ cả từ, nên vị trí của app được tin.
     - Còn lại như cũ: trong từ là lệch (D11; dùng lại chữ vừa đọc để dựng lại chỉ khi phím trước đủ 50 ms), đầu từ thì tin `selectedRange`.
-    - Vị trí lấy từ một `selectedRange` có thể cũ không còn ghi đè `known` trong các ca trên (lượt 1d: ghi đè làm lần trả lời chậm sau trùng với `known` sai, "kóo").
+    - Vị trí lấy từ một `selectedRange` có thể cũ không còn ghi đè `known` trong các ca trên (ghi đè làm lần trả lời chậm sau trùng với `known` sai, ví dụ "kóo").
   - Cùng cách chứng minh ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ); hai chỗ này vẫn chỉ đọc khi phím trước đủ 50 ms.
 - Giới hạn: app chậm hơn số thao tác trên mà không chứng minh được thì như trước. Ở đầu văn bản, app tự xoá hết chữ giữa hai phím của một loạt phím dồn trả lời giống hệt bộ đệm Chromium khi trang chưa báo gì, nên bị coi là app chậm: một `insertText` có vùng thay nằm ngoài chữ, phím thay chữ sau đó mới thấy lệch (`RapidKeysTests.clearedAtStartInBurst`). Kiểm bằng client giả trong `LateAnswerTests`, `RapidKeysTests` và `CursorEditorTests` (mô hình Chrome, VS Code, Firefox theo mã nguồn, mô hình Cursor theo log đo; thời gian của app, kể cả quãng app chưa sẵn sàng ở đầu tài liệu, là số chọn, không phải số đo).
 - Giới hạn ở app tính vị trí từ đầu từ (trình soạn thảo của Cursor; mô hình `LateDocument.Origin.word`, test `CursorEditorTests`, phần nào đo và phần nào giả định ghi ở mô hình):
-  - App chậm thật qua ranh giới từ: vị trí app trả thuộc toạ độ của từ trước hoặc của từ chưa đủ chữ, còn `known` đếm từ một từ cũ hơn, nên thay ở vị trí nào cũng sai (`staleAnswerAcrossWords`; trong mô hình, mã trước M6 cũng sai ở đây). Chưa sửa.
+  - App chậm thật qua ranh giới từ: vị trí app trả thuộc toạ độ của từ trước hoặc của từ chưa đủ chữ, còn `known` đếm từ một từ cũ hơn, nên thay ở vị trí nào cũng sai (`staleAnswerAcrossWords`). Chưa sửa.
   - App đúng giờ bị coi là chậm khi mọi phím từ lúc lấy vị trí ở đầu chữ app giữ đến phím đang xử lý thuộc một loạt phím dồn, và phím đó là phím thứ hai của một từ không phải từ đầu (đã đo trên Cursor, `docs/PROGRESS.md`; `burstFromStartOfWord`). Ở app này từ nào cũng bắt đầu từ 0, nên vị trí app trả, chữ đọc được và `known` giống hệt một tài liệu mới của app tính từ đầu văn bản, dùng bộ đệm Chromium, chưa áp phím nào (ca từ đầu tiên của tài liệu mới ở trên; `sameAnswerAsLateNewDocument`). Thay ở `known` đúng cho app đó và bị Cursor bỏ; thay ở vị trí app trả đúng cho Cursor và đè lên chữ đầu văn bản của app đó. Chỉ áp ca tài liệu mới cho từ đầu tiên thì sửa được Cursor nhưng mô hình VS Code và Firefox sai lại khi tài liệu chưa sẵn sàng qua một ranh giới từ (`stalledStartTable`). Chưa sửa.
   - Một ca chỉ có ở mô hình (`wordStartingAsTheText`): cùng điều kiện loạt phím dồn, từ đang gõ bắt đầu bằng đúng chữ đầu của phần đã gõ từ vị trí 0.
 
@@ -151,17 +151,17 @@ dau/
   - Thứ tự ngược thì phím thay chữ kế tiếp thấy lệch (D11 (Kiểm tra ngữ cảnh)) và reset.
 - Chữ cuối là dấu kết hợp (NFD) thì không đoán: reset, ⌫ đi thẳng.
 
-#### Đổi nguồn nhập liệu không qua `activateServer` (thêm ở M3)
+#### Đổi nguồn nhập liệu không qua `activateServer`
 
 - Hiện tượng: chọn U.S. rồi chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì IMK không gọi `deactivateServer`/`activateServer`, từ đang gõ dở bị gõ tiếp.
 - Cách xử lý:
   - mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được);
   - khi nhận thì reset từ đang gõ (D4; chế độ gạch chân thì chốt chữ đang hiện).
-- Thông báo đến trong 0,5 s sau `activateServer` của chính controller được coi là tiếng vọng của lần chuyển bằng phím tắt/menu và bị bỏ qua, để phím gõ ngay sau khi chuyển không mất từ.
+- Thông báo đến trong 0,5 s (`DauInputController.activationEcho`) sau `activateServer` của chính controller được coi là tiếng vọng của lần chuyển bằng phím tắt/menu và bị bỏ qua, để phím gõ ngay sau khi chuyển không mất từ.
 - Kịch bản kiểm: `scripts/selftest/typing/run.sh --keys "to⇄cj " safari` (không có `--expect` nên script so với câu mẫu mặc định và báo ✗; thứ cần xem là dòng log `source-changed-reset`).
   - `⇄` là chọn U.S. rồi Dấu bằng `TISSelectInputSource` từ tiến trình của script; log `source-changed-reset`.
-  - Kết quả có và không có bộ nghe: `docs/PROGRESS.md`, bảng Số đo, 30/10/2026.
-- Kịch bản `to` ⇄ `o` không còn phân biệt được: sau reset, D20 đọc lại "to" và `o` cho "tô" đúng như D20 định.
+  - Kết quả có và không có bộ nghe: bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`, dòng "Reset khi đổi nguồn".
+- Kịch bản `to` ⇄ `o` không phân biệt được có và không có bộ nghe: sau reset, D20 đọc lại "to" và `o` cho "tô" đúng như D20 định.
 
 #### "Thêm dấu cho từ đã gõ" (D20), `InPlaceComposer.addMarks`
 
@@ -175,7 +175,7 @@ dau/
   - phím hay click trước đó trên client này cách ít nhất 50 ms (`settleInterval`).
 - Khi đó, các bước đọc:
   - một `selectedRange` (phải là con trỏ, không có vùng chọn);
-  - một `attributedSubstring` tối đa 16 đơn vị UTF-16 ngay trước con trỏ, lấy dãy chữ cái/dấu kết hợp/chữ số cuối cùng;
+  - một `attributedSubstring` tối đa 16 đơn vị UTF-16 (`InPlaceComposer.readLength`) ngay trước con trỏ, lấy dãy chữ cái/dấu kết hợp/chữ số cuối cùng;
   - `seed(displayed:)`;
   - rồi đưa phím vào engine.
 - Sau khi đưa phím vào engine:
@@ -196,15 +196,15 @@ dau/
   - client trả `NSNotFound` hoặc `nil`: thôi đọc tới lần `activateServer` sau;
   - chuỗi sai độ dài, không có chữ, từ có chữ số mà `seed` không nhận, có vùng chọn: không seed, phím xử lý như phím đầu của từ mới.
 - Chỉ xét chữ trước con trỏ: con trỏ giữa từ ("hoc|tap" + `j`) thì chỉ phần trước con trỏ đổi ("họctap").
-- Vì sao chờ 50 ms:
+- Vì sao chờ 50 ms (`InPlaceComposer.settleInterval`):
   - app áp phím bất đồng bộ (Chromium, Electron, terminal) trả `selectedRange`/chữ từ ảnh chụp cũ khi phím dồn (số đo: D13, N3);
   - chữ đọc từ ảnh chụp cũ có thể bị thay sai chỗ.
-  - Đã thử không chờ (`settleInterval` = 0): kết quả ở `docs/PROGRESS.md`, bảng Số đo, 30/10/2026 (mục Phạm vi của D20, ý chờ 50 ms).
+  - Không chờ (`settleInterval` = 0) không làm hỏng chữ ở các app đã thử; số đo ở bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`, dòng "D20 không chờ" (mục Phạm vi của D20, ý chờ 50 ms).
   - Vẫn giữ 50 ms làm biên an toàn vì người quay lại sửa từ không gõ nhanh như vậy.
   - Phím dồn dưới 50 ms thì D20 không áp dụng, phím đi thẳng.
   - Phép kiểm app trả lời chậm (mục "App trả lời chậm") không chờ: nó không dựng từ từ chữ đọc được, chỉ thay ở vị trí bộ gõ tự theo dõi khi chữ đọc được chứng minh app chậm.
 - Chi phí thêm:
-  - số đo theo app ở D20 và `docs/PROGRESS.md`, bảng Số đo, 30/10/2026;
+  - số đo theo app ở D20 và bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`, dòng "D20 chi phí thêm";
   - chỉ tốn ở phím chữ cái hoặc phím dấu đầu tiên ngay sau reset/⌫;
   - gõ liền qua dấu cách không đọc thêm lần nào, tối đa một lần ở phím đầu của phiên (test `sample`, `InPlaceComposerLetterTests.sentence`).
 - Log perf:
@@ -276,7 +276,7 @@ Mọi điểm vào và cách xử lý giá trị lạ:
 - `main.swift` nghe thông báo Darwin `<bundle ID>.quitRequested` (`InputMethodLifecycle`).
 - Phát `DauQuitRequested` trong tiến trình để mỗi controller đang hoạt động chốt từ như một lần reset (gạch chân: chốt marked text vào client).
 - Rồi `exit(0)` ở vòng chạy kế tiếp.
-- Kiểm bằng `notifyutil -p com.codefastlabs.dau.inputmethod.Dau.quitRequested` → log `event=quit-requested` (kết quả: `docs/PROGRESS.md`, nhật ký 30/10/2026).
+- Kiểm bằng `notifyutil -p com.codefastlabs.dau.inputmethod.Dau.quitRequested` → log `event=quit-requested` (kết quả: `docs/history/LOG-M5.md`, nhật ký 30/10/2026).
 
 #### Khởi chạy bộ gõ: người dùng hay hệ thống (`LaunchOrigin.swift`, `InputMethodAppDelegate.swift`)
 
@@ -292,7 +292,7 @@ Bundle là `LSBackgroundOnly` nên người dùng mở nó (nháy đúp trong Fi
 - *Mở lại khi đang chạy* (Finder, `open`, `NSWorkspace`, có hay không `dontSwitch`):
   - không có tiến trình mới, tiến trình đang chạy nhận `aevt/rapp`;
   - → mở app chủ, **không** thoát (có thể đang phục vụ gõ);
-  - bỏ qua `rapp` trong 1 s đầu sau khởi chạy (phòng hờ hệ thống xin chạy hai lần; chưa thấy xảy ra).
+  - bỏ qua `rapp` trong 1 s đầu sau khởi chạy (`LaunchPolicy.reopenSettleSeconds`) (phòng hờ hệ thống xin chạy hai lần; chưa thấy xảy ra).
 - *`open` trong Terminal khi bộ gõ chưa chạy*:
   - không có Apple event, giống hệt hệ thống (chỉ LaunchServices thấy cờ khởi chạy; biến môi trường là của tiến trình gọi `open`, không tin được);
   - → coi là hệ thống, chạy tiếp, không mở gì;
@@ -310,13 +310,13 @@ Cách tìm app chủ:
   - dùng chung `Apps/Dau/Resources/Assets.xcassets` (AppIcon) với app chủ (`project.yml`), ra `CFBundleIconName`/`Assets.car` giống Dấu.app;
   - tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
 - Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) không đổi: vẫn là TIFF template khai trong Info.plist (`docs/COMPATIBILITY.md` 6.6, 6.7).
-  - Đã kiểm lại TIS (`kTISPropertyIconImageURL` = `ModeVietnamese.tiff`, cờ template = 1 ở cả bundle và mode) và ảnh thanh menu sau khi cài.
+  - TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template = 1 ở cả bundle và mode; ảnh thanh menu khớp sau khi cài.
 - Bản Release không có `get-task-allow` (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO`), nên không tiến trình nào gắn debugger vào bộ gõ để đọc từ đang gõ.
   - Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-input-method.sh --release` cho việc gõ hằng ngày).
 - Entitlements: App Sandbox, App Group, tạm thêm `temporary-exception.mach-register.global-name` cho tên kết nối IMK (theo mẫu IMK có sandbox).
   - Chưa thử bỏ đi để biết có cần không: hoãn sang M7, xét cùng lượt rà entitlement trước khi notarize.
   - **Không** `com.apple.security.network.client`.
-- Khoá Info.plist đang dùng (chạy được trên macOS 27 ở M2):
+- Khoá Info.plist đang dùng (chạy được trên macOS 27):
   - `InputMethodConnectionName`, `InputMethodServerControllerClass`, `LSBackgroundOnly`, `TISInputSourceID`, `TISIntendedLanguage`;
   - `ComponentInputModeDict` (một mode `.vi`, icon template V), `tsInputMethodIconFileKey`, `TISIconIsTemplate`;
   - `CFBundleIconName` do actool thêm từ catalog chung;
@@ -376,11 +376,11 @@ Cách tìm app chủ:
 
 #### Cờ chạy của bản Debug
 
-Bản Debug có ba nhóm cờ:
+Bản Debug có các nhóm cờ (mọi cờ nằm trong `#if DEBUG`; danh sách đủ ở nơi định nghĩa, không chép ở đây):
 
-- chạy không mở cửa sổ (`--print-…`);
-- chụp cần dịch vụ giả (`--capture-onboarding`, `--capture-uninstall`);
-- cho lần mở app thật để đo từ ngoài (`--settings-window`, `--appearance`).
+- chạy không mở cửa sổ, in một giá trị rồi thoát: các cờ `--print-…` ở đầu `main.swift`, và `--set-typing-method` ở `DebugSettingsCommand`;
+- chụp cần dịch vụ giả và các cờ chọn màn hình, trạng thái để chụp (`--capture-…`, `--onboarding`, `--shortcut`, `--active`, `--tampered`): `DebugCapture.swift`, `DauApp.swift`;
+- cho lần mở app thật để đo từ ngoài (`--settings-window`, `--appearance`): `DebugCapture.swift`.
 
 `scripts/selftest/settings-window` dùng các cờ này để kiểm giao diện (`docs/UI-CHECKS.md`).
 
@@ -392,7 +392,7 @@ Bản Debug có ba nhóm cờ:
   - `files.user-selected.read-only` (bảng chọn app).
 - App vẫn chỉ **đọc** các tuỳ chọn hệ thống đó (N4 (Không tự đổi cài đặt hệ thống)).
 - Bộ gõ giữ sandbox, App Group, không mạng (N2).
-- Kiểm bằng `scripts/selftest/app-group.sh` (kết quả với app không sandbox: `docs/PROGRESS.md`, nhật ký 30/10/2026).
+- Kiểm bằng `scripts/selftest/app-group.sh` (kết quả với app không sandbox: `docs/history/LOG-M5.md`, nhật ký 30/10/2026).
 
 #### Onboarding
 
@@ -430,7 +430,7 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 - Rồi luôn `TISRegisterInputSource`: app đang chạy dựng lại bộ đệm từ đĩa ở lần đăng ký này. TIS không liệt kê Dấu sau đó → `notListed`.
 - Mode `.vi` đã nằm trong mục lưu → `enabled` ngay (sau lượt kiểm bộ đệm ở dưới).
 - Không thì yêu cầu Cài đặt hệ thống thoát (`terminate()`, không ép; không thoát được thì đi tiếp), rồi `TISEnableInputSource` cho mục cha (mode do macOS ghi theo).
-- Sau đó **đọc lại** mục lưu theo chu kỳ tới khi có mode `.vi` (mặc định tối đa 60 s, để người dùng đọc và bấm Allow):
+- Sau đó **đọc lại** mục lưu theo chu kỳ tới khi có mode `.vi` (mặc định tối đa 60 s, `SystemInputMethodInstaller.enableTimeout`, để người dùng đọc và bấm Allow):
   - có → `enabled`;
   - hết hạn → `notEnabled` (giao diện hiện màn "Chưa bật được"; nếu sau đó macOS ghi mục, cửa sổ nhận ra và sang "đã bật").
 - Mỗi lần ra `enabled` (cả đường đã bật sẵn) có đúng một lượt kiểm `InputSourceCaches.removeCaches(notMentioning:)`:
@@ -467,7 +467,7 @@ Onboarding 3 bước (`OnboardingFlow`, `OnboardingWindow`); sheet báo lỗi: M
 
 - app chủ phát thông báo Darwin `<bundle ID bộ gõ>.quitRequested` (`InputMethodLifecycle` trong DauShared);
 - bộ gõ (`main.swift`) báo cho mọi controller chốt từ đang gõ (gạch chân: chốt marked text) rồi `exit(0)`; macOS chạy lại bundle trên đĩa ở phím kế tiếp;
-- quá 2 s mà còn chạy (bộ gõ bản cũ chưa nghe thông báo) thì `forceTerminate` đúng tiến trình bộ gõ của Dấu (`NSRunningApplication` theo bundle ID);
+- quá 2 s (`SystemInputMethodInstaller.quitTimeout`) mà còn chạy (bộ gõ bản cũ chưa nghe thông báo) thì `forceTerminate` đúng tiến trình bộ gõ của Dấu (`NSRunningApplication` theo bundle ID);
 - không dừng tiến trình hệ thống nào (`imklaunchagent`, `TextInputMenuAgent`…);
 - ai cũng phát được thông báo Darwin này, nên tiến trình khác có thể làm bộ gõ thoát; chấp nhận vì macOS chạy lại ngay ở phím sau, thông báo không mang dữ liệu.
 
@@ -505,13 +505,15 @@ Quy tắc kèm theo khi gỡ:
 
 #### Tên giao diện của macOS trong chữ của Dấu (`SystemUINames`, D38 (Chữ trên giao diện))
 
-- Các tên hiện đúng như macOS của người dùng:
-  - System Settings, General, Login Items & Extensions, Keyboard, Input Sources, Edit…, Add, Done, Allow, Don’t Allow, Log Out, Applications;
-  - tên tuỳ chọn "Automatically switch to a document’s input source", tên ngôn ngữ "Vietnamese", hộp thoại "Allow … to enable …?";
+- Các tên hiện đúng như macOS của người dùng. Danh sách đủ là các case của enum `SystemUIName` (nơi duy nhất giữ danh sách; `docs/GLOSSARY.md` dẫn sang đây), mỗi case có một dòng trong `SystemUINames.location(of:)`:
+  - System Settings, General, Login Items & Extensions, Keyboard, Input Sources, Edit…, Add, Done, Allow, Don’t Allow, Log Out;
+  - Applications (tên thư mục, `applications`) và Trash (`trash`, của Finder);
+  - Language & Region và mục Applications của nó (`languageAndRegion`, `languageRegionApplications`; mục này khác `applications` vì lấy từ bảng khác);
+  - tên tuỳ chọn "Automatically switch to a document’s input source", tên ngôn ngữ "Vietnamese", hộp thoại "Allow … to enable …?" (tiêu đề và nội dung: `allowDialogTitle`, `allowDialogBody`);
   - tên nguồn của chính Dấu ("Dấu – Vietnamese"/"Dấu – Tiếng Việt", D41; `dauInputSource`): đọc `InfoPlist.strings` của bộ gõ đã cài, chưa cài thì bản trong app, khoá là ID input mode.
 - Ngôn ngữ lấy như `LayoutNames` (`AppleLanguages` toàn cục, không phải ngôn ngữ của tiến trình app).
 - Chữ lấy từ bảng của chính hệ thống:
-  - đường dẫn trong `SystemUINames.tableURLs`: `.loctable` của System Settings, `KeyboardSettings.appex`, `GeneralSettings.appex`, `loginwindow.app`, và `SystemFolderLocalizations` cho "Applications"; tên ngôn ngữ từ `Locale`;
+  - bảng (`SystemUITable`) và đường dẫn trong `SystemUINames.tableURLs` và `loadTables`: `.loctable` của System Settings (`Localizable`, `InfoPlist`), `KeyboardSettings.appex`, `GeneralSettings.appex`, `Localization.appex` (`Localizable`, `InfoPlist`), `loginwindow.app`; `SystemFolderLocalizations` cho "Applications" (`folderNames`); `Localizable.strings` của Finder, chỉ mục "Trash" (`finderNames`); tên ngôn ngữ từ `Locale`;
   - tìm khoá bằng cách khớp giá trị tiếng Anh;
   - ngôn ngữ đầu là tiếng Anh thì dùng tiếng Anh; không khớp ở mọi ngôn ngữ ưu tiên thì tiếng Anh.
 - Câu chữ của Dấu dùng `%@` cho các tên này.
@@ -571,4 +573,4 @@ Quy tắc kèm theo khi gỡ:
   - `scripts/selftest/typing/run.sh` tự bật lúc chạy và khi xong trả khoá về đúng như cũ (xoá nếu trước đó không có).
   - Đo tay thì bật, đo, rồi xoá (`scripts/perf/perf-report.sh`).
   - Mỗi dòng phím có `t_ns` (lúc `handle` bắt đầu, đồng hồ `CLOCK_UPTIME_RAW`) và `ev_ns` (thời điểm của chính sự kiện phím); `perf-report.sh` dựng từ đó khoảng cách giữa các phím và độ trễ từ lúc tạo phím tới bộ gõ, cho bài test tải nặng (`scripts/selftest/load/run.sh`).
-- Test hiệu năng engine trong CI. Bài test tải nặng: xem mốc M6 (Hiệu năng dưới tải) trong `ROADMAP.md`.
+- Test hiệu năng engine (`PerformanceTests`) chạy tay bằng `swift test -c release --package-path Packages/DauEngine`; chạy trên CI là việc của M7 (Phát hành) trong `ROADMAP.md`. Bài test tải nặng: xem mốc M6 (Hiệu năng dưới tải) trong `ROADMAP.md`.

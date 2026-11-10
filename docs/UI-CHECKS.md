@@ -80,7 +80,7 @@ Lệnh: `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
    - Màn hình chính; kiểm (a) và chụp từng mục.
    - Mục tràn (`Reference.scrollingSection`) cuộn bằng giá trị thanh cuộn qua trợ năng, kiểm (d) phần khung, chụp `<mục>-scrolled-*.png`.
 6. Giao diện hệ thống đang không dùng (`--appearance light|dark`), thanh cuộn Always → `always-<light|dark>/`.
-   - Đối số `-AppleInterfaceStyle` truyền như đối số không đổi được giao diện cửa sổ (đo 02/11/2026), nên dùng `--appearance`.
+   - Đối số `-AppleInterfaceStyle` truyền như đối số không đổi được giao diện cửa sổ, nên dùng `--appearance`.
    - Kiểm: tiêu điểm lúc mở, Tab và ⌘F vào ô tìm, tìm ở sidebar (mục 18, 15, ở giao diện còn lại).
    - Rồi như lần 5, thêm ảnh sheet chưa chọn và đã chọn một hàng (không kiểm lại sheet).
 

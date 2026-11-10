@@ -94,6 +94,6 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 
 ## Thư mục khác
 
-- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu; đếm và lọc mục của Dấu trong plist cho `scripts/dev/clean-dau.sh`) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh`, `scripts/selftest/load/run.sh`, `scripts/dev/doctor.sh` và `scripts/dev/clean-dau.sh` biên dịch qua `scripts/lib/swift-tool.sh`; hưởng tác dụng phụ của script gọi nó.
+- `scripts/lib/input-source.swift`: công cụ dòng lệnh nhỏ (đọc, chọn nguồn nhập liệu; đếm và lọc mục của Dấu trong plist cho `scripts/dev/clean-dau.sh`) mà `scripts/selftest/app-group.sh`, `scripts/selftest/typing/run.sh`, `scripts/selftest/load/run.sh`, `scripts/selftest/load/heavy.sh`, `scripts/dev/doctor.sh` và `scripts/dev/clean-dau.sh` biên dịch qua `scripts/lib/swift-tool.sh`; hưởng tác dụng phụ của script gọi nó.
 - Các file `.swift` trong `scripts/assets/make-*.swift`, `scripts/selftest/settings-window/`, `scripts/selftest/typing/clipboard.swift` (cả `scripts/selftest/load/run.sh` dùng), `scripts/check-docs/doc-check.swift`, `scripts/design/canvas-index.swift`, `scripts/research/compare-ims/cases.swift` do script `.sh` tương ứng biên dịch và chạy; hưởng tác dụng phụ của script đó.
 - `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.

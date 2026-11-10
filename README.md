@@ -20,7 +20,7 @@ Bộ gõ tiếng Việt cho macOS, mã nguồn mở (GPLv3), miễn phí trọn 
 | AI agent (Claude Code) | [CLAUDE.md](CLAUDE.md): thứ tự đọc, cách điều phối, các luật làm việc đã rút ra |
 | Người xem thiết kế | [`docs/ui/canvas/README.md`](docs/ui/canvas/README.md): ảnh chụp mọi màn hình đã duyệt |
 
-**Máy mới:** chạy `scripts/dev/doctor.sh` trước. Lệnh chỉ đọc này liệt kê máy còn thiếu gì để build, test và chạy Dấu (Xcode, XcodeGen, chứng chỉ ký, bản đã cài, nguồn nhập liệu) kèm lệnh sửa từng mục. Sự cố hay gặp khi phát triển: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md). Mục lục mọi tài liệu: [`docs/README.md`](docs/README.md).
+**Máy mới:** chạy `scripts/dev/doctor.sh` trước. Lệnh này không cài hay đổi gì trên hệ thống (chỉ ghi vào `build/` và `.build/`, dòng `# Side effects: builds` trong script) và liệt kê máy còn thiếu gì để build, test và chạy Dấu (Xcode, XcodeGen, chứng chỉ ký, bản đã cài, nguồn nhập liệu) kèm lệnh sửa từng mục. Sự cố hay gặp khi phát triển: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md). Mục lục mọi tài liệu: [`docs/README.md`](docs/README.md).
 
 ## Cấu trúc
 
@@ -72,7 +72,7 @@ Với Command Line Tools (Swift 6.4), `swift test` báo lỗi không tìm thấy
 
 ## Định danh
 
-Bundle ID đã chốt (D24 (Tên và định danh)): `project.yml` dùng `BUNDLE_ID_PREFIX = com.codefastlabs.dau` (app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, App Group `M58DANM3ZP.com.codefastlabs.dau.shared`). `DEVELOPMENT_TEAM` nằm trong `Config/Signing.xcconfig`: Personal Team miễn phí `M58DANM3ZP`, trừ khi `Config/Local.xcconfig` (git bỏ qua) đặt team khác; mọi cấu hình ký tự động "Apple Development" (App Group cần Team ID thật, xem đầu `project.yml`). Build dưới team của bạn: xem [CONTRIBUTING.md](CONTRIBUTING.md). Bản phát hành ký Developer ID ở M7 (phát hành). Bộ gõ chỉ có một input mode, `com.codefastlabs.dau.inputmethod.Dau.vi` (D2 (Chuyển Việt/Anh)). Khi đổi `BUNDLE_ID_PREFIX`, phải sửa cả ID này trong `Apps/DauInputMethod/Info.plist` và `Apps/DauInputMethod/Resources/InfoPlist.xcstrings`, vì Xcode không thay biến trong khoá plist (chỉ thay trong giá trị).
+Bundle ID đã chốt (D24 (Tên và định danh)): `project.yml` dùng `BUNDLE_ID_PREFIX = com.codefastlabs.dau` (app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, App Group `M58DANM3ZP.com.codefastlabs.dau.shared`). `DEVELOPMENT_TEAM` nằm trong `Config/Signing.xcconfig`: Personal Team miễn phí `M58DANM3ZP`, trừ khi `Config/Local.xcconfig` (git bỏ qua) đặt team khác; mọi cấu hình ký tự động "Apple Development" (App Group cần Team ID thật, xem đầu `project.yml`). Build dưới team của bạn: xem [CONTRIBUTING.md](CONTRIBUTING.md). Bản phát hành ký Developer ID ở M7 (phát hành). Bộ gõ chỉ có một input mode, `com.codefastlabs.dau.inputmethod.Dau.vi` (D2 (Chuyển Việt/Anh)). ID này viết cứng ở nhiều nơi nên đổi `BUNDLE_ID_PREFIX` phải sửa theo: danh sách và lý do ở `docs/ARCHITECTURE.md`, mục "Build".
 
 ## Giấy phép
 

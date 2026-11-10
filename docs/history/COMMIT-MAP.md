@@ -1,6 +1,6 @@
 # Đối chiếu mã commit sau khi viết lại lịch sử (02/11/2026)
 
-Ngày 02/11/2026 repo chuyển từ `thevuong/dau` sang `codefastlabs/dau` và lịch sử được viết lại để bỏ một từ mẫu cũ khỏi mọi phiên bản (người dùng yêu cầu). Mã của mọi commit đều đổi. Các mã commit ghi trong tài liệu trước ngày này (PROGRESS, COMPATIBILITY…) là mã cũ: tra bảng dưới để ra mã mới. Hai commit chỉ dùng để thay từ đó trở thành rỗng nên bị bỏ (ghi "—").
+Ngày 02/11/2026 repo chuyển từ tài khoản cũ sang `codefastlabs/dau` và lịch sử được viết lại để bỏ một từ mẫu cũ khỏi mọi phiên bản (người dùng yêu cầu). Mã của mọi commit đều đổi. Các mã commit ghi trong tài liệu trước ngày này (PROGRESS, COMPATIBILITY…) là mã cũ: tra bảng dưới để ra mã mới. Hai commit chỉ dùng để thay từ đó trở thành rỗng nên bị bỏ (ghi "—").
 
 | Mã cũ | Mã mới | Commit |
 |---|---|---|

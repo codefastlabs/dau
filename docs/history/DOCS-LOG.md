@@ -11,6 +11,14 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 - Mục "Khởi chạy bộ gõ: người dùng hay hệ thống": tiêu đề "(02/11/2026, `LaunchOrigin.swift`, `InputMethodAppDelegate.swift`)".
 - Mục "Đo lường": "ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain (02/11/2026)".
 - Mục "Build": "(Xcode không thay biến trong khoá plist, đã thử 30/10/2026)".
+- Mục "DauShared", `CompatibilityList`: "Nội dung ở M3 (Độ tin cậy): VS Code, các app Electron/Chromium của `docs/COMPATIBILITY.md` và Firefox (61daeec), không có Terminal (D13)." Danh sách đổi sau đó (Chrome, Firefox, VS Code bỏ nhãn 10/11/2026); nay mục chỉ dẫn `CompatibilityList.json`.
+- Mục "DauInputMethod", thay tại chỗ: "số đo M2 (Bộ gõ tối thiểu) làm trên Debug có lời gọi thừa này".
+- Mục "App trả lời chậm": tiêu đề "(M6, …)"; "trong mô hình, mã trước M6 cũng sai ở đây"; "từng coi app đúng giờ là app chậm" (Cursor, trước khi sửa); "từng ra đúng từ trong engine" ("ở đâu" ra "ở dâu"); "(lượt 1d: ghi đè làm lần trả lời chậm sau trùng với `known` sai, "kóo")".
+- Mục "Đổi nguồn nhập liệu không qua `activateServer`": tiêu đề "(thêm ở M3)".
+- Mục "Thêm dấu cho từ đã gõ": "Đã thử không chờ (`settleInterval` = 0)" (số đo ở bảng "Số đo (M1–M3)" của `docs/history/LOG-M0-M4.md`).
+- Mục "DauInputMethod", biểu tượng: "Đã kiểm lại TIS … và ảnh thanh menu sau khi cài"; Info.plist: "(chạy được trên macOS 27 ở M2)".
+- Các dẫn "`docs/PROGRESS.md`, bảng Số đo, 29/10 và 30/10/2026" và "nhật ký 30/10/2026": PROGRESS không còn bảng đó (chuyển sang `docs/history/LOG-M0-M4.md`, `docs/history/LOG-M5.md` ngày 09/11/2026); nay dẫn thẳng các file đó.
+- Mục "Đo lường": "Test hiệu năng engine trong CI" (chưa có CI; chạy tay, CI là việc của M7).
 
 ## docs/UI.md
 
@@ -19,10 +27,12 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 - Mục "Cập nhật & hỗ trợ", hàng "Ngôn ngữ": "(D41; artboard \"Cài đặt – hàng Ngôn ngữ (theo macOS)\" và \"(Dấu đặt riêng English, macOS tiếng Việt)\", canvas phiên bản 136, người dùng duyệt 08/11/2026)".
 - Mục "Cập nhật & hỗ trợ", hàng "Ngôn ngữ", phần chờ mở lại: "(artboard \"Cài đặt – hàng Ngôn ngữ (đã đổi sang English, chưa mở lại Dấu)\", canvas phiên bản 137)".
 - Mục "Cập nhật & hỗ trợ": "Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (người dùng chốt 02/11/2026, D9)."
+- Mục "Onboarding", dòng cuối thanh bước: "(đã đo 30/10/2026)".
+- Mục "Onboarding": đoạn "Mọi bước dùng chung một khung" nằm ở Bước 2, nay chuyển lên "Khung chung".
 
 ## docs/UI-CHECKS.md
 
-- Mục "Lệnh", lần mở 6: "Giao diện hệ thống đang không dùng (`--appearance light|dark`; `-AppleInterfaceStyle` truyền như đối số không đổi được giao diện cửa sổ, đo 02/11/2026)" (số đo vẫn giữ trong file, cạnh câu giải thích).
+- Mục "Lệnh", lần mở 6: "Giao diện hệ thống đang không dùng (`--appearance light|dark`; `-AppleInterfaceStyle` truyền như đối số không đổi được giao diện cửa sổ, đo 02/11/2026)" (ngày đo 02/11/2026 giữ ở đây; file chỉ còn câu giải thích).
 - Mục "Lệnh", cuối phần cửa sổ thật: "Bài học 02/11/2026: một `layoutProbe` đặt ngoài `listRowInsets` làm ảnh chụp ngoài màn hình lệch so với cửa sổ thật mà các kiểm vẫn đạt. Từ 03/11/2026 cửa sổ Cài đặt chỉ được đo trên cửa sổ thật; `layoutProbe` chỉ còn cho ảnh chụp onboarding và bảng so mockup, luôn cùng một cấu trúc view dù có probe hay không, và chỉ đặt trên nội dung hàng hoặc cả control, không bọc ngoài modifier của hàng list."
 - Danh sách, mục 16: "(đo 05/11/2026: trước khi sửa, ⌘[ đổi trang và làm sheet tự đóng)".
 - Danh sách, mục 18: "(đo 06/11/2026 trên bản sidebar cố định đầu tiên)".
