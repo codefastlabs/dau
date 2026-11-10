@@ -38,3 +38,6 @@ lùi sau vị trí đó tối đa 2 chữ	D11: late limit is 2 edits plus the ed
 Hiện còn nhãn: VS Code	D13: Chrome, Firefox and VS Code no longer carry the label (10/11/2026)
 "aw" khôi phục thành "aw"	D31: a lone ă, â or đ is kept at the word end (10/11/2026)
 chốt sau khi đo, so với gõ bằng U\.S\.	D42: thresholds are set; the control is Apple Telex, not the U.S. layout (10/11/2026)
+Chỉ đọc chữ từ ứng dụng \(`attributedSubstring`\) cho tính năng	D11 reads text in three more cases; the line was removed (10/11/2026)
+Telex của Apple cùng điều kiện ra chữ 2/3 lượt	D11: two valid control cells, the third was a broken measurement (10/11/2026)
+Chưa có dấu hiệu App Nap	D12: App Nap and efficiency cores were not measured directly (10/11/2026)

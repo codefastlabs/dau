@@ -70,10 +70,12 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 02/11/2026: từ đã hết hợp lệ ("người dùng chốt 02/11/2026: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ, 'tốt', ⌘A, 'toots' ra 'toots' và hỏng tới dấu cách").
 - 10/11/2026: thêm ý "App trả lời chậm" (thay ở vị trí Dấu tự theo dõi khi `selectedRange` lùi tối đa 2 chữ), người dùng duyệt. Bản trước: "Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ." Câu trong "Câu hỏi đã trả lời" (vị trí thay chữ) trước đó: "Tự cộng dồn vị trí cũng không cứu được (vị trí gốc cũng là ảnh chụp cũ; VS Code đổi gốc toạ độ). Hướng cho app bất đồng bộ: gạch chân theo D13".
 - 10/11/2026: ý "App trả lời chậm" viết lại theo mã (50b67ec và bản sửa ca đầu văn bản), người dùng duyệt: chạy ở mọi tốc độ gõ; giới hạn chậm là 2 thao tác cộng số thao tác của loạt phím dồn; vùng thay luôn kết thúc ở vị trí Dấu theo dõi; ở đầu văn bản, trong cùng loạt phím dồn, không cần chữ của app để so. Bản trước: "Khi kiểm: `selectedRange` lùi sau vị trí đó tối đa 2 chữ và phím trước cách ít nhất 50 ms"; "Phím dồn dưới 50 ms: chưa áp dụng (M6)". Câu trong "Câu hỏi đã trả lời" (vị trí thay chữ) trước đó: "App chậm mà phím cách từ 50 ms: Dấu dùng vị trí tự theo dõi, kiểm bằng chữ đọc được (D11, M6). Phím dồn dưới 50 ms: chưa có cách, đang làm ở M6".
+- 10/11/2026 (rà soát tài liệu, người dùng duyệt): bỏ dòng "Chỉ đọc chữ từ ứng dụng (`attributedSubstring`) cho tính năng \"Thêm dấu cho từ đã gõ\" (D20)", trái với ba chỗ đọc chữ khác của chính D11. "Vì sao": "Telex của Apple cùng điều kiện ra chữ 2/3 lượt" thành 2 ô đo hợp lệ, ô thứ ba là đo hỏng do cách script chuyển nguồn; số đo phím dồn chỉ còn ghi ở D13.
 
 ### D12. Ưu tiên tiến trình
 
 - 10/11/2026: thêm ý "Số đo" từ bài tải nặng của M6, người dùng duyệt. Lời quyết định không đổi.
+- 10/11/2026 (rà soát tài liệu, người dùng duyệt): ý "Số đo" ghi ô cao hơn lúc rảnh (p99 của Chrome) và cách đo; câu "Chưa có dấu hiệu App Nap hay bị xếp vào nhân tiết kiệm điện" thành "chưa đo trực tiếp". Lời quyết định không đổi.
 
 ### D13. Gạch chân là đường lui cuối cùng
 
@@ -83,6 +85,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 09/11/2026: câu "từ 10 ms đều đúng" trong lý do viết lại cho khớp số đo: VS Code ở 10 ms sai một lần ở lượt M2 với câu mẫu cũ; luật không đổi.
 - 10/11/2026: đổi tên thành "Gạch chân là đường lui cuối cùng", người dùng duyệt. Thay tại chỗ là cách gõ của Dấu, gõ sai ở một app là lỗi phải sửa; nhãn "Đề xuất" chỉ giữ cho app mà thay tại chỗ còn sai ở tốc độ gõ thật. Bản trước: "Gạch chân (marked text) là đường lui, bật theo quy tắc riêng của từng app"; "Danh sách đề xuất ban đầu: VS Code, các app Electron/Chromium và Firefox". Do M6 bước 1: Chrome trang bận sai 3/3 khi thay theo vị trí của app, đúng 3/3 khi thay theo vị trí Dấu tự theo dõi.
 - 10/11/2026: Chrome, Firefox và VS Code bỏ nhãn "Đề xuất", người dùng duyệt: đo ở nhịp 5, 10, 20 ms sau các lần sửa ở M6 (`docs/PROGRESS.md`, nhật ký 10/11). Bản trước: "Hiện còn nhãn: VS Code, các app Electron/Chromium và Firefox (sai khi phím dồn, M3)".
+- 10/11/2026 (rà soát tài liệu, người dùng duyệt): danh sách còn nhãn ghi số đo lại của Edge và thêm Cursor; bản trước: "Edge, Brave, Arc và các app Electron khác (sai khi phím dồn ở M3 hoặc xếp theo công nghệ giao diện; chưa đo lại sau lần sửa ở M6)". "Vì sao (nhãn đã bỏ)" ghi nhịp 5, 10, 20 ms là nhịp danh nghĩa và số lượt mỗi app.
 
 ### D16. Bảo trì và gỡ cài đặt
 
@@ -216,6 +219,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 ### D42. Ngưỡng hiệu năng
 
 - 10/11/2026: quyết định mới, người dùng duyệt, từ số đo bài tải nặng của M6. Thay câu hỏi mở "Ngưỡng hiệu năng (độ trễ p99, bộ nhớ): chốt sau khi đo, so với gõ bằng U.S."; bàn phím U.S. không dùng làm mốc vì không có log từng phím, đối chứng là Telex của Apple.
+- 10/11/2026 (rà soát tài liệu, người dùng duyệt): thêm dòng `heavy.sh` chưa chạy trọn lượt nào. Ngưỡng không đổi.
 
 ## Đã biết nhưng không làm
 
@@ -254,6 +258,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 ### Vị trí thay chữ (câu hỏi A/B)
 
 - 29/10/2026: "Đã chốt (29/10/2026): cách A." Số đo M2 lúc đó ghi pointer `docs/PROGRESS.md` (nay ở `docs/history/LOG-M0-M4.md`). "Slack không đo: người dùng chọn Telegram thay cho Slack (30/10/2026); số đo Telegram ghi trong `docs/PROGRESS.md`." Hướng lúc đó: "Hướng cho app bất đồng bộ: M3 thử gạch chân (D13) theo bundle ID, đo ở 0 ms rồi chốt. Máy tải nặng: đo ở M6."
+- 10/11/2026 (rà soát tài liệu): số đo phím dồn sau khi sửa không chép ở đây nữa, dẫn sang D13.
 
 ### App Group với bản ký ad-hoc
 
