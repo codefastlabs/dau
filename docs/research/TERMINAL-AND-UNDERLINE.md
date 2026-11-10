@@ -13,7 +13,9 @@ Nghiên cứu đọc mã để tìm vì sao (1) chế độ gạch chân kém kh
   - **xterm.js (trang thử trong Chrome, cùng cơ chế với terminal của Claude): đúng** ("tối việt đ "). xterm.js chuyển nguyên chuỗi cho shell và không gửi phím gốc của phím Dấu đã nhận. Thời gian mỗi phím ngang cách hiện tại.
   - **Ghostty: sai**, mọi lần thay có DEL đều mất. Theo mã Ghostty 1.4.0, chữ bộ gõ đưa trong lúc Ghostty xử lý phím mà bắt đầu bằng ký tự điều khiển bị bỏ (`String.keyEventText`). Chữ đưa ngoài lúc xử lý phím đi đường khác (`committedTextAction`) và theo mã thì giữ nguyên DEL; nhưng khi bộ gõ nhận phím mà không đưa chữ, Ghostty gửi phím gốc. Biến thể "để phím đi qua rồi sửa sau phím" chưa đo.
 - **Gạch chân không thuộc tính gạch:** không giúp ở terminal. Ghostty tự vẽ gạch chân cho chữ đang soạn; trang xterm.js không vẽ gạch chân ở cả hai cách.
-- Việc tiếp theo: đo biến thể Ghostty; với terminal của Claude, tìm cách nhận ra ô terminal mà không áp lên ô chat của cùng app (bản thử đang bật theo bundle ID, mà app Claude dùng một bundle ID cho cả hai).
+- **Bản thử Ghostty "sửa sau phím" (lượt thứ ba, 11/11/2026): đúng** ở zsh, vim và khi phím cách 30 ms; tốc độ ngang cách hiện tại. Phím đi tới Ghostty như thường, rồi DEL và chữ mới tới sau khi Ghostty xử lý xong phím, xoá cả việc phím vừa làm.
+- **Nhận ra ô kiểu terminal:** `length()` trả 0 ở mọi app đã thử, không dùng được; `selectedRange` (Dấu đã hỏi ở phím có thay chữ, không tốn thêm lời gọi) phân biệt được: ô gõ thường tăng theo chữ đã gõ, Ghostty luôn `{0,0}`, xterm.js dao động 0–2.
+- Việc tiếp theo: người dùng duyệt hướng sửa thật (quyết định mới cho ô bỏ qua vùng thay chữ; cách nhận ra theo `selectedRange`); kiểm trên app Claude thật.
 
 ## Nhãn nguồn và bản đã đọc
 

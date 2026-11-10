@@ -26,7 +26,8 @@ Mở từ 10/11, chưa sửa mã sản phẩm (mới có bản thử chỉ ở D
 - Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
 - Ghostty: thay tại chỗ sai (nhân đôi chữ hoặc ra chuỗi phím gốc); gạch chân đúng chữ nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple. Terminal của Claude chưa đo (không tự động hoá được).
 - Hướng đang theo (11/11): thay tại chỗ ở cả hai terminal bằng API chính thống, gạch chân chỉ là đường lui. Bản thử xoá bằng DEL (chỉ có ở Debug) đúng ở xterm.js, sai ở Ghostty (nhật ký 11/11, lượt thứ hai).
-- Việc tiếp theo của mạch này: bản thử Ghostty "để phím đi qua rồi sửa sau phím"; cách nhận ra ô terminal của app Claude mà không áp lên ô chat (cùng bundle ID). Thay đổi `docs/DECISIONS.md` chờ người dùng duyệt khi có bản sửa thật.
+- Đã đo (nhật ký 11/11, lượt thứ ba): Ghostty "sửa sau phím" đúng; `selectedRange` phân biệt ô kiểu terminal với ô gõ thường.
+- Việc tiếp theo của mạch này: người dùng duyệt hướng sửa thật và thay đổi `docs/DECISIONS.md`; sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
@@ -321,3 +322,8 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Gạch chân không thuộc tính gạch: Ghostty vẫn vẽ gạch chân (tự vẽ chữ đang soạn, bỏ qua thuộc tính); trang xterm.js không vẽ gạch chân ở cả hai cách. Hướng này không giúp ở hai terminal.
   - Thời gian xử lý mỗi phím của bản thử ngang cách hiện tại: xterm.js p50 371 µs, p99 540 µs; Ghostty dòng trộn p50 343 µs, p99 760 µs; gạch chân xterm.js p50 351 µs, p99 496 µs (n 13–32 phím mỗi ô). Bản thử không hỏi `selectedRange`, không đọc chữ.
   - Dọn: bản Release đã cài lại (đối chiếu binary), không còn khoá Debug, nguồn nhập liệu về Dấu, không còn cửa sổ thử, `build/terminal-underline/` đã xoá sau khi ghi số.
+- 11/11/2026 — lượt gõ thử thứ ba: bản thử Ghostty "sửa sau phím" và đầu dò độ dài văn bản (người dùng cho chạy, 01:08–01:10, 115 s, `scripts/research/terminal-underline/run.sh 't3-*'`, bộ gõ Debug 237e68f, máy này, một lượt mỗi ô; cài lại Release ngay sau) — phiên chính. Kết quả (được / mong đợi):
+  - Ghostty, sửa sau phím (`DauDebugEraseAfterKey`: phím đi tới Ghostty, rồi DEL và chữ mới tới sau khi Ghostty xử lý xong phím): đúng ở mọi ô. `dd` → "đ", `toois` → "tối", `vieetj` → "việt"; dòng trộn `toois vieetj ddi hoaf⌫ windows ` → "tối việt đi hò windows " ở zsh 120 ms, ở zsh 30 ms giữa hai phím và ở vim (giao thức phím kitty). Byte gửi cho shell, ví dụ "dd⌫⌫đ".
+  - Thời gian xử lý mỗi phím ngang cách hiện tại: p50 291–344 µs, p99 441–609 µs (n 31–32 phím mỗi ô); cùng ô với cách hiện tại p50 325 µs, p99 686 µs.
+  - Đầu dò (`DauDebugProbeLength`, `toois vieetj `): `length()` của app trả 0 ở mọi app (Chrome, Safari, Sublime Text, xterm.js, Ghostty), không dùng được. `selectedRange` phân biệt được: ô gõ thường tăng theo chữ đã gõ (tới 8 ở cả ba app); Ghostty luôn `{0,0}`; xterm.js dao động 0–2.
+  - Dọn: Release đã cài lại (đối chiếu binary), không còn khoá Debug, nguồn nhập liệu về Dấu; cửa sổ thử của Sublime Text còn hộp thoại lưu, phiên chính đóng bằng "Don't Save" (bước đóng Sublime của `typing/run.sh` đã để sót hai lần, chưa sửa). `build/terminal-underline/` đã xoá sau khi ghi số.
