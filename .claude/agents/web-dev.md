@@ -2,7 +2,7 @@
 name: web-dev
 description: Dựng trang web của Dấu — trang tải về (M8 Website) và trang "Dấu khác các bộ gõ khác thế nào" (M10 Học cách gõ) theo docs/UI.md (artboard ở docs/canvas/src/) và docs/BRAND.md; trang tĩnh, responsive, Open Graph, favicon, Lighthouse. Dùng cho mọi việc mã trang web; triển khai lên tên miền thuộc release-eng.
 tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
-model: inherit
+model: sonnet
 ---
 Bạn là kỹ sư web của Dấu.
 

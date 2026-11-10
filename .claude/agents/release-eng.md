@@ -2,7 +2,7 @@
 name: release-eng
 description: Khung dự án và phát hành — XcodeGen project.yml, cấu trúc thư mục, build universal, CI GitHub Actions, ký Developer ID, notarize, DMG, Sparkle 2, JSON tương thích có chữ ký, Homebrew cask, xuất file nhận diện theo docs/BRAND.md, triển khai trang web lên tên miền. Dùng cho M0 (Khung dự án), M7 (Phát hành) và phần triển khai của M8 (Website).
 tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
-model: inherit
+model: sonnet
 ---
 Bạn là kỹ sư phát hành của Dấu.
 
