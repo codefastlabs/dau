@@ -252,7 +252,7 @@ PAGE_TITLE="Dấu self test"
 FOCUS_TITLE="$PAGE_TITLE [focus]"
 cat > "$PAGE" <<HTML
 <!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
-<textarea autofocus spellcheck="false" autocomplete="off" style="width:90%;height:8em"></textarea>
+<textarea autofocus spellcheck="false" autocomplete="off" style="width:96vw;height:90vh"></textarea>
 <script>
 var t = document.querySelector("textarea");
 function mark() {
@@ -498,29 +498,25 @@ open_test_page() {
 # Puts the keyboard focus in the test page's text field of browser process $1 when the
 # page does not report it (title without "[focus]"): Safari has been seen to open the
 # page with the focus in its address field (docs/PROGRESS.md, 10/11/2026), and the
-# page's autofocus does not take it back. Clicks the middle of the page's AXTextArea,
-# found through Accessibility, only while the browser is frontmost with the test page in
-# its focused window. A click, not a script in the page: it needs no browser setting.
+# page's autofocus does not take it back. Clicks the middle of the browser's focused
+# window, only while the browser is frontmost with the test page in that window: the
+# text field fills the page (96vw × 90vh) so that the middle of the window is inside
+# it. A first version looked for the page's AXTextArea through Accessibility and did
+# not click in Safari (why was not kept). A click, not a script in the page: it needs
+# no browser setting.
 # Whether it worked is not judged here: type_keys's guard still checks the title.
 focus_test_field() { # process
   stopped && return 1
   wait_until -i 0.3 2 front_ok "$1" "$FOCUS_TITLE" && return 0
   log_warn "$1: ô nhập của trang thử chưa có focus, bấm vào ô"
-  osascript -e "$(front_guard "$1" "$PAGE_TITLE")" -e "
+  local err
+  err="$(osascript -e "$(front_guard "$1" "$PAGE_TITLE")" -e "
     tell application \"System Events\" to tell process \"$1\"
       set w to value of attribute \"AXFocusedWindow\"
-      repeat with e in (entire contents of w)
-        try
-          if role of e is \"AXTextArea\" then
-            set {x, y} to position of e
-            set {sw, sh} to size of e
-            click at {x + sw / 2, y + sh / 2}
-            return \"clicked\"
-          end if
-        end try
-      end repeat
-      error \"no AXTextArea in the test page\"
-    end tell" >/dev/null 2>&1 || log_warn "$1: không bấm được vào ô nhập của trang thử"
+      set {x, y} to position of w
+      set {sw, sh} to size of w
+      click at {x + sw / 2, y + sh / 2}
+    end tell" 2>&1 >/dev/null)" || log_warn "$1: không bấm được vào ô nhập của trang thử: $err"
   return 0
 }
 

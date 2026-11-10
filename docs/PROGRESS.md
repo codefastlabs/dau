@@ -313,3 +313,12 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Nhóm 2, Safari: sau 15 giây ô nhập vẫn chưa có focus; focus của Safari nằm ở thanh địa chỉ (`AXTextField`, "smart search field"). Máy lúc đó rảnh, nên các lần dừng ở Safari hôm nay (16:18, 16:30, 16:43) không phải do trang chậm. Vì sao Safari mở trang với focus ở thanh địa chỉ: chưa rõ. Các ô Safari đã qua trong ba lượt chiều nay không cho biết gì về việc này: người dùng có bấm tay vào ô nhập khi thấy focus ở thanh địa chỉ, không ghi lại ô nào.
   - Sửa: `typing/run.sh` (`focus_test_field`) bấm vào ô nhập của trang thử qua Accessibility khi trang không báo focus, trước khi gõ, ở cả bốn trình duyệt. Chưa chạy thật.
   - Dọn: không có tải nào được bật, không còn tab thử, nguồn là Dấu (script chọn lại bằng API sau khi dừng), đã cài lại bộ gõ bản Release.
+- 10/11/2026 — M6 bước 2, `heavy.sh` lần ba (người dùng cho chạy; máy M1, 16:48–16:52; Dấu Debug; log `build/load/heavy-20261110-164814/`, không commit): bốn nhóm đầu chạy xong, dừng ở nhóm 5 — phiên chính.
+  - Tải: 8 tiến trình `yes` và `memory_pressure -l warn`. Tải trung bình 1 phút 2,9–4,5 lúc rảnh; 17–23 trong nhóm 4; bộ nhớ trống 58–62% lúc rảnh, 41–42% dưới tải.
+  - Chữ của Dấu: đúng 3/3 lúc rảnh và 3/3 dưới tải (Safari, Chrome, VS Code). Không có phím nào tới bộ gõ cách phím trước dưới 10 ms; không có `late`, `mismatch`, `resync`.
+  - Đối chứng Telex của Apple (Safari, Chrome): chữ dưới tải giống hệt chữ lúc rảnh của chính nó, 2/2.
+  - Thời gian mỗi phím của Dấu, lúc rảnh / dưới tải, theo thứ tự Safari, Chrome, VS Code. `lag` p50: 0,54 / 0,34; 0,50 / 0,35; 0,46 / 0,30 ms. `lag` p99: 7,5 / 2,4; 5,1 / 1,2; 3,8 / 1,7 ms. Phím có thay chữ `handle` p50: 1,92 / 1,67; 1,24 / 0,99; 1,11 / 0,80 ms. `handle` p99: 8,6 / 6,2; 6,0 / 6,7; 10,5 / 5,7 ms.
+  - Giới hạn: mỗi điều kiện một nhóm (ba ô), nhóm rảnh chạy trước nhóm tải, chưa có nhóm rảnh chạy sau; cùng hướng với lượt thử 13:16. Số dưới tải không cao hơn lúc rảnh ở ô nào trừ `handle` p99 của Chrome (6,0 lên 6,7 ms). Vì sao số dưới tải thấp hơn: chưa đo.
+  - Bộ nhớ tiến trình Dấu (Debug): 62–64 MB suốt lượt.
+  - Nhóm 5 dừng: Safari lại mở trang với focus ở thanh địa chỉ, và bước `focus_test_field` không bấm được vào ô nhập (lỗi không được giữ lại). Sửa: ô nhập của trang thử phủ gần hết trang, script bấm vào giữa cửa sổ đang focus và ghi lỗi nếu có. Chưa chạy thật.
+  - Dọn: tải đã tắt, không còn tab thử, nguồn là Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bộ gõ bản Release.
