@@ -41,7 +41,9 @@
 # of a group:
 #   group source load app text_ok late mismatch resync gap_lt10 lag_p50_us lag_p99_us
 #   replace_p50_us replace_p99_us
-# ("-" = not in the log; Apple Telex rows have text_ok only).
+# ("-" = not in the log). text_ok for Dấu: 1 when the text is the expected one. For Apple
+# Telex: "ref" in the idle group (its text is the reference), then 1 when the loaded
+# text is the same as its idle text.
 #
 # Cleanup: the load is stopped; each typing/run.sh call closes what it opened and puts
 # back the clipboard and DauPerfLog. The last group leaves Dấu selected; if the source
@@ -196,6 +198,23 @@ for g in $PLAN; do
     [[ -f "$dir/$app.txt" ]] || continue
     ok=0; grep -q "^✓ $app đạt" "$dir/typing.log" && ok=1
     row=($index $src $load $app $ok - - - - - - - -)
+    if [[ $src != dau ]]; then
+      # The control is compared with itself: its idle text is the reference for its
+      # loaded text. Dấu's expected text is not the control's (Apple's Telex keeps
+      # "mêting" where Dấu restores "meeting", D4).
+      ref="$OUT/$src-$app.idle.txt"
+      if [[ $load == idle ]]; then
+        cp "$dir/$app.txt" "$ref"; ok=ref
+        log_ok "$app: chữ lúc rảnh của $src, làm mốc"
+      elif [[ -f "$ref" ]] && cmp -s "$dir/$app.txt" "$ref"; then
+        ok=1; log_ok "$app: chữ giống lúc rảnh"
+      else
+        ok=0; log_error "$app: chữ khác lúc rảnh (so $dir/$app.txt với $ref)"
+      fi
+      row=($index $src $load $app $ok - - - - - - - -)
+      print -r -- "${(pj:\t:)row}" >> "$SUMMARY"
+      continue
+    fi
     if [[ $src == dau ]]; then
       p="$dir/$app.perf.txt"
       # --app matches part of the bundle ID: vscodefile is VS Code.

@@ -328,14 +328,20 @@ OSA
 # title, if given). Sends nothing.
 front_ok() { osascript -e "$(front_guard "$1" "${2:-}")" -e 'return' >/dev/null 2>&1; }
 # Runs AppleScript $3 only if the guard for process $1 (title $2) passes.
-# The check alone is retried for a few seconds first: right after `open`, Safari 27 may
+# The check alone is retried first (15 s at most): right after `open`, Safari 27 may
 # briefly report an untitled front window. Keys are still only sent
 # once the check passes.
 guarded() {
-  local out
-  wait_until -i 0.4 3.2 front_ok "$1" "$2"
+  local out start=$SECONDS waited where
+  # 15 s: on a Mac under heavy load the test page has been seen not to report the focus
+  # within 3 s (docs/PROGRESS.md, 10/11/2026). A longer wait that passes is reported, and
+  # a failure says where the keyboard focus is, to tell a slow page from a focus elsewhere.
+  wait_until -i 0.4 15 front_ok "$1" "$2"
+  waited=$(( SECONDS - start ))
+  (( waited >= 3 )) && log_warn "$1: chờ $waited giây mới tới kiểm tra cửa sổ và focus"
   if ! out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)"; then
-    log_error "Dừng: $out — không gửi phím nào nữa"
+    where="$(osascript -e "tell application \"System Events\" to tell process \"$1\" to get {role, description} of (value of attribute \"AXFocusedUIElement\")" 2>&1)"
+    log_error "Dừng: $out — không gửi phím nào nữa (sau $waited giây; focus của $1 đang ở: ${where:-không đọc được})"
     echo front > "$STOP_FILE"
     return 1
   fi
