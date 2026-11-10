@@ -1,6 +1,9 @@
 # macOS
 .DS_Store
 
+# JetBrains IDEs (WebStorm)
+.idea/
+
 # Xcode — Dau.xcodeproj is generated from project.yml by XcodeGen
 Dau.xcodeproj/
 *.xcworkspace/
