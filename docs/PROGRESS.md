@@ -27,7 +27,7 @@ Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
    - 1d. Đạt 10/11 với Chrome (nhật ký). Đo lại như 1b. Mục tiêu: thay tại chỗ đúng khi trang bận, ít nhất ngang Telex của Apple trong cùng điều kiện. Gạch chân là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn, nên không phải đích của bước này: sửa không đạt thì tìm cách sửa khác. Có số đo rồi thì đề xuất sửa D13 (Gạch chân là đường lui cuối cùng) và nhãn "Đề xuất" bật gạch chân cho Chrome, VS Code, Firefox trong danh sách tương thích; người dùng duyệt.
 2. Bài tải nặng theo `docs/ROADMAP.md` mục M6. Đo 10/11 (nhật ký, `heavy.sh` lần ba): Dấu đúng chữ và không chậm hơn dưới tải ở Safari, Chrome, VS Code; mỗi điều kiện mới một nhóm.
 3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
-4. Chốt ngưỡng và D12 (Ưu tiên tiến trình) vào `DECISIONS.md` theo số đo (người dùng duyệt).
+4. Xong 10/11: D12 (Ưu tiên tiến trình) giữ nguyên kèm số đo; ngưỡng ở D42 (Ngưỡng hiệu năng). Ngưỡng bộ nhớ chưa chốt.
 
 So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
 - Phần B, C xong 09/11.
@@ -322,3 +322,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Bộ nhớ tiến trình Dấu (Debug): 62–64 MB suốt lượt.
   - Nhóm 5 dừng: Safari lại mở trang với focus ở thanh địa chỉ, và bước `focus_test_field` không bấm được vào ô nhập (lỗi không được giữ lại). Sửa: ô nhập của trang thử phủ gần hết trang, script bấm vào giữa cửa sổ đang focus và ghi lỗi nếu có. Chưa chạy thật.
   - Dọn: tải đã tắt, không còn tab thử, nguồn là Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bộ gõ bản Release.
+- 10/11/2026 — M6 bước 4: D12 (Ưu tiên tiến trình) giữ nguyên, thêm ý "Số đo"; D42 (Ngưỡng hiệu năng) mới (người dùng duyệt) — phiên chính. `DECISIONS.md` (bỏ câu hỏi mở về ngưỡng), `DECISIONS-LOG.md`, `superseded.txt`, `ROADMAP.md` (M7 chạy bài đo của D42), ghi chú sổ quyết định trên canvas (phiên bản 147; chỉ `canvas.json` đổi, artboard không đổi). Còn mở: ngưỡng bộ nhớ (cần một lượt đo dài), và bài đo mới chạy trên máy M1.

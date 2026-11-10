@@ -71,6 +71,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 10/11/2026: thêm ý "App trả lời chậm" (thay ở vị trí Dấu tự theo dõi khi `selectedRange` lùi tối đa 2 chữ), người dùng duyệt. Bản trước: "Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ." Câu trong "Câu hỏi đã trả lời" (vị trí thay chữ) trước đó: "Tự cộng dồn vị trí cũng không cứu được (vị trí gốc cũng là ảnh chụp cũ; VS Code đổi gốc toạ độ). Hướng cho app bất đồng bộ: gạch chân theo D13".
 - 10/11/2026: ý "App trả lời chậm" viết lại theo mã (50b67ec và bản sửa ca đầu văn bản), người dùng duyệt: chạy ở mọi tốc độ gõ; giới hạn chậm là 2 thao tác cộng số thao tác của loạt phím dồn; vùng thay luôn kết thúc ở vị trí Dấu theo dõi; ở đầu văn bản, trong cùng loạt phím dồn, không cần chữ của app để so. Bản trước: "Khi kiểm: `selectedRange` lùi sau vị trí đó tối đa 2 chữ và phím trước cách ít nhất 50 ms"; "Phím dồn dưới 50 ms: chưa áp dụng (M6)". Câu trong "Câu hỏi đã trả lời" (vị trí thay chữ) trước đó: "App chậm mà phím cách từ 50 ms: Dấu dùng vị trí tự theo dõi, kiểm bằng chữ đọc được (D11, M6). Phím dồn dưới 50 ms: chưa có cách, đang làm ở M6".
 
+### D12. Ưu tiên tiến trình
+
+- 10/11/2026: thêm ý "Số đo" từ bài tải nặng của M6, người dùng duyệt. Lời quyết định không đổi.
+
 ### D13. Gạch chân là đường lui cuối cùng
 
 - Tên cũ: "Ứng dụng không hỗ trợ thay chữ tại chỗ".
@@ -208,6 +212,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 06/11/2026: hai ngôn ngữ, String Catalog gốc tiếng Anh ("người dùng chốt 06/11/2026"); tên nguồn trong câu chữ theo ngôn ngữ hệ thống ("người dùng chốt 06/11/2026").
 - 06/11/2026: ô chọn ngôn ngữ trong Cài đặt ghi khoá `AppleLanguages` ("Theo hệ thống", Tiếng Việt, English; 06/11/2026), sau bị loại.
 - 08/11/2026: "sửa 08/11/2026": dùng mục ngôn ngữ riêng từng ứng dụng của macOS ("N1; người dùng chốt 08/11/2026"). "Đo 08/11/2026 trên Dấu thật (macOS 27.2)": danh sách "+" có Dấu.app; macOS hỏi mở lại app và không tự mở lại ("đo 08/11/2026"). Nút "Mở lại Dấu" ("người dùng chốt 08/11/2026, canvas phiên bản 137").
+
+### D42. Ngưỡng hiệu năng
+
+- 10/11/2026: quyết định mới, người dùng duyệt, từ số đo bài tải nặng của M6. Thay câu hỏi mở "Ngưỡng hiệu năng (độ trễ p99, bộ nhớ): chốt sau khi đo, so với gõ bằng U.S."; bàn phím U.S. không dùng làm mốc vì không có log từng phím, đối chứng là Telex của Apple.
 
 ## Đã biết nhưng không làm
 

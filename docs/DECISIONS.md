@@ -116,6 +116,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ. Đo 10/11/2026 ở nhịp 5, 10, 20 ms: Chrome và Firefox đúng mọi lượt.
     - Đầu văn bản: từ đầu tiên của tài liệu mới trong VS Code, "Chieeuf" từng ra "êhieuf" khi VS Code chưa báo phím nào của loạt phím dồn; sau khi sửa, ca đó đúng mọi lần nó xảy ra (10/11/2026).
 - **D12. Ưu tiên tiến trình.** Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm khi bài test tải nặng chứng minh có App Nap hoặc bị xếp vào nhân tiết kiệm điện.
+  - **Số đo (M6, 10/11/2026):** dưới tải nặng (mọi nhân bận, bộ nhớ trống còn khoảng 40%), Dấu đúng chữ ở Safari, Chrome, VS Code và thời gian mỗi phím không cao hơn lúc rảnh. Chưa có dấu hiệu App Nap hay bị xếp vào nhân tiết kiệm điện, nên không bật gì thêm. Số chi tiết: nhật ký `docs/PROGRESS.md`.
 - **D13. Gạch chân là đường lui cuối cùng.**
   - Thay tại chỗ là cách gõ của Dấu. Gõ sai ở một app là lỗi của Dấu và phải sửa, không giải quyết bằng gạch chân: gạch chân (marked text) là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn.
   - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được, người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
@@ -326,6 +327,13 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Hai ngôn ngữ: người Việt dùng rộng rãi và người nước ngoài học tiếng Việt.
     - Khoá tiếng Anh: macOS tự lùi về ngôn ngữ gốc nên không cần cấu hình riêng; sửa câu tiếng Việt không đổi khoá; người dịch ngôn ngữ khác dịch từ tiếng Anh. Đã loại: khoá là câu tiếng Việt (phải đặt vùng phát triển khác ngôn ngữ gốc để lùi về tiếng Anh); khoá theo ngữ nghĩa (`onboarding.title`; Xcode không tự lấy chuỗi từ `Text("…")`, đọc mã không thấy chữ hiện ra).
     - Mục ngôn ngữ của macOS thay cho ô chọn riêng: đã loại ô chọn ngôn ngữ trong Cài đặt ghi khoá `AppleLanguages` ("Theo hệ thống", Tiếng Việt, English), vì làm lại việc macOS đã có; điều người dùng thiếu chỉ là biết chỗ đổi.
+- **D42. Ngưỡng hiệu năng.** Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với bộ gõ bản Debug, 20 phím mỗi giây, ở Safari, Chrome, VS Code, lúc rảnh và dưới tải.
+  - Chữ gõ ra khớp đáp án ở mọi ô.
+  - Phím có thay chữ: thời gian xử lý phía bộ gõ p50 không quá 3 ms, p99 không quá 20 ms.
+  - Đối chứng: chữ của Telex của Apple dưới tải giống chữ của chính nó lúc rảnh; khác thì lượt đo không hợp lệ.
+  - Vượt ngưỡng thì không phát hành cho tới khi rõ nguyên nhân.
+  - Ngưỡng bộ nhớ chưa chốt: mới đo trong một lượt 4 phút.
+  - **Vì sao:** số đo M6 ngày 10/11/2026 trên một máy (chip M1 Pro): p50 0,65–1,92 ms, p99 3,7–13,2 ms; ngưỡng cao hơn mức đã đo khoảng 1,5 lần để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)); bản Debug có thêm một lời gọi chẩn đoán sau mỗi lần thay chữ nên số của nó cao hơn bản phát hành.
 
 ## Đã biết nhưng không làm
 
@@ -362,7 +370,6 @@ Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM v
   - Nguồn: Apple DTS nói cần đăng xuất, một dự án khác nói không. Chi tiết: `docs/research/M5-INSTALL.md` mục 0, 2.2, 2.3.
 - **Cài cho riêng mình hay cho cả máy** (làm sau M5 (onboarding, cài đặt, gỡ cài đặt)): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` (như D16 (Bảo trì và gỡ cài đặt) hiện nay) hoặc `/Library/Input Methods` để mọi tài khoản trên máy dùng được. Chưa thiết kế; khi làm phải sửa D16, D37 (Cài đặt bộ gõ), có thể cả D6 (Phát hành) (`.pkg` hay app chủ xin quyền quản trị) và D7 (Cập nhật và loại bản dựng) (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không. `docs/research/M5-INSTALL.md` mục 8.2 có một bước đo một phần các câu này.
 - **Hộp thoại App Group:** truy cập App Group giữa app chủ và bộ gõ có phát sinh hộp thoại hệ thống không? Bản có Team ID: không có hộp thoại; còn phải kiểm lại với bản ký Developer ID ở M7.
-- Ngưỡng hiệu năng (độ trễ p99, bộ nhớ): chốt sau khi đo, so với gõ bằng U.S.
 - Độ ổn định của "Thêm dấu cho từ đã gõ" trên các web editor (Google Docs, Notion…).
 - **Loại bản dựng** (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện); chốt ở M7): kênh Beta có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID; artboard "Cập nhật & hỗ trợ (bản phát triển)" hiện vẫn vẽ phần Cập nhật như bản chính thức). Tên nguồn nhập liệu "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37 (Cài đặt bộ gõ)).
 - **Tên "Dấu":** tra nhãn hiệu (Cục Sở hữu trí tuệ VN), tên miền (cân nhắc tên miền tiếng Việt có dấu "dấu.vn" bên cạnh một bản không dấu), tên cask Homebrew và tên tổ chức GitHub. (Bundle ID, tên miền chính: đã chốt ở D24 (Tên và định danh); Team ID cho bản phát hành: M7.)

@@ -84,6 +84,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 
 ## M7 — Phát hành
 - Làm trước: phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện).
+- Trước khi phát hành: chạy bài đo của D42 (Ngưỡng hiệu năng).
 - Ký Developer ID, notarize, DMG.
 - Sparkle 2: EdDSA, 2 kênh, phát hành theo đợt.
 - JSON tương thích có chữ ký.

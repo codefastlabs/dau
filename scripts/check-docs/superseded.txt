@@ -37,3 +37,4 @@ Phím dồn dưới 50 ms: chưa	D11: the late-answer branch runs at every typin
 lùi sau vị trí đó tối đa 2 chữ	D11: late limit is 2 edits plus the edits of the current burst (10/11/2026)
 Hiện còn nhãn: VS Code	D13: Chrome, Firefox and VS Code no longer carry the label (10/11/2026)
 "aw" khôi phục thành "aw"	D31: a lone ă, â or đ is kept at the word end (10/11/2026)
+chốt sau khi đo, so với gõ bằng U\.S\.	D42: thresholds are set; the control is Apple Telex, not the U.S. layout (10/11/2026)
