@@ -387,6 +387,11 @@ OSA
   # Fixed: apps that apply text asynchronously (browsers, Electron) may still be
   # catching up with the last keys, and their text can only be read through ⌘A ⌘C,
   # which changes the selection; no state to poll for that is common to every app.
+  # The source in effect right after the last key. The check in select_dau is from before
+  # the keys: with macOS's "Automatically switch to a document's input source" on, the
+  # focused document may have its own source.
+  local after="$("$INPUT_SOURCE" current 2>/dev/null)"
+  [[ "$after" == "$DAU_SOURCE" ]] || log_warn "Nguồn nhập liệu ngay sau khi gõ là \"$after\", không phải $DAU_SOURCE"
   sleep 0.8
 }
 
