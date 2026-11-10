@@ -1,15 +1,15 @@
 #!/bin/zsh
-# Types the cells of docs/research/TERMINAL-AND-UNDERLINE.md (section 6) in Sublime Text, Ghostty and xterm.js, with Dấu, its Debug trials and Apple's Vietnamese Telex as the control.
+# Types the cells of docs/research/TERMINAL-AND-UNDERLINE.md (section 6) in Sublime Text, Ghostty, xterm.js and text fields, with Dấu and Apple's Vietnamese Telex as the control.
 # Side effects: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/research/terminal-underline/run.sh [--delay MS] [CELL]...
 #   --delay MS   pause between keys (default 120, close to normal typing)
-#   CELL         ids or patterns (t2-*) from the table below (default: all, in table order)
+#   CELL         ids or patterns (t4-*) from the table below (default: all, in table order)
 #
 # Each cell is one call of scripts/selftest/typing/run.sh (its safety rules apply: keys
 # only while the app's test window is in front; input source, clipboard and the Debug
 # defaults keys put back at the end). Needs the Debug input method for underline and the
-# trials (scripts/dev/install-app.sh --debug); Dấu and Apple's Telex must be enabled
+# perf log (scripts/dev/install-app.sh --debug); Dấu and Apple's Telex must be enabled
 # already (N4). xterm cells load xterm.js from jsDelivr (network). The text of each cell,
 # raw bytes or xterm.js data, pictures, the perf/diag log and the full output go to
 # build/terminal-underline/<time>/<cell>/, a table of all cells to summary.md there.
@@ -24,25 +24,23 @@ TYPING="$ROOT/scripts/selftest/typing/run.sh"
 DELAY=120
 
 # id | app | source (dau, apple) | mode | keys | expect
-# Mode: words joined by "+": inplace; underline (--underline); erase (--erase: Debug trial,
-# DEL characters plus the new text in one insertText); plain (--underline --plain-marked:
-# marked text with no underline attribute); shot (--shot: picture of the window right
-# after the keys, before the last word is committed); after (--erase-after-key: Debug
-# trial, the key goes to the app and the DEL fix follows it); probe (--probe-length: the
-# document length and selection the app reports after each key, in the diag log); fast
-# (30 ms between keys instead of --delay).
+# Mode: words joined by "+": inplace; underline (--underline); shot (--shot: picture of
+# the window right after the keys, before the last word is committed); busy (--busy
+# 300:1000: the test page blocks its main thread 300 ms of every second, M6); fast (30 ms
+# between keys instead of --delay).
 # Keys: ⌫ Delete, ← left arrow, ↩ Return (typing/run.sh).
 # First round (11/11/2026): Sublime holds the three edits of an already typed word: change
 # the mark (D26), ⌫ back into a committed word then add a mark (D20), move left into a
 # word then add a mark (D20). Ghostty cells start at an empty line, as right after Return;
 # the underline cell ends with Return.
-# Second round (t2-): the erase trial in Ghostty (zsh line editor, vim insert mode) and in
-# xterm.js (the terminal of the Claude desktop app, rebuilt in Chrome), the current
-# behaviour and Apple's Telex in xterm.js, and pictures of marked text with and without
-# the underline attribute. The mixed line covers D32 (hoaf ⌫) and D4 (windows).
-# Third round (t3-): the after-key trial in Ghostty, also at 30 ms (the fix of a key must
-# reach Ghostty before the next key), and the length probe in a text field (Chrome,
-# Safari, Sublime Text) against the two terminals, to tell them apart.
+# Second and third rounds (11/11/2026, t2- and t3- cells): Debug trials that D43 replaced
+# (DEL erase in the key, after the key, a document length probe); they ran builds 13d4df7
+# and 237e68f, results in the log of docs/PROGRESS.md. Their cells went with the trials.
+# Fourth round (t4-): D43 as built. The terminals (Ghostty with zsh and vim, xterm.js)
+# must be told apart and come out right from the word where they are; the text fields
+# (Chrome, also with a busy page; Safari; Sublime Text) must never be taken for one
+# (typing/run.sh reports "D43: …" for each cell). One line covers D32 (hoaf ⌫), D4
+# (windows), a word whose first replacement comes late (nguwowif) and short ones.
 CELLS=(
   "sub-dau|sublime|dau|inplace|tooisf ba ⌫j tooi←s|tồi bạ tối"
   "sub-dau-ul|sublime|dau|underline|tooisf ba ⌫j tooi←s|tồi bạ tối"
@@ -55,30 +53,14 @@ CELLS=(
   "gh-apple-toois|ghostty|apple|inplace|toois|tối"
   "gh-apple-vieetj|ghostty|apple|inplace|vieetj|việt"
   "gh-apple-ret|ghostty|apple|inplace|toois vieetj↩|tối việt"
-  "t2-gh-erase-dd|ghostty|dau|erase|dd|đ"
-  "t2-gh-erase-toois|ghostty|dau|erase|toois|tối"
-  "t2-gh-erase-vieetj|ghostty|dau|erase|vieetj|việt"
-  "t2-gh-erase-mix|ghostty|dau|erase|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
-  "t2-ghv-erase-mix|ghosttyvim|dau|erase|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
-  "t2-gh-ul-shot|ghostty|dau|underline+shot|toois vieet|tối viêt"
-  "t2-gh-plain-shot|ghostty|dau|plain+shot|toois vieet|tối viêt"
-  "t2-xt-dau|xterm|dau|inplace|toois vieetj dd |tối việt đ "
-  "t2-xt-erase|xterm|dau|erase|toois vieetj dd |tối việt đ "
-  "t2-xt-ul|xterm|dau|underline|toois vieetj dd |tối việt đ "
-  "t2-xt-apple|xterm|apple|inplace|toois vieetj dd |tối việt đ "
-  "t2-xt-ul-shot|xterm|dau|underline+shot|toois vieet|tối viêt"
-  "t2-xt-plain-shot|xterm|dau|plain+shot|toois vieet|tối viêt"
-  "t3-gh-after-dd|ghostty|dau|after|dd|đ"
-  "t3-gh-after-toois|ghostty|dau|after|toois|tối"
-  "t3-gh-after-vieetj|ghostty|dau|after|vieetj|việt"
-  "t3-gh-after-mix|ghostty|dau|after|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
-  "t3-ghv-after-mix|ghosttyvim|dau|after|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
-  "t3-gh-after-mix-fast|ghostty|dau|after+fast|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
-  "t3-probe-chrome|chrome|dau|probe|toois vieetj |tối việt "
-  "t3-probe-safari|safari|dau|probe|toois vieetj |tối việt "
-  "t3-probe-sublime|sublime|dau|probe|toois vieetj |tối việt "
-  "t3-probe-xterm|xterm|dau|probe|toois vieetj |tối việt "
-  "t3-probe-ghostty|ghostty|dau|probe|toois vieetj |tối việt "
+  "t4-gh|ghostty|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-ghv|ghosttyvim|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-gh-fast|ghostty|dau|inplace+fast|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-xt|xterm|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-chrome|chrome|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-chrome-busy|chrome|dau|inplace+busy|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-safari|safari|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t4-sublime|sublime|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
 )
 
 WANT=()
@@ -106,8 +88,8 @@ done
 OUT="$ROOT/build/terminal-underline/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
 {
-  print "| ô | phím | mong đợi | được | byte gửi cho shell | mã thoát |"
-  print "|---|---|---|---|---|---|"
+  print "| ô | phím | mong đợi | được | byte gửi cho shell | D43 | mã thoát |"
+  print "|---|---|---|---|---|---|---|"
 } > "$OUT/summary.md"
 
 FAILED=0
@@ -122,11 +104,8 @@ for cell in $CELLS; do
     case $m in
       inplace) ;;
       underline) args+=(--underline) ;;
-      erase) args+=(--erase) ;;
-      plain) args+=(--underline --plain-marked) ;;
       shot) args+=(--shot) ;;
-      after) args+=(--erase-after-key) ;;
-      probe) args+=(--probe-length) ;;
+      busy) args+=(--busy 300:1000) ;;
       fast) args[2]=30 ;;
       *) log_die 2 "Ô $id: chế độ lạ \"$m\"" ;;
     esac
@@ -141,7 +120,8 @@ for cell in $CELLS; do
   elif [[ -e "$dir/xterm.data" ]]; then
     raw="\"$(<"$dir/xterm.data")\""
   fi
-  print -r -- "| $id | \`$keys\` | $expect | ${got:-—} | ${raw:-—} | $rc |" >> "$OUT/summary.md"
+  d43="$(grep -o 'D43: .*' "$dir/typing.log" | head -1 | sed 's/^D43: //')"
+  print -r -- "| $id | \`$keys\` | $expect | ${got:-—} | ${raw:-—} | ${d43:-—} | $rc |" >> "$OUT/summary.md"
   case $rc in
     0) log_ok "$id: \"$got\"" ;;
     1) log_warn "$id: \"$got\" (mong đợi \"$expect\")" ;;

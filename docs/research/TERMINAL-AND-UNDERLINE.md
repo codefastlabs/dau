@@ -9,13 +9,13 @@ Nghiên cứu đọc mã để tìm vì sao (1) chế độ gạch chân kém kh
 - **Phản hồi 1 (gạch chân), Sublime Text:** đã đo. Gạch chân không sửa được dấu cho từ đã chốt (⌫ về từ cũ, ← vào giữa từ), đúng H1a; Telex của Apple cũng vậy (H1d). Thay tại chỗ trong Sublime sửa được cả ba ca (D20 (Thêm dấu cho từ đã gõ) chạy), nên tắt gạch chân cho Sublime là đủ; không quyết định nào phải đổi.
 - **Gạch chân ở Ghostty:** chữ đúng, nhưng Return ngay sau từ gạch chân bị nuốt (H1b), cả với Telex của Apple: lỗi của Ghostty.
 - **Hướng đang theo (11/11/2026, chưa ghi vào `docs/DECISIONS.md`):** thay tại chỗ bằng API chính thống ở cả hai terminal; gạch chân giữ làm đường lui, không đề xuất làm cách sửa. Các hướng được xét theo chi phí tốc độ mỗi phím.
-- **Bản thử xoá bằng DEL (lượt thứ hai, 11/11/2026, nhật ký `docs/PROGRESS.md`):** chỉ có ở bản Debug (`DebugTrial`). Mỗi lần thay là một `insertText` tại con trỏ gồm DEL × số chữ cần xoá rồi chữ mới; không hỏi `selectedRange`, không đọc chữ.
+- **Bản thử xoá bằng DEL (lượt thứ hai, 11/11/2026, nhật ký `docs/PROGRESS.md`):** bản Debug lúc đó (khoá Debug đã bỏ khi D43 (Ô bỏ qua vùng thay chữ) được viết). Mỗi lần thay là một `insertText` tại con trỏ gồm DEL × số chữ cần xoá rồi chữ mới; không hỏi `selectedRange`, không đọc chữ.
   - **xterm.js (trang thử trong Chrome, cùng cơ chế với terminal của Claude): đúng** ("tối việt đ "). xterm.js chuyển nguyên chuỗi cho shell và không gửi phím gốc của phím Dấu đã nhận. Thời gian mỗi phím ngang cách hiện tại.
   - **Ghostty: sai**, mọi lần thay có DEL đều mất. Theo mã Ghostty 1.4.0, chữ bộ gõ đưa trong lúc Ghostty xử lý phím mà bắt đầu bằng ký tự điều khiển bị bỏ (`String.keyEventText`). Chữ đưa ngoài lúc xử lý phím đi đường khác (`committedTextAction`) và theo mã thì giữ nguyên DEL; nhưng khi bộ gõ nhận phím mà không đưa chữ, Ghostty gửi phím gốc. Biến thể "để phím đi qua rồi sửa sau phím" chưa đo.
 - **Gạch chân không thuộc tính gạch:** không giúp ở terminal. Ghostty tự vẽ gạch chân cho chữ đang soạn; trang xterm.js không vẽ gạch chân ở cả hai cách.
 - **Bản thử Ghostty "sửa sau phím" (lượt thứ ba, 11/11/2026): đúng** ở zsh, vim và khi phím cách 30 ms; tốc độ ngang cách hiện tại. Phím đi tới Ghostty như thường, rồi DEL và chữ mới tới sau khi Ghostty xử lý xong phím, xoá cả việc phím vừa làm.
 - **Nhận ra ô kiểu terminal:** `length()` trả 0 ở mọi app đã thử, không dùng được; `selectedRange` (Dấu đã hỏi ở phím có thay chữ, không tốn thêm lời gọi) phân biệt được: ô gõ thường tăng theo chữ đã gõ, Ghostty luôn `{0,0}`, xterm.js dao động 0–2.
-- Đã chốt 11/11/2026: D43 (Ô bỏ qua vùng thay chữ) trong `docs/DECISIONS.md`. Việc tiếp theo: viết bản thật và kiểm trên app Claude thật.
+- Đã chốt 11/11/2026: D43 (Ô bỏ qua vùng thay chữ) trong `docs/DECISIONS.md`. Đã viết trong bộ gõ (11/11/2026; cấu trúc ở `docs/ARCHITECTURE.md` mục "Ô bỏ qua vùng thay chữ"), thay các bản thử Debug; lượt gõ thử bản thật và thử tay trong app Claude: nhật ký `docs/PROGRESS.md`.
 
 ## Nhãn nguồn và bản đã đọc
 

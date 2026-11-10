@@ -158,6 +158,18 @@ dau/
   - App đúng giờ bị coi là chậm khi mọi phím từ lúc lấy vị trí ở đầu chữ app giữ đến phím đang xử lý thuộc một loạt phím dồn, và phím đó là phím thứ hai của một từ không phải từ đầu (đã đo trên Cursor, `docs/PROGRESS.md`; `burstFromStartOfWord`). Ở app này từ nào cũng bắt đầu từ 0, nên vị trí app trả, chữ đọc được và `known` giống hệt một tài liệu mới của app tính từ đầu văn bản, dùng bộ đệm Chromium, chưa áp phím nào (ca từ đầu tiên của tài liệu mới ở trên; `sameAnswerAsLateNewDocument`). Thay ở `known` đúng cho app đó và bị Cursor bỏ; thay ở vị trí app trả đúng cho Cursor và đè lên chữ đầu văn bản của app đó. Chỉ áp ca tài liệu mới cho từ đầu tiên thì sửa được Cursor nhưng mô hình VS Code và Firefox sai lại khi tài liệu chưa sẵn sàng qua một ranh giới từ (`stalledStartTable`). Chưa sửa.
   - Một ca chỉ có ở mô hình (`wordStartingAsTheText`): cùng điều kiện loạt phím dồn, từ đang gõ bắt đầu bằng đúng chữ đầu của phần đã gõ từ vị trí 0.
 
+#### Ô bỏ qua vùng thay chữ (D43 (Ô bỏ qua vùng thay chữ), `RangeIgnoreDetector`)
+
+- Hiện tượng: Ghostty và terminal dựng bằng xterm.js nhận chữ của `insertText` nhưng bỏ `replacementRange`, chữ thay bị gửi thêm vào sau; vị trí con trỏ app báo không theo chữ đã gõ (cơ chế: `docs/research/TERMINAL-AND-UNDERLINE.md`; số đo: nhật ký `docs/PROGRESS.md`).
+- Nhận ra ô: `RangeIgnoreDetector` trong `InPlaceComposer`, chỉ dùng các `selectedRange` composer vốn đã hỏi (N3).
+  - Theo dõi số đơn vị chữ bộ gõ đã thêm sau mỗi phím (`totals`, tính từ các `insertText` của chính nó và phím để đi thẳng) và chỗ bắt đầu từ đang gõ. Từ bắt đầu lại khi từ kết thúc, khi reset, và khi composer bắt đầu lại từ chữ của app (lệch D11, dựng lại, gieo của D20).
+  - Câu trả lời "kẹt": không vùng chọn, vị trí không quá `terminalLimit`, và nhỏ hơn số chữ của từ đang gõ ở trạng thái cũ nhất app có thể còn trả (lùi `CursorTracker.lateLimit` phím cộng loạt phím dồn, như phép kiểm app trả lời chậm). Phím thuộc loạt phím dồn không được xét.
+  - Một câu kẹt chỉ là nghi ngờ (⌘A mà bộ gõ không thấy, giữa từ, cũng cho một câu như vậy). Câu kẹt thứ hai, trong từ đó hoặc từ ngay sau, mà vị trí không tăng theo số chữ đã thêm từ câu đầu: nhận ra ô. Câu trả lời nào lớn hơn `terminalLimit` xoá nghi ngờ.
+  - Nhận ra thì giữ cho client đó trong lần kích hoạt đó (`InPlaceComposer.activate` xét lại).
+- Lúc gửi (`InPlaceComposer.EraseMode`): chọn khi nhận ra, theo các câu trả lời đã thấy trong lần kích hoạt. Đã có câu 1 hoặc 2: gửi trong phím (`inKey`, xterm.js). Mọi câu đều là 0: gửi sau phím (`afterKey`, Ghostty): phím đi tới app, phần sửa (`Outcome.deferredText`) tới sau khi app xử lý xong phím, `DauInputController` gửi nó ở lượt kế của hàng đợi chính.
+- Sau khi nhận ra: không hỏi vị trí, không đọc chữ (D11, D20 tắt ở client đó); log `event=range-ignored` một lần mỗi lần kích hoạt (chỉ bundle ID).
+- Kiểm bằng client giả trong `RangeIgnoreTests` (Ghostty, xterm.js, ô gõ thường có ⌘A mà bộ gõ không thấy); mọi client giả của `LateAnswerTests`, `RapidKeysTests`, `CursorEditorTests` và `InPlaceComposerTests` kiểm thêm rằng không bao giờ nhận nhầm.
+
 #### Backspace thay tại chỗ (D32)
 
 - `backspace()` trả `passThrough` thì ⌫ đi thẳng.

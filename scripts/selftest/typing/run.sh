@@ -69,20 +69,6 @@
 #                     `underline-on` when it took effect. By hand:
 #                       defaults write -g DauDebugForceUnderline -array com.google.Chrome
 #                       defaults delete -g DauDebugForceUnderline
-#   --erase           Debug trial, as --underline (key DauDebugEraseByDelete, report shows
-#                     `erase-trial-on`): in-place replacements become DEL characters plus
-#                     the new text in one insertText at the cursor, for an app that ignores
-#                     the replacement range (docs/research/TERMINAL-AND-UNDERLINE.md).
-#   --erase-after-key Debug trial, as --erase (key DauDebugEraseAfterKey, report shows
-#                     `erase-trial-on`), but the key goes to the app and the fix follows
-#                     once the app has handled it (Ghostty drops DEL text sent during a key).
-#   --probe-length    Debug probe (key DauDebugProbeLength): after each key the input method
-#                     logs the document length and selection the app reports, with the
-#                     characters typed since the last reset (`probe` lines in the diag
-#                     log, DIR/<app>.perf.log with --save).
-#   --plain-marked    Debug trial, as --underline (key DauDebugPlainMarked, report shows
-#                     `plain-marked-on`): marked text is sent with no underline attribute.
-#                     Use with --underline.
 #   --shot            with --save: a picture of the app's window right after the keys, before
 #                     the last word is committed (ghostty, ghosttyvim, xterm), to DIR/<app>.png.
 #
@@ -151,10 +137,6 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
-ERASE=0
-ERASE_AFTER=0
-PROBE=0
-PLAIN_MARKED=0
 SHOT=0
 SOURCE_ID=""
 SAVE_DIR=""
@@ -162,10 +144,6 @@ KEEP_SOURCE=0
 JITTER_MS=0
 BUSY=""
 FORCE_KEY=DauDebugForceUnderline
-ERASE_KEY=DauDebugEraseByDelete
-ERASE_AFTER_KEY=DauDebugEraseAfterKey
-PROBE_KEY=DauDebugProbeLength
-PLAIN_KEY=DauDebugPlainMarked
 APPS=()
 # Prints the whole leading comment block.
 usage() { log_usage "$SELF"; }
@@ -175,10 +153,6 @@ while [[ $# -gt 0 ]]; do
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
-    --erase) ERASE=1; shift ;;
-    --erase-after-key) ERASE_AFTER=1; shift ;;
-    --probe-length) PROBE=1; shift ;;
-    --plain-marked) PLAIN_MARKED=1; shift ;;
     --shot) SHOT=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
@@ -288,10 +262,6 @@ restore_perf_key() {
 defaults write -g "$PERF_KEY" -bool true
 cleanup() {
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
-  [[ $ERASE == 1 ]] && defaults delete -g "$ERASE_KEY" >/dev/null 2>&1
-  [[ $ERASE_AFTER == 1 ]] && defaults delete -g "$ERASE_AFTER_KEY" >/dev/null 2>&1
-  [[ $PROBE == 1 ]] && defaults delete -g "$PROBE_KEY" >/dev/null 2>&1
-  [[ $PLAIN_MARKED == 1 ]] && defaults delete -g "$PLAIN_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
   if (( ! KEEP_SOURCE )) && [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
@@ -1196,10 +1166,6 @@ for app in "${APPS[@]}"; do
   if [[ $UNDERLINE == 1 ]]; then
     defaults write -g "$FORCE_KEY" -array "$(bundle_id "$app")"
   fi
-  [[ $ERASE == 1 ]] && defaults write -g "$ERASE_KEY" -array "$(bundle_id "$app")"
-  [[ $ERASE_AFTER == 1 ]] && defaults write -g "$ERASE_AFTER_KEY" -array "$(bundle_id "$app")"
-  [[ $PROBE == 1 ]] && defaults write -g "$PROBE_KEY" -array "$(bundle_id "$app")"
-  [[ $PLAIN_MARKED == 1 ]] && defaults write -g "$PLAIN_KEY" -array "$(bundle_id "$app")"
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   got="$("run_$app")"
   # Fixed: the input method's perf lines reach the log store asynchronously, and how many
@@ -1251,17 +1217,22 @@ for app in "${APPS[@]}"; do
   esac
   "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
     | grep -E 'count_|gap_|lag_us|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
-  if (( UNDERLINE || ERASE || ERASE_AFTER || PLAIN_MARKED )); then
-    settings_log="$("$LOG" show --start "$start" --style compact \
-        --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"
-    for flag event in UNDERLINE underline-on ERASE erase-trial-on ERASE_AFTER erase-trial-on PLAIN_MARKED plain-marked-on; do
-      (( ${(P)flag} )) || continue
-      if [[ "$settings_log" == *"event=$event "*"app=$(bundle_id "$app")"* ]]; then
-        log_detail "$event"
-      else
-        log_warn "Không thấy $event (bộ gõ chưa nhận khoá Debug?)"
-      fi
-    done
+  settings_log="$("$LOG" show --start "$start" --style compact \
+      --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"
+  if [[ $UNDERLINE == 1 ]]; then
+    if [[ "$settings_log" == *"event=underline-on app=$(bundle_id "$app")"* ]]; then
+      log_detail "underline-on"
+    else
+      log_warn "Không thấy underline-on (bộ gõ chưa nhận khoá Debug?)"
+    fi
+  fi
+  # D43: whether the input method took this field for one that ignores the replacement
+  # range, and how it sends (logged once per activation, also by Release builds).
+  ignored="$(print -r -- "$settings_log" | grep -o "event=range-ignored mode=[a-z-]* app=$(bundle_id "$app")" | head -1)"
+  if [[ -n "$ignored" ]]; then
+    log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}"
+  else
+    log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"
   fi
 done
 if stopped; then

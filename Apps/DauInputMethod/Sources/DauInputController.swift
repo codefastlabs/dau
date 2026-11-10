@@ -44,14 +44,6 @@ final class DauInputController: IMKInputController {
     /// Underline mode (D13) for the current client: the word is marked text, committed
     /// at its end. Decided at activation and on settings changes, never per key.
     private var underline = false
-    /// Debug trial (`DebugTrial.plainMarkedKey`): marked text sent with no underline
-    /// attribute, to see whether the client draws it as plain text. Never on in Release.
-    private var plainMarked = false
-    /// Debug probe (`DebugTrial.probeLengthKey`): after each key, log the client's document
-    /// length and selection with the characters typed since the last reset, to tell a
-    /// terminal-like client (the text typed never shows up) from a text field.
-    private var probeLength = false
-    private var probeTyped = 0
     private var composer = MarkedComposer()
     /// The client the marked text was sent to, so a reset that arrives with another
     /// client (or none) still commits it where it is shown.
@@ -80,7 +72,6 @@ final class DauInputController: IMKInputController {
             // Underline mode: commit the word where it is shown before the click moves
             // the cursor (D4: reset, no restore).
             let committed = resetComposition(client: sender)
-            probeTyped = 0
             inPlace.noteEvent(at: event.timestamp)
             record(KeyResult(kind: committed ? .commit : .reset), start: start, eventTime: event.timestamp)
             return false
@@ -98,14 +89,20 @@ final class DauInputController: IMKInputController {
         let route = KeyRouter.route(keyCode: event.keyCode,
                                     modifiers: event.modifierFlags,
                                     characters: event.characters)
-        let timed = TimedClient(client, plainMarked: plainMarked)
+        let timed = TimedClient(client)
         var result: KeyResult
         if underline {
             result = processMarked(route, client: timed)
         } else {
+            let wasErasing = inPlace.eraseByDelete
             let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
+            if !wasErasing, inPlace.eraseByDelete {
+                // D43: once per activation; the bundle ID only, never text (D8).
+                let mode = inPlace.eraseMode == .afterKey ? "after-key" : "in-key"
+                settingsLogger.notice("event=range-ignored mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
+            }
             if let text = outcome.deferredText {
-                // Erase trial (after the key): once the app has handled the key.
+                // D43, after the key: once the app has handled the key.
                 nonisolated(unsafe) let target = client
                 DispatchQueue.main.async {
                     target.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
@@ -125,15 +122,6 @@ final class DauInputController: IMKInputController {
         #if DEBUG
         // After the timing is recorded, so the extra selectedRange is not measured.
         if perf.enabled, let diag = result.diag { ReplaceDiag.log(diag, kind: result.kind, client: client, app: clientApp) }
-        if probeLength {
-            switch route {
-            case .character: probeTyped += 1
-            case .backspace: probeTyped = max(0, probeTyped - 1)
-            default: probeTyped = 0
-            }
-            let selection = client.selectedRange()
-            ReplaceDiag.logger.notice("probe typed=\(self.probeTyped, privacy: .public) len=\(client.length(), privacy: .public) sel=\(selection.location, privacy: .public),\(selection.length, privacy: .public) kind=\(result.kind.rawValue, privacy: .public) app=\(self.clientApp, privacy: .public)")
-        }
         #endif
         return result.consumed
     }
@@ -218,7 +206,7 @@ final class DauInputController: IMKInputController {
             perf.note("marked-abandoned", app: clientApp)
             return false
         }
-        return composer.commit(engine: &engine, client: TimedClient(target, plainMarked: plainMarked)) == .insertText
+        return composer.commit(engine: &engine, client: TimedClient(target)) == .insertText
     }
 
     /// Resets when the client proxy changes under this controller.
@@ -241,7 +229,6 @@ final class DauInputController: IMKInputController {
         NotificationCenter.default.post(name: .dauClientActivated, object: nil)
         resetComposition(client: sender)
         activatedAt = ProcessInfo.processInfo.systemUptime
-        probeTyped = 0
         inPlace.activate()
         startObservingSettings()
         startObservingInputSource()
@@ -256,13 +243,6 @@ final class DauInputController: IMKInputController {
         perf.note("activate", app: clientApp)
         if underline {
             settingsLogger.notice("event=underline-on app=\(self.clientApp, privacy: .public)")
-        }
-        if inPlace.eraseByDelete {
-            let mode = inPlace.eraseMode == .afterKey ? "after-key" : "in-key"
-            settingsLogger.notice("event=erase-trial-on mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
-        }
-        if plainMarked {
-            settingsLogger.notice("event=plain-marked-on app=\(self.clientApp, privacy: .public)")
         }
     }
 
@@ -392,11 +372,6 @@ final class DauInputController: IMKInputController {
         }
         // D20 "Thêm dấu cho từ đã gõ" (D15: on by default). Read here, never per key.
         inPlace.addMarksEnabled = new.addMarksToTypedWords
-        // Debug trials only; both lists are empty in Release.
-        inPlace.eraseMode = Self.debugList(DebugTrial.eraseAfterKeyKey).contains(clientApp) ? .afterKey
-            : Self.debugList(DebugTrial.eraseKey).contains(clientApp) ? .inKey : .off
-        probeLength = Self.debugList(DebugTrial.probeLengthKey).contains(clientApp)
-        plainMarked = Self.debugList(DebugTrial.plainMarkedKey).contains(clientApp)
     }
 
     /// Debug builds only: bundle IDs forced into underline mode for trials
@@ -502,12 +477,8 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
     /// Duration of the `attributedSubstring` call (D20), -1 if none.
     private(set) var readNs: Int64 = -1
 
-    /// Debug trial: marked text with no underline attribute (`DebugTrial.plainMarkedKey`).
-    private let plainMarked: Bool
-
-    init(_ client: IMKTextInput, plainMarked: Bool = false) {
+    init(_ client: IMKTextInput) {
         self.client = client
-        self.plainMarked = plainMarked
     }
 
     func selectedRange() -> NSRange {
@@ -532,12 +503,7 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
     func setMarkedText(_ text: String, selectionRange: NSRange, replacementRange: NSRange) {
         let start = PerfLog.now()
         let signpost = PerfLog.signposter.beginInterval("setMarkedText")
-        if plainMarked {
-            let plain = NSAttributedString(string: text, attributes: [.underlineStyle: 0])
-            client.setMarkedText(plain, selectionRange: selectionRange, replacementRange: replacementRange)
-        } else {
-            client.setMarkedText(text, selectionRange: selectionRange, replacementRange: replacementRange)
-        }
+        client.setMarkedText(text, selectionRange: selectionRange, replacementRange: replacementRange)
         PerfLog.signposter.endInterval("setMarkedText", signpost)
         callNs = Int64(PerfLog.now() &- start)
     }

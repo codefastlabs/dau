@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+import Testing
 
 /// An app that applies every edit in order (keys it types, `insertText` with absolute
 /// ranges) but answers `selectedRange` and `attributedSubstring` from an earlier state
@@ -169,6 +170,8 @@ final class LateDocument: InPlaceClient {
 
     func insertText(_ string: String, replacementRange: NSRange) {
         inserts += 1
+        // D43: DEL characters go only to a client that ignores the range, never to this one.
+        #expect(!string.unicodeScalars.contains("\u{7F}"))
         var state = states[states.count - 1]
         var range = replacementRange.location == NSNotFound
             ? NSRange(location: state.cursor, length: 0) : replacementRange

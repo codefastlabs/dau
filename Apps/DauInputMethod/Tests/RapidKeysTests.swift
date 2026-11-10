@@ -88,6 +88,7 @@ struct RapidSession {
             outcome = composer.handle(route, time: arrival, engine: &engine, client: doc)
         }
         slowest = max(slowest, took)
+        #expect(outcome.kind != .erase && !composer.eraseByDelete)  // D43: never a text field
         if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         reads += doc.reads
         kinds.append(outcome.kind)

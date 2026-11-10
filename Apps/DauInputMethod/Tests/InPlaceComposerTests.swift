@@ -141,6 +141,7 @@ private struct Session {
         doc.now += interval
         let before = doc.calls.count
         let outcome = composer.handle(route, time: doc.now, engine: &engine, client: doc)
+        #expect(outcome.kind != .erase && !composer.eraseByDelete)  // D43: never a text field
         let made = doc.calls[before...]
         let inserts = made.filter { if case .insert = $0 { true } else { false } }.count
         let selections = made.filter { $0 == .selectedRange }.count

@@ -245,20 +245,3 @@ enum UnderlineMode {
         return settings.rule(for: bundleID)?.underline ?? false
     }
 }
-
-/// Debug builds only: trials for clients where in-place replacement fails
-/// (docs/research/TERMINAL-AND-UNDERLINE.md). Each key holds an array of bundle IDs in the
-/// global defaults domain, like `UnderlineMode.debugForceKey`; never written by Dấu, never
-/// read by Release builds. See scripts/research/terminal-underline/run.sh.
-enum DebugTrial {
-    /// In-place mode replaces with DEL characters plus the new text in one `insertText`
-    /// at the cursor while the key is handled (`InPlaceComposer.EraseMode.inKey`).
-    static let eraseKey = "DauDebugEraseByDelete"
-    /// As `eraseKey`, but the key goes to the app and the fix follows it
-    /// (`InPlaceComposer.EraseMode.afterKey`). Wins over `eraseKey`.
-    static let eraseAfterKeyKey = "DauDebugEraseAfterKey"
-    /// After each key, log the client's document length and selection (diag log).
-    static let probeLengthKey = "DauDebugProbeLength"
-    /// Underline mode sends the marked text with no underline attribute.
-    static let plainMarkedKey = "DauDebugPlainMarked"
-}

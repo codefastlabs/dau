@@ -67,8 +67,9 @@ struct PerfLog {
         /// it (which an app that edited the text would show). Replaced at the followed
         /// position (`InPlaceComposer.replace`).
         case lateGuess = "late_guess"
-        /// Debug trial (`DebugTrial.eraseKey`): one insertText at the cursor of DEL characters and the
-        /// new text, for a client that ignores replacementRange (Ghostty); no selectedRange.
+        /// D43: a client that ignores replacementRange (Ghostty, xterm.js): DEL characters and
+        /// the new text at the cursor, in the key or right after it (`deferredText`); no
+        /// selectedRange.
         case erase
     }
 
