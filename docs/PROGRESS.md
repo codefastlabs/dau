@@ -32,6 +32,14 @@ Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở c
 - Tạm thời (11/11, người dùng chọn): ô nhận ra theo kiểu xterm.js (gửi trong phím) giữ cách thay tại chỗ cũ, D43 chỉ chạy ở Ghostty.
 - Việc tiếp theo của mạch này: chẩn đoán xterm.js (giả thuyết: một `insertText` có vùng thay trước lúc nhận ra để lại trạng thái trong textarea của xterm.js), rồi bật lại gửi trong phím. Thử tay trong terminal của app Claude để sau khi sửa. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
 
+Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11, làm ở một phiên riêng.
+- Chờ người dùng:
+  - duyệt tên "Thiết lập Dấu" cho các artboard onboarding trên canvas (hiện "Chào mừng – bước…", trong app là "Thiết lập Dấu");
+  - duyệt bản rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ): thuật toán chuyển sang `docs/ARCHITECTURE.md`, sổ quyết định giữ luật, bất biến và lý do. Làm sau khi mạch Ghostty và xterm.js ở trên đóng, vì D43 (Ô bỏ qua vùng thay chữ) dẫn tới D11 và D20 và mạch đó còn có thể đổi chúng; D43 là mẫu viết ở mức quyết định.
+- Phiên đó tự chốt rồi báo lại:
+  - `docs/history/`: giữ file nào còn được tài liệu sống dẫn tới (như `DOCS-LOG.md`, `PLANS.md`), xoá phần còn lại nếu nội dung không nằm riêng ở đó (`KICKOFF.md`, `M4-TESTING.md`, `RESEARCH-LOG.md`); chọn chỗ ở cho bảng số đo M1–M3 trong `docs/history/LOG-M0-M4.md`, nơi duy nhất giữ số mà tài liệu sống dẫn làm bằng chứng;
+  - xếp lớp ca `aw␣` của gonhanh (`docs/research/external-test-inputs/README.md` mục 9).
+
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
 Việc tiếp theo: `heavy.sh` chạy trọn một lượt (M6 bước 2).

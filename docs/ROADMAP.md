@@ -102,6 +102,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
   - máy để tiếng Anh hẳn (menu app, tên "Dấu" trong Finder);
   - các sheet ở chế độ tối;
   - danh sách "+" của System Settings có Dấu (nhìn bằng mắt).
+  - cài, bật và gõ thử trên macOS 14–26 và trên máy Intel: D1 (Nền tảng) hứa macOS 14 trở lên và binary universal, mọi lượt đo tới nay trên macOS 27.2 và Apple silicon; câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trong `docs/DECISIONS.md` cần cùng lượt này.
 - Việc ghi lại từ kiểm toán M0:
   - Xem lại gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 (Chỉ hứa điều đã kiểm chứng) khi làm báo lỗi.
   - `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
