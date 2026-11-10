@@ -33,6 +33,10 @@
 #                     The source wanted (this one, or Dấu) is switched to only when it is
 #                     not the current one, with macOS's own "Select next source in Input
 #                     menu" shortcut, and switched back the same way at the end.
+#   --keep-source     leave the input source as it is at the end instead of switching
+#                     back: for a caller that runs several calls in a row with the same
+#                     source and puts the first one back itself (load/heavy.sh), so the
+#                     source is switched once per source, not twice per call.
 #   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
 #                     and +MS (never below 0), drawn per key: closer to a human than an
 #                     even pace. With --delay 0 the keys still go one by one.
@@ -112,6 +116,7 @@ DELAY_MS=30
 UNDERLINE=0
 SOURCE_ID=""
 SAVE_DIR=""
+KEEP_SOURCE=0
 JITTER_MS=0
 BUSY=""
 FORCE_KEY=DauDebugForceUnderline
@@ -126,6 +131,7 @@ while [[ $# -gt 0 ]]; do
     --underline) UNDERLINE=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
+    --keep-source) KEEP_SOURCE=1; shift ;;
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
@@ -227,7 +233,7 @@ cleanup() {
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
-  if [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
+  if (( ! KEEP_SOURCE )) && [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
     cycle_to_source "$ORIGINAL_SOURCE" || true
   fi
   rm -rf "$WORK"

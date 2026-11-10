@@ -10,7 +10,7 @@ Thư mục theo mục đích:
 | `scripts/dev/` | cài, dọn, xem bản bộ gõ trên máy |
 | `scripts/perf/` | đọc số đo từ nhật ký |
 | `scripts/assets/` | sinh biểu tượng tạm |
-| `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu): gõ thử một câu (`typing/`), ma trận gõ khi app bận cho M6 (`load/`), cửa sổ Cài đặt, App Group |
+| `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận cho M6 (`load/`), cửa sổ Cài đặt, App Group |
 | `scripts/check-docs/` | kiểm tài liệu |
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
