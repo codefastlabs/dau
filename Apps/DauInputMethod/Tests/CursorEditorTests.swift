@@ -162,30 +162,84 @@ struct CursorEditorTests {
         #expect(s.overCalls == 0)
     }
 
-    // MARK: Predicted by the model, not measured
+    // MARK: After a word of one letter (run of 11:44)
 
-    /// The same mistake as group 1 (a right answer taken for a late one) on inputs no
-    /// run had. Not measured in Cursor: what the model gives, kept as known limits.
+    /// The run c100-short of 11:44 (Cursor 3.29.15, Dấu Debug dc71b7f, 100 ms between
+    /// keys; build/load/fix2-20261110-114446, not committed): "owr ddaau, uwf cos. anh
+    /// ddi " gave "ở dâu, ừ co. anh đi ". Cursor's answer was right at both keys; after
+    /// a replaced word of one letter the followed position is two past it, within
+    /// `CursorTracker.lateLimit`, where the text of the app was not compared with the
+    /// text typed:
+    /// - "d" + d (sel 1, known 3, was `late`, range 2,1): the text read, "d", with the
+    ///   last two edits replayed gave "d d", whose word is the engine's, though "ở d"
+    ///   was typed there. Then `resync` at the second a.
+    /// - "co" + s (sel 2, known 4, was `late`, range 3,1): "co" is the text typed, "ừ co",
+    ///   with its two first units missing, which the cache of a late Chromium page
+    ///   never shows.
     ///
-    /// - After a word of one letter that was replaced ("ở", "ừ"), the followed position
-    ///   is two past the answer, within `CursorTracker.lateLimit`, where the app's text
-    ///   is not compared with the text typed: at any pace.
-    /// - Every key since the position was anchored at the start of the app's text came
-    ///   in one burst (`CursorTracker.typedHere`, the first word of a new document): in
-    ///   this app every word starts at 0, so the answer of an app that is on time is
-    ///   the answer Chromium's cache gives when the page has applied none of the keys.
-    @Test("known limit predicted by the model: a right answer taken for a late one, after a one-letter word or a burst from position 0",
-          arguments: [
-              ("owr ddaau ", 0.1, "ở đâu "),
-              ("uwf cos ", 0.1, "ừ có "),
-              ("anh ddi ", 0.02, "anh đi "),
-              ("chieeuf nay anh cos ", 0.02, "chiều nay anh có "),
-          ])
-    func rightAnswerTakenForLate(_ keys: String, _ interval: TimeInterval, _ expected: String) {
+    /// The log's kinds from the first key of the string (after the confirm step); at
+    /// each replacement of the log checked here, the answer and the followed position (the
+    /// first replacement of the run, not checked, had known -1 in the log and has 1 here:
+    /// the log does not say why the first key did not anchor the position).
+    @Test("the 100 ms run of the Cursor log after one-letter words, the app on time: every word right")
+    func afterOneLetterWord() {
         var s = EditorSession()
-        s.type(keys, every: interval)
+        s.type("owr ddaau, uwf cos. anh ddi ", every: 0.1)
+        #expect(s.doc.text == "ở đâu, ừ có. anh đi ")
+        // The log: seed_none replace replace pass pass late pass resync pass … late …
+        let odd = s.kinds.enumerated().filter { ![.pass, .replace, .seedNone].contains($0.element) }
+        #expect(odd.isEmpty, "\(odd.map { "key \($0.offset + 1) \($0.element.rawValue)" })")
+        // (key of the string, sel, known) of the log's diag lines; known 11 at key 26 followed the
+        // wrong "co" (9 once that word is replaced at the answer).
+        for (key, sel, known) in [(6, 1, 3), (13, 1, 6), (18, 2, 4), (26, 1, 9)] {
+            let attempt = s.outcomes[key - 1].attempt
+            #expect(attempt?.selection.location == sel, "key \(key)")
+            #expect(attempt?.known == known, "key \(key)")
+        }
+        #expect(s.doc.dropped == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    /// The run c20-short of 11:44: "anh ddi owr ddaau " at 20 ms gave "anh đi ở dâu",
+    /// `late` at "d" + d (sel 1, known 3), `resync` at the second a. `before` at 100 ms
+    /// stands for the start of that run, where the position was not followed (known -1
+    /// at the first replacement).
+    @Test("after a one-letter word with the keys in a burst, the app on time: every word right")
+    func afterOneLetterWordInBurst() {
+        var s = EditorSession()
+        s.type("anh ddi ", every: 0.1)
+        s.type("owr dd", every: 0.02)
+        #expect(s.outcomes.last?.attempt?.selection.location == 1)
+        #expect(s.outcomes.last?.attempt?.known == 3)
+        #expect(s.outcomes.last?.kind == .replace)
+        s.type("aau ", every: 0.02)
+        #expect(s.doc.text == "anh đi ở đâu ")
+        #expect(s.doc.dropped == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    // MARK: Predicted by the model, not seen in a run
+
+    /// The same mistake as group 1 (a right answer taken for a late one) when every key
+    /// since the position was anchored at the start of the app's text came in one burst
+    /// (`CursorTracker.typedHere`, the first word of a new document): in this app every
+    /// word starts at 0, so the answer of an app that is on time is the answer
+    /// Chromium's cache gives when the page has applied none of the keys.
+    ///
+    /// Not seen in Cursor: in the run c20-short of 11:44 "anh ddi" at 20 ms came out
+    /// right; the log has known -1 at that key (the position was not anchored at the
+    /// first key of the string), so the condition of this case was not met there. Kept
+    /// as what the model gives; the code is not changed for it.
+    @Test("predicted by the model, not seen in a run: a burst from a position anchored at 0, a right answer taken for a late one",
+          arguments: [
+              ("anh ddi ", "anh đi "),
+              ("chieeuf nay anh cos ", "chiều nay anh có "),
+          ])
+    func burstFromAnchorTakenForLate(_ keys: String, _ expected: String) {
+        var s = EditorSession()
+        s.type(keys, every: 0.02)
         #expect(s.kinds.contains(.late))
-        withKnownIssue("a right answer of a word-origin app taken for a late one (predicted, not measured)") {
+        withKnownIssue("a right answer of a word-origin app taken for a late one (model only)") {
             #expect(s.doc.text == expected)
         }
         #expect(s.overCalls == 0)

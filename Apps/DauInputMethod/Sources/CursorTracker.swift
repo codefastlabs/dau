@@ -239,6 +239,13 @@ struct CursorTracker: Equatable {
     /// app that was on time for a late one where positions count from the start of the
     /// word being typed (Cursor's editor, M6 runs of 10/11/2026: the answer was the
     /// caret the previous replacement had in its own word; "uoongs" gave "uongs").
+    ///
+    /// Within `lateLimit` the text this composer typed, where it knows it, must not say
+    /// otherwise: the text rebuilt and `tail` agree over the units both have (`agrees`).
+    /// After a replaced word of one letter the same app answers two before the followed
+    /// position with the letters of the new word, which replayed gave the engine's word
+    /// though another letter was typed there (run of 11:44, 100 ms: "owr ddaau" gave
+    /// "ở dâu").
     func rebuild(_ snapshot: [UInt16], at selection: NSRange,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
         let end = selection.location
@@ -260,6 +267,7 @@ struct CursorTracker: Equatable {
                       first.cursor - before.count + text.count == known else { continue }
                 if m > Self.lateLimit,
                    !typedHere(text, before: before.count, fromStart: first.cursor == before.count) { continue }
+                if m <= Self.lateLimit, !agrees(text) { continue }
                 if accept(text) { return text }
             }
         }
@@ -292,6 +300,12 @@ struct CursorTracker: Equatable {
         return text
     }
 
+    /// `text` (ending at `known`) and `tail` are the same over the units both have.
+    private func agrees(_ text: [UInt16]) -> Bool {
+        let n = min(text.count, tail.count)
+        return text.suffix(n).elementsEqual(tail.suffix(n))
+    }
+
     /// `text` (ending at `known`, its first `count` units read from the app) ends with
     /// `tail`, and `tail` reaches at least two units into the part read: the app's own
     /// text, not only this composer's edits, is what was typed there. `fromStart`: the
@@ -320,6 +334,12 @@ struct CursorTracker: Equatable {
     /// `snapshot` (ending `missing` units before `known`) is `tail` with `missing` of its
     /// last `missing + lateLimit` units left out, compared over at least two units: then
     /// the text before `known` is the start of `snapshot` followed by `tail`. nil if not.
+    ///
+    /// A unit that is missing comes after one that was compared: what Chromium's cache
+    /// lacks is what the page has not reported, after the text it has. Text that is
+    /// `tail` without its first units is an app that holds only the word being typed
+    /// (Cursor's editor, run of 11:44: "co" read where "ừ co" was typed, "uwf cos" gave
+    /// "ừ co").
     private func withMissingUnits(_ snapshot: [UInt16], missing d: Int) -> [UInt16]? {
         let n = min(snapshot.count, tail.count - d)
         guard n >= 2 else { return nil }
@@ -334,7 +354,7 @@ struct CursorTracker: Equatable {
             }
             return false
         }
-        guard fits(tail, dropping: d, from: tail.count - window) else { return nil }
+        guard fits(tail, dropping: d, from: max(tail.count - window, tail.count - (n + d) + 1)) else { return nil }
         return Array(snapshot.dropLast(n)) + Array(tail.suffix(n + d))
     }
 }
