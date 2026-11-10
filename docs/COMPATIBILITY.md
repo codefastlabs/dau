@@ -402,7 +402,7 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
 - Ghostty 1.4.0 không thay chữ theo `replacementRange` và báo `selectedRange` là `{0,0}`. Đây không phải app áp phím bất đồng bộ (mục 6.2): hỏi lại bao lâu cũng không đúng. Thay tại chỗ sai ở 120 ms; Telex của Apple (marked text) đúng.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple; lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không có D20 (Thêm dấu cho từ đã gõ), theo D20 mục Phạm vi: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"). Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
-- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay.
+- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay. Trang thử xterm.js trong Chrome (cùng cơ chế, 11/11/2026): cách hiện tại sai ("toôoiís"), gạch chân đúng.
 
 ## 7. Còn mở
 

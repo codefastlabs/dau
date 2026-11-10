@@ -20,12 +20,13 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - Hai màn onboarding mới: ảnh chụp trong app đạt và khớp artboard (sáng, tối); `scripts/selftest/settings-window/run.sh` đạt hết (nhật ký 10/11). Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
 - Giữ nguyên trong đợt này: cách `HostApp` tìm app chủ.
 
-Chờ người dùng: chọn hướng sửa cho Ghostty và terminal xterm.js (đoạn ngay dưới).
+Chờ người dùng: không có việc nào.
 
-Mở từ 10/11, chưa bắt đầu sửa mã: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
+Mở từ 10/11, chưa sửa mã sản phẩm (mới có bản thử chỉ ở Debug): gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
 - Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
 - Ghostty: thay tại chỗ sai (nhân đôi chữ hoặc ra chuỗi phím gốc); gạch chân đúng chữ nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple. Terminal của Claude chưa đo (không tự động hoá được).
-- Việc tiếp theo của mạch này: người dùng chọn hướng sửa cho Ghostty và terminal xterm.js (mục 7 của file nghiên cứu; đụng D11, D13 hoặc mục "Đã cân nhắc và loại bỏ").
+- Hướng đang theo (11/11): thay tại chỗ ở cả hai terminal bằng API chính thống, gạch chân chỉ là đường lui. Bản thử xoá bằng DEL (chỉ có ở Debug) đúng ở xterm.js, sai ở Ghostty (nhật ký 11/11, lượt thứ hai).
+- Việc tiếp theo của mạch này: bản thử Ghostty "để phím đi qua rồi sửa sau phím"; cách nhận ra ô terminal của app Claude mà không áp lên ô chat (cùng bundle ID). Thay đổi `docs/DECISIONS.md` chờ người dùng duyệt khi có bản sửa thật.
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
@@ -314,3 +315,9 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Ghostty, `toois vieetj↩`: Dấu gạch chân và Telex của Apple đều ra "tối việt" nhưng byte gửi không có Return (`<0d>`): Return chốt chữ gạch chân bị Ghostty nuốt, dòng chỉ kết thúc ở ⌃D sau đó.
   - Khớp dự đoán đọc mã: H1a, H1b (cả với Telex của Apple), H1d (Telex của Apple cũng không sửa được từ đã chốt), H2a, H2b. Chưa đo: terminal của Claude (H2c, H2d), H2e.
   - Dọn: khoá `DauDebugForceUnderline`, `DauPerfLog` đã xoá (script tự xoá, đã kiểm), nguồn nhập liệu về Dấu, Release đã cài lại (đối chiếu binary với bản build Release), `build/terminal-underline/` đã xoá sau khi ghi số. Ghostty và Sublime Text vẫn chạy, không còn cửa sổ thử nào (ô `sub-dau` báo còn tab thử ngay lúc đóng, kiểm lại sau lượt thì không còn).
+- 11/11/2026 — lượt gõ thử thứ hai: bản thử xoá bằng DEL và gạch chân không thuộc tính gạch, ở Ghostty và xterm.js (người dùng cho chạy, 00:53–00:55, 137 s, `scripts/research/terminal-underline/run.sh 't2-*'`, bộ gõ Debug 13d4df7, máy này, một lượt mỗi ô, 120 ms; cài lại Release ngay sau) — phiên chính. Bản thử chỉ có ở bản Debug, bật bằng khoá `DauDebugEraseByDelete`, `DauDebugPlainMarked` (`DebugTrial`). xterm.js là trang thử trong Chrome (xterm.js 5.5.0), cùng cơ chế với terminal của app Claude, không phải chính app đó. Kết quả (được / mong đợi):
+  - xterm.js, `toois vieetj dd `: bản thử xoá "tối việt đ " (đúng; xterm.js gửi cho shell "⌫ô", "⌫⌫ối"…, không gửi phím gốc của phím Dấu đã nhận); cách hiện tại "toôoiís vieêetj dđd " (phím gốc và chữ thay đều tới shell); gạch chân và Telex của Apple "tối việt đ " (đúng).
+  - Ghostty, bản thử xoá: `dd` → "d", `toois` → "toi", `vieetj` → "viet"; dòng trộn `toois vieetj ddi hoaf⌫ windows ` → "toi viet di ho ưindows" ở zsh, "toois vieetj ddi hoa ưindows " ở vim (vim 9.1 bật giao thức phím kitty). Mọi lần thay có DEL đều mất: Ghostty bỏ chữ của bộ gõ bắt đầu bằng ký tự điều khiển khi đang xử lý phím (đọc mã Ghostty 1.4.0: `String.keyEventText`), rồi gửi phím đó không kèm chữ, bộ mã hoá không ra byte nào.
+  - Gạch chân không thuộc tính gạch: Ghostty vẫn vẽ gạch chân (tự vẽ chữ đang soạn, bỏ qua thuộc tính); trang xterm.js không vẽ gạch chân ở cả hai cách. Hướng này không giúp ở hai terminal.
+  - Thời gian xử lý mỗi phím của bản thử ngang cách hiện tại: xterm.js p50 371 µs, p99 540 µs; Ghostty dòng trộn p50 343 µs, p99 760 µs; gạch chân xterm.js p50 351 µs, p99 496 µs (n 13–32 phím mỗi ô). Bản thử không hỏi `selectedRange`, không đọc chữ.
+  - Dọn: bản Release đã cài lại (đối chiếu binary), không còn khoá Debug, nguồn nhập liệu về Dấu, không còn cửa sổ thử, `build/terminal-underline/` đã xoá sau khi ghi số.

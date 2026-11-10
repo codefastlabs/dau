@@ -74,15 +74,17 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 ids=(${CELLS%%|*})
-for w in $WANT; do
-  (( ${#${(M)ids:#${~w}}} )) || log_die 2 "Không có ô \"$w\""
-done
 wanted() { # id
   (( $#WANT == 0 )) && return 0
   local w
   for w in $WANT; do [[ $1 == ${~w} ]] && return 0; done
   return 1
 }
+for w in $WANT; do
+  n=0
+  for i in $ids; do [[ $i == ${~w} ]] && n=$(( n + 1 )); done
+  (( n > 0 )) || log_die 2 "Không có ô \"$w\""
+done
 
 OUT="$ROOT/build/terminal-underline/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
