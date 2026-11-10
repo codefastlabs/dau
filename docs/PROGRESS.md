@@ -221,3 +221,11 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Cursor không đo được ở lượt này: thử thêm `cursor` vào `typing/run.sh` theo cách của VS Code (⌘N mở tệp mới), nhưng ở Cursor ⌘N mở một agent mới, cửa sổ vẫn tên "Cursor Agents", nên script dừng trước khi gửi chữ nào (ô đầu: Cursor chưa lên trước). Đo được ở lượt sau (mục dưới).
   - Zalo, Discord, Notion, Figma không đưa vào lượt tự động: gõ thử ở đó là gõ vào cuộc trò chuyện hay tài liệu thật của tài khoản.
   - Dọn: Edge và Firefox do script mở đã thoát; Cursor để như trước lượt đo (đang chạy); nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bộ gõ bản Release.
+- 10/11/2026 — M6: đo Cursor (người dùng yêu cầu; máy B, 09:46–09:49; Dấu Debug dc7208c; Cursor 3.24.12; chuỗi std; log `build/load/cursor-20261110-094602/`, không commit) — phiên chính.
+  - Cách đo: `typing/run.sh` thêm app `cursor`, mở trình soạn thảo trên một tệp trống tạm (`cursor --new-window`), tiêu đề cửa sổ là tên tệp. Mọi ô đủ 232 phím tới bộ gõ, log mang đúng bundle ID.
+  - Thay tại chỗ: 5 ms sai 3/3 ("co", "uongs", "tuan", "veề", "meting"; lượt khác "minhf", "guir", "àyy la tứu áuu"), 20 ms sai 1/1 ("uongs", "tuanf"), 100 ms đúng 1/1. Gạch chân (`--underline`) ở 5 ms đúng 1/1.
+  - Log vị trí: từ từ thứ hai trở đi, `selectedRange` của Cursor là số nhỏ (2–6) trong khi vị trí Dấu tự theo dõi (`known`) là 5–21, tức Cursor trả vị trí theo một gốc toạ độ khác và gốc đó đổi theo từ. Phần lớn lần thay tin `selectedRange` và đúng. Các từ sai nằm ở lần thay đi nhánh `late` (thay ở `known`, 5–8 lần mỗi lượt 5 ms, 2 lần ở 20 ms) và ở các dòng `mismatch` (2–4 lần, reset không thay). Ở 100 ms không có `late` hay `mismatch`.
+  - Chưa rõ: trước các lần sửa ở M6 Cursor đúng hay sai ở các nhịp này (chưa từng đo), nên chưa biết nhánh `late` làm Cursor sai thêm hay Cursor vốn đã sai khi phím dồn. VS Code cùng ngày trả vị trí tuyệt đối (`sel` 15, `known` 16) và đúng.
+  - Hệ quả: Cursor giữ nhãn "Đề xuất" (số đo cho thấy còn sai ở 5 và 20 ms, gạch chân sửa được). App Electron chưa đo không suy ra được từ Chrome hay VS Code.
+  - Còn mở ở script: sau mỗi ô, cửa sổ thử của Cursor ở lại với hộp hỏi lưu; lượt này phiên chính đóng bằng "Don't Save" qua Accessibility.
+  - Dọn: các cửa sổ thử của Cursor đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bộ gõ bản Release.

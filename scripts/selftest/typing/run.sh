@@ -8,7 +8,7 @@
 #
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
-#     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail
+#     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail | cursor
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/TROUBLESHOOTING.md); Safari's test page is the AppKit/WebKit reference.
@@ -124,7 +124,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -583,6 +583,28 @@ run_vscode() {
   end tell' >/dev/null
 }
 
+# Cursor (built from VS Code). ⌘N there opens a new agent, not an untitled file, so the
+# editor is opened on an empty file of this run instead (its name is the window title
+# the guard asks for). Emptied again before ⌘W, so the file is unchanged and nothing asks
+# to save; the editor window itself stays open, empty.
+run_cursor() {
+  local file="$WORK/dau-selftest.txt"
+  : > "$file"
+  /Applications/Cursor.app/Contents/Resources/app/bin/cursor --new-window "$file" >/dev/null 2>&1
+  osascript -e 'tell application "Cursor" to activate' >/dev/null
+  # Not there in time: type_keys's guard reports it and stops the run.
+  wait_until -i 0.3 20 front_ok Cursor dau-selftest
+  select_dau; type_keys Cursor dau-selftest
+  copy_all Cursor dau-selftest
+  guarded Cursor dau-selftest 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+    delay 0.2
+    keystroke "w" using {command down}
+  end tell' >/dev/null
+}
+
 # Sets $win to Terminal's front window, if it has one.
 terminal_front_window() {
   win="$(osascript -e 'tell application "Terminal" to if (count of windows) > 0 then return id of front window' 2>/dev/null)"
@@ -645,6 +667,7 @@ bundle_id() {
     terminal) echo com.apple.Terminal ;;
     edge) echo com.microsoft.edgemac ;; firefox) echo org.mozilla.firefox ;;
     notes) echo com.apple.Notes ;; mail) echo com.apple.mail ;;
+    cursor) echo com.todesktop.230313mzl4w4u92 ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
