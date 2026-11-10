@@ -283,7 +283,10 @@ struct InPlaceComposerTests {
 
     @Test("D11: keys faster than settleInterval do not re-sync (stale snapshot)")
     func noResyncWhenFast() {
-        var s = Session()
+        // Not at the start of a document: there, keys in one burst and an answer from
+        // before all of them are an app that is slow to start
+        // (`RapidKeysTests.firstWordOfEmptyDocument`, `clearedAtStartInBurst`).
+        var s = Session("xy ")
         s.interval = 0.01
         s.type("oo")
         s.doc.text = ""

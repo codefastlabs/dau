@@ -229,7 +229,8 @@ struct CursorTracker: Equatable {
     /// `requireDeletedText`: an edit that removes text this composer does not know fails.
     /// `m` is at most `lateLimit`, plus the edits made in the latest burst of keys
     /// (`burst`); past `lateLimit`, the text the app gave before those edits must also be
-    /// the text this composer typed there (`tail`), over at least two units.
+    /// the text this composer typed there (`tail`), over at least two units, or the edits
+    /// must start the document in one burst with this key (`typedHere`).
     func rebuild(_ snapshot: [UInt16], at selection: NSRange,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
         let end = selection.location
@@ -288,8 +289,20 @@ struct CursorTracker: Equatable {
     /// part read starts the document; then one unit is enough if `tail` covers all of it.
     /// With less than that (nothing read, a short `tail`), nothing tells a late answer
     /// from a text that was replaced (a field cleared and typed again).
+    ///
+    /// One case has nothing to read and still counts: the edits start the document
+    /// (`fromStart`, `count` 0), so no text of the app's can precede them, `tail` is all
+    /// of `text`, and the key being handled is itself in the burst (`keyInBurst`): every
+    /// edit past `lateLimit` and this key came one after the other, with no time for a
+    /// click IMK does not report (D11). That is the first word of a new document the app
+    /// is slow to start (M6, fast-key run of 10/11/2026: VS Code, "Chieeuf" gave "êhieuf",
+    /// the answer from before every key of the document). After a pause the answer
+    /// stands, as before.
     private func typedHere(_ text: [UInt16], before count: Int, fromStart: Bool) -> Bool {
         let n = min(text.count, tail.count)
+        if fromStart, count == 0 {
+            return keyInBurst && tail.count == text.count && text.elementsEqual(tail)
+        }
         let reach = n - (text.count - count)
         guard reach >= 2 || (fromStart && count >= 1 && reach == count) else { return false }
         return text.suffix(n).elementsEqual(tail.suffix(n))

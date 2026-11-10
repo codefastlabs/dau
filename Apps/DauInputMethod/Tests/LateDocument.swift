@@ -160,6 +160,15 @@ final class LateDocument: InPlaceClient {
         append(State(text: units, cursor: units.count))
     }
 
+    /// The caret moves without the input method being told (a click IMK does not report,
+    /// the app itself): the new state.
+    func moveCaret(to cursor: Int) {
+        var state = states[states.count - 1]
+        state.cursor = cursor
+        state.atCaret = nil
+        append(state)
+    }
+
     /// What the app does with a key the input method left to it.
     func typed(_ route: KeyRoute) {
         switch route {

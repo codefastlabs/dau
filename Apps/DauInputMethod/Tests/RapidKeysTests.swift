@@ -51,8 +51,10 @@ struct RapidSession {
     private var free: TimeInterval = 0
     private let timed: Bool
 
-    /// `model` nil: an app that is always up to date (the reference).
-    init(_ model: AppModel?, seed: UInt64 = 0, settings: DauSettings = .defaults) {
+    /// `model` nil: an app that is always up to date (the reference). `startStall`: seconds
+    /// the app takes before it applies the first edit (a new document that is not ready
+    /// when the first keys come).
+    init(_ model: AppModel?, seed: UInt64 = 0, startStall: TimeInterval = 0, settings: DauSettings = .defaults) {
         engine = VietEngine(options: settings.engineOptions)
         composer.addMarksEnabled = settings.addMarksToTypedWords
         doc = LateDocument()
@@ -63,9 +65,11 @@ struct RapidSession {
             doc.clock = 0
             doc.reportDelay = 0.0003
             var rng = SplitMix(seed &* 7919 &+ 17)
+            var first = true
             doc.work = {
                 var ms = rng.uniform(model.work.lowerBound, model.work.upperBound)
                 if model.stall.chance > 0, rng.uniform(0, 1) < model.stall.chance { ms += model.stall.ms }
+                if first { ms += startStall * 1000; first = false }
                 return ms / 1000
             }
         }
@@ -139,12 +143,13 @@ struct RapidKeysTests {
         var slowest: Duration
     }
 
-    static func simulate(_ keys: String, _ model: AppModel, ms: Double, seed: UInt64) -> Run {
+    static func simulate(_ keys: String, _ model: AppModel, ms: Double, seed: UInt64,
+                         startStall: TimeInterval = 0) -> Run {
         let keyRoutes = routes(keys)
         let times = arrivals(keyRoutes.count, ms: ms, jitter: ms == 0 ? 0.3 : 1, seed: seed)
         var reference = RapidSession(nil)
         reference.type(keyRoutes, at: times)
-        var s = RapidSession(model, seed: seed)
+        var s = RapidSession(model, seed: seed, startStall: startStall)
         s.type(keyRoutes, at: times)
         return Run(ok: s.doc.text == reference.doc.text, behind: s.doc.maxBehind, overCalls: s.overCalls,
                    badRanges: s.doc.badRanges, text: s.doc.text, reference: reference.doc.text,
@@ -256,6 +261,209 @@ struct RapidKeysTests {
         type(" guiwr", lag: 0)
         #expect(doc.text == "người bạn gửi")
         #expect(doc.badRanges == 0)
+    }
+
+    // MARK: The first word of an empty document
+
+    /// The fast-key run of 10/11/2026 (VS Code, nominal 5 and 10 ms, keys 10–20 ms apart):
+    /// in a new document "Chieeuf" gave "êhieuf", at the second "e" `sel` 1, `known` 4.
+    /// With Chromium's cache that answer is an app that has reported none of the four
+    /// keys, the cache holding the latest one at the caret it knows (0): "e" before caret
+    /// 1. No text of the app's precedes the keys, so nothing read could show the app was
+    /// only late. (An app that has reported "C", three behind, was already taken for
+    /// late.) The text of the run comes out with the caret kept after a replaced range;
+    /// the other caret behaviour and Firefox's cache (caret 0, nothing to read) are the
+    /// same case.
+    @Test("first word of an empty document, keys in a burst, the app has reported none of them: replaced at the followed position",
+          arguments: [LateDocument.Cache.chromium, .snapshot], [LateDocument.Replace.keepSelection, .caretAfterText])
+    func firstWordOfEmptyDocument(_ cache: LateDocument.Cache, _ replace: LateDocument.Replace) {
+        let doc = LateDocument()
+        doc.cache = cache
+        doc.replace = replace
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        var over = 0
+        var outcomes: [InPlaceComposer.Outcome] = []
+        func type(_ keys: String, lag: Int) {
+            for route in routes(keys) {
+                now += 0.01
+                doc.lag = lag
+                doc.selections = 0; doc.reads = 0; doc.inserts = 0
+                let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
+                if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { over += 1 }
+                outcomes.append(outcome)
+                if !outcome.consumed { doc.typed(route) }
+            }
+        }
+        type("Chie", lag: 0)
+        type("e", lag: 4)
+        #expect(outcomes[4].attempt?.selection.location == (cache == .chromium ? 1 : 0))
+        #expect(outcomes[4].attempt?.known == 4)
+        #expect(outcomes[4].kind == .late)
+        type("uf nay ", lag: 0)
+        #expect(doc.text == "Chiều nay ")
+        #expect(doc.badRanges == 0)
+        #expect(over == 0)
+    }
+
+    /// The same word while the app stays behind every key of it (each answer from before
+    /// the whole document).
+    @Test("first word of an empty document, the app behind every key of the word", arguments: [LateDocument.Cache.chromium, .snapshot])
+    func firstWordAppStaysBehind(_ cache: LateDocument.Cache) {
+        let doc = LateDocument()
+        doc.cache = cache
+        doc.replace = .caretAfterText
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        for route in routes("Chieeuf ") {
+            now += 0.01
+            doc.lag = doc.states.count - 1
+            let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
+            if !outcome.consumed { doc.typed(route) }
+        }
+        #expect(doc.text == "Chiều ")
+        #expect(doc.badRanges == 0)
+    }
+
+    /// The opposite cases: the caret really is where the app says. With nothing of the
+    /// app's text to compare, only keys in one burst up to the key being handled count as
+    /// an app that is late: after a pause a person may have clicked (a click IMK does not
+    /// report, D11).
+    @Test("word typed in a burst at the start of a document, a pause, an unreported click to the start, a key: the answer stands")
+    func caretMovedToStartAfterBurst() {
+        let doc = LateDocument()
+        doc.cache = .chromium
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        var kinds: [PerfLog.Kind] = []
+        func key(_ route: KeyRoute, after seconds: TimeInterval) {
+            now += seconds
+            let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
+            kinds.append(outcome.kind)
+            if !outcome.consumed { doc.typed(route) }
+        }
+        for route in routes("Chie") { key(route, after: 0.01) }
+        doc.moveCaret(to: 0)
+        key(.character("e"), after: 0.5)
+        #expect(doc.text == "eChie")
+        #expect(!kinds.contains(.late) && !kinds.contains(.lateGuess))
+        #expect(doc.badRanges == 0)
+    }
+
+    /// Known limit: a document the app empties between two keys of one burst, at its
+    /// very start, answers exactly as Chromium's cache does when the page has reported
+    /// nothing (caret 1, the latest key before it). It is taken for late: one
+    /// `insertText` whose range is past the text, then the next key sees the mismatch.
+    @Test("known limit: document emptied by the app inside a burst at its start is taken for a late app")
+    func clearedAtStartInBurst() {
+        let doc = LateDocument()
+        doc.cache = .chromium
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        var kinds: [PerfLog.Kind] = []
+        func type(_ keys: String) {
+            for route in routes(keys) {
+                now += 0.01
+                let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
+                kinds.append(outcome.kind)
+                if !outcome.consumed { doc.typed(route) }
+            }
+        }
+        type("oo")
+        doc.appEdit("")
+        type("is")
+        #expect(kinds.last == .late)
+        #expect(doc.badRanges == 1)
+        // The same after a pause: the answer stands (D11 mismatch).
+        let doc2 = LateDocument()
+        doc2.cache = .chromium
+        var engine2 = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer2 = InPlaceComposer()
+        var last = InPlaceComposer.Outcome()
+        for (index, route) in routes("oois").enumerated() {
+            if index == 2 { doc2.appEdit("") }
+            last = composer2.handle(route, time: Double(index) * 0.01 + (index == 3 ? 0.5 : 0), engine: &engine2, client: doc2)
+            if !last.consumed { doc2.typed(route) }
+        }
+        #expect(last.kind != .late && last.kind != .lateGuess)
+        #expect(doc2.badRanges == 0)
+    }
+
+    @Test("first word in a burst, the answer at caret 1 with another letter before it: not late, the answer stands")
+    func firstWordOtherTextAtAnswer() {
+        let doc = LateDocument()
+        doc.cache = .chromium
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        for route in routes("Chie") {
+            now += 0.01
+            let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
+            if !outcome.consumed { doc.typed(route) }
+        }
+        // Caret 1 as in the run, but not the latest key before it.
+        doc.override = "x"
+        now += 0.01
+        let outcome = composer.handle(.character("e"), time: now, engine: &engine, client: doc)
+        #expect(outcome.kind == .replace)
+        #expect(outcome.attempt?.replacement == NSRange(location: 0, length: 1))
+    }
+
+    @Test("first word typed at a human pace, the same answer four keys behind: not late, the answer stands")
+    func firstWordHumanPaceFarBehind() {
+        let doc = LateDocument()
+        doc.cache = .chromium
+        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
+        var composer = InPlaceComposer()
+        var now = 0.0
+        var last = InPlaceComposer.Outcome()
+        for (index, route) in routes("Chiee").enumerated() {
+            now += 0.1
+            doc.lag = index == 4 ? 4 : 0
+            last = composer.handle(route, time: now, engine: &engine, client: doc)
+            if !last.consumed { doc.typed(route) }
+        }
+        #expect(last.kind == .replace)
+    }
+
+    /// The timed models with a new document that is not ready when the first keys come:
+    /// the app applies the first edit only after `stall`. The stall is not measured: 40
+    /// and 80 ms put the app three to eight keys behind at the first replacement at
+    /// 10–20 ms between keys, around what the 10/11 run showed for VS Code (`sel` 1,
+    /// `known` 4). Lines starting with START are the table of the report; 0 ms is
+    /// printed only.
+    @Test("first words of an empty document that stalls 40 or 80 ms, at 5, 10, 20 ms in Chrome, VS Code, Firefox models: same text as an app that is up to date")
+    func stalledStartTable() {
+        var lines: [String] = []
+        var failures = 0
+        for model in [AppModel.chrome, .vscode, .firefox] {
+            for ms in Self.speeds {
+                var cells: [String] = []
+                for stall in [0.04, 0.08] {
+                    var wrong = 0, over = 0, bad = 0, behind = 0
+                    var example: Run?
+                    for seed in 1...UInt64(Self.seeds) {
+                        let run = Self.simulate(LateAnswerTests.stdKeys, model, ms: ms, seed: seed, startStall: stall)
+                        if !run.ok { wrong += 1; if example == nil { example = run } }
+                        over += run.overCalls
+                        bad += run.badRanges
+                        behind = max(behind, run.behind)
+                    }
+                    failures += over + (ms > 0 ? wrong + bad : 0)
+                    cells.append("stall \(Int(stall * 1000)) ms \(wrong)/\(Self.seeds) wrong, behind ≤ \(behind), over \(over), bad \(bad)")
+                    if let example {
+                        lines.append("  e.g. \(model) \(Int(ms)) ms: \(example.text.prefix(40)) ≠ \(example.reference.prefix(40))")
+                    }
+                }
+                lines.append("START \(model) \(Int(ms)) ms: " + cells.joined(separator: "; "))
+            }
+        }
+        print(lines.joined(separator: "\n"))
+        #expect(failures == 0)
     }
 
     // MARK: What a burst must not change
