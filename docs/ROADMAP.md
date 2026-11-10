@@ -65,14 +65,16 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Xác minh câu hỏi mở về `TISEnableInputSource` và sandbox của app chủ.
 
 ## M6 — Hiệu năng dưới tải
-- Tự gửi phím 20 phím/giây vào trang thử trong Safari, Chrome, VS Code và Telegram trong khi CPU đầy và `memory_pressure` đang chạy.
+- Tự gửi phím 20 phím/giây vào trang thử trong Safari, Chrome và VS Code trong khi CPU đầy và `memory_pressure` đang chạy (`scripts/selftest/load/heavy.sh`).
+  - Không gõ vào Telegram: script sẽ gõ vào một cuộc trò chuyện thật.
   - Không dùng TextEdit: nó tự lưu tài liệu thử lên iCloud Drive (`docs/TROUBLESHOOTING.md`).
   - Chrome và VS Code là hai app áp phím bất đồng bộ: lượt này trả lời câu hỏi của D13 (Gạch chân là đường lui cuối cùng), app bận có dồn phím dưới 10 ms không (`docs/research/COMPETITOR-COMPARISON.md`, phần A).
 - Chỉ số:
   - văn bản cuối khớp 100%;
   - độ trễ p50/p99 phía bộ gõ;
   - bộ nhớ ổn định theo thời gian.
-- So với gõ bằng U.S. (độ trễ nền) và với bộ gõ Telex có sẵn của macOS (`scripts/research/compare-ims/run.sh` so Dấu với Telex của Apple; phần U.S. cần thêm vào script).
+- Đối chứng là bộ gõ Telex có sẵn của macOS trong cùng điều kiện: chữ của nó dưới tải so với chữ của chính nó lúc rảnh.
+  - Không so với bàn phím U.S.: nó ra nguyên chuỗi phím và không có log từng phím, nên không cho số nào để so.
   - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
 - Chốt ngưỡng vào `DECISIONS.md`; quyết định về D12 (Ưu tiên tiến trình) dựa trên số đo.
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md`:
