@@ -44,6 +44,9 @@ final class DauInputController: IMKInputController {
     /// Underline mode (D13) for the current client: the word is marked text, committed
     /// at its end. Decided at activation and on settings changes, never per key.
     private var underline = false
+    /// Debug trial (`DebugTrial.plainMarkedKey`): marked text sent with no underline
+    /// attribute, to see whether the client draws it as plain text. Never on in Release.
+    private var plainMarked = false
     private var composer = MarkedComposer()
     /// The client the marked text was sent to, so a reset that arrives with another
     /// client (or none) still commits it where it is shown.
@@ -89,7 +92,7 @@ final class DauInputController: IMKInputController {
         let route = KeyRouter.route(keyCode: event.keyCode,
                                     modifiers: event.modifierFlags,
                                     characters: event.characters)
-        let timed = TimedClient(client)
+        let timed = TimedClient(client, plainMarked: plainMarked)
         var result: KeyResult
         if underline {
             result = processMarked(route, client: timed)
@@ -193,7 +196,7 @@ final class DauInputController: IMKInputController {
             perf.note("marked-abandoned", app: clientApp)
             return false
         }
-        return composer.commit(engine: &engine, client: TimedClient(target)) == .insertText
+        return composer.commit(engine: &engine, client: TimedClient(target, plainMarked: plainMarked)) == .insertText
     }
 
     /// Resets when the client proxy changes under this controller.
@@ -230,6 +233,12 @@ final class DauInputController: IMKInputController {
         perf.note("activate", app: clientApp)
         if underline {
             settingsLogger.notice("event=underline-on app=\(self.clientApp, privacy: .public)")
+        }
+        if inPlace.eraseByDelete {
+            settingsLogger.notice("event=erase-trial-on app=\(self.clientApp, privacy: .public)")
+        }
+        if plainMarked {
+            settingsLogger.notice("event=plain-marked-on app=\(self.clientApp, privacy: .public)")
         }
     }
 
@@ -359,6 +368,9 @@ final class DauInputController: IMKInputController {
         }
         // D20 "Thêm dấu cho từ đã gõ" (D15: on by default). Read here, never per key.
         inPlace.addMarksEnabled = new.addMarksToTypedWords
+        // Debug trials only; both lists are empty in Release.
+        inPlace.eraseByDelete = Self.debugList(DebugTrial.eraseKey).contains(clientApp)
+        plainMarked = Self.debugList(DebugTrial.plainMarkedKey).contains(clientApp)
     }
 
     /// Debug builds only: bundle IDs forced into underline mode for trials
@@ -366,11 +378,17 @@ final class DauInputController: IMKInputController {
     /// scripts/selftest/typing/run.sh `--underline`). Read at activation and on settings
     /// changes, never per key. Release builds never read it.
     private static func debugForcedUnderline() -> [String] {
+        debugList(UnderlineMode.debugForceKey)
+    }
+
+    /// Debug builds only: the array of bundle IDs under global defaults key `key`. Read at
+    /// activation and on settings changes, never per key. Release builds read nothing.
+    private static func debugList(_ key: String) -> [String] {
         #if DEBUG
         let any = kCFPreferencesAnyApplication
         // Pick up a `defaults write -g` made since the last read.
         CFPreferencesAppSynchronize(any)
-        let value = CFPreferencesCopyAppValue(UnderlineMode.debugForceKey as CFString, any)
+        let value = CFPreferencesCopyAppValue(key as CFString, any)
         return (value as? [Any])?.compactMap { $0 as? String } ?? []
         #else
         return []
@@ -458,7 +476,13 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
     /// Duration of the `attributedSubstring` call (D20), -1 if none.
     private(set) var readNs: Int64 = -1
 
-    init(_ client: IMKTextInput) { self.client = client }
+    /// Debug trial: marked text with no underline attribute (`DebugTrial.plainMarkedKey`).
+    private let plainMarked: Bool
+
+    init(_ client: IMKTextInput, plainMarked: Bool = false) {
+        self.client = client
+        self.plainMarked = plainMarked
+    }
 
     func selectedRange() -> NSRange {
         let start = PerfLog.now()
@@ -482,7 +506,12 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
     func setMarkedText(_ text: String, selectionRange: NSRange, replacementRange: NSRange) {
         let start = PerfLog.now()
         let signpost = PerfLog.signposter.beginInterval("setMarkedText")
-        client.setMarkedText(text, selectionRange: selectionRange, replacementRange: replacementRange)
+        if plainMarked {
+            let plain = NSAttributedString(string: text, attributes: [.underlineStyle: 0])
+            client.setMarkedText(plain, selectionRange: selectionRange, replacementRange: replacementRange)
+        } else {
+            client.setMarkedText(text, selectionRange: selectionRange, replacementRange: replacementRange)
+        }
         PerfLog.signposter.endInterval("setMarkedText", signpost)
         callNs = Int64(PerfLog.now() &- start)
     }

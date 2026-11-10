@@ -13,6 +13,8 @@
 #     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail | cursor
 #           | cursoragents (the prompt box of Cursor's agents window) | vscodefile (VS Code
 #           opened on a file, as cursor is) | sublime (Sublime Text) | ghostty (Ghostty)
+#           | ghosttyvim (vim in insert mode in a Ghostty window) | xterm (xterm.js in a
+#           Chrome page: the terminal of Electron apps such as the Claude desktop app)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/TROUBLESHOOTING.md); Safari's test page is the AppKit/WebKit reference.
@@ -67,6 +69,15 @@
 #                     `underline-on` when it took effect. By hand:
 #                       defaults write -g DauDebugForceUnderline -array com.google.Chrome
 #                       defaults delete -g DauDebugForceUnderline
+#   --erase           Debug trial, as --underline (key DauDebugEraseByDelete, report shows
+#                     `erase-trial-on`): in-place replacements become DEL characters plus
+#                     the new text in one insertText at the cursor, for an app that ignores
+#                     the replacement range (docs/research/TERMINAL-AND-UNDERLINE.md).
+#   --plain-marked    Debug trial, as --underline (key DauDebugPlainMarked, report shows
+#                     `plain-marked-on`): marked text is sent with no underline attribute.
+#                     Use with --underline.
+#   --shot            with --save: a picture of the app's window right after the keys, before
+#                     the last word is committed (ghostty, ghosttyvim, xterm), to DIR/<app>.png.
 #
 # For each app: opens a new, empty window, selects the Dấu input source (which must be
 # enabled already; nothing is enabled or disabled, N4), types, reads the text back,
@@ -133,12 +144,17 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
+ERASE=0
+PLAIN_MARKED=0
+SHOT=0
 SOURCE_ID=""
 SAVE_DIR=""
 KEEP_SOURCE=0
 JITTER_MS=0
 BUSY=""
 FORCE_KEY=DauDebugForceUnderline
+ERASE_KEY=DauDebugEraseByDelete
+PLAIN_KEY=DauDebugPlainMarked
 APPS=()
 # Prints the whole leading comment block.
 usage() { log_usage "$SELF"; }
@@ -148,6 +164,9 @@ while [[ $# -gt 0 ]]; do
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
+    --erase) ERASE=1; shift ;;
+    --plain-marked) PLAIN_MARKED=1; shift ;;
+    --shot) SHOT=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     --keep-source) KEEP_SOURCE=1; shift ;;
@@ -155,11 +174,12 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
 [[ ${#APPS[@]} -gt 0 ]] || { usage; exit 2; }
+(( SHOT == 0 )) || [[ -n "$SAVE_DIR" ]] || log_die 2 "--shot cần --save DIR"
 [[ "$JITTER_MS" =~ ^[0-9]+$ ]] || log_die 2 "--jitter phải là số nguyên ms"
 # --save DIR need not exist yet (compare-ims and load/run.sh create theirs; a call by hand may not).
 [[ -z "$SAVE_DIR" ]] || mkdir -p "$SAVE_DIR" || log_die "Không tạo được thư mục $SAVE_DIR"
@@ -255,6 +275,8 @@ restore_perf_key() {
 defaults write -g "$PERF_KEY" -bool true
 cleanup() {
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
+  [[ $ERASE == 1 ]] && defaults delete -g "$ERASE_KEY" >/dev/null 2>&1
+  [[ $PLAIN_MARKED == 1 ]] && defaults delete -g "$PLAIN_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
   if (( ! KEEP_SOURCE )) && [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
@@ -986,10 +1008,11 @@ end run
 OSA
   wait_until 3 ghostty_window_gone "$1" || log_warn "Còn cửa sổ Ghostty \"$SELFTEST_TITLE\", đóng tay giúp"
 }
-run_ghostty() {
-  local win
+run_ghosttyvim() { run_ghostty vim; }
+run_ghostty() { # [vim]
+  local win mode="${1:-}"
   rm -f "$GHOSTTY_RAW" "$GHOSTTY_LINE"
-  ghostty_cell > "$GHOSTTY_CELL"
+  if [[ $mode == vim ]]; then ghostty_vim_cell; else ghostty_cell; fi > "$GHOSTTY_CELL"
   # Not running: launch it without the window it opens at launch, so that only this run's
   # window is opened (and closed). It stays running afterwards, as other apps do.
   if ! ghostty_running; then
@@ -1004,9 +1027,20 @@ run_ghostty() {
   # Not there in time: type_keys's guard reports it and stops the run.
   wait_until -i 0.3 15 ghostty_front "$win"
   select_dau
+  if [[ $mode == vim ]]; then
+    # vim writes the buffer once typing pauses; then the window is closed with vim running.
+    if type_keys "$GHOSTTY_PROC" "$SELFTEST_TITLE"; then
+      shot_window "$GHOSTTY_PROC" ghosttyvim
+      wait_until 4 test -s "$GHOSTTY_LINE" || log_warn "Ghostty (vim): vim chưa ghi tệp sau 4 giây"
+    fi
+    ghostty_close "$win"
+    [[ -e "$GHOSTTY_LINE" ]] && print -r -- "$(<"$GHOSTTY_LINE")"
+    return 0
+  fi
   # Keys ending with ↩: if Ghostty passed Return on, the line editor has ended already and
   # the window is closing, so no ⌃D (its guard would find no window and stop the run).
-  if type_keys "$GHOSTTY_PROC" "$SELFTEST_TITLE" \
+  type_keys "$GHOSTTY_PROC" "$SELFTEST_TITLE" && shot_window "$GHOSTTY_PROC" ghostty
+  if ! stopped \
       && { [[ "$KEYS" == *↩* ]] && wait_until 2 test -e "$GHOSTTY_LINE" || ghostty_end_line; }; then
     if ! wait_until 2 test -e "$GHOSTTY_LINE" && ! stopped; then
       log_warn "Ghostty: dòng chưa kết thúc 2 giây sau ⌃D (⌃D chỉ chốt chữ gạch chân?), gửi lại ⌃D"
@@ -1034,6 +1068,91 @@ visible_bytes() {
   print -r -- "$out"
 }
 
+# Ghostty with vim (ghosttyvim): the same window, but the cell runs vim in insert mode
+# (no user configuration; Backspace over everything, as defaults.vim sets it) in place of
+# the line editor. vim writes the buffer to the line file whenever typing pauses 300 ms
+# (CursorHoldI), so the text is there without a key to save; the window is then closed
+# ("Close" in Ghostty's sheet). Raw bytes are teed as for ghostty. Underline keys that do
+# not end a word are never committed here: use it with in-place typing.
+ghostty_vim_cell() {
+  cat <<'CELL'
+# Runs in the Ghostty window opened by scripts/selftest/typing/run.sh (run_ghostty vim).
+export LC_ALL=en_US.UTF-8
+stty raw -echo </dev/tty
+# vim sets the window title itself once it reads keys: the guard waits for that title, so
+# no key reaches the terminal while it is still in line mode (which erases bytes, not
+# characters).
+/usr/bin/script -q /dev/null /usr/bin/vim -u NONE -N -n -i NONE --cmd "set encoding=utf-8" \
+  -c "set backspace=indent,eol,start updatetime=300 title titlestring=${3// /\\ }" \
+  -c "au CursorHoldI * silent write! ${(q)2}" -c startinsert < <(exec /usr/bin/tee "$1" </dev/tty)
+CELL
+}
+
+# --shot: a picture of the focused window of process $1 to SAVE_DIR/$2.png, taken right
+# after the keys (before a word end commits marked text), to see how marked text is drawn.
+shot_window() { # process name
+  (( SHOT )) || return 0
+  local b
+  b="$(osascript -e "tell application \"System Events\" to tell process \"$1\" to get {position, size} of (value of attribute \"AXFocusedWindow\")" 2>/dev/null)"
+  b="${b//[[:space:]]/}"
+  [[ "$b" =~ '^-?[0-9]+,-?[0-9]+,[0-9]+,[0-9]+$' ]] || { log_warn "$1: không đọc được khung cửa sổ, không chụp"; return 0; }
+  /usr/sbin/screencapture -x -R"$b" "$SAVE_DIR/$2.png" || log_warn "$1: chụp cửa sổ không được"
+}
+
+# xterm: the terminal of Electron apps such as the Claude desktop app (xterm.js in a
+# Chromium page), rebuilt as a local page in Chrome: xterm.js 5.5.0 from jsDelivr (needs
+# the network) and, in place of a shell, a line editor in the page: DEL erases one
+# character, other data is appended, as a shell prompt does. Read back with ⌘C, which the
+# page answers with that line and, on a second line, every chunk xterm.js sent to the
+# "shell" (onData), so what the input method's calls became is visible. The focus title
+# is set only while xterm.js's own text area has the focus.
+XTERM_PAGE="$WORK/dau-xterm.html"
+cat > "$XTERM_PAGE" <<HTML
+<!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
+<script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
+<div id="t" style="width:96vw;height:90vh"></div>
+<script>
+var term = new Terminal({ fontSize: 18 });
+term.open(document.getElementById("t"));
+term.focus();
+var line = [], chunks = [];
+function show(s) {
+  return s.replace(/[\x00-\x1f\x7f]/g, function (c) { return c === "\x7f" ? "⌫" : "<" + c.charCodeAt(0).toString(16).padStart(2, "0") + ">"; });
+}
+term.onData(function (d) {
+  chunks.push(show(d));
+  for (var c of d) {
+    if (c === "\x7f") { if (line.length) { line.pop(); term.write("\b \b"); } }
+    else if (c >= " ") { line.push(c); term.write(c); }
+  }
+});
+window.addEventListener("copy", function (e) {
+  e.clipboardData.setData("text/plain", line.join("") + "\n" + chunks.join(" | "));
+  e.preventDefault(); e.stopImmediatePropagation();
+}, true);
+function mark() {
+  document.title = document.hasFocus() && document.activeElement === term.textarea ? "$FOCUS_TITLE" : "$PAGE_TITLE";
+}
+["focus", "blur"].forEach(function (e) { window.addEventListener(e, mark, true); });
+setInterval(mark, 200);
+mark();
+</script>
+HTML
+# Prints the line; the onData chunks go to SAVE_DIR/xterm.data (with --save) and stderr.
+run_xterm() {
+  local got
+  open -a "Google Chrome" "$XTERM_PAGE"
+  wait_until -i 0.3 15 front_ok "Google Chrome" "$PAGE_TITLE"
+  select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
+  shot_window "Google Chrome" xterm
+  got="$(copy_all "Google Chrome" "$FOCUS_TITLE")"
+  close_test_tab "Google Chrome"
+  log_detail "xterm.js gửi cho shell: \"${got#*$'\n'}\"" >&2
+  [[ -n "$SAVE_DIR" ]] && print -r -- "${got#*$'\n'}" > "$SAVE_DIR/xterm.data"
+  print -r -- "${got%%$'\n'*}"
+}
+
 # --- run -------------------------------------------------------------------------------
 trim_right() { sed -e 's/[[:space:]]*$//'; }
 EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
@@ -1050,7 +1169,8 @@ bundle_id() {
     notes) echo com.apple.Notes ;; mail) echo com.apple.mail ;;
     cursor|cursoragents) echo com.todesktop.230313mzl4w4u92 ;;
     vscodefile) echo com.microsoft.VSCode ;;
-    sublime) echo com.sublimetext.4 ;; ghostty) echo com.mitchellh.ghostty ;;
+    sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
+    xterm) echo com.google.Chrome ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
@@ -1061,6 +1181,8 @@ for app in "${APPS[@]}"; do
   if [[ $UNDERLINE == 1 ]]; then
     defaults write -g "$FORCE_KEY" -array "$(bundle_id "$app")"
   fi
+  [[ $ERASE == 1 ]] && defaults write -g "$ERASE_KEY" -array "$(bundle_id "$app")"
+  [[ $PLAIN_MARKED == 1 ]] && defaults write -g "$PLAIN_KEY" -array "$(bundle_id "$app")"
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   got="$("run_$app")"
   # Fixed: the input method's perf lines reach the log store asynchronously, and how many
@@ -1098,28 +1220,31 @@ for app in "${APPS[@]}"; do
   fi
   if [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
   # Ghostty: the bytes it sent to the terminal, before the line editor applied ⌫ (DEL).
-  if [[ "$app" == ghostty && -e "$GHOSTTY_RAW" ]]; then
+  if [[ "$app" == ghostty* && -e "$GHOSTTY_RAW" ]]; then
     log_detail "byte Ghostty gửi xuống terminal: \"$(visible_bytes "$GHOSTTY_RAW")\""
-    [[ -n "$SAVE_DIR" ]] && cp "$GHOSTTY_RAW" "$SAVE_DIR/ghostty.raw"
+    [[ -n "$SAVE_DIR" ]] && cp "$GHOSTTY_RAW" "$SAVE_DIR/$app.raw"
   fi
   "$LOG" show --start "$start" --style compact \
     --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
   case "$app" in
-    safari) filter=Safari ;; chrome) filter=Chrome ;;
+    safari) filter=Safari ;; chrome|xterm) filter=Chrome ;;
     vscode) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac
   "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
     | grep -E 'count_|gap_|lag_us|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
-  if [[ $UNDERLINE == 1 ]]; then
+  if (( UNDERLINE || ERASE || PLAIN_MARKED )); then
     settings_log="$("$LOG" show --start "$start" --style compact \
         --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"
-    if [[ "$settings_log" == *"event=underline-on app=$(bundle_id "$app")"* ]]; then
-      log_detail "underline-on"
-    else
-      log_warn "Không thấy underline-on (bộ gõ chưa nhận khoá ép?)"
-    fi
+    for flag event in UNDERLINE underline-on ERASE erase-trial-on PLAIN_MARKED plain-marked-on; do
+      (( ${(P)flag} )) || continue
+      if [[ "$settings_log" == *"event=$event app=$(bundle_id "$app")"* ]]; then
+        log_detail "$event"
+      else
+        log_warn "Không thấy $event (bộ gõ chưa nhận khoá Debug?)"
+      fi
+    done
   fi
 done
 if stopped; then

@@ -67,6 +67,9 @@ struct PerfLog {
         /// it (which an app that edited the text would show). Replaced at the followed
         /// position (`InPlaceComposer.replace`).
         case lateGuess = "late_guess"
+        /// Debug trial (`DebugTrial.eraseKey`): one insertText at the cursor of DEL characters and the
+        /// new text, for a client that ignores replacementRange (Ghostty); no selectedRange.
+        case erase
     }
 
     /// Off unless `DauPerfLog` is set, in Debug builds too: even without text, one line

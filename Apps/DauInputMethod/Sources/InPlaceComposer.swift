@@ -34,6 +34,12 @@ struct InPlaceComposer {
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
 
+    /// Debug trial only (`DebugTrial.eraseKey`): the client ignores `replacementRange` and sends
+    /// text to a terminal as typed (Ghostty). A replacement is then one `insertText` at
+    /// the cursor of DEL (U+007F) per character to remove, then the new text: the shell
+    /// erases and retypes. No `selectedRange`, no reads (D11 check, D20) for this client.
+    var eraseByDelete = false
+
     /// What the cursor is known to follow while the engine has no word (D20 needs a word
     /// right before the cursor; reading costs two client calls, so it is skipped when
     /// the answer is already known).
@@ -251,7 +257,7 @@ struct InPlaceComposer {
             return result
 
         case .character(let scalar):
-            if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable, settled {
+            if !engine.isComposing, addMarksEnabled, !eraseByDelete, before == .unknown, !readUnavailable, settled {
                 let method = engine.options.inputMethod
                 if Self.isMarkKey(scalar, method: method) {
                     return addMarks(scalar, letter: false, engine: &engine, client: client)
@@ -262,7 +268,7 @@ struct InPlaceComposer {
                     return addMarks(scalar, letter: true, engine: &engine, client: client)
                 }
             }
-            if engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
+            if !eraseByDelete, engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
                Self.isMarkKey(scalar, method: engine.options.inputMethod),
                let outcome = checkLockedWord(scalar, engine: &engine, client: client) {
                 return outcome
@@ -708,6 +714,13 @@ struct InPlaceComposer {
         if deleteCount == 0 {
             result.kind = .insert
             insertAtCursor(insert, client: client)
+            return result
+        }
+        if eraseByDelete {
+            var text = String(repeating: "\u{7F}", count: deleteCount) + insert.description
+            if let extra { text.unicodeScalars.append(extra) }
+            client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
+            result.kind = .erase
             return result
         }
         // Engine letters are BMP scalars, so deleteCount scalars == deleteCount UTF-16
