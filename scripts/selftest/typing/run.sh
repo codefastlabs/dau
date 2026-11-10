@@ -9,6 +9,8 @@
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
 #     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail | cursor
+#           | cursoragents (the prompt box of Cursor's agents window) | vscodefile (VS Code
+#           opened on a file, as cursor is)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/TROUBLESHOOTING.md); Safari's test page is the AppKit/WebKit reference.
@@ -124,7 +126,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -583,25 +585,61 @@ run_vscode() {
   end tell' >/dev/null
 }
 
-# Cursor (built from VS Code). ⌘N there opens a new agent, not an untitled file, so the
-# editor is opened on an empty file of this run instead (its name is the window title
-# the guard asks for). Emptied again before ⌘W, so the file is unchanged and nothing asks
-# to save; the editor window itself stays open, empty.
-run_cursor() {
-  local file="$WORK/dau-selftest.txt"
+# An editor built on VS Code, opened on an empty file of this run: $1 the process name,
+# $2 its command-line tool. The file's name is the window title the guard asks for. After
+# the text is read back the file is emptied and saved (it is this run's own file), so
+# closing the window asks nothing.
+file_editor() {
+  local proc="$1" cli="$2" file="$WORK/dau-selftest.txt"
   : > "$file"
-  /Applications/Cursor.app/Contents/Resources/app/bin/cursor --new-window "$file" >/dev/null 2>&1
-  osascript -e 'tell application "Cursor" to activate' >/dev/null
+  "$cli" --new-window "$file" >/dev/null 2>&1
+  osascript -e "tell application \"System Events\" to set frontmost of process \"$proc\" to true" >/dev/null 2>&1
   # Not there in time: type_keys's guard reports it and stops the run.
-  wait_until -i 0.3 20 front_ok Cursor dau-selftest
-  select_dau; type_keys Cursor dau-selftest
-  copy_all Cursor dau-selftest
-  guarded Cursor dau-selftest 'tell application "System Events"
+  wait_until -i 0.3 20 front_ok "$proc" dau-selftest
+  select_dau; type_keys "$proc" dau-selftest
+  copy_all "$proc" dau-selftest
+  guarded "$proc" dau-selftest 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.1
     key code 51
     delay 0.2
-    keystroke "w" using {command down}
+    keystroke "s" using {command down}
+    delay 0.5
+  end tell' >/dev/null
+  osascript -e "tell application \"System Events\" to tell process \"$proc\" to click (first button of (first window whose name contains \"dau-selftest\") whose subrole is \"AXCloseButton\")" >/dev/null 2>&1
+}
+
+# Cursor's editor. ⌘N in Cursor opens a new agent, not an untitled file, hence the file.
+run_cursor() { file_editor Cursor /Applications/Cursor.app/Contents/Resources/app/bin/cursor; }
+# VS Code opened the same way as Cursor: the control for that way of opening an editor.
+run_vscodefile() { file_editor Code "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"; }
+
+# The prompt box of Cursor's "Cursor Agents" window. ⌘N starts a new agent with an empty
+# prompt; a prompt that is not empty (the user's draft) stops the run before anything is
+# typed. Return is never sent: nothing goes to an agent. The prompt is emptied at the end.
+run_cursoragents() {
+  open -a Cursor
+  osascript -e 'tell application "System Events" to tell process "Cursor"
+    set frontmost to true
+    perform action "AXRaise" of (first window whose name is "Cursor Agents")
+  end tell' >/dev/null 2>&1
+  wait_until -i 0.3 15 front_ok Cursor "Cursor Agents"
+  guarded Cursor "Cursor Agents" 'tell application "System Events" to keystroke "n" using {command down}' \
+    >/dev/null || return 0
+  sleep 0.5
+  local draft
+  draft="$(copy_all Cursor "Cursor Agents")"
+  if [[ -n "$draft" ]]; then
+    log_error "Dừng: ô nhập của Cursor Agents không trống — không gõ gì"
+    echo front > "$STOP_FILE"
+    return 0
+  fi
+  select_dau; type_keys Cursor "Cursor Agents"
+  copy_all Cursor "Cursor Agents"
+  guarded Cursor "Cursor Agents" 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
   end tell' >/dev/null
 }
 
@@ -667,7 +705,8 @@ bundle_id() {
     terminal) echo com.apple.Terminal ;;
     edge) echo com.microsoft.edgemac ;; firefox) echo org.mozilla.firefox ;;
     notes) echo com.apple.Notes ;; mail) echo com.apple.mail ;;
-    cursor) echo com.todesktop.230313mzl4w4u92 ;;
+    cursor|cursoragents) echo com.todesktop.230313mzl4w4u92 ;;
+    vscodefile) echo com.microsoft.VSCode ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
