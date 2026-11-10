@@ -20,11 +20,12 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - Hai màn onboarding mới: ảnh chụp trong app đạt và khớp artboard (sáng, tối); `scripts/selftest/settings-window/run.sh` đạt hết (nhật ký 10/11). Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
 - Giữ nguyên trong đợt này: cách `HostApp` tìm app chủ.
 
-Chờ người dùng: không có việc nào.
+Chờ người dùng: chọn hướng sửa cho Ghostty và terminal xterm.js (đoạn ngay dưới).
 
-Mở từ 10/11, chưa bắt đầu sửa: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế đọc từ mã ở `docs/research/TERMINAL-AND-UNDERLINE.md` (chưa đo). `scripts/selftest/typing/run.sh` đã nhận `sublime` và `ghostty` (chưa chạy thật lần nào).
-- Việc tiếp theo của mạch này: một lượt gõ thử ít ô theo mục 6 của file nghiên cứu, có đối chứng Telex của Apple, gồm Sublime Text ở thay tại chỗ và gạch chân với các ca sửa dấu, và Ghostty. Cần cài bản Debug trước (ép gạch chân bằng khoá Debug), cài lại Release sau. Lượt đầu nên có người xem: lần đầu macOS hỏi quyền Automation cho Ghostty; tên nút hộp thoại đóng của Sublime và Ghostty chưa kiểm.
-- Sau đó: đưa người dùng chọn hướng sửa ở mục 7 (đụng D11, D13, D20).
+Mở từ 10/11, chưa bắt đầu sửa mã: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
+- Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
+- Ghostty: thay tại chỗ sai (nhân đôi chữ hoặc ra chuỗi phím gốc); gạch chân đúng chữ nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple. Terminal của Claude chưa đo (không tự động hoá được).
+- Việc tiếp theo của mạch này: người dùng chọn hướng sửa cho Ghostty và terminal xterm.js (mục 7 của file nghiên cứu; đụng D11, D13 hoặc mục "Đã cân nhắc và loại bỏ").
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
@@ -306,3 +307,10 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
 - 10/11/2026 — chạy lại kiểm giao diện trên cửa sổ thật sau khi hộp thoại hệ thống được đóng (người dùng cho chạy, 22:41–22:43, 109 s, cùng bản Debug 44c4016, một lượt) — phiên chính. Đạt hết, mã thoát 0: cửa sổ thật 302 + 15 + 28 kiểm (gồm Tab và ⌘F vào ô tìm, trang sau ⌘[ và ⌘]), ảnh chụp 330 kiểm. Đã dọn: không còn tiến trình Dấu, thư mục kết quả trong `build/` đã xoá.
 - 10/11/2026 — đóng ba mục còn mở của đợt bản chủ — phiên chính. Lệnh reconcile báo `replaced` khi lần đăng ký lại trả lỗi: giữ, theo nguyên tắc mã trả về của TIS không là bằng chứng và bộ gõ đã được đăng ký từ trước (lý do ghi ở `docs/ARCHITECTURE.md`); `install()` vẫn ném lỗi vì lần cài đầu cần lần đăng ký đó. Bản Debug với `--tampered`: "Cài lại" trên banner ghim không cài thật nữa. `scripts/dev/install-app.sh`: cờ "bản cũ đã vào Thùng rác" đặt trước khi gọi `/usr/bin/trash`. Test app chủ 172, `check-docs` đạt; bản Debug build và qua `dau_check_input_method`.
 - 10/11/2026 — công cụ gõ thử nhận Sublime Text và Ghostty — release-eng. Sublime: mở file trống ở cửa sổ mới, đọc chữ bằng ⌘A ⌘C (không lưu, tránh hộp thoại mời mua), đóng tab thử. Ghostty: mở cửa sổ qua AppleScript của Ghostty (dòng lệnh của 1.4.0 không mở được cửa sổ trên macOS), chạy `zsh -f` với `vared` qua `script(1)`, ghi cả dòng zsh nhận lẫn byte thô (`--save DIR/ghostty.raw`). Kiểm được không cần màn hình: cú pháp, tham số, đoạn zsh sinh ra chạy trong pty giả cho đúng dòng và byte thô, AppleScript biên dịch được. Chưa chạy thật.
+- 11/11/2026 — lượt gõ thử Ghostty và Sublime Text theo mục 6 của `docs/research/TERMINAL-AND-UNDERLINE.md` (người dùng cho chạy, 00:18–00:20, 144 s, `scripts/research/terminal-underline/run.sh`, bộ gõ Debug bb677c7, máy này, một lượt mỗi ô, 120 ms giữa hai phím; cài lại Release ngay sau) — phiên chính. `typing/run.sh` thêm phím ← và ↩ (↩ chỉ cho Ghostty). Kết quả (được / mong đợi):
+  - Sublime Text, `tooisf ba ⌫j tooi←s` (đổi dấu, ⌫ về từ đã chốt rồi thêm dấu, ← vào giữa từ rồi thêm dấu): Dấu thay tại chỗ "tồi bạ tối" (đúng cả ba); Dấu gạch chân "tồi baj tôsi"; Telex của Apple "tồi baj tôsi". Gạch chân chỉ đúng ca đổi dấu trong từ đang gõ, như Telex của Apple.
+  - Ghostty, Dấu thay tại chỗ: `dd` → "dđ" (byte gửi "dđ"; nhật ký: `kind=late`, `sel=0,0`); `toois` → "toôis" (late rồi mismatch); `vieetj` → "vieetj" (mismatch 2 lần, `sel=0,0`). Ghostty báo `selectedRange` là `{0,0}` ở mọi lần hỏi.
+  - Ghostty, Telex của Apple: `dd` → "đ", `toois` → "tối", `vieetj` → "việt" (đúng; ⌃D đầu chỉ chốt chữ gạch chân, ⌃D thứ hai mới kết thúc dòng).
+  - Ghostty, `toois vieetj↩`: Dấu gạch chân và Telex của Apple đều ra "tối việt" nhưng byte gửi không có Return (`<0d>`): Return chốt chữ gạch chân bị Ghostty nuốt, dòng chỉ kết thúc ở ⌃D sau đó.
+  - Khớp dự đoán đọc mã: H1a, H1b (cả với Telex của Apple), H1d (Telex của Apple cũng không sửa được từ đã chốt), H2a, H2b. Chưa đo: terminal của Claude (H2c, H2d), H2e.
+  - Dọn: khoá `DauDebugForceUnderline`, `DauPerfLog` đã xoá (script tự xoá, đã kiểm), nguồn nhập liệu về Dấu, Release đã cài lại (đối chiếu binary với bản build Release), `build/terminal-underline/` đã xoá sau khi ghi số. Ghostty và Sublime Text vẫn chạy, không còn cửa sổ thử nào (ô `sub-dau` báo còn tab thử ngay lúc đóng, kiểm lại sau lượt thì không còn).

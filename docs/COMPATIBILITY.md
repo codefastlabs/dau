@@ -2,7 +2,7 @@
 
 Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ tin cậy). Khung lập ngày 30/10/2026 trên máy phát triển: macOS 27.2 (26B123), Apple M1 Pro; kết quả được điền cùng ngày. Dòng nào chưa thử ghi "chưa thử"; không điền ô nào bằng phỏng đoán.
 
-## Hiện trạng (10/11/2026)
+## Hiện trạng (11/11/2026)
 
 - **Kết quả trình duyệt trước 09/11/2026 chưa chắc là gõ vào ô của trang:** script tự gõ khi đó chỉ kiểm tiêu đề cửa sổ; khi thanh địa chỉ có focus, phím vào thanh địa chỉ và lượt vẫn đạt (⌘A ⌘C chép cùng chữ). Từ 09/11/2026 script chỉ gõ khi ô của trang có focus. Các dòng trình duyệt của mục 5 cần đo lại ở M6.
 - **Khi trang rảnh, thay chữ tại chỗ chỉ sai khi phím đến dồn dưới 10 ms** (đo 29–30/10/2026): Chrome, Edge, VS Code, Firefox, Terminal sai ở 0 ms; từ 10 ms đúng, trừ VS Code: ở 10 ms sai lượt 29/10 (câu mẫu cũ) và đúng lượt 30/10 (câu mẫu mới), từ 20 ms đúng mọi lượt (mục 6.2). TextEdit, Safari đúng ở mọi tốc độ đã đo; Notes đúng ở 30 và 0 ms; Telegram mới đo ở 30 ms (đúng). Bằng chứng: mục 5 (bảng kết quả) và mục 6.2.
@@ -14,7 +14,9 @@ Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ 
 - **Tự sửa chính tả của macOS 27.2** có thể đè lên chữ đã giữ, kể cả khi gõ bằng U.S. (D4 (Từ nước ngoài)): mục 6.1.
 - **Ô mật khẩu:** macOS giữ bàn phím U.S., Dấu không nhận phím; hành vi của hệ thống: mục 6.3.
 - **Biểu tượng nguồn nhập liệu** (thanh menu nhiều màn hình, bong bóng ⌃Space) đã sửa ngày 30/10/2026 bằng cờ `TISIconIsTemplate` ở cấp input mode: mục 6.6 và mục 6.7.
-- **Phạm vi đã thử:** 11 trong 42 dòng của mục 3 có số đo (nhiều dòng mới chỉ ở 30 ms); phần còn lại làm ở M6 (Hiệu năng dưới tải): mục 7.
+- **Ghostty không thay theo `replacementRange`** (đo 11/11/2026): thay tại chỗ sai, chữ thay bị nối thêm (`dd` → "dđ") hoặc ra chuỗi phím gốc; Telex của Apple (marked text) đúng. Gạch chân ra chữ đúng nhưng Return ngay sau từ gạch chân bị Ghostty nuốt, cả với Telex của Apple: mục 6.8. Terminal của Claude (xterm.js) theo mã cũng không thay theo vùng thay, chưa đo.
+- **Sublime Text:** thay tại chỗ đúng, cả D20 sau ⌫ và sau ← (đo 11/11/2026); gạch chân không thêm dấu được cho từ đã chốt, như Telex của Apple: mục 6.8.
+- **Phạm vi đã thử:** 12 trong 42 dòng của mục 3 có số đo (nhiều dòng mới chỉ ở 30 ms); phần còn lại làm ở M6 (Hiệu năng dưới tải): mục 7.
 
 ## 1. Mục đích
 
@@ -83,13 +85,13 @@ Cách ghi công nghệ ở mục 3:
 | Soạn mã | VS Code | `com.microsoft.VSCode` | có (1.144.0) | Electron | bất đồng bộ (đã đo, mục 6.2) |
 | Soạn mã | Cursor | `com.todesktop.230313mzl4w4u92` | có (3.24.12) | Electron (bản dựng từ VS Code) | như VS Code |
 | Soạn mã | Zed | `dev.zed.Zed` | có (1.23.2) | tự vẽ bằng Metal (GPUI, Rust), vỏ AppKit | chưa biết; tự cài đặt phía nhập liệu |
-| Soạn mã | Sublime Text | `com.sublimetext.4` | có (Build 4215) | tự vẽ, vỏ Cocoa/AppKit | chưa biết (M2 chỉ có số đo gõ tay) |
+| Soạn mã | Sublime Text | `com.sublimetext.4` | có (Build 4215) | tự vẽ, vỏ Cocoa/AppKit | thay tại chỗ đúng, cả thêm dấu cho từ đã gõ (D20) sau ⌫ và sau ← (đo 11/11/2026, 120 ms); gạch chân không thêm dấu được cho từ đã chốt (mục 6.8) |
 | Soạn mã | JetBrains IDE | `com.jetbrains.WebStorm`; khác: `com.jetbrains.intellij`, `com.jetbrains.intellij.ce`, `com.jetbrains.pycharm`, `com.jetbrains.goland`, `com.google.android.studio` | WebStorm có (2026.2.3, `~/Applications`); các ID khác không | Java (JetBrains Runtime, có thư mục `jbr`) | chưa biết; nhập liệu qua lớp Java |
 | Soạn mã | Xcode | `com.apple.dt.Xcode` | có (27.1) | AppKit, trình soạn mã riêng | chưa biết; có gợi ý hoàn thành mã |
 | Terminal | Terminal | `com.apple.Terminal` | có (2.15) | AppKit, chờ shell in lại chữ | bất đồng bộ (đã đo, mục 6.2) |
 | Terminal | iTerm2 | `com.googlecode.iterm2` | không | AppKit (suy luận) | như Terminal (suy luận) |
 | Terminal | Warp | `dev.warp.Warp-Stable` | không | tự vẽ bằng Metal, Rust (suy luận) | chưa biết |
-| Terminal | Ghostty | `com.mitchellh.ghostty` | có (1.4.0) | AppKit + SwiftUI, vẽ bằng Metal | không thay theo `replacementRange`: chữ thay bị gửi thêm vào sau; vị trí con trỏ báo luôn là 0 (đọc mã Ghostty 1.4.0, 10/11/2026; chưa đo trên máy). Người dùng báo gõ rất tệ |
+| Terminal | Ghostty | `com.mitchellh.ghostty` | có (1.4.0) | AppKit + SwiftUI, vẽ bằng Metal | không thay theo `replacementRange`: chữ thay bị gửi thêm vào sau; vị trí con trỏ báo luôn là 0 (đọc mã Ghostty 1.4.0; đo 11/11/2026: `dd` → "dđ", `vieetj` ra chuỗi phím gốc, `selectedRange` luôn `{0,0}`). Gạch chân: chữ đúng, Return ngay sau từ gạch chân bị nuốt (mục 6.8) |
 | Chat | Zalo | `com.vng.zalo` | có (26.10.10) | Electron | như VS Code (suy luận) |
 | Chat | Messenger | web (`messenger.com`, `facebook.com`) | web | trình duyệt | theo trình duyệt. Meta đã ngừng app Messenger cho Mac từ 15/12/2025 và chuyển người dùng sang web ([TechCrunch](https://techcrunch.com/2025/10/16/meta-to-shut-down-messenger-desktop-apps-for-mac-and-windows/), [AppleInsider](https://appleinsider.com/articles/25/12/15/facebook-messenger-for-macos-departs-the-desktop)); ID cũ `com.facebook.archon` không có trên máy |
 | Chat | Telegram | `ru.keepcoder.Telegram` | có (13.1.0) | AppKit, Swift (bản "Telegram for macOS") | thấp (lượt thử M2 đúng ở 30 ms) |
@@ -240,13 +242,13 @@ Nguồn của các cột:
 | VS Code | 29/10/2026; Backspace, lượt đo gạch chân, lượt đo D20 30/10/2026 | script | đúng | **sai**; 5 ms sai. 10 ms: M2 (29/10/2026) sai ("ôoi"), lượt đo gạch chân sau đó (30/10/2026, câu mẫu đã đổi) đúng; từ 20 ms đúng. Gạch chân 0 và 5 ms: **đúng** (lượt đo gạch chân) | — | không / không ở 30 ms | Backspace **SAI** ở cbb8179 ("h", 30 ms); đã sửa: ĐẠT ("hò" ở 120 ms và chạy lại ở 30 ms, mục 6.4) | ĐẠT (lượt đo D20, 120 ms) | — | 230 / 885 | 0 / — (ở 30 ms) | có; bỏ nhãn đề xuất 10/11/2026 (14/15 lượt đúng ở 5–20 ms sau sửa M6; trước đó sai ở 0 và 5 ms) | PROGRESS "Số đo" 29/10, 30/10; `docs/history/LOG-M0-M4.md` nhật ký chẩn đoán 29/10 và nhật ký 30/10 (lượt đo gạch chân) |
 | Cursor | 10/11/2026 | script (`typing/run.sh`: `cursor`, `cursoragents`; Cursor 3.29.15, nền VS Code 1.128.0) | — | không đo ở 0 ms (không là tiêu chí). Phím dồn, nhịp danh nghĩa, sau các lần sửa ở M6: trình soạn thảo 20 ms chuỗi std đúng; 5 ms **sai**; ca "anh ddi" ở 20 ms **sai**; 100 ms đúng. Ô nhập Agents đúng ở 5, 20, 100 ms | — | — / gạch chân đúng ở 5 ms | — | — | — | — | — | Đề xuất (giữ nhãn) | PROGRESS nhật ký M6, 10/11/2026 (các mục Cursor) |
 | Zed | chưa thử | | | | | | | | | | | | |
-| Sublime Text | 29/10/2026 | gõ tay | — | — | có số đo; kết quả chữ không được ghi | — | — | — | — | 334 / 3.718 (gõ tay, n=35, sơ bộ) | — | chưa đủ dữ liệu | PROGRESS "Số đo" 29/10; DECISIONS mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính" (selectedRange 17% thời gian phím) |
+| Sublime Text | 29/10/2026; 11/11/2026 | gõ tay; script 11/11 (`scripts/research/terminal-underline/run.sh`, 120 ms) | — | — | có số đo; kết quả chữ không được ghi | — | — | ĐẠT thay tại chỗ (sau ⌫ và sau ←, 11/11/2026); gạch chân: không (mục 6.8) | — | 334 / 3.718 (gõ tay, n=35, sơ bộ) | — | chưa đủ dữ liệu | PROGRESS "Số đo" 29/10; DECISIONS mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính" (selectedRange 17% thời gian phím) |
 | JetBrains IDE | chưa thử | | | | | | | | | | | | |
 | Xcode | chưa thử | | | | | | | | | | | | |
 | Terminal | 29/10/2026; lượt đo gạch chân, lượt đo D20 30/10/2026 | script | đúng | **sai**; 5 và 10 ms đúng. Gạch chân 0 ms: **vẫn sai** (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau); gạch chân 5–30 ms đúng (lượt đo gạch chân) | — | không / không ở 30 ms | — | ra "hocj…" (lượt đo D20: ⌫ không tới bộ gõ, mục 6.5) | — | 408 / 637 | 0 / — (ở 30 ms) | không đề xuất (D13: gạch chân không sửa được ở 0 ms) | PROGRESS "Số đo" 29/10, 30/10; `docs/history/LOG-M0-M4.md` nhật ký 30/10 (lượt đo gạch chân, lượt đo D20) |
 | iTerm2 | chưa thử | | | | | | | | | | | | |
 | Warp | chưa thử | | | | | | | | | | | | |
-| Ghostty | chưa thử | | | | | | | | | | | | |
+| Ghostty | 11/11/2026 | script (1.4.0, `scripts/research/terminal-underline/run.sh`, 120 ms, dấu nhắc của trình sửa dòng zsh) | — | — | — | gạch chân: chữ đúng, Return sau từ gạch chân bị nuốt | — | — | — | — | — | không giúp (Return bị nuốt); chờ chọn hướng sửa | mục 6.8; PROGRESS nhật ký 11/11. Thay tại chỗ 120 ms: **sai** (`dd` → "dđ", `toois` → "toôis", `vieetj` → "vieetj"), `selectedRange` luôn `{0,0}` |
 | Zalo | chưa thử | | | | | | | | | | | | |
 | Messenger (web) | chưa thử | | | | | | | | | | | | |
 | Telegram | 30/10/2026 | System Events, 30 ms, Saved Messages, không gửi | đúng (câu mẫu cũ) | — | — | không / không | — | — | — | 240 / 1.670 | 0 / 0 | chưa thấy lỗi | PROGRESS "Số đo" 30/10; `docs/history/M2-TESTING.md` mục 2. `insertText` p50 1.830 / p99 3.491 µs; cả phím có thay p50 2.171 / p99 5.313 µs; replace 12, pass 34. `docs/history/M2-TESTING.md` mục 4 dòng 3 (Return ngay sau từ) bỏ qua vì không gửi tin |
@@ -321,7 +323,7 @@ Ghi chú về TextEdit (backspace, click reset, mũi tên reset):
 
 - Hiện tượng: Chrome, VS Code, Terminal đúng khi phím cách nhau từ 20 ms, nhưng sai khi phím đến dồn.
   - Ngưỡng sai: dưới khoảng 10 ms ở Chrome, Terminal; dưới khoảng 20 ms ở VS Code (số đo 29/10/2026; lượt đo gạch chân ngày 30/10/2026 với câu mẫu mới cho VS Code đúng từ 10 ms).
-  - Các app này áp phím bất đồng bộ (Chromium/Electron; Terminal chờ shell in lại chữ), nên `selectedRange` trả ảnh chụp cũ; bộ gõ thấy lệch (`mismatch`), reset từ đang gõ, chữ ra thiếu dấu hoặc thay nhầm vùng.
+  - Các app này áp phím bất đồng bộ (Chromium/Electron; Terminal chờ shell in lại chữ), nên `selectedRange` trả ảnh chụp cũ; bộ gõ thấy lệch (`mismatch`), reset từ đang gõ, chữ ra thiếu dấu hoặc thay nhầm vùng. Ghostty khác: không thay theo vùng thay dù app đã áp phím (mục 6.8).
   - Ảnh chụp không cập nhật trong lúc `handle` đang chạy (hỏi lại 10 lần, cách 2 ms, vẫn y nguyên).
 - Ví dụ lượt tự gõ đầu tiên ngày 29/10: VS Code ra "arroi yeu tiengs Vietj, ?indows Suni c", Terminal ra "tôi yêu tiêngs Viêtj, windows Sủnise car".
 - Không phải do thiếu quyền Trợ năng (bộ gõ không có quyền đó mà vẫn đúng ở 20 ms trở lên).
@@ -394,6 +396,14 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
   - `CursorUIViewService` giữ ảnh cũ trong bộ nhớ đệm và bỏ qua SIGTERM: máy đã cài bản cũ thấy V sau khi đăng xuất, hoặc `killall -9 CursorUIViewService` (dịch vụ tự chạy lại).
 - Không thử (không cần sau khi tìm ra nguyên nhân): ảnh PDF, `TISIconLabels` cấp bundle, nhãn bản địa hoá. Chuyển sang IMK extension (`.appex`) có lẽ cũng không cho nhãn chữ, vì bảng nhãn khoá theo ID của Apple (suy luận, chưa thử).
 
+### 6.8 Ghostty bỏ qua vùng thay; gạch chân không sửa được từ đã chốt — ghi ngày 11/11/2026
+
+- Cơ chế (đọc mã) và các hướng sửa: `docs/research/TERMINAL-AND-UNDERLINE.md`; số đo: nhật ký `docs/PROGRESS.md` ngày 11/11; chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`.
+- Ghostty 1.4.0 không thay chữ theo `replacementRange` và báo `selectedRange` là `{0,0}`. Đây không phải app áp phím bất đồng bộ (mục 6.2): hỏi lại bao lâu cũng không đúng. Thay tại chỗ sai ở 120 ms; Telex của Apple (marked text) đúng.
+- Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple; lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
+- Gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không có D20 (Thêm dấu cho từ đã gõ), theo D20 mục Phạm vi: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"). Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
+- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay.
+
 ## 7. Còn mở
 
 - Phần còn lại của ma trận làm tiếp ở M6 (Hiệu năng dưới tải; người dùng chốt 30/10/2026):
@@ -407,5 +417,5 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
   - Notes không đề xuất (đúng ở 0 ms).
   - Chrome, Firefox, VS Code bỏ nhãn ngày 10/11/2026 (mục "Hiện trạng").
 - Đã xong: tiêu chí đưa một ứng dụng vào danh sách gạch chân đã chốt ở D13 (mục 1): chỉ đề xuất; thay tại chỗ chỉ sai dưới 10 ms.
-- `scripts/selftest/typing/run.sh` biết 11 ứng dụng (thêm Edge, Firefox, Notes, Mail ở lượt chạy ma trận; Cursor ngày 10/11/2026, hai chỗ gõ `cursor` và `cursoragents`, cùng đối chứng `vscodefile`; Sublime Text và Ghostty ngày 11/11/2026, chưa chạy thật). Với Ghostty, script đọc hai thứ: dòng mà trình sửa dòng của zsh giữ lại (như ở dấu nhắc) và chuỗi byte Ghostty gửi xuống terminal. Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
+- `scripts/selftest/typing/run.sh` biết 11 ứng dụng (thêm Edge, Firefox, Notes, Mail ở lượt chạy ma trận; Cursor ngày 10/11/2026, hai chỗ gõ `cursor` và `cursoragents`, cùng đối chứng `vscodefile`; Sublime Text và Ghostty ngày 10/11/2026, chạy thật lần đầu 11/11/2026). Với Ghostty, script đọc hai thứ: dòng mà trình sửa dòng của zsh giữ lại (như ở dấu nhắc) và chuỗi byte Ghostty gửi xuống terminal. Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
 - Pages có hai bundle ID trên cùng máy (`com.apple.Pages` và `com.apple.iWork.Pages`); Numbers, Keynote bản mới đổi ID (`com.apple.Numbers`, `com.apple.Keynote`). Nếu các app này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

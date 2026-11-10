@@ -216,7 +216,7 @@ dau/
   - chuỗi sai độ dài, không có chữ, từ có chữ số mà `seed` không nhận, có vùng chọn: không seed, phím xử lý như phím đầu của từ mới.
 - Chỉ xét chữ trước con trỏ: con trỏ giữa từ ("hoc|tap" + `j`) thì chỉ phần trước con trỏ đổi ("họctap").
 - Vì sao chờ 50 ms (`InPlaceComposer.settleInterval`):
-  - app áp phím bất đồng bộ (Chromium, Electron, terminal) trả `selectedRange`/chữ từ ảnh chụp cũ khi phím dồn (số đo: D13, N3);
+  - app áp phím bất đồng bộ (Chromium, Electron, Terminal của Apple; Ghostty khác: bỏ qua vùng thay, `docs/COMPATIBILITY.md` mục 6.8) trả `selectedRange`/chữ từ ảnh chụp cũ khi phím dồn (số đo: D13, N3);
   - chữ đọc từ ảnh chụp cũ có thể bị thay sai chỗ.
   - Không chờ (`settleInterval` = 0) không làm hỏng chữ ở các app đã thử; số đo ở bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`, dòng "D20 không chờ" (mục Phạm vi của D20, ý chờ 50 ms).
   - Vẫn giữ 50 ms làm biên an toàn vì người quay lại sửa từ không gõ nhanh như vậy.

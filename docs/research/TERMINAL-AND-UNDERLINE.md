@@ -1,15 +1,14 @@
 # Gõ trong terminal (Ghostty, terminal của Claude) và sửa chữ ở chế độ gạch chân
 
-Nghiên cứu đọc mã để tìm vì sao (1) chế độ gạch chân kém khi sửa chữ đã gõ và (2) thay tại chỗ hỏng trong Ghostty và trong terminal của ứng dụng Claude desktop. Mục đích là để phiên chính dựng được một lượt gõ thử ít ô phân biệt các giả thuyết.
+Nghiên cứu đọc mã để tìm vì sao (1) chế độ gạch chân kém khi sửa chữ đã gõ và (2) thay tại chỗ hỏng trong Ghostty và trong terminal của ứng dụng Claude desktop. Mục đích là để phiên chính dựng được một lượt gõ thử ít ô phân biệt các giả thuyết; lượt đó đã chạy ngày 11/11/2026 cho Ghostty và Sublime Text (mục Hiện trạng).
 
-## Hiện trạng (10/11/2026)
+## Hiện trạng (11/11/2026)
 
-- **Mọi dự đoán ở đây là đọc mã, chưa đo trên máy.** Không có lượt gõ thử nào; chữ "dự đoán" ở các bảng là kết quả truy theo mã nguồn.
-- **Phản hồi 2 (thay tại chỗ trong terminal):** Ghostty và terminal của Claude không thay chữ theo `replacementRange`, khác Terminal của Apple; đây không phải lỗi "app trả lời chậm" mà Dấu đã xử lý ở M6. Hai app hỏng theo hai kiểu khác nhau (mục 3), nên một lượt ít ô phân biệt được.
-  - Ghostty: chữ thay bị nối thêm vào sau ("dd" → "dđ") khi Dấu tưởng app chậm, còn lại ra nguyên chuỗi phím.
-  - Terminal của Claude (xterm.js): ra nguyên chuỗi phím với chữ thường.
-- **Phản hồi 1 (gạch chân):** phần lớn do D20 (Thêm dấu cho từ đã gõ) bị tắt ở chế độ gạch chân theo chính D20 (mục Phạm vi). Đã xác nhận sau báo cáo đầu: phản hồi này đến từ Sublime Text (`com.sublimetext.4`) đang bật gạch chân; triệu chứng là không thêm hay sửa dấu được cho từ đã gõ, khớp giả thuyết H1a (mục 6). Riêng Ghostty, gạch chân còn làm mất Return/Tab/Esc ngay sau một từ đang gạch chân (lỗi của Ghostty).
-- Việc tiếp theo: lượt gõ thử ở mục 6, rồi chọn hướng sửa ở mục 7 (mỗi hướng đụng một quyết định).
+- **Đã đo Ghostty và Sublime Text** (lượt gõ thử 11/11/2026, một lượt mỗi ô, 120 ms giữa hai phím, có đối chứng Telex của Apple; chuỗi phím và đáp án trong `scripts/research/terminal-underline/run.sh`, số đo ở nhật ký `docs/PROGRESS.md` ngày 11/11). Mọi ô đã đo khớp dự đoán đọc mã ở mục 3, 4, 6. **Terminal của Claude chưa đo** (không tự động hoá được); các dòng về xterm.js vẫn là đọc mã.
+- **Phản hồi 2 (thay tại chỗ trong terminal), Ghostty:** đã đo. Ghostty báo `selectedRange` là `{0,0}` ở mọi lần hỏi và không thay theo `replacementRange`: `dd` → "dđ", `toois` → "toôis" (Dấu tưởng app chậm, chữ thay bị nối thêm), `vieetj` → "vieetj" (Dấu thấy lệch, ra chuỗi phím gốc). Telex của Apple (marked text) đúng ở cả ba ô. Đây không phải lỗi "app trả lời chậm" mà Dấu đã xử lý ở M6.
+- **Phản hồi 1 (gạch chân), Sublime Text:** đã đo. Gạch chân không sửa được dấu cho từ đã chốt (⌫ về từ cũ, ← vào giữa từ), đúng H1a; Telex của Apple cũng vậy (H1d). Thay tại chỗ trong Sublime sửa được cả ba ca (D20 (Thêm dấu cho từ đã gõ) chạy), nên tắt gạch chân cho Sublime là đủ; không quyết định nào phải đổi.
+- **Gạch chân ở Ghostty:** chữ đúng, nhưng Return ngay sau từ gạch chân bị nuốt (H1b), cả với Telex của Apple: lỗi của Ghostty.
+- Việc tiếp theo: người dùng chọn hướng sửa cho Ghostty và terminal xterm.js ở mục 7 (mỗi hướng đụng một quyết định).
 
 ## Nhãn nguồn và bản đã đọc
 
@@ -61,7 +60,7 @@ Theo [Mã Dấu] `InPlaceComposer`, `CursorTracker`:
 
 ## 3. Dự đoán theo chuỗi phím (thay tại chỗ)
 
-Gõ ở dấu nhắc zsh, ngay sau Return.
+Gõ ở dấu nhắc zsh, ngay sau Return. Đã đo 11/11/2026 ở 120 ms: cột "Ghostty, nhịp ≥ 50 ms" đúng ở `dd`, `toois`, `vieetj`; cột Terminal của Claude chưa đo.
 
 | Phím | Ghostty, nhịp ≥ 50 ms | Ghostty, phím dồn < 50 ms | Terminal của Claude | Terminal của Apple |
 |---|---|---|---|---|
@@ -76,7 +75,7 @@ Gõ ở dấu nhắc zsh, ngay sau Return.
 
 ## 4. Chế độ gạch chân: thao tác sửa
 
-Theo [Mã Dấu] `MarkedComposer`. Telex của Apple ở các ca này: không tìm thấy nguồn, phải đo cùng ô.
+Theo [Mã Dấu] `MarkedComposer`. Telex của Apple ở các ca ⌫ về từ đã chốt và ← vào giữa từ: cũng không sửa được (đo 11/11/2026, Sublime Text).
 
 | Thao tác | Dấu làm gì | Người dùng thấy | Vì sao "tệ" |
 |---|---|---|---|
@@ -87,7 +86,7 @@ Theo [Mã Dấu] `MarkedComposer`. Telex của Apple ở các ca này: không t�
 | D4 khôi phục | Từ hiện dạng Telex dở khi đang gạch chân ("ưindows"), chốt mới về "windows" | Chữ gạch chân lạ rồi đổi | Như thay tại chỗ |
 | Return, Tab, Esc, ⌃C khi đang gạch chân | `insertText` từ, trả false | Phần lớn app đúng; **Ghostty nuốt phím** | Lỗi của Ghostty (mục 1) |
 
-Quan sát đã xác nhận (10/11/2026, theo phản hồi khi dùng hằng ngày, chưa đo bằng script): ở Sublime Text bật gạch chân, không thêm hay sửa dấu được cho từ đã gõ. Khớp hai dòng "⌫ khi không còn gạch chân" và "Mũi tên, bấm chuột giữa từ". Sublime Text là app tự vẽ chữ; nó trả được vị trí con trỏ (đã đo chi phí `selectedRange` ở M2, mục "Câu hỏi đã trả lời" của `docs/DECISIONS.md`), nhưng thay tại chỗ có D20 trong Sublime chưa đo.
+Đã đo (11/11/2026, Sublime Text, `tooisf ba ⌫j tooi←s`): gạch chân ra "tồi baj tôsi", đúng hai dòng "⌫ khi không còn gạch chân" và "Mũi tên, bấm chuột giữa từ"; Telex của Apple ra cùng chữ; thay tại chỗ (có D20) ra "tồi bạ tối", đúng cả ba ca. Sublime Text là app tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ trước con trỏ.
 
 ## 5. Bộ gõ khác
 
@@ -102,17 +101,17 @@ Quan sát đã xác nhận (10/11/2026, theo phản hồi khi dùng hằng ngày
 Gõ ở dấu nhắc zsh (không chạy Claude Code), nhịp ≥ 100 ms; đối chứng Telex của Apple cùng ô, chuyển nguồn bằng phím tắt hệ thống.
 
 Phản hồi 2 (thay tại chỗ trong terminal):
-- **H2a** app bỏ qua `replacementRange`, trả `{0,0}`, Dấu tưởng app chậm và thay "thành công": Ghostty `dd` → "dđ", `toois` → "toôis"; Claude `dd` → "dd".
-- **H2b** Dấu thấy lệch, reset, phím đi thẳng: ra đúng chuỗi phím (`toois` → "toois") ở cả hai. Theo mã H2a và H2b cùng xảy ra; ô `dd`/`toois` sau Return thấy H2a, ô `vieetj` thấy H2b.
+- **H2a** app bỏ qua `replacementRange`, trả `{0,0}`, Dấu tưởng app chậm và thay "thành công": Ghostty `dd` → "dđ", `toois` → "toôis"; Claude `dd` → "dd". **Đã đo ở Ghostty:** đúng (nhật ký `kind=late`, `sel=0,0`).
+- **H2b** Dấu thấy lệch, reset, phím đi thẳng: ra đúng chuỗi phím (`toois` → "toois") ở cả hai. Theo mã H2a và H2b cùng xảy ra; ô `dd`/`toois` sau Return thấy H2a, ô `vieetj` thấy H2b. **Đã đo ở Ghostty:** `vieetj` → "vieetj" (`kind=mismatch`); `toois` có cả hai (late rồi mismatch).
 - **H2c** (Claude) `keydown` của xterm gửi phím gốc dù Dấu nuốt phím: `w` → "w" ở Claude, "ư" ở Ghostty; `W` → "Ư" ở cả hai.
 - **H2d** lỗi do chương trình bên trong (Claude Code) chứ không do Dấu: zsh đúng mà Claude Code sai. Theo mã zsh cũng sai; kiểm bằng cùng chuỗi ở zsh và trong `claude`.
 - **H2e** Ghostty còn vùng bôi đen bằng chuột: mọi phím thay đều nối thêm chữ. Ghostty mặc định bỏ bôi đen khi gõ (`selection-clear-on-typing`), nên chỉ ảnh hưởng phím đầu.
 
 Phản hồi 1 (gạch chân):
-- **H1a** thiếu D20 ở gạch chân. Đã khớp với quan sát ở Sublime Text (mục 4). Ô phân biệt: `ba` ␣ ⌫ `j` ␣ và `tooi` ← `s`, gạch chân và thay tại chỗ: dự đoán "baj ", "tôsi" và "bạ ", "tối".
-- **H1b** app nuốt phím sau khi chốt: gạch chân ở Ghostty, `ls` Return: hiện "ls", lệnh chưa chạy; Telex của Apple cùng ô cũng bị (lỗi của Ghostty).
+- **H1a** thiếu D20 ở gạch chân. **Đã đo ở Sublime Text:** đúng (mục 4). Ô phân biệt: `ba` ␣ ⌫ `j` ␣ và `tooi` ← `s`, gạch chân và thay tại chỗ: dự đoán "baj ", "tôsi" và "bạ ", "tối".
+- **H1b** app nuốt phím sau khi chốt: gạch chân ở Ghostty, từ rồi Return: Return không tới chương trình. **Đã đo:** đúng, cả với Telex của Apple (`toois vieetj` ↩, byte gửi không có Return), lỗi của Ghostty.
 - **H1c** app vẽ marked text sai (Terminal ở 0 ms): chỉ thấy khi phím dồn, không ưu tiên.
-- **H1d** khác Telex của Apple ở ⌫ quay về từ đã chốt: không có nguồn; ô `ba` ␣ ⌫ `j` với Telex của Apple trả lời.
+- **H1d** khác Telex của Apple ở ⌫ quay về từ đã chốt: **Đã đo:** không khác: Telex của Apple cũng không sửa được từ đã chốt (Sublime Text, mục 4).
 
 ## 7. Hướng sửa có thể
 
@@ -121,12 +120,12 @@ Mỗi hướng ghi quyết định nó đụng tới; không hướng nào đã 
 - **H2a–H2c, hướng 2:** tự dùng marked text cho client không thay theo `replacementRange` (nhận ra qua `selectedRange` đứng yên ở 0 dù Dấu đã gõ). Đụng D13 và D5 (Quy tắc theo ứng dụng). Ở xterm.js đây là đường duy nhất chạy được; ở Ghostty dính H1b.
 - **H2a, hướng 3 (Ghostty):** gửi lệnh xoá dưới dạng ký tự DEL 0x7F trong chuỗi `insertText`. Thực chất là Backspace giả ở tầng pty; mục "Đã cân nhắc và loại bỏ" của `docs/DECISIONS.md` đã loại "event tap + Backspace giả". Hỏng trong vim, giao diện TUI; ở xterm.js chưa rõ [Suy luận, cần kiểm chứng].
 - **H2, hướng 4:** không sửa; ghi Ghostty và terminal xterm.js là không tương thích với thay tại chỗ trong `docs/COMPATIBILITY.md` và danh sách tương thích, theo N5 (Chỉ hứa điều đã kiểm chứng).
-- **H1a:** cho D20 chạy ở gạch chân: đọc từ trước con trỏ (sau 50 ms như D20) rồi `setMarkedText(…, replacementRange: vùng của từ)` để đánh dấu lại từ đó. Đụng D20 (mục Phạm vi), N3 (Ít lời gọi vào ứng dụng đích) và D13. Nhớ từ vừa chốt thay vì đọc thì đụng câu "Không giữ lịch sử từ" của D20. Không dùng được ở Ghostty (`setMarkedText` bỏ qua `replacementRange`). Với Sublime Text, hướng khác không đụng quyết định: đo thay tại chỗ (có D20) trong Sublime; nếu đúng thì tắt gạch chân cho app đó là đủ.
+- **H1a:** cho D20 chạy ở gạch chân: đọc từ trước con trỏ (sau 50 ms như D20) rồi `setMarkedText(…, replacementRange: vùng của từ)` để đánh dấu lại từ đó. Đụng D20 (mục Phạm vi), N3 (Ít lời gọi vào ứng dụng đích) và D13. Nhớ từ vừa chốt thay vì đọc thì đụng câu "Không giữ lịch sử từ" của D20. Không dùng được ở Ghostty (`setMarkedText` bỏ qua `replacementRange`). Với Sublime Text, hướng khác không đụng quyết định và đã đo đúng: thay tại chỗ (có D20) trong Sublime sửa được cả ba ca, nên tắt gạch chân cho app đó là đủ.
 - **H1b:** chỉ có cách vòng theo từng app (ví dụ chốt kèm "\r"), đụng D5 và D13; hoặc báo lỗi cho Ghostty (PR #15048 có cách sửa, đóng chưa merge).
 
 ## 8. Chỗ lệch với tài liệu và quyết định
 
-- `docs/COMPATIBILITY.md` mục 3, hàng Ghostty ghi "như Terminal (suy luận)": theo mã là sai (Ghostty bỏ qua `replacementRange` và trả `{0,0}`; Terminal thay đúng và không chuyển ⌫). Câu khái quát "app áp phím bất đồng bộ (Chromium, Electron, terminal)" ở `docs/ARCHITECTURE.md` và `docs/COMPATIBILITY.md` mục 6.2 không đúng với Ghostty và xterm.js: đây là bỏ qua vùng thay, không phải trả lời chậm. Chưa sửa ở hai file đó.
+- `docs/COMPATIBILITY.md` mục 3, hàng Ghostty ghi "như Terminal (suy luận)": sai (Ghostty bỏ qua `replacementRange` và trả `{0,0}`, đã đo; Terminal thay đúng và không chuyển ⌫). Câu khái quát "app áp phím bất đồng bộ (Chromium, Electron, terminal)" ở `docs/ARCHITECTURE.md` và `docs/COMPATIBILITY.md` mục 6.2 không đúng với Ghostty và xterm.js: đây là bỏ qua vùng thay, không phải trả lời chậm. Đã sửa ngày 11/11/2026 (hai file đó và `docs/COMPATIBILITY.md` mục 6.8).
 - D11, trường hợp "Không chứng minh được, ở lần thay đầu của một từ… vẫn thay ở vị trí Dấu theo dõi", cộng với việc D20 neo ở vị trí app trả, gây nhân đôi chữ với app trả `{0,0}`; D11 không xét ca này.
 - Phản hồi 1 phần lớn là do D20 (mục Phạm vi) cố ý tắt D20 ở gạch chân.
 - D13 coi gõ sai ở một app là lỗi của Dấu cần sửa và gạch chân chỉ là đường lui; với Ghostty và terminal xterm.js, thay tại chỗ không có đường sửa nào trong IMK mà không đụng một quyết định khác (mục 7).
