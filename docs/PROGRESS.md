@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: giờ chạy lượt đo phím dồn (Chrome, VS Code, Firefox ở 5, 10, 20 ms; hồi quy Chrome trang bận; chiếm màn hình, khoảng 12 phút).
+Chờ người dùng: duyệt câu chữ D11 (Kiểm tra ngữ cảnh) theo mã 50b67ec (phiên chính soạn). Việc tiếp theo: sửa ca từ đầu tiên của tài liệu mới trong VS Code; bỏ nhãn "Đề xuất" của Chrome và Firefox theo D13 (Gạch chân là đường lui cuối cùng).
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -197,3 +197,10 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Mô phỏng (client giả theo mã nguồn Chromium, VS Code, Firefox; thời gian xử lý của app là số chọn để bản cũ sai đúng như M3, không phải số đo; 40 seed × 2 chuỗi): 5, 10, 20 ms 0 sai ở cả ba mô hình (bản cũ: VS Code, Firefox sai ở 5 ms); 0 ms: Chrome 0 sai, VS Code và Firefox còn sai 30/40 với chuỗi std.
   - Câu chữ của D11 ("phím trước cách ít nhất 50 ms", "tối đa 2 chữ", "Phím dồn dưới 50 ms: chưa áp dụng") và câu tương ứng trong "Câu hỏi đã trả lời" chưa khớp mã mới; đề xuất sửa cùng kết quả đo thật.
   - Kiểm: test IMK 133 đạt (phiên chính chạy lại), build Debug và Release, check-docs. Chưa đo trên app thật.
+- 10/11/2026 — M6: đo phím dồn sau 50b67ec (người dùng cho chạy; máy nhà, 06:58–07:04; Dấu Debug; chuỗi std; app rảnh; log `build/load/fast-20261110-065810/`, không commit) — phiên chính.
+  - `--delay 5` và `--delay 10` cho khoảng cách thật gần như nhau: phần lớn phím 10–20 ms, chỉ 0–7 phím mỗi lượt dưới 10 ms (System Events tốn ~10 ms mỗi phím). Nên "5 ms" ở đây (và ở M3, cùng script) là nhịp danh nghĩa; nhịp thật dưới 10 ms chưa đo được bằng script này.
+  - Chrome: 5 và 10 ms 6/6 đúng, 20 ms 1/1; trang bận 100 ± 30 ms (chuỗi edit, hồi quy vì vùng thay không còn cắt) 3/3 đúng. Ở trang rảnh không có lần app chậm nào (`late` 0).
+  - Firefox: 5 và 10 ms 6/6 đúng, 20 ms 1/1 (M3: sai ở 5 ms danh nghĩa). Không có lần `late` nào, nên cái sửa được là vùng thay luôn kết thúc ở vị trí Dấu theo dõi (Firefox đưa con trỏ về cuối vùng thay).
+  - VS Code: 7/9 đúng, 20 ms 1/1. Hai lượt sai cùng một chỗ: từ đầu tiên của tài liệu mới, "Chieeuf" ra "êhieuf": ở lần thay đầu, VS Code mới áp "C" (`sel` 1, `known` 4, chậm 3 thao tác, ngoài `lateLimit`) và đầu văn bản không có chữ nào của app để chứng minh, nên Dấu tin `selectedRange`. Các từ sau đúng.
+  - Telex của Apple, 5 ms: Chrome và Firefox ra nguyên chuỗi phím (hiện tượng đã thấy ở 1b, nguyên nhân chưa rõ); VS Code ra chữ của Apple nhưng mất "h" của từ đầu ("Ciều") và "mêting".
+  - Dọn: không còn cửa sổ thử ở Chrome, VS Code, Firefox; nguồn trả về Dấu; không còn khoá `defaults` có chữ `Dau`; đã cài lại bản Release 50b67ec; giữ log cho việc sửa VS Code.
