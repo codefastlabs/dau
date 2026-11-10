@@ -28,13 +28,12 @@
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
-#                     the verdict still compares with --expect. Before the test keys, a
-#                     probe word confirms in the focused field that this source handles
-#                     the keys there (confirm_source); if not, the run stops (status 4).
-#   --confirm         the same switch and probe in the focused field when typing with Dấu, so
-#                     that Dấu and a --source run are measured the same way. Off by default:
-#                     the probe leaves a document that is no longer new (the first word of a
-#                     new document is a case of its own).
+#                     the verdict still compares with --expect. The switch to this source
+#                     is made with macOS's own "Select next source in Input menu" shortcut
+#                     once the field has the focus; text that comes back as the keys typed
+#                     means the source did not take: an invalid cell (status 4).
+#   --system-switch   switch to Dấu the same way (system shortcut) instead of selecting it
+#                     from this script, so that Dấu and a --source run are measured alike.
 #   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
 #                     and +MS (never below 0), drawn per key: closer to a human than an
 #                     even pace. With --delay 0 the keys still go one by one.
@@ -112,7 +111,7 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
-CONFIRM=0
+SYSTEM_SWITCH=0
 SOURCE_ID=""
 SAVE_DIR=""
 JITTER_MS=0
@@ -127,7 +126,7 @@ while [[ $# -gt 0 ]]; do
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
-    --confirm) CONFIRM=1; shift ;;
+    --system-switch) SYSTEM_SWITCH=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
@@ -356,7 +355,7 @@ cycle_to_source() { # process [window-title-substring]
     for n in 1 2 3 4 5 6 7 8 9 10; do
       guarded "$1" "${2:-}" "tell application \"System Events\" to key code $key using {$using}" >/dev/null || return 1
       # Fixed: the switch, and the system's source switcher going away, are not readable.
-      sleep 0.8
+      sleep 0.5
       is_current_source "$DAU_SOURCE" && { sleep 0.5; return 0; }
     done
     log_warn "Phím tắt chuyển nguồn của macOS không đưa tới $DAU_SOURCE sau 10 lần nhấn"
@@ -370,53 +369,16 @@ cycle_to_source() { # process [window-title-substring]
   sleep 1
 }
 
-# With --source, or --confirm for Dấu: confirms, in the focused field itself, that the
-# chosen input method is the one handling keys there, before the test keys are typed.
-# What macOS reports as the current source (select_dau) is not enough: a source selected
-# from this script's process can be current, and shown in the menu bar, while the field
-# still gets the keys untransformed (docs/PROGRESS.md, 10/11/2026). So the switch is made
-# with the system shortcut (cycle_to_source), as the user makes it, and then the probe
-# types a short word, reads the field back and empties it.
-# The probe word is "ân " (Telex aan, VNI a6n, then a space):
-# - a real Vietnamese word: Dấu puts back the keys of a word that is not Vietnamese when
-#   the word ends (D4), so a lone "â" comes back as "aa " with Dấu working as designed;
-# - ended by a space: an input method that composes with marked text (Apple's) only
-#   commits there, and ⌘A ⌘C does not copy text that is still being composed;
-# - one key at a time, at a human pace: keys in one keystroke command arrive about 1 ms
-#   apart, which is itself a condition under test.
-# Not there after three tries: the run stops with status 4, so a cell typed with the wrong
-# input method is never reported as a result. --confirm is off by default for Dấu: the
-# probe leaves a document that is no longer new (the first word of a new document is a
-# case of its own). Not used in Terminal (no read-back by copy).
-confirm_source() { # process [window-title-substring]
-  [[ ( -n "$SOURCE_ID" || $CONFIRM == 1 ) && "$1" != Terminal ]] || return 0
-  local probe try got c keys=""
-  case "$SOURCE_ID" in
-    *Telex*|"") probe=aan ;;  # "": Dấu with --confirm, its keys here are Telex
-    *VNI*) probe=a6n ;;
-    *) log_warn "Không có phím thử cho nguồn $SOURCE_ID: không xác nhận được bộ gõ trong ô gõ"; return 0 ;;
-  esac
-  for c in ${(s::)probe}; do keys+="keystroke \"$c\"
-      delay 0.15
-      "; done
-  for try in 1 2 3; do
-    cycle_to_source "$1" "${2:-}" || return 1
-    guarded "$1" "${2:-}" "tell application \"System Events\"
-      ${keys}keystroke space
-    end tell" >/dev/null || return 1
-    sleep 0.3
-    got="$(copy_all "$1" "${2:-}")" || return 1
-    guarded "$1" "${2:-}" 'tell application "System Events" to key code 51' >/dev/null || return 1
-    sleep 0.3
-    if [[ "${got%% }" == "ân" ]]; then
-      log_detail "bộ gõ trong ô gõ: đã xác nhận $DAU_SOURCE (lần thử $try)" >&2
-      return 0
-    fi
-    log_warn "Ô gõ chưa dùng $DAU_SOURCE (phím thử \"$probe\" ra \"$got\"), chuyển nguồn lại (lần $try)"
-  done
-  log_error "Dừng: $DAU_SOURCE được chọn nhưng không có tác dụng trong ô gõ — không gõ chuỗi thử"
-  echo source > "$STOP_FILE"
-  return 1
+# With --source, or --system-switch for Dấu: after the field has the focus, the switch to
+# the wanted source is made with the system shortcut (cycle_to_source), as the user makes
+# it. A source selected from this script's process (select_dau) can be current, and shown
+# in the menu bar, while the focused field still gets the keys untransformed
+# (docs/PROGRESS.md, 10/11/2026). No probe is typed: with the shortcut the field followed
+# in every measured cell, and a --source cell whose text comes back as the keys typed is
+# reported as an invalid cell (status 4) by the verdict below. Not used in Terminal.
+switch_in_field() { # process [window-title-substring]
+  [[ ( -n "$SOURCE_ID" || $SYSTEM_SWITCH == 1 ) && "$1" != Terminal ]] || return 0
+  cycle_to_source "$1" "${2:-}"
 }
 
 type_keys() { # process [window-title-substring]
@@ -424,7 +386,7 @@ type_keys() { # process [window-title-substring]
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  confirm_source "$1" "${2:-}" || return 1
+  switch_in_field "$1" "${2:-}" || return 1
   if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" <<'OSA'
 on run argv
   set s to item 1 of argv
@@ -851,6 +813,11 @@ for app in "${APPS[@]}"; do
       () { local LC_ALL=en_US.UTF-8; capitalized="${(U)EXPECT_TRIMMED[1]}${EXPECT_TRIMMED[2,-1]}" }
       [[ "$got_trimmed" == "$capitalized" ]] && { ok=1; log_detail "(chữ đầu viết hoa do app tự viết hoa, không tính lỗi)"; }
     fi
+  fi
+  # A control source that did not take: the text is the keys as typed. Not a result.
+  if [[ -n "$SOURCE_ID" && "$got_trimmed" == "$(printf '%s' "$KEYS" | trim_right)" && "$KEYS" != "$EXPECT" ]]; then
+    log_error "Ô không hợp lệ: $app ra nguyên chuỗi phím, $SOURCE_ID không có tác dụng trong ô gõ"
+    echo source > "$STOP_FILE"; break
   fi
   if [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
   "$LOG" show --start "$start" --style compact \
