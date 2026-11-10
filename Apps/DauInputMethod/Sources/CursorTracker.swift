@@ -231,6 +231,14 @@ struct CursorTracker: Equatable {
     /// (`burst`); past `lateLimit`, the text the app gave before those edits must also be
     /// the text this composer typed there (`tail`), over at least two units, or the edits
     /// must start the document in one burst with this key (`typedHere`).
+    ///
+    /// Past `lateLimit` an edit that removes text this composer does not know fails too
+    /// (a replacement made at the app's answer, away from the followed position, starts
+    /// `tail` over): replayed, it fits any text and writes this composer's own text over
+    /// it, so the comparison with `tail` would compare `tail` with itself. That took an
+    /// app that was on time for a late one where positions count from the start of the
+    /// word being typed (Cursor's editor, M6 runs of 10/11/2026: the answer was the
+    /// caret the previous replacement had in its own word; "uoongs" gave "uongs").
     func rebuild(_ snapshot: [UInt16], at selection: NSRange,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
         let end = selection.location
@@ -247,7 +255,8 @@ struct CursorTracker: Equatable {
                 forms.append(Array(snapshot.dropLast(units.count)))
             }
             for before in forms {
-                guard let text = replay(before, endingAt: first.cursor, last: m, requireDeletedText: requireDeletedText),
+                guard let text = replay(before, endingAt: first.cursor, last: m,
+                                        requireDeletedText: requireDeletedText || m > Self.lateLimit),
                       first.cursor - before.count + text.count == known else { continue }
                 if m > Self.lateLimit,
                    !typedHere(text, before: before.count, fromStart: first.cursor == before.count) { continue }

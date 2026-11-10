@@ -17,6 +17,8 @@ struct AppModel: CustomStringConvertible {
     /// Now and then the app stops for a while (garbage collection, layout, a busy
     /// page): chance per edit and milliseconds.
     var stall: (chance: Double, ms: Double) = (0, 0)
+    /// Where the app counts positions from (`LateDocument.Origin`).
+    var origin = LateDocument.Origin.document
     var description: String { name }
 
     /// Chromium text field: browser-side cache, caret kept after a replaced range.
@@ -62,6 +64,7 @@ struct RapidSession {
         if let model {
             doc.cache = model.cache
             doc.replace = model.replace
+            doc.origin = model.origin
             doc.clock = 0
             doc.reportDelay = 0.0003
             var rng = SplitMix(seed &* 7919 &+ 17)
@@ -136,6 +139,8 @@ struct RapidKeysTests {
         var behind: Int
         var overCalls: Int
         var badRanges: Int
+        /// Ranges the app dropped (`LateDocument.dropped`, word origin only).
+        var dropped: Int
         var text: String
         var reference: String
         var kinds: [PerfLog.Kind]
@@ -152,7 +157,7 @@ struct RapidKeysTests {
         var s = RapidSession(model, seed: seed, startStall: startStall)
         s.type(keyRoutes, at: times)
         return Run(ok: s.doc.text == reference.doc.text, behind: s.doc.maxBehind, overCalls: s.overCalls,
-                   badRanges: s.doc.badRanges, text: s.doc.text, reference: reference.doc.text,
+                   badRanges: s.doc.badRanges, dropped: s.doc.dropped, text: s.doc.text, reference: reference.doc.text,
                    kinds: s.kinds, reads: s.reads, slowest: s.slowest)
     }
 

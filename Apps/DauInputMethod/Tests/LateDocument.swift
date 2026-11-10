@@ -46,6 +46,37 @@ final class LateDocument: InPlaceClient {
         case caretAfterText
     }
 
+    /// Where the positions the app answers with, and the ranges it takes, count from.
+    enum Origin {
+        /// The start of the document.
+        case document
+        /// The start of the word being typed (Cursor's editor, runs of 10/11/2026 in
+        /// `docs/PROGRESS.md`: at 100 ms between keys `selectedRange` was the number of
+        /// letters of the word at every replacement, 0-based again after each space,
+        /// also after a replacement whose text ends with a space; VS Code and Cursor's
+        /// Agents input count from the start of the document).
+        ///
+        /// Measured, from the positions and texts of those logs: the answers; that a
+        /// range starting past the text the app holds is dropped ("uo", range 4,1: the
+        /// text stayed "uo"; `dropped`); that a range starting right at its end inserts
+        /// there ("ve", range 2,1 with "ê" gave "veê"); that the page applies a range in
+        /// the coordinates it has when it gets to it ("co", range 0,1 sent while the
+        /// page had not applied "c", "o" gave "óo"); that the caret stays after the text
+        /// that follows a replaced range ("óo rảnh", "èttlix": the keys after went to the
+        /// end of the word; `Replace.keepSelection`, not the EditContext behaviour read
+        /// in Chromium's source for VS Code).
+        ///
+        /// Assumed, not measured: every character that is not a letter or a digit
+        /// starts a new word for the app, not only the space; a range that starts
+        /// inside the text and ends past it is cut at its end; text read past the
+        /// held text gives nothing; after ⌫ past the start of the word the app holds
+        /// the word before the caret; the cache between the page and the input method
+        /// is Chromium's (`Cache.chromium`), which fits the stale answers of the logs
+        /// (the caret of the previous word plus one, or 1 right after a space) but not
+        /// all of them ("ve" answered 3 once).
+        case word
+    }
+
     struct State {
         var text: [UInt16]
         var cursor: Int
@@ -53,10 +84,13 @@ final class LateDocument: InPlaceClient {
         var atCaret: [UInt16]? = nil
         /// When the app has applied this edit and told the input method's side about it.
         var reportAt: TimeInterval = -.infinity
+        /// Where the text the app holds starts (`Origin.word`; 0 otherwise).
+        var window = 0
     }
     private(set) var states: [State]
     var cache = Cache.snapshot
     var replace = Replace.keepSelection
+    var origin = Origin.document
     /// Edits the answers are behind by (when `clock` is nil).
     var lag = 0
     /// Timed answers: the latest state reported at or before `clock`.
@@ -74,6 +108,9 @@ final class LateDocument: InPlaceClient {
     var selections = 0, reads = 0, inserts = 0
     /// An `insertText` whose range is outside the real text (never expected).
     var badRanges = 0
+    /// An `insertText` whose range starts past the text the app holds (`Origin.word`):
+    /// the app drops it.
+    private(set) var dropped = 0
     /// The largest number of edits an answer was behind (timed answers).
     private(set) var maxBehind = 0
 
@@ -95,6 +132,12 @@ final class LateDocument: InPlaceClient {
             index = max(0, last - lag)
         }
         var state = states[index]
+        if origin == .word {
+            // The page reports the text it holds and the caret inside it.
+            state.text.removeFirst(min(state.window, state.text.count))
+            state.cursor -= state.window
+            state.window = 0
+        }
         if cache == .chromium, index < last {
             let caret = state.cursor
             var latest: [UInt16]?
@@ -123,8 +166,19 @@ final class LateDocument: InPlaceClient {
     func insertText(_ string: String, replacementRange: NSRange) {
         inserts += 1
         var state = states[states.count - 1]
-        let range = replacementRange.location == NSNotFound
+        var range = replacementRange.location == NSNotFound
             ? NSRange(location: state.cursor, length: 0) : replacementRange
+        if origin == .word, replacementRange.location != NSNotFound {
+            // The range counts from the start of the text the page holds when it applies it.
+            let held = state.text.count - state.window
+            guard range.location >= 0, range.length >= 0, range.location <= held else {
+                dropped += 1
+                state.atCaret = nil
+                append(state)   // nothing changes; the answers stay one state per edit
+                return
+            }
+            range = NSRange(location: state.window + range.location, length: min(range.length, held - range.location))
+        }
         guard range.location >= 0, range.location + range.length <= state.text.count else {
             badRanges += 1
             return
@@ -141,17 +195,33 @@ final class LateDocument: InPlaceClient {
             state.cursor += units.count - range.length
         }
         state.atCaret = replacementRange.location == NSNotFound ? units : nil
+        // Text that ends a word: the app holds a new, empty word from the caret on.
+        if let unit = units.last, !Self.isWordUnit(unit) { state.window = state.cursor }
         append(state)
     }
 
     private func append(_ state: State) {
         var state = state
+        if origin == .document {
+            state.window = 0
+        } else if state.cursor < state.window {
+            // The caret went back past the start of the held text: the word before it.
+            var start = min(state.cursor, state.text.count)
+            while start > 0, Self.isWordUnit(state.text[start - 1]) { start -= 1 }
+            state.window = start
+        }
         if clock != nil {
             let applied = max(sentAt, lastApplied) + work()
             lastApplied = applied
             state.reportAt = applied + reportDelay
         }
         states.append(state)
+    }
+
+    /// A letter or a digit (the units of a word, as `InPlaceComposer.trailingWord`).
+    private static func isWordUnit(_ unit: UInt16) -> Bool {
+        guard let scalar = Unicode.Scalar(unit) else { return false }
+        return CharacterSet.alphanumerics.contains(scalar)
     }
 
     /// An edit the app makes on its own (autocorrect, smart dashes): the new state.
