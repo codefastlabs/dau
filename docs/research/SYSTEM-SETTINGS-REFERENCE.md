@@ -1,17 +1,17 @@
-## Hiện trạng (09/11/2026)
+## Hiện trạng (10/11/2026)
 
 - **Chuẩn đối chiếu (đo 02/11/2026, macOS 27.2 build 26B123):** khi mockup và macOS khác nhau về bố cục, khoảng cách, cỡ chữ hay hình dáng control thì theo System Settings; mockup chỉ quy định nội dung (D9 (Giao diện)). Số đo ở các mục "Cửa sổ, thanh công cụ, tiêu đề", "Sidebar", "Cột chi tiết: Form dạng nhóm", "Hàng trong thẻ".
 - **Mặc định SwiftUI khớp phần lớn số đo:** danh sách ở mục "Mặc định SwiftUI đã khớp".
 - **Không khớp hoặc cần đặt tay (02/11/2026):**
-  - Sidebar: mặc định 144, System Settings 232; đặt `navigationSplitViewColumnWidth(232)` thì mọi số sidebar trùng.
+  - Sidebar: mặc định 144, System Settings 232; trên SwiftUI thuần đặt `navigationSplitViewColumnWidth(232)` thì mọi số sidebar trùng. Dấu hiện dùng `NSSplitViewController` của chính app với sidebar cố định 232 (D9 (Giao diện), từ 06/11/2026).
   - Lề trên form: 20 so với 12; Dấu giữ 20 (D9: không đè thông số hệ thống).
   - Thẻ của `Form(.grouped)` tối đa 704 pt (mục "Độ rộng tối đa của Form dạng nhóm").
   - Hàng chỉ có `Text` cao 36 so với 37,5; nút trong hàng chỉ có nút: SwiftUI căn trái, System Settings căn phải.
   - Chi tiết và việc đã giải quyết ở mục "Cần chỉnh / không khớp".
-- **Sheet (đo 02/11/2026, sửa 03/11/2026 cho khớp mã):** nút trên `toolbar` cho đúng thanh nút của System Settings, thẻ `Form(.grouped)` cho đúng lề và khoảng cách thẻ; `List` trong `Form(.grouped)` bị tắt cuộn nên danh sách đặt trong `GroupBox`. Chi tiết ở mục "Sheet". Chiều cao thẻ danh sách (188) lấy từ mockup, giữ hay đổi là câu hỏi mở cho người dùng.
+- **Sheet (đo 02/11/2026, sửa 03/11/2026 cho khớp mã):** nút trên `toolbar` cho đúng thanh nút của System Settings, thẻ `Form(.grouped)` cho đúng lề và khoảng cách thẻ; `List` trong `Form(.grouped)` bị tắt cuộn nên danh sách đặt trong `GroupBox`. Chi tiết ở mục "Sheet". Chiều cao thẻ danh sách (188) lấy từ mockup, không có số System Settings tương ứng; đã chốt giữ 188 (mục "Sheet").
 - **Icon ứng dụng trong hàng (02/11/2026):** khung 32 cho hàng có dòng phụ, 24 cho hàng một dòng kèm control; mục "Icon ứng dụng trong hàng".
 - **Nút mở/thu kiểu "Nâng cao" (02/11/2026):** System Settings không có hàng mở/thu nào trong 13 pane đã rà; `DisclosureGroup` trong Form lệch cách vẽ hàng và không mở được qua Accessibility API, nên giữ nút + chevron; D9 đã ghi đúng lý do này. Mục "Nút mở/thu kiểu 'Nâng cao'".
-- **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) chưa đo trên cửa sổ thật. Mục "Cần chỉnh / không khớp".
+- **Cụm Lùi/Tiến và sidebar cố định (05/11 và 06/11/2026):** `ControlGroup` với `.controlGroupStyle(.navigation)` giữ thanh 52 và tiêu đề hệ thống 15 đậm (đo 05/11/2026). Sidebar của System Settings cố định độ rộng (đo 05/11/2026); sidebar cố định của Dấu (từ 06/11/2026) đã kiểm trên cửa sổ thật bằng `scripts/selftest/settings-window/run.sh` (trang `sidebar-fixed`, `docs/UI-CHECKS.md` mục "Sidebar kéo thu lại được"; lượt đạt 06/11/2026 ở `docs/history/LOG-M5-M6.md`). Mục "Cần chỉnh / không khớp".
 - **Cửa sổ System Settings cố định độ rộng 740, chỉ đổi được chiều cao (đo 09/11/2026):** mục "Cửa sổ có đổi rộng được không". Cửa sổ Cài đặt của Dấu làm theo: rộng cố định 740, chỉ đổi chiều cao (từ 09/11/2026).
 - Tài liệu Apple không công bố các số 704, 20, 12, 37,5; mọi số trong file là số đo trên máy, có thể đổi theo phiên bản macOS (mục "Nguồn API").
 
@@ -48,8 +48,8 @@ Lưu ý khi đọc số: máy đo đang hiện thanh cuộn kiểu cũ (luôn hi
 
 | Thông số | System Settings | SwiftUI mặc định | Ghi chú |
 |---|---|---|---|
-| Độ rộng cột | 232 (đường chia 0.5 ở x 231.5) | **144** | Không khớp: phải đặt `navigationSplitViewColumnWidth(232)`. Đặt 232 thì mọi số bên dưới trùng System Settings. |
-| Ô tìm kiếm | x 10, y 61, 212 × 28, dạng viên thuốc | Không có; với `.searchable(placement: .sidebar)`: x 10, y 61, 212 × 28 (cột 232) | Khớp khi dùng `.searchable(placement: .sidebar)`. Danh sách bắt đầu ở y 98 (không có ô tìm: y 52). |
+| Độ rộng cột | 232 (đường chia 0.5 ở x 231.5) | **144** | Không khớp ở SwiftUI thuần: phải đặt `navigationSplitViewColumnWidth(232)` (Dấu hiện đặt 232 cố định bằng split view của chính app, D9). Đặt 232 thì mọi số bên dưới trùng System Settings. |
+| Ô tìm kiếm | x 10, y 61, 212 × 28, dạng viên thuốc | Không có; với `.searchable(placement: .sidebar)`: x 10, y 61, 212 × 28 (cột 232) | Khớp khi dùng `.searchable(placement: .sidebar)` trên `NavigationSplitView` (bản đo 02/11/2026); Dấu hiện dùng `NSSearchField` cỡ lớn (D9), lệch System Settings 1–2 pt. Danh sách bắt đầu ở y 98 (không có ô tìm: y 52). |
 | Chiều cao hàng | 32 | 32 | Khớp. |
 | Vùng chọn | Đúng khung ô: x 10, rộng = cột − 20, cao 32 | x 10 → cột − 10, cao 32 | Khớp (System Settings đo được x 10..205 vì thanh cuộn chiếm chỗ; không có thanh cuộn thì suy ra 10..222, cần kiểm chứng). |
 | Bán kính góc vùng chọn | ≈ 7 (khớp đường tròn theo pixel) | Trùng từng pixel với System Settings | Khớp. |
@@ -202,7 +202,7 @@ Kết luận:
 ### Mặc định SwiftUI đã khớp
 
 - Thanh công cụ cao 52; tiêu đề trang 15 đậm.
-- Sidebar: hàng 32, vùng chọn lề 10 và góc ≈ 7, ô icon 20 ở x 19, chữ 13 ở x ≈ 46, khoảng giữa nhóm 13. Ô tìm 212 × 28 ở (10, 61) khi dùng `.searchable(placement: .sidebar)`.
+- Sidebar: hàng 32, vùng chọn lề 10 và góc ≈ 7, ô icon 20 ở x 19, chữ 13 ở x ≈ 46, khoảng giữa nhóm 13. Ô tìm 212 × 28 ở (10, 61) khi dùng `.searchable(placement: .sidebar)` (SwiftUI thuần, 02/11/2026).
 - Form dạng nhóm: lề thẻ 20, góc thẻ ≈ 11, màu thẻ và nền, tiêu đề nhóm (13 semibold, lề 10, cách thẻ 10, cách thẻ trước 30), lề trong hàng 10, đường phân cách 1 thụt 10.
 - Chiều cao hàng: nhãn + công tắc/pop-up 37.5, nhãn + dòng phụ 55.5, nhãn + nút 40, hàng chỉ có nút 44.
 - Control: công tắc 36 × 16, pop-up/nút/segmented cao 24, cùng hình dáng.
@@ -211,26 +211,26 @@ Kết luận:
 ### Cần chỉnh / không khớp
 
 Đã giải quyết trong app (02/11/2026, d446a09):
-- sidebar 232 + ô tìm `.searchable(.sidebar)`;
+- sidebar 232 + ô tìm `.searchable(.sidebar)` (bản 02/11/2026; từ 06/11/2026 sidebar cố định bằng `NSSplitViewController` và ô tìm `NSSearchField` của app, D9);
 - lề trên giữ 20 (D9: không đè thông số hệ thống);
 - nút sidebar bị gỡ như System Settings;
-- cửa sổ rộng cố định 740 như System Settings, nên thẻ không bao giờ chạm giới hạn 704;
+- thẻ không chạm giới hạn 704 (cửa sổ rộng cố định 740 như System Settings có từ 09/11/2026, mục "Cửa sổ có đổi rộng được không");
 - nút trong hàng chỉ có nút căn phải.
 
 Từ 05/11/2026 thanh công cụ có cụm Lùi/Tiến như System Settings nên tiêu đề hệ thống giữ 15 đậm (trước đó là `PageTitle` tự vẽ).
 
 Chi tiết từng mục:
 
-- **Độ rộng sidebar**: mặc định 144, System Settings 232. Mặc định làm cụt chữ "Cập nhật & hỗ trợ". Cách gần nhất: `navigationSplitViewColumnWidth(232)`; đặt rồi thì mọi số đo sidebar và lề form trùng System Settings.
-- **Ô tìm ở sidebar**: mặc định không có; dùng `.searchable(placement: .sidebar)` là ra đúng khung của System Settings.
+- **Độ rộng sidebar**: mặc định 144, System Settings 232. Mặc định làm cụt chữ "Cập nhật & hỗ trợ". Cách ở SwiftUI thuần: `navigationSplitViewColumnWidth(232)`; đặt rồi thì mọi số đo sidebar và lề form trùng System Settings.
+- **Ô tìm ở sidebar**: mặc định không có; `.searchable(placement: .sidebar)` trên `NavigationSplitView` ra đúng khung của System Settings. Dấu không còn dùng `NavigationSplitView` (D9) nên dùng `NSSearchField` cỡ lớn, lệch 1–2 pt.
 - **Lề trên form**: 20 so với 12. Chưa tìm được cách giảm bằng API công khai (`contentMargins` chỉ cộng thêm). Dấu giữ 20 theo D9 (không chỉnh thông số hệ thống); muốn khớp 12 thì phải đổi D9, việc của người dùng.
 - **Nút trên thanh công cụ**: SwiftUI tự thêm nút ẩn/hiện sidebar; System Settings có Lùi/Tiến thay vào đó.
   - Bỏ nút bằng `.toolbar(removing: .sidebarToggle)` làm thanh công cụ co từ 52 xuống 32 và tiêu đề trang thành chữ tiêu đề cửa sổ; muốn giữ thanh 52 thì để nguyên nút.
   - Đã giải quyết (05/11/2026): cụm Lùi/Tiến bằng `ControlGroup { … }.controlGroupStyle(.navigation)` ở `.navigation` giữ thanh 52 và tiêu đề hệ thống 15 đậm.
   - Đo trên Dấu (`run.sh` 05/11/2026): nút Lùi 239.5,8 36×36, Tiến 275.5,8 37×36, khung tiêu đề x 316.5 (1x: 317).
-  - System Settings đo cùng ngày: 240,8 36×36 và 276,8 37×36, vạch ngăn x 276, nét tiêu đề từ x 326.
+  - System Settings đo cùng ngày: 240,8 36×36 và 276,8 37×36, vạch ngăn x 276, nét tiêu đề từ x 324 (≈ 326 là số của app thử, `scripts/selftest/settings-window/Reference.swift`).
   - Sidebar của System Settings (05/11/2026): kéo đường chia 200 pt sang hai bên và bấm đúp không đổi độ rộng, không thu được, con trỏ là mũi tên.
-  - Sidebar của Dấu (từ 06/11/2026, D9): cố định bằng `NSSplitViewController` của app, chưa đo trên cửa sổ thật (đo trên app thử: `docs/research/SWIFTUI-WINDOW-API.md` mục 10).
+  - Sidebar của Dấu (từ 06/11/2026, D9): cố định bằng `NSSplitViewController` của app, đã kiểm trên cửa sổ thật bằng `run.sh` (trang `sidebar-fixed`, `docs/UI-CHECKS.md`; lượt đạt 06/11/2026, `docs/history/LOG-M5-M6.md`); đo trên app thử: `docs/research/SWIFTUI-WINDOW-API.md` mục 10.
 - **Hàng chỉ có `Text`**: cao 36, không phải 37.5 như hàng nhãn + control (System Settings không có hàng nhãn trơn để so).
 - **Hàng chỉ có nút**: SwiftUI căn nút trái; System Settings căn nút phải.
 - **Form rộng**: thẻ không quá 704; cửa sổ rộng cố định 740 nên không ảnh hưởng.

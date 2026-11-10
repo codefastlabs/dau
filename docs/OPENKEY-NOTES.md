@@ -3,7 +3,7 @@
 Tài liệu tham khảo cho M1 (Engine). Viết bằng lời của Dấu, **không chép mã**.
 Theo D10 (Engine tự viết), OpenKey chỉ là tài liệu tham khảo: mọi kết quả mong đợi trong test viết theo chính tả tiếng Việt và `DECISIONS.md`, không lấy từ việc chạy OpenKey.
 
-## Hiện trạng (cập nhật 05/11/2026)
+## Hiện trạng (cập nhật 10/11/2026)
 
 Nguồn và cách đọc:
 
@@ -18,7 +18,7 @@ Kết luận hiện hành về chỗ Dấu khác OpenKey (đã chốt 29/10/2026
 
 - Ranh giới từ: khôi phục và gõ tắt phụ âm chạy ở mọi ký tự kết thúc từ có in ra, theo D4 (Từ nước ngoài) và D21 (Gõ tắt phụ âm); OpenKey không khôi phục với `!`, `(`, `)`. Xem 3.16, B10, mục 7 (điểm "Ranh giới từ").
 - Thêm dấu cho từ đã gõ: OpenKey không có; Dấu làm theo D20 (Thêm dấu cho từ đã gõ), cho cả phím dấu thanh lẫn phím biến đổi. Xem 3.17, 6.8.
-- Gõ đúp: D26 (Gõ đúp phím dấu), sau gõ đúp phím đi thẳng tới hết từ, kể cả sau Backspace. Đo 05/11/2026 so với OpenKey và XKey ở mục 8; 3.3 đã sửa theo đó (khoá sau gõ đúp và Backspace).
+- Gõ đúp: D26 (Gõ đúp phím dấu), sau gõ đúp phím đi thẳng tới hết từ, kể cả sau Backspace. Đối chiếu 05/11/2026 với OpenKey (bằng đọc mã) và XKey ở mục 8; 3.3 đã sửa theo đó (khoá sau gõ đúp và Backspace).
 - Bỏ dấu tự do: D28 (Bỏ dấu tự do), nghĩa khác biến `vFreeMark` của OpenKey. Xem 3.7.
 - Telex đơn giản: D29 (Telex đơn giản) theo Simple Telex 1 nhưng bỏ w → qu. Xem 3.5.
 - Kiểm tra chính tả: luôn chạy (D30 (Kiểm tra chính tả)); âm tiết hợp lệ định nghĩa theo D31 (Âm tiết tiếng Việt hợp lệ). Xem 3.8, 6.7.
@@ -86,7 +86,7 @@ Kết luận hiện hành về chỗ Dấu khác OpenKey (đã chốt 29/10/2026
 | 24 | Phím `[` → ơ, `]` → ư (chỉ Telex) | Không làm; `[ ]` luôn là dấu câu, kết thúc từ | D27 |
 | 25 | Lịch sử từ: Backspace qua dấu cách để sửa tiếp từ trước | Không làm; trường hợp này do D20 phủ | D20, D32 |
 | 26 | "Thêm dấu cho từ đã gõ" (đọc chữ trong ứng dụng) | OpenKey **không có**. Dấu làm, cho cả phím dấu thanh lẫn phím biến đổi | D11, D20 |
-| 27 | Giới hạn độ dài từ (OpenKey: bộ đệm 32 phần tử, dịch trái khi tràn) | Từ dài hơn 7 chữ cái thì ngừng biến đổi; bộ đệm dung lượng cố định | D33 |
+| 27 | Giới hạn độ dài từ (OpenKey: bộ đệm 32 phần tử, dịch trái khi tràn) | Từ dài hơn 7 chữ cái thì khôi phục ngay về chuỗi phím đã gõ và các phím sau đi thẳng (chỉ ngừng biến đổi khi tắt công tắc tự khôi phục); bộ đệm dung lượng cố định | D33 |
 | 28 | Backspace trong từ | Bỏ chữ cuối, đặt lại dấu; mốc khôi phục là chữ đang hiển thị | D32 |
 
 ---
@@ -161,7 +161,7 @@ Các phím được xử lý (`IS_SPECIALKEY` trong `DataType.h`): `a e o w d s 
   - Sau gõ đúp, phím dấu đi thẳng tới hết từ ("carrs" → "cars").
   - Áp dụng cho cả phím biến đổi ("aaa" → "aa", "ddd" → "dd", "ww" → "w") và VNI ("a11" → "a1").
   - Ngoại lệ "ooo" → "oo" không khoá ("xooongf" → "xoòng").
-  - Khác OpenKey ở một điểm đã đo 05/11/2026: khoá giữ tới hết từ kể cả sau Backspace (mục 8).
+  - Khác OpenKey ở một điểm, đối chiếu bằng đọc mã 05/11/2026: khoá giữ tới hết từ kể cả sau Backspace (mục 8).
 
 ### 3.4 VNI
 
@@ -341,7 +341,7 @@ Xem B5, B6.
 - Bộ đệm giới hạn 32 phần tử. Quá giới hạn thì bộ đệm dịch trái và lưu phần đầu ra một danh sách phụ (`insertKey`, `_longWordHelper`). Bộ đệm phím gốc cũng dịch trái, nhưng theo nhịp riêng.
 - Khôi phục từ dài hơn 32 ký tự vì thế có thể sai (B15, suy luận).
 - **Dấu (đã chốt, D33):**
-  - từ dài hơn âm tiết dài nhất (7 chữ cái, như "nghiêng") thì ngừng biến đổi;
+  - từ dài hơn âm tiết dài nhất (7 chữ cái, như "nghiêng") thì khôi phục ngay về chuỗi phím đã gõ và các phím còn lại đi thẳng tới hết từ (khi tắt công tắc tự khôi phục thì chỉ ngừng biến đổi);
   - bộ đệm có dung lượng cố định, không cấp phát thêm;
   - ngưỡng tính theo chữ cái, không theo số phím.
 
@@ -624,7 +624,7 @@ Cột "Ghi chú" dẫn số quyết định khi kết quả do quyết định �
 | `ask␣`, `task␣`, `desk␣`, `hawk␣` | giữ nguyên | D31: âm cuối k không nhận sau a/e; "ăk" không dấu không hợp lệ | |
 | `karma␣`, `hawks␣`, `awkward␣` | `kẩm␣`, `hắk␣`, `akward␣` | hệ quả đã chấp nhận của D31 phương án d | |
 | `ghus␣` | `ghus␣` | gh chỉ đứng trước i, e, ê | **Khác (cố ý)** |
-| `aw␣` | `aw␣` | ă không đứng cuối âm tiết (D31) | **Khác (cố ý)**. OpenKey: "ă" |
+| `aw␣` | `ă␣` | chữ ă đứng một mình được giữ (D31 (Âm tiết tiếng Việt hợp lệ), ý "Chữ cái đứng một mình"); `traw␣` vẫn khôi phục vì ă không đứng cuối âm tiết | Giống OpenKey |
 | `pin␣` / `pins␣` | `pin␣` / `pín␣` | "p" đơn là phụ âm đầu hợp lệ (D31) | |
 
 ### 6.8 "Thêm dấu cho từ đã gõ" (D20; bộ đệm rỗng, chữ đọc từ ứng dụng)
@@ -647,7 +647,7 @@ Người dùng đã duyệt câu chữ DECISIONS cho các ca này (D4 mốc khô
 | `vieetj␣` | `việt␣` | D30 (tiền tố), D28 | |
 | `hocj␣` | `học␣` | D30 (tiền tố) | |
 | `trawngf␣` | `trằng␣` | D30 (tiền tố), D31 | |
-| `aw␣` | `aw␣` | D31 | trùng 6.7 |
+| `aw␣` | `ă␣` | D31 (chữ cái đứng một mình) | trùng 6.7 |
 | `carr␣` | `car␣` | D4, D26 | trùng 6.1 |
 | `tesst␣` | `test␣` | D4, D26 | trùng 6.1 |
 | `tesst` ⌫ `s` | `tess` | D26 (khoá giữ sau ⌫), D32 | "test" ⌫ → "tes"; "tes" không hợp lệ (s không là phụ âm cuối) nên `s` đi thẳng |
@@ -696,7 +696,7 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - (c) ă/â có bắt buộc phụ âm cuối không (`aw␣`);
   - (d) phụ âm đầu "p" đơn (pin, pa-tê) có hợp lệ không;
   - (e) danh sách vần hợp lệ. Đề xuất engine-dev lập bảng vần riêng theo chính tả, không chép bảng OpenKey (bảng đó có mục lạ như "ôô", "uao").
-  - **Đã chốt: D31.** Có "p"; áp phân bố c/k/q, g/gh, ng/ngh; bảng vần tự lập; vần tắc chỉ sắc/nặng, không dấu là sai; ă, â không đứng cuối.
+  - **Đã chốt: D31.** Có "p"; áp phân bố c/k/q, g/gh, ng/ngh; bảng vần tự lập; vần tắc chỉ sắc/nặng, không dấu là sai; ă, â không đứng cuối (trừ chữ đứng một mình, quyết định sau đó).
 - **Phạm vi "gõ đúp".** D4 nói "gõ đúp phím dấu theo chuẩn Telex". Chưa nói:
   - (a) ở VNI thì gõ đúp số có tương đương không (đề xuất có);
   - (b) sau khi gõ đúp, phần còn lại của từ có là chữ thường không ("carrs" → "cars");
@@ -737,7 +737,7 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - (d) có làm "lịch sử từ" qua Backspace như OpenKey không (3.17). Nếu có thì tránh B12.
   - **Đã chốt: D20 (chi tiết 29/10/2026).** (a) cả phím dấu thanh và phím biến đổi; (b) không tự thêm biến đổi, "viet" + j → "vietj"; (d) không làm lịch sử từ. (c) mốc khôi phục chưa ghi trực tiếp, suy ra từ D32 (xem 6.8).
 - **Độ dài từ tối đa.** Chưa có quyết định (3.15).
-  - **Đã chốt: D33.** Dài hơn 7 chữ cái thì ngừng biến đổi; bộ đệm cố định.
+  - **Đã chốt: D33.** Dài hơn 7 chữ cái thì khôi phục ngay về chuỗi phím đã gõ, phím còn lại đi thẳng (tắt công tắc tự khôi phục thì chỉ ngừng biến đổi); bộ đệm cố định.
 - **Quick Telex (cc → ch…)** không có trong DECISIONS. Đề xuất ghi vào "Đã cân nhắc và loại bỏ": phá từ tiếng Anh có phụ âm đôi, trùng mục đích với gõ tắt phụ âm.
   - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (Quick Telex); từ 04/11/2026 nằm ở mục "Đã biết nhưng không làm".**
 - **Phím `[` `]` ở Telex** không có trong DECISIONS. Đề xuất không làm hoặc chốt rõ: xung đột với gõ code/markdown, và "Telex đơn giản" theo đề xuất đã bỏ chúng.

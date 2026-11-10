@@ -1,9 +1,10 @@
 # Luồng chính của trang web bận bao lâu khi người dùng gõ
 
-## Hiện trạng (09/11/2026)
+## Hiện trạng (10/11/2026)
 
-Câu hỏi: trên các trang web người ta hay gõ, luồng chính của trang bận đủ lâu (từ khoảng 100 ms, bằng khoảng cách hai phím khi gõ bình thường) trong lúc gõ thường xuyên đến đâu? Lý do hỏi: đo ngày 09/11/2026 (`docs/PROGRESS.md`, nhật ký, đo lại riêng Chrome) cho thấy khi luồng chính của trang bận lâu hơn khoảng cách giữa hai phím, Chrome trả `selectedRange` cũ và thay tại chỗ sai; gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không bị.
+Câu hỏi: trên các trang web người ta hay gõ, luồng chính của trang bận đủ lâu (từ khoảng 100 ms, bằng khoảng cách hai phím khi gõ bình thường) trong lúc gõ thường xuyên đến đâu? Lý do hỏi ban đầu: đo ngày 09/11/2026 (`docs/PROGRESS.md`, nhật ký, đo lại riêng Chrome) cho thấy khi luồng chính của trang bận lâu hơn khoảng cách giữa hai phím, Chrome trả `selectedRange` cũ và thay tại chỗ sai; gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không bị.
 
+- **Lỗi đó đã sửa ngày 10/11/2026** (D11 (Kiểm tra ngữ cảnh), mục "Vì sao", ý "App trả lời chậm"): Dấu tự theo dõi vị trí con trỏ, nên trang bận đúng 3/3 lượt ở Chrome, Edge và Firefox (`docs/COMPATIBILITY.md`, mục "Hiện trạng"). Các số INP dưới đây chỉ còn là bối cảnh về độ bận của trang web, không còn là lý do của một lỗi chưa sửa.
 - **Dữ liệu dùng được:** số đo thật từ người dùng Chrome (CrUX), tháng 09/2026, bản desktop, theo origin, lấy qua trang công khai của Treo. Không có tài khoản, không đo trên máy ai.
 - **Dữ liệu CrUX không có mốc 100 ms.** Chỉ có ba nhóm: tốt (≤ 200 ms), cần cải thiện (200–500 ms), kém (> 500 ms), và p75. Tỉ lệ ở mốc 100 ms không lấy được từ nguồn công khai không cần tài khoản.
 - **Trên 17 origin có dữ liệu** (bảng ở mục 3): p75 INP từ 25 ms (vnexpress.net) đến 350 ms (chatgpt.com). Tỉ lệ lượt truy cập có INP trên 200 ms từ 2,7% (vnexpress.net) đến 45,6% (app.slack.com).
@@ -86,7 +87,7 @@ Những điều chưa biết hoặc chưa kiểm chứng:
 - Bản đo ở M6 dùng trang thử chặn 300 ms mỗi 1000 ms và phím cách đều 100 ms, một máy; số đó là điều kiện nặng có chủ ý, không phải tần suất thật.
 - Không biết lỗi của Dấu xảy ra bao nhiêu khi gõ thật trên các trang trong bảng.
 
-**Kết luận được phép:** rủi ro "luồng chính bận lâu hơn khoảng cách hai phím trong lúc gõ" tồn tại trên web thật: ở 9 trong 17 origin có dữ liệu, ít nhất 27% lượt truy cập có một tương tác chậm hơn 200 ms, và ngay ở origin có p75 tốt (claude.ai, notion.so, mail.google.com) vẫn có 16–17% lượt như vậy. Nó tập trung ở ứng dụng web nặng, ít ở trang đọc và tìm kiếm. **Chưa được phép nói:** "x% chữ sẽ sai", hay "web nào cũng/không sao".
+**Kết luận được phép:** ở 9 trong 17 origin có dữ liệu, ít nhất 27% lượt truy cập có một tương tác (không riêng gõ phím) có INP trên 200 ms, và ngay ở origin có p75 tốt (claude.ai, notion.so, mail.google.com) vẫn có 16–17% lượt như vậy; tập trung ở ứng dụng web nặng, ít ở trang đọc và tìm kiếm. Đó là bối cảnh: INP trên 200 ms không đồng nghĩa luồng chính bận lâu hơn khoảng cách hai phím, vì INP gồm cả độ trễ hiển thị và mọi loại tương tác, còn rủi ro của Dấu bắt đầu từ khoảng 100 ms (các giới hạn ở trên). Số này không nói luồng chính có bận trong lúc gõ hay không. **Chưa được phép nói:** "x% chữ sẽ sai", "luồng chính bận lâu hơn khoảng cách hai phím ở y% lượt gõ", hay "web nào cũng/không sao".
 
 ## 5. Nguồn
 

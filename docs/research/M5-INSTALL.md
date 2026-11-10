@@ -21,7 +21,7 @@ Mỗi khẳng định mang một nhãn. Chỗ không có nguồn ghi đúng "kh�
 | **[Ngoài]** | dự án hoặc diễn đàn khác: báo cáo, PR, README, hoặc mã nguồn của dự án đó (ghi "mã" nếu là mã) |
 | **[Máy/hệ thống]** | đọc file hệ thống hoặc nhật ký trên máy này; ghi lệnh hoặc ngày |
 | **[Máy/Dấu]** | đo bằng Dấu thật (nhật ký của `docs/PROGRESS.md` và `docs/history/LOG-M0-M4.md`, dẫn theo ngày) |
-| **[Máy/bản thử]** | đo bằng bản thử, **không phải Dấu**; chỉ nằm ở mục 8, không rút kết luận |
+| **[Máy/bản thử]** | đo bằng bản thử, **không phải Dấu**; nằm ở mục 8 và ở những điểm của mục 0 gắn đúng nhãn này; không rút kết luận về Dấu từ nhãn này |
 | **[Diễn giải mã máy]** | người nghiên cứu đọc mã máy hoặc mã nguồn dự án khác và tự diễn giải; không có tài liệu Apple xác nhận |
 | **[Suy luận, cần kiểm chứng]** | chưa ai đo |
 
@@ -29,14 +29,14 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 - 30/10: Squirrel 46962d2, McBopomofo 18e2060, vChewing 7c82f5f, macSKK 539cce3, fcitx5-macos 3466612, Gureum 46c62e5, XKey 398e78e, goxkey b197c57, OpenKey 89c2fd3.
 - 02/11 (`/tmp/dau-research/`): Squirrel d220b92, McBopomofo 257da53, vChewing-macOS 8c1bb72, macSKK c812585, Gureum 46c62e5, fcitx5-macos 3466612, XKey 398e78e.
 
-## 0. Hiện trạng (05/11/2026, macOS 27.2)
+## 0. Hiện trạng (10/11/2026, macOS 27.2)
 
 Kết luận hiện hành, mỗi dòng có ngày và mục chứa bằng chứng.
 Apple không có tài liệu công khai cho các hành vi này, nên mọi dòng có thể đổi theo từng bản macOS (mục 2.1).
 
 **Lần cài đầu và danh sách "+"**
-1. Bật lần đầu **không cần đăng xuất** để "+" thấy Dấu, nếu làm theo luồng D37 (Cài đặt bộ gõ): xoá bộ đệm `IntlDataCache.le*` của System Settings sau khi đăng ký, rồi bật; hộp thoại xin phép hiện, bấm "Allow".
-   - Đo 04/11/2026 bằng bản thử (mục 8.1b), rồi bằng Dấu thật trên tài khoản đã từng cài Dấu (mục 9.9).
+1. Bật lần đầu **không cần đăng xuất** để "+" thấy Dấu, nếu làm theo luồng D37 (Cài đặt bộ gõ): xoá `IntlDataCache.le*` trong mọi thư mục con của `DARWIN_USER_CACHE_DIR` (bộ đệm của System Settings và của từng app) ngay trước khi đăng ký, thoát System Settings, bật, rồi quét lại một lượt; hộp thoại xin phép hiện, bấm "Allow". Luồng này đo ở mục 9.11.
+   - Đo 04/11/2026 bằng bản thử (mục 8.1b), rồi bằng Dấu thật trên tài khoản đã từng cài Dấu: mục 9.9 là bản đầu (chỉ xoá bộ đệm của System Settings, sau khi đăng ký), mục 9.11 là luồng hiện hành.
    - Chưa đo: macOS 14–26, bản ký Developer ID, tài khoản macOS mới (kế hoạch ở mục 7 đã bỏ, người dùng chốt 04/11/2026). Mục 2.3, 10.1.
 2. Apple DTS (06/2026, FB23026482) nói không có cách tránh đăng xuất; lời này phù hợp với việc bộ đệm chỉ được dựng lại khi đăng nhập [Suy luận, cần kiểm chứng]. Mục 2.3.
 3. Các dự án khác: Squirrel, macSKK, Gureum, fcitx5-macos, XKey, AquaSKK báo phải đăng xuất; msime (macOS 27.0) đo thấy phải đăng xuất; marinaMoji (máy ảo sạch macOS 27.0.1) báo nguồn hiện ngay trong "+". [Ngoài] Mục 2.3, 2.4.
@@ -59,8 +59,8 @@ Apple không có tài liệu công khai cho các hành vi này, nên mọi dòng
     - Ghi `com.apple.inputsources` bị chính sách nền tảng của macOS chặn với mọi tiến trình thiếu entitlement riêng của Apple; trên máy này chỉ `KeyboardSettings` có entitlement đó, và bên thứ ba không xin được entitlement `com.apple.private.*` (Apple DTS). Đọc thì tiến trình nào cũng đọc được.
     - Arion (macOS 26.6.2) và msime (macOS 27) đo thấy như Dấu và chuyển sang bắt người dùng bấm "–" trước khi xoá bundle.
     - [Máy/Dấu, Apple, Ngoài, Máy/hệ thống] Mục 4, 4.1.
-12. Đường gỡ chính là hướng dẫn người dùng bấm "–", bundle còn nguyên cho tới khi mục cha biến mất. Nếu bundle đã bị xoá trước thì mục thành ẩn; cài lại đúng bundle ID rồi bấm "–" dọn được (bản thử, 04/11/2026). [Máy/bản thử] Mục 4.1, 8.1b.
-13. Khi Dấu đang được chọn, nút "–" vẫn bấm được và macOS tự chuyển sang U.S. (đo 04/11/2026 14:58 bằng Dấu thật). App vẫn chuyển bàn phím trước cho chắc. Mục 4, bước 1.
+12. Đường gỡ chính là hướng dẫn người dùng bấm "–", bundle còn nguyên cho tới khi mục cha biến mất. Nếu bundle đã bị xoá trước thì mục thành ẩn; cài lại đúng bundle ID rồi bấm "–" dọn được (chỉ đo bằng bản thử, 04/11/2026, chưa đo bằng Dấu thật). [Máy/bản thử] Mục 4.1, 8.1b.
+13. Khi Dấu đang được chọn, nút "–" vẫn bấm được và macOS tự chuyển sang U.S. (đo 04/11/2026 14:58 bằng Dấu thật). Vì vậy app không tự chuyển bàn phím (D16 (Bảo trì và gỡ cài đặt)); sheet chỉ nhắc chọn bàn phím khác khi nút "–" bị mờ, phòng bản macOS khác chưa đo. Mục 4, bước 1.
 
 **Cài app, nâng cấp, bộ gõ cũ**
 14. App chủ có sandbox không dùng được: file app tạo ra luôn bị quarantine và app không gỡ được, không dừng được app khác (Apple DTS, 2022 và 2026). D37 chọn app chủ không sandbox. [Apple] Mục 1.2, 1.3.
@@ -118,7 +118,7 @@ Các bộ gõ khác: XKey (tiếng Việt) có app chủ **không sandbox** tự
 - `input_method`: "Relative path to an Input Method that should be moved into the `~/Library/Input Methods` folder on installation".
   - `uninstall quit:` gửi Apple Event thoát. `signal:` chỉ dùng khi `quit` không có tác dụng. `zap` chỉ chạy khi gõ `--zap`. [Ngoài, Homebrew Cask Cookbook]
 - Cask đề xuất (tên cask chọn sau, D24 (Tên và định danh)): chỉ `app "Dấu.app"` và `auto_updates true`.
-  - `uninstall` gọi lệnh gỡ của chính app (ví dụ cờ `--uninstall-input-method`: tắt nguồn, dừng bộ gõ) rồi `trash "~/Library/Input Methods/DauInputMethod.app"`.
+  - Đề xuất ban đầu (03/11/2026): `uninstall` gọi lệnh gỡ của chính app (ví dụ cờ `--uninstall-input-method`) rồi `trash "~/Library/Input Methods/DauInputMethod.app"`. D37 (Cài đặt bộ gõ) chốt hẹp hơn: cask chỉ khai `app`; app không tự tắt được nguồn (mục 4), nên không có bước "tắt nguồn" trong cask.
   - `zap` xoá Group Container `M58DANM3ZP.com.codefastlabs.dau.shared` (sẽ đổi theo Team ID của bản phát hành), các container, và các tuỳ chọn.
   - Không dùng stanza `input_method`.
 
@@ -232,7 +232,7 @@ Trên macOS 27.2, làm theo D37 thì không cần đăng xuất (Dấu thật, 0
 - Bằng chứng gián tiếp: ở lần thử cài đầu 02/11 (mục 9.5), "+" và menu không có Dấu sau "Bật Dấu", và có sau lần đăng xuất/đăng nhập kế tiếp. Máy không sạch (mục 9.4) nên chỉ là một quan sát phù hợp, không phải phép đo. [Máy/Dấu]
 
 **Bên "không cần / hiện ngay":**
-- Dấu thật (04/11/2026, macOS 27.2): xoá `IntlDataCache.le*` sau khi đăng ký thì "+" có Dấu và bật được qua hộp thoại xin phép, không đăng xuất (mục 9.9, mục 8.1b). [Máy/Dấu]
+- Dấu thật (04/11/2026, macOS 27.2): xoá `IntlDataCache.le*` thì "+" có Dấu và bật được qua hộp thoại xin phép, không đăng xuất. Bản đầu xoá bộ đệm của System Settings sau khi đăng ký (mục 9.9, mục 8.1b); luồng hiện hành (D37) xoá trong mọi thư mục con của `DARWIN_USER_CACHE_DIR` ngay trước khi đăng ký rồi quét lại sau khi bật (mục 9.11). [Máy/Dấu]
 - marinaMoji (máy ảo sạch macOS 27.0.1, `.pkg` vào `/Library/Input Methods`; `postinstall` chạy dưới tên người dùng):
   - `TISRegisterInputSource` → 0; `TISEnableInputSource` các mode → 0; `TISSelectInputSource` mode gốc → -50; cha vẫn `enabled=0`.
   - Nguồn **hiện ngay trong "+"**, người dùng tự thêm, dùng được, không đăng xuất.
@@ -339,8 +339,8 @@ Trình tự đề xuất, ráp từ McBopomofo, vChewing, XKey và D7:
 
 **Không làm:**
 - Không dừng `imklaunchagent`. vChewing ghi: dừng nó làm app đang gõ mất kết nối với mọi bộ gõ cho tới khi mở lại app đó. [Ngoài, chú thích trong mã vChewing]
-- Không dừng `TextInputMenuAgent`, `CursorUIViewService`, `TextInputSwitcher`, không xoá bộ đệm của Cài đặt Bàn phím (`$(getconf DARWIN_USER_CACHE_DIR)/com.apple.Keyboard-Settings.extension/com.apple.IntlDataCache.le.kbdx`; msime xoá file này, macOS 27.0.1).
-  - Đó đều là tiến trình và bộ đệm của hệ thống (tinh thần N4).
+- Không dừng `TextInputMenuAgent`, `CursorUIViewService`, `TextInputSwitcher`, không tự ý xoá bộ đệm của Cài đặt Bàn phím (`$(getconf DARWIN_USER_CACHE_DIR)/com.apple.Keyboard-Settings.extension/com.apple.IntlDataCache.le.kbdx`; msime xoá file này, macOS 27.0.1).
+  - Đó đều là tiến trình và bộ đệm của hệ thống. Điểm khác so với đề xuất ngày 03/11/2026: từ 04/11/2026 N4 và D37 (Cài đặt bộ gõ) cho nút "Bật Dấu"/"Bật lại" xoá bộ đệm danh sách nguồn (của System Settings và của từng app) ngay trước khi đăng ký, và cho nút "Gỡ cài đặt" xoá bộ đệm của System Settings sau khi người dùng đã bỏ Dấu bằng "–" (D16 (Bảo trì và gỡ cài đặt)); các tiến trình `TextInputMenuAgent`, `CursorUIViewService`, `TextInputSwitcher` vẫn không dừng.
   - Giữ biểu tượng và tên không đổi thì không cần làm những việc đó. Nếu một bản có đổi biểu tượng/tên thì ghi trong ghi chú phát hành: "đăng xuất để thấy biểu tượng mới".
   - Dấu đã thấy cả hai bộ đệm ảnh (30/10/2026): ảnh cũ trong `TextInputMenuAgent` chỉ đổi sau khi khởi động lại tiến trình đó; `CursorUIViewService` giữ ảnh cũ. [Máy/Dấu]
 
@@ -354,10 +354,10 @@ Trình tự đề xuất, ráp từ McBopomofo, vChewing, XKey và D7:
 ## 4. Gỡ cài đặt (D16)
 
 Trình tự đề xuất (người dùng bấm "Gỡ cài đặt…" và xác nhận):
-1. Nếu Dấu đang được chọn: chọn trước một bàn phím khác.
-   - Đích là `TISCopyCurrentASCIICapableKeyboardLayoutInputSource()` (theo header: bàn phím ASCII dùng gần nhất) nếu nó đang bật; không thì lấy nguồn ASCII đang bật đầu tiên. Gureum dặn người dùng tự chuyển sang bàn phím của hệ thống trước khi gỡ.
-   - Người dùng báo (04/11/2026, chưa có ảnh hay nhật ký): trong System Settings không bỏ được nguồn đang được chọn bằng "–", nên luồng hướng dẫn bấm "–" (vì app không tự tắt được, bước 2) bắt buộc chuyển nguồn trước.
-   - **Đo lại 04/11/2026 14:58 (Dấu thật, macOS 27.2, qua trợ năng):** khi Dấu đang được chọn, nút "–" vẫn bấm được và macOS tự chuyển sang U.S. sau khi bỏ; quan sát trước chưa lặp lại. App vẫn chuyển bàn phím trước cho chắc. [Máy/Dấu]
+1. Nếu Dấu đang được chọn: **app không tự chuyển bàn phím** (D16 (Bảo trì và gỡ cài đặt)); sheet chỉ nhắc người dùng chọn bàn phím khác khi nút "–" bị mờ.
+   - Phương án đã cân nhắc ở bản đầu của mục này: chọn trước một bàn phím ASCII, đích là `TISCopyCurrentASCIICapableKeyboardLayoutInputSource()` (theo header: bàn phím ASCII dùng gần nhất) nếu nó đang bật, không thì nguồn ASCII đang bật đầu tiên; Gureum dặn người dùng tự chuyển sang bàn phím của hệ thống trước khi gỡ. Mã không còn làm việc này.
+   - Quan sát ban đầu (04/11/2026, không có ảnh hay nhật ký): trong System Settings không bỏ được nguồn đang được chọn bằng "–".
+   - **Đo lại 04/11/2026 14:58 (Dấu thật, macOS 27.2, qua trợ năng):** khi Dấu đang được chọn, nút "–" vẫn bấm được và macOS tự chuyển sang U.S. sau khi bỏ; quan sát trước chưa lặp lại. Đó là lý do D16 để app không tự chuyển bàn phím. [Máy/Dấu]
    - Chưa đo: người dùng chỉ bật mỗi Dấu thì không có gì để chuyển sang; tuỳ chọn "tự động chuyển sang nguồn của tài liệu" (D5 (Quy tắc theo ứng dụng)) bật thì cửa sổ System Settings có thể tự chọn lại Dấu.
    - Nếu không chọn trước, hệ thống sẽ tự đổi sang nguồn khác khi Dấu bị tắt, nhưng chưa biết đổi sang nguồn nào [Suy luận, cần kiểm chứng].
 2. `TISDisableInputSource` cho mode `….Dau.vi`, rồi cho input method cha `com.codefastlabs.dau.inputmethod.Dau` (fcitx5 tắt cha).
@@ -481,7 +481,7 @@ Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế ho�
 - **Ghi thẳng file**: không khuyến nghị trên tài khoản này (file chứa mục thật của Dấu; cfprefsd có thể ghi đè). Nếu cần, chỉ trên tài khoản thử của kế hoạch thử trên máy sạch (mục 7.2), cũng với khoá giả, sao lưu như phép chẩn đoán Full Disk Access.
 
 **Kết quả (04/11/2026)** [Máy/bản thử]:
-- **Phép xem Full Disk Access của Terminal:** Full Disk Access của Terminal.app đang **bật**; Ghostty.app có trong danh sách, **tắt** (ảnh của người dùng). Không biết `clean-dau.sh --yes` ngày 02/11 chạy trong ứng dụng nào, và `log show` không còn dòng từ chối của ngày đó, nên hướng Full Disk Access chưa đóng được bằng phép này.
+- **Phép xem Full Disk Access của Terminal:** Full Disk Access của Terminal.app **bật**; Ghostty.app có trong danh sách, **tắt** (ảnh chụp màn hình). Không biết `clean-dau.sh --yes` ngày 02/11 chạy trong ứng dụng nào, và `log show` không còn dòng từ chối của ngày đó, nên hướng Full Disk Access chưa đóng được bằng phép này.
 - **Phép hồi sinh mục ẩn** (bỏ bước sao lưu 1 và phần nhìn menu của bước 4):
   - 13:58:12 chép lại `DauProbeC1`, `register` (0), xoá bộ đệm, mở Keyboard.
   - TIS tiến trình mới báo ngay cha và mode `enabled`, mode chọn được (mục ẩn làm `DauProbeC1` "đang bật" lại, không có hộp thoại xin phép); không có tiến trình `DauProbeC1`.
@@ -536,7 +536,7 @@ Chỉ liệt kê điều có nguồn ở trên; nối về D và N chỉ để t
    - Nhật ký cho thấy Cài đặt bỏ qua yêu cầu mà không hỏi khi không dựng lại được nguồn, hoặc khi trang Keyboard đang mở sẵn (mục 2.2, 8.1b).
 3. **Không dùng cờ "enabled" từ tiến trình của chính app làm bằng chứng** (mục 2.6). Người dùng chuyển sang Dấu bằng phím tắt của hệ thống; app không chọn Dấu sau khi bật.
    - N4 (`docs/DECISIONS.md`) không có câu cấm "tự chọn nguồn": N4 chỉ cho đổi cài đặt hệ thống khi người dùng bấm đúng nút ("Bật Dấu", "Gỡ cài đặt"), luôn có Hoàn tác hoặc xác nhận, và không bao giờ tự làm.
-   - Mã hiện chọn một bàn phím ASCII khi Dấu đang được chọn, ngay trước khi gỡ cài đặt và trước Hoàn tác (`selectOtherKeyboardIfDauIsCurrent` trong `InputMethodInstaller.swift`). Việc đó nằm trong nút "Gỡ cài đặt" hoặc "Hoàn tác" mà người dùng đã bấm, nhưng có tính là "đổi cài đặt hệ thống" theo N4 hay không là điều chờ người dùng quyết.
+   - App không tự chuyển bàn phím khi gỡ cài đặt hay Hoàn tác (D16 (Bảo trì và gỡ cài đặt)); mã đã bỏ bước chọn bàn phím ASCII từng có ở đây.
 4. **Đăng xuất:**
    - Trên macOS 27.2, bật lần đầu không cần đăng xuất khi làm theo D37 (mục 2.3, 9.9); đăng xuất rồi đăng nhập là đường lui khi một app vẫn không chọn được Dấu (mục 9.12). Các bản macOS khác chưa đo (mục 10.1).
    - Cho tới khi có số đo trên bản macOS khác và bản ký Developer ID, chữ trên giao diện về đăng xuất chỉ nói điều đã đo (N5); cách an toàn là "nếu không thấy Dấu trong '+', đăng xuất rồi đăng nhập" như phương án chờ.
@@ -555,11 +555,11 @@ Chỉ liệt kê điều có nguồn ở trên; nối về D và N chỉ để t
   - Câu "không tự chọn nguồn" của đề xuất cũ **không** nằm trong N4 (xem mục 6.1 điểm 3).
   - Phương án thay thế giống msime (bỏ nút bật, chỉ hướng dẫn) còn mở.
 - Danh sách định danh không đổi giữa các bản (mục 3): đã vào **D37**.
-- Cask chỉ có `app`, `uninstall` gọi lệnh gỡ của app, `zap` xoá container (mục 1.4): đã vào **D37** (cask chỉ khai `app`); chi tiết `uninstall`/`zap` chưa thấy trong `DECISIONS.md`.
+- Cask chỉ có `app` (mục 1.4): đã vào **D37** (cask chỉ khai `app`); `DECISIONS.md` không ghi bước `uninstall`/`zap` của cask.
+- Trình tự gỡ ở mục 4: đã vào **D16 (Bảo trì và gỡ cài đặt)** (người dùng bấm "–", app không tự chuyển bàn phím).
 - **Chưa thấy trong `DECISIONS.md`:**
   - D14 bước 1 chỉ coi bộ gõ chặn phím đang chạy là xung đột, bộ gõ IMK tiếng Việt khác chỉ nhắc nhẹ (mục 5);
   - D7 thay bộ gõ bằng chép tạm rồi đổi chỗ cả khối, dừng bằng thông báo Darwin, không đụng `imklaunchagent` và bộ đệm hệ thống, chấp nhận biểu tượng cũ còn tới khi đăng xuất (mục 3);
-  - D16 trình tự gỡ ở mục 4.
   - Cần người dùng chốt.
 - Hướng dẫn trên giao diện (N5): câu về đăng xuất, hộp thoại "Cho phép", và "Bàn phím đang dùng trước đó được giữ nguyên" để dạng ô trống cho tới khi kiểm xong bằng Dấu thật (lần thử trên máy sạch ở mục 7 đã bỏ).
 
@@ -635,7 +635,7 @@ Mẫu ghi một dòng cho mỗi bước: `bước | mã trả về Register/Enab
 
 ## 8. Quan sát bằng bản thử (không phải Dấu, không kết luận)
 
-Mọi quan sát ở mục này đo bằng bản thử, **không phải Dấu**: không rút kết luận về Dấu từ đây; kết luận về Dấu chỉ nằm ở mục 0 và mục 9. Công cụ thử đã xoá khỏi repo (mục 0, dòng "Công cụ thử").
+Mọi quan sát ở mục này đo bằng bản thử, **không phải Dấu**: không rút kết luận về Dấu từ đây; kết luận về Dấu dựa vào mục 9, còn mục 0 chỉ nhắc quan sát của mục này ở điểm nào gắn nhãn [Máy/bản thử]. Công cụ thử đã xoá khỏi repo (mục 0, dòng "Công cụ thử").
 
 ### 8.1 Quan sát (03/11/2026)
 
@@ -933,7 +933,7 @@ Dấu thật đã bật; app thử có sandbox `local.probe.cacheL1`, ký ad-hoc
 Tên cũ của các tiểu mục: trước khi viết lại (09/11/2026) chúng nằm ở mục 0 dưới nhãn (d)1 đến (d)10; tiểu mục 10.N là (d)N. Các tài liệu và chú thích trong mã dẫn "(d)N" thì đọc là mục 10.N.
 
 ### 10.1 Lần cài đầu có phải đăng xuất để danh sách "+" thấy ID mới
-- Trên macOS 27.2: không, nếu xoá bộ đệm `IntlDataCache.le*` của System Settings sau khi đăng ký (mục 8.1b bằng bản thử; mục 9.9 bằng Dấu thật trên tài khoản đã từng cài Dấu).
+- Trên macOS 27.2: không, nếu xoá bộ đệm `IntlDataCache.le*` (mọi thư mục con của `DARWIN_USER_CACHE_DIR`) ngay trước khi đăng ký, theo D37 (mục 9.11 bằng Dấu thật; mục 8.1b bằng bản thử; mục 9.9 là bản đầu, xoá sau khi đăng ký, chỉ bộ đệm của System Settings).
 - Còn phải đo: macOS 14–26, bản ký Developer ID. Tài khoản macOS mới không đo: kế hoạch ở mục 7 đã bỏ, người dùng chốt 04/11/2026.
 - Lời khuyên đăng xuất của Apple DTS phù hợp với việc bộ đệm này chỉ được dựng lại khi đăng nhập [Suy luận, cần kiểm chứng]. Mục 2.3.
 

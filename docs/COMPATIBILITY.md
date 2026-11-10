@@ -4,12 +4,11 @@ Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ 
 
 ## Hiện trạng (10/11/2026)
 
-- **Thay chữ tại chỗ sai khi trang Chrome bận, cả ở nhịp gõ bình thường** (đo 09/11/2026, `docs/PROGRESS.md` nhật ký M6): trang thử chặn luồng chính 300 ms mỗi giây, phím cách nhau 100 ± 30 ms, thay tại chỗ sai ở phần lớn các lượt (cả bản Release), gạch chân đúng; Chrome trả vị trí con trỏ cũ khi chưa áp xong phím trước. Các app khác chưa đo khi bận.
 - **Kết quả trình duyệt trước 09/11/2026 chưa chắc là gõ vào ô của trang:** script tự gõ khi đó chỉ kiểm tiêu đề cửa sổ; khi thanh địa chỉ có focus, phím vào thanh địa chỉ và lượt vẫn đạt (⌘A ⌘C chép cùng chữ). Từ 09/11/2026 script chỉ gõ khi ô của trang có focus. Các dòng trình duyệt của mục 5 cần đo lại ở M6.
 - **Khi trang rảnh, thay chữ tại chỗ chỉ sai khi phím đến dồn dưới 10 ms** (đo 29–30/10/2026): Chrome, Edge, VS Code, Firefox, Terminal sai ở 0 ms; từ 10 ms đúng, trừ VS Code: ở 10 ms sai lượt 29/10 (câu mẫu cũ) và đúng lượt 30/10 (câu mẫu mới), từ 20 ms đúng mọi lượt (mục 6.2). TextEdit, Safari đúng ở mọi tốc độ đã đo; Notes đúng ở 30 và 0 ms; Telegram mới đo ở 30 ms (đúng). Bằng chứng: mục 5 (bảng kết quả) và mục 6.2.
-- **Khi trang Chrome bận** (trang chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms; M6, 09–10/11/2026): thay tại chỗ sai 3/3 lượt vì Chrome trả vị trí và chữ cũ hơn phím vừa gõ; từ bcd4e54 đúng 3/3 (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"). Cùng điều kiện, đo 10/11/2026: Edge 3/3 và Firefox 3/3 đúng. Chưa đo VS Code và phím dồn khi app bận. Nhật ký: `docs/PROGRESS.md`.
-- **Phím dồn sau các lần sửa ở M6** (đo 10/11/2026, app rảnh, nhịp danh nghĩa 5, 10, 20 ms; khoảng cách phím thật phần lớn 10–20 ms): Chrome và Firefox đúng mọi lượt; VS Code đúng 14/15 lượt, lượt sai không phải lỗi vị trí thay chữ (vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ). Edge đúng 9/9 lượt. Cursor (đo lần đầu): trình soạn thảo sai ở 5 và 20 ms, đúng ở 100 ms, gạch chân đúng ở 5 ms, và trả vị trí con trỏ tính từ đầu từ đang gõ (VS Code mở cùng kiểu thì đúng; Telex của Apple cùng chỗ, cùng cách chuyển nguồn và xác nhận, đúng ở 5 và 20 ms); ô nhập của cửa sổ Agents đúng ở 5, 20, 100 ms. Terminal và các app Electron khác chưa đo. Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật (D13 (Gạch chân là đường lui cuối cùng)). Nhật ký: `docs/PROGRESS.md`.
-- **Gạch chân (D13 (Gạch chân là đường lui cuối cùng))** sửa được lỗi phím dồn ở Chrome, Edge, VS Code, Firefox (đúng ở 0 ms); Terminal vẫn sai ở 0 ms nên không đề xuất. Còn nhãn "Đề xuất": Edge, Brave, Arc và các app Electron khác; Chrome, Firefox, VS Code đã bỏ nhãn (10/11/2026). Tiêu chí: mục 1 và mục 7.
+- **Khi trang Chrome bận** (trang thử chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms, nhịp gõ bình thường; M6, 09–10/11/2026): Chrome trả vị trí và chữ cũ hơn phím vừa gõ. Trước lần sửa ở M6, thay tại chỗ sai 3/3 lượt (cả bản Release), gạch chân đúng; từ bcd4e54, sau lần sửa ở M6 (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"), đúng 3/3. Cùng điều kiện, đo 10/11/2026: Edge 3/3 và Firefox 3/3 đúng. Chưa đo VS Code và phím dồn khi app bận. Nhật ký: `docs/PROGRESS.md`.
+- **Phím dồn sau các lần sửa ở M6** (đo 10/11/2026, app rảnh, nhịp danh nghĩa 5, 10, 20 ms; khoảng cách phím thật phần lớn 10–20 ms): Chrome và Firefox đúng mọi lượt; VS Code đúng 14/15 lượt, lượt sai không phải lỗi vị trí thay chữ (vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ). Edge đúng 9/9 lượt (nhãn "Đề xuất" của Edge còn, chờ quyết định: D13 (Gạch chân là đường lui cuối cùng) chưa đổi). Cursor (kết quả cuối sau các lần sửa ở M6): trình soạn thảo đúng ở 20 ms với chuỗi std nhưng còn sai ở 5 ms danh nghĩa và ở ca "anh ddi" ở 20 ms, đúng ở 100 ms, gạch chân đúng ở 5 ms; nó trả vị trí con trỏ tính từ đầu từ đang gõ (VS Code mở cùng kiểu thì đúng; Telex của Apple cùng chỗ, cùng cách chuyển nguồn và xác nhận, đúng ở 5 và 20 ms); ô nhập của cửa sổ Agents đúng ở 5, 20, 100 ms. Cursor giữ nhãn "Đề xuất". Terminal và các app Electron khác chưa đo. Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật (D13 (Gạch chân là đường lui cuối cùng)). Nhật ký: `docs/PROGRESS.md`.
+- **Gạch chân (D13 (Gạch chân là đường lui cuối cùng))** sửa được lỗi phím dồn ở Chrome, Edge, VS Code, Firefox (đúng ở 0 ms); Terminal vẫn sai ở 0 ms nên không đề xuất. Còn nhãn "Đề xuất": Edge, Brave, Arc và các app Electron khác (Cursor trong đó); Chrome, Firefox, VS Code đã bỏ nhãn (10/11/2026). Tiêu chí: mục 1 và mục 7.
 - **Backspace (D32 (Backspace)) trong Chromium/Electron:** lỗi xoá hai lần đã sửa ngày 30/10/2026 (82d9ecc); kết quả đo lại ở 6 ứng dụng: mục 6.4.
 - **Terminal không gửi ⌫ cho bộ gõ**, nên D32 không giữ được ở đó và D20 (Thêm dấu cho từ đã gõ) sau ⌫ không chạy. Chưa kiểm chứng lại sau lần phát hiện đầu: mục 6.5.
 - **Tự sửa chính tả của macOS 27.2** có thể đè lên chữ đã giữ, kể cả khi gõ bằng U.S. (D4 (Từ nước ngoài)): mục 6.1.
@@ -35,15 +34,15 @@ Bảng ghi kết quả thử Dấu trong từng ứng dụng, thuộc M3 (Độ 
 
 Tiêu chí nhãn "Đề xuất": D13 (30/10/2026, sửa 10/11/2026). Gạch chân chỉ là đề xuất, không tự bật; nhãn chỉ giữ cho app mà thay tại chỗ còn sai ở tốc độ gõ thật và chưa sửa được.
 
-- Theo số đo M3, thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms; từ 10 ms đều đúng.
-- App sai ở 0–5 ms mà gạch chân sửa được thì được đề xuất (Firefox thêm theo cách này). App nào đo lại đúng ở tốc độ gõ thật sau khi sửa thì bỏ nhãn (Chrome, Firefox, VS Code: 10/11/2026); các app còn nhãn chưa đo lại.
+- Theo số đo M3 (30/10/2026, các app đã đo lúc đó, app rảnh), thay tại chỗ chỉ sai khi phím cách nhau dưới 10 ms; từ 10 ms đúng ở lượt đo M3. Đo lại ngày 10/11/2026 sau các lần sửa ở M6: mục "Hiện trạng".
+- App sai ở 0–5 ms mà gạch chân sửa được thì được đề xuất (Firefox thêm theo cách này). App nào đo lại đúng ở tốc độ gõ thật sau khi sửa thì bỏ nhãn (Chrome, Firefox, VS Code: 10/11/2026). Còn nhãn: Edge đã đo lại 10/11/2026 (đúng 9/9 ở nhịp 5, 10, 20 ms, trang bận 3/3), nhãn còn, chờ quyết định (D13 chưa đổi); Cursor đo 10/11/2026 còn sai ở 5 ms danh nghĩa và ca "anh ddi" ở 20 ms; Brave, Arc và các app Electron khác chưa đo lại.
 - Terminal sai ở 0 ms cả khi gạch chân nên không đề xuất.
 
 ## 2. Vì sao ghi công nghệ giao diện
 
 Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` một lần rồi gọi `insertText(_:replacementRange:)`.
 
-- Đây là phương án "hỏi vị trí con trỏ ở mỗi phím có thay chữ", đã chốt ở D11 (Kiểm tra ngữ cảnh) và N3 (Ít lời gọi vào ứng dụng đích). Phương án còn lại, "tự cộng dồn vị trí từ một vị trí gốc", đã bị bỏ (mục 6.2).
+- Đây là phương án "hỏi vị trí con trỏ ở mỗi phím có thay chữ", đã chốt ở D11 (Kiểm tra ngữ cảnh) và N3 (Ít lời gọi vào ứng dụng đích). Phương án "tự cộng dồn vị trí từ một vị trí gốc" chỉ để thay cho việc hỏi thì bị bỏ; từ M6 Dấu tự theo dõi vị trí để nhận ra app trả lời chậm (mục 6.2).
 - Cách này cần ứng dụng trả vị trí con trỏ đúng **ngay lúc hỏi**.
 
 Các dữ kiện chi phối:
@@ -119,7 +118,7 @@ Cách ghi công nghệ ở mục 3:
 
 Tổng (42 dòng): 26 có trên máy, 13 không có, 3 chỉ có bản web (Messenger, Google Docs, Google Sheets).
 
-Ngoài danh sách chính, máy này còn các app thử được nếu cần thêm mẫu:
+Mẫu bổ sung nếu cần thêm (chưa đo):
 
 - Electron: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`), Antigravity (`com.google.antigravity`), LM Studio (`ai.elementlabs.lmstudio`), Polypane (`com.firstversionist.polypane`).
 - Trình duyệt Blisk (`org.blisk.Blisk`).
@@ -236,7 +235,7 @@ Nguồn của các cột:
 | Arc | chưa thử | | | | | | | | | | | | |
 | Brave | chưa thử | | | | | | | | | | | | |
 | VS Code | 29/10/2026; Backspace, lượt đo gạch chân, lượt đo D20 30/10/2026 | script | đúng | **sai**; 5 ms sai. 10 ms: M2 (29/10/2026) sai ("ôoi"), lượt đo gạch chân sau đó (30/10/2026, câu mẫu đã đổi) đúng; từ 20 ms đúng. Gạch chân 0 và 5 ms: **đúng** (lượt đo gạch chân) | — | không / không ở 30 ms | Backspace **SAI** ở cbb8179 ("h", 30 ms); đã sửa: ĐẠT ("hò" ở 120 ms và chạy lại ở 30 ms, mục 6.4) | ĐẠT (lượt đo D20, 120 ms) | — | 230 / 885 | 0 / — (ở 30 ms) | có; bỏ nhãn đề xuất 10/11/2026 (14/15 lượt đúng ở 5–20 ms sau sửa M6; trước đó sai ở 0 và 5 ms) | PROGRESS "Số đo" 29/10, 30/10; `docs/history/LOG-M0-M4.md` nhật ký chẩn đoán 29/10 và nhật ký 30/10 (lượt đo gạch chân) |
-| Cursor | chưa thử | | | | | | | | | | | | |
+| Cursor | 10/11/2026 | script (`typing/run.sh`: `cursor`, `cursoragents`; Cursor 3.29.15, nền VS Code 1.128.0) | — | không đo ở 0 ms (không là tiêu chí). Phím dồn, nhịp danh nghĩa, sau các lần sửa ở M6: trình soạn thảo 20 ms chuỗi std đúng; 5 ms **sai**; ca "anh ddi" ở 20 ms **sai**; 100 ms đúng. Ô nhập Agents đúng ở 5, 20, 100 ms | — | — / gạch chân đúng ở 5 ms | — | — | — | — | — | Đề xuất (giữ nhãn) | PROGRESS nhật ký M6, 10/11/2026 (các mục Cursor) |
 | Zed | chưa thử | | | | | | | | | | | | |
 | Sublime Text | 29/10/2026 | gõ tay | — | — | có số đo; kết quả chữ không được ghi | — | — | — | — | 334 / 3.718 (gõ tay, n=35, sơ bộ) | — | chưa đủ dữ liệu | PROGRESS "Số đo" 29/10; DECISIONS mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính" (selectedRange 17% thời gian phím) |
 | JetBrains IDE | chưa thử | | | | | | | | | | | | |
@@ -296,7 +295,7 @@ Ghi chú về TextEdit (backspace, click reset, mũi tên reset):
   - Các việc này làm tiếp ở M6 (người dùng chốt 30/10/2026, mục 7).
 - Dọn dẹp:
   - Tab thử đã đóng.
-  - Ghi chú thử trong Notes đã xoá trắng và Notes bỏ ghi chú trống (đếm 53 ghi chú trước và sau).
+  - Ghi chú thử trong Notes đã xoá trắng và Notes bỏ ghi chú trống (số ghi chú trước và sau bằng nhau).
   - Thư nháp đóng bằng "Don’t Save".
   - Notes, Mail, Firefox đã thoát; Edge (do lượt thử mở) còn chạy, không cửa sổ.
   - Nguồn nhập liệu và clipboard được script khôi phục; khoá `DauDebugForceUnderline` đã xoá.
@@ -323,8 +322,8 @@ Ghi chú về TextEdit (backspace, click reset, mũi tên reset):
   - Ảnh chụp không cập nhật trong lúc `handle` đang chạy (hỏi lại 10 lần, cách 2 ms, vẫn y nguyên).
 - Ví dụ lượt tự gõ đầu tiên ngày 29/10: VS Code ra "arroi yeu tiengs Vietj, ?indows Suni c", Terminal ra "tôi yêu tiêngs Viêtj, windows Sủnise car".
 - Không phải do thiếu quyền Trợ năng (bộ gõ không có quyền đó mà vẫn đúng ở 20 ms trở lên).
-- Phương án tự cộng dồn vị trí (thay cho việc hỏi ở mỗi phím) cũng không cứu được, vì vị trí gốc cũng là ảnh chụp cũ và VS Code đổi gốc toạ độ.
-- Đã thử và bỏ: chờ ứng dụng rồi hỏi lại; so chữ trước con trỏ bằng `attributedSubstring` (Safari trả chữ cũ nên hỏng cả Safari).
+- Ghi chú ngày 29/10/2026: phương án tự cộng dồn vị trí từ một vị trí gốc, thay cho việc hỏi ở mỗi phím, khi đó không cứu được vì vị trí gốc cũng là ảnh chụp cũ và VS Code đổi gốc toạ độ. Cũng khi đó đã thử và bỏ: chờ ứng dụng rồi hỏi lại; so chữ trước con trỏ bằng `attributedSubstring` làm phép thay (Safari trả chữ cũ nên hỏng cả Safari).
+- Hiện hành (M6, D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"): Dấu vẫn hỏi `selectedRange` ở phím có thay chữ, và tự theo dõi vị trí con trỏ qua các từ, các thao tác và các chữ chính nó vừa gõ. Khi `selectedRange` khác vị trí đó, Dấu đọc chữ trước con trỏ một lần để chứng minh app chỉ chưa áp các thao tác vừa gõ, rồi thay ở vị trí tự theo dõi; không chứng minh được thì dựng lại hoặc reset như cũ. Cơ chế: `docs/ARCHITECTURE.md` mục "App trả lời chậm".
 - Bằng chứng:
   - `docs/DECISIONS.md` mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính" (đã chốt hỏi ở mỗi phím) và mục câu hỏi Chrome/Terminal.
   - `docs/PROGRESS.md` mục "Số đo" (dòng "Cách A theo tốc độ gõ"; "cách A" là hỏi vị trí ở mỗi phím).
@@ -400,7 +399,8 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
   - Click reset và mũi tên reset cho phần lớn app (mũi tên reset theo mong đợi mới D4 × D20).
 - Đã xong: danh sách đề xuất theo số đo lượt chạy ma trận.
   - **Thêm Firefox** (`org.mozilla.firefox`; sai ở 0 và 5 ms, chữ nhảy chỗ, gạch chân sửa được) vào `CompatibilityList.json` ở 61daeec.
-  - Edge giữ, nay có số đo (sai ở 0 và 5 ms, ⌫ xoá hai lần — nay đã sửa ở thay tại chỗ, mục 6.4 — gạch chân sửa cả hai).
+  - Edge giữ, nay có số đo (sai ở 0 và 5 ms, ⌫ xoá hai lần — nay đã sửa ở thay tại chỗ, mục 6.4 — gạch chân sửa cả hai). Đo lại 10/11/2026 sau các lần sửa ở M6: đúng 9/9 ở nhịp 5, 10, 20 ms và trang bận 3/3; nhãn còn, chờ quyết định (D13 chưa đổi).
+  - Cursor giữ nhãn (10/11/2026): trình soạn thảo còn sai ở 5 ms danh nghĩa và ở ca "anh ddi" ở 20 ms, ô nhập Agents đúng (mục "Hiện trạng").
   - Notes không đề xuất (đúng ở 0 ms).
   - Chrome, Firefox, VS Code bỏ nhãn ngày 10/11/2026 (mục "Hiện trạng").
 - Đã xong: tiêu chí đưa một ứng dụng vào danh sách gạch chân đã chốt ở D13 (mục 1): chỉ đề xuất; thay tại chỗ chỉ sai dưới 10 ms.

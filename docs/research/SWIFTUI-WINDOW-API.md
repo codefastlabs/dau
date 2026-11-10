@@ -1,6 +1,6 @@
 # Cửa sổ Cài đặt: API SwiftUI/AppKit cho sidebar, thanh công cụ, tiêu đề (tra tài liệu Apple)
 
-Nghiên cứu cho cửa sổ Cài đặt của app chủ (`Apps/Dau/Sources/SettingsWindow.swift`), theo yêu cầu người dùng 05/11/2026: học API trước, không vá vì thiếu hiểu biết.
+Nghiên cứu cho cửa sổ Cài đặt của app chủ (`Apps/Dau/Sources/SettingsWindow.swift`), lập ngày 05/11/2026: tra API Apple dành cho sidebar, thanh công cụ và tiêu đề để chọn cách làm có tài liệu, và ghi rõ chỗ nào chỉ là suy luận hay phải đo.
 
 Nguồn chỉ dùng loại chính thức của Apple:
 - tài liệu developer.apple.com (đọc qua dạng JSON `https://developer.apple.com/tutorials/data/documentation/…json`);
@@ -23,9 +23,9 @@ Nhãn dùng trong file:
 | **[Đo trên app thử]** | Đo trên app thử ném đi (`build/probe-fixed-sidebar/`, ID riêng, không phải Dấu); chỉ là quan sát, chưa phải kết luận về Dấu. |
 | **[Đo của Dấu]** | Số hay hành vi Dấu đã đo, dẫn nơi ghi; không phải tài liệu Apple. |
 
-## Hiện trạng (06/11/2026)
+## Hiện trạng (10/11/2026)
 
-Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề hệ thống `navigationTitle`, chặn thu gọn sidebar bằng `columnVisibility`.
+Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề hệ thống `navigationTitle`, chặn thu gọn sidebar bằng `columnVisibility`. Hai phần đầu đã áp dụng; phần thứ ba không có tài liệu ủng hộ và D9 (Giao diện) thay bằng sidebar cố định bằng split view của chính app (mục 10).
 
 - **Sidebar cố định bằng split view của chính app (06/11/2026; D9 (Giao diện) sửa theo; bằng chứng: mục 10):**
   - [Đo trên app thử] Cửa sổ scene SwiftUI chứa `NSSplitViewController` do app tạo.
@@ -38,18 +38,18 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
 - **Đã áp dụng (05/11/2026, D9; bằng chứng: mục 2.4, 3.2):**
   - Cụm Lùi/Tiến `ControlGroup` kiểu `.navigation` ở `.navigation`, `navigationTitle` của hệ thống.
   - `SidebarCommands` đã gỡ 06/11/2026 khi sidebar thành cố định (D9).
-  - Đã gỡ `PageTitle`, `HiddenWindowTitle`, `RemoveToolbarTitle`; không chặn thu gọn sidebar.
+  - Đã gỡ `PageTitle`, `HiddenWindowTitle`, `RemoveToolbarTitle`. Sidebar không thu gọn được nhờ split view của chính app (bullet đầu), không nhờ `columnVisibility`.
   - [Đo của Dấu] Gắn `.toolbar` của cụm lên trang trong cột chi tiết thì đổi trang làm item dựng lại, và AXPress trên Lùi/Tiến trả lỗi -25205 dù vẫn chạy.
   - [Đo của Dấu] Gắn lên `NavigationSplitView` thì AXPress trả 0 (đo bằng app thử, rồi trên Dấu).
   - `run.sh` 05/11/2026 đạt toàn bộ.
-  - Menu View có Lùi ⌘[, Tiến ⌘], "Hiển thị thanh bên" ⌃⌘S và mục toàn màn hình.
+  - Menu View có Lùi ⌘[, Tiến ⌘] và mục toàn màn hình; không có "Show/Hide Sidebar" ⌃⌘S (D9: sidebar cố định). Mã chỉ thêm vào nhóm `.sidebar`, không dùng `SidebarCommands`, và `SettingsSplitViewController` giữ hành động `toggleSidebar(_:)` luôn tắt; kiểm bằng `swift test` ("Settings window shell"), xem `docs/UI-CHECKS.md`.
   - Điểm (a) của bullet "Hai việc mới phát hiện" bên dưới không xảy ra, vì không còn thay nhóm `.sidebar`.
 - **Chặn người dùng thu gọn hay kéo rộng sidebar: SwiftUI không có API nào (mục 1.2, 1.3, 1.6, 8).**
   - Tài liệu chỉ có `navigationSplitViewColumnWidth` (độ rộng "ưu tiên", hệ thống "cố gắng" theo) và `columnVisibility` ("điều khiển bằng mã").
   - Không câu nào nói hai thứ này ngăn người dùng kéo.
   - Tra toàn bộ chỉ mục tài liệu SwiftUI và `SwiftUI.swiftinterface` không thấy API nào khác ([SDK]).
   - HIG còn khuyên điều ngược lại: cho người dùng ẩn sidebar và có nhiều cách mở lại (mục 1.6).
-  - `FixedSidebar` dùng API công khai của AppKit nhưng đặt lên cấu trúc bên trong mà SwiftUI không công bố, nên không có cam kết nào là còn chạy ở macOS sau.
+  - `FixedSidebar` (bản cũ, đã thay ngày 06/11/2026) dùng API công khai của AppKit nhưng đặt lên cấu trúc bên trong mà SwiftUI không công bố, nên không có cam kết nào là còn chạy ở macOS sau; split view của chính app (mục 10) không còn vấn đề này.
 - **Thanh công cụ co còn 32 pt khi gỡ nút sidebar: Apple không ghi tài liệu cho hành vi này (mục 2.7).**
   - Cách được tài liệu hỗ trợ để có tiêu đề hệ thống nằm ngay sau cụm nút như System Settings: đặt nút điều hướng ở `ToolbarItemPlacement.navigation`.
   - Tài liệu ghi vị trí đó là "mép đầu thanh công cụ, **trước tiêu đề inline**" (mục 2.4).
@@ -121,7 +121,7 @@ Phương án xét ở mục 7: cụm Lùi/Tiến ở `.navigation`, tiêu đề 
   - [Đã giải quyết] Mã hiện nay không thay nhóm này, chỉ thêm vào (`SettingsHistoryCommands`), nên mục toàn màn hình vẫn còn.
   - Việc cửa sổ Cài đặt có vào toàn màn hình được không còn phụ thuộc `windowResizability` và khung tối đa, nên đo cả hai.
 - [Tài liệu, chưa rõ] Hai trang trên lệch nhau: `SidebarCommands` "optional", còn nhóm `.sidebar` "by default" có Show/Hide Sidebar.
-  - Chú thích của `SettingsHistoryCommands` (mã hiện nay, không dùng `SidebarCommands`) ghi menu View không có "Show/Hide Sidebar"; tài liệu này chưa ghi số đo riêng cho điều đó.
+  - Chú thích của `SettingsHistoryCommands` (mã hiện nay, không dùng `SidebarCommands`) ghi menu View không có "Show/Hide Sidebar" (D9); điều này được kiểm bằng `swift test` ("Settings window shell": hành động `toggleSidebar(_:)` của AppKit luôn tắt, `docs/UI-CHECKS.md`), chưa có số đo riêng trên menu View của cửa sổ thật.
 - [HIG] Thanh menu, menu View: "Show/Hide Sidebar — In a window that includes a sidebar, toggles the sidebar's visibility." https://developer.apple.com/design/human-interface-guidelines/the-menu-bar
 
 ### 1.6 HIG: có nên cho người dùng ẩn sidebar trên macOS

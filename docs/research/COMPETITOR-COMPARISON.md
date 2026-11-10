@@ -1,11 +1,12 @@
 # So sánh Dấu với các bộ gõ khác
 
-## Hiện trạng (09/11/2026)
+## Hiện trạng (10/11/2026)
 
 - **Phần C đo xong (09/11/2026).**
   - Điều kiện: macOS 27.2, Dấu Release 24e61ec, 30 ms giữa hai phím, Safari và Chrome. Chi tiết ở mục "Kết quả phần C".
   - Tiếng Việt: Dấu và Telex của Apple ngang nhau (677/678 từ).
-  - Từ tiếng Anh và từ trong mã: Dấu giữ nguyên 88/105, Apple 53/105.
+  - Từ tiếng Anh và từ trong mã: Dấu giữ nguyên 88/105, Apple 53/105. Trong 17 từ Dấu không giữ nguyên có 7 từ sai thật (chữ cái đôi trùng phím dấu) và 10 từ trùng Anh–Việt, nhóm không chấm đúng sai (D4 (Từ nước ngoài)) nhưng bảng điểm vẫn tính vào số từ không giữ nguyên.
+  - **Giới hạn của số Apple (53/105, 169/188, 677/678):** lượt đo chọn nguồn của Apple bằng API từ tiến trình của script (`--source`) và chưa kiểm bộ gõ nào đang xử lý phím trong ô gõ. Ngày 10/11/2026 đã xác định cách chọn nguồn đó có thể để ô gõ không dùng bộ gõ của Apple (các ô "ra nguyên chuỗi phím" là đo hỏng, `docs/PROGRESS.md` nhật ký 10/11). Chữ Apple ra ở lượt này là chữ kiểu Telex chứ không phải nguyên chuỗi phím (suy luận, cần kiểm chứng rằng bộ gõ của Apple thật sự xử lý phím ở mọi ô). Cần đo lại bằng `typing/run.sh` hiện hành (chuyển nguồn bằng phím tắt hệ thống, xác nhận trong ô) trước khi dùng cho M10 (N5 (Chỉ hứa điều đã kiểm chứng)).
   - Câu trộn Việt–Anh: Dấu 184/188 từ, Apple 169/188.
   - Khác biệt chỉ đến từ việc Dấu khôi phục từ không phải tiếng Việt (D4 (Từ nước ngoài)); Apple không khôi phục ("good" ra "gôd", "website" ra "ưebsite").
   - Cả hai cho cùng chữ ở Safari và Chrome.
@@ -69,7 +70,7 @@ Trên máy này `com.apple.inputmethod.VietnameseIM.VietnameseTelex` đã đư�
   - Kiểm offline bằng engine của Dấu trước khi gõ thật (09/11/2026): 677/678 từ tiếng Việt đúng, từ còn lại là "taxi" ra "tãi" (D4), nên bộ chuyển phím đúng.
 - **Cách chấm:**
   - Tiếng Việt đúng khi ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa).
-  - Tiếng Anh đúng khi giữ nguyên chữ đã gõ. Từ vừa là tiếng Anh vừa là âm tiết tiếng Việt hợp lệ ("car", "as") tính riêng một nhóm, không chấm đúng sai (D4).
+  - Tiếng Anh đúng khi giữ nguyên chữ đã gõ. Từ vừa là tiếng Anh vừa là âm tiết tiếng Việt hợp lệ ("car", "as") tính riêng một nhóm, không chấm đúng sai (D4); bảng điểm vẫn đếm chúng là từ không giữ nguyên, nên báo cáo tách số từ sai thật và số từ trùng (mục "Kết quả phần C").
   - Đáp án lấy từ chữ gốc, không từ kết quả của bộ gõ nào (D10 (Engine tự viết)).
 - **Ứng dụng:**
   - Trang thử trong Safari (WebKit, đúng ở mọi tốc độ ở M2 (Bộ gõ tối thiểu); dùng thay app thử riêng vì script đã có sẵn) và Chrome.
@@ -106,13 +107,14 @@ Chữ đọc lại và bảng điểm ở `build/compare-ims/20261109-122753/` (
 
 - Safari và Chrome cho đúng cùng một chữ, với cả hai bộ gõ. Chữ của Dấu trong hai app trùng từng byte với engine chạy offline.
 - **Tiếng Việt:** từ sai duy nhất của cả hai là "taxi" ra "tãi" (âm tiết hợp lệ, tiếng Việt thắng theo D4).
-- **Từ Dấu sai (17), Apple cũng sai y như vậy:**
-  - 7 từ có chữ cái đôi trùng phím dấu mất một chữ: password, coffee, office, assert, offset, session, error (D26 (Gõ đúp phím dấu); hệ quả đã chấp nhận).
-  - 10 từ vừa là tiếng Anh vừa ra âm tiết tiếng Việt hợp lệ (D4): seems → sếm, see → sê, door → dổ, moon → môn, soon → sôn, horse → hoé, mix → mĩ, box → bõ, max → mã, major → mảo.
+- **Từ Dấu không giữ nguyên (17), Apple cũng ra y như vậy** (7 từ sai thật, 10 từ trùng Anh–Việt không chấm đúng sai):
+  - 7 từ sai thật, có chữ cái đôi trùng phím dấu mất một chữ: password, coffee, office, assert, offset, session, error (D26 (Gõ đúp phím dấu); hệ quả đã chấp nhận).
+  - 10 từ trùng Anh–Việt, không chấm đúng sai (tiếng Việt thắng theo D4), bảng điểm vẫn tính là không giữ nguyên: seems → sếm, see → sê, door → dổ, moon → môn, soon → sôn, horse → hoé, mix → mĩ, box → bõ, max → mã, major → mảo.
   - Trong câu trộn thêm reset → rết, test → tét.
 - **Từ chỉ Apple sai (35 từ đơn, 15 từ trong câu trộn):** từ không phải âm tiết tiếng Việt vẫn bị biến đổi, vì Apple không khôi phục: windows → ưindows, good → gôd, book → bôk, google → gôgle, software → sờtare, work → ửok, push → púh, website → ưebsite, design → déign…
 
 Giới hạn của phép đo này:
+- Số của Telex của Apple chưa kiểm là bộ gõ của Apple xử lý phím trong ô gõ: nguồn được chọn bằng API từ script, không bằng phím tắt hệ thống kèm bước xác nhận trong ô (cách chọn này bị coi là có thể làm ô gõ không dùng bộ gõ của Apple, 10/11/2026); cần đo lại trước khi dùng cho M10 (N5 (Chỉ hứa điều đã kiểm chứng)).
 - Một máy, một lượt, chỉ 30 ms giữa hai phím, chỉ Telex thứ tự chuẩn.
 - Dữ liệu do Dấu tự viết. Danh sách từ tiếng Anh cố ý chọn từ có phím dấu hoặc phím biến đổi của Telex (từ không có các phím đó thì bộ gõ nào cũng để nguyên), nên 88/105 và 53/105 không phải tỉ lệ trên tiếng Anh nói chung.
 - Cách chấm bỏ qua vị trí dấu thanh (hoà/hòa coi như nhau), nên không bắt được dấu đặt sai nguyên âm.
