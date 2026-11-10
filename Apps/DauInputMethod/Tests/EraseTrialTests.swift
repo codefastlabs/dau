@@ -47,9 +47,15 @@ private final class FakeTerminal: InPlaceClient {
 @Suite("Erase trial (Debug): DEL characters for a client that ignores replacementRange")
 struct EraseTrialTests {
     private func type(_ keys: String, erase: Bool) -> (String, FakeTerminal, [Bool]) {
+        type(keys, mode: erase ? .inKey : .off)
+    }
+
+    /// `afterKey`: the app (Ghostty) handles every key the input method did not consume,
+    /// then the deferred text arrives, sent as is.
+    private func type(_ keys: String, mode: InPlaceComposer.EraseMode) -> (String, FakeTerminal, [Bool]) {
         var engine = VietEngine()
         var composer = InPlaceComposer()
-        composer.eraseByDelete = erase
+        composer.eraseMode = mode
         let terminal = FakeTerminal()
         var now: TimeInterval = 0
         var oneCallPerKey: [Bool] = []
@@ -60,6 +66,7 @@ struct EraseTrialTests {
             let outcome = composer.handle(route, time: now, engine: &engine, client: terminal)
             oneCallPerKey.append(terminal.inserts - before <= 1)
             if !outcome.consumed { terminal.defaultAction(route) }
+            if let deferred = outcome.deferredText { terminal.send(deferred) }
         }
         return (String(terminal.line), terminal, oneCallPerKey)
     }
@@ -69,6 +76,18 @@ struct EraseTrialTests {
                       ("tooisf", "tồi"), ("hoaf⌫", "hò"), ("DD", "Đ"), ("windows ", "windows ")])
     func cells(keys: String, expected: String) {
         let (text, terminal, oneCall) = type(keys, erase: true)
+        #expect(text == expected)
+        #expect(terminal.selectedRangeCalls == 0)
+        #expect(terminal.reads == 0)
+        #expect(oneCall.allSatisfy { $0 })
+    }
+
+    @Test("after the key: the fix follows the app's own handling of the key",
+          arguments: [("dd", "đ"), ("toois", "tối"), ("vieetj", "việt"), ("toois vieetj", "tối việt"),
+                      ("tooisf", "tồi"), ("hoaf⌫", "hò"), ("DD", "Đ"), ("windows ", "windows "),
+                      ("toois vieetj ddi hoaf⌫ windows ", "tối việt đi hò windows ")])
+    func afterKey(keys: String, expected: String) {
+        let (text, terminal, oneCall) = type(keys, mode: .afterKey)
         #expect(text == expected)
         #expect(terminal.selectedRangeCalls == 0)
         #expect(terminal.reads == 0)

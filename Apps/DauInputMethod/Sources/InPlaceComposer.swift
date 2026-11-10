@@ -34,11 +34,26 @@ struct InPlaceComposer {
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
 
-    /// Debug trial only (`DebugTrial.eraseKey`): the client ignores `replacementRange` and sends
-    /// text to a terminal as typed (Ghostty). A replacement is then one `insertText` at
-    /// the cursor of DEL (U+007F) per character to remove, then the new text: the shell
-    /// erases and retypes. No `selectedRange`, no reads (D11 check, D20) for this client.
-    var eraseByDelete = false
+    /// Debug trials only (`DebugTrial`): the client ignores `replacementRange` and sends text
+    /// to a terminal as typed (xterm.js, Ghostty). A replacement is then DEL (U+007F) per
+    /// character to remove, then the new text, at the cursor: the shell erases and retypes.
+    /// No `selectedRange`, no reads (D11 check, D20) for this client.
+    enum EraseMode: Equatable {
+        case off
+        /// One `insertText` while the key is handled (`DebugTrial.eraseKey`): right in
+        /// xterm.js; Ghostty drops IME text that starts with a control character there.
+        case inKey
+        /// The key goes to the app, then the fix is sent once the app has handled it
+        /// (`Outcome.deferredText`, `DebugTrial.eraseAfterKeyKey`): Ghostty sends text
+        /// inserted outside its key handling as is, and sends a key the input method
+        /// consumed without text anyway. The fix also erases what the key did.
+        case afterKey
+    }
+    var eraseMode = EraseMode.off
+    var eraseByDelete: Bool { eraseMode != .off }
+    /// What the current key does in the app if it goes there: +1 a typed character, -1
+    /// Delete; nil for other keys (Return runs the line: never sent before the fix).
+    private var keyEffect: Int?
 
     /// What the cursor is known to follow while the engine has no word (D20 needs a word
     /// right before the cursor; reading costs two client calls, so it is skipped when
@@ -97,6 +112,9 @@ struct InPlaceComposer {
         var consumed = false
         var kind = PerfLog.Kind.pass
         var attempt: Attempt?
+        /// Erase trial (`EraseMode.afterKey`): text to insert at the cursor once the app has
+        /// handled the key (the controller sends it on the next turn of the main queue).
+        var deferredText: String?
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
         var d20: D20Trace?
@@ -185,6 +203,11 @@ struct InPlaceComposer {
         let settled = isSettled(at: time)
         if let time { lastEventTime = time }
         lateRead = nil
+        switch route {
+        case .character: keyEffect = 1
+        case .backspace: keyEffect = -1
+        default: keyEffect = nil
+        }
         // The edits of a key in a burst may all be missing from a late answer (`rebuild`).
         tracker.keyInBurst = !settled
 
@@ -226,7 +249,8 @@ struct InPlaceComposer {
                     result.kind = .reset
                 }
                 result.consumed = false
-                if result.kind == .replace || result.kind == .late || result.kind == .lateGuess {
+                if result.kind == .replace || result.kind == .late || result.kind == .lateGuess
+                    || result.kind == .erase {
                     tracker.backspacePassedThrough()
                 } else {
                     // Let the app's own Delete run; the engine no longer knows the word.
@@ -717,6 +741,12 @@ struct InPlaceComposer {
             return result
         }
         if eraseByDelete {
+            if eraseMode == .afterKey, let keyEffect, deleteCount + keyEffect >= 0 {
+                result.deferredText = String(repeating: "\u{7F}", count: deleteCount + keyEffect) + insert.description
+                result.consumed = false
+                result.kind = .erase
+                return result
+            }
             var text = String(repeating: "\u{7F}", count: deleteCount) + insert.description
             if let extra { text.unicodeScalars.append(extra) }
             client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))

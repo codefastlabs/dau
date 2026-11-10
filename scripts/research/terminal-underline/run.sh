@@ -27,7 +27,10 @@ DELAY=120
 # Mode: words joined by "+": inplace; underline (--underline); erase (--erase: Debug trial,
 # DEL characters plus the new text in one insertText); plain (--underline --plain-marked:
 # marked text with no underline attribute); shot (--shot: picture of the window right
-# after the keys, before the last word is committed).
+# after the keys, before the last word is committed); after (--erase-after-key: Debug
+# trial, the key goes to the app and the DEL fix follows it); probe (--probe-length: the
+# document length and selection the app reports after each key, in the diag log); fast
+# (30 ms between keys instead of --delay).
 # Keys: ⌫ Delete, ← left arrow, ↩ Return (typing/run.sh).
 # First round (11/11/2026): Sublime holds the three edits of an already typed word: change
 # the mark (D26), ⌫ back into a committed word then add a mark (D20), move left into a
@@ -37,6 +40,9 @@ DELAY=120
 # xterm.js (the terminal of the Claude desktop app, rebuilt in Chrome), the current
 # behaviour and Apple's Telex in xterm.js, and pictures of marked text with and without
 # the underline attribute. The mixed line covers D32 (hoaf ⌫) and D4 (windows).
+# Third round (t3-): the after-key trial in Ghostty, also at 30 ms (the fix of a key must
+# reach Ghostty before the next key), and the length probe in a text field (Chrome,
+# Safari, Sublime Text) against the two terminals, to tell them apart.
 CELLS=(
   "sub-dau|sublime|dau|inplace|tooisf ba ⌫j tooi←s|tồi bạ tối"
   "sub-dau-ul|sublime|dau|underline|tooisf ba ⌫j tooi←s|tồi bạ tối"
@@ -62,6 +68,17 @@ CELLS=(
   "t2-xt-apple|xterm|apple|inplace|toois vieetj dd |tối việt đ "
   "t2-xt-ul-shot|xterm|dau|underline+shot|toois vieet|tối viêt"
   "t2-xt-plain-shot|xterm|dau|plain+shot|toois vieet|tối viêt"
+  "t3-gh-after-dd|ghostty|dau|after|dd|đ"
+  "t3-gh-after-toois|ghostty|dau|after|toois|tối"
+  "t3-gh-after-vieetj|ghostty|dau|after|vieetj|việt"
+  "t3-gh-after-mix|ghostty|dau|after|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
+  "t3-ghv-after-mix|ghosttyvim|dau|after|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
+  "t3-gh-after-mix-fast|ghostty|dau|after+fast|toois vieetj ddi hoaf⌫ windows |tối việt đi hò windows "
+  "t3-probe-chrome|chrome|dau|probe|toois vieetj |tối việt "
+  "t3-probe-safari|safari|dau|probe|toois vieetj |tối việt "
+  "t3-probe-sublime|sublime|dau|probe|toois vieetj |tối việt "
+  "t3-probe-xterm|xterm|dau|probe|toois vieetj |tối việt "
+  "t3-probe-ghostty|ghostty|dau|probe|toois vieetj |tối việt "
 )
 
 WANT=()
@@ -108,6 +125,9 @@ for cell in $CELLS; do
       erase) args+=(--erase) ;;
       plain) args+=(--underline --plain-marked) ;;
       shot) args+=(--shot) ;;
+      after) args+=(--erase-after-key) ;;
+      probe) args+=(--probe-length) ;;
+      fast) args[2]=30 ;;
       *) log_die 2 "Ô $id: chế độ lạ \"$m\"" ;;
     esac
   done

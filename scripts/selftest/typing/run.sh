@@ -73,6 +73,13 @@
 #                     `erase-trial-on`): in-place replacements become DEL characters plus
 #                     the new text in one insertText at the cursor, for an app that ignores
 #                     the replacement range (docs/research/TERMINAL-AND-UNDERLINE.md).
+#   --erase-after-key Debug trial, as --erase (key DauDebugEraseAfterKey, report shows
+#                     `erase-trial-on`), but the key goes to the app and the fix follows
+#                     once the app has handled it (Ghostty drops DEL text sent during a key).
+#   --probe-length    Debug probe (key DauDebugProbeLength): after each key the input method
+#                     logs the document length and selection the app reports, with the
+#                     characters typed since the last reset (`probe` lines in the diag
+#                     log, DIR/<app>.perf.log with --save).
 #   --plain-marked    Debug trial, as --underline (key DauDebugPlainMarked, report shows
 #                     `plain-marked-on`): marked text is sent with no underline attribute.
 #                     Use with --underline.
@@ -145,6 +152,8 @@ EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
 ERASE=0
+ERASE_AFTER=0
+PROBE=0
 PLAIN_MARKED=0
 SHOT=0
 SOURCE_ID=""
@@ -154,6 +163,8 @@ JITTER_MS=0
 BUSY=""
 FORCE_KEY=DauDebugForceUnderline
 ERASE_KEY=DauDebugEraseByDelete
+ERASE_AFTER_KEY=DauDebugEraseAfterKey
+PROBE_KEY=DauDebugProbeLength
 PLAIN_KEY=DauDebugPlainMarked
 APPS=()
 # Prints the whole leading comment block.
@@ -165,6 +176,8 @@ while [[ $# -gt 0 ]]; do
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
     --erase) ERASE=1; shift ;;
+    --erase-after-key) ERASE_AFTER=1; shift ;;
+    --probe-length) PROBE=1; shift ;;
     --plain-marked) PLAIN_MARKED=1; shift ;;
     --shot) SHOT=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
@@ -276,6 +289,8 @@ defaults write -g "$PERF_KEY" -bool true
 cleanup() {
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
   [[ $ERASE == 1 ]] && defaults delete -g "$ERASE_KEY" >/dev/null 2>&1
+  [[ $ERASE_AFTER == 1 ]] && defaults delete -g "$ERASE_AFTER_KEY" >/dev/null 2>&1
+  [[ $PROBE == 1 ]] && defaults delete -g "$PROBE_KEY" >/dev/null 2>&1
   [[ $PLAIN_MARKED == 1 ]] && defaults delete -g "$PLAIN_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
@@ -1182,6 +1197,8 @@ for app in "${APPS[@]}"; do
     defaults write -g "$FORCE_KEY" -array "$(bundle_id "$app")"
   fi
   [[ $ERASE == 1 ]] && defaults write -g "$ERASE_KEY" -array "$(bundle_id "$app")"
+  [[ $ERASE_AFTER == 1 ]] && defaults write -g "$ERASE_AFTER_KEY" -array "$(bundle_id "$app")"
+  [[ $PROBE == 1 ]] && defaults write -g "$PROBE_KEY" -array "$(bundle_id "$app")"
   [[ $PLAIN_MARKED == 1 ]] && defaults write -g "$PLAIN_KEY" -array "$(bundle_id "$app")"
   start="$(date '+%Y-%m-%d %H:%M:%S')"
   got="$("run_$app")"
@@ -1234,12 +1251,12 @@ for app in "${APPS[@]}"; do
   esac
   "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
     | grep -E 'count_|gap_|lag_us|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
-  if (( UNDERLINE || ERASE || PLAIN_MARKED )); then
+  if (( UNDERLINE || ERASE || ERASE_AFTER || PLAIN_MARKED )); then
     settings_log="$("$LOG" show --start "$start" --style compact \
         --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"
-    for flag event in UNDERLINE underline-on ERASE erase-trial-on PLAIN_MARKED plain-marked-on; do
+    for flag event in UNDERLINE underline-on ERASE erase-trial-on ERASE_AFTER erase-trial-on PLAIN_MARKED plain-marked-on; do
       (( ${(P)flag} )) || continue
-      if [[ "$settings_log" == *"event=$event app=$(bundle_id "$app")"* ]]; then
+      if [[ "$settings_log" == *"event=$event "*"app=$(bundle_id "$app")"* ]]; then
         log_detail "$event"
       else
         log_warn "Không thấy $event (bộ gõ chưa nhận khoá Debug?)"

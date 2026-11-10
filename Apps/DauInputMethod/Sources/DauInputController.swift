@@ -47,6 +47,11 @@ final class DauInputController: IMKInputController {
     /// Debug trial (`DebugTrial.plainMarkedKey`): marked text sent with no underline
     /// attribute, to see whether the client draws it as plain text. Never on in Release.
     private var plainMarked = false
+    /// Debug probe (`DebugTrial.probeLengthKey`): after each key, log the client's document
+    /// length and selection with the characters typed since the last reset, to tell a
+    /// terminal-like client (the text typed never shows up) from a text field.
+    private var probeLength = false
+    private var probeTyped = 0
     private var composer = MarkedComposer()
     /// The client the marked text was sent to, so a reset that arrives with another
     /// client (or none) still commits it where it is shown.
@@ -75,6 +80,7 @@ final class DauInputController: IMKInputController {
             // Underline mode: commit the word where it is shown before the click moves
             // the cursor (D4: reset, no restore).
             let committed = resetComposition(client: sender)
+            probeTyped = 0
             inPlace.noteEvent(at: event.timestamp)
             record(KeyResult(kind: committed ? .commit : .reset), start: start, eventTime: event.timestamp)
             return false
@@ -98,6 +104,13 @@ final class DauInputController: IMKInputController {
             result = processMarked(route, client: timed)
         } else {
             let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
+            if let text = outcome.deferredText {
+                // Erase trial (after the key): once the app has handled the key.
+                nonisolated(unsafe) let target = client
+                DispatchQueue.main.async {
+                    target.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
+                }
+            }
             result = KeyResult(consumed: outcome.consumed, kind: outcome.kind)
             #if DEBUG
             result.diag = outcome.attempt.map(ReplaceDiag.init)
@@ -112,6 +125,15 @@ final class DauInputController: IMKInputController {
         #if DEBUG
         // After the timing is recorded, so the extra selectedRange is not measured.
         if perf.enabled, let diag = result.diag { ReplaceDiag.log(diag, kind: result.kind, client: client, app: clientApp) }
+        if probeLength {
+            switch route {
+            case .character: probeTyped += 1
+            case .backspace: probeTyped = max(0, probeTyped - 1)
+            default: probeTyped = 0
+            }
+            let selection = client.selectedRange()
+            ReplaceDiag.logger.notice("probe typed=\(self.probeTyped, privacy: .public) len=\(client.length(), privacy: .public) sel=\(selection.location, privacy: .public),\(selection.length, privacy: .public) kind=\(result.kind.rawValue, privacy: .public) app=\(self.clientApp, privacy: .public)")
+        }
         #endif
         return result.consumed
     }
@@ -219,6 +241,7 @@ final class DauInputController: IMKInputController {
         NotificationCenter.default.post(name: .dauClientActivated, object: nil)
         resetComposition(client: sender)
         activatedAt = ProcessInfo.processInfo.systemUptime
+        probeTyped = 0
         inPlace.activate()
         startObservingSettings()
         startObservingInputSource()
@@ -235,7 +258,8 @@ final class DauInputController: IMKInputController {
             settingsLogger.notice("event=underline-on app=\(self.clientApp, privacy: .public)")
         }
         if inPlace.eraseByDelete {
-            settingsLogger.notice("event=erase-trial-on app=\(self.clientApp, privacy: .public)")
+            let mode = inPlace.eraseMode == .afterKey ? "after-key" : "in-key"
+            settingsLogger.notice("event=erase-trial-on mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
         }
         if plainMarked {
             settingsLogger.notice("event=plain-marked-on app=\(self.clientApp, privacy: .public)")
@@ -369,7 +393,9 @@ final class DauInputController: IMKInputController {
         // D20 "Thêm dấu cho từ đã gõ" (D15: on by default). Read here, never per key.
         inPlace.addMarksEnabled = new.addMarksToTypedWords
         // Debug trials only; both lists are empty in Release.
-        inPlace.eraseByDelete = Self.debugList(DebugTrial.eraseKey).contains(clientApp)
+        inPlace.eraseMode = Self.debugList(DebugTrial.eraseAfterKeyKey).contains(clientApp) ? .afterKey
+            : Self.debugList(DebugTrial.eraseKey).contains(clientApp) ? .inKey : .off
+        probeLength = Self.debugList(DebugTrial.probeLengthKey).contains(clientApp)
         plainMarked = Self.debugList(DebugTrial.plainMarkedKey).contains(clientApp)
     }
 
