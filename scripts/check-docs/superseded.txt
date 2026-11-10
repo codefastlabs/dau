@@ -33,3 +33,6 @@ kéo đường chia vẫn thu được sidebar	D9: sidebar cố định bằng N
 Ô chọn ngôn ngữ trong Cài đặt	D41: dùng mục ngôn ngữ riêng từng ứng dụng của macOS, Cài đặt chỉ có hàng chỉ sang đó (08/11/2026)
 Gạch chân làm đường lui	D13: renamed "Gạch chân là đường lui cuối cùng"; in-place failures are Dấu bugs to fix (10/11/2026)
 Hướng cho app bất đồng bộ: gạch chân	D11/D13: late answers use the tracked caret; underline only as the last fallback (10/11/2026)
+Phím dồn dưới 50 ms: chưa	D11: the late-answer branch runs at every typing speed (10/11/2026)
+lùi sau vị trí đó tối đa 2 chữ	D11: late limit is 2 edits plus the edits of the current burst (10/11/2026)
+Hiện còn nhãn: VS Code	D13: Chrome, Firefox and VS Code no longer carry the label (10/11/2026)

@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: duyệt câu chữ D11 (Kiểm tra ngữ cảnh) theo mã 50b67ec và bản sửa ca đầu văn bản (nhật ký 10/11; bản nháp đã đưa); duyệt artboard SettingsApps* (hàng Chrome đổi thành Edge, canvas phiên bản 142) và câu "Hiện còn nhãn" của D13 (Gạch chân là đường lui cuối cùng). Việc tiếp theo, sau khi duyệt: bỏ nhãn "Đề xuất" của Chrome, Firefox (và VS Code, nếu duyệt) trong `CompatibilityList.json`, test, `docs/COMPATIBILITY.md`.
+Chờ người dùng: duyệt hàng mẫu Slack (thay Visual Studio Code) trên các artboard SettingsApps*, canvas phiên bản 144. Việc tiếp theo: M6 bước 2 (bài tải nặng) theo kế hoạch bên dưới; còn mở: đối chứng Telex của Apple đôi khi ra nguyên chuỗi phím, và một lượt VS Code mà vài phím đầu không tới bộ gõ (nhật ký 10/11), nguyên nhân chưa rõ.
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -213,3 +213,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Chưa rõ: mô hình VS Code trong test (con trỏ về cuối vùng thay) không ra chữ "êhieuf" của lượt 06:58, mô hình giữ con trỏ thì ra; cách sửa đạt ở cả hai.
   - Telex của Apple, 5 ms, 1 lượt: ra nguyên chuỗi phím (hiện tượng đã thấy, nguyên nhân chưa rõ).
   - Dọn: cửa sổ thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài bộ gõ bản Release (869f05a kèm bản sửa). `/Applications/Dau.app` trên máy B vẫn d8af10f.
+- 10/11/2026 — D11 (Kiểm tra ngữ cảnh) viết lại theo mã, và Chrome, Firefox, VS Code bỏ nhãn "Đề xuất" (người dùng duyệt) — phiên chính, app-ui-dev. `DECISIONS.md` (D11 ý "App trả lời chậm", D13 (Gạch chân là đường lui cuối cùng), "Câu hỏi đã trả lời"), `docs/history/DECISIONS-LOG.md`, `superseded.txt`, ghi chú trên canvas; `CompatibilityList.json` (ba mục giữ lại với `suggestUnderline` tắt), test, `docs/COMPATIBILITY.md`. Artboard SettingsApps* (canvas phiên bản 144): hàng mẫu Google Chrome đổi thành Microsoft Edge (đã duyệt), Visual Studio Code đổi thành Slack (chờ duyệt); bản chụp `docs/ui/canvas/` dựng lại. Kiểm: DauShared 35, snapshot 139 test đạt, check-docs, check-l10n đạt. Chưa cài lại `/Applications/Dau.app` trên máy B.

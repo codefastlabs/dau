@@ -1,23 +1,23 @@
 {
-  "version": 2,
-  "updated": "2026-10-30",
-  "about": "Apps Dấu labels “Đề xuất” for underlining (D13). Every app types without underline until the user turns it on. Initial list (D13, 30/10/2026): VS Code and the Electron/Chromium apps of docs/COMPATIBILITY.md; Terminal is not suggested. Firefox added on measurement (user, 30/10/2026). Bundle IDs from docs/COMPATIBILITY.md section 3.",
+  "version": 3,
+  "updated": "2026-11-10",
+  "about": "Apps Dấu labels “Đề xuất” for underlining (D13). Every app types without underline until the user turns it on. Labeled: Microsoft Edge, Brave, Arc and the Electron apps of docs/COMPATIBILITY.md. Chrome, Firefox and VS Code lost the label on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/COMPATIBILITY.md section 3.",
   "apps": [
     {
       "name": "Visual Studio Code",
       "bundleIDs": [
         "com.microsoft.VSCode"
       ],
-      "suggestUnderline": true,
-      "note": "Electron. Measured 30/10/2026: in-place wrong at 0 and 5 ms between keys, right from 10 ms; underline right at 0 ms."
+      "suggestUnderline": false,
+      "note": "Electron. Measured 10/11/2026: in-place right at 5, 10 and 20 ms nominal after the M6 late-answer fix (14 of 15 runs right; the wrong run was not a replacement-position error); label removed."
     },
     {
       "name": "Google Chrome",
       "bundleIDs": [
         "com.google.Chrome"
       ],
-      "suggestUnderline": true,
-      "note": "Chromium. Measured 30/10/2026: in-place wrong at 0 ms, right from 5 ms; underline right at 0 ms."
+      "suggestUnderline": false,
+      "note": "Chromium. Measured 10/11/2026: in-place right at 5, 10 and 20 ms nominal after the M6 late-answer fix; label removed."
     },
     {
       "name": "Microsoft Edge",
@@ -104,8 +104,8 @@
       "bundleIDs": [
         "org.mozilla.firefox"
       ],
-      "suggestUnderline": true,
-      "note": "Gecko. Measured 30/10/2026: in-place wrong at 0 and 5 ms (text in the wrong place), right from 10 ms; underline right at 0 ms."
+      "suggestUnderline": false,
+      "note": "Gecko. Measured 10/11/2026: in-place right at 5, 10 and 20 ms nominal after the M6 late-answer fix; label removed."
     }
   ]
 }
