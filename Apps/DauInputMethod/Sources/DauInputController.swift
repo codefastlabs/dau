@@ -94,11 +94,12 @@ final class DauInputController: IMKInputController {
         if underline {
             result = processMarked(route, client: timed)
         } else {
-            let wasErasing = inPlace.eraseByDelete
+            let wasKnown = inPlace.detector.send != nil
             let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
-            if !wasErasing, inPlace.eraseByDelete {
-                // D43: once per activation; the bundle ID only, never text (D8).
-                let mode = inPlace.eraseMode == .afterKey ? "after-key" : "in-key"
+            if !wasKnown, let send = inPlace.detector.send {
+                // D43: once per activation; the bundle ID only, never text (D8). In the key
+                // is logged but not applied (`InPlaceComposer.eraseMode(for:)`).
+                let mode = send == .afterKey ? "after-key" : "in-key"
                 settingsLogger.notice("event=range-ignored mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
             }
             if let text = outcome.deferredText {

@@ -167,6 +167,7 @@ dau/
   - Một câu kẹt chỉ là nghi ngờ (⌘A mà bộ gõ không thấy, giữa từ, cũng cho một câu như vậy). Câu kẹt thứ hai, trong từ đó hoặc từ ngay sau, mà vị trí không tăng theo số chữ đã thêm từ câu đầu: nhận ra ô. Câu trả lời nào lớn hơn `terminalLimit` xoá nghi ngờ.
   - Nhận ra thì giữ cho client đó trong lần kích hoạt đó (`InPlaceComposer.activate` xét lại).
 - Lúc gửi (`InPlaceComposer.EraseMode`): chọn khi nhận ra, theo các câu trả lời đã thấy trong lần kích hoạt. Đã có câu 1 hoặc 2: gửi trong phím (`inKey`, xterm.js). Mọi câu đều là 0: gửi sau phím (`afterKey`, Ghostty): phím đi tới app, phần sửa (`Outcome.deferredText`) tới sau khi app xử lý xong phím, `DauInputController` gửi nó ở lượt kế của hàng đợi chính.
+  - Gửi trong phím đang tạm giữ lại (`InPlaceComposer.eraseMode(for:)`): ô như vậy vẫn thay tại chỗ như trước D43, chỉ ghi log. Lý do và số đo: nhật ký `docs/PROGRESS.md`, lượt gõ thử thứ tư.
 - Sau khi nhận ra: không hỏi vị trí, không đọc chữ (D11, D20 tắt ở client đó); log `event=range-ignored` một lần mỗi lần kích hoạt (chỉ bundle ID).
 - Kiểm bằng client giả trong `RangeIgnoreTests` (Ghostty, xterm.js, ô gõ thường có ⌘A mà bộ gõ không thấy); mọi client giả của `LateAnswerTests`, `RapidKeysTests`, `CursorEditorTests` và `InPlaceComposerTests` kiểm thêm rằng không bao giờ nhận nhầm.
 

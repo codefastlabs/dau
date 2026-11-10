@@ -54,6 +54,19 @@ struct InPlaceComposer {
     }
     var eraseMode = EraseMode.off
     var eraseByDelete: Bool { eraseMode != .off }
+
+    /// The erase mode for a client `detector` found, or nil to keep replacing in place.
+    /// In the key (xterm.js) is held back: on the xterm.js test page it went wrong once a
+    /// range replacement made before the field was told apart had reached the page (each
+    /// fix sent again with every earlier one, fourth typing round of 11/11/2026 in
+    /// docs/PROGRESS.md); it was right when on from the first key (second round). Until
+    /// that is understood such a client keeps in-place replacement, wrong as before D43.
+    static func eraseMode(for send: RangeIgnoreDetector.Send) -> EraseMode? {
+        switch send {
+        case .afterKey: return .afterKey
+        case .inKey: return nil
+        }
+    }
     /// Tells a client that ignores `replacementRange` from the `selectedRange` answers
     /// (D43); sets `eraseMode`.
     private(set) var detector = RangeIgnoreDetector()
@@ -442,9 +455,9 @@ struct InPlaceComposer {
                                           client: some InPlaceClient) -> Outcome? {
         checkedLockedWord = true
         let selection = client.selectedRange()
-        if let mode = detector.observe(selection, inBurst: tracker.keyInBurst) {
+        if let mode = detector.observe(selection, inBurst: tracker.keyInBurst), let found = Self.eraseMode(for: mode) {
             // D43: from this key on, the word's keys pass or are erased and typed again.
-            eraseMode = mode == .afterKey ? .afterKey : .inKey
+            eraseMode = found
             return nil
         }
         // A selection here is the app's: an autocomplete after the cursor, or text the user
@@ -785,9 +798,10 @@ struct InPlaceComposer {
         // Engine letters are BMP scalars, so deleteCount scalars == deleteCount UTF-16
         // units, also for a word seeded from decomposed (NFD) text (D20).
         let selection = known ?? client.selectedRange()
-        if known == nil, let mode = detector.observe(selection, inBurst: tracker.keyInBurst) {
+        if known == nil, let mode = detector.observe(selection, inBurst: tracker.keyInBurst),
+           let found = Self.eraseMode(for: mode) {
             // D43: this client ignores the range; this key is the first one erased.
-            eraseMode = mode == .afterKey ? .afterKey : .inKey
+            eraseMode = found
             return erase(deleteCount: deleteCount, insert: insert, appending: extra, client: client)
         }
         var text = insert.description

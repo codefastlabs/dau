@@ -254,26 +254,27 @@ struct RangeIgnoreTests {
         #expect(text.hasSuffix(expected))
     }
 
-    @Test("xterm.js: taken for a terminal from its answers of 0 to 2, sending in the key")
+    @Test("xterm.js: told apart from its answers of 0 to 2 (in the key), but in-place replacement is kept for now")
     func xtermDetected() {
-        let (text, run) = xterm("toois vieetj nguwowif ddi hocj nhaf ")
-        #expect(run.composer.eraseMode == .inKey)
-        #expect(run.detectedAt != nil)
-        #expect(text.hasSuffix(" đi học nhà "))
+        let (_, run) = xterm("toois vieetj nguwowif ddi hocj nhaf ")
+        #expect(run.composer.detector.send == .inKey)
+        // `InPlaceComposer.eraseMode(for:)`: held back after the fourth typing round.
+        #expect(!run.composer.eraseByDelete)
     }
 
     /// The line of the fourth typing round (scripts/research/terminal-underline/run.sh,
     /// t4- cells): the prediction written before the run.
     static let t4Line = "toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows "
 
-    @Test("the t4 line: Ghostty right from the second word, xterm.js from the word it is told apart in")
+    @Test("the t4 line: Ghostty right from the second word; xterm.js told apart, replaced in place as before")
     func t4Line() {
         let (gh, ghRun) = ghostty(Self.t4Line)
         print("t4 ghostty: \"\(gh)\" detected at key \(ghRun.detectedAt.map(String.init) ?? "-")")
         #expect(gh.hasSuffix(" việt đi học nhà người hò windows "))
         let (xt, xtRun) = xterm(Self.t4Line)
-        print("t4 xterm: \"\(xt)\" detected at key \(xtRun.detectedAt.map(String.init) ?? "-")")
-        #expect(xtRun.composer.eraseMode == .inKey)
+        print("t4 xterm: \"\(xt)\"")
+        #expect(xtRun.composer.detector.send == .inKey)
+        #expect(!xtRun.composer.eraseByDelete)
     }
 
     @Test("keys in a burst are never judged: a terminal typed at 30 ms is not told apart")

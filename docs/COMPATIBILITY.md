@@ -403,7 +403,7 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple; lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không có D20 (Thêm dấu cho từ đã gõ), theo D20 mục Phạm vi: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"). Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
 - D43, bản thật 60b0517 (lượt gõ thử thứ tư, 11/11/2026, 120 ms): Ghostty được nhận ra và gửi sau phím, đúng từ từ thứ hai trở đi ở zsh và vim; từ đầu của mỗi lần kích hoạt còn sai. Ở 30 ms (phím dồn) không nhận ra, sai như trước. Chrome (cả khi trang bận), Safari, Sublime Text không bị nhận nhầm.
-- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay. Trang thử xterm.js trong Chrome (cùng cơ chế): cách cũ sai ("toôoiís"), gạch chân đúng; với D43 bản 60b0517 được nhận ra và gửi trong phím nhưng sai nặng hơn (chữ dồn lại mỗi lần sửa, chưa rõ nguyên nhân).
+- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay. Trang thử xterm.js trong Chrome (cùng cơ chế): cách cũ sai ("toôoiís"), gạch chân đúng; với D43 bản 60b0517 được nhận ra và gửi trong phím nhưng sai nặng hơn (chữ dồn lại mỗi lần sửa, chưa rõ nguyên nhân); từ bản sau đó cách gửi trong phím tạm giữ lại, ô này thay tại chỗ như cách cũ.
 
 ## 7. Còn mở
 
