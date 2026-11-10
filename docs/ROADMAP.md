@@ -10,7 +10,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 ## M0 — Khung dự án
 - `git init`, `.gitignore`, `LICENSE` (GPLv3), `README.md` ngắn.
 - `project.yml` (XcodeGen) có 2 target app (`Dau`, `DauInputMethod`) và 2 package local (`DauEngine`, `DauShared`).
-- Bundle ID và Team ID để placeholder, hỏi người dùng.
+- Bundle ID và Team ID theo D24 (Tên và định danh).
 - Xong khi: `xcodegen generate` và build Debug thành công cho cả hai target, universal.
 
 ## M1 — Engine
@@ -48,11 +48,8 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Quy tắc theo ứng dụng (D5 (Quy tắc theo ứng dụng)).
 - Kiểm chứng bằng VoiceOver rằng hệ thống tự đọc tên nguồn nhập liệu khi chuyển (D17 (Trợ năng)).
 - Ma trận tương thích: bảng app × kết quả, lưu trong `docs/COMPATIBILITY.md`.
-- Reset khi nguồn nhập liệu đổi mà bộ gõ không nhận `activateServer`: xong (6c1c055).
-  - Đo 30/10/2026: chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì từ đang gõ dở không được reset.
-  - Bản sửa được kiểm bằng `to⇄cj␣` → "tocj"; tắt bộ nghe để đối chứng thì ra "tọc".
-  - Kịch bản đo ban đầu (`to` → U.S. → Dấu → `o` ra "tô") không còn là lỗi: "tô" là hành vi của D20 (Thêm dấu cho từ đã gõ) sau sự kiện reset (D4 (Từ nước ngoài) × D20).
-- Ghi tự sửa chính tả của macOS (giới hạn đã biết của D4) vào ma trận tương thích.
+- Reset khi nguồn nhập liệu đổi mà bộ gõ không nhận `activateServer` (`docs/ARCHITECTURE.md` mục "Đổi nguồn nhập liệu không qua `activateServer`").
+- Ghi tự sửa chính tả của macOS (giới hạn đã biết của D4 (Từ nước ngoài)) vào ma trận tương thích.
 
 ## M4 — App Cài đặt
 - Dựng 4 mục theo `docs/UI.md`.
@@ -68,7 +65,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Tự gửi phím 20 phím/giây vào trang thử trong Safari, Chrome và VS Code trong khi CPU đầy và `memory_pressure` đang chạy (`scripts/selftest/load/heavy.sh`).
   - Không gõ vào Telegram: script sẽ gõ vào một cuộc trò chuyện thật.
   - Không dùng TextEdit: nó tự lưu tài liệu thử lên iCloud Drive (`docs/TROUBLESHOOTING.md`).
-  - Chrome và VS Code là hai app áp phím bất đồng bộ: lượt này trả lời câu hỏi của D13 (Gạch chân là đường lui cuối cùng), app bận có dồn phím dưới 10 ms không (`docs/research/COMPETITOR-COMPARISON.md`, phần A).
+  - Chrome và VS Code là hai app áp phím bất đồng bộ (D11, ý "App trả lời chậm").
 - Chỉ số:
   - văn bản cuối khớp 100%;
   - độ trễ p50/p99 phía bộ gõ;
@@ -80,7 +77,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md`:
   - app: Zalo, Discord, Messages, Pages, Numbers, Ghostty, Zed, Xcode, WebStorm;
   - kiểm lại Terminal không gửi ⌫ cho bộ gõ;
-  - hai bài kiểm của ma trận cho phần lớn app: click chuột rồi gõ tiếp (gõ `tooi`, click chỗ khác, gõ `s`: chỉ thêm "s" ở chỗ mới) và mũi tên rồi gõ tiếp (gõ `tooi`, nhấn ←, gõ `s`: ra "tối", vì ← chỉ xoá bộ đệm còn D20 vẫn đặt dấu vào chữ trước con trỏ).
+  - hai bài kiểm của ma trận cho phần lớn app: click chuột rồi gõ tiếp (gõ `tooi`, click chỗ khác, gõ `s`: chỉ thêm "s" ở chỗ mới) và mũi tên rồi gõ tiếp (gõ `tooi`, nhấn ←, gõ `s`: ra "tối", vì ← chỉ xoá bộ đệm còn D20 (Thêm dấu cho từ đã gõ) vẫn đặt dấu vào chữ trước con trỏ).
 
 ## M7 — Phát hành
 - Làm trước: phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện).

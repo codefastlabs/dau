@@ -2,13 +2,13 @@
 
 Dấu là input method tiếng Việt **chỉ dành cho macOS**, dựng trên InputMethodKit (IMK). Nó thay chữ tại chỗ bằng `insertText(_:replacementRange:)` thay vì giả lập phím Backspace như OpenKey. Tên chính thức: **Dấu** (đã chốt). Quy tắc dùng tên và định danh kỹ thuật: xem D24 (Tên và định danh).
 
-Đọc theo thứ tự trước khi làm bất cứ việc gì:
+Phiên mới đọc `docs/PROGRESS.md` trước (đang ở đâu, việc đang chờ), rồi đọc theo thứ tự:
 1. `docs/DECISIONS.md` — sổ quyết định (nguồn chuẩn duy nhất).
 2. `docs/ARCHITECTURE.md` — kiến trúc, target, luồng xử lý phím.
 3. `docs/ROADMAP.md` — các mốc, tiêu chí hoàn thành.
 4. `docs/UI.md` — mô tả màn hình (mockup gốc nằm trên canvas, xem link trong file).
 5. `docs/BRAND.md` — biểu tượng, màu, chữ, danh sách file nhận diện cần xuất.
-6. `docs/PROGRESS.md` — đang ở đâu, việc đang chờ, số đo. **Đọc đầu tiên khi bắt đầu một phiên mới.**
+6. `docs/PROGRESS.md` — kế hoạch mốc đang làm, số đo, nhật ký theo ngày.
 
 Mục lục mọi tài liệu khác (tra cứu, nghiên cứu, lưu trữ): `docs/README.md`.
 
@@ -91,10 +91,10 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Sửa commit chưa push thì gộp vào nó** (`git commit --fixup` rồi `git rebase --autosquash`, hoặc `git reset --soft` khi là các commit cuối), không thêm commit "sửa lại"; lịch sử không giữ câu sai đã được sửa trước khi push.
 - **Commit khi subagent đang chạy:** dùng `git commit --only <paths>` để không cuốn theo file subagent đã stage; dặn subagent làm như vậy.
 
-## Lệnh thường dùng (cập nhật khi dự án có thật)
+## Lệnh thường dùng
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
-- `scripts/dev/doctor.sh` — máy mới thiếu gì để build, test, chạy Dấu (Xcode, xcodegen, ký, bản đã cài, nguồn nhập liệu, secure input), kèm lệnh sửa; chỉ đọc, `--tests` để chạy cả test engine.
+- `scripts/dev/doctor.sh` — máy mới thiếu gì để build, test, chạy Dấu (Xcode, xcodegen, ký, bản đã cài, nguồn nhập liệu, secure input), kèm lệnh sửa; không đổi gì trên hệ thống (chỉ ghi vào `build/` và `.build/`), `--tests` để chạy cả test engine.
 - `scripts/dev/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
 - `scripts/dev/clean-dau.sh` — không tham số: liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` (người dùng tự chạy) xoá những gì xoá được để thử cài từ máy sạch — các mục trong `com.apple.inputsources` phải bỏ bằng "–" trong System Settings › Keyboard › "All Input Sources" — rồi đăng xuất.
 - `scripts/dev/install-input-method.sh` — build và cài bộ gõ bản Debug vào `~/Library/Input Methods`; `--release` cho bản Release.
