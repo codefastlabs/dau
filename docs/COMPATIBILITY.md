@@ -168,7 +168,7 @@ Mong đợi: `windows car tôi yêu tiếng Việt, Sunrise␣` (D4, D26 (Gõ đ
 
 Cách chạy:
 
-- **Ứng dụng có trong script** (`safari`, `chrome`, `vscode`, `terminal`; TextEdit đã bỏ khỏi script vì tự lưu tài liệu thử lên iCloud Drive, kết quả TextEdit dưới đây là số đo cũ; lượt chạy ma trận thêm `edge`, `firefox`, `notes`, `mail`): chạy lần lượt
+- **Ứng dụng có trong script** (`safari`, `chrome`, `vscode`, `terminal`; TextEdit đã bỏ khỏi script vì tự lưu tài liệu thử lên iCloud Drive, kết quả TextEdit dưới đây là số đo cũ; lượt chạy ma trận thêm `edge`, `firefox`, `notes`, `mail`; sau đó thêm `cursor`, `cursoragents`, `vscodefile`, `sublime`, `ghostty`, cách mở và đọc chữ của từng app ghi ở đầu script): chạy lần lượt
   `scripts/selftest/typing/run.sh --delay 30 <app>` và `scripts/selftest/typing/run.sh --delay 0 <app>`.
   - Script cần quyền Trợ năng cho tiến trình chạy nó (gửi phím qua System Events).
   - Script tự mở cửa sổ trống, gõ, đọc lại, đóng không lưu, in ✓/✗ cho từng app và số đo.
@@ -407,5 +407,5 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
   - Notes không đề xuất (đúng ở 0 ms).
   - Chrome, Firefox, VS Code bỏ nhãn ngày 10/11/2026 (mục "Hiện trạng").
 - Đã xong: tiêu chí đưa một ứng dụng vào danh sách gạch chân đã chốt ở D13 (mục 1): chỉ đề xuất; thay tại chỗ chỉ sai dưới 10 ms.
-- `scripts/selftest/typing/run.sh` biết 9 ứng dụng (thêm Edge, Firefox, Notes, Mail ở lượt chạy ma trận; Cursor ngày 10/11/2026, hai chỗ gõ `cursor` và `cursoragents`, cùng đối chứng `vscodefile`). Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
+- `scripts/selftest/typing/run.sh` biết 11 ứng dụng (thêm Edge, Firefox, Notes, Mail ở lượt chạy ma trận; Cursor ngày 10/11/2026, hai chỗ gõ `cursor` và `cursoragents`, cùng đối chứng `vscodefile`; Sublime Text và Ghostty ngày 11/11/2026, chưa chạy thật). Với Ghostty, script đọc hai thứ: dòng mà trình sửa dòng của zsh giữ lại (như ở dấu nhắc) và chuỗi byte Ghostty gửi xuống terminal. Thử nhiều ứng dụng ở 0 ms cần thêm ứng dụng vào script (mở ô trống, đọc lại chữ) hoặc chấp nhận gõ tay.
 - Pages có hai bundle ID trên cùng máy (`com.apple.Pages` và `com.apple.iWork.Pages`); Numbers, Keynote bản mới đổi ID (`com.apple.Numbers`, `com.apple.Keynote`). Nếu các app này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

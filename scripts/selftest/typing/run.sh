@@ -5,13 +5,14 @@
 # (System Events keystrokes); the input method must be installed (Debug for the per-key
 # timings: a Release build types the same but logs nothing per key, D8), the Dấu input
 # source enabled (scripts/dev/install-app.sh, with --debug for a Debug build; the first
-# time, "Bật Dấu" in Dấu.app), and the apps installed.
+# time, "Bật Dấu" in Dấu.app), and the apps installed. Terminal and Ghostty are driven
+# through AppleScript too: the Automation permission for each, asked by macOS once.
 #
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
 #     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail | cursor
 #           | cursoragents (the prompt box of Cursor's agents window) | vscodefile (VS Code
-#           opened on a file, as cursor is)
+#           opened on a file, as cursor is) | sublime (Sublime Text) | ghostty (Ghostty)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/TROUBLESHOOTING.md); Safari's test page is the AppKit/WebKit reference.
@@ -52,7 +53,8 @@
 #                     replacement) from the start of that app's run (`log show
 #                     --style compact`, numbers and bundle IDs only, D8; lines of other apps
 #                     too, if any typed meanwhile) to DIR/<app>.perf.log, for
-#                     `scripts/perf/perf-report.sh --input`
+#                     `scripts/perf/perf-report.sh --input`; for ghostty also the raw
+#                     bytes Ghostty sent to the terminal, to DIR/ghostty.raw
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
 #                     Debug input method only: the script writes the bundle ID into the
@@ -70,7 +72,7 @@
 # counts and timings for that app (scripts/perf/perf-report.sh; the script sets the global
 # defaults key DauPerfLog for the run and at exit puts back what was there: the same value
 # and type, or deletes the key if it was absent, D8). The input source selected
-# before and the clipboard (read through ⌘C in browsers, VS Code, Notes, Mail) are
+# before and the clipboard (read through ⌘C in browsers, editors, Notes, Mail) are
 # restored; the clipboard is emptied before each ⌘C so a failed copy cannot pass. A new
 # document whose first letter the app capitalized by itself counts as a pass (noted).
 #
@@ -85,10 +87,24 @@
 # Return; it clears the line with ⌃U before closing the window. Keys must not contain
 # a newline.
 #
-# Safety: keys and shortcuts (⌘A ⌘C ⌘W ⌃U) are only sent while the app under test is
+# Sublime Text: `subl -n` opens an empty file of this run in a new window; read with ⌘A ⌘C
+# (nothing is saved: an unregistered copy may ask to buy a license on save); ⌘W closes
+# that tab and "Don't Save" is chosen; Sublime closes the window once its last tab is
+# closed (close_windows_when_empty, on by default on macOS). Other windows are not touched.
+#
+# Ghostty: a new window (Ghostty's AppleScript `new window`, which needs the Automation
+# permission for Ghostty once) runs a line editor of its own instead of a shell; the keys
+# go there, ⌃D ends the line and the window closes by itself. Two results: the line as
+# zsh's line editor ends up with it (the verdict, what a zsh prompt shows), and the raw
+# bytes Ghostty wrote to the terminal (printed with ⌫ for DEL, also in DIR/ghostty.raw
+# with --save). Details at run_ghostty. A Ghostty launched by the script opens no window
+# of its own (--initial-window=false).
+#
+# Safety: keys and shortcuts (⌘A ⌘C ⌘W ⌃U ⌃D) are only sent while the app under test is
 # frontmost (browsers: with the test page in front; VS Code: an Untitled editor; Mail:
-# the New Message window). If another app comes to the front, the script stops sending
-# keys and exits with status 3, also when that happens during the last app.
+# the New Message window; Sublime Text, Ghostty: the window titled dau-selftest). If
+# another app comes to the front, the script stops sending keys and exits with status 3,
+# also when that happens during the last app.
 #
 # After selecting the Dấu input source the script checks that Dấu is the current source
 # (TIS is trusted for the current source only); if not, it stops and exits with status 4.
@@ -137,7 +153,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -782,6 +798,227 @@ run_terminal() {
   osascript -e "tell application \"Terminal\" to close window id $win" >/dev/null 2>&1
 }
 
+# Sublime Text (System Events process "sublime_text"): an empty file of this run in a new
+# window of its own (`subl -n`), so ⌘W and the save prompt only ever concern this file.
+# Read with ⌘A ⌘C, not by saving and reading the file back: an unregistered copy may ask
+# to buy a license after a save, a dialog the script must not answer for the user.
+SUBLIME_PROC=sublime_text
+SUBLIME_CLI="/Applications/Sublime Text.app/Contents/SharedSupport/bin/subl"
+SELFTEST_TITLE=dau-selftest
+# Status 0 when this run's Sublime window is the focused one; if not, raises it (it can
+# open behind another window of the app).
+sublime_front() {
+  front_ok "$SUBLIME_PROC" "$SELFTEST_TITLE" && return 0
+  osascript -e "tell application \"System Events\" to tell process \"$SUBLIME_PROC\"
+    set frontmost to true
+    perform action \"AXRaise\" of (first window whose name contains \"$SELFTEST_TITLE\")
+  end tell" >/dev/null 2>&1
+  return 1
+}
+sublime_closed() { [[ "$(window_names "$SUBLIME_PROC")" != *"$SELFTEST_TITLE"* ]]; }
+# Clicks "Don't Save" in the prompt Sublime shows for this run's file (a sheet of its
+# window, or a dialog window whose text names the file), only while Sublime is frontmost.
+# Status 0 when clicked.
+sublime_discard() {
+  osascript - "$SUBLIME_PROC" "$SELFTEST_TITLE" <<'OSA' >/dev/null 2>&1
+on run argv
+  set p to item 1 of argv
+  set t to item 2 of argv
+  tell application "System Events"
+    if name of first process whose frontmost is true is not p then error "not front"
+    tell process p
+      repeat with w in windows
+        set cands to {}
+        if (count of sheets of w) > 0 then
+          if name of w contains t then set cands to buttons of sheet 1 of w
+        else
+          set isDialog to false
+          try
+            set isDialog to (subrole of w is in {"AXDialog", "AXSystemDialog"})
+          end try
+          if isDialog then
+            set mine to false
+            repeat with s in static texts of w
+              if (value of s as text) contains t then set mine to true
+            end repeat
+            if mine then set cands to buttons of w
+          end if
+        end if
+        repeat with b in cands
+          if name of b is in {"Don't Save", "Don’t Save"} then
+            click b
+            return
+          end if
+        end repeat
+      end repeat
+    end tell
+  end tell
+  error "no prompt for this file"
+end run
+OSA
+}
+# The tab closed without asking, or its prompt was answered.
+sublime_closed_or_discarded() { sublime_closed || sublime_discard; }
+run_sublime() {
+  local file="$WORK/$SELFTEST_TITLE.txt"
+  : > "$file"
+  "$SUBLIME_CLI" -n "$file" >/dev/null 2>&1
+  # Not there in time: type_keys's guard reports it and stops the run.
+  wait_until -i 0.5 15 sublime_front
+  select_dau; type_keys "$SUBLIME_PROC" "$SELFTEST_TITLE"
+  copy_all "$SUBLIME_PROC" "$SELFTEST_TITLE"
+  # ⌘W on this tab (the guard checks its title), then "Don't Save": nothing is written.
+  # Its window closes with its last tab (close_windows_when_empty, on by default on macOS).
+  guarded "$SUBLIME_PROC" "$SELFTEST_TITLE" \
+    'tell application "System Events" to keystroke "w" using {command down}' >/dev/null || return 0
+  wait_until 5 sublime_closed_or_discarded && wait_until 5 sublime_closed
+  sublime_closed || log_warn "Còn tab \"$SELFTEST_TITLE\" hoặc hộp thoại lưu của Sublime Text, đóng tay giúp (Don't Save)"
+}
+
+# Ghostty (System Events process "ghostty"). Its AppleScript cannot read a window's text,
+# so the new window runs a small line editor of this run's own (the cell below) in place
+# of the user's shell, through the `command` of a Ghostty surface configuration. The cell:
+# - puts Ghostty's terminal in raw mode and copies every byte Ghostty writes to it, as is,
+#   to the raw file (tee): DEL bytes, text sent again after a replacement, everything;
+# - passes the same bytes, through a terminal of its own (script(1)), to zsh's line editor
+#   (`vared` in `zsh -f`: emacs keys, none of the user's configuration). There ⌫ (DEL)
+#   deletes one character, as at a zsh prompt, and the line it ends with is the result
+#   compared with --expect: what a zsh prompt would hold. ⌃D is bound to accept the line,
+#   so no Return is sent. Ghostty drops most keys that commit marked text (Return, ⌃C…,
+#   docs/research/TERMINAL-AND-UNDERLINE.md), so with --underline and keys that do not
+#   end a word, the first ⌃D may only commit it: run_ghostty sends a second one;
+# - sets the window title to dau-selftest just before the line editor reads its first
+#   key: the guard waits for that title, so no key is sent before the editor is ready.
+# Not used: the terminal's own line mode (`cat` in canonical mode), whose erase is not a
+# zsh prompt's line editor and takes one byte unless iutf8 is set; and a named pipe in
+# place of the pipe into script(1), which macOS's script refuses as its input.
+# The cell ends after ⌃D; Ghostty then closes the window (wait-after-command is off by default).
+GHOSTTY_PROC=ghostty
+GHOSTTY_RAW="$WORK/ghostty.raw"
+GHOSTTY_LINE="$WORK/ghostty.line"
+GHOSTTY_CELL="$WORK/ghostty-cell.zsh"
+# The cell, a zsh script: $1 raw bytes file, $2 line file, $3 window title.
+ghostty_cell() {
+  cat <<'CELL'
+# Runs in the Ghostty window opened by scripts/selftest/typing/run.sh (run_ghostty).
+export LC_ALL=en_US.UTF-8
+size=(${=$(stty size </dev/tty 2>/dev/null)})
+stty raw -echo </dev/tty
+/usr/bin/script -q /dev/null /bin/zsh -f -c '
+  (( $1 > 0 )) && stty rows $1 cols $2 2>/dev/null
+  zmodload zsh/zle
+  bindkey -e
+  bindkey "^D" accept-line
+  print -n "\e]2;$4\a"
+  line=
+  vared -p "dau> " line
+  print -rn -- "$line" > $3
+' zsh "${size[1]:-0}" "${size[2]:-0}" "$2" "$3" < <(exec /usr/bin/tee "$1" </dev/tty)
+/usr/bin/pkill -P $$ -x tee
+exit 0
+CELL
+}
+# The command line Ghostty runs (with arguments, Ghostty runs it through /bin/sh -c).
+ghostty_command() { print -r -- "/bin/zsh -f ${(qq)GHOSTTY_CELL} ${(qq)GHOSTTY_RAW} ${(qq)GHOSTTY_LINE} ${(qq)SELFTEST_TITLE}"; }
+# A new Ghostty window running command $1; prints the window's id. The app ID is written
+# out: AppleScript needs it at compile time to know Ghostty's terms.
+ghostty_new_window() {
+  osascript - "$1" <<'OSA'
+on run argv
+  tell application id "com.mitchellh.ghostty"
+    activate
+    set cfg to new surface configuration
+    set command of cfg to (item 1 of argv)
+    set w to new window with configuration cfg
+    return id of w
+  end tell
+end run
+OSA
+}
+ghostty_running() { [[ "$(osascript -e "application id \"$(bundle_id ghostty)\" is running" 2>/dev/null)" == true ]]; }
+ghostty_window_gone() { # window id
+  [[ ", $(osascript -e 'tell application id "com.mitchellh.ghostty" to get id of every window' 2>/dev/null), " != *", $1, "* ]]
+}
+# Status 0 when this run's Ghostty window is the focused one with the cell's title; if
+# not, brings that window to the front.
+ghostty_front() { # window id
+  front_ok "$GHOSTTY_PROC" "$SELFTEST_TITLE" && return 0
+  osascript -e "tell application id \"com.mitchellh.ghostty\" to activate window (first window whose id is \"$1\")" >/dev/null 2>&1
+  return 1
+}
+# ⌃D: the cell's line editor accepts the line.
+ghostty_end_line() {
+  guarded "$GHOSTTY_PROC" "$SELFTEST_TITLE" \
+    'tell application "System Events" to keystroke "d" using {control down}' >/dev/null
+}
+# Closes Ghostty window $1 when the cell did not end. Ghostty asks before closing a window
+# whose program still runs: "Close" is clicked in that sheet of this window only.
+ghostty_close() { # window id
+  osascript -e "tell application id \"com.mitchellh.ghostty\" to close window (first window whose id is \"$1\")" >/dev/null 2>&1
+  wait_until 3 ghostty_window_gone "$1" && return 0
+  osascript - "$GHOSTTY_PROC" "$SELFTEST_TITLE" <<'OSA' >/dev/null 2>&1
+on run argv
+  tell application "System Events" to tell process (item 1 of argv)
+    repeat with w in windows
+      if name of w contains (item 2 of argv) and (count of sheets of w) > 0 then
+        repeat with b in buttons of sheet 1 of w
+          if name of b is "Close" then
+            click b
+            return
+          end if
+        end repeat
+      end if
+    end repeat
+  end tell
+end run
+OSA
+  wait_until 3 ghostty_window_gone "$1" || log_warn "Còn cửa sổ Ghostty \"$SELFTEST_TITLE\", đóng tay giúp"
+}
+run_ghostty() {
+  local win
+  rm -f "$GHOSTTY_RAW" "$GHOSTTY_LINE"
+  ghostty_cell > "$GHOSTTY_CELL"
+  # Not running: launch it without the window it opens at launch, so that only this run's
+  # window is opened (and closed). It stays running afterwards, as other apps do.
+  if ! ghostty_running; then
+    open -a Ghostty --args --initial-window=false
+    wait_until 10 ghostty_running
+  fi
+  if ! win="$(ghostty_new_window "$(ghostty_command)" 2>&1)" || [[ -z "$win" ]]; then
+    log_error "Không mở được cửa sổ Ghostty: ${win:-không rõ lý do}"
+    log_hint "Cần quyền Automation cho Ghostty (System Settings › Privacy & Security › Automation) và macos-applescript chưa tắt trong cấu hình Ghostty."
+    return 0
+  fi
+  # Not there in time: type_keys's guard reports it and stops the run.
+  wait_until -i 0.3 15 ghostty_front "$win"
+  select_dau
+  if type_keys "$GHOSTTY_PROC" "$SELFTEST_TITLE" && ghostty_end_line; then
+    if ! wait_until 2 test -e "$GHOSTTY_LINE" && ! stopped; then
+      log_warn "Ghostty: dòng chưa kết thúc 2 giây sau ⌃D (⌃D chỉ chốt chữ gạch chân?), gửi lại ⌃D"
+      ghostty_end_line && wait_until 3 test -e "$GHOSTTY_LINE"
+    fi
+  fi
+  wait_until 5 ghostty_window_gone "$win" || ghostty_close "$win"
+  [[ -e "$GHOSTTY_LINE" ]] && print -r -- "$(<"$GHOSTTY_LINE")"
+  return 0
+}
+# The bytes of file $1 for reading: DEL as ⌫, ⌃D as ⌃D, ESC as ⎋, other control bytes as
+# <hex>, text as is.
+visible_bytes() {
+  local LC_ALL=en_US.UTF-8 s c out=""
+  s="$(cat -- "$1"; print -n x)"; s="${s%x}"
+  for c in "${(@s::)s}"; do
+    case "$c" in
+      $'\x7f') out+="⌫" ;;
+      $'\x04') out+="⌃D" ;;
+      $'\e') out+="⎋" ;;
+      [[:cntrl:]]) out+="<$(printf '%02x' "'$c")>" ;;
+      *) out+="$c" ;;
+    esac
+  done
+  print -r -- "$out"
+}
+
 # --- run -------------------------------------------------------------------------------
 trim_right() { sed -e 's/[[:space:]]*$//'; }
 EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
@@ -798,6 +1035,7 @@ bundle_id() {
     notes) echo com.apple.Notes ;; mail) echo com.apple.mail ;;
     cursor|cursoragents) echo com.todesktop.230313mzl4w4u92 ;;
     vscodefile) echo com.microsoft.VSCode ;;
+    sublime) echo com.sublimetext.4 ;; ghostty) echo com.mitchellh.ghostty ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
@@ -844,6 +1082,11 @@ for app in "${APPS[@]}"; do
     echo source > "$STOP_FILE"; break
   fi
   if [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
+  # Ghostty: the bytes it sent to the terminal, before the line editor applied ⌫ (DEL).
+  if [[ "$app" == ghostty && -e "$GHOSTTY_RAW" ]]; then
+    log_detail "byte Ghostty gửi xuống terminal: \"$(visible_bytes "$GHOSTTY_RAW")\""
+    [[ -n "$SAVE_DIR" ]] && cp "$GHOSTTY_RAW" "$SAVE_DIR/ghostty.raw"
+  fi
   "$LOG" show --start "$start" --style compact \
     --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
