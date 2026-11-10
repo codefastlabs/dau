@@ -28,9 +28,13 @@
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
-#                     the verdict still compares with --expect. Before the test keys, two
-#                     probe keys confirm in the focused field that this source handles
+#                     the verdict still compares with --expect. Before the test keys, a
+#                     probe word confirms in the focused field that this source handles
 #                     the keys there (confirm_source); if not, the run stops (status 4).
+#   --confirm         the same switch and probe in the focused field when typing with Dấu, so
+#                     that Dấu and a --source run are measured the same way. Off by default:
+#                     the probe leaves a document that is no longer new (the first word of a
+#                     new document is a case of its own).
 #   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
 #                     and +MS (never below 0), drawn per key: closer to a human than an
 #                     even pace. With --delay 0 the keys still go one by one.
@@ -108,6 +112,7 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
+CONFIRM=0
 SOURCE_ID=""
 SAVE_DIR=""
 JITTER_MS=0
@@ -122,6 +127,7 @@ while [[ $# -gt 0 ]]; do
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
+    --confirm) CONFIRM=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
@@ -364,51 +370,51 @@ cycle_to_source() { # process [window-title-substring]
   sleep 1
 }
 
-# With --source: confirms, in the focused field itself, that the chosen input method is
-# the one handling keys there, before the test keys are typed. What macOS reports as the
-# current source (select_dau) is not enough: a source selected from this script's process
-# can be current, and shown in the menu bar, while the field still gets the keys
-# untransformed (docs/PROGRESS.md, 10/11/2026). The probe types two keys and a space that the source
-# must turn into "â", reads the field back and empties it. Not there: the source is
-# switched to again with the system shortcut (cycle_to_source) and the probe repeated; after three tries
-# the run stops with status 4, so a cell typed with the wrong input method is never
-# reported as a result. Not used for Dấu itself (the probe would change what is measured:
-# the first word of a new document), nor in Terminal (no read-back by copy).
+# With --source, or --confirm for Dấu: confirms, in the focused field itself, that the
+# chosen input method is the one handling keys there, before the test keys are typed.
+# What macOS reports as the current source (select_dau) is not enough: a source selected
+# from this script's process can be current, and shown in the menu bar, while the field
+# still gets the keys untransformed (docs/PROGRESS.md, 10/11/2026). So the switch is made
+# with the system shortcut (cycle_to_source), as the user makes it, and then the probe
+# types a short word, reads the field back and empties it.
+# The probe word is "ân " (Telex aan, VNI a6n, then a space):
+# - a real Vietnamese word: Dấu puts back the keys of a word that is not Vietnamese when
+#   the word ends (D4), so a lone "â" comes back as "aa " with Dấu working as designed;
+# - ended by a space: an input method that composes with marked text (Apple's) only
+#   commits there, and ⌘A ⌘C does not copy text that is still being composed;
+# - one key at a time, at a human pace: keys in one keystroke command arrive about 1 ms
+#   apart, which is itself a condition under test.
+# Not there after three tries: the run stops with status 4, so a cell typed with the wrong
+# input method is never reported as a result. --confirm is off by default for Dấu: the
+# probe leaves a document that is no longer new (the first word of a new document is a
+# case of its own). Not used in Terminal (no read-back by copy).
 confirm_source() { # process [window-title-substring]
-  [[ -n "$SOURCE_ID" && "$1" != Terminal ]] || return 0
-  local probe try got
+  [[ ( -n "$SOURCE_ID" || $CONFIRM == 1 ) && "$1" != Terminal ]] || return 0
+  local probe try got c keys=""
   case "$SOURCE_ID" in
-    *Telex*) probe=aa ;;
-    *VNI*) probe=a6 ;;
+    *Telex*|"") probe=aan ;;  # "": Dấu with --confirm, its keys here are Telex
+    *VNI*) probe=a6n ;;
     *) log_warn "Không có phím thử cho nguồn $SOURCE_ID: không xác nhận được bộ gõ trong ô gõ"; return 0 ;;
   esac
-  # Selecting from this script (select_dau) leaves the field on the old input method
-  # (measured 10/11/2026), so the system shortcut makes the switch before the first probe.
-  cycle_to_source "$1" "${2:-}" || return 1
+  for c in ${(s::)probe}; do keys+="keystroke \"$c\"
+      delay 0.15
+      "; done
   for try in 1 2 3; do
-    # One key at a time, at a human pace: both keys in one keystroke command arrive about
-    # 1 ms apart, which is itself a condition under test.
+    cycle_to_source "$1" "${2:-}" || return 1
     guarded "$1" "${2:-}" "tell application \"System Events\"
-      keystroke \"${probe[1]}\"
-      delay 0.15
-      keystroke \"${probe[2]}\"
-      delay 0.15
-      keystroke space
+      ${keys}keystroke space
     end tell" >/dev/null || return 1
-    # The space ends the word: an input method that composes with marked text (Apple's)
-    # only commits there, and ⌘A ⌘C does not copy text that is still being composed.
     sleep 0.3
     got="$(copy_all "$1" "${2:-}")" || return 1
     guarded "$1" "${2:-}" 'tell application "System Events" to key code 51' >/dev/null || return 1
     sleep 0.3
-    if [[ "${got%% }" == "â" ]]; then
-      log_detail "bộ gõ trong ô gõ: đã xác nhận $SOURCE_ID (lần thử $try)" >&2
+    if [[ "${got%% }" == "ân" ]]; then
+      log_detail "bộ gõ trong ô gõ: đã xác nhận $DAU_SOURCE (lần thử $try)" >&2
       return 0
     fi
-    log_warn "Ô gõ chưa dùng $SOURCE_ID (phím thử \"$probe\" ra \"$got\"), chọn lại nguồn (lần $try)"
-    cycle_to_source "$1" "${2:-}" || return 1
+    log_warn "Ô gõ chưa dùng $DAU_SOURCE (phím thử \"$probe\" ra \"$got\"), chuyển nguồn lại (lần $try)"
   done
-  log_error "Dừng: $SOURCE_ID được chọn nhưng không có tác dụng trong ô gõ — không gõ chuỗi thử"
+  log_error "Dừng: $DAU_SOURCE được chọn nhưng không có tác dụng trong ô gõ — không gõ chuỗi thử"
   echo source > "$STOP_FILE"
   return 1
 }
@@ -685,7 +691,16 @@ file_editor() {
   "$cli" --new-window "$file" >/dev/null 2>&1
   osascript -e "tell application \"System Events\" to set frontmost of process \"$proc\" to true" >/dev/null 2>&1
   # Not there in time: type_keys's guard reports it and stops the run.
-  wait_until -i 0.3 20 front_ok "$proc" dau-selftest
+  # The new window can open behind another window of the app (Cursor keeps its agents
+  # window focused): raise it until it is the focused one.
+  local i
+  for i in {1..40}; do
+    osascript -e "tell application \"System Events\" to tell process \"$proc\" to perform action \"AXRaise\" of (first window whose name contains \"dau-selftest\")" >/dev/null 2>&1
+    front_ok "$proc" dau-selftest && break
+    # The first call after a while can bring the app up without opening the file: ask again.
+    (( i % 10 == 0 )) && "$cli" "$file" >/dev/null 2>&1
+    sleep 0.5
+  done
   select_dau; type_keys "$proc" dau-selftest
   copy_all "$proc" dau-selftest
   guarded "$proc" dau-selftest 'tell application "System Events"
