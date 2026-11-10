@@ -282,3 +282,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Hồi quy: Chrome trang bận (chuỗi edit) đúng 1/1, VS Code 5 ms đúng 1/1.
   - Script: chuyển nguồn bằng phím tắt với 0,5 s mỗi lần nhấn chạy đúng ở cả ba ô Cursor.
   - Dọn: cửa sổ thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài bộ gõ bản Release 1c6326a. Cursor: trước lượt đo có cửa sổ "codefast" và "Cursor Agents"; sau lượt đo cửa sổ "codefast" còn nhưng không ở màn hình đang xem, không thấy cửa sổ "Cursor Agents"; chưa rõ có phải do script.
+- 10/11/2026 — `typing/run.sh`: nguồn cần gõ (Dấu hay `--source`) đang là nguồn hiện tại thì không chuyển gì; khác thì chuyển bằng phím tắt chuyển nguồn của hệ thống tới khi macOS báo đúng nguồn, và trả lại nguồn cũ cùng cách khi xong. Script không còn chọn nguồn bằng API trên đường này (trừ ký hiệu ⇄, là ca thử cố ý, và khi không đọc được phím tắt). Bỏ `--system-switch`. Chưa chạy thật sau khi đổi — phiên chính.

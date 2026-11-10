@@ -28,12 +28,11 @@
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
-#                     the verdict still compares with --expect. The switch to this source
-#                     is made with macOS's own "Select next source in Input menu" shortcut
-#                     once the field has the focus; text that comes back as the keys typed
-#                     means the source did not take: an invalid cell (status 4).
-#   --system-switch   switch to Dấu the same way (system shortcut) instead of selecting it
-#                     from this script, so that Dấu and a --source run are measured alike.
+#                     the verdict still compares with --expect. Text that comes back as the
+#                     keys typed means the source did not take: an invalid cell (status 4).
+#                     The source wanted (this one, or Dấu) is switched to only when it is
+#                     not the current one, with macOS's own "Select next source in Input
+#                     menu" shortcut, and switched back the same way at the end.
 #   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
 #                     and +MS (never below 0), drawn per key: closer to a human than an
 #                     even pace. With --delay 0 the keys still go one by one.
@@ -111,7 +110,6 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 DELAY_MS=30
 UNDERLINE=0
-SYSTEM_SWITCH=0
 SOURCE_ID=""
 SAVE_DIR=""
 JITTER_MS=0
@@ -126,7 +124,6 @@ while [[ $# -gt 0 ]]; do
     --keys) KEYS="${2?}"; shift 2 ;;
     --expect) EXPECT="${2?}"; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
-    --system-switch) SYSTEM_SWITCH=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
@@ -231,7 +228,7 @@ cleanup() {
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
   if [[ "$("$INPUT_SOURCE" current)" != "$ORIGINAL_SOURCE" ]]; then
-    "$INPUT_SOURCE" select "$ORIGINAL_SOURCE" || true
+    cycle_to_source "$ORIGINAL_SOURCE" || true
   fi
   rm -rf "$WORK"
 }
@@ -281,7 +278,11 @@ fi
 is_current_source() { [[ "$("$INPUT_SOURCE" current 2>/dev/null)" == "$1" ]]; }
 select_dau() {
   stopped && return 1
-  "$INPUT_SOURCE" select "$DAU_SOURCE" >&2
+  # Already the current source: nothing to switch. The script never selects a source
+  # through the API on this path, so what macOS reports is what the system switched to.
+  if ! is_current_source "$DAU_SOURCE"; then
+    cycle_to_source "$DAU_SOURCE"
+  fi
   if wait_until 3 is_current_source "$DAU_SOURCE"; then
     # Fixed: the input method is activated for the focused app after the switch, and
     # nothing outside it shows when that is done.
@@ -336,13 +337,14 @@ guarded() {
 }
 stopped() { [[ -e "$STOP_FILE" ]]; }
 
-# Switches to $DAU_SOURCE the way the user does: macOS's own "Select next source in Input
-# menu" shortcut, read from the user's settings (symbolic hot key 61), pressed while the
-# app under test is in front, until macOS reports the wanted source. The system then
-# switches the source for the focused field itself, which selecting a source from this
-# script's process does not always do. Shortcut off or unreadable: falls back to selecting
-# through the original source, and says so.
-cycle_to_source() { # process [window-title-substring]
+# Switches to source $1 the way the user does: macOS's own "Select next source in Input
+# menu" shortcut, read from the user's settings (symbolic hot key 61), pressed until
+# macOS reports the wanted source. The system then switches the source for the focused
+# field itself; a source selected from this script's process (TISSelectInputSource) is
+# reported as current, and shown in the menu bar, while the field keeps the old input
+# method (docs/PROGRESS.md, 10/11/2026). Only called when the wanted source is not the
+# current one. Shortcut off or unreadable: falls back to the API, and says so.
+cycle_to_source() { # source-id
   local json key mods using="" n
   json="$(plutil -extract AppleSymbolicHotKeys.61 json -o - "$HOME/Library/Preferences/com.apple.symbolichotkeys.plist" 2>/dev/null)"
   if [[ "$json" == *'"enabled":true'* && "$json" =~ '"parameters":\[[0-9]+,([0-9]+),([0-9]+)\]' ]]; then
@@ -353,40 +355,24 @@ cycle_to_source() { # process [window-title-substring]
     (( mods & 1048576 )) && using+="command down, "
     using="${using%, }"
     for n in 1 2 3 4 5 6 7 8 9 10; do
-      guarded "$1" "${2:-}" "tell application \"System Events\" to key code $key using {$using}" >/dev/null || return 1
+      osascript -e "tell application \"System Events\" to key code $key using {$using}" >/dev/null 2>&1
       # Fixed: the switch, and the system's source switcher going away, are not readable.
       sleep 0.5
-      is_current_source "$DAU_SOURCE" && { sleep 0.5; return 0; }
+      is_current_source "$1" && return 0
     done
-    log_warn "Phím tắt chuyển nguồn của macOS không đưa tới $DAU_SOURCE sau 10 lần nhấn"
+    log_warn "Phím tắt chuyển nguồn của macOS không đưa tới $1 sau 10 lần nhấn: chọn bằng API"
   else
-    log_warn "Không đọc được phím tắt \"Select next source in Input menu\" (hoặc đang tắt): chọn lại nguồn bằng API"
+    log_warn "Không đọc được phím tắt \"Select next source in Input menu\" (hoặc đang tắt): chọn nguồn bằng API"
   fi
-  "$INPUT_SOURCE" select "$ORIGINAL_SOURCE" >&2 || true
-  sleep 0.5
-  "$INPUT_SOURCE" select "$DAU_SOURCE" >&2 || true
-  wait_until 3 is_current_source "$DAU_SOURCE" || true
-  sleep 1
+  "$INPUT_SOURCE" select "$1" >&2 || true
 }
 
-# With --source, or --system-switch for Dấu: after the field has the focus, the switch to
-# the wanted source is made with the system shortcut (cycle_to_source), as the user makes
-# it. A source selected from this script's process (select_dau) can be current, and shown
-# in the menu bar, while the focused field still gets the keys untransformed
-# (docs/PROGRESS.md, 10/11/2026). No probe is typed: with the shortcut the field followed
-# in every measured cell, and a --source cell whose text comes back as the keys typed is
-# reported as an invalid cell (status 4) by the verdict below. Not used in Terminal.
-switch_in_field() { # process [window-title-substring]
-  [[ ( -n "$SOURCE_ID" || $SYSTEM_SWITCH == 1 ) && "$1" != Terminal ]] || return 0
-  cycle_to_source "$1" "${2:-}"
-}
 
 type_keys() { # process [window-title-substring]
   stopped && return 1
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  switch_in_field "$1" "${2:-}" || return 1
   if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" <<'OSA'
 on run argv
   set s to item 1 of argv
