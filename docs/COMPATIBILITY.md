@@ -91,7 +91,7 @@ Cách ghi công nghệ ở mục 3:
 | Terminal | Terminal | `com.apple.Terminal` | có (2.15) | AppKit, chờ shell in lại chữ | bất đồng bộ (đã đo, mục 6.2) |
 | Terminal | iTerm2 | `com.googlecode.iterm2` | không | AppKit (suy luận) | như Terminal (suy luận) |
 | Terminal | Warp | `dev.warp.Warp-Stable` | không | tự vẽ bằng Metal, Rust (suy luận) | chưa biết |
-| Terminal | Ghostty | `com.mitchellh.ghostty` | có (1.4.0) | AppKit + SwiftUI, vẽ bằng Metal | không thay theo `replacementRange`: chữ thay bị gửi thêm vào sau; vị trí con trỏ báo luôn là 0 (đọc mã Ghostty 1.4.0; đo 11/11/2026: `dd` → "dđ", `vieetj` ra chuỗi phím gốc, `selectedRange` luôn `{0,0}`). Gạch chân: chữ đúng, Return ngay sau từ gạch chân bị nuốt (mục 6.8) |
+| Terminal | Ghostty | `com.mitchellh.ghostty` | có (1.4.0) | AppKit + SwiftUI, vẽ bằng Metal | không thay theo `replacementRange`: chữ thay bị gửi thêm vào sau; vị trí con trỏ báo luôn là 0 (đọc mã Ghostty 1.4.0; đo 11/11/2026: `dd` → "dđ", `vieetj` ra chuỗi phím gốc, `selectedRange` luôn `{0,0}`). Từ 60b0517 (D43 (Ô bỏ qua vùng thay chữ)): đúng từ từ thứ hai của mỗi lần kích hoạt ở 120 ms, chưa đúng khi gõ dồn. Gạch chân: chữ đúng, Return ngay sau từ gạch chân bị nuốt (mục 6.8) |
 | Chat | Zalo | `com.vng.zalo` | có (26.10.10) | Electron | như VS Code (suy luận) |
 | Chat | Messenger | web (`messenger.com`, `facebook.com`) | web | trình duyệt | theo trình duyệt. Meta đã ngừng app Messenger cho Mac từ 15/12/2025 và chuyển người dùng sang web ([TechCrunch](https://techcrunch.com/2025/10/16/meta-to-shut-down-messenger-desktop-apps-for-mac-and-windows/), [AppleInsider](https://appleinsider.com/articles/25/12/15/facebook-messenger-for-macos-departs-the-desktop)); ID cũ `com.facebook.archon` không có trên máy |
 | Chat | Telegram | `ru.keepcoder.Telegram` | có (13.1.0) | AppKit, Swift (bản "Telegram for macOS") | thấp (lượt thử M2 đúng ở 30 ms) |
@@ -396,13 +396,14 @@ Phát hiện ở lượt đo D20 của M3 (`docs/history/LOG-M0-M4.md` nhật k�
   - `CursorUIViewService` giữ ảnh cũ trong bộ nhớ đệm và bỏ qua SIGTERM: máy đã cài bản cũ thấy V sau khi đăng xuất, hoặc `killall -9 CursorUIViewService` (dịch vụ tự chạy lại).
 - Không thử (không cần sau khi tìm ra nguyên nhân): ảnh PDF, `TISIconLabels` cấp bundle, nhãn bản địa hoá. Chuyển sang IMK extension (`.appex`) có lẽ cũng không cho nhãn chữ, vì bảng nhãn khoá theo ID của Apple (suy luận, chưa thử).
 
-### 6.8 Ghostty bỏ qua vùng thay; gạch chân không sửa được từ đã chốt — ghi ngày 11/11/2026
+### 6.8 Ghostty bỏ qua vùng thay; gạch chân không sửa được từ đã chốt — ghi ngày 11/11/2026, sửa cùng ngày (D43)
 
 - Cơ chế (đọc mã) và các hướng sửa: `docs/research/TERMINAL-AND-UNDERLINE.md`; số đo: nhật ký `docs/PROGRESS.md` ngày 11/11; chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`.
 - Ghostty 1.4.0 không thay chữ theo `replacementRange` và báo `selectedRange` là `{0,0}`. Đây không phải app áp phím bất đồng bộ (mục 6.2): hỏi lại bao lâu cũng không đúng. Thay tại chỗ sai ở 120 ms; Telex của Apple (marked text) đúng.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple; lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13 (Gạch chân là đường lui cuối cùng)) không có D20 (Thêm dấu cho từ đã gõ), theo D20 mục Phạm vi: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"). Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
-- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay. Trang thử xterm.js trong Chrome (cùng cơ chế, 11/11/2026): cách hiện tại sai ("toôoiís"), gạch chân đúng.
+- D43, bản thật 60b0517 (lượt gõ thử thứ tư, 11/11/2026, 120 ms): Ghostty được nhận ra và gửi sau phím, đúng từ từ thứ hai trở đi ở zsh và vim; từ đầu của mỗi lần kích hoạt còn sai. Ở 30 ms (phím dồn) không nhận ra, sai như trước. Chrome (cả khi trang bận), Safari, Sublime Text không bị nhận nhầm.
+- Terminal của Claude (xterm.js trong Electron): chưa đo; theo mã cũng không thay theo vùng thay. Trang thử xterm.js trong Chrome (cùng cơ chế): cách cũ sai ("toôoiís"), gạch chân đúng; với D43 bản 60b0517 được nhận ra và gửi trong phím nhưng sai nặng hơn (chữ dồn lại mỗi lần sửa, chưa rõ nguyên nhân).
 
 ## 7. Còn mở
 
