@@ -49,7 +49,7 @@
         "com.todesktop.230313mzl4w4u92"
       ],
       "suggestUnderline": true,
-      "note": "Electron (built from VS Code). Not measured."
+      "note": "Electron (built from VS Code 1.128). Measured 10/11/2026 (3.29.15): the agents prompt is right at 5, 20 and 100 ms; in the editor in-place is right at 100 ms and at 20 ms after the M6 fixes, wrong at 5 ms and in a burst from the first key of a new document; underline right at 5 ms. The editor counts positions from the start of the word."
     },
     {
       "name": "Zalo",
