@@ -21,7 +21,9 @@
 #                     Chrome, VS Code and Terminal fail with method A (docs/PROGRESS.md);
 #                     120 is close to normal typing.
 #   --keys "…"        keys to type (default: the sample sentence below). Two marks are
-#                     not typed as characters: ⌫ sends the Delete key; ⇄ switches the
+#                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
+#                     key; ↩ the Return key (ghostty only: the line editor there ends at
+#                     Return, nothing runs; any other app is an error); ⇄ switches the
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
@@ -180,6 +182,11 @@ fi
 US_SOURCE=com.apple.keylayout.US
 if [[ "$KEYS" == *$'\n'*|| "$KEYS" == *$'\r'* ]]; then
   log_die 2 "Phím gõ không được có xuống dòng (không bao giờ nhấn Return trong Terminal)."
+fi
+if [[ "$KEYS" == *↩* ]]; then
+  for app in "${APPS[@]}"; do
+    [[ $app == ghostty ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty, không với $app"
+  done
 fi
 
 # --- helpers -------------------------------------------------------------------------
@@ -412,7 +419,7 @@ on run argv
   set j to (item 5 of argv) as integer
   tell application "System Events"
     if (name of first process whose frontmost is true) is not p then error "frontmost changed"
-    if d = 0 and j = 0 and s does not contain "⌫" and s does not contain "⇄" then
+    if d = 0 and j = 0 and s does not contain "⌫" and s does not contain "←" and s does not contain "↩" and s does not contain "⇄" then
       keystroke s
     else
       set i to 0
@@ -424,6 +431,10 @@ on run argv
         end if
         if (c as text) is "⌫" then
           key code 51
+        else if (c as text) is "←" then
+          key code 123
+        else if (c as text) is "↩" then
+          key code 36
         else if (c as text) is "⇄" then
           tell current application to do shell script sw
           if (name of first process whose frontmost is true) is not p then error "frontmost changed"
@@ -884,7 +895,8 @@ run_sublime() {
 #   (`vared` in `zsh -f`: emacs keys, none of the user's configuration). There ⌫ (DEL)
 #   deletes one character, as at a zsh prompt, and the line it ends with is the result
 #   compared with --expect: what a zsh prompt would hold. ⌃D is bound to accept the line,
-#   so no Return is sent. Ghostty drops most keys that commit marked text (Return, ⌃C…,
+#   so no Return is needed (keys ending with ↩ show whether Ghostty passes Return on: the
+#   raw bytes then hold <0d>). Ghostty drops most keys that commit marked text (Return, ⌃C…,
 #   docs/research/TERMINAL-AND-UNDERLINE.md), so with --underline and keys that do not
 #   end a word, the first ⌃D may only commit it: run_ghostty sends a second one;
 # - sets the window title to dau-selftest just before the line editor reads its first
@@ -992,7 +1004,10 @@ run_ghostty() {
   # Not there in time: type_keys's guard reports it and stops the run.
   wait_until -i 0.3 15 ghostty_front "$win"
   select_dau
-  if type_keys "$GHOSTTY_PROC" "$SELFTEST_TITLE" && ghostty_end_line; then
+  # Keys ending with ↩: if Ghostty passed Return on, the line editor has ended already and
+  # the window is closing, so no ⌃D (its guard would find no window and stop the run).
+  if type_keys "$GHOSTTY_PROC" "$SELFTEST_TITLE" \
+      && { [[ "$KEYS" == *↩* ]] && wait_until 2 test -e "$GHOSTTY_LINE" || ghostty_end_line; }; then
     if ! wait_until 2 test -e "$GHOSTTY_LINE" && ! stopped; then
       log_warn "Ghostty: dòng chưa kết thúc 2 giây sau ⌃D (⌃D chỉ chốt chữ gạch chân?), gửi lại ⌃D"
       ghostty_end_line && wait_until 3 test -e "$GHOSTTY_LINE"

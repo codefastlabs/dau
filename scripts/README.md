@@ -15,7 +15,7 @@ Thư mục theo mục đích:
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
-| `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`) |
+| `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`, `terminal-underline/`) |
 | `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/canvas/`) |
 
 Mỗi script tự mô tả ở phần đầu file: dòng chú thích đầu, `# Usage:` và `# Side effects:`. Không có bảng liệt kê riêng.
