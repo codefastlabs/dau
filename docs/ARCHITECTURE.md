@@ -423,7 +423,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 Ở bước 2, `OnboardingFlow.installedTampered` đổi màn "Bật Dấu" thành màn "Cài lại" (`OnboardingFlow.EnableScreen.tampered`, view `EnableStep.tampered`; luật ở D37):
 
 - đọc cùng mọi trạng thái khác (lúc mở và mỗi lần cửa sổ được đưa lên trước): đúng khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và `InputMethodInstaller.installedIsGenuine` sai; phát hiện lúc đang chờ Allow thì huỷ lần chờ;
-- `OnboardingFlow.reinstall` gọi `install()`, không gọi `enable()`; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu", lỗi thì hiện màn lỗi cài, nơi "Thử lại" (`OnboardingFlow.enable`) cài lại chứ không bật;
+- `OnboardingFlow.reinstall` gọi `install()`, không gọi `enable()`; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu", lỗi thì hiện màn lỗi cài, nơi "Thử lại" (`OnboardingFlow.enable`) cài lại khi bản đã cài còn sai chữ ký, và bật khi nó đã đúng (lỗi đến sau khi đổi chỗ xong);
 - `OnboardingFlow.enable` nhận `EnableOutcome.needsReinstall` (bộ gõ bị thay sau lần đọc cuối) thì cũng sang màn này.
 
 #### Cài, bật, thay, gỡ bộ gõ

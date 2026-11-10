@@ -131,7 +131,7 @@ Artboard: [bước 1](canvas/OnboardingConflict.png).
 
 - Màn riêng "Chưa cài được Dấu", hai cách xử lý.
 - Dòng "Chi tiết" là mô tả thật của lỗi (chọn được để chép).
-- Nút "Thử lại" bật lại từ đầu; lỗi đến từ "Cài lại" (mục dưới) thì "Thử lại" cài lại.
+- Nút "Thử lại" bật lại từ đầu; lỗi đến từ "Cài lại" (mục dưới) thì "Thử lại" cài lại khi bộ gõ trên máy còn sai chữ ký, còn đã đúng thì bật.
 
 **Bộ gõ đã bị thay** ([`OnboardingEnableTampered`](canvas/OnboardingEnableTampered.png)): thay cho màn "Trước khi bấm" khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và chữ ký của nó không hợp lệ hoặc khác Team ID (D37).
 
