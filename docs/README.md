@@ -37,6 +37,7 @@ Mỗi chủ đề một file; kết luận hiện hành ở đầu file, mỗi k
 | `docs/research/SWIFTUI-WINDOW-API.md` | API cửa sổ của Apple cho cửa sổ Cài đặt (`NavigationSplitView`, thanh công cụ, tiêu đề, Lùi/Tiến), có nguồn; đối chiếu từng chỗ vá với API chính thức |
 | `docs/research/external-test-inputs/README.md` | ca thử (chuỗi phím, không đáp án) gom từ bộ test của 10 bộ gõ tiếng Việt khác, để viết đáp án mù cho engine; ghi công ở `docs/research/external-test-inputs/NOTICE.md` |
 | `docs/research/COMPETITOR-COMPARISON.md` | so sánh với bộ gõ khác (nghiên cứu cho M10): Telex của macOS trong Safari và Chrome (đã đo 09/11), khác biệt engine từ số đã có, nhịp gõ dưới 10 ms (dữ liệu công khai không đủ) |
+| `docs/research/TERMINAL-AND-UNDERLINE.md` | vì sao thay tại chỗ hỏng trong Ghostty và terminal của Claude (đọc mã Ghostty, xterm.js, Chromium; chưa đo), gạch chân không sửa được dấu cho từ đã gõ; giả thuyết, chuỗi phân biệt, hướng sửa kèm quyết định bị đụng |
 | `docs/research/WEB-INPUT-DELAY.md` | luồng chính của trang web bận bao lâu khi gõ: INP theo origin (CrUX 09/2026, desktop) cho 17 trang, giới hạn khi suy ra rủi ro của thay chữ tại chỗ trong Chrome (D13 (Gạch chân là đường lui cuối cùng)) |
 
 ## Lưu trữ
