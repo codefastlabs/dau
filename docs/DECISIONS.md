@@ -106,6 +106,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Không chứng minh được, ở lần thay đầu của một từ, app chậm tối đa 2 thao tác, và trước vị trí app trả không có đủ cả từ: vẫn thay ở vị trí Dấu theo dõi.
     - Không chứng minh được, ở giữa từ: như "Dựng lại khi lệch" (lần dựng lại vẫn cần phím trước cách ít nhất 50 ms).
     - Vị trí app trả mà có thể là vị trí cũ thì không ghi đè vị trí Dấu theo dõi.
+  - **Ô bỏ qua vùng thay chữ** (vị trí app báo không theo chữ đã gõ, như terminal): D43 (Ô bỏ qua vùng thay chữ).
   - **Từ đã hết hợp lệ:** từ trong bộ đệm đã hết hợp lệ (D30 (Kiểm tra chính tả), không tính D33 (Độ dài từ)) mà người dùng gõ phím dấu/biến đổi thì đọc chữ trước con trỏ một lần cho từ đó; khác bộ đệm thì dựng lại từ chữ thật rồi xử lý phím (cùng điều kiện 50 ms). Chi phí: tối đa một lần đọc cho mỗi từ không phải tiếng Việt.
   - **Vì sao:**
     - Gợi ý tự hoàn thành: mọi cách người dùng tự chọn chữ (chuột, ⇧ + mũi tên, ⌘A) đều đã reset bộ đệm trước đó, nên vùng bôi đen như vậy chỉ có thể là gợi ý của app.
@@ -158,6 +159,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - Không giữ "lịch sử từ" để Backspace quay lại sửa như OpenKey: lùi về sau từ rồi gõ phím dấu đã được D20 phủ.
   - **Phạm vi:**
     - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
+    - Không áp dụng ở ô bỏ qua vùng thay chữ (D43), vì ô đó không cho đọc chữ.
     - Chỉ đọc lại chữ khi phím trước đó trên cùng ô nhập cách ít nhất 50 ms (biên an toàn khi gõ dồn; đo ở 0–30 ms chưa thấy hỏng).
     - Chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").
   - **Khi nào đọc:** mỗi lần đọc tốn một `selectedRange` và một `attributedSubstring` 16 đơn vị UTF-16, ở phím chữ cái hoặc dấu/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng đi thẳng (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
@@ -343,6 +345,27 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - `heavy.sh` chưa chạy trọn lượt nào (10/11/2026): số ở "Vì sao" lấy từ các nhóm đã chạy xong.
   - Ngưỡng bộ nhớ chưa chốt: mới đo trong một lượt 4 phút.
   - **Vì sao:** số đo M6 ngày 10/11/2026 trên một máy (chip M1 Pro): p50 0,65–1,92 ms, p99 3,7–13,2 ms; ngưỡng cao hơn mức đã đo khoảng 1,5 lần để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)); bản Debug có thêm một lời gọi chẩn đoán sau mỗi lần thay chữ nên số của nó cao hơn bản phát hành.
+- **D43. Ô bỏ qua vùng thay chữ.** Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ. Đã đo: Ghostty, và terminal dựng bằng xterm.js (trang thử trong Chrome, cùng cơ chế với terminal trong app Claude; chính app Claude chưa đo). Ở những ô này, Dấu vẫn thay chữ tại chỗ, bằng cách gửi ký tự xoá (DEL, U+007F) cho từng chữ cần xoá rồi tới chữ mới, trong một lần `insertText` tại con trỏ; chương trình trong terminal xoá rồi in lại.
+  - **Nhận ra ô:** dựa vào vị trí con trỏ app báo ở các phím có thay chữ (Dấu vốn đã hỏi vị trí ở các phím này, N3 (Ít lời gọi vào ứng dụng đích)), và chỉ áp dụng cho ô nhập đó trong lần kích hoạt đó; đổi ô hoặc kích hoạt lại thì xét lại từ đầu.
+    - Ô gõ thường: vị trí tăng theo chữ đã gõ, kể cả khi app trả lời chậm (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm").
+    - Ghostty: vị trí luôn là 0.
+    - xterm.js: vị trí dao động 0–2 dù Dấu đã gõ nhiều chữ hơn thế.
+    - Ngưỡng cụ thể nằm ở mã và test. Yêu cầu: không nhận nhầm ô gõ thường nào trong các lượt đo đã có, kể cả Chrome khi trang bận và đầu văn bản (vị trí 0 là vị trí thật); nhận ra Ghostty càng sớm càng tốt trong từ đầu tiên.
+  - **Lúc gửi:** gửi ngay trong lúc app xử lý phím, như thay tại chỗ thường. Riêng app bỏ chữ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím (Ghostty): để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm.
+  - **Sau khi nhận ra:** không hỏi vị trí con trỏ, không đọc chữ (ít lời gọi hơn thay tại chỗ thường); mỗi phím vẫn tối đa một lần `insertText`.
+  - **Khác "event tap + Backspace giả" đã loại** (mục "Đã cân nhắc và loại bỏ"): không event tap, không giả lập phím, không xin quyền Trợ năng (N4 (Không tự đổi cài đặt hệ thống)). Ký tự xoá là chữ gửi qua API của InputMethodKit, chỉ tới ô đã nhận ra là bỏ qua vùng thay.
+  - **Giới hạn:**
+    - D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 không chạy, vì không đọc được chữ.
+    - Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: Return chạy dòng lệnh trước khi phần sửa tới, nên từ giữ như đang hiện.
+    - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
+    - Trước khi nhận ra, các phím đầu ra như hiện nay (ở xterm.js có thể sai ở từ đầu tiên).
+    - Chữ có thể chớp một khung hình ở cách gửi sau phím: chưa đo.
+  - **Gạch chân không phải cách sửa** cho những ô này: D13 (Gạch chân là đường lui cuối cùng) giữ nguyên, gạch chân vẫn chỉ do người dùng tự bật.
+  - **Vì sao:** số đo ngày 11/11/2026, một lượt mỗi ô, trên một máy (nhật ký `docs/PROGRESS.md`; cơ chế đọc từ mã ở `docs/research/TERMINAL-AND-UNDERLINE.md`):
+    - Thay tại chỗ hiện nay: Ghostty `dd` ra "dđ", `vieetj` ra "vieetj"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ". Telex của Apple ra đúng ở cả hai.
+    - Bản thử ký tự xoá, bật theo ứng dụng: ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim, phím cách nhau 120 và 30 ms). Thời gian xử lý mỗi phím ngang thay tại chỗ hiện nay (p50 0,29–0,37 ms, p99 0,44–0,76 ms).
+    - Gửi trong phím ở Ghostty thì mất: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím.
+    - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 
 ## Đã biết nhưng không làm
 
@@ -367,7 +390,7 @@ Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết 
 
 ## Đã cân nhắc và loại bỏ
 
-Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM và đa nền tảng; thử gõ trên trang web; event tap + Backspace giả (cách của OpenKey); `NSSpellChecker` trong đường nóng; nhúng engine UniKey qua C++ interop; chạy engine OpenKey làm đáp án cho test (oracle); MIT/MPL tách riêng cho engine.
+Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM và đa nền tảng; thử gõ trên trang web; event tap + Backspace giả (cách của OpenKey; khác cách xoá bằng ký tự DEL qua InputMethodKit của D43); `NSSpellChecker` trong đường nóng; nhúng engine UniKey qua C++ interop; chạy engine OpenKey làm đáp án cho test (oracle); MIT/MPL tách riêng cho engine.
 
 ## Câu hỏi mở (phải kiểm chứng trên máy thật)
 

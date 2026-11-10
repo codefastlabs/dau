@@ -27,7 +27,8 @@ Mở từ 10/11, chưa sửa mã sản phẩm (mới có bản thử chỉ ở D
 - Ghostty: thay tại chỗ sai (nhân đôi chữ hoặc ra chuỗi phím gốc); gạch chân đúng chữ nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple. Terminal của Claude chưa đo (không tự động hoá được).
 - Hướng đang theo (11/11): thay tại chỗ ở cả hai terminal bằng API chính thống, gạch chân chỉ là đường lui. Bản thử xoá bằng DEL (chỉ có ở Debug) đúng ở xterm.js, sai ở Ghostty (nhật ký 11/11, lượt thứ hai).
 - Đã đo (nhật ký 11/11, lượt thứ ba): Ghostty "sửa sau phím" đúng; `selectedRange` phân biệt ô kiểu terminal với ô gõ thường.
-- Việc tiếp theo của mạch này: người dùng duyệt hướng sửa thật và thay đổi `docs/DECISIONS.md`; sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
+- Đã chốt 11/11: D43 (Ô bỏ qua vùng thay chữ).
+- Việc tiếp theo của mạch này: viết D43 trong bộ gõ (imk-dev): luật nhận ra ô theo vị trí con trỏ, kèm test dựng từ số đo của đầu dò và của các lượt đo app chậm (Chrome trang bận, đầu văn bản); chọn cách gửi trong phím hay sau phím; bỏ các khoá Debug của bản thử khi bản thật thay được chúng. Rồi một lượt gõ thử Ghostty, trang xterm.js và các ô gõ thường (không nhận nhầm), và người dùng thử tay trong terminal của app Claude. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 

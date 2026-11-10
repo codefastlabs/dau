@@ -15,7 +15,7 @@ Nghiên cứu đọc mã để tìm vì sao (1) chế độ gạch chân kém kh
 - **Gạch chân không thuộc tính gạch:** không giúp ở terminal. Ghostty tự vẽ gạch chân cho chữ đang soạn; trang xterm.js không vẽ gạch chân ở cả hai cách.
 - **Bản thử Ghostty "sửa sau phím" (lượt thứ ba, 11/11/2026): đúng** ở zsh, vim và khi phím cách 30 ms; tốc độ ngang cách hiện tại. Phím đi tới Ghostty như thường, rồi DEL và chữ mới tới sau khi Ghostty xử lý xong phím, xoá cả việc phím vừa làm.
 - **Nhận ra ô kiểu terminal:** `length()` trả 0 ở mọi app đã thử, không dùng được; `selectedRange` (Dấu đã hỏi ở phím có thay chữ, không tốn thêm lời gọi) phân biệt được: ô gõ thường tăng theo chữ đã gõ, Ghostty luôn `{0,0}`, xterm.js dao động 0–2.
-- Việc tiếp theo: người dùng duyệt hướng sửa thật (quyết định mới cho ô bỏ qua vùng thay chữ; cách nhận ra theo `selectedRange`); kiểm trên app Claude thật.
+- Đã chốt 11/11/2026: D43 (Ô bỏ qua vùng thay chữ) trong `docs/DECISIONS.md`. Việc tiếp theo: viết bản thật và kiểm trên app Claude thật.
 
 ## Nhãn nguồn và bản đã đọc
 
