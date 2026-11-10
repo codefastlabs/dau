@@ -495,30 +495,59 @@ open_test_page() {
   wait_until -i 0.3 15 front_ok "$2" "$PAGE_TITLE"
 }
 
+# Puts the keyboard focus in the test page's text field of browser process $1 when the
+# page does not report it (title without "[focus]"): Safari has been seen to open the
+# page with the focus in its address field (docs/PROGRESS.md, 10/11/2026), and the
+# page's autofocus does not take it back. Clicks the middle of the page's AXTextArea,
+# found through Accessibility, only while the browser is frontmost with the test page in
+# its focused window. A click, not a script in the page: it needs no browser setting.
+# Whether it worked is not judged here: type_keys's guard still checks the title.
+focus_test_field() { # process
+  stopped && return 1
+  wait_until -i 0.3 2 front_ok "$1" "$FOCUS_TITLE" && return 0
+  log_warn "$1: ô nhập của trang thử chưa có focus, bấm vào ô"
+  osascript -e "$(front_guard "$1" "$PAGE_TITLE")" -e "
+    tell application \"System Events\" to tell process \"$1\"
+      set w to value of attribute \"AXFocusedWindow\"
+      repeat with e in (entire contents of w)
+        try
+          if role of e is \"AXTextArea\" then
+            set {x, y} to position of e
+            set {sw, sh} to size of e
+            click at {x + sw / 2, y + sh / 2}
+            return \"clicked\"
+          end if
+        end try
+      end repeat
+      error \"no AXTextArea in the test page\"
+    end tell" >/dev/null 2>&1 || log_warn "$1: không bấm được vào ô nhập của trang thử"
+  return 0
+}
+
 run_safari() {
   open_test_page Safari Safari
-  select_dau; type_keys Safari "$FOCUS_TITLE"
+  select_dau; focus_test_field Safari; type_keys Safari "$FOCUS_TITLE"
   copy_all Safari "$FOCUS_TITLE"
   close_test_tab Safari
 }
 
 run_chrome() {
   open_test_page "Google Chrome" "Google Chrome"
-  select_dau; type_keys "Google Chrome" "$FOCUS_TITLE"
+  select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
   copy_all "Google Chrome" "$FOCUS_TITLE"
   close_test_tab "Google Chrome"
 }
 
 run_edge() {
   open_test_page "Microsoft Edge" "Microsoft Edge"
-  select_dau; type_keys "Microsoft Edge" "$FOCUS_TITLE"
+  select_dau; focus_test_field "Microsoft Edge"; type_keys "Microsoft Edge" "$FOCUS_TITLE"
   copy_all "Microsoft Edge" "$FOCUS_TITLE"
   close_test_tab "Microsoft Edge"
 }
 
 run_firefox() {
   open_test_page Firefox firefox
-  select_dau; type_keys firefox "$FOCUS_TITLE"
+  select_dau; focus_test_field firefox; type_keys firefox "$FOCUS_TITLE"
   copy_all firefox "$FOCUS_TITLE"
   close_test_tab firefox
 }
