@@ -152,6 +152,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 29/10/2026: định nghĩa gốc ("(29/10/2026)").
 - 29/10/2026: "Nới cho địa danh (29/10/2026, phương án d)"; đo trên 428 từ tiếng Anh; vần "ăk" chỉ nhận khi ă đã có trước k ("(29/10/2026)").
 - 05/11/2026: "Bổ sung (người dùng chốt 05/11/2026, từ so sánh với ca thử của bộ gõ khác, `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9)": phím dấu sau "qu", "qui" không hợp lệ, b, m, p, v với âm đệm o, u, vần "oao" và "uêu".
+- 10/11/2026: chữ ă, â (có hoặc không có dấu thanh) và đ đứng một mình được giữ khi kết thúc từ, hoa hay thường như nhau, người dùng duyệt; tham chiếu Telex của Apple. Bản trước: "ă, â không đứng cuối âm tiết (\"aw\" khôi phục thành \"aw\")"; chữ đ đứng một mình cũng bị trả về "dd".
 
 ### D32. Backspace
 

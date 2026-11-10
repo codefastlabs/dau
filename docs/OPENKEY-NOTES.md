@@ -270,7 +270,7 @@ Xem B5, B6.
   - áp phân bố c/k/q, g/gh, ng/ngh;
   - bảng vần Dấu tự lập;
   - vần p, t, c, ch chỉ mang sắc hoặc nặng, không dấu là không hợp lệ;
-  - ă, â không đứng cuối âm tiết.
+  - ă, â không đứng cuối âm tiết, trừ khi là một chữ đứng một mình (D31 (Âm tiết tiếng Việt hợp lệ)).
 
 ### 3.9 Khôi phục khi sai chính tả (Restore if wrong spelling)
 

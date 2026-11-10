@@ -51,7 +51,7 @@ struct EnglishVietnameseTests {
     @Test(arguments: [
         Case("windows ", "windows "),
         Case("Sunrise ", "Sunrise "),
-        Case("aw ", "aw "),       // D31: ă cannot end a syllable.
+        Case("traw ", "traw "),   // D31: ă cannot end a syllable.
         Case("pdd ", "pdd "),     // "pđ" is invalid; restore even though only đ changed (B7).
         Case("Sunrise", "Sủnise"),   // no boundary yet: nothing is restored.
     ])

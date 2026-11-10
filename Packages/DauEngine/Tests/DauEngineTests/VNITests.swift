@@ -90,10 +90,25 @@ struct VNITests {
     @Test(arguments: [
         Case("windows ", "windows "), Case("Sunrise ", "Sunrise "), Case("test ", "test "),
         Case("Su1nrise", "Súnrise"), Case("Su1nrise ", "Su1nrise "), Case("Su1nrise!", "Su1nrise!"),
-        Case("ca3 ", "cả "), Case("car3 ", "car3 "), Case("aw ", "aw "), Case("a8 ", "a8 "), Case("ca8n ", "căn "),
+        Case("ca3 ", "cả "), Case("car3 ", "car3 "), Case("aw ", "aw "), Case("tra8 ", "tra8 "), Case("ca8n ", "căn "),
         Case("Su1nrise←", "Súnrise"),
     ])
     func restore(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
+
+    /// D31 "Chữ cái đứng một mình" in VNI: one letter ă, â (with or without a tone)
+    /// or đ is kept at the boundary; a double key gives the keys back (D26).
+    @Test(arguments: [
+        Case("a6 ", "â "), Case("a8 ", "ă "), Case("d9 ", "đ "),
+        Case("a61 ", "ấ "), Case("a82 ", "ằ "), Case("a63 ", "ẩ "), Case("a84 ", "ẵ "), Case("a65 ", "ậ "),
+        Case("a16 ", "ấ "), Case("a610 ", "â "),
+        Case("A6, A8, D9. ", "Â, Ă, Đ. "), Case("D9/c ", "Đ/c "), Case("d9.", "đ."),
+        Case("a66 ", "a6 "), Case("a88 ", "a8 "), Case("d99 ", "d9 "), Case("A66 ", "A6 "),
+        Case("a661 ", "a61 "), Case("d99a ", "d9a "),
+        Case("a6⌫ ", " "), Case("a6n⌫ ", "â "), Case("d9a⌫ ", "đ "),
+        Case("tra6 ", "tra6 "), Case("hoa8 ", "hoa8 "), Case("d9a6 ", "d9a6 "),
+        Case("a ", "a "), Case("d ", "d "), Case("e6 ", "ê "), Case("o7 ", "ơ "),
+    ])
+    func loneLetters(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
 
     /// D34: case follows the letters; digits have none.
     @Test(arguments: [

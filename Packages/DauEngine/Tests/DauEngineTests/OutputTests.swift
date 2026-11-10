@@ -37,13 +37,26 @@ struct OutputTests {
 
     @Test func boundaryRestoreIncludesTheKey() {
         var engine = VietEngine()
-        for k in "aw".unicodeScalars { _ = engine.handle(k) }
+        for k in "traw".unicodeScalars { _ = engine.handle(k) }
         guard case .replace(let deleteCount, let insert) = engine.handle(" ") else {
             Issue.record("expected replace"); return
         }
-        #expect(deleteCount == 1)
+        #expect(deleteCount == 1)                   // "tră" → "traw "
         #expect(insert.map(\.value) == scalars("aw "))
         #expect(!engine.isComposing)
+    }
+
+    /// D31 lone letters: nothing to replace, so the app inserts the boundary itself.
+    @Test func loneLetterBoundaryPassesThrough() {
+        for keys in ["aw", "aa", "dd", "aas", "DD"] {
+            var engine = VietEngine()
+            for k in keys.unicodeScalars { _ = engine.handle(k) }
+            #expect(engine.handle(" ") == .passThrough, "\(keys)")
+            #expect(!engine.isComposing)
+        }
+        var engine = VietEngine()
+        for k in "dd".unicodeScalars { _ = engine.handle(k) }
+        #expect(engine.endWord() == .passThrough)
     }
 
     @Test func endWordDoesNotIncludeAKey() {

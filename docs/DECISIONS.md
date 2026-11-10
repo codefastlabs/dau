@@ -242,7 +242,9 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
   - iê không đứng đầu âm tiết (viết yê: yên, yêu); yê sau phụ âm chỉ trong uyê (khuyên, tuyết).
   - Vần thuộc bảng vần hợp lệ do Dấu tự lập theo chính tả (không chép bảng OpenKey). Bảng vần có "oao" (ngoao, ngoáo) và "uêu" (nguều).
   - Vần kết thúc bằng p, t, c, ch chỉ mang sắc hoặc nặng; không dấu thanh là không hợp lệ (vì vậy "bak" với gõ tắt phụ âm giữ nguyên "bak").
-  - ă, â không đứng cuối âm tiết ("aw" khôi phục thành "aw").
+  - ă, â không đứng cuối âm tiết ("traw" khôi phục thành "traw").
+  - **Chữ cái đứng một mình:** một từ chỉ gồm đúng một chữ ă hoặc â (có hoặc không có dấu thanh) hoặc đ được giữ khi kết thúc từ, hoa hay thường như nhau (`aw` → "ă", `aa` → "â", `dd` → "đ", `aas` → "ấ", `AA` → "Â", `DD/c` → "Đ/c"). Muốn giữ chữ gốc thì gõ đúp phím (D26 (Gõ đúp phím dấu): `aaa` → "aa", `ddd` → "dd"). Từ dài hơn một chữ không đổi. Với D20 (Thêm dấu cho từ đã gõ): chữ "a" hoặc "d" có sẵn sát con trỏ rồi gõ `a`, `w` hoặc `d` cũng là từ một chữ, nên ra "â", "ă", "đ".
+    - **Vì sao:** người viết bảng chữ cái hay dạy tiếng Việt gõ từng mặt chữ ("a, ă, â… d, đ"), và chữ viết tắt "Đ/c", "Đ." bắt đầu bằng một chữ đ đứng riêng; trước đó ba chữ này bị D4 (Từ nước ngoài) trả về phím gốc, không có cách gõ nào ngoài tắt tự khôi phục. Telex của Apple giữ các chữ này, kể cả chữ hoa (đo 10/11/2026, `docs/PROGRESS.md`). Hệ quả đã chấp nhận: "AA", "DD", "aw", "dd" gõ hai phím ra "Â", "Đ", "ă", "đ"; muốn chữ gốc thì gõ đúp.
   - Phím dấu gõ ngay sau "qu" được nhận như sau "gi" ("qusa" → "quá"); "qui" vẫn không hợp lệ, chỉ "quy" theo chính tả chuẩn.
   - b, m, p, v đi với âm đệm o, u hợp lệ (buýt, boa, voan; "more" → "moẻ" theo D4, gõ đúp để giữ chữ gốc).
   - **Nới cho địa danh:** k đứng trước mọi nguyên âm (Kon Tum, Bắc Kạn, Kơ Tu), phụ âm đầu "kr" (Krông Pắc), và âm cuối k **chỉ sau ă**, cùng ràng buộc dấu như c (Đắk Lắk). Không dùng danh sách ngoại lệ (cùng tinh thần D4).

@@ -27,7 +27,8 @@ enum Spelling {
     /// Rhymes (vowel cluster + final consonant), one line per main vowel or cluster:
     /// a, ă, â, e, ê, i, iê, y/yê, o, oo, oa, oă, oe, ô, ơ, u, uâ, uê, uô, uơ, uy/uyê,
     /// ư, ươ.
-    /// ă and â never end a syllable (D31). Rhymes with final p, t, c, ch take only
+    /// ă and â never end a syllable (D31), except as a word of one letter (see
+    /// `check`). Rhymes with final p, t, c, ch take only
     /// sắc or nặng; that rule is checked separately.
     static let rhymes: [UInt32] = parse("""
         a ac ach ai am an ang anh ao ap at au ay
@@ -104,6 +105,13 @@ enum Spelling {
     static func check(_ w: Word, _ mode: SpellMode, allowZFWJ: Bool) -> Bool {
         let n = w.count
         if n == 0 { return mode != .full }
+        // D31 "Chữ cái đứng một mình": a word that is exactly one letter ă or â (any
+        // tone) or đ is kept at a boundary, for people typing the alphabet and for
+        // abbreviations such as "Đ/c". Longer words follow the rules below.
+        if n == 1 && mode == .full {
+            let c = w.code(0)
+            if c == Code.aBreve || c == Code.aHat || c == Code.dStroke { return true }
+        }
         var v = -1
         var i = 0
         while i < n {

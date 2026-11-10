@@ -17,6 +17,24 @@ struct SeedTests {
         var testDescription: String { "\(displayed) + \(keys) → \(expected)" }
     }
 
+    /// D20 × D31 "Chữ cái đứng một mình": a letter already in the app plus a transform
+    /// key gives a one-letter word, kept at the boundary like the typed one.
+    @Test(arguments: [
+        SeedCase("a", "a ", "â "), SeedCase("a", "w ", "ă "), SeedCase("d", "d ", "đ "),
+        SeedCase("A", "a ", "Â "), SeedCase("D", "d.", "Đ."),
+        SeedCase("â", "s ", "ấ "), SeedCase("ă", "f ", "ằ "), SeedCase("a", "as ", "ấ "),
+        SeedCase("â", " ", "â "), SeedCase("đ", " ", "đ "),
+        SeedCase("â", "a ", "aa "),         // D26 on a seeded word: the double undoes
+        SeedCase("đ", "d ", "dd "),
+        SeedCase("tr", "aw ", "traw "),     // longer words are restored as before
+    ])
+    func loneLetters(_ c: SeedCase) {
+        var t = Typist()
+        do { let result = t.seed(c.displayed); #expect(result) }
+        t.type(c.keys)
+        #expect(t.text.map(\.value) == scalars(c.expected), "gave \"\(t.string)\"")
+    }
+
     @Test(arguments: [
         SeedCase("hoc", "j", "học"),
         SeedCase("dep", "j", "dẹp"),        // not "đẹp": no transform is added (D20)

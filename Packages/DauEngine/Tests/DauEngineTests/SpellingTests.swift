@@ -34,12 +34,88 @@ struct SpellingTests {
     ])
     func stopFinals(_ c: Case) { expectTyped(c.keys, c.expected) }
 
-    /// D31: ă and â do not end a syllable; D30: they are fine while typing.
+    /// D31: ă and â do not end a syllable; D30: they are fine while typing. A word
+    /// longer than one letter that ends in ă or â is still restored (D4).
     @Test(arguments: [
-        Case("aw ", "aw "), Case("aa ", "aa "), Case("traw", "tră"), Case("trawngf ", "trằng "),
-        Case("caan ", "cân "),
+        Case("traw", "tră"), Case("traw ", "traw "), Case("trawngf ", "trằng "),
+        Case("caan ", "cân "), Case("traa ", "traa "), Case("hoaw ", "hoaw "),
+        Case("uaa ", "uaa "), Case("ddaa ", "ddaa "), Case("ddaw.", "ddaw."),
+        Case("aab ", "aab "), Case("aaz ", "aaz "), Case("dds ", "dds "),
     ])
     func breveAndCircumflexNeedFinal(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D31 "Chữ cái đứng một mình": a word that is exactly one letter ă or â (with or
+    /// without a tone) or đ is kept at the boundary, upper or lower case.
+    @Test(arguments: [
+        Case("aw ", "ă "), Case("aa ", "â "), Case("dd ", "đ "),
+        Case("aas ", "ấ "), Case("aws ", "ắ "),
+        Case("aaf ", "ầ "), Case("aar ", "ẩ "), Case("aax ", "ẫ "), Case("aaj ", "ậ "),
+        Case("awf ", "ằ "), Case("awr ", "ẳ "), Case("awx ", "ẵ "), Case("awj ", "ặ "),
+        Case("asa ", "ấ "), Case("afw ", "ằ "),      // tone first (D28)
+        Case("aasz ", "â "),                          // z removes the tone, the letter stays
+        Case("AW, AA, DD. ", "Ă, Â, Đ. "), Case("Aa ", "Â "), Case("AAS ", "Ấ "),
+        Case("aA ", "â "), Case("Dd ", "Đ "), Case("dD ", "đ "), Case("aW ", "ă "),   // D34
+        Case("aw, aa, dd, ee, oo, ow, uw. ", "ă, â, đ, ê, ô, ơ, ư. "),
+        Case("DD/c ", "Đ/c "), Case("dd.", "đ."), Case("DD.", "Đ."),
+        Case("a, aw, aa, b, c, d, dd, e, ee ", "a, ă, â, b, c, d, đ, e, ê "),
+    ])
+    func loneLetters(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D31 lone letters: every printed boundary (D4) and `endWord()` keep them.
+    @Test(arguments: [",", ".", "!", "?", "(", ")", "\"", ";", ":", "'", "-", "/", "[", "]", "\t", "\n"])
+    func loneLettersAtEveryBoundary(_ boundary: String) {
+        expectTyped("aw" + boundary, "ă" + boundary)
+        expectTyped("aa" + boundary, "â" + boundary)
+        expectTyped("dd" + boundary, "đ" + boundary)
+        expectTyped("AAS" + boundary, "Ấ" + boundary)
+    }
+
+    @Test func loneLettersThroughEndWord() {
+        expectTyped("aw⏎", "ă\n")
+        expectTyped("dd⏎", "đ\n")
+        expectTyped("aas⏎", "ấ\n")
+    }
+
+    /// D31 lone letters × D26: a double key gives the keys back, and the lock holds.
+    @Test(arguments: [
+        Case("aaa ", "aa "), Case("ddd ", "dd "), Case("AAA ", "AA "), Case("DDD ", "DD "),
+        Case("aww ", "aw "), Case("AWW ", "AW "),
+        Case("aaas ", "aas "), Case("ddda ", "dda "), Case("awws ", "aws "), Case("dddd ", "ddd "),
+        Case("aass ", "âs "),                 // D26 baseline: the text shown after the double
+        Case("aaa⌫ ", "a "), Case("aaa⌫a ", "aa "), Case("ddd⌫d ", "dd "),   // the lock survives ⌫
+        Case("aaa⌫⌫aa ", "â "),              // word deleted: the lock is gone
+    ])
+    func loneLettersAndDoubleKeys(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D31 lone letters × D32: after ⌫ the rule looks at the letters left.
+    @Test(arguments: [
+        Case("aa⌫ ", " "), Case("dd⌫ ", " "), Case("aas⌫ ", " "),
+        Case("aab⌫ ", "â "), Case("dda⌫ ", "đ "), Case("awn⌫, ", "ă, "), Case("aasn⌫ ", "ấ "),
+        Case("aa⌫aa ", "â "), Case("dd⌫d ", "d "), Case("da⌫d ", "đ "),
+    ])
+    func loneLettersAndBackspace(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D31 lone letters: the plain letters and the other single vowels are as before.
+    @Test(arguments: [
+        Case("a ", "a "), Case("d ", "d "), Case("A ", "A "), Case("D ", "D "),
+        Case("ee ", "ê "), Case("oo ", "ô "), Case("ow ", "ơ "), Case("uw ", "ư "), Case("w ", "ư "),
+        Case("banana ", "banana "), Case("windows ", "windows "), Case("dda ", "đa "),
+    ])
+    func loneLettersLeaveTheRestAlone(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D31 lone letters with the other input methods and options.
+    @Test func loneLettersAcrossOptions() {
+        for options in [simpleTelex, noFreeMarking, classic, shortcuts, zfwj] {
+            expectTyped("aw, aa, dd. ", "ă, â, đ. ", options)
+            expectTyped("AW AA DD/c ", "Ă Â Đ/c ", options)
+            expectTyped("aas aws ", "ấ ắ ", options)
+            expectTyped("aaa ddd aww ", "aa dd aw ", options)
+            expectTyped("traw traa ", "traw traa ", options)
+        }
+        expectTyped("w ", "w ", simpleTelex)
+        // autoRestore off: nothing was restored before either.
+        expectTyped("aw aa dd traw ", "ă â đ tră ", noRestore)
+    }
 
     /// D30: once the word cannot become a syllable, later keys are plain letters.
     @Test(arguments: [
