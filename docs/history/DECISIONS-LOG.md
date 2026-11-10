@@ -86,6 +86,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 10/11/2026: đổi tên thành "Gạch chân là đường lui cuối cùng", người dùng duyệt. Thay tại chỗ là cách gõ của Dấu, gõ sai ở một app là lỗi phải sửa; nhãn "Đề xuất" chỉ giữ cho app mà thay tại chỗ còn sai ở tốc độ gõ thật. Bản trước: "Gạch chân (marked text) là đường lui, bật theo quy tắc riêng của từng app"; "Danh sách đề xuất ban đầu: VS Code, các app Electron/Chromium và Firefox". Do M6 bước 1: Chrome trang bận sai 3/3 khi thay theo vị trí của app, đúng 3/3 khi thay theo vị trí Dấu tự theo dõi.
 - 10/11/2026: Chrome, Firefox và VS Code bỏ nhãn "Đề xuất", người dùng duyệt: đo ở nhịp 5, 10, 20 ms sau các lần sửa ở M6 (`docs/PROGRESS.md`, nhật ký 10/11). Bản trước: "Hiện còn nhãn: VS Code, các app Electron/Chromium và Firefox (sai khi phím dồn, M3)".
 - 10/11/2026 (rà soát tài liệu, người dùng duyệt): danh sách còn nhãn ghi số đo lại của Edge và thêm Cursor; bản trước: "Edge, Brave, Arc và các app Electron khác (sai khi phím dồn ở M3 hoặc xếp theo công nghệ giao diện; chưa đo lại sau lần sửa ở M6)". "Vì sao (nhãn đã bỏ)" ghi nhịp 5, 10, 20 ms là nhịp danh nghĩa và số lượt mỗi app.
+- 10/11/2026: Edge bỏ nhãn "Đề xuất" (người dùng duyệt), theo số đo lại cùng ngày; hàng mẫu Edge trên các artboard SettingsApps* đổi thành Cursor (canvas phiên bản 148). Bản trước: "Hiện còn nhãn: Edge (đo lại 10/11/2026 …; bỏ nhãn sau khi đổi hàng mẫu trên artboard), Cursor…".
 
 ### D16. Bảo trì và gỡ cài đặt
 

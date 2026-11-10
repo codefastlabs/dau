@@ -12,9 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng:
-- duyệt hàng mẫu Slack (thay Visual Studio Code) trên các artboard SettingsApps*, canvas phiên bản 144;
-- hàng mẫu thay Microsoft Edge trên các artboard SettingsApps*, để bỏ nhãn "Đề xuất" của Edge (số đo 10/11 đủ, D13 (Gạch chân là đường lui cuối cùng)).
+Chờ người dùng: không có việc nào.
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
@@ -298,3 +296,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Dọn: tải đã tắt, không còn tab thử, nguồn là Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bộ gõ bản Release.
 - 10/11/2026 — M6 bước 4: D12 (Ưu tiên tiến trình) giữ nguyên, thêm ý "Số đo"; D42 (Ngưỡng hiệu năng) mới (người dùng duyệt) — phiên chính. `DECISIONS.md` (bỏ câu hỏi mở về ngưỡng), `DECISIONS-LOG.md`, `superseded.txt`, `ROADMAP.md` (M7 chạy bài đo của D42), ghi chú sổ quyết định trên canvas (phiên bản 147; chỉ `canvas.json` đổi, artboard không đổi). Còn mở: ngưỡng bộ nhớ (cần một lượt đo dài), và bài đo mới chạy trên máy M1.
 - 10/11/2026 — rà soát nội dung tài liệu (hai lượt kiểm toán chỉ đọc, rồi sửa) — phiên chính, researcher, 2 subagent. Sửa các chỗ lệch với `DECISIONS.md` và mã ở 22 file: trạng thái và kế hoạch M6 ở file này, ghi chú các mốc đã đóng chuyển sang `docs/history/`, tài liệu nghiên cứu (luồng xoá bộ đệm của D37, gỡ theo D16, chữ cái đứng một mình của D31, mục "Hiện trạng" tự mâu thuẫn), `docs/ARCHITECTURE.md` (CI chưa có, dẫn bảng số đo đã chuyển), tên tài khoản cũ trong `docs/history/`. Đếm lại bộ ca ngoài sau D31 (test engine 110 đạt, `compare.sh`). Câu chữ ở D11, D12, D13, D42 sửa cho khớp số đo (người dùng duyệt; `docs/history/DECISIONS-LOG.md`). check-docs đạt.
+- 10/11/2026 — Edge bỏ nhãn "Đề xuất" (người dùng duyệt) — phiên chính. Canvas phiên bản 148–149: hàng mẫu Microsoft Edge trên các artboard SettingsApps* đổi thành Cursor, ghi chú sổ quyết định theo D13; hàng mẫu Slack (phiên bản 144) cũng được duyệt. `DECISIONS.md` (D13), `docs/history/DECISIONS-LOG.md`, `superseded.txt`, `CompatibilityList.json` (Edge giữ mục, `suggestUnderline` tắt, version 4), test, dữ liệu mẫu của `snapshot-settings`, `docs/COMPATIBILITY.md`, bản chụp `docs/ui/canvas/` dựng lại.

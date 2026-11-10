@@ -1,7 +1,7 @@
 {
-  "version": 3,
+  "version": 4,
   "updated": "2026-11-10",
-  "about": "Apps Dấu labels “Đề xuất” for underlining (D13). Every app types without underline until the user turns it on. Labeled: Microsoft Edge, Brave, Arc and the Electron apps of docs/COMPATIBILITY.md. Chrome, Firefox and VS Code lost the label on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/COMPATIBILITY.md section 3.",
+  "about": "Apps Dấu labels “Đề xuất” for underlining (D13). Every app types without underline until the user turns it on. Labeled: Brave, Arc and the Electron apps of docs/COMPATIBILITY.md. Chrome, Edge, Firefox and VS Code lost the label on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/COMPATIBILITY.md section 3.",
   "apps": [
     {
       "name": "Visual Studio Code",
@@ -24,8 +24,8 @@
       "bundleIDs": [
         "com.microsoft.edgemac"
       ],
-      "suggestUnderline": true,
-      "note": "Chromium (Microsoft Edge Framework). Measured 30/10/2026: in-place wrong at 0 and 5 ms, right from 10 ms; underline right at 0 ms."
+      "suggestUnderline": false,
+      "note": "Chromium (Microsoft Edge Framework). Measured 10/11/2026: in-place right in 9 of 9 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page, after the M6 late-answer fix; label removed."
     },
     {
       "name": "Brave",

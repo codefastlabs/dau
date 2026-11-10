@@ -66,7 +66,7 @@ struct CompatibilityListTests {
         #expect(CompatibilityList.decode(data) == list)
     }
 
-    @Test("D13: shipped list suggests Edge, Brave, Arc and Electron apps; not Chrome, Firefox, VS Code (10/11/2026) or Terminal")
+    @Test("D13: shipped list suggests Brave, Arc and Electron apps; not Chrome, Edge, Firefox, VS Code (10/11/2026) or Terminal")
     func shippedList() throws {
         let data = try Data(contentsOf: Self.shippedURL)
         // Strict decode too, so a typo cannot silently drop an entry.
@@ -76,19 +76,20 @@ struct CompatibilityListTests {
         #expect(list.version >= 1)
         #expect(list.apps.count == rawApps.count)
         let ids = list.suggestedBundleIDs
-        #expect(ids.first == "com.microsoft.edgemac")
-        for id in ["com.microsoft.edgemac", "com.brave.Browser",
+        #expect(ids.first == "com.brave.Browser")
+        for id in ["com.brave.Browser",
                    "company.thebrowser.Browser", "com.todesktop.230313mzl4w4u92", "com.vng.zalo",
                    "com.hnc.Discord", "com.tinyspeck.slackmacgap", "notion.id", "md.obsidian",
                    "com.figma.Desktop"] {
             #expect(ids.contains(id), "\(id)")
         }
-        for id in ["com.google.Chrome", "org.mozilla.firefox", "com.microsoft.VSCode", "com.apple.Terminal"] {
+        for id in ["com.google.Chrome", "com.microsoft.edgemac", "org.mozilla.firefox", "com.microsoft.VSCode",
+                   "com.apple.Terminal"] {
             #expect(!ids.contains(id), "\(id)")
             #expect(list.suggestion(for: id) == nil, "\(id)")
         }
-        // The three entries stay in the file with the flag off.
-        for id in ["com.google.Chrome", "org.mozilla.firefox", "com.microsoft.VSCode"] {
+        // The four entries stay in the file with the flag off.
+        for id in ["com.google.Chrome", "com.microsoft.edgemac", "org.mozilla.firefox", "com.microsoft.VSCode"] {
             #expect(list.apps.contains { $0.bundleIDs.contains(id) && !$0.suggestUnderline }, "\(id)")
         }
         #expect(Set(ids).count == ids.count)
