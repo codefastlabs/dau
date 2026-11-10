@@ -12,7 +12,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
   - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-M5-M6.md`;
   - rút gọn script và test (09/11; nhật ký ở dưới).
 
-Chờ người dùng: duyệt hàng mẫu Slack (thay Visual Studio Code) trên các artboard SettingsApps*, canvas phiên bản 144. Việc tiếp theo: M6 bước 2 (bài tải nặng) theo kế hoạch bên dưới; còn mở: đối chứng Telex của Apple đôi khi ra nguyên chuỗi phím, và một lượt VS Code mà vài phím đầu không tới bộ gõ (nhật ký 10/11), nguyên nhân chưa rõ.
+Chờ người dùng: duyệt hàng mẫu Slack (thay Visual Studio Code) trên các artboard SettingsApps*, canvas phiên bản 144; chọn có sửa lỗi nhận nhầm "app chậm" ở trình soạn thảo Cursor không (nhật ký 10/11). Việc tiếp theo: đo lại các ô đối chứng Telex của Apple đã hỏng; nhãn "Đề xuất" của Edge (đủ số đo để bỏ); M6 bước 2 (bài tải nặng). Còn mở: một lượt VS Code mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
 
 Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 1. Đang làm: thay chữ tại chỗ khi trang Chrome bận (câu hỏi của D13).
@@ -242,4 +242,11 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Lượt 10:15 (7 ô liền nhau): 5 ms gõ ngay, 5 ms chờ 2 s sau khi chọn nguồn, 100 ms gõ ngay, rồi lặp 5 ms gõ ngay và chờ 2 s. Chỉ ô đầu ra chữ tiếng Việt; 6 ô sau ra nguyên chuỗi phím, kể cả ô 100 ms và các ô chờ 2 s. H1, H2 bị loại.
   - Lượt 10:20 (4 ô Apple rồi 1 ô Dấu, 30 ms): `typing/run.sh` nay đọc nguồn ngay sau phím cuối và báo khi khác nguồn đã chọn; không ô nào báo. Ảnh chụp màn hình giữa lúc gõ: thanh menu hiện biểu tượng Telex của Apple ở cả ô ra chữ tiếng Việt (ô 1) lẫn ô ra nguyên chuỗi phím (ô 2); ô Dấu hiện biểu tượng của Dấu và đúng. H3 bị loại ở mức người dùng nhìn thấy.
   - Còn lại: ở cả hai lượt chỉ ô Apple đầu tiên ra chữ tiếng Việt, và ô đó chạy sau một quãng vài phút không có ô Apple nào; các ô cách nhau vài giây thì không. Chưa thử phân biệt (quãng nghỉ giữa các ô; không trả nguồn về Dấu giữa các ô). Nguyên nhân chưa rõ. Các ô Apple "ra nguyên chuỗi phím" trước đây không dùng làm đối chứng.
+  - Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`; bộ gõ vẫn là bản Release.
+- 10/11/2026 — đối chứng Telex của Apple ra nguyên chuỗi phím: nguyên nhân ở cách script chuyển nguồn, đã sửa (người dùng cho chạy; Chrome; log `build/load/apple3-…` tới `apple6-20261110-104207/`, không commit) — phiên chính.
+  - `typing/run.sh --source` nay xác nhận bộ gõ ngay trong ô đang focus trước khi gõ chuỗi thử (`confirm_source`): gõ hai phím thử và một dấu cách (`aa␣`, VNI `a6␣`), đọc lại phải ra "â", rồi xoá ô; không được thì dừng với mã 4, không báo ô đó như một kết quả.
+  - Đo: nguồn chọn bằng `TISSelectInputSource` từ tiến trình của script thì macOS báo nguồn hiện tại và thanh menu đều là Telex của Apple, nhưng phím thử ra "aa" ở 12/12 lần (4 ô × 3 lần, kể cả khi chọn lại bằng API). Sau khi nhấn phím tắt "Select next source in Input menu" của macOS (đọc từ cài đặt người dùng, ở máy này ⌃⌥Space) tới khi macOS báo đúng nguồn (`cycle_to_source`): 2/2 ô xác nhận ngay lần thử đầu và ra đúng "tiếng Việt có dấu".
+  - Hai lần sửa phím thử trong lúc làm: gửi hai phím trong một lệnh (cách nhau khoảng 1 ms) là điều kiện đang đo, nên gửi từng phím; bộ gõ của Apple giữ chữ ở trạng thái soạn dở (gạch chân) tới hết từ và ⌘A ⌘C không chép chữ đó, nên phím thử phải có dấu cách.
+  - Kết luận: các ô Apple "ra nguyên chuỗi phím" từ 09/11 tới nay là đo hỏng (ô gõ không dùng bộ gõ của Apple), không nói gì về Telex của Apple. Chưa rõ vì sao ở các loạt trước ô Apple đầu tiên vẫn ra chữ tiếng Việt.
+  - Chưa làm: đo lại các ô đối chứng Apple đã hỏng (trình soạn thảo Cursor, VS Code, Chrome và Firefox phím dồn). Dấu vẫn được chọn bằng API (Dấu tự nhận lần chuyển đó, `docs/ARCHITECTURE.md` mục "Đổi nguồn nhập liệu không qua `activateServer`"); lượt VS Code 08:48 mà vài phím đầu không tới bộ gõ có thể cùng nguyên nhân, chưa thử.
   - Dọn: tab thử đã đóng, nguồn trả về Dấu, không còn khoá `defaults` có chữ `Dau`; bộ gõ vẫn là bản Release.

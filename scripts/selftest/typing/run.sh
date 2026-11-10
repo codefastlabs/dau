@@ -28,7 +28,9 @@
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
-#                     the verdict still compares with --expect.
+#                     the verdict still compares with --expect. Before the test keys, two
+#                     probe keys confirm in the focused field that this source handles
+#                     the keys there (confirm_source); if not, the run stops (status 4).
 #   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
 #                     and +MS (never below 0), drawn per key: closer to a human than an
 #                     even pace. With --delay 0 the keys still go one by one.
@@ -329,11 +331,94 @@ guarded() {
 }
 stopped() { [[ -e "$STOP_FILE" ]]; }
 
+# Switches to $DAU_SOURCE the way the user does: macOS's own "Select next source in Input
+# menu" shortcut, read from the user's settings (symbolic hot key 61), pressed while the
+# app under test is in front, until macOS reports the wanted source. The system then
+# switches the source for the focused field itself, which selecting a source from this
+# script's process does not always do. Shortcut off or unreadable: falls back to selecting
+# through the original source, and says so.
+cycle_to_source() { # process [window-title-substring]
+  local json key mods using="" n
+  json="$(plutil -extract AppleSymbolicHotKeys.61 json -o - "$HOME/Library/Preferences/com.apple.symbolichotkeys.plist" 2>/dev/null)"
+  if [[ "$json" == *'"enabled":true'* && "$json" =~ '"parameters":\[[0-9]+,([0-9]+),([0-9]+)\]' ]]; then
+    key=$match[1]; mods=$match[2]
+    (( mods & 131072 )) && using+="shift down, "
+    (( mods & 262144 )) && using+="control down, "
+    (( mods & 524288 )) && using+="option down, "
+    (( mods & 1048576 )) && using+="command down, "
+    using="${using%, }"
+    for n in 1 2 3 4 5 6 7 8 9 10; do
+      guarded "$1" "${2:-}" "tell application \"System Events\" to key code $key using {$using}" >/dev/null || return 1
+      # Fixed: the switch, and the system's source switcher going away, are not readable.
+      sleep 0.8
+      is_current_source "$DAU_SOURCE" && { sleep 0.5; return 0; }
+    done
+    log_warn "Phím tắt chuyển nguồn của macOS không đưa tới $DAU_SOURCE sau 10 lần nhấn"
+  else
+    log_warn "Không đọc được phím tắt \"Select next source in Input menu\" (hoặc đang tắt): chọn lại nguồn bằng API"
+  fi
+  "$INPUT_SOURCE" select "$ORIGINAL_SOURCE" >&2 || true
+  sleep 0.5
+  "$INPUT_SOURCE" select "$DAU_SOURCE" >&2 || true
+  wait_until 3 is_current_source "$DAU_SOURCE" || true
+  sleep 1
+}
+
+# With --source: confirms, in the focused field itself, that the chosen input method is
+# the one handling keys there, before the test keys are typed. What macOS reports as the
+# current source (select_dau) is not enough: a source selected from this script's process
+# can be current, and shown in the menu bar, while the field still gets the keys
+# untransformed (docs/PROGRESS.md, 10/11/2026). The probe types two keys and a space that the source
+# must turn into "â", reads the field back and empties it. Not there: the source is
+# switched to again with the system shortcut (cycle_to_source) and the probe repeated; after three tries
+# the run stops with status 4, so a cell typed with the wrong input method is never
+# reported as a result. Not used for Dấu itself (the probe would change what is measured:
+# the first word of a new document), nor in Terminal (no read-back by copy).
+confirm_source() { # process [window-title-substring]
+  [[ -n "$SOURCE_ID" && "$1" != Terminal ]] || return 0
+  local probe try got
+  case "$SOURCE_ID" in
+    *Telex*) probe=aa ;;
+    *VNI*) probe=a6 ;;
+    *) log_warn "Không có phím thử cho nguồn $SOURCE_ID: không xác nhận được bộ gõ trong ô gõ"; return 0 ;;
+  esac
+  # Selecting from this script (select_dau) leaves the field on the old input method
+  # (measured 10/11/2026), so the system shortcut makes the switch before the first probe.
+  cycle_to_source "$1" "${2:-}" || return 1
+  for try in 1 2 3; do
+    # One key at a time, at a human pace: both keys in one keystroke command arrive about
+    # 1 ms apart, which is itself a condition under test.
+    guarded "$1" "${2:-}" "tell application \"System Events\"
+      keystroke \"${probe[1]}\"
+      delay 0.15
+      keystroke \"${probe[2]}\"
+      delay 0.15
+      keystroke space
+    end tell" >/dev/null || return 1
+    # The space ends the word: an input method that composes with marked text (Apple's)
+    # only commits there, and ⌘A ⌘C does not copy text that is still being composed.
+    sleep 0.3
+    got="$(copy_all "$1" "${2:-}")" || return 1
+    guarded "$1" "${2:-}" 'tell application "System Events" to key code 51' >/dev/null || return 1
+    sleep 0.3
+    if [[ "${got%% }" == "â" ]]; then
+      log_detail "bộ gõ trong ô gõ: đã xác nhận $SOURCE_ID (lần thử $try)" >&2
+      return 0
+    fi
+    log_warn "Ô gõ chưa dùng $SOURCE_ID (phím thử \"$probe\" ra \"$got\"), chọn lại nguồn (lần $try)"
+    cycle_to_source "$1" "${2:-}" || return 1
+  done
+  log_error "Dừng: $SOURCE_ID được chọn nhưng không có tác dụng trong ô gõ — không gõ chuỗi thử"
+  echo source > "$STOP_FILE"
+  return 1
+}
+
 type_keys() { # process [window-title-substring]
   stopped && return 1
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
+  confirm_source "$1" "${2:-}" || return 1
   if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" <<'OSA'
 on run argv
   set s to item 1 of argv
@@ -776,7 +861,7 @@ done
 if stopped; then
   # Not overwritten by an earlier failure: the run did not finish.
   if [[ "$(cat "$STOP_FILE")" == source ]]; then
-    log_error "Đã dừng: không chọn được Dấu (mã thoát 4)."; FAILED=4
+    log_error "Đã dừng: không chọn được nguồn nhập liệu, hoặc nguồn không có tác dụng trong ô gõ (mã thoát 4)."; FAILED=4
   else
     log_error "Đã dừng: app đang thử không còn ở trước (người dùng đang dùng máy?) (mã thoát 3)."; FAILED=3
   fi
