@@ -301,4 +301,9 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Máy không rảnh lúc bắt đầu (tải trung bình 1 phút 21), nên các ô "lúc rảnh" đã chạy không làm mốc được.
   - Ô Dấu ở Safari không gõ phím nào: script dừng vì ô nhập của trang thử chưa có focus. Nguyên nhân chưa rõ.
   - Chuyển nguồn: mỗi ô là một lần gọi `typing/run.sh`, mỗi lần gọi chuyển sang nguồn đối chứng rồi chuyển về. Sửa: `typing/run.sh --keep-source` không chuyển về khi xong; `scripts/selftest/load/heavy.sh` (mới) chạy cả lượt theo nhóm, mỗi nguồn chuyển một lần, tự bật và tắt tải, từ chối chạy khi máy đang bận. Mới chạy `--dry-run`; chưa chạy thật.
-  - Chưa dọn: bộ gõ đang cài là bản Debug.
+- 10/11/2026 — M6 bước 2, `scripts/selftest/load/heavy.sh` chạy thật lần đầu (người dùng cho chạy; máy M1, 16:27–16:30; Dấu Debug; log `build/load/heavy-20261110-162743/`, không commit), dừng ở nhóm 4 nên chưa có số của Dấu dưới tải — phiên chính.
+  - Nhóm 1, Dấu lúc rảnh (tải trung bình 1 phút 4,0–4,5): đúng chữ 3/3 (Safari, Chrome, VS Code). `lag` p50 0,42–0,58 ms, p99 2,9–6,9 ms; phím có thay chữ `handle` p50 1,03–1,83 ms, p99 8,2–11,6 ms.
+  - Nhóm 2 và 3, Telex của Apple lúc rảnh và dưới tải (Safari, Chrome): bốn ô ra cùng một chữ, khác đáp án của Dấu đúng một từ ("meeting" thành "mêting", Telex của Apple không trả lại từ tiếng Anh này). Tải không làm đổi chữ của bộ gõ đối chứng. Chuyển nguồn: một lần sang Telex của Apple cho cả hai nhóm.
+  - Nhóm 4, Dấu dưới tải: Safari không gõ phím nào, script dừng vì tiêu đề trang thử không báo ô nhập có focus trong thời gian chờ (3,2 giây), giống ô Safari của lượt 16:18. Hai lần đều lúc máy bận (tải trung bình 1 phút 21 và 42); nhóm 3 cũng dưới tải thì Safari qua. Hai giả thuyết chưa phân biệt: trang nhận focus chậm khi máy bận, hoặc focus nằm ở thanh địa chỉ.
+  - Tải nặng hơn lượt thử 13:16: tải trung bình 1 phút lên 42–49, bộ nhớ trống 39%.
+  - Dọn: tải đã tắt, không còn tab thử, nguồn là Dấu, không còn khoá `defaults` có chữ `Dau`, đã cài lại bộ gõ bản Release.
