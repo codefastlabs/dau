@@ -2,12 +2,12 @@
 
 Chạy engine của Dấu trên **chuỗi phím** lấy từ bộ test của 10 bộ gõ tiếng Việt khác, rồi so với đáp án của họ để tìm ca đáng xem lại. Đáp án của họ không bao giờ là kết quả mong đợi của Dấu (D10 (Engine tự viết)): engine được kiểm bằng bất biến rút từ chính tả và `docs/Decisions.md`, đáp án của họ chỉ dùng để so. Ghi công nguồn và giấy phép: [`docs/research/external-test-inputs/NOTICE.md`](NOTICE.md). Diễn biến các lần đếm, quy trình dự kiến ban đầu và các bước chốt quyết định: `docs/history/ResearchLog.md` mục 3.
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (12/11/2026)
 
-- **10.303 ca** từ 10 nguồn (Telex 8.222, VNI 2.028, Telex đơn giản 53). Họ không kiểm chữ ở 235 ca; còn lại **8.078 khớp, 1.990 khác**.
-- Ca khác theo lớp (mục 1; định nghĩa lớp ở mục 3.3): **A 426** (Dấu cố ý khác theo một quyết định), **B 1.493** (do tuỳ chọn của nguồn mà Dấu không có), **C 67** (đáp án của họ sai chính tả), **X 4** (không so được). **D 0** (lỗi của Dấu), **E 0** (cần quyết định mới), không còn ca chưa xếp lớp.
+- **10.303 ca** từ 10 nguồn (Telex 8.222, VNI 2.028, Telex đơn giản 53). Họ không kiểm chữ ở 235 ca; còn lại **8.082 khớp, 1.986 khác**.
+- Ca khác theo lớp (mục 1; định nghĩa lớp ở mục 3.3): **A 422** (Dấu cố ý khác theo một quyết định), **B 1.493** (do tuỳ chọn của nguồn mà Dấu không có), **C 67** (đáp án của họ sai chính tả), **X 4** (không so được). **D 0** (lỗi của Dấu), **E 0** (cần quyết định mới), không còn ca chưa xếp lớp.
 - **Lỗi của Dấu tìm được: bốn kiểu, đã sửa** (mục 2.1). Mười một câu hỏi về luật đã chốt thành quyết định (mục 2.2).
-- Số đếm bằng `scripts/research/external-tests/compare.sh` trên engine sau D31 (Âm tiết tiếng Việt hợp lệ) đổi ngày 10/11/2026, chạy lại 11/11/2026 khi xếp ca cuối vào lớp A; test engine xanh. Khung test mô phỏng D20 (Thêm dấu cho từ đã gõ) theo cách đọc ở chữ cái đầu tiên cùng ba ngoại lệ (mục 3.4); mô phỏng, chưa chạy trên Dấu thật.
+- Số đếm bằng `scripts/research/external-tests/compare.sh` trên engine sau D31 (Âm tiết tiếng Việt hợp lệ) đổi ngày 10/11/2026, chạy lại 12/11/2026 sau khi D26 (Gõ đúp phím dấu) đổi: ⌫ xoá chữ của phím gõ đúp thì mở khoá, 4 ca lớp A thành khớp (XKey `testTelex_UndoBackspaceRetype_ToneMark#5`, `_DD#5`; bamboo-core `TestProcessRefresh2#1`; gonhanh `bug7_backspace_resets_stroke_reverted#1`); test engine xanh. Khung test mô phỏng D20 (Thêm dấu cho từ đã gõ) theo cách đọc ở chữ cái đầu tiên cùng ba ngoại lệ (mục 3.4); mô phỏng, chưa chạy trên Dấu thật.
 - Không chạy mã nào của các dự án khác: chỉ đọc file. Không có đáp án của họ trong thư mục này; vài ca ví dụ ở mục 1 và 2 nhắc đáp án của họ, có ghi nguồn.
 - Không có khẳng định nào về API Apple trong file này.
 
@@ -17,39 +17,39 @@ Theo nguồn ("Khác" gồm cả lớp X; cột `src:`: ca có tuỳ chọn củ
 
 | Nguồn | Ca | Họ không kiểm chữ | Khớp, không `src:` | Khác, không `src:` | Khớp, có `src:` | Khác, có `src:` |
 |---|---|---|---|---|---|---|
-| gonhanh | 4.110 | 119 | 2.228 | 86 | 1.509 | 168 |
+| gonhanh | 4.110 | 119 | 2.229 | 85 | 1.509 | 168 |
 | ibus-teni | 3.050 | 1 | 0 | 0 | 1.627 | 1.422 |
 | fcitx5-unikey | 1.325 | 1 | 7 | 0 | 1.225 | 92 |
 | uvie-rs | 947 | 37 | 1 | 0 | 744 | 165 |
 | ibus-telex | 323 | 11 | 280 | 31 | 0 | 1 |
-| XKey | 263 | 30 | 214 | 6 | 10 | 3 |
+| XKey | 263 | 30 | 216 | 4 | 10 | 3 |
 | vi-rs | 182 | 12 | 166 | 4 | 0 | 0 |
-| bamboo-core | 67 | 7 | 50 | 10 | 0 | 0 |
+| bamboo-core | 67 | 7 | 51 | 9 | 0 | 0 |
 | ibus-bamboo | 32 | 17 | 14 | 1 | 0 | 0 |
 | goxkey | 4 | 0 | 3 | 1 | 0 | 0 |
-| **Tổng** | **10.303** | **235** | **2.963** | **139** | **5.115** | **1.851** |
+| **Tổng** | **10.303** | **235** | **2.967** | **135** | **5.115** | **1.851** |
 
 Ca khác, theo lớp:
 
 | Nguồn | A | B | C | D | E | X | Chưa xếp |
 |---|---|---|---|---|---|---|---|
-| gonhanh | 198 | 21 | 34 | 0 | 0 | 1 | 0 |
+| gonhanh | 197 | 21 | 34 | 0 | 0 | 1 | 0 |
 | ibus-teni | 0 | 1.416 | 6 | 0 | 0 | 0 | 0 |
 | fcitx5-unikey | 84 | 8 | 0 | 0 | 0 | 0 | 0 |
 | uvie-rs | 102 | 46 | 17 | 0 | 0 | 0 | 0 |
 | ibus-telex | 22 | 1 | 9 | 0 | 0 | 0 | 0 |
-| XKey | 6 | 1 | 1 | 0 | 0 | 1 | 0 |
+| XKey | 4 | 1 | 1 | 0 | 0 | 1 | 0 |
 | vi-rs | 4 | 0 | 0 | 0 | 0 | 0 | 0 |
-| bamboo-core | 8 | 0 | 0 | 0 | 0 | 2 | 0 |
+| bamboo-core | 7 | 0 | 0 | 0 | 0 | 2 | 0 |
 | ibus-bamboo | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | goxkey | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **Tổng** | **426** | **1.493** | **67** | **0** | **0** | **4** | **0** |
+| **Tổng** | **422** | **1.493** | **67** | **0** | **0** | **4** | **0** |
 
-### 1.1 Lớp A: Dấu cố ý khác (426)
+### 1.1 Lớp A: Dấu cố ý khác (422)
 
 | Quyết định | Ca | Điểm khác |
 |---|---|---|
-| D26 (Gõ đúp phím dấu) | 217 | gõ đúp phím dấu hay phím biến đổi bỏ biến đổi và khoá tới hết từ, kể cả sau ⌫; mốc khôi phục là chữ đang hiển thị (D4 (Từ nước ngoài)). Trong đó 84 ca của fcitx5-unikey: UniKey dùng w thứ hai để thêm móc cho u ("uow" rồi w ra "ươ"), Dấu coi đó là gõ đúp, còn uơ/ươ do D35 ("uơ" và "ươ") quyết. 4 ca dấu thanh của vần oo ở o thứ hai ("xoòng"). 1 ca "ww" trên "ưa" bỏ móc ("chuawrwz" → "chủawz") |
+| D26 (Gõ đúp phím dấu) | 213 | gõ đúp phím dấu hay phím biến đổi bỏ biến đổi và khoá tới hết từ, hoặc tới khi ⌫ xoá chữ của phím gõ đúp; mốc khôi phục là chữ đang hiển thị (D4 (Từ nước ngoài)). Trong đó 84 ca của fcitx5-unikey: UniKey dùng w thứ hai để thêm móc cho u ("uow" rồi w ra "ươ"), Dấu coi đó là gõ đúp, còn uơ/ươ do D35 ("uơ" và "ươ") quyết. 4 ca dấu thanh của vần oo ở o thứ hai ("xoòng"). 1 ca "ww" trên "ưa" bỏ móc ("chuawrwz" → "chủawz") |
 | D30 (Kiểm tra chính tả), dấu thanh trên vần tắc | 36 | huyền, hỏi, ngã trên vần có âm cuối p, t, c, ch được nhận giữa từ ("catr" hiện "cảt"); kết thúc từ D4 khôi phục; tắt tự khôi phục thì chữ đó ở lại |
 | D31, nới cho địa danh | 33 | k đứng trước mọi nguyên âm ("kò", "ká", "Kẩ", "kô" hợp lệ); âm cuối k chỉ sau ă và phải có sắc/nặng, nên "Busk", "Ddawk" được khôi phục |
 | D4, tiếng Việt thắng | 21 | từ vừa là tiếng Anh vừa là âm tiết hợp lệ ra chữ Việt (sims → sím, per → pẻ, wrong → ưởng) |

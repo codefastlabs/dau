@@ -2,7 +2,7 @@
 
 Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, ở đâu Dấu làm khác và vì sao. Viết bằng lời của Dấu, **không chép mã**. Theo D10 (Engine tự viết), kết quả mong đợi trong test viết theo chính tả tiếng Việt và `docs/Decisions.md`, không lấy từ OpenKey. Bản trước (danh sách ca biên đã duyệt, các điểm mơ hồ đã chốt ngày 29/10/2026): `docs/history/ResearchLog.md` mục 2.
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (12/11/2026)
 
 - **Đã đọc:** OpenKey https://github.com/tuyenvm/OpenKey, commit `89c2fd3` (15/06/2026), clone ra ngoài repo; `Sources/OpenKey/engine/` (`Engine.cpp`, `Engine.h`, `Vietnamese.cpp`, `DataType.h`, `Macro.cpp`, `SmartSwitchKey.cpp`, `ConvertTool.cpp`, `platforms/mac.h`) và `macOS/ModernKey/OpenKey.mm` để biết engine được gọi thế nào.
 - **Không chạy.** Mọi hành vi dưới đây có từ lần theo mã; chỗ chưa chắc ghi "(suy luận)". D10 cấm dùng OpenKey làm đáp án, nên không chạy để kiểm chứng. Test của XKey (engine chuyển từ OpenKey) cho một phần đối chiếu (mục 4).
@@ -16,7 +16,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | Điều kiện khôi phục | chỉ khi có nguyên âm mang dấu/mũ/móc (B7) | mọi chữ không phải âm tiết hợp lệ khi kết thúc từ (D4, D31 (Âm tiết tiếng Việt hợp lệ)) |
 | Âm tiết hợp lệ | không xét c/k/q, g/gh, ng/ngh, p cuối với huyền/hỏi/ngã (B5, B6) | bảng vần tự lập, có các luật đó (D31) |
 | Gõ tắt phụ âm | mở rộng rồi giữ, kể cả ra chữ không hợp lệ ("big" → "bing", B9) | mở rộng rồi kiểm lại, không hợp lệ thì khôi phục (D21) |
-| Khoá sau gõ đúp | Backspace về lại chữ hợp lệ thì mở khoá | khoá tới hết từ, kể cả sau Backspace (D26 (Gõ đúp phím dấu)) |
+
 | "uơ"/"ươ" | luôn "ươ", trừ sau "th", "q"; phân biệt hoa thường (B4) | theo vị trí cặp trong từ (D35 ("uơ" và "ươ")) |
 | Telex đơn giản | Simple Telex 1 có w → qu | không có w → qu (D29 (Telex đơn giản), D23 (w → qu chỉ ở VNI)) |
 | "Bỏ dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu", và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu ở đâu cũng được, dấu tự dời (D28 (Bỏ dấu tự do)) |
@@ -98,7 +98,7 @@ Dấu: D31 (vần tắc chỉ sắc/nặng), D40 (Chữ dựng sẵn và phím z
 - Ngoại lệ "oo": "ô" + `o` → "oo" không bật cờ (để gõ "thoòng"), nên "xooongf" → "xoòng".
 - Bộ đệm phím gốc bớt một phím sau gõ đúp ("car", không phải "carr"), nên lần khôi phục sau trả về đúng chữ đang hiển thị.
 
-**Dấu (D26):** cùng luật, kể cả phím biến đổi và VNI ("a11" → "a1"), cùng ngoại lệ "ooo". Khác OpenKey: khoá giữ tới hết từ kể cả sau Backspace; chỉ xoá hết từ mới hết khoá.
+**Dấu (D26 (Gõ đúp phím dấu)):** cùng luật, kể cả phím biến đổi và VNI ("a11" → "a1"), cùng ngoại lệ "ooo". Backspace: Dấu mở khoá khi ⌫ xoá chữ của phím gõ đúp ("nhâmf" ⌫ rồi `f` → "nhầm", "aaa" ⌫ a → "â"). Điều kiện khác OpenKey (xoá chữ đó, thay vì về lại chữ hợp lệ) nhưng kết quả trùng ở các ca đã xem: khi chữ của phím gõ đúp còn hiện, từ không phải tiếng Việt nên OpenKey vẫn khoá; khi phần còn lại không hợp lệ, D30 (Kiểm tra chính tả) của Dấu vẫn khoá.
 
 ### 2.4 VNI
 
@@ -261,7 +261,7 @@ XKey (macOS, MIT, commit ở `docs/research/external-test-inputs/README.md` mụ
 
 | Hành vi | OpenKey (đọc mã) | XKey (test của họ) | Dấu |
 |---|---|---|---|
-| Khoá sau gõ đúp, rồi Backspace | khoá mở lại khi phần còn lại hợp lệ (mục 2.3); suy luận: tắt kiểm tra chính tả thì khoá còn | "nhaamff⌫f" → "nhầm", "ddd⌫d" → "đ" | D26: "nhaamff⌫f" → "nhâmf", "ddd⌫d" → "dd"; xoá hết từ thì bắt đầu từ mới |
+| Khoá sau gõ đúp, rồi Backspace | khoá mở lại khi phần còn lại hợp lệ (mục 2.3); suy luận: tắt kiểm tra chính tả thì khoá còn | "nhaamff⌫f" → "nhầm", "ddd⌫d" → "đ" | D26: ⌫ xoá chữ của phím gõ đúp thì mở khoá, "nhaamff⌫f" → "nhầm", "ddd⌫d" → "đ" |
 | "ooo" rồi phím dấu | không khoá sau "ooo", phím dấu vẫn đặt dấu (suy luận: "pooor" giữa từ hiện "poỏ") | khoá cả sau "ooo", "pooor" → "poor" (test của họ gọi hành vi cũ là lỗi) | D26, ngoại lệ "ooo" như OpenKey: "pooor" giữa từ hiện "poỏ"; kết thúc từ D4 khôi phục "poor␣"; "xooongf" → "xoòng" |
 | Móc trên "uo" cuối từ (VNI "nuo7", Telex "nuow") | luôn "ươ", trừ sau "th", "q" (B4) | "nuo7" → "nươ" | D35: "nuo7" → "nuơ", gõ thêm chữ thì "nuo7c" → "nươc" |
 | Âm cuối k | không hợp lệ, trừ khi bật gõ tắt phụ âm cuối | hợp lệ sau mọi nguyên âm ("desk" → "dék", "oaks" → "oák") | D31: chỉ sau ă (Đắk Lắk); "oaks" giữ nguyên, "desk" giữa từ hiện "dék", kết thúc từ khôi phục "desk" |
@@ -283,7 +283,7 @@ Kết quả mong đợi theo chính tả và `docs/Decisions.md` (D10), cấu h�
 | `bak␣` (gõ tắt phụ âm bật) | `bak␣` | `bach␣` | D31 | `ShortcutTests.consonantShortcuts` |
 | `capf␣` | `capf␣` | `càp␣` | D31; B5 | `SpellingTests.stopFinals` |
 | `ghus` | `ghus` | `ghú` (suy luận) | D31; B6 | `SpellingTests.initialDistribution` |
-| `aaa⌫a␣`, `ddd⌫d␣` | `aa␣`, `dd␣` | `â␣`, `đ␣` (khoá mở lại khi còn "a", "d" hợp lệ) | D26 | `SpellingTests.loneLettersAndDoubleKeys` |
+
 | `u[` (Telex đơn giản), `[ ]` ở Telex | ngoặc là dấu câu | `[` → ơ ở Telex | D27 | `TransformTests.simpleTelexW`, `EnglishVietnameseTests.bracketsArePunctuation` |
 | `wen␣` (Telex đơn giản, gõ tắt phụ âm bật) | `wen␣` | `quen␣` (Simple Telex 1) | D29, D23 | chưa có test |
 | chữ có sẵn `hoc` + `j` | `học` | `hocj` | D20 | `SeedTests.seeded` |
