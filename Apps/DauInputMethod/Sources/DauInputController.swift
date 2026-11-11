@@ -376,6 +376,11 @@ final class DauInputController: IMKInputController {
                                                   ownBundleID: Bundle.main.bundleIdentifier)
             lastSourceID = current
             let now = ProcessInfo.processInfo.systemUptime
+            // Debug only (PerfLog): a notification that changed nothing, kept so a run can
+            // tell "never delivered" from "delivered and ignored".
+            if !ends, engine.isComposing || composer.isComposing {
+                perf.note("source-unchanged-kept", app: clientApp)
+            }
             guard ends, now - activatedAt >= Self.activationEcho else { return }
             let hadWord = engine.isComposing || composer.isComposing
             resetComposition(client: client() as Any?)

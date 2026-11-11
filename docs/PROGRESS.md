@@ -18,10 +18,9 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - Còn mở: không có mục nào; việc của đợt này đã xong.
 - Đã chạy thật (nhật ký 10/11): cài bằng `scripts/dev/install-app.sh`, hai lượt, nhánh `replaced`; nguồn đang chọn không đổi ở cả hai lượt. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi; `scripts/selftest/app-group.sh --install`.
 - Hai màn onboarding mới: ảnh chụp trong app đạt và khớp artboard (sáng, tối); `scripts/selftest/settings-window/run.sh` đạt hết (nhật ký 10/11). Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
-- `HostApp` kiểm chữ ký ứng viên app chủ từ 11/11 (rà soát bảo mật, nhật ký 11/11).
+- `HostApp` kiểm chữ ký ứng viên app chủ từ 11/11 (rà soát bảo mật, nhật ký 11/11; đã chạy thật trong sandbox).
 
 Chờ người dùng:
-- Chọn giờ cho một lượt chạy chiếm màn hình (rà soát bảo mật 11/11): `typing/run.sh --keys "to⇄cj " safari` (TIS đọc từ sandbox có trả đúng nguồn không, log `source-changed-reset`) và bấm "Cài đặt Dấu…" khi `/Applications/Dau.app` chưa chạy (kiểm chữ ký app chủ trong sandbox, log `host-app-open` hay `host-app-signature-invalid`).
 - Quyết định các đề xuất sửa sổ quyết định của rà soát bảo mật (D43 (Ô bỏ qua vùng thay chữ) nhận ra ô, D4 (Từ nước ngoài), D8 (Không telemetry), D18 (Phòng thủ với IMK), D37 (Cài đặt bộ gõ)).
 
 Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
@@ -355,5 +354,11 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Kiểm chữ ký bộ gõ ở app chủ theo code requirement (chứng chỉ Apple, Team ID, định danh) thay cho so hai Team ID (hai bản ad-hoc từng khớp nhau); `codesign -R` đạt trên bản đã cài.
   - Thông báo đổi nguồn giả từ tiến trình khác cắt mọi từ; gọi ngược từ client trong `insertText` có thể trap; log Release ghi bundle ID app ở `.public`; "Cài đặt Dấu…" mở app trùng bundle ID không kiểm chữ ký; nạp cài đặt O(n²) theo số quy tắc.
   - Test: engine 110 → 116, DauShared 35 → 39, bộ gõ 166 → 199, app chủ 178; `check.sh`, `check-l10n` đạt.
-  - Chưa đo trên máy thật: TIS đọc từ sandbox (đổi nguồn), kiểm chữ ký app chủ từ sandbox, IMK có gọi ngược không. Chưa sửa (chờ quyết định): D43 (Ô bỏ qua vùng thay chữ) nhận nhầm ô luôn báo `{0,0}` và gửi DEL vào đó; bundle bộ gõ trong `~/Library/Input Methods` thay được bởi mọi tiến trình của người dùng (kiểm chữ ký chỉ phát hiện khi mở app chủ).
+  - Chưa đo trên máy thật: IMK có gọi ngược vào bộ gõ trong lúc `insertText` không. Chưa sửa (chờ quyết định): D43 (Ô bỏ qua vùng thay chữ) nhận nhầm ô luôn báo `{0,0}` và gửi DEL vào đó; bundle bộ gõ trong `~/Library/Input Methods` thay được bởi mọi tiến trình của người dùng (kiểm chữ ký chỉ phát hiện khi mở app chủ).
   - Commit `422e644`, `d1f33a4`, `39edfcb`, `2cfbeca`.
+- 11/11/2026 — lượt chạy thật sau rà soát bảo mật (người dùng cho chạy; bộ gõ Debug, rồi cài lại Release) — phiên chính — Chrome, phím cách 120 ms:
+  - Đổi nguồn thật (`--keys "to⇄cj "`): một `source-changed-reset`, ra "tọc"; TIS đọc được nguồn hiện tại từ sandbox của bộ gõ.
+  - Thông báo đổi nguồn giả (một tiến trình phát `kTISNotifySelectedKeyboardInputSourceChanged` mỗi 30 ms) trong lúc gõ "vieetj nguwowif tieengs ": 83 thông báo tới bộ gõ, cả 83 bị bỏ qua (`source-unchanged-kept`, log Debug thêm cho phép đo này), không reset nào, chữ đúng. Một lượt, không đối chứng bằng bản trước khi sửa.
+  - "Dấu Settings…" khi `/Applications/Dau.app` chưa chạy: `host-app-open reason=same-version` rồi `host-app-opened`, không có `host-app-signature-invalid` hay `-unreadable`: kiểm chữ ký app chủ chạy được trong sandbox.
+  - Safari không chạy được: focus ở thanh địa chỉ, script dừng trước phím đầu (như ghi chú 09/11).
+  - Dọn: Dấu.app đã thoát, bản Release đã cài lại, `build/sec*` đã xoá, không còn khoá `DauPerfLog`/`DauDebug…`, nguồn đầu vào là Dấu như trước lượt chạy.
