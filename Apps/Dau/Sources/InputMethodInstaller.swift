@@ -592,21 +592,44 @@ enum Quarantine {
 
 /// Code signature checks of the input method before it is installed.
 enum CodeSignature {
-    /// Valid signature (all architectures, nested code) by the same team as this app.
+    /// Valid signature (all architectures, nested code) that chains to Apple, signed by
+    /// this app's team, with the input method's identifier (D37). A requirement, not a
+    /// comparison of two Team IDs: two ad-hoc signatures both have no Team ID, and a team's
+    /// other code (another app of the same team) has another identifier.
     static func isValidAndSameTeam(_ url: URL) -> Bool {
-        var code: SecStaticCode?
-        guard SecStaticCodeCreateWithPath(url as CFURL, [], &code) == errSecSuccess, let code else { return false }
-        let flags = SecCSFlags(rawValue: SecCSFlags.RawValue(kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSStrictValidate))
-        guard SecStaticCodeCheckValidity(code, flags, nil) == errSecSuccess else {
-            installLogger.error("event=signature-invalid")
+        guard let ours = hostTeamID(),
+              let identifier = InputMethodBundleFiles.info(at: InputMethodBundleFiles.standardEmbeddedURL)?.bundleID else {
+            installLogger.error("event=signature-no-host-identity")
             return false
         }
-        let theirs = teamID(of: code)
-        let ours = hostTeamID()
-        if theirs != ours {
-            installLogger.error("event=signature-team-mismatch theirs=\(theirs ?? "-", privacy: .public) ours=\(ours ?? "-", privacy: .public)")
+        return isValid(url, requirement: requirementText(identifier: identifier, teamID: ours))
+    }
+
+    /// The requirement the installed input method must meet: Apple-issued certificate
+    /// (Developer ID or Apple Development), leaf certificate of `teamID`, `identifier`.
+    /// nil when either value cannot be quoted safely.
+    static func requirementText(identifier: String, teamID: String) -> String? {
+        let allowed = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_")
+        guard !identifier.isEmpty, !teamID.isEmpty,
+              identifier.allSatisfy(allowed.contains), teamID.allSatisfy(allowed.contains) else { return nil }
+        return "anchor apple generic and identifier \"\(identifier)\" and certificate leaf[subject.OU] = \"\(teamID)\""
+    }
+
+    /// `url` is validly signed (all architectures, nested code, strict) and meets
+    /// `requirement`; false when there is no requirement.
+    static func isValid(_ url: URL, requirement text: String?) -> Bool {
+        var code: SecStaticCode?
+        var requirement: SecRequirement?
+        guard let text,
+              SecRequirementCreateWithString(text as CFString, [], &requirement) == errSecSuccess, let requirement,
+              SecStaticCodeCreateWithPath(url as CFURL, [], &code) == errSecSuccess, let code else { return false }
+        let flags = SecCSFlags(rawValue: SecCSFlags.RawValue(kSecCSCheckAllArchitectures | kSecCSCheckNestedCode | kSecCSStrictValidate))
+        let status = SecStaticCodeCheckValidity(code, flags, requirement)
+        if status != errSecSuccess {
+            let theirs = teamID(of: code)
+            installLogger.error("event=signature-invalid status=\(status) theirs=\(theirs ?? "-", privacy: .public)")
         }
-        return theirs == ours
+        return status == errSecSuccess
     }
 
     /// The code directory hash (cdhash) of every architecture slice of the bundle at

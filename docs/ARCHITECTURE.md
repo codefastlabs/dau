@@ -473,7 +473,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 
 - chép `Contents/Library/Input Methods/DauInputMethod.app` vào thư mục tạm ẩn, không đuôi `.app`, cùng thư mục đích (`.DauInputMethod-staging-<uuid>`);
 - gỡ `com.apple.quarantine`;
-- kiểm chữ ký bản tạm (hợp lệ mọi kiến trúc, cùng Team ID với app chủ);
+- kiểm chữ ký bản tạm (`CodeSignature.isValidAndSameTeam`, xem dưới);
 - đổi chỗ vào `DauInputMethod.app` bằng một lần `renamex_np(RENAME_SWAP)`; lần đổi chỗ báo đích không có (`ENOENT`) thì `InputMethodFiles.installEmbedded` chuyển bản tạm vào bằng `RENAME_EXCL`, còn `InputMethodFiles.replaceInstalledWithEmbedded` (đường thay của `reconcile`) không cài, xoá bản tạm và trả về sai;
 - xoá bản cũ;
 - dừng tiến trình cũ nếu đang chạy;
@@ -512,7 +512,7 @@ Trước bước 1, `OnboardingFlow.needsMoveToApplications` thay cả ba bướ
 
 **Kiểm bộ gõ đã cài** (D37):
 
-- mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`: chữ ký hợp lệ và cùng Team ID với app chủ); chỉ bản chủ hỏi;
+- mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`: chữ ký hợp lệ ở mọi kiến trúc và thoả một yêu cầu mã — chứng chỉ do Apple cấp, chứng chỉ lá thuộc Team ID của app chủ, định danh là bundle ID của bản nhúng; app chủ không có Team ID thì không bản nào đạt); chỉ bản chủ hỏi;
 - không khớp thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng trong app (chữ ký bản mới cũng được kiểm trước khi đổi chỗ);
 - Dấu chưa bật thì onboarding hiện cùng thông báo ở bước 2 (mục "Onboarding"), và `enable()` không bật bộ gõ đó (mục "Bật");
 - cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật nữa, và lượt `reconcile` lúc mở app không chạy.
