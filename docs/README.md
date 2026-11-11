@@ -48,12 +48,9 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 |---|---|
 | `docs/history/PLANS.md` | kế hoạch của các mốc đã đóng; các bước của lần thử cài trên máy sạch đã bỏ (04/11/2026) |
 | `docs/history/M2-TESTING.md` | gõ thử M2 trên máy thật và kết quả (cách thử hiện hành: `docs/COMPATIBILITY.md` mục 4) |
-| `docs/history/M4-TESTING.md` | cách thử M4 trên máy thật |
-| `docs/history/LOG-M0-M4.md` | nhật ký M0–M4 (29–30/10/2026), chuyển từ `PROGRESS.md` khi đóng M4; bảng số đo M1–M3 |
+| `docs/history/LOG-M0-M4.md` | nhật ký M0–M4 (29–30/10/2026), chuyển từ `PROGRESS.md` khi đóng M4; bảng "Số đo (M1–M3)" là nguồn của các số đo M1–M3 mà ARCHITECTURE, DECISIONS và COMPATIBILITY dẫn |
 | `docs/history/LOG-M5.md` | nhật ký M5 (30/10–05/11/2026), chuyển từ `PROGRESS.md` khi đóng M5 |
 | `docs/history/LOG-BETWEEN-M5-M6.md` | nhật ký giữa M5 và M6 (05–08/11/2026), chuyển từ `PROGRESS.md` ngày 09/11/2026 |
 | `docs/history/DECISIONS-LOG.md` | lịch sử từng nguyên tắc và quyết định của `DECISIONS.md`: ngày, ai chốt, bản trước, cách nói cũ |
 | `docs/history/DOCS-LOG.md` | phần lịch sử (ngày chốt, bản trước, số phiên bản canvas) tách khỏi ARCHITECTURE, UI, ROADMAP, PROGRESS, CONTRIBUTING và file agent khi các file đó chuyển sang chỉ ghi hiện trạng (09/11/2026) |
-| `docs/history/RESEARCH-LOG.md` | đoạn kết luận cũ đã bị thay của các tài liệu nghiên cứu, chuyển ra khi viết lại (09/11/2026) |
 | `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
-| `docs/history/KICKOFF.md` | brief khởi động M0–M8 lúc bắt đầu dự án |

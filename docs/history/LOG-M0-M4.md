@@ -76,7 +76,7 @@ Chuyển từ `docs/PROGRESS.md` ngày 03/11/2026 khi M0–M4 đã đóng; file 
 
 ## Số đo (M1–M3, 29–30/10/2026)
 
-Chuyển từ `docs/PROGRESS.md` ngày 09/11/2026.
+Chuyển từ `docs/PROGRESS.md` ngày 09/11/2026. Bảng này là nguồn duy nhất của các số đo M1–M3; `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` và `docs/COMPATIBILITY.md` dẫn tới nó theo tên dòng. Số đo của mốc đã đóng ở lại `docs/history/` (`CLAUDE.md` mục "Nguồn chuẩn"); số mới đo lại ghi ở nhật ký `docs/PROGRESS.md`, không sửa bảng.
 
 | Ngày | Số đo | Giá trị | Cách đo |
 |---|---|---|---|
