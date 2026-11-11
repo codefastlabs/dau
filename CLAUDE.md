@@ -43,6 +43,17 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - **Tài liệu nghiên cứu (`docs/research/`) có mục "Hiện trạng" ở đầu, ghi ngày.** Kết luận đổi thì sửa thẳng vào mục đó và vào thân bài, không viết thêm mục "Đính chính" ở cuối.
 - **Chỉ ghi kết luận khi đã đo trên Dấu thật hoặc có nguồn.** Quan sát trên bản thử (bundle đổi ID, app thử) ghi riêng một mục có nhãn, không rút kết luận; trạng thái đọc ở đúng chỗ người dùng thấy (danh sách "+", menu), không chỉ qua TIS từ một tiến trình mới.
 
+## Viết tài liệu
+
+Tài liệu mục nhanh hơn mã, vì không có test nào đỏ khi nó sai. Các luật dưới đây giữ cho nó ít, đúng và theo kịp mã.
+
+- **Chỉ ghi điều mã không tự nói.** Quyết định và lý do (`DECISIONS.md`), cấu trúc và luồng giữa các thành phần (`ARCHITECTURE.md`), cách dùng (README, CONTRIBUTING), kết luận nghiên cứu. Chi tiết đổi theo mã (giá trị hằng số, các bước bên trong một hàm, tuỳ chọn của script) nằm trong comment của mã hay đầu script; tài liệu dẫn tên kiểu, hàm, script.
+- **Ghi hiện trạng, không ghi nhật ký.** File tra cứu chỉ giữ điều đang đúng. Việc xong thì xoá kế hoạch và danh sách bước của nó, kết quả thay vào chỗ câu hỏi; diễn biến theo lượt, theo ngày vào nhật ký `PROGRESS.md` (rồi `docs/history/`), không vào file tra cứu.
+- **Thứ tự theo người đọc.** Mở đầu bằng mục đích và kết luận; kết quả nằm cạnh câu hỏi nó trả lời; phần quan trọng trước, phần đã dừng hay để sau ở cuối. Câu ngắn; gạch đầu dòng cho các ý ngang hàng, không cho một đoạn văn.
+- **Đổi mã thì sửa tài liệu trong cùng commit.** Đổi hành vi, tên kiểu, tên script hay tuỳ chọn: grep tên và cách nói cũ trong `docs/`, CLAUDE.md, CONTRIBUTING, README rồi sửa; cách nói cũ có thể quay lại thì thêm vào `scripts/check-docs/superseded.txt`.
+- **Viết cho GitHub.** Tài liệu công khai trên GitHub: file trong repo dẫn bằng liên kết bấm được (``[`docs/DECISIONS.md`](docs/DECISIONS.md)``); chú thích cuối trang dùng URL đầy đủ (GitHub không đổi liên kết tương đối ở đó); thoát `|` trong bảng; chuỗi `<…>` để trong backtick.
+- **Lỗi tài liệu tìm được bằng máy thì thêm vào `check.sh`**, như mọi lỗi kiểm tĩnh bắt được.
+
 ## Quy tắc làm việc
 
 - **Đối chiếu sổ quyết định trước mọi đề xuất hay thay đổi.** Nếu một thay đổi mâu thuẫn với một nguyên tắc (N1–N5) hoặc quyết định (D1–D…) thì dừng lại và nêu mâu thuẫn, không tự ý làm. Nếu một quyết định cần đổi, cập nhật `docs/DECISIONS.md` trong cùng commit, ghi lý do.
