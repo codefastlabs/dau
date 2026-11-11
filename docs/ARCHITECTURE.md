@@ -350,7 +350,7 @@ Cách tìm app chủ:
 #### Biểu tượng, ký và entitlements của bundle
 
 - **Biểu tượng của bundle** (Finder):
-  - dùng chung `Apps/Dau/Resources/Assets.xcassets` (AppIcon) với app chủ (`project.yml`), ra `CFBundleIconName`/`Assets.car` giống Dấu.app;
+  - dùng chung `Apps/Dau/Resources/Assets.xcassets` (AppIcon, AppIconDev: chọn theo cờ `DAU_OFFICIAL`, D25 (Nhận diện)) với app chủ (`project.yml`), ra `CFBundleIconName`/`Assets.car` giống Dấu.app;
   - tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
 - Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) không đổi: vẫn là TIFF template khai trong Info.plist (`docs/COMPATIBILITY.md` 6.6, 6.7).
   - TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template = 1 ở cả bundle và mode; ảnh thanh menu khớp sau khi cài.

@@ -54,6 +54,19 @@ settings:
     ARCHS: arm64 x86_64
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
+    # D25: the standard icon only on the official build. Only the CI release build passes
+    # DAU_OFFICIAL=YES (xcodebuild DAU_OFFICIAL=YES); everything else (Debug, a local Release,
+    # someone else's build) gets the development icon and no DAU_OFFICIAL condition. Both
+    # targets share the asset catalog, so both read DAU_APPICON.
+    DAU_OFFICIAL: NO
+    DAU_APPICON_NO: AppIconDev
+    DAU_APPICON_YES: AppIcon
+    DAU_APPICON: $(DAU_APPICON_$(DAU_OFFICIAL))
+    # A swiftc flag, not SWIFT_ACTIVE_COMPILATION_CONDITIONS: set here, that setting
+    # replaces XcodeGen's per-config preset and Debug loses DEBUG.
+    DAU_SWIFT_FLAG_NO: ""
+    DAU_SWIFT_FLAG_YES: -DDAU_OFFICIAL
+    OTHER_SWIFT_FLAGS: $(inherited) $(DAU_SWIFT_FLAG_$(DAU_OFFICIAL))
     SWIFT_EMIT_LOC_STRINGS: YES
     LOCALIZATION_PREFERS_STRING_CATALOGS: YES
     STRING_CATALOG_GENERATE_SYMBOLS: NO
@@ -93,10 +106,10 @@ targets:
         # input method); App Group + hardened runtime only. The input method keeps its
         # sandbox. Never set ENABLE_APP_SANDBOX here.
         CODE_SIGN_ENTITLEMENTS: Apps/Dau/Dau.entitlements
-        # Temporary icon from scripts/assets/make-app-icon.sh (Resources/Brand). The input method
-        # shares this asset catalog for its Finder icon. TODO(M7): Icon Composer icon
-        # (docs/BRAND.md).
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        # Temporary icons from scripts/assets/make-app-icon.sh (Resources/Brand); the set is
+        # chosen by DAU_OFFICIAL (D25). The input method shares this asset catalog for its
+        # Finder icon. TODO(M7): Icon Composer icon (docs/BRAND.md).
+        ASSETCATALOG_COMPILER_APPICON_NAME: $(DAU_APPICON)
     # build/generated/BuildCommit.txt is written by the input method's "Stamp build
     # commit" phase; this target builds after it (dependency below).
     dependencies:
@@ -118,7 +131,7 @@ targets:
     sources:
       - path: Apps/DauInputMethod/Sources
       - path: Apps/DauInputMethod/Resources
-      # The host app's asset catalog (AppIcon only), shared rather than copied: the
+      # The host app's asset catalog (AppIcon and AppIconDev), shared rather than copied: the
       # bundle gets the same Finder icon as Dấu.app (CFBundleIconName, Assets.car).
       # The input source icons (menu bar V, ⌃Space indicator) are not app icons: they
       # stay the template TIFF named in Info.plist (tsInputMethodIconFileKey, mode keys,
@@ -130,7 +143,7 @@ targets:
     settings:
       base:
         PRODUCT_NAME: DauInputMethod
-        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_APPICON_NAME: $(DAU_APPICON)
         # Input method bundle IDs conventionally contain ".inputmethod.".
         PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).inputmethod.Dau
         INFOPLIST_FILE: Apps/DauInputMethod/Info.plist

@@ -89,7 +89,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
 - Homebrew cask với `auto_updates true`.
 - Báo lỗi (URL issue điền sẵn), Quay về bản trước, Gỡ cài đặt.
 - Loại bản dựng (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện)):
-  - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt;
+  - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
   - mặc định là biểu tượng bản phát triển;
   - số build tăng dần, số hiển thị có chữ beta;
   - trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit (vẽ trên canvas trước).

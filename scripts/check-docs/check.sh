@@ -46,6 +46,7 @@
 #   11. script languages (scripts/README.md, "Ngôn ngữ"): outside scripts/research/external-tests,
 #      no tracked .py/.pl/.rb file, no code line of a scripts/**/*.sh or hook that runs
 #      python, perl or ruby, and no `swift <file>.swift` run interpreted (use dau_swift_tool).
+#   12. project.yml never sets SWIFT_ACTIVE_COMPILATION_CONDITIONS (Debug would lose DEBUG).
 # Checks 3b and 10 run doc-check.swift, compiled once into build/tools/ (scripts/lib/swift-tool.sh).
 # Exit status 0 only if every check passes. Output (Vietnamese, via scripts/lib/log.sh):
 # one "✗" line per problem, then a final verdict line.
@@ -237,6 +238,13 @@ for s in scripts/**/*.sh(N); do
       break
     fi
   done
+done
+
+# 12. project.yml never sets SWIFT_ACTIVE_COMPILATION_CONDITIONS: set there it replaces
+# XcodeGen's per-config preset and Debug loses DEBUG (every #if DEBUG goes dark). Custom
+# conditions go in OTHER_SWIFT_FLAGS (-D…), as DAU_OFFICIAL does (D25).
+grep -n '^[^#]*SWIFT_ACTIVE_COMPILATION_CONDITIONS' project.yml | while IFS= read -r l; do
+  report "project.yml:${l%%:*}: đặt SWIFT_ACTIVE_COMPILATION_CONDITIONS làm bản Debug mất DEBUG; dùng OTHER_SWIFT_FLAGS (-D…)"
 done
 
 (( fail )) && { log_error "Tài liệu lệch: sửa các chỗ trên rồi chạy lại."; exit 1 }
