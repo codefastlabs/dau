@@ -37,7 +37,7 @@ Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11; còn một việ
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
-Mở từ 11/11: lượt `/dogfood` đầu tiên (nhật ký 11/11) tìm hai ca lặp lại được ở Notes, chế độ thay tại chỗ, chưa chẩn đoán: `hocj d. ` ra "học Đ." (Telex của Apple đúng), và D20 (Thêm dấu cho từ đã gõ) không chạy khi nghỉ giữa dấu cách và ⌫. Việc tiếp theo của mạch này: chẩn đoán bằng bản Debug (vị trí thay chữ), thêm đối chứng ở Mail.
+Mở từ 11/11: lượt `/dogfood` đầu tiên tìm hai ca sai ở Notes; chẩn đoán xong (nhật ký 11/11, "chẩn đoán /dogfood"): cả hai do tự sửa chính tả của macOS sửa chữ Dấu đã trả, không do Dấu thay sai. Telex của Apple bị sửa y hệt, và chèn chữ bằng `insertText` không tránh được (nhật ký 11/11, "tự sửa chính tả với bộ gõ khác"). Luật bổ sung D20 (Thêm dấu cho từ đã gõ) đã bàn và gác lại: nó nuốt phím ở ca như "cat" bị sửa thành "cát" rồi gõ thêm "s". Chờ người dùng duyệt câu mở rộng giới hạn của D4 (Từ nước ngoài).
 
 Việc tiếp theo: `heavy.sh` chạy trọn một lượt (M6 bước 2).
 
@@ -384,3 +384,17 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Cửa sổ Cài đặt: gõ "ghi chú" bằng Dấu ở ô tìm của sheet thêm quy tắc tìm ra Ghi chú; ba nút cuối sheet báo cho Accessibility tên "nút", không có nhãn (chưa kiểm bằng VoiceOver).
   - Giới hạn: phím từ System Events; một máy; Notes là app duy nhất có hai ca lạ, chưa đo Mail hay Safari.
   - Dọn: quy tắc theo app về trống như trước lượt, ghi chú thử đã xoá (vào Recently Deleted), tab thử và tài liệu VS Code đã đóng, clipboard và nguồn (Dấu) như trước; `build/dogfood/` đã xoá.
+- 11/11/2026 — chẩn đoán /dogfood: hai ca sai ở Notes (người dùng cho chạy; bộ gõ Debug 4b61c84, rồi cài lại Release; `typing/run.sh --save`, Notes và Mail) — phiên chính.
+  - Ca `toi hocj d. hocj d. ` (120 ms): Notes và Mail đều ra "Toi học Đ. học Đ.". Nhật ký Debug: Dấu chỉ thay ở hai phím j (`rep=5,2`, `ins_len=2`), mọi phím "d", ".", dấu cách đều `pass`, nên chữ "Đ" không do Dấu thay.
+  - Tắt "Correct Spelling Automatically" trong menu Edit của Notes rồi chạy lại: "toi học d. học d." (2/2 chữ "d" đúng, "toi" cũng không bị viết hoa); bật lại thì ra "Đ". Cài đặt đã trả về bật, đọc lại lúc mở menu.
+  - Ca D20 (Thêm dấu cho từ đã gõ) `toi hoc ⌫j bai `: tắt tự sửa thì đúng "học" cả ở nhịp 1,2 s; bật thì sai "hocj" ở Notes và Mail, ở cả 1,2 s và 120 ms (4/4). Nhật ký: Dấu đọc được từ và thay đúng chỗ (`rep=5,2`), nhưng chèn 3 ký tự. Engine (thử offline): seed "học" + j cho `replace(2, "ocj")`, seed "hoc" + j cho "ọc". Vậy chữ Dấu đọc lại đã là "học": tự sửa của macOS đổi "hoc" thành "học" sau dấu cách, và phím j của người gõ bỏ dấu đó theo luật Telex. Cùng cơ chế giải thích "chep ⌫s" ra "cheps" ở lượt /dogfood. Ca gõ liền tay đúng ở lượt /dogfood (3/3) vì tự sửa chưa kịp chạy; thời điểm tự sửa chạy chưa đo.
+  - Nguyên nhân: tự sửa chính tả của macOS sửa chữ Dấu đã trả, như giới hạn đã biết của D4 (Từ nước ngoài) ("car" → "cả"). Thêm so với giới hạn đó: nó còn sửa chữ tiếng Việt không dấu ("hoc" → "học") và chữ đơn ("d" → "Đ"), và đè lên D20. Telex của Apple cũng bị sửa như vậy (mục "tự sửa chính tả với bộ gõ khác" ở dưới); lượt /dogfood Telex của Apple ra "học d." ở một lượt, chưa rõ vì sao khác.
+  - `typing/run.sh` để lại một ghi chú rỗng "New Note" ở Notes sau lượt (Notes không tự bỏ như đầu script ghi); đã xoá tay (vào Recently Deleted).
+  - Dọn: Release đã cài lại, không còn khoá `DauPerfLog`/`DauDebugForceUnderline`, nguồn là Dấu, tự sửa của Notes đang bật như trước, Notes 54 ghi chú như trước lượt, `build/diag*` đã xoá.
+- 11/11/2026 — tự sửa chính tả với bộ gõ khác (người dùng cho chạy; bộ gõ Debug c515581 có cờ thử chỉ trong lượt này, rồi cài lại Release từ mã sạch; `typing/run.sh`, Notes và Mail, 120 ms, `toi hocj d. hoc bai `, tự sửa của hệ thống bật như máy đang dùng) — phiên chính.
+  - Telex của Apple (`--source`), 3 lượt: cả 6 ô ra "Toi học Đ. Học bai", tức tự sửa đổi "d" thành "Đ" và "hoc" thành "Học" như với Dấu.
+  - Dấu như bản phát hành, 1 lượt: cả 2 ô ra cùng chữ đó.
+  - Bản thử chèn bằng `insertText` mọi phím mà Dấu thường để app tự gõ (một lượt chỉ chữ cái, 13 lần chèn trong Notes; một lượt mọi ký tự kể cả dấu cách, 19 lần): cả 4 ô vẫn ra cùng chữ đó. Cách Dấu trả chữ không quyết định việc bị tự sửa; không có hướng sửa tận gốc ở phía bộ gõ.
+  - Lượt /dogfood Telex của Apple ra "học d." ở một lượt (gõ bằng công cụ khác, sau dòng tiêu đề ghi chú); lượt này không lặp lại được, nguyên nhân chưa rõ.
+  - Luật bổ sung D20 (Thêm dấu cho từ đã gõ) "phím đã được app làm hộ thì giữ chữ" đã bàn rồi gác: nó đúng ở "hoc" → "học" rồi ⌫ j, nhưng nuốt phím ở từ tiếng Anh bị sửa thành tiếng Việt rồi gõ thêm chữ trùng phím dấu ("cat" → "cát", ⌫ s: muốn "cats", luật cho "cát"; hiện nay cho "cats").
+  - Dọn: mã thử đã bỏ (`git checkout`), Release cài lại, không còn khoá `DauDebugInsert*`/`DauPerfLog`, nguồn là Dấu, ghi chú rỗng còn sót đã xoá (Notes 54), `build/ac` đã xoá.
