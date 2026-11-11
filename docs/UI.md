@@ -51,7 +51,7 @@ Artboard: [OnboardingMoveToApplications](canvas/OnboardingMoveToApplications.png
 
 Artboard: [OnboardingConflict](canvas/OnboardingConflict.png).
 
-- Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 5). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
+- Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 8). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
 - Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng. App chưa kiểm thì ghi chung "Thoát `<tên>`" và đường dẫn Mục đăng nhập (N5).
 - Tự kiểm tra lại khi cửa sổ được kích hoạt. Cho phép bỏ qua.
 

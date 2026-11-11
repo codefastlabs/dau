@@ -38,7 +38,7 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 - AppKit, WebKit (TextEdit, Safari, Notes): áp phím ngay, chưa thấy lỗi.
 - Chromium, Electron, Terminal: áp phím bất đồng bộ, trả vị trí cũ khi phím dồn hay app bận (mục 6.2).
 - Terminal tự vẽ (Ghostty) và xterm.js: bỏ qua vùng thay (mục 6.8).
-- Client không hỗ trợ TSMDocumentAccess thì `selectedRange` trả `NSNotFound` và `replacementRange` bị bỏ qua (header `IMKInputSession.h`, SDK macOS 27.0; header ghi trường hợp này "cực kỳ hiếm"). Bộ gõ đếm là `unsupported`; chưa gặp ở ứng dụng nào. Trang tài liệu web của `IMKTextInput` trả 404 ([`docs/research/OPENKEY-NOTES.md`](research/OPENKEY-NOTES.md) mục 5); phía ứng dụng: https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange() và https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
+- Client không hỗ trợ TSMDocumentAccess thì `selectedRange` trả `NSNotFound` và `replacementRange` bị bỏ qua (header `IMKInputSession.h`, SDK macOS 27.0; header ghi trường hợp này "cực kỳ hiếm"). Bộ gõ đếm là `unsupported`; chưa gặp ở ứng dụng nào. Trang tài liệu web của `IMKTextInput` trả 404 ([`docs/research/IMK-API-NOTES.md`](research/IMK-API-NOTES.md)); phía ứng dụng: https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange() và https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
 - Gạch chân dùng `setMarkedText(_:selectionRange:replacementRange:)`, không hỏi vị trí nên không bị lỗi bất đồng bộ; đổi lại không có D20 (Thêm dấu cho từ đã gõ).
 
 ## 3. Ứng dụng và công nghệ giao diện
@@ -98,7 +98,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
 2. Cài bản Debug: `scripts/dev/install-app.sh --debug` (chỉ bản Debug có nhật ký từng phím, D8 (Không telemetry)). Thử xong cài lại bản dùng hằng ngày: `scripts/dev/install-app.sh --ref stable`.
-3. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu" rồi Allow (D37 (Cài đặt bộ gõ)). Không bật được thì theo đường lui của D37: tự thêm bằng "+" trong danh sách nguồn đầu vào của System Settings, "+" không có Dấu thì đăng xuất một lần ([`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) (b)9, (b)12).
+3. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu" rồi Allow (D37 (Cài đặt bộ gõ)). Không bật được thì theo đường lui của D37: tự thêm bằng "+" trong danh sách nguồn đầu vào của System Settings, "+" không có Dấu thì đăng xuất một lần ([`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 1.3, 3.2).
 4. Giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách nguồn: Dấu chỉ có nguồn tiếng Việt (D2 (Chuyển Việt/Anh)).
 5. Máy bật "Automatically switch to a document’s input source" thì mỗi ứng dụng nhớ nguồn riêng: chọn lại Dấu sau khi chuyển sang ứng dụng cần thử.
 6. Bộ gõ không chạy: xem log bằng `/usr/bin/log stream --predicate 'process == "DauInputMethod"'` (trong zsh, `log` là lệnh có sẵn khác).

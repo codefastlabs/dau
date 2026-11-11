@@ -30,7 +30,8 @@
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
-#                     (ROADMAP M3). Example (D20, K7): --keys "hoc ⌫j " --expect "học "
+#                     (docs/ARCHITECTURE.md, "Đổi nguồn nhập liệu không qua
+#                     `activateServer`"). Example (D20, K7): --keys "hoc ⌫j " --expect "học "
 #   --expect "…"      expected text (default: what the sample sentence must give)
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by

@@ -1,8 +1,8 @@
-"""Step 3 of docs/research/external-test-inputs/README.md: join the key sequences, Dấu's output and the
+"""Section 3.2 of docs/research/external-test-inputs/README.md: join the key sequences, Dấu's output and the
 other projects' expected output per case, normalise by `their_note`, and count agreement.
 Called by compare.sh (python3 -I). Reads only TSVs; writes build/external-review/<source>.tsv.
 
-Classes (section 9 of the doc): agree, no-answer, A–E, X (with a rule note "X-…"), and
+Classes (section 3.3 of the doc): agree, no-answer, A–E, X (with a rule note "X-…"), and
 "unreviewed" for a disagreement nobody has classified yet. Classification needs judgement:
 this script only carries a class forward from the previous review file when the case is the
 same (same keys, same Dấu output, same expected text), and applies hand classifications given

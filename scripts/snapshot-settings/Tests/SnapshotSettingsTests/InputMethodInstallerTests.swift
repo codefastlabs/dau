@@ -3,7 +3,7 @@ import Testing
 @testable import SnapshotSettings
 
 // The installer's state machine (D14, D16, D37; docs/research/INPUT-METHOD-INSTALL.md sections
-// 2–4) on fake Text Input Sources, a fake process list and fake bundle files: the order
+// 1–6) on fake Text Input Sources, a fake process list and fake bundle files: the order
 // of the system calls, read-backs, and failure paths. No test touches the real input
 // sources or ~/Library/Input Methods; the file tests run in a temp folder.
 
@@ -24,7 +24,7 @@ final class FakeTextInputSources: TextInputSources {
     /// `enable` returns this status and changes nothing when false (the macOS 27.0
     /// report: noErr, mode still off).
     var enableTakesEffect = true
-    /// Enabling the parent also stores the mode (macOS does; 8.1b).
+    /// Enabling the parent also stores the mode (macOS does; docs/research/INPUT-METHOD-INSTALL.md section 1.4).
     var enableCascadesToMode = true
     var enableStatus: OSStatus = noErr
     /// What `register` makes appear (nothing: the source is not listed until logout).

@@ -16,7 +16,7 @@ struct TypingPreviewTests {
     @Test("seeds the engine from text already shown (D20)")
     func seeded() {
         #expect(TypingPreview.type("j", options: EngineOptions(), after: "hoc") == "học")
-        // UI.md caveat: dep + j gives dẹp, not đẹp.
+        // dep + j gives dẹp, not đẹp: no other transform is added (D20).
         #expect(TypingPreview.type("j", options: EngineOptions(), after: "dep") == "dẹp")
     }
 

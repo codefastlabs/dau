@@ -73,7 +73,7 @@ Kế hoạch của các mốc này: [`docs/history/PLANS.md`](history/PLANS.md).
 ## M8 — Website
 
 - Chốt công nghệ và thư mục của trang web (người dùng chốt).
-- Dựng trang tải về theo [`docs/UI.md`](UI.md) (mục "Trang tải về") và [`docs/BRAND.md`](BRAND.md): trang tĩnh, responsive, thẻ meta và ảnh Open Graph, favicon.
+- Dựng trang tải về theo [`docs/WEBSITE.md`](WEBSITE.md) (mục "Trang tải về (M8)") và [`docs/BRAND.md`](BRAND.md): trang tĩnh, responsive, thẻ meta và ảnh Open Graph, favicon.
 - Các ô số liệu và lời hứa chỉ điền từ kết quả đã đo (N5 (Chỉ hứa điều đã kiểm chứng)).
 - Xong khi: Lighthouse ≥ 95 ở cả bốn hạng mục trên điện thoại; kiểm toán ĐẠT.
 

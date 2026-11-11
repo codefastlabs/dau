@@ -31,7 +31,7 @@ private final class FakeDocument: InPlaceClient {
 
     var lag: TimeInterval = 0
     var staleText = false
-    /// Chromium/Electron (COMPATIBILITY.md 6.4): the app runs its own Delete for ⌫ even
+    /// Chromium/Electron (docs/history/COMPATIBILITY-FIXED.md): the app runs its own Delete for ⌫ even
     /// when the input method consumed the key, after the input method's `insertText`
     /// (`render_widget_host_view_cocoa.mm` forwards the raw key-down to the page after
     /// `interpretKeyEvents:` unless there is marked text).
@@ -509,7 +509,7 @@ struct InPlaceComposerTests {
         #expect(t.doc.text == "hocj")
     }
 
-    // MARK: Backspace (D32) in apps that delete even a consumed ⌫ (COMPATIBILITY.md 6.4)
+    // MARK: Backspace (D32) in apps that delete even a consumed ⌫ (docs/history/COMPATIBILITY-FIXED.md)
 
     /// Both kinds of app: one that honours a consumed key (AppKit, WebKit, Firefox) and
     /// one that runs its own Delete anyway (Chromium, Electron).

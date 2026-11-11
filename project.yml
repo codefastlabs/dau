@@ -135,7 +135,7 @@ targets:
       # bundle gets the same Finder icon as Dấu.app (CFBundleIconName, Assets.car).
       # The input source icons (menu bar V, ⌃Space indicator) are not app icons: they
       # stay the template TIFF named in Info.plist (tsInputMethodIconFileKey, mode keys,
-      # TISIconIsTemplate; docs/COMPATIBILITY.md 6.6, 6.7).
+      # TISIconIsTemplate; docs/history/COMPATIBILITY-FIXED.md).
       - path: Apps/Dau/Resources/Assets.xcassets
       - path: build/generated/BuildCommit.txt
         optional: true

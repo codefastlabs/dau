@@ -207,7 +207,7 @@ Các hướng đã xét (04/11/2026, chỉ đọc):
 | Nhờ System Settings (Apple event, URL, AppleScript, App Intents) | không có | chỉ có đường xin **bật** |
 | Dịch vụ XPC `com.apple.hiservices-xpcservice` | không thử | API riêng không tài liệu, vượt một lớp bảo vệ |
 | Hồ sơ cấu hình | không | phải cài trong System Settings, nhiều bước hơn "–"; không có khoá nguồn nhập liệu |
-| Tự động bấm "–" bằng trợ năng | làm được | cần quyền Accessibility (Dấu không xin, xem "Câu hỏi đã trả lời" của `docs/DECISIONS.md`), vỡ theo bản macOS |
+| Tự động bấm "–" bằng trợ năng | làm được | cần quyền Accessibility (Dấu không xin, N4), vỡ theo bản macOS |
 | Full Disk Access | chưa biết | quá tay cho việc dọn một mục (mục 10.6) |
 | **Người dùng bấm "–"** rồi app mới xoá bundle | **có** | đường hiện hành (D16) |
 | Mục đã ẩn: cài lại cùng ID, bấm "–", rồi xoá | **có** (bản thử) | đường cứu khi bundle đã bị xoá trước |

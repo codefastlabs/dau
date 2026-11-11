@@ -14,7 +14,7 @@ import SwiftUI
 /// (`SettingsSplitViewController`), wrapped in an `NSViewControllerRepresentable`
 /// (https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentable). The
 /// sidebar and the pages stay SwiftUI views, each in an `NSHostingController`; nothing
-/// here reaches into views SwiftUI builds (docs/research/SWIFTUI-WINDOW-API.md, section 10).
+/// here reaches into views SwiftUI builds (docs/research/SWIFTUI-WINDOW-API.md, section 1).
 struct SettingsWindow: View {
     @State private var state: SettingsWindowState
     @Environment(SettingsModel.self) private var model
@@ -305,7 +305,7 @@ struct SettingsSidebar: View {
         // (https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)).
         // `searchable(placement: .sidebar)` needs a `NavigationSplitView` sidebar: in this
         // hosting controller it went to the toolbar (docs/research/SWIFTUI-WINDOW-API.md,
-        // section 10). The field's height is its own at the large control size (no frame
+        // section 4). The field's height is its own at the large control size (no frame
         // height), set on the SwiftUI side too
         // (https://developer.apple.com/documentation/swiftui/view/controlsize(_:)); the
         // inset is the sidebar's standard 10 pt, no other offset (D9 accepts the 1–2 pt

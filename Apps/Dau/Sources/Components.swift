@@ -315,7 +315,7 @@ struct WrappingHStack: Layout {
     }
 }
 
-/// "Dấu chưa được bật" banner (docs/UI.md, "Các trạng thái bổ sung", mockup
+/// "Dấu chưa được bật" banner (docs/UI.md, "Cửa sổ Cài đặt › Banner", mockup
 /// "SettingsNotEnabled", "SettingsBannerStates"), first on every page while Dấu is not
 /// among the enabled input sources: a tile (orange with a white warning symbol), title,
 /// subtitle, button.

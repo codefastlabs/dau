@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Types the cells of docs/research/TERMINAL-AND-UNDERLINE.md (section 6) in Sublime Text, Ghostty, xterm.js and text fields, with Dấu and Apple's Vietnamese Telex as the control.
+# Types the cells of docs/research/TERMINAL-AND-UNDERLINE.md (sections 1–3) in Sublime Text, Ghostty, xterm.js and text fields, with Dấu and Apple's Vietnamese Telex as the control.
 # Side effects: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/research/terminal-underline/run.sh [--delay MS] [CELL]...

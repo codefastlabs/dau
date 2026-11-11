@@ -41,11 +41,11 @@ Thứ tự mục:
    - góp công (báo lỗi, dùng thử Beta, góp mã nguồn, giới thiệu);
    - ủng hộ qua VietQR và GitHub Sponsors (D39 (Ủng hộ dự án));
    - mục Cảm ơn (chỉ nêu tên khi người đó đồng ý).
-10. **Hỏi đáp:** tám câu dạng `<details>`.
-    - Các câu: miễn phí, thu thập dữ liệu, quyền cần cấp, khác bộ gõ có sẵn, chuyển từ bộ gõ khác, vì sao không có gõ tắt/viết hoa đầu câu/chuyển mã, một ứng dụng không chọn được Dấu (D37 (Cài đặt bộ gõ)), gỡ cài đặt.
+10. **Hỏi đáp:** chín câu dạng `<details>`.
+    - Các câu: miễn phí, thu thập dữ liệu, quyền cần cấp, khác bộ gõ có sẵn, chuyển từ bộ gõ khác, vì sao không có gõ tắt/viết hoa đầu câu/chuyển mã, VNI gõ chữ số ra dấu và giữ chữ số bằng cách gõ đúp (D36 (VNI: chữ số thành dấu)), một ứng dụng không chọn được Dấu (D37 (Cài đặt bộ gõ)), gỡ cài đặt.
     - Trang web không biết ngôn ngữ macOS của người đọc, nên tên giao diện macOS ghi tiếng Việt của Apple kèm tiếng Anh trong ngoặc.
 11. **Chân trang:** nền Than, logo có viền, liên kết mã nguồn, báo lỗi, lịch sử phiên bản, hướng dẫn gỡ, ủng hộ.
 
 ## Trang "Dấu khác các bộ gõ khác thế nào" (M10)
 
-Chưa có artboard. Nội dung và nguồn: [`docs/ROADMAP.md`](ROADMAP.md) mục M10; canvas trước, mã sau.
+Chưa có artboard. Nội dung và nguồn: [`docs/ROADMAP.md`](ROADMAP.md) mục M10; làm artboard trước khi viết mã ([CLAUDE.md](../CLAUDE.md), mục "Giao diện").

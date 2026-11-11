@@ -332,7 +332,7 @@ struct InPlaceComposer {
                 // D32 re-places the tone ("hoà" ⌫ → "hò"). Chromium and Electron run
                 // their own Delete for this key even when the input method consumes it
                 // (the raw key-down goes to the page after the input method's text;
-                // COMPATIBILITY.md 6.4), so a consumed ⌫ lost one letter more there
+                // docs/history/COMPATIBILITY-FIXED.md), so a consumed ⌫ lost one letter more there
                 // ("h"). So the key is never consumed: every app deletes the last
                 // character itself, and the replacement puts that character back at the
                 // end ("hoà" → "hòà" → app's Delete → "hò"). Same calls as before (N3).

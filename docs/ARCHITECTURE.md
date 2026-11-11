@@ -200,7 +200,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 
 D32. `backspace()` trả `passThrough` thì ⌫ đi thẳng. Trả `replace` (dấu phải dời, "hoà" ⌫ → "hò") thì vẫn **không nuốt phím**: một `selectedRange`, một `insertText` thay phần chữ cần đổi **kèm lại chữ cuối** ("oà" → "òà"), rồi lệnh xoá của chính ứng dụng bỏ chữ cuối đó (`VietEngine.lastShown`).
 
-- Lý do: Chromium/Electron luôn gửi phím ⌫ gốc cho trang sau chữ của bộ gõ, dù bộ gõ đã nuốt phím, nên nuốt phím làm mất thêm một chữ (`docs/COMPATIBILITY.md` mục 6.4).
+- Lý do: Chromium/Electron luôn gửi phím ⌫ gốc cho trang sau chữ của bộ gõ, dù bộ gõ đã nuốt phím, nên nuốt phím làm mất thêm một chữ (`docs/history/COMPATIBILITY-FIXED.md`).
 - Cách này cần ứng dụng áp `insertText` trước lệnh xoá: AppKit làm trong lúc `handle`, Chromium theo mã nguồn. Thứ tự ngược thì phím thay chữ kế tiếp thấy lệch (D11) và reset.
 - Chữ cuối là dấu kết hợp (NFD) thì không đoán: reset, ⌫ đi thẳng.
 
@@ -277,7 +277,7 @@ Dùng khi thay bộ gõ (D37) và khi gỡ (D16 (Bảo trì và gỡ cài đặt
 ### Bundle: biểu tượng, ký, entitlements
 
 - Biểu tượng của bundle (Finder) dùng chung `Apps/Dau/Resources/Assets.xcassets` với app chủ (AppIcon, AppIconDev, chọn theo cờ `DAU_OFFICIAL`, D25 (Nhận diện)), ra `CFBundleIconName`/`Assets.car` giống Dấu.app; tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
-- Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/COMPATIBILITY.md` 6.6, 6.7); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
+- Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/history/COMPATIBILITY-FIXED.md`); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
 - Bản Release không có `get-task-allow` (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO`), nên không tiến trình nào gắn debugger vào bộ gõ để đọc từ đang gõ. Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-app.sh --debug`). `dau_check_input_method` (`scripts/lib/build.sh`) kiểm điều này, cùng universal và không có quyền mạng, trên bộ gõ nhúng trước khi cài.
 - Entitlements: App Sandbox, App Group, `temporary-exception.mach-register.global-name` cho tên kết nối IMK (theo mẫu IMK có sandbox; chưa thử bỏ). **Không** `com.apple.security.network.client`.
 - Khoá Info.plist: `InputMethodConnectionName`, `InputMethodServerControllerClass`, `LSBackgroundOnly`, `TISInputSourceID`, `TISIntendedLanguage`; `ComponentInputModeDict` (một mode `.vi`, icon template V), `tsInputMethodIconFileKey`, `TISIconIsTemplate`; `CFBundleIconName` do actool thêm; `DauHostAppBundleIdentifier`, `DauAppGroupIdentifier` của riêng Dấu.
@@ -312,7 +312,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 
 ### Cài, bật, thay, gỡ bộ gõ
 
-`InputMethodInstaller.swift`, theo `docs/research/INPUT-METHOD-INSTALL.md` mục 2–4; luật ở D37 và D16.
+`InputMethodInstaller.swift`, theo `docs/research/INPUT-METHOD-INSTALL.md` mục 1–6; luật ở D37 và D16.
 
 `SystemInputMethodInstaller` đi qua sáu giao diện hẹp để test bằng đồ giả (`scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift`): `InputMethodFiles` (bundle trong app và bản ở `~/Library/Input Methods`), `TextInputSources` (TIS), `InputMethodProcesses`, `SystemSettingsControl` (bộ đệm và tiến trình System Settings), `InputSourceCaches` (bộ đệm danh sách nguồn của từng app; bản thật `UserInputSourceCaches` nhận thư mục gốc làm tham số nên test chạy trên thư mục tạm), `OwnerCopyCheck` (bản chủ; bản thật `ApplicationsOwnerCopy`).
 
@@ -330,7 +330,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 3. Đổi chỗ vào `DauInputMethod.app` bằng một lần `renamex_np(RENAME_SWAP)`. Đích không có (`ENOENT`): `InputMethodFiles.installEmbedded` chuyển bản tạm vào bằng `RENAME_EXCL`, còn `InputMethodFiles.replaceInstalledWithEmbedded` (đường thay) không cài, xoá bản tạm và trả về sai.
 4. Xoá bản cũ; dừng tiến trình cũ nếu đang chạy (mục "Thoát theo yêu cầu của app chủ"); `TISRegisterInputSource`. Không bật, không chọn nguồn nào.
 
-**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại"; `docs/research/INPUT-METHOD-INSTALL.md` mục 9.10, 10.10 và 8.1b):
+**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại"; `docs/research/INPUT-METHOD-INSTALL.md` mục 1 và 3):
 
 1. Bản chủ kiểm `InputMethodFiles.installedIsGenuine` trước mọi việc: sai thì trả `EnableOutcome.needsReinstall`, không làm gì thêm. `OnboardingFlow` hiện màn "Cài lại", `InputMethodActions.enableFromBanner` hiện `TamperedBanner`.
 2. Ngay trước `TISRegisterInputSource`, `InputSourceCaches.clearAll` xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con trực tiếp của `DARWIN_USER_CACHE_DIR` (mỗi app có sandbox giữ bộ đệm riêng ở đó, extension Bàn phím của System Settings là một). File ở gốc thư mục là bộ đệm chung, tự làm mới, không đụng. Thư mục không liệt kê được hay file không xoá được thì bỏ qua, đếm là lỗi, ghi nhật ký; không bao giờ làm `enable()` thất bại.
@@ -339,7 +339,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 5. **Đọc lại** mục lưu theo chu kỳ tới khi có mode `.vi` (tối đa `SystemInputMethodInstaller.enableTimeout`, để người dùng đọc và bấm Allow): có thì `enabled`; hết hạn thì `notEnabled` (giao diện hiện "Chưa bật được"; macOS ghi mục sau đó thì cửa sổ nhận ra).
 6. Mỗi lần ra `enabled` có đúng một lượt `InputSourceCaches.removeCaches(notMentioning:)`: thư mục con nào có `com.apple.IntlDataCache.le.kbdx` đọc được mà không chứa chuỗi UTF-8 `Input Methods/DauInputMethod.app` thì xoá bộ đệm đó; có ít nhất một thì `TISRegisterInputSource` thêm một lần. Đây là phỏng đoán trên định dạng không có tài liệu; lượt này không ném lỗi và không đổi kết quả.
 
-Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()`, "Thử lại"/"Quay lại" huỷ nó. Mã trả về của TIS không bao giờ là bằng chứng. App không tắt được Dấu (`TISDisableInputSource` từ app bị macOS chặn, `docs/research/INPUT-METHOD-INSTALL.md` mục 4); trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
+Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()`, "Thử lại"/"Quay lại" huỷ nó. Mã trả về của TIS không bao giờ là bằng chứng. App không tắt được Dấu (`TISDisableInputSource` từ app bị macOS chặn, `docs/research/INPUT-METHOD-INSTALL.md` mục 5.2); trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
 
 **Kiểm bộ gõ đã cài:** mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`, yêu cầu mã ở D37); chỉ bản chủ hỏi. Không đạt thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng. Cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật, và lượt `reconcile` lúc mở app không chạy.
 

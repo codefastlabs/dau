@@ -91,7 +91,7 @@
 				     indicator under the caret (CursorUIViewService, KLInputSourceIconManager in
 				     KeyboardLayouts.framework) draws third-party sources from the mode's icon
 				     image and its template flag; a non-template icon gives an empty blue bubble
-				     (verified 30/10/2026, macOS 27.2, docs/COMPATIBILITY.md 6.7). -->
+				     (verified 30/10/2026, macOS 27.2, docs/history/COMPATIBILITY-FIXED.md). -->
 				<key>TISIconIsTemplate</key>
 				<true/>
 				<!-- Undocumented: Apple's TamilIM declares a text label per mode this way

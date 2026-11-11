@@ -68,13 +68,13 @@ So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên
 Việc còn mở:
 - Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.
   - Ảnh hưởng chưa đo.
-  - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/INPUT-METHOD-INSTALL.md` mục 10.10).
+  - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/INPUT-METHOD-INSTALL.md` mục 10.7).
 - "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome, chưa tái hiện. Phiên chính thử lại thanh địa chỉ khi chạy ma trận Chrome ở M6.
 - Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
 
 Việc hoãn:
 - Về M6: phần còn lại của ma trận tương thích.
-- Về M7 (Phát hành): danh sách kiểm và việc ghi lại nằm ở `docs/ROADMAP.md` mục M7.
+- Về M7 (Phát hành): danh sách kiểm và việc ghi lại nằm ở `docs/ROADMAP.md` mục M7 và mục "Tồn đọng chưa gắn mốc".
 
 Ký và máy (hai máy phát triển, gọi theo chip: máy M1 (M1 Pro) và máy M3 Max):
 - Ký bằng Personal Team (Team ID trong D24 (Tên và định danh)), ký tự động "Apple Development". Bản phát hành dùng Developer ID ở M7.

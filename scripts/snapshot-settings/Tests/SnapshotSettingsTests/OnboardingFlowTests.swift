@@ -656,7 +656,7 @@ struct OnboardingFlowTests {
     func knownList() {
         let ids = KnownInputMethods.all.flatMap(\.bundleIDs)
         #expect(Set(ids).count == ids.count)
-        // Bundle IDs from the released apps (docs/research/INPUT-METHOD-INSTALL.md section 5).
+        // Bundle IDs from the released apps (docs/research/INPUT-METHOD-INSTALL.md section 8).
         #expect(Set(ids) == ["com.tuyenmai.openkey", "com.lamquangminh.evkey", "com.trankynam.GoTiengViet",
                              "com.codetay.XKey", "com.phamhungtien.phtv", "org.gonhanh.GoNhanh", "com.goxkey.app"])
         // XKey's IMK input method is an input source (soft note), not a conflict.

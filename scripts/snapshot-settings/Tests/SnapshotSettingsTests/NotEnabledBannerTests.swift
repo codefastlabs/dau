@@ -4,7 +4,7 @@ import Testing
 import DauShared
 @testable import SnapshotSettings
 
-/// The "Dấu chưa được bật" banner (docs/UI.md "Các trạng thái bổ sung", artboards
+/// The "Dấu chưa được bật" banner (docs/UI.md "Cửa sổ Cài đặt › Banner", artboards
 /// "SettingsNotEnabled", "SettingsBannerStates"): first on every Settings page while Dấu is
 /// not among the enabled input sources, in each state "Bật lại" leads to, and absent
 /// otherwise. The real window's split view (`SettingsSplitViewController`) is laid out in
