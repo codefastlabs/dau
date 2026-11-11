@@ -36,8 +36,8 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 ## Nguồn chuẩn
 
-- `docs/DECISIONS.md` là nguồn chuẩn **duy nhất** cho quyết định. Canvas mockup có một ghi chú tóm tắt sổ quyết định, và lịch sử trò chuyện trên claude.ai có nhiều đề xuất đã bị thay thế (Rust/WASM, nhúng UniKey, từ điển tiếng Anh, `NSSpellChecker`, phím chuyển nhấn-nhả ⇧, chạy OpenKey làm đáp án test…). Gặp thông tin trái với `DECISIONS.md` ở bất kỳ đâu thì theo `DECISIONS.md`, và sửa hoặc báo chỗ lệch.
-- Khi một quyết định thay đổi: sửa `DECISIONS.md` trước, thêm cách nói cũ vào `scripts/check-docs/superseded.txt`, rồi cập nhật ghi chú trên canvas và các tài liệu khác cho khớp trong cùng lượt làm việc (chạy `check.sh` để tìm chỗ còn sót).
+- `docs/DECISIONS.md` là nguồn chuẩn **duy nhất** cho quyết định. Canvas không chép sổ quyết định. Lịch sử trò chuyện trên claude.ai có nhiều đề xuất đã bị thay thế (Rust/WASM, nhúng UniKey, từ điển tiếng Anh, `NSSpellChecker`, phím chuyển nhấn-nhả ⇧, chạy OpenKey làm đáp án test…). Gặp thông tin trái với `DECISIONS.md` ở bất kỳ đâu thì theo `DECISIONS.md`, và sửa hoặc báo chỗ lệch.
+- Khi một quyết định thay đổi: sửa `DECISIONS.md` trước, thêm cách nói cũ vào `scripts/check-docs/superseded.txt`, rồi cập nhật artboard và các tài liệu khác cho khớp trong cùng lượt làm việc (chạy `check.sh` để tìm chỗ còn sót).
 - **Mỗi sự kiện chỉ ghi ở một chỗ.** Quyết định ở `DECISIONS.md` (nơi khác dẫn số D/N, không chép lại nội dung); số đo giao diện ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md` và script kiểm; số test và số đo theo ngày ở nhật ký `PROGRESS.md` (mốc đã đóng: trong `docs/history/`); kiến trúc ở `ARCHITECTURE.md` tả cấu trúc, không chép số. Dẫn mã bằng tên kiểu/hàm, không bằng số dòng. File agent trong `.claude/agents/` chỉ nêu vai trò và nơi đọc, không chép sự kiện.
 - **Đóng mốc nào thì chuyển nhật ký và ghi nhớ của mốc đó sang `docs/history/`.** Mọi phiên đều đọc `PROGRESS.md`, nên nó chỉ giữ việc của mốc đang làm.
 - **Tài liệu nghiên cứu (`docs/research/`) có mục "Hiện trạng" ở đầu, ghi ngày.** Kết luận đổi thì sửa thẳng vào mục đó và vào thân bài, không viết thêm mục "Đính chính" ở cuối.

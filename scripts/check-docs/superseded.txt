@@ -50,3 +50,4 @@ kiểm chữ ký và Team ID của bộ gõ	D37: kiểm theo yêu cầu mã (ch�
 same team as this app	D37: code requirement (Apple certificate, team, identifier), 11/11/2026
 đổi ô hoặc kích hoạt lại thì xét lại từ đầu	D43: chỉ xét lại khi IMK kích hoạt lại hay đổi client (11/11/2026)
 ghi lại chữ dễ thay sai vùng	D4: lý do viết lại cùng D20 (11/11/2026)
+ghi chú (tóm tắt )?sổ quyết định|cập nhật ghi chú trên canvas	canvas không còn ghi chú sổ quyết định (11/11/2026)
