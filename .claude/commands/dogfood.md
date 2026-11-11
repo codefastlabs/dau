@@ -51,6 +51,8 @@ Tự soạn tại chỗ, mỗi lượt chủ đề khác, như một người vi
 - từ tiếng Anh và tên sản phẩm lẫn trong câu (email, deadline, GitHub, iPhone), viết tắt (HN, ok, k), URL hay tên file;
 - từ dễ vấp: uơ, ươ, gi/qu (giường, quyển, quốc), từ không dấu chen giữa từ có dấu.
 
+Mỗi câu có nghĩa và mang ý tích cực, kể cả câu dựng riêng cho một ca (CLAUDE.md, "Đo độ đúng khi gõ"). Trước khi gõ, soát từng chuỗi phím ra đúng chữ muốn ra.
+
 ## Cách gõ
 
 Gõ như người, không như máy:
