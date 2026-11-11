@@ -40,6 +40,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 30/10/2026: "Cũng chỉ reset, không khôi phục (bổ sung 30/10/2026, khớp mã M2): đổi cài đặt, đổi nguồn nhập liệu, đổi ô nhập hoặc ứng dụng giữa chừng một từ."
 - 30/10/2026: "Giới hạn đã biết — tự sửa chính tả của macOS" ghi ngày 30/10/2026, kèm việc cần làm: "Ghi vào ma trận tương thích ở M3."
 
+- 11/11/2026: giới hạn "tự sửa chính tả của macOS" mở rộng sau lượt /dogfood và chẩn đoán (nhật ký PROGRESS 11/11), người dùng duyệt: tự sửa chạy với mọi bộ gõ (Telex của Apple, bản thử chèn bằng `insertText`), đổi cả chữ cái đứng một mình ("d" → "Đ"), và nối sang ý mới của D20. Bản trước bắt đầu: "từ macOS 27.2, ở app bật tự sửa chính tả, hệ thống có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt khi phía trước là câu tiếng Việt".
+- 11/11/2026: thêm ca từ quên dấu bị sửa thành từ khác ("cat" → "cắt") và bong bóng gợi ý, sau khi đo ở nhịp giống người (tự sửa ở dấu cách không phụ thuộc nhịp); người dùng chọn ghi giới hạn thay vì mở rộng ý D20 "Từ hệ thống vừa sửa" (áp phím lên từ Dấu đã trả).
 - 11/11/2026: "Vì sao" của việc chỉ reset viết lại. Bản trước: "Mũi tên, Esc, click và tổ hợp phím chỉ reset vì lúc đó con trỏ có thể đã đi chỗ khác, ghi lại chữ dễ thay sai vùng." Câu đó trái với D20, nơi phím sau reset vẫn sửa chữ trước con trỏ; nay nói rõ lý do là không khôi phục theo chuỗi phím cũ, và D20 chỉ sửa chữ đọc lại được (rà soát bảo mật, người dùng duyệt).
 
 ### D5. Quy tắc theo ứng dụng
@@ -119,6 +121,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - Trước 05/11/2026, D20 chỉ đọc chữ trước con trỏ ở phím dấu/biến đổi; chữ cái thường gõ sau reset hay sau Backspace bắt đầu từ mới ("q" có sẵn + "uer" → "qủe").
 - 05/11/2026: "Chữ cái gõ sát chữ có sẵn (chốt 05/11/2026, câu hỏi E8)", "ngược lại chữ đó bắt đầu từ mới như trước". Chọn giữa ba phương án bằng mô phỏng: chỉ đọc ở phím dấu ("cách cũ"), luôn nối, và chỉ nối khi từ ghép còn là tiền tố hợp lệ (`docs/research/EXTERNAL-TEST-INPUTS.md` mục 9.8).
 - 05/11/2026: "Ba ngoại lệ (chốt 05/11/2026, sau mô phỏng)". Ở ngoại lệ (a), "hoc" + "J" → "học" ghi "như trước".
+
+- 11/11/2026: thêm ý "Từ hệ thống vừa sửa" (người dùng duyệt) sau khi đo "Tôi hoc␣⌫j bài" ra "hocj" khi tự sửa của macOS bật. Đề xuất đầu bị gác vì phản ví dụ "cat" → "cát" rồi ⌫ s; phản ví dụ sai vì D20 không có tự sửa cũng cho "cát", nên đề xuất được đưa lại, thêm ngoại lệ cho từ đã bỏ dấu bằng gõ đúp (D26) hoặc D4 đã khôi phục.
 
 ### D22. Gõ tắt loại trừ z, f, w, j
 

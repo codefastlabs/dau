@@ -88,6 +88,22 @@ private final class FakeDocument: InPlaceClient {
         }
     }
 
+    /// macOS autocorrect (D4 "Giới hạn đã biết", D20 "Từ hệ thống vừa sửa"): right after a
+    /// word-ending character, the app replaces the word before it with `word`, behind the
+    /// input method's back. The cursor stays after the character.
+    func autocorrect(to word: String) {
+        let before = String(decoding: Array(text.utf16)[..<cursor], as: UTF16.self)
+        let after = String(decoding: Array(text.utf16)[cursor...], as: UTF16.self)
+        var head = before.unicodeScalars
+        guard let ending = head.popLast() else { return }
+        while let last = head.last, CharacterSet.alphanumerics.contains(last) { head.removeLast() }
+        let corrected = String(head) + word + String(Character(ending))
+        edit {
+            text = corrected + after
+            cursor = corrected.utf16.count
+        }
+    }
+
     /// What the app types for an end-word key (Return; "\t" for Tab).
     var endWordText = "\n"
 
@@ -1074,5 +1090,223 @@ struct InPlaceComposerExceptionTests {
         s.type(keys)
         #expect(s.doc.text == expected)
         #expect(s.overCalls == 0)
+    }
+}
+
+extension Session {
+    /// A mouse click, as `DauInputController` reports it: reset (D4), then the event time.
+    mutating func click() {
+        doc.now += interval
+        composer.reset(engine: &engine)
+        composer.noteEvent(at: doc.now)
+    }
+
+    /// The calls the last key made.
+    func calls(since count: Int) -> [FakeDocument.Call] { Array(doc.calls[count...]) }
+}
+
+/// D20 "Từ hệ thống vừa sửa": macOS autocorrect changes the word Dấu just produced right
+/// after the word-ending character (D4 "Giới hạn đã biết"); ⌫ and a mark key then keep the
+/// text when it already is what the key makes of Dấu's word. The fake document changes
+/// the word after the Space (`FakeDocument.autocorrect`).
+@Suite("InPlaceComposer: D20, a word the system just changed")
+struct InPlaceComposerSystemFixTests {
+    private static func session(_ text: String = "", _ edit: (inout DauSettings) -> Void = { _ in }) -> Session {
+        var settings = DauSettings.defaults
+        edit(&settings)
+        return Session(text, settings: settings)
+    }
+
+    @Test("the system's word is kept when it is what the key makes of Dấu's word", arguments: [
+        ("Tôi ", "hoc ", "học", "j", "Tôi học"),      // 1
+        ("", "chep ", "chép", "s", "chép"),           // 2
+        ("", "hoc ", "Học", "j", "Học"),              // 3: ignoring case
+        ("", "cat ", "cát", "s", "cát"),              // 9
+    ])
+    func kept(_ start: String, _ keys: String, _ corrected: String, _ key: String, _ expected: String) {
+        var s = Self.session(start)
+        s.type(keys)
+        s.doc.autocorrect(to: corrected)
+        s.type("⌫")
+        let before = s.doc.calls.count
+        s.type(key)
+        #expect(s.doc.text == expected)
+        #expect(s.kinds.last == .seedKept)
+        #expect(s.consumed.last == true)
+        // N3: the D20 read only; nothing sent.
+        #expect(s.calls(since: before) == [.selectedRange, .read(NSRange(location: s.doc.cursor - min(s.doc.cursor, 16),
+                                                                              length: min(s.doc.cursor, 16)))])
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("1: the sentence of D20 — Tôi hoc␣⌫j bài → Tôi học bài")
+    func sentence() {
+        var s = Self.session()
+        s.type("Tooi hoc ")
+        s.doc.autocorrect(to: "học")
+        s.type("⌫j bai ")
+        #expect(s.doc.text == "Tôi học bai ")
+        s.type("⌫f ")
+        #expect(s.doc.text == "Tôi học bài ")
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("4: another key than the system's is D20 as usual — học ⌫s → hóc")
+    func otherKey() {
+        var s = Self.session()
+        s.type("hoc ")
+        s.doc.autocorrect(to: "học")
+        s.type("⌫s")
+        #expect(s.doc.text == "hóc")
+        #expect(s.kinds.last == .seed)
+    }
+
+    @Test("5: the user typed the tone, the app changed nothing — học ⌫j → hocj (D26)")
+    func ownToneUndone() {
+        var s = Self.session()
+        s.type("hocj ⌫j")
+        #expect(s.doc.text == "hocj")
+        #expect(s.kinds.last == .seed)
+    }
+
+    @Test("6: a word un-toned by a double key is not kept — carr → car, system cả, ⌫r → car")
+    func doubleKeyWord() {
+        var s = Self.session()
+        s.type("carr ")
+        #expect(s.doc.text == "car ")
+        #expect(s.composer.produced == nil)
+        s.doc.autocorrect(to: "cả")
+        s.type("⌫r")
+        #expect(s.doc.text == "car")
+        #expect(s.kinds.last == .seed)
+    }
+
+    @Test("6: the exclusion decides when the un-toned word is still Vietnamese — xooong → xoong")
+    func doubleKeyVietnameseWord() {
+        // "xooo" undoes the circumflex (D26: "ooo" → "oo"); "xoong" is a valid syllable,
+        // so D20 on it would apply: only the exclusion keeps today's behaviour.
+        var s = Self.session()
+        s.type("xooong ")
+        #expect(s.doc.text == "xoong ")
+        #expect(s.composer.produced == nil)
+        s.doc.autocorrect(to: "xoòng")
+        s.type("⌫f")
+        #expect(s.kinds.last == .seed)
+        #expect(s.doc.text != "xoòng")
+        // Control: without the exclusion the comparison would hold.
+        #expect(InPlaceComposer.isSystemFix(Array("xoòng".unicodeScalars), of: Array("xoong".unicodeScalars),
+                                            key: "f", options: DauSettings.defaults.engineOptions))
+    }
+
+    @Test("a word D4 restored is not remembered — hocf␣ → hocf")
+    func restoredWord() {
+        var s = Self.session()
+        s.type("hocf ")
+        #expect(s.doc.text == "hocf ")
+        #expect(s.composer.produced == nil)
+    }
+
+    @Test("a consonant shortcut (D21) is not a restore — fai␣ → phai, system phải, ⌫r → phải")
+    func consonantShortcutWord() {
+        var s = Self.session { $0.advanced = .consonantShortcuts }
+        s.type("fai ")
+        #expect(s.doc.text == "phai ")
+        #expect(s.composer.produced?.word == Array("phai".unicodeScalars))
+        s.doc.autocorrect(to: "phải")
+        s.type("⌫r")
+        #expect(s.doc.text == "phải")
+        #expect(s.kinds.last == .seedKept)
+    }
+
+    @Test("7: the system only capitalised the word — Hoc ⌫j → Học")
+    func capitalisedOnly() {
+        var s = Self.session()
+        s.type("hoc ")
+        s.doc.autocorrect(to: "Hoc")
+        s.type("⌫j")
+        #expect(s.doc.text == "Học")
+        #expect(s.kinds.last == .seed)
+    }
+
+    @Test("8: a click or an arrow before ⌫ forgets the word — hocj as today", arguments: [true, false])
+    func forgottenAfterReset(_ click: Bool) {
+        var s = Self.session()
+        s.type("hoc ")
+        s.doc.autocorrect(to: "học")
+        if click { s.click() } else { s.type("←") }
+        #expect(s.composer.produced == nil)
+        s.type("⌫j")
+        #expect(s.doc.text == "hocj")
+    }
+
+    @Test("a second ⌫, or any other key, forgets the word")
+    func forgottenAfterOtherKeys() {
+        var s = Self.session()
+        s.type("hoc ")
+        #expect(s.composer.produced == ProducedWordTests.word("hoc"))
+        s.type("⌫")
+        #expect(s.composer.produced?.backspaced == true)
+        s.type("⌫")
+        #expect(s.composer.produced == nil)
+
+        var t = Self.session()
+        t.type("hoc ")
+        t.doc.autocorrect(to: "học")
+        t.type(" ⌫⌫j")  // a second Space in between: the word is no longer the last key's
+        #expect(t.doc.text == "hocj")
+    }
+
+    @Test("the kept word goes on as the word shown: học, j → hocj (D26), s → hóc")
+    func keysAfterKeeping() {
+        var s = Self.session()
+        s.type("hoc ")
+        s.doc.autocorrect(to: "học")
+        s.type("⌫jj")
+        #expect(s.doc.text == "hocj")
+        var t = Self.session()
+        t.type("hoc ")
+        t.doc.autocorrect(to: "học")
+        t.type("⌫js ")
+        #expect(t.doc.text == "hóc ")
+        #expect(t.overCalls == 0)
+    }
+
+    @Test("10: no autocorrect, D20 after ⌫ as before — hoc␣⌫j → học")
+    func noAutocorrect() {
+        var s = Self.session()
+        s.type("hoc ⌫j")
+        #expect(s.doc.text == "học")
+        #expect(s.kinds.last == .seed)
+    }
+
+    @Test("D20 off: nothing read, the key goes on as typed")
+    func d20Off() {
+        var s = Self.session { $0.addMarksToTypedWords = false }
+        s.type("hoc ")
+        s.doc.autocorrect(to: "học")
+        s.type("⌫j")
+        #expect(s.doc.text == "họcj")
+        #expect(s.reads == 0)
+    }
+}
+
+/// The text-side test of D26 used to leave a word out of `produced`.
+@Suite("InPlaceComposer: a double key seen from the text")
+struct ProducedWordTests {
+    static func word(_ text: String) -> InPlaceComposer.ProducedWord {
+        InPlaceComposer.ProducedWord(word: Array(text.unicodeScalars))
+    }
+
+    @Test("undoes a mark and types the key", arguments: [
+        ("cả", "car", "r", true), ("ô", "oo", "o", true), ("đ", "dd", "d", true),
+        ("ư", "w", "w", true), ("Cả", "CaR", "R", true),
+        ("cá", "cà", "f", false),   // tone change
+        ("cá", "ca", "z", false),   // z removes the tone, adds nothing
+        ("hóa", "hoán", "n", false), // the tone moves, no mark removed
+        ("ca", "car", "r", false),  // a letter, nothing removed
+    ])
+    func undidMark(_ before: String, _ after: String, _ key: String, _ expected: Bool) {
+        #expect(InPlaceComposer.undidMark(before: Array(before.unicodeScalars), after: Array(after.unicodeScalars),
+                                          key: key.unicodeScalars.first!) == expected)
     }
 }

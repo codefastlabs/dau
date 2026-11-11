@@ -37,7 +37,7 @@ Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11; còn một việ
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
-Mở từ 11/11: lượt `/dogfood` đầu tiên tìm hai ca sai ở Notes; chẩn đoán xong (nhật ký 11/11, "chẩn đoán /dogfood"): cả hai do tự sửa chính tả của macOS sửa chữ Dấu đã trả, không do Dấu thay sai. Telex của Apple bị sửa y hệt, và chèn chữ bằng `insertText` không tránh được (nhật ký 11/11, "tự sửa chính tả với bộ gõ khác"). Luật bổ sung D20 (Thêm dấu cho từ đã gõ) đã bàn và gác lại: nó nuốt phím ở ca như "cat" bị sửa thành "cát" rồi gõ thêm "s". Chờ người dùng duyệt câu mở rộng giới hạn của D4 (Từ nước ngoài).
+Xong 11/11: mạch `/dogfood` và tự sửa chính tả của macOS (nhật ký 11/11). Hai ca sai ở Notes và Mail là do tự sửa của macOS, với mọi bộ gõ; D20 (Thêm dấu cho từ đã gõ) thêm ý "Từ hệ thống vừa sửa" (đã có mã), D4 (Từ nước ngoài) ghi thêm giới hạn. Còn mở: `typing/run.sh` để lại một ghi chú rỗng ở Notes sau mỗi lượt.
 
 Việc tiếp theo: `heavy.sh` chạy trọn một lượt (M6 bước 2).
 
@@ -398,3 +398,20 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Lượt /dogfood Telex của Apple ra "học d." ở một lượt (gõ bằng công cụ khác, sau dòng tiêu đề ghi chú); lượt này không lặp lại được, nguyên nhân chưa rõ.
   - Luật bổ sung D20 (Thêm dấu cho từ đã gõ) "phím đã được app làm hộ thì giữ chữ" đã bàn rồi gác: nó đúng ở "hoc" → "học" rồi ⌫ j, nhưng nuốt phím ở từ tiếng Anh bị sửa thành tiếng Việt rồi gõ thêm chữ trùng phím dấu ("cat" → "cát", ⌫ s: muốn "cats", luật cho "cát"; hiện nay cho "cats").
   - Dọn: mã thử đã bỏ (`git checkout`), Release cài lại, không còn khoá `DauDebugInsert*`/`DauPerfLog`, nguồn là Dấu, ghi chú rỗng còn sót đã xoá (Notes 54), `build/ac` đã xoá.
+- 11/11/2026 — xác nhận ví dụ cho D4 (Từ nước ngoài) và D20 (Thêm dấu cho từ đã gõ) bằng câu có nghĩa (người dùng cho chạy; bản Release c515581, Notes và Mail, 120 ms, tự sửa bật) — phiên chính.
+  - `Minhf chonj phuwowng ans d. `: "Mình chọn phương án Đ." ở cả hai app (muốn "d.").
+  - `Hoom nay con hoc ⌫j baif raats chawm. `: đúng "Hôm nay con học bài rất chăm." 3 lượt × 2 app.
+  - `Tooi hoc ⌫j baif mooix toois. `: "Tôi hocj bài mỗi tối." 2 lượt × 2 app (muốn "học"). Tự sửa đổi "hoc" sau "Tôi", không đổi sau "con".
+  - `Bes vex hai chus cat ⌫s raats ddepj. `: đúng "Bé vẽ hai chú cát rất đẹp." (D20 hiện nay).
+  - Sổ quyết định: D4 mở rộng giới hạn tự sửa, D20 thêm ý "Từ hệ thống vừa sửa" (người dùng duyệt); mã của ý đó giao `imk-dev`.
+  - `typing/run.sh` để lại một ghi chú rỗng ở Notes sau các lượt; đã xoá (Notes 54).
+- 11/11/2026 — bản sửa D20 "Từ hệ thống vừa sửa" gõ thật, và tự sửa của macOS ở nhịp giống người (người dùng cho chạy; bản Release dựng từ cây làm việc chưa commit có mã D20 mới; Notes và Mail, tự sửa bật) — phiên chính.
+  - Nhịp đều 120 ms: `Tooi hoc ⌫j baif mooix toois. ` đúng "Tôi học bài mỗi tối." 2 lượt × 2 app (trước khi sửa "hocj"); `Hoom nay con hoc ⌫j baif raats chawm. ` đúng 2 × 2; `Bes xaay laau ddaif cat ⌫s raats ddepj. ` ra "Bé xây lâu đài căts rất đẹp." 2 × 2: tự sửa đổi "cat" thành "cắt" (không phải "cát"), phím s gõ đúp dấu sắc trên "cắt" (D26); Telex của Apple ra "cắts". Ý D20 mới chỉ giữ chữ khi hệ thống sửa ra đúng kết quả của phím, nên không phủ ca này.
+  - Gợi ý sửa của macOS là bong bóng (chữ đề xuất kèm ×) hiện dưới từ khi dừng sau từ; dấu cách chấp nhận. `typing/run.sh` có thêm `--word-pause MS` (nghỉ thêm sau mỗi dấu cách).
+  - Nhịp giống người (`--delay 80 --jitter 30 --word-pause 250`), câu không ⌫, 3 lượt × 2 app mỗi câu: "Mình chọn phương án d." ra "Đ." 6/6; "Tôi hoc bài mỗi tối." ra "học" 6/6; "Bé xây lâu đài cat rất đẹp." ra "cắt" 6/6. Nhịp đều 120 ms: cùng kết quả (1 × 2 mỗi câu). Tự sửa ở dấu cách không phụ thuộc nhịp đã đo.
+  - `/dogfood`: nhịp gõ đổi sang nhịp như người, và bong bóng gợi ý sửa ghi như quan sát.
+  - Dọn: ghi chú rỗng còn sót đã xoá (Notes 54), nguồn là Dấu. Bộ gõ đang cài là bản Release có mã D20 mới chưa commit.
+- 11/11/2026 — đóng mạch tự sửa của macOS (người dùng chọn: giữ ý D20 (Thêm dấu cho từ đã gõ) "Từ hệ thống vừa sửa" như đã viết, ghi ca "cắt" vào giới hạn của D4 (Từ nước ngoài)) — phiên chính, imk-dev, auditor.
+  - Người dùng gõ tay trong Notes với Dấu "bé xây lâu đài cát rất đẹp" (gõ `cats`): không bị sửa; ca "cắt" của script là do `cat␣` còn thiếu dấu lúc bấm dấu cách, không do nhịp.
+  - Test: bộ gõ 206 → 221 đạt (11 known issue như trước), engine 116 đạt; `check-docs`, `check-l10n` xanh.
+  - Kiểm toán: ĐẠT, không mục chặn; bốn mục chữ (câu "Chỉ gặp khi" của D4 rộng hơn số đo, dòng số đo D20 thiếu kết quả sau khi sửa, "ký tự kết thúc từ" chưa loại Return/Tab, thiếu số test ở nhật ký) đã sửa. Ghi chú chưa làm: test riêng cho `activate` và phím tắt ⌘ xoá từ nhớ (cùng đường `reset` với click, mũi tên đã có test).

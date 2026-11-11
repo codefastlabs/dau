@@ -51,6 +51,10 @@ struct PerfLog {
         /// cursor) found no word to seed, or a plain letter did not join the word read
         /// (E8); the key was handled as the first of a word.
         case seedNone = "seed_none"
+        /// D20 "Từ hệ thống vừa sửa": a word was read and seeded, and it already is what
+        /// the key makes of the word the input method produced last (macOS autocorrect
+        /// changed it after the word ended): nothing sent, the key consumed.
+        case seedKept = "seed_kept"
         /// D11: a mismatch, then the word before the cursor was read and seeded, and the
         /// key replaced it (one more attributedSubstring than a plain mismatch).
         case resync

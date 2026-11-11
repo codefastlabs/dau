@@ -218,6 +218,10 @@ dau/
 - Sau khi đưa phím vào engine:
   - `replace`: một `insertText` thay đúng vùng chữ đã đọc (đếm UTF-16; mọi ký tự engine nhận đều thuộc BMP nên số scalar bằng số UTF-16, kể cả chữ NFD);
   - `passThrough`: phím đi thẳng và engine giữ từ để gõ tiếp (mốc khôi phục D4 = chữ đã đọc).
+- Từ hệ thống vừa sửa (ý "Từ hệ thống vừa sửa" của D20), trong `seedWord`, trước khi đưa phím vào engine:
+  - composer nhớ từ nó vừa trả (`InPlaceComposer.produced`), đặt khi một ký tự kết thúc từ gõ ở đây kết thúc từ; không đặt cho từ D4 đã khôi phục (`producedWord`; khác với mở rộng của D21 (Gõ tắt phụ âm), nhận ra bằng bản sao engine tắt gõ tắt) hay từ có phím gõ đúp bỏ dấu (`undidMark`: phím bỏ một dấu và thêm chính nó vào cuối từ, xét trên chữ trước và sau phím);
+  - từ nhớ chỉ sống qua đúng một phím, cộng một ⌫ ở giữa; phím khác, ⌫ thứ hai, `reset` (click, mũi tên, phím tắt, đổi nguồn) và `activate` xoá nó;
+  - phím dấu/biến đổi ngay sau ⌫ đó: nếu từ đọc được khác từ nhớ, mà engine thử (`isSystemFix`: gieo từ nhớ, đưa phím) ra đúng từ đọc được, không phân biệt hoa thường, thì engine giữ từ đọc được, không gửi gì, phím bị nuốt (kind `seed_kept`). Không thêm lời gọi nào ngoài lần đọc của D20 (N3).
 - Phím có nối vào từ đã đọc hay không được quyết định trong `seedWord` theo D20 ("Chữ cái gõ sát chữ có sẵn" và ba ngoại lệ).
   - Quyết định chỉ dựa trên từ chữ đã đọc và trạng thái engine, trước khi gửi gì cho ứng dụng. Nên phím không nối chỉ tốn đúng lần đọc (N3).
   - Từ không phải tiếng Việt (ngoại lệ về từ nước ngoài, thắng ngoại lệ về chữ hoa giữa từ): phím được nhận nguyên văn tới hết từ, hoa hay thường.
@@ -245,7 +249,7 @@ dau/
   - chỉ tốn ở phím chữ cái hoặc phím dấu đầu tiên ngay sau reset/⌫;
   - gõ liền qua dấu cách không đọc thêm lần nào, tối đa một lần ở phím đầu của phiên (test `sample`, `InPlaceComposerLetterTests.sentence`).
 - Log perf:
-  - kind `seed` (đã thay), `seed_pass` (đọc, seed, phím đi thẳng), `seed_none` (đọc, không có từ, hoặc chữ cái không nối được), trường `read_ns`;
+  - kind `seed` (đã thay), `seed_pass` (đọc, seed, phím đi thẳng), `seed_kept` (đọc, seed, giữ chữ hệ thống vừa sửa), `seed_none` (đọc, không có từ, hoặc chữ cái không nối được), trường `read_ns`;
   - bản Debug thêm `d20=mark|letter|none`, `seeded=0|1`, `diff=0|1|-` (từ đã seed khác với khi không đọc);
   - `scripts/perf/perf-report.sh` đếm các trường này.
 - Chế độ gạch chân (D13) **không** dùng D20.

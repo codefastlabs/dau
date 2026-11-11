@@ -27,7 +27,8 @@ protocol InPlaceClient {
 /// - D20 "Thêm dấu cho từ đã gõ" (see `addMarks`): on a tone or transform key, or a
 ///   plain letter (E8), typed with no word in the engine and an unknown text before the
 ///   cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
-///   one `insertText`;
+///   one `insertText` (none when the system already changed the word that way, D20 "Từ
+///   hệ thống vừa sửa", `isSystemFix`);
 /// - D43: at the one key where the positions are enough to take the client for one that
 ///   ignores the range, one `text(in:)` more (`confirmRangeIgnore`), at most once per
 ///   activation.
@@ -106,6 +107,27 @@ struct InPlaceComposer {
     /// gave none), reused by the D11 re-sync so a key reads at most once (N3).
     private var lateRead: (location: Int, text: String?)?
 
+    /// D20 "Từ hệ thống vừa sửa": the last word this composer produced, as it was when a
+    /// word-ending character typed here ended it. macOS autocorrect may change it right
+    /// after that character ("hoc" → "học"); a mark key after one ⌫ over the character
+    /// then compares the word read with it (`seedWord`). Kept for exactly the next key,
+    /// plus one ⌫ in between: any other key, a reset (click, arrows, shortcuts, source
+    /// change) or an activation forgets it. Not set for a word the user un-toned with a
+    /// double key (D26) or that D4 restored.
+    struct ProducedWord: Equatable {
+        var word: [Unicode.Scalar]
+        /// One ⌫ (over the word-ending character) came after the word.
+        var backspaced = false
+    }
+    private(set) var produced: ProducedWord?
+    /// The produced word the current key may compare with (a key right after the one ⌫).
+    private var keyProduced: [Unicode.Scalar]?
+    /// A key of the current word undid a mark by a double key (D26): the word is not
+    /// remembered as `produced` when it ends.
+    private var wordUndidMark = false
+    /// The word `seedWord` read for the current key (to tell a double key on it, D26).
+    private var keySeededWord: [Unicode.Scalar]?
+
     /// UTF-16 units read before the cursor for D20: the longest word the engine tracks
     /// is 7 letters (D33), at most 13 scalars when decomposed (NFD: base + 2 marks on up
     /// to 3 vowels); one more shows whether the word goes on past the read.
@@ -178,6 +200,8 @@ struct InPlaceComposer {
         tracker.invalidate()
         before = .unknown
         checkedLockedWord = false
+        produced = nil
+        wordUndidMark = false
     }
 
     /// A click (or any non-key event that moves the cursor) at `time`.
@@ -193,6 +217,7 @@ struct InPlaceComposer {
         lastEventTime = nil
         detector.reset()
         eraseMode = .off
+        produced = nil
     }
 
     // MARK: - Keys
@@ -228,10 +253,21 @@ struct InPlaceComposer {
     private mutating func handleTracked(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
                                         client: some InPlaceClient) -> Outcome {
         keyDelta = 0
+        keySeededWord = nil
+        var shownBefore: [Unicode.Scalar]?
+        if case .character = route, engine.lastShown != nil { shownBefore = engine.shown }
+        if case .character = route, !engine.isComposing { wordUndidMark = false }  // a new word
         let outcome = handleKey(route, time: time, engine: &engine, client: client)
+        // D26: remember that this word was un-toned by a double key, so it is not taken
+        // for a word the system changed when it ends (`produced`).
+        if case .character(let key) = route, engine.lastShown != nil,
+           let prior = shownBefore ?? keySeededWord,
+           Self.undidMark(before: prior, after: engine.shown, key: key) {
+            wordUndidMark = true
+        }
         guard !eraseByDelete else { return outcome }
         switch outcome.kind {
-        case .mismatch, .unsupported, .resync, .resyncPass, .seed, .seedPass, .seedNone:
+        case .mismatch, .unsupported, .resync, .resyncPass, .seed, .seedPass, .seedNone, .seedKept:
             // The composer started the word over at the app's cursor (D11, D20): the word
             // starts where this key was typed.
             detector.startWord()
@@ -262,6 +298,14 @@ struct InPlaceComposer {
         }
         // The edits of a key in a burst may all be missing from a late answer (`rebuild`).
         tracker.keyInBurst = !settled
+        // D20 "Từ hệ thống vừa sửa": the produced word lasts for this key only (one ⌫
+        // over the word-ending character keeps it for one key more, below).
+        let lastProduced = produced
+        produced = nil
+        keyProduced = nil
+        if case .character = route, let lastProduced, lastProduced.backspaced {
+            keyProduced = lastProduced.word
+        }
 
         switch route {
         case .ignore:
@@ -315,6 +359,10 @@ struct InPlaceComposer {
                 tracker.endWord()
                 before = .unknown
                 checkedLockedWord = false
+            }
+            if !wasComposing, let lastProduced, !lastProduced.backspaced {
+                // The one ⌫ over the character that ended the produced word.
+                produced = ProducedWord(word: lastProduced.word, backspaced: true)
             }
             return result
 
@@ -393,7 +441,13 @@ struct InPlaceComposer {
                                     engine: inout VietEngine, client: some InPlaceClient) -> Outcome {
         var result: Outcome
         let wordBefore = engine.isComposing ? engine.shown : nil
-        switch engine.handle(scalar) {
+        // Consonant shortcuts (D21) also change the word at its end; a copy tells them
+        // from a D4 restore (`producedWord`).
+        let engineBefore: VietEngine? = engine.options.advanced == .consonantShortcuts && wordBefore != nil
+            ? engine : nil
+        let tracked = engine.lastShown != nil  // not D33's pass-through state
+        let action = engine.handle(scalar)
+        switch action {
         case .passThrough:
             tracker.passedThrough(String(Character(scalar)))
             result = Outcome()
@@ -443,8 +497,81 @@ struct InPlaceComposer {
             if failed { tracker.invalidate() } else { tracker.endWord() }
             before = failed ? .unknown : .noWord
             checkedLockedWord = false
+            if !failed, tracked, !wordUndidMark, let wordBefore,
+               let word = Self.producedWord(wordBefore, ending: scalar, action: action, engineBefore: engineBefore) {
+                produced = ProducedWord(word: word)
+            }
+            wordUndidMark = false
         }
         return result
+    }
+
+    // MARK: - D20 "Từ hệ thống vừa sửa"
+
+    /// The word left in the app when `key`, a word-ending character, ended `word` with
+    /// `action`; nil when the key did not end it with a printable character, or when D4
+    /// restored it (the user's keys, not a word to add marks to). `engineBefore`: the
+    /// engine before the key when consonant shortcuts (D21) are on, to tell an expansion
+    /// (remembered) from a restore.
+    static func producedWord(_ word: [Unicode.Scalar], ending key: Unicode.Scalar, action: Action,
+                             engineBefore: VietEngine?) -> [Unicode.Scalar]? {
+        let v = key.value
+        guard v >= 0x20, v != 0x7F, !(v >= 0xF700 && v <= 0xF8FF) else { return nil }
+        switch action {
+        case .passThrough:
+            return word
+        case .replace(let deleteCount, let insert):
+            guard insert.last == key, deleteCount <= word.count else { return nil }
+            // The word changed at its end: a D4 restore, unless the same engine without
+            // consonant shortcuts leaves it as it is (then a D21 expansion did it).
+            guard var plain = engineBefore else { return nil }
+            plain.options.advanced = .off
+            guard case .passThrough = plain.endWord() else { return nil }
+            return Array(word.dropLast(deleteCount)) + insert.dropLast()
+        }
+    }
+
+    /// D26 seen from the text: a key that removed a mark (tone, circumflex, breve, horn,
+    /// đ) and put its own letter at the end of the word ("cả" + r → "car", "ô" + o → "oo",
+    /// "đ" + d → "dd"). No other key does both: a tone change keeps the count, z removes a
+    /// tone without adding a letter.
+    static func undidMark(before: [Unicode.Scalar], after: [Unicode.Scalar], key: Unicode.Scalar) -> Bool {
+        guard let last = after.last,
+              String(Character(last)).lowercased() == String(Character(key)).lowercased() else { return false }
+        return markCount(after) < markCount(before)
+    }
+
+    /// Marks in `word`: combining marks once decomposed, and the stroke of đ.
+    static func markCount(_ word: [Unicode.Scalar]) -> Int {
+        var count = 0
+        for scalar in word {
+            if scalar == "đ" || scalar == "Đ" { count += 1; continue }
+            for part in String(Character(scalar)).decomposedStringWithCanonicalMapping.unicodeScalars
+            where part.properties.generalCategory == .nonspacingMark {
+                count += 1
+            }
+        }
+        return count
+    }
+
+    /// D20 "Từ hệ thống vừa sửa": `shown`, the word read before the cursor, is what D20
+    /// gives on `own` (the word this composer produced) with `key`, ignoring case, and
+    /// is not `own` itself: the system changed the word after it was produced, the way
+    /// this key would have ("hoc" shown as "học", then j). Engine only, no client call.
+    static func isSystemFix(_ shown: [Unicode.Scalar], of own: [Unicode.Scalar], key: Unicode.Scalar,
+                            options: EngineOptions) -> Bool {
+        let read = string(shown).precomposedStringWithCanonicalMapping
+        let mine = string(own)
+        guard read != mine else { return false }
+        var probe = VietEngine(options: options)
+        guard probe.seed(displayed: own), case .replace = probe.handle(key) else { return false }
+        return string(probe.shown).lowercased() == read.lowercased()
+    }
+
+    private static func string(_ scalars: [Unicode.Scalar]) -> String {
+        var view = String.UnicodeScalarView()
+        view.append(contentsOf: scalars)
+        return String(view)
     }
 
     // MARK: - D11: a word that stopped being Vietnamese
@@ -576,7 +703,7 @@ struct InPlaceComposer {
         }
         var traced = outcome ?? Outcome()
         #if DEBUG
-        let seeded = traced.kind == .seed || traced.kind == .seedPass
+        let seeded = traced.kind == .seed || traced.kind == .seedPass || traced.kind == .seedKept
         traced.d20 = D20Trace(trigger: letter ? .letter : .mark, seeded: seeded)
         #endif
         return traced
@@ -656,6 +783,18 @@ struct InPlaceComposer {
         // counts (deleteCount below); anything else is refused by `seed` anyway.
         guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else {
             return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine) : nil
+        }
+        keySeededWord = word
+        // D20 "Từ hệ thống vừa sửa": the system already made the word what this key
+        // makes of the word this composer produced ("hoc" shown as "học", ⌫ j): keep the
+        // text; the engine holds the word shown, so the next keys go on from it.
+        if rule == .mark, let own = keyProduced,
+           Self.isSystemFix(word, of: own, key: scalar, options: engine.options) {
+            if engine.isSpellingLocked { checkedLockedWord = true }
+            #if DEBUG
+            lastSeededWord = word
+            #endif
+            return Outcome(consumed: true, kind: .seedKept)
         }
 
         let lockedBefore = engine.isSpellingLocked
