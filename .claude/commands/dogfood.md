@@ -16,7 +16,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 - **thay tại chỗ** (mặc định, D13 (Gạch chân là đường lui cuối cùng));
 - **gạch chân**, bật như người dùng bật: quy tắc riêng cho app đó trong cửa sổ Cài đặt của Dấu (D5 (Quy tắc theo ứng dụng)). Ghi lại danh sách quy tắc trước khi đổi và trả về đúng như cũ khi xong. Cách bật đó vướng gì cũng là một quan sát.
 
-Gạch chân thường đúng khi gõ một mạch từ đầu tới cuối từ; chỗ cần tìm là lúc người dùng làm việc khác trong khi chữ gạch chân còn đang chờ chốt. Ở chế độ này dồn thời gian vào các thao tác trong mục "Cách gõ" diễn ra giữa một từ chưa chốt:
+Ở chế độ gạch chân, chỗ cần tìm là lúc người dùng làm việc khác trong khi chữ gạch chân còn đang chờ chốt. Ở chế độ này dồn thời gian vào các thao tác trong mục "Cách gõ" diễn ra giữa một từ chưa chốt:
 - ←/→, ↑/↓, Home/End, nhấp chuột chỗ khác, chọn chữ bằng ⇧←;
 - ⌫ lùi qua ranh giới giữa chữ gạch chân và chữ đã chốt, ⌫ hết chữ gạch chân;
 - quay lại thêm hay đổi dấu cho từ đã chốt;
@@ -29,7 +29,7 @@ Gạch chân thường đúng khi gõ một mạch từ đầu tới cuối từ
 
 ## Trước khi chạy (không chiếm màn hình)
 
-1. `scripts/dev/dau-version.sh`: bộ gõ đã cài là bản Release của commit mới nhất (người dùng gõ bằng bản Release). Lệch thì `scripts/dev/install-app.sh` cũng là lượt cần người dùng đồng ý; gộp vào cùng lượt chạy.
+1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản ổn định người dùng dùng hằng ngày (tag `stable`, CLAUDE.md "Dọn sau mỗi lần chạy"). Lượt này cần bản khác (commit mới nhất, bản Debug) thì việc cài nó cũng cần người dùng đồng ý: gộp vào cùng lượt chạy, và cài lại bản ổn định khi dọn.
 2. Soạn sẵn văn bản sẽ gõ (mục "Văn bản") và kế hoạch app, ghi vào `build/dogfood/<ngày>/plan.md`. Mỗi đoạn có: chữ muốn ra, chuỗi phím Telex sẽ gõ (kể cả lỗi cố ý và chỗ sửa), app và ô gõ.
 3. Báo người dùng: "sẵn sàng, khoảng N phút, dùng các app …", chờ đồng ý (CLAUDE.md, "Điểm dừng bắt buộc"). Một lần đồng ý cho một lượt.
 
@@ -75,7 +75,7 @@ Biết giới hạn của cách làm: phím từ System Events không hẳn là 
 
 ## Dọn
 
-Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn nhập liệu, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
+Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn nhập liệu, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ, và cài lại bản ổn định (`scripts/dev/install-app.sh --ref stable`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
 
 ## Sau lượt gõ
 
