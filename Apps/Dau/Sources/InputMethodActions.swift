@@ -41,6 +41,10 @@ final class InputMethodActions {
     private(set) var installedTampered = false
     enum ReinstallState: Equatable { case idle, working, failed }
     private(set) var reinstall: ReinstallState = .idle
+    /// Counts the checks of the installed copy: `checkInstalled` (after the launch
+    /// reconcile, whenever the app becomes active) and the end of "Cài lại". Views that show what is installed (the development
+    /// build's "Bộ gõ đã cài" line, D25) read it again when it changes.
+    private(set) var installedChecks = 0
 
     /// The input source shortcut and the English layout, read when Dấu got enabled from
     /// the banner (its confirmation names the real shortcut, N5).
@@ -151,6 +155,7 @@ final class InputMethodActions {
     /// becomes active). A copy that is not the owner copy checks nothing and shows no
     /// banner (D37).
     func checkInstalled() {
+        installedChecks += 1
         #if DEBUG
         // `--tampered`: the banner stays for the capture, whatever is installed.
         if tamperedPinned { return }
@@ -183,6 +188,7 @@ final class InputMethodActions {
         }
         installedTampered = !installer.installedIsGenuine()
         if installedTampered { reinstall = .failed }
+        installedChecks += 1
     }
 
     #if DEBUG

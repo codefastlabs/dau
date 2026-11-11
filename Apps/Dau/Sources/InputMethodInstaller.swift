@@ -616,6 +616,20 @@ enum CodeSignature {
         return "anchor apple generic and identifier \"\(identifier)\" and certificate leaf[subject.OU] = \"\(teamID)\""
     }
 
+    /// Whether the bundle at `url` is signed with get-task-allow: a Debug build (D8: Release
+    /// never has it, scripts/dev/install-app.sh checks). Read from the signature, not
+    /// validated. nil when there is no readable signature: nothing is claimed (N5).
+    static func hasGetTaskAllow(_ url: URL) -> Bool? {
+        var code: SecStaticCode?
+        var raw: CFDictionary?
+        guard SecStaticCodeCreateWithPath(url as CFURL, [], &code) == errSecSuccess, let code,
+              SecCodeCopySigningInformation(code, SecCSFlags(rawValue: kSecCSSigningInformation), &raw) == errSecSuccess,
+              let info = raw as? [String: Any], info[kSecCodeInfoIdentifier as String] != nil
+        else { return nil }
+        let entitlements = info[kSecCodeInfoEntitlementsDict as String] as? [String: Any]
+        return entitlements?["com.apple.security.get-task-allow"] as? Bool == true
+    }
+
     /// `url` is validly signed (all architectures, nested code, strict) and meets
     /// `requirement`; false when there is no requirement.
     static func isValid(_ url: URL, requirement text: String?) -> Bool {

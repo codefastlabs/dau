@@ -953,6 +953,23 @@
         }
       }
     },
+    "Development build · %@" : {
+      "comment" : "Updates & Support header card on a development build (D25). %@ = build configuration, Debug or Release (not translated).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Development build · %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bản phát triển · %@"
+          }
+        }
+      }
+    },
     "Details" : {
       "comment" : "Heading above the error text.",
       "localizations" : {
@@ -1582,6 +1599,23 @@
         }
       }
     },
+    "Input method not installed" : {
+      "comment" : "Updates & Support header card on a development build (D25): no input method in ~/Library/Input Methods.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Input method not installed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa cài bộ gõ"
+          }
+        }
+      }
+    },
     "Input source per window" : {
       "comment" : "Apps page section header.",
       "localizations" : {
@@ -1612,6 +1646,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Phím tắt chuyển nguồn đầu vào"
+          }
+        }
+      }
+    },
+    "Installed input method: %@" : {
+      "comment" : "Updates & Support header card on a development build (D25). %@ = the installed input method's commit and build configuration, e.g. a1b2c3d · Release (not translated).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Installed input method: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ gõ đã cài: %@"
           }
         }
       }

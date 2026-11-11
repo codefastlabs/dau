@@ -470,17 +470,53 @@ enum AppVersion {
     /// The git commit of this build (Resources/BuildCommit.txt, written by
     /// scripts/build/stamp-build-commit.sh), "+" when built with uncommitted changes; nil when
     /// the build had no git.
-    static let commit: String? = {
-        guard let url = Bundle.main.url(forResource: "BuildCommit", withExtension: "txt"),
-              let c = try? String(contentsOf: url, encoding: .utf8),
+    static let commit: String? = stampedCommit(at: Bundle.main.bundleURL)
+
+    /// The commit stamped into the bundle at `url` (Contents/Resources/BuildCommit.txt).
+    nonisolated static func stampedCommit(at url: URL) -> String? {
+        let file = url.appendingPathComponent("Contents/Resources/BuildCommit.txt")
+        guard let c = try? String(contentsOf: file, encoding: .utf8),
               !c.isEmpty, c.count <= 12 else { return nil }
         return c
+    }
+
+    /// The installed input method's build, for the development build's header card
+    /// (docs/UI.md, artboard SettingsAboutDev): "a1b2c3d · Release"; a part that cannot be
+    /// read is left out (no signature: no configuration, N5), and with neither the bundle's
+    /// version is shown, else "–". nil when no input method is installed. The app's own
+    /// label says what was opened; this says what types, which can differ (D37 never
+    /// replaces a development build of the same build number).
+    nonisolated static func installedInputMethodBuild(at url: URL) -> String? {
+        guard FileManager.default.fileExists(atPath: url.path) else { return nil }
+        let configuration = CodeSignature.hasGetTaskAllow(url).map { $0 ? "Debug" : "Release" }
+        let parts = [stampedCommit(at: url), configuration].compactMap { $0 }
+        if !parts.isEmpty { return parts.joined(separator: " · ") }
+        return InputMethodBundleFiles.info(at: url)?.shortVersion ?? "–"
+    }
+
+    /// The build configuration of a development build (D7, D25): "Debug" or "Release";
+    /// nil for an official build. Only the CI release process sets DAU_OFFICIAL (D25), so
+    /// every other build, Release built locally included, is a development build.
+    static let developmentConfiguration: String? = {
+        #if DAU_OFFICIAL
+        return nil
+        #elseif DEBUG
+        return "Debug"
+        #else
+        return "Release"
+        #endif
     }()
 
     /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0" without a commit, or "Dấu" without a version.
     static var nameAndVersion: String {
         guard let marketing else { return "Dấu" }
         return commit.map { "Dấu \(marketing) (\($0))" } ?? "Dấu \(marketing)"
+    }
+
+    /// The sidebar's version line: `nameAndVersion`, plus " · Debug"/" · Release" on a
+    /// development build (docs/UI.md, artboard SettingsAboutDev).
+    static var sidebarLine: String {
+        developmentConfiguration.map { "\(nameAndVersion) · \($0)" } ?? nameAndVersion
     }
 }
 

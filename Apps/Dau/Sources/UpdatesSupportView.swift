@@ -7,6 +7,13 @@ import SwiftUI
 /// `InputMethodActions.confirmUninstall`. "Ngôn ngữ" (D41): `LanguageRow`.
 struct UpdatesSupportView: View {
     @Environment(\.inputMethodActions) private var actions
+    /// The installed input method's build (development builds only): read off the main
+    /// thread when the page appears and after each check of the installed copy
+    /// (`InputMethodActions.installedChecks`: the launch reconcile, "Cài lại", app
+    /// activation), not on every body evaluation. Nothing is shown before the first read
+    /// ends (N5: "not installed" only once that was read).
+    @State private var installed: InstalledRead = .unread
+    enum InstalledRead: Equatable { case unread, notInstalled, build(String) }
 
     var body: some View {
         SettingsPage {
@@ -22,6 +29,15 @@ struct UpdatesSupportView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: AppVersion.nameAndVersion)
                             .font(.headline)
+                        // D25: a development build says so, with its configuration.
+                        if let configuration = AppVersion.developmentConfiguration {
+                            Subtitle(Text("Development build · \(configuration)"))
+                            switch installed {
+                            case .unread: EmptyView()
+                            case .notInstalled: Subtitle(Text("Input method not installed"))
+                            case .build(let build): Subtitle(Text("Installed input method: \(build)"))
+                            }
+                        }
                         // TODO(M7): one of the six update states from docs/UI.md.
                         Subtitle(Text("[Update check status]"))
                     }
@@ -87,6 +103,14 @@ struct UpdatesSupportView: View {
                 // the last card (a footer, not a section description).
                 Subtitle(Text("Dấu never sends what you type off your Mac. The input method has no network access; only the updater connects, to download new versions and the app compatibility list. Open source under the GPLv3 license."))
             }
+        }
+        .task(id: actions?.installedChecks) {
+            guard AppVersion.developmentConfiguration != nil else { return }
+            let url = InputMethodBundleFiles.standard().installedURL
+            let build = await Task.detached { AppVersion.installedInputMethodBuild(at: url) }.value
+            // A newer check replaced this task: its read wins, never this older one.
+            guard !Task.isCancelled else { return }
+            installed = build.map(InstalledRead.build) ?? .notInstalled
         }
     }
 }

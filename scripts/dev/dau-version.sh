@@ -5,7 +5,8 @@
 # Usage: scripts/dev/dau-version.sh
 #
 # Prints the commit (Resources/BuildCommit.txt, scripts/build/stamp-build-commit.sh) of the
-# installed input method and of the Debug Dấu.app, the repo's HEAD, and whether the
+# installed input method and of the Debug Dấu.app, each installed bundle's build configuration
+# (Debug when signed with get-task-allow, D8), the repo's HEAD, and whether the
 # running input method process started after the installed bundle was written (if not,
 # switch input source away from Dấu and back, so macOS starts the new one). Also prints
 # whether each installed bundle's signature still verifies (a revoked "Apple Development"
@@ -36,6 +37,17 @@ stale_note() { # bundle label -> a warning when the bundle was built from anothe
   stale=1
 }
 
+config_of() { # bundle -> Debug or Release (only Debug is signed with get-task-allow); "cấu hình không rõ" without a readable signature
+  local ents
+  if ! ents=$(codesign -d --entitlements - --xml "$1" 2>/dev/null); then
+    print -r -- "cấu hình không rõ"
+  elif [[ ${ents//[[:space:]]/} == *'<key>com.apple.security.get-task-allow</key><true/>'* ]]; then
+    print -r -- Debug
+  else
+    print -r -- Release
+  fi
+}
+
 signature_of() { # bundle -> "hợp lệ, Team X" or the codesign error
   local out team
   team=$(codesign -dv "$1" 2>&1 | sed -n 's/^TeamIdentifier=//p')
@@ -52,14 +64,14 @@ head=$(git -C "$root" rev-parse --short=7 HEAD 2>/dev/null)
 print -r -- "Repo:              $head"
 
 if [[ -d $im ]]; then
-  print -r -- "Bộ gõ đã cài:      $(commit_of "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
+  print -r -- "Bộ gõ đã cài:      $(commit_of "$im") · $(config_of "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
   stale_note "$im" "Bộ gõ đã cài"
   print -r -- "  chữ ký:          $(signature_of "$im")"
 else
   print -r -- "Bộ gõ đã cài:      chưa cài"
 fi
 if [[ -d $host ]]; then
-  print -r -- "Dấu.app (/Applications): $(commit_of "$host")"
+  print -r -- "Dấu.app (/Applications): $(commit_of "$host") · $(config_of "$host")"
   stale_note "$host" "Dấu.app"
   print -r -- "  chữ ký:          $(signature_of "$host")"
 fi
