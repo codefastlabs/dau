@@ -246,7 +246,7 @@ Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/S
     - không có Hoàn tác (app không tự tắt được Dấu).
   - macOS vẫn để tắt hoặc lỗi: banner nói chưa bật được, kèm cách tự thêm trong System Settings và "Thử lại" (không tự mở System Settings).
   - Chưa cài hoặc macOS chưa liệt kê Dấu: mở cửa sổ thiết lập.
-- **Bộ gõ trên máy đã bị thay** (artboard [`SettingsTampered`](canvas/SettingsTampered.png)): chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ hoặc không cùng Team ID với app; kiểm lúc mở app và mỗi lần app được đưa lên trước.
+- **Bộ gõ trên máy đã bị thay** (artboard [`SettingsTampered`](canvas/SettingsTampered.png)): chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ, không do Apple cấp, không cùng Team ID với app hoặc sai định danh bộ gõ; kiểm lúc mở app và mỗi lần app được đưa lên trước.
   - Banner đỏ đầu mọi mục Cài đặt, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên.
   - Cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
 - **Chế độ tối** ([`SettingsDark`](canvas/SettingsDark.png)): Cài đặt và onboarding đều có (màu hệ thống).

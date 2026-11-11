@@ -82,7 +82,8 @@ dau/
 - `SettingsStore`:
   - lưu cả cài đặt thành một JSON dưới khoá `settings` trong UserDefaults suite = App Group (`DauAppGroupIdentifier` trong Info.plist, giá trị `$(TeamIdentifierPrefix)$(BUNDLE_ID_PREFIX).shared`);
   - sau mỗi lần lưu phát Darwin notification `<suite>.settingsDidChange`;
-  - `observeChanges` cho bộ gõ áp dụng ngay.
+  - `observeChanges` cho bộ gõ áp dụng ngay; ai cũng phát được thông báo này, nên bộ gõ gộp các thông báo đến dồn thành một lần đọc (`ChangeCoalescer`, sau `ChangeCoalescer.delay`).
+- Giải mã đọc tối đa `DauSettings.maxAppRules` quy tắc; gộp quy tắc trùng bundle ID trong O(n) (`DauSettings.merged`): cái sau thắng, giữ chỗ của cái trước.
 - `CompatibilityList` (D7 (Cập nhật và loại bản dựng), D13): danh sách app được gắn nhãn "Đề xuất".
   - Mỗi mục có: các bundle ID của một app (một app có thể có nhiều ID), tên, cờ `suggestUnderline`, ghi chú cho người bảo trì (không hiện lên giao diện, N5 (Chỉ hứa điều đã kiểm chứng)). Cả danh sách có `version`.
   - Giải mã dễ dãi (D18): khoá lạ bị bỏ qua; mục hỏng hoặc không có bundle ID bị bỏ mà không mất các mục khác; file hỏng thành danh sách rỗng.
@@ -168,7 +169,7 @@ dau/
   - Nhận ra thì giữ cho client đó trong lần kích hoạt đó (`InPlaceComposer.activate` xét lại).
 - Lúc gửi (`InPlaceComposer.EraseMode`): chọn khi nhận ra, theo các câu trả lời đã thấy trong lần kích hoạt. Đã có câu 1 hoặc 2: gửi trong phím (`inKey`, xterm.js). Mọi câu đều là 0: gửi sau phím (`afterKey`, Ghostty): phím đi tới app, phần sửa (`Outcome.deferredText`) tới sau khi app xử lý xong phím, `DauInputController` gửi nó ở lượt kế của hàng đợi chính.
   - Gửi trong phím đang tạm giữ lại (`InPlaceComposer.eraseMode(for:)`): ô như vậy vẫn thay tại chỗ như trước D43, chỉ ghi log. Lý do và số đo: nhật ký `docs/PROGRESS.md`, lượt gõ thử thứ tư.
-- Sau khi nhận ra: không hỏi vị trí, không đọc chữ (D11, D20 tắt ở client đó); log `event=range-ignored` một lần mỗi lần kích hoạt (chỉ bundle ID).
+- Sau khi nhận ra: không hỏi vị trí, không đọc chữ (D11, D20 tắt ở client đó); log `event=range-ignored` một lần mỗi lần kích hoạt (chỉ cách gửi; bản Debug thêm bundle ID, D8 (Không telemetry)).
 - Kiểm bằng client giả trong `RangeIgnoreTests` (Ghostty, xterm.js, ô gõ thường có ⌘A mà bộ gõ không thấy); mọi client giả của `LateAnswerTests`, `RapidKeysTests`, `CursorEditorTests` và `InPlaceComposerTests` kiểm thêm rằng không bao giờ nhận nhầm.
 
 #### Backspace thay tại chỗ (D32)
@@ -188,7 +189,7 @@ dau/
 - Hiện tượng: chọn U.S. rồi chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì IMK không gọi `deactivateServer`/`activateServer`, từ đang gõ dở bị gõ tiếp.
 - Cách xử lý:
   - mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được);
-  - khi nhận thì reset từ đang gõ (D4; chế độ gạch chân thì chốt chữ đang hiện).
+  - khi nhận thì đọc nguồn đang chọn; chỉ reset từ đang gõ (D4; chế độ gạch chân thì chốt chữ đang hiện) khi nguồn đó không phải Dấu, không đọc được, hoặc khác nguồn đã thấy lần trước (lúc `activateServer` hay ở thông báo trước; `InputSourceChange`). Ai cũng phát được thông báo phân tán này, nên thông báo giả khi nguồn không đổi không cắt từ.
 - Thông báo đến trong 0,5 s (`DauInputController.activationEcho`) sau `activateServer` của chính controller được coi là tiếng vọng của lần chuyển bằng phím tắt/menu và bị bỏ qua, để phím gõ ngay sau khi chuyển không mất từ.
 - Kịch bản kiểm: `scripts/selftest/typing/run.sh --keys "to⇄cj " safari` (không có `--expect` nên script so với câu mẫu mặc định và báo ✗; thứ cần xem là dòng log `source-changed-reset`).
   - `⇄` là chọn U.S. rồi Dấu bằng `TISSelectInputSource` từ tiến trình của script; log `source-changed-reset`.
@@ -278,7 +279,7 @@ Mọi điểm vào và cách xử lý giá trị lạ:
   - event nil hoặc kiểu khác keyDown/mouseDown → `false`;
   - client nil hoặc không phải `IMKTextInput` → reset, `false`;
   - `characters` nil, rỗng, nhiều scalar, ký tự điều khiển → chỉ reset (`KeyRouter`);
-  - `selectedRange` `NSNotFound`, âm, có vùng chọn, ít chữ hơn số cần xoá → không thay (`CursorTracker`);
+  - `selectedRange` đi qua `ClientRange.sanitized` ở một chỗ (`InPlaceComposer.selectedRange(of:)`): `NSNotFound`, âm, hoặc vị trí, độ dài, điểm cuối vượt `ClientRange.limit` (Int32.max) đều thành `NSNotFound`, tức không truy cập được văn bản → không thay, không đọc (`CursorTracker`); hệ quả: client trả `selectedRange` âm hoặc vượt trần một lần thì D20 và lần đọc của D11 tắt tới lần `activateServer` sau (như với `NSNotFound`); có vùng chọn, ít chữ hơn số cần xoá → không thay; các phép cộng còn lại trên vị trí dùng phép cộng bão hoà;
   - `attributedSubstring` nil, sai độ dài, ký tự ngoài BMP → không seed.
 - `activateServer`/`deactivateServer`/`commitComposition` với client nil:
   - reset (gạch chân: chốt vào client đã nhận marked text nếu còn, không thì bỏ);
@@ -287,6 +288,7 @@ Mọi điểm vào và cách xử lý giá trị lạ:
 - `inputControllerWillClose`: reset, bỏ hai bộ nghe (cài đặt, nguồn nhập liệu).
 - `menu()` và hành động menu: không chạy ngoài main thread (`onMain` trả nil thay vì dừng chương trình); tham số của hành động không được dùng.
 - Thông báo cài đặt và nguồn nhập liệu: chỉ chạy trên main thread, tham chiếu yếu tới controller.
+- Gọi ngược trong lúc xử lý (client gọi `commitComposition`, `deactivateServer`… ngay trong `insertText`, `selectedRange` hay `setMarkedText`): phím, reset (kể cả reset chốt chữ gạch chân bằng `insertText`) và nạp lại cài đặt chạy lần lượt, không lồng nhau (`KeyReentry`): `handle` qua `KeyReentry.key`, mọi điểm vào khác qua `outsideKey`. Lời gọi đến trong lúc đang bận được giữ lại và chạy ngay sau phần đang chạy, vì engine và composer đang bị mượn (`inout`). Phím đến lúc đang bận thì đi thẳng tới app và từ đang gõ reset sau đó. IMK có gọi ngược như vậy hay không: chưa đo.
 
 #### Input mode, quy tắc theo app, cài đặt
 
@@ -333,6 +335,7 @@ Bundle là `LSBackgroundOnly` nên người dùng mở nó (nháy đúp trong Fi
 Cách tìm app chủ:
 
 - Tìm như mục "Cài đặt Dấu…" (`HostApp`): bản đang chạy, bản chứa bộ gõ, bản cùng phiên bản ưu tiên thư mục Applications, rồi tìm thẳng trong /Applications khi LaunchServices chưa biết bản chép vào.
+- Mỗi bản phải qua kiểm chữ ký (`HostApp.accepts`, `HostAppSignature`): chữ ký hợp lệ, gốc Apple, đúng bundle ID app chủ và Team ID của chính bộ gõ. Bản không đọc được (thư mục nhà) hoặc bộ gõ không có Team ID thì chỉ mở khi là bản đang chạy, bản chứa bộ gõ, hoặc bản nằm trực tiếp trong `~/Applications` của thư mục nhà thật khi `/Applications` không có bản nào đạt (D37 (Cài đặt bộ gõ), `HostApp.userApplicationsFolder`). Bản đọc được mà kiểm không đạt thì không bao giờ mở. Lời gọi Security bên trong sandbox của bộ gõ chưa chạy thật.
 - Sandbox của bộ gõ không đọc được Info.plist của bản nằm trong thư mục nhà (đo: `deny file-read-data` với bản ở DerivedData).
 - Nên bản build chưa chạy và không nằm ở /Applications không được chọn (log `host-app-not-found known=… readable=…`).
 

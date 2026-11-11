@@ -1227,8 +1227,10 @@ for app in "${APPS[@]}"; do
     fi
   fi
   # D43: whether the input method took this field for one that ignores the replacement
-  # range, and how it sends (logged once per activation, also by Release builds).
-  ignored="$(print -r -- "$settings_log" | grep -o "event=range-ignored mode=[a-z-]* app=$(bundle_id "$app")" | head -1)"
+  # range, and how it sends (logged once per activation, also by Release builds; only
+  # Debug builds add the app's bundle ID, D8, so a line without one counts for the app
+  # this window of the log belongs to).
+  ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( app=$(bundle_id "$app"))?\$" | grep -o "event=range-ignored mode=[a-z-]*" | head -1)"
   if [[ -n "$ignored" ]]; then
     log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}"
   else

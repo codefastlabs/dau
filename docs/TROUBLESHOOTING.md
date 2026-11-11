@@ -13,6 +13,9 @@ Các sự cố đã gặp trên máy phát triển, nguyên nhân đã xác đ�
 - **Nguyên nhân:** Dấu.app được chép vào `/Applications` bằng `ditto` hay Finder mà chưa đăng ký với LaunchServices. Bộ gõ chạy sandbox nên tìm app chủ qua LaunchServices, và chỉ thấy các bản trong DerivedData.
 - **Xử lý:** cài bằng `scripts/dev/install-app.sh` (chép bản mới cạnh bản cũ, chuyển bản cũ vào Thùng rác, đổi tên, chạy `lsregister -f`, để app thay bộ gõ đã cài, mở lại app nếu nó đang chạy). Cài tay thì chạy `lsregister -f /Applications/Dau.app` sau khi chép; trong nhật ký của bộ gõ phải thấy `event=host-app-open`.
 
+- **Nguyên nhân khác:** bản Dấu.app tìm được không đạt kiểm chữ ký (chữ ký hỏng, không do Apple cấp, khác Team ID với bộ gõ hoặc khác bundle ID của app chủ); bộ gõ bỏ qua bản đó. Log: `log show --last 5m --predicate 'subsystem == "com.codefastlabs.dau.inputmethod.Dau"' | grep host-app`, tìm `host-app-signature-invalid`.
+- **Xử lý:** cài lại Dấu.app từ bản dựng hay bản tải về chính thức bằng `scripts/dev/install-app.sh`.
+
 ## Thử gõ bằng TextEdit để lại file trên iCloud Drive
 
 - **Nguyên nhân:** TextEdit tự lưu mọi tài liệu "Untitled" vào `~/Library/Mobile Documents/com~apple~TextEdit/Documents/`; đóng mà không lưu vẫn để lại file, và file đó đồng bộ sang mọi thiết bị của người dùng.

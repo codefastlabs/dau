@@ -87,10 +87,12 @@ struct CursorTracker: Equatable {
     }
 
     /// Decides the replacement range for `deleteCount` UTF-16 units before the cursor,
-    /// given the selection the client reported.
-    func plan(selection: NSRange, deleteCount: Int) -> Plan {
-        if selection.location == NSNotFound || selection.length == NSNotFound { return .unsupported }
-        if selection.location < 0 || selection.length < 0 || deleteCount < 0 { return .mismatch }
+    /// given the selection the client reported. An answer outside `ClientRange.limit`
+    /// (negative, huge) is no document access, as NSNotFound is (D18).
+    func plan(selection reported: NSRange, deleteCount: Int) -> Plan {
+        let selection = ClientRange.sanitized(reported)
+        if selection.location == NSNotFound { return .unsupported }
+        if deleteCount < 0 { return .mismatch }
         if let expected, expected != selection.location { return .mismatch }
         if selection.location < deleteCount { return .mismatch }
         // A selection that starts at the cursor while the engine holds a word is an app's
@@ -107,8 +109,16 @@ struct CursorTracker: Equatable {
     /// `range` (or `cursor`, when the range ends before it: keys the app applies after).
     /// `atCaret`: the text was in fact inserted at the app's caret without a range (a
     /// key let through at a position read from the app, D20).
+    ///
+    /// Positions this tracker keeps stay in 0...`ClientRange.limit`: a range or cursor
+    /// outside it (D18: a client that answered anything) forgets the position instead.
     mutating func didReplace(_ range: NSRange, text: String, cursor: Int? = nil, atCaret: Bool = false) {
-        record(cursor: cursor ?? range.location + range.length, location: range.location,
+        let end = cursor ?? range.location.addingSaturated(range.length)
+        guard ClientRange.isUsable(range), ClientRange.isUsable(position: end) else {
+            invalidate()
+            return
+        }
+        record(cursor: end, location: range.location,
                deleted: range.length, inserted: Array(text.utf16), atCaret: atCaret)
         expected = known
     }
@@ -117,7 +127,10 @@ struct CursorTracker: Equatable {
     /// (deleteCount 0, replacementRange NSNotFound).
     mutating func didInsertAtCursor(_ text: String) {
         let length = text.utf16.count
-        if let e = expected { expected = e + length }
+        if let e = expected {
+            let moved = e.addingSaturated(length)
+            expected = ClientRange.isUsable(position: moved) ? moved : nil
+        }
         if let k = known { record(cursor: k, location: k, deleted: 0, inserted: Array(text.utf16), atCaret: true) }
     }
 
@@ -157,8 +170,10 @@ struct CursorTracker: Equatable {
     }
 
     /// The position is known from the app (D20 read): start following from there.
+    /// A location outside `ClientRange.limit` (D18) is not a position: forgotten.
     mutating func anchor(at location: Int) {
         if known != location { forgetPosition() }
+        guard ClientRange.isUsable(position: location) else { return }
         known = location
     }
 
@@ -197,7 +212,10 @@ struct CursorTracker: Equatable {
         edits.append(Edit(cursor: cursor, location: location, deleted: deleted,
                           deletedText: deletedText, inserted: inserted, atCaret: atCaret))
         if edits.count > Self.editLimit { edits.removeFirst(edits.count - Self.editLimit) }
-        known = cursor + inserted.count - deleted
+        // Every caller passes positions in 0...ClientRange.limit and short texts, so this
+        // cannot overflow; past the limit the position is forgotten (D18).
+        let next = cursor.addingSaturated(inserted.count).subtractingSaturated(deleted)
+        if ClientRange.isUsable(position: next) { known = next } else { forgetPosition() }
     }
 
     /// One UTF-16 unit that the app's Delete removes alone: not half of a surrogate pair,
@@ -248,6 +266,8 @@ struct CursorTracker: Equatable {
     /// "ở dâu").
     func rebuild(_ snapshot: [UInt16], at selection: NSRange,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
+        // D18: an answer outside `ClientRange.limit` proves nothing.
+        let selection = ClientRange.sanitized(selection)
         let end = selection.location
         guard let known, selection.length == 0, end != NSNotFound, end != known else { return nil }
         let count = min(Self.lateLimit + burst, edits.count)
@@ -356,5 +376,61 @@ struct CursorTracker: Equatable {
         }
         guard fits(tail, dropping: d, from: max(tail.count - window, tail.count - (n + d) + 1)) else { return nil }
         return Array(snapshot.dropLast(n)) + Array(tail.suffix(n + d))
+    }
+}
+
+
+/// D18 (Phòng thủ với IMK): every `selectedRange` answer goes through `sanitized` before
+/// any arithmetic in in-place mode (`InPlaceComposer`, `CursorTracker`,
+/// `RangeIgnoreDetector`). A client may answer anything: NSNotFound (no document
+/// access), a negative value, or a huge positive one that would overflow
+/// `location + length` or `location - deleteCount + …` and trap.
+///
+/// The ceiling is `limit` (Int32.max UTF-16 units, 4 GiB of text): far beyond any text
+/// an app shows in one field, and low enough that a position at the ceiling plus every
+/// amount this module adds to it (a word, `CursorTracker.tailLimit` units, a key's
+/// delta) stays far from Int.max on a 64-bit Mac. An answer past it, or with a negative
+/// part, is taken as no document access (NSNotFound): `CursorTracker.plan` says
+/// `.unsupported`, so nothing is replaced and nothing is read (the safe branch: the key
+/// starts a word on its own, D11).
+enum ClientRange {
+    /// Largest location, length or end (location + length) accepted from a client.
+    static let limit = Int(Int32.max)
+
+    /// The answer "no document access".
+    static let notFound = NSRange(location: NSNotFound, length: NSNotFound)
+
+    /// `range` when both parts are in 0...`limit` and so is its end; `notFound` otherwise
+    /// (also for NSNotFound itself, in either part).
+    static func sanitized(_ range: NSRange) -> NSRange {
+        isUsable(range) ? range : notFound
+    }
+
+    /// Both parts and the end are in 0...`limit`.
+    static func isUsable(_ range: NSRange) -> Bool {
+        let location = range.location, length = range.length
+        guard location >= 0, length >= 0, location <= limit, length <= limit else { return false }
+        return location + length <= limit  // no overflow: both are at most Int32.max
+    }
+
+    /// A position in 0...`limit`.
+    static func isUsable(position: Int) -> Bool {
+        position >= 0 && position <= limit
+    }
+}
+
+extension Int {
+    /// `self + other`, clamped to Int.min...Int.max instead of trapping (D18).
+    func addingSaturated(_ other: Int) -> Int {
+        let (sum, overflow) = addingReportingOverflow(other)
+        guard overflow else { return sum }
+        return other > 0 ? .max : .min
+    }
+
+    /// `self - other`, clamped to Int.min...Int.max instead of trapping (D18).
+    func subtractingSaturated(_ other: Int) -> Int {
+        let (difference, overflow) = subtractingReportingOverflow(other)
+        guard overflow else { return difference }
+        return other < 0 ? .max : .min
     }
 }

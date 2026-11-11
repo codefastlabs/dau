@@ -480,7 +480,8 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
 struct InputMethodBundleFiles: InputMethodFiles {
     let embeddedURL: URL
     let directory: URL
-    /// Signature check of the staged copy (default: valid, same team as this app).
+    /// Signature check of the staged copy (default: `CodeSignature.isValidAndSameTeam`, a code
+    /// requirement: Apple-issued certificate, this app's team, the input method's identifier).
     var verify: (URL) -> Bool = CodeSignature.isValidAndSameTeam
     /// The code directory hashes of a bundle, every architecture; nil when unreadable.
     var codeHashes: (URL) -> CodeHashes? = CodeSignature.codeHashes

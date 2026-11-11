@@ -234,7 +234,7 @@ struct InPlaceComposer {
             break
         }
         let own = outcome.consumed ? 0 : (keyEffect ?? 0)
-        detector.keyHandled(delta: keyDelta + own, inBurst: tracker.keyInBurst)
+        detector.keyHandled(delta: keyDelta.addingSaturated(own), inBurst: tracker.keyInBurst)
         // The word ended, or the cursor may have moved (shortcut, arrow, Return/Tab).
         if outcome.kind == .reset || !engine.isComposing { detector.endWord() }
         return outcome
@@ -454,7 +454,7 @@ struct InPlaceComposer {
     private mutating func checkLockedWord(_ scalar: Unicode.Scalar, engine: inout VietEngine,
                                           client: some InPlaceClient) -> Outcome? {
         checkedLockedWord = true
-        let selection = client.selectedRange()
+        let selection = Self.selectedRange(of: client)
         if let mode = detector.observe(selection, inBurst: tracker.keyInBurst), let found = Self.eraseMode(for: mode) {
             // D43: from this key on, the word's keys pass or are erased and typed again.
             eraseMode = found
@@ -529,7 +529,7 @@ struct InPlaceComposer {
         pendingShadow = plain
         lastSeededWord = []
         #endif
-        var selection = client.selectedRange()
+        var selection = Self.selectedRange(of: client)
         detector.note(selection)
         var read: String?
         var didRead = false
@@ -766,6 +766,13 @@ struct InPlaceComposer {
 
     // MARK: - Client calls
 
+    /// The client's `selectedRange`, the only way in-place mode asks for it: an answer
+    /// outside `ClientRange.limit` (negative, huge) is NSNotFound from here on (D18), so
+    /// no position past the limit reaches any arithmetic below or in `CursorTracker`.
+    static func selectedRange(of client: some InPlaceClient) -> NSRange {
+        ClientRange.sanitized(client.selectedRange())
+    }
+
     /// Applies `.replace` with exactly one `insertText` call (N3). Method A: ask the
     /// client for `selectedRange` when text before the cursor must be replaced, unless
     /// this key already asked (`selection`).
@@ -797,7 +804,7 @@ struct InPlaceComposer {
         }
         // Engine letters are BMP scalars, so deleteCount scalars == deleteCount UTF-16
         // units, also for a word seeded from decomposed (NFD) text (D20).
-        let selection = known ?? client.selectedRange()
+        let selection = known ?? Self.selectedRange(of: client)
         if known == nil, let mode = detector.observe(selection, inBurst: tracker.keyInBurst),
            let found = Self.eraseMode(for: mode) {
             // D43: this client ignores the range; this key is the first one erased.
@@ -838,7 +845,7 @@ struct InPlaceComposer {
         case .replace(let range):
             attempt.replacement = range
             client.insertText(text, replacementRange: range)
-            keyDelta += text.utf16.count - range.length
+            keyDelta = keyDelta.addingSaturated(text.utf16.count - range.length)
             tracker.didReplace(range, text: text)
             result.kind = .replace
         case .unsupported:
@@ -863,7 +870,7 @@ struct InPlaceComposer {
                                            client: some InPlaceClient) -> Outcome {
         let range = NSRange(location: followed - deleteCount, length: deleteCount)
         client.insertText(text, replacementRange: range)
-        keyDelta += text.utf16.count - deleteCount
+        keyDelta = keyDelta.addingSaturated(text.utf16.count - deleteCount)
         tracker.didReplace(range, text: text)
         var result = Outcome(consumed: true, kind: kind)
         result.attempt = attempt
@@ -894,7 +901,7 @@ struct InPlaceComposer {
     private mutating func insertAtCursor(_ insert: TextBuffer, client: some InPlaceClient) {
         let text = insert.description
         client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-        keyDelta += text.utf16.count
+        keyDelta = keyDelta.addingSaturated(text.utf16.count)
         tracker.didInsertAtCursor(text)
     }
 

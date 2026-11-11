@@ -95,7 +95,8 @@ struct RangeIgnoreDetector {
 
     /// A key was handled: it changed the document by `delta` units.
     mutating func keyHandled(delta: Int, inBurst: Bool) {
-        totals.append((totals.last ?? 0) + delta)
+        // Saturating: a client's odd answer must never trap here (D18).
+        totals.append((totals.last ?? 0).addingSaturated(delta))
         if totals.count > Self.stateLimit {
             let drop = totals.count - Self.stateLimit
             totals.removeFirst(drop)
@@ -120,7 +121,7 @@ struct RangeIgnoreDetector {
     var minimumAnswer: Int {
         let (total, inWord) = oldest
         guard inWord else { return 0 }
-        return max(0, total - totals[wordStart])
+        return max(0, total.subtractingSaturated(totals[wordStart]))
     }
 
     /// Any `selectedRange` answer of this client (also at the start of a word, D20): only
@@ -151,7 +152,7 @@ struct RangeIgnoreDetector {
         }
         // A text field has grown by at least what was added since the first answer, minus
         // the keys it may still be behind by.
-        guard selection.location < first.location + oldest.total - first.total else {
+        guard selection.location < first.location.addingSaturated(oldest.total.subtractingSaturated(first.total)) else {
             suspicion = (selection.location, total)
             wordsSinceSuspicion = 0
             return nil

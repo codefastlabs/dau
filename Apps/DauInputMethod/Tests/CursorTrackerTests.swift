@@ -23,12 +23,12 @@ struct CursorTrackerTests {
         #expect(t.plan(selection: NSRange(location: NSNotFound, length: 0), deleteCount: 1) == .unsupported)
     }
 
-    @Test("too little text or negative values are a mismatch")
+    @Test("too little text or a negative count is a mismatch; a negative answer is no document access (D18)")
     func invalid() {
         let t = CursorTracker()
         #expect(t.plan(selection: at(1), deleteCount: 2) == .mismatch)
         #expect(t.plan(selection: at(1, 5), deleteCount: 2) == .mismatch)
-        #expect(t.plan(selection: at(-1), deleteCount: 1) == .mismatch)
+        #expect(t.plan(selection: at(-1), deleteCount: 1) == .unsupported)
         #expect(t.plan(selection: at(5), deleteCount: -1) == .mismatch)
     }
 

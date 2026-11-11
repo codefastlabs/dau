@@ -48,8 +48,22 @@ final class DauInputController: IMKInputController {
     /// The client the marked text was sent to, so a reset that arrives with another
     /// client (or none) still commits it where it is shown.
     private weak var markedClient: AnyObject?
+    /// Runs keys, resets and reloads one at a time (D18, `KeyReentry`): `handle` goes
+    /// through `reentry.key`, every other entry point through `outsideKey`.
+    private let reentry = KeyReentry()
+    /// Folds settings change notifications that come in a burst into one reload.
+    private var settingsReload = ChangeCoalescer()
+    /// The selected input source seen last (`InputSourceChange`), nil if unknown.
+    private var lastSourceID: String?
 
     // MARK: - Keys
+
+    /// Runs `body` now, or right after the key, reset or reload that is running when called
+    /// from inside it (a client calling back during `insertText`, `selectedRange` or
+    /// `setMarkedText`; D18, `KeyReentry`).
+    private func outsideKey(_ body: @escaping () -> Void) {
+        reentry.run(body)
+    }
 
     override func recognizedEvents(_ sender: Any!) -> Int {
         // Mouse downs reach `handle` so a click resets the word (D4, D11). The click itself
@@ -59,6 +73,17 @@ final class DauInputController: IMKInputController {
     }
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
+        guard let consumed = reentry.key({ handleOutsideReentry(event, client: sender) }) else {
+            // D18: a key sent from inside a client call made while a key, reset or reload
+            // runs. The engine is borrowed: this key goes to the app untouched, and the
+            // word ends once the running body is done (the text no longer matches it).
+            reentry.run { [weak self] in _ = self?.resetComposition(client: sender) }
+            return false
+        }
+        return consumed
+    }
+
+    private func handleOutsideReentry(_ event: NSEvent?, client sender: Any?) -> Bool {
         let start = PerfLog.now()
         let signpost = PerfLog.signposter.beginInterval("handle")
         defer { PerfLog.signposter.endInterval("handle", signpost) }
@@ -97,10 +122,15 @@ final class DauInputController: IMKInputController {
             let wasKnown = inPlace.detector.send != nil
             let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
             if !wasKnown, let send = inPlace.detector.send {
-                // D43: once per activation; the bundle ID only, never text (D8). In the key
-                // is logged but not applied (`InPlaceComposer.eraseMode(for:)`).
+                // D43: once per activation, never text (D8). In the key is logged but not
+                // applied (`InPlaceComposer.eraseMode(for:)`). Which app is typed in is
+                // typing metadata (D8): Release logs the mode only, Debug adds the app.
                 let mode = send == .afterKey ? "after-key" : "in-key"
+                #if DEBUG
                 settingsLogger.notice("event=range-ignored mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
+                #else
+                settingsLogger.notice("event=range-ignored mode=\(mode, privacy: .public)")
+                #endif
             }
             if let text = outcome.deferredText {
                 // D43, after the key: once the app has handled the key.
@@ -228,8 +258,14 @@ final class DauInputController: IMKInputController {
         super.activateServer(sender)
         // A client uses this process: a user launch must not quit it (main.swift).
         NotificationCenter.default.post(name: .dauClientActivated, object: nil)
+        outsideKey { [self] in activate(sender) }
+    }
+
+    private func activate(_ sender: Any?) {
         resetComposition(client: sender)
         activatedAt = ProcessInfo.processInfo.systemUptime
+        // The source this activation is for: a change notification compares with it.
+        lastSourceID = InputSourceChange.currentSourceID()
         inPlace.activate()
         startObservingSettings()
         startObservingInputSource()
@@ -243,7 +279,12 @@ final class DauInputController: IMKInputController {
         apply(SettingsStore.inputMethod.load())
         perf.note("activate", app: clientApp)
         if underline {
+            // Which app is typed in is typing metadata (D8): Release logs no bundle ID.
+            #if DEBUG
             settingsLogger.notice("event=underline-on app=\(self.clientApp, privacy: .public)")
+            #else
+            settingsLogger.notice("event=underline-on")
+            #endif
         }
     }
 
@@ -260,7 +301,7 @@ final class DauInputController: IMKInputController {
     }
 
     override func deactivateServer(_ sender: Any!) {
-        resetComposition(client: sender)
+        outsideKey { [self] in _ = resetComposition(client: sender) }
         super.deactivateServer(sender)
     }
 
@@ -269,11 +310,11 @@ final class DauInputController: IMKInputController {
     /// insert and forgets the word. (super is not called on purpose: its default would
     /// insert `composedString`, which Dấu does not use.)
     override func commitComposition(_ sender: Any!) {
-        resetComposition(client: sender)
+        outsideKey { [self] in _ = resetComposition(client: sender) }
     }
 
     override func inputControllerWillClose() {
-        resetComposition()
+        outsideKey { [self] in _ = resetComposition() }
         settingsObserver = nil
         sourceObserver = nil
         if let quitObserver { NotificationCenter.default.removeObserver(quitObserver) }
@@ -297,8 +338,10 @@ final class DauInputController: IMKInputController {
     }
 
     private func quitRequested() {
-        let committed = resetComposition(client: client() as Any?)
-        if committed { perf.note("quit-commit", app: clientApp) }
+        outsideKey { [self] in
+            let committed = resetComposition(client: client() as Any?)
+            if committed { perf.note("quit-commit", app: clientApp) }
+        }
     }
 
     // MARK: - Input source changes IMK does not report (M3)
@@ -310,7 +353,9 @@ final class DauInputController: IMKInputController {
     /// `kTISNotifySelectedKeyboardInputSourceChanged` for every switch, and a sandboxed
     /// process may observe it. A switch made with the keyboard shortcut or the menu also
     /// activates this controller; its notification arrives just after and is ignored, so
-    /// keys typed right after the switch keep their word.
+    /// keys typed right after the switch keep their word. Any process can post the
+    /// notification: only a real change of the selected source ends the word
+    /// (`InputSourceChange`).
     private func startObservingInputSource() {
         guard sourceObserver == nil else { return }
         let target = WeakController(self)
@@ -325,11 +370,17 @@ final class DauInputController: IMKInputController {
     static let activationEcho: TimeInterval = 0.5
 
     private func inputSourceDidChange() {
-        let now = ProcessInfo.processInfo.systemUptime
-        guard now - activatedAt >= Self.activationEcho else { return }
-        let hadWord = engine.isComposing || composer.isComposing
-        resetComposition(client: client() as Any?)
-        if hadWord { perf.note("source-changed-reset", app: clientApp) }
+        outsideKey { [self] in
+            let current = InputSourceChange.currentSourceID()
+            let ends = InputSourceChange.endsWord(previous: lastSourceID, current: current,
+                                                  ownBundleID: Bundle.main.bundleIdentifier)
+            lastSourceID = current
+            let now = ProcessInfo.processInfo.systemUptime
+            guard ends, now - activatedAt >= Self.activationEcho else { return }
+            let hadWord = engine.isComposing || composer.isComposing
+            resetComposition(client: client() as Any?)
+            if hadWord { perf.note("source-changed-reset", app: clientApp) }
+        }
     }
 
     // MARK: - Shared settings (M4)
@@ -351,8 +402,20 @@ final class DauInputController: IMKInputController {
         }
     }
 
+    /// Any process can post the change notification: changes that come in a burst are
+    /// read once (`ChangeCoalescer`), at most every `ChangeCoalescer.delay`.
     private func settingsDidChange() {
-        apply(SettingsStore.inputMethod.load())
+        guard settingsReload.noteChange() else { return }
+        let target = WeakController(self)
+        DispatchQueue.main.asyncAfter(deadline: .now() + ChangeCoalescer.delay) {
+            guard Thread.isMainThread else { return }
+            target.controller?.reloadSettings()
+        }
+    }
+
+    private func reloadSettings() {
+        settingsReload.willReload()
+        outsideKey { [self] in apply(SettingsStore.inputMethod.load()) }
     }
 
     /// Applies new settings to this controller. A change of engine options in the middle
@@ -406,7 +469,7 @@ final class DauInputController: IMKInputController {
         // D18: a nil value carries nothing to store; super is not given it.
         if let value { super.setValue(value, forTag: tag, client: sender) }
         guard tag == kTextServiceInputModePropertyTag else { return }
-        resetComposition(client: sender)
+        outsideKey { [self] in _ = resetComposition(client: sender) }
     }
 
     // MARK: - Input menu
@@ -449,8 +512,10 @@ final class DauInputController: IMKInputController {
         var new = store.load()
         new.typingMethod = method
         store.save(new)
-        resetComposition(client: client() as Any?)
-        apply(new)
+        outsideKey { [self] in
+            resetComposition(client: client() as Any?)
+            apply(new)
+        }
     }
 
     /// "Cài đặt Dấu…": opens the host app, whose main window is Settings (UI.md).
