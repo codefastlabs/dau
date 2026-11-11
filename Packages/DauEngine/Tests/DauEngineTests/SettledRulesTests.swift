@@ -99,7 +99,7 @@ struct SettledRulesTests {
     ])
     func otherKindModifierVNI(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
 
-    /// D31 "Bổ sung": a tone key right after "qu" is taken like after "gi" and moves to
+    /// D31 ("Phím dấu gõ ngay sau \"qu\""): a tone key right after "qu" is taken like after "gi" and moves to
     /// the vowel that follows ("qusa" → "quá"); "qui" stays invalid.
     @Test(arguments: [
         Case("qusa", "quá"), Case("qusa ", "quá "), Case("Qusa", "Quá"), Case("qury ", "quỷ "),

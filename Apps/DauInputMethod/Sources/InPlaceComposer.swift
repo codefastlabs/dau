@@ -1084,7 +1084,7 @@ struct InPlaceComposer {
     /// cursor is. `EraseMode.afterKey`: the key goes to the app and the fix follows it
     /// (`Outcome.deferredText`), also erasing what the key did; a key whose effect is not
     /// known (Return, Tab: they run the line) is fixed in the key, which Ghostty drops
-    /// (D43, "Giới hạn").
+    /// (D43, "Hệ quả đã chấp nhận").
     private func erase(deleteCount: Int, insert: TextBuffer, appending extra: Unicode.Scalar?,
                        client: some InPlaceClient) -> Outcome {
         var result = Outcome(consumed: true, kind: .erase)

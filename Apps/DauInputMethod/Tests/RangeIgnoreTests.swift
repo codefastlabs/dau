@@ -464,7 +464,7 @@ struct RangeIgnoreTests {
     @Test("known limit: an app stalled so long that it has none of the text read is taken for a terminal")
     func stalledPastTheRead() {
         // Told apart at the tenth key; an answer from before the first key has no text,
-        // as Ghostty (D43, "Giới hạn": a field with a constant 0 that gives no text).
+        // as Ghostty (D43, "Hệ quả đã chấp nhận": a field with a constant 0 that gives no text).
         withKnownIssue {
             let (doc, _) = zero(Self.zeroLine, lag: 12)
             #expect(!doc.sent.contains { $0.unicodeScalars.contains("\u{7F}") })

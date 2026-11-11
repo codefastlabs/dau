@@ -154,7 +154,7 @@ struct RangeIgnoreDetector {
     /// 0: right for a field that was empty then (the case the evidence must catch: the
     /// fake that always answers {0,0}, an app stalled at the start of an empty document),
     /// and at worst a read of other text, which only keeps the field recognized as before
-    /// the evidence (D43, "Giới hạn"). nil: nothing of this composer's own to compare.
+    /// the evidence (D43, "Hệ quả đã chấp nhận"). nil: nothing of this composer's own to compare.
     var evidence: (range: NSRange, typed: [UInt16])? {
         guard send == nil, !refuted else { return nil }
         let end = max(0, totals.last ?? 0)

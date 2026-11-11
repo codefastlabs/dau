@@ -41,7 +41,7 @@ enum KnownInputMethods {
     struct Entry: Sendable {
         let name: String
         let bundleIDs: [String]
-        /// Steps verified for this app (research section 5); nil: the generic steps.
+        /// Steps verified for this app (research section 8); nil: the generic steps.
         let steps: [String]?
     }
 
@@ -80,7 +80,7 @@ enum KnownInputMethods {
         ]
     }
 
-    /// System Settings path on macOS 27.2 (research section 2.5).
+    /// System Settings path on macOS 27.2 (research section 8).
     static func loginItemsStep(_ name: String) -> String {
         String(localized: "In \(SystemUINames.system().loginItemsPath), turn off \(name)")
     }
