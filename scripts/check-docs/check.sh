@@ -11,7 +11,8 @@
 #   1. repo paths in backticks exist (in PROGRESS.md, not in the dated log), in living docs
 #      and docs/research/**/*.md; not-ours.txt lists the paths of other projects, of tools
 #      removed from the repo and of files each developer creates locally;
-#   1b. relative Markdown links resolve (living docs, docs/research, docs/canvas/README.md);
+#   1b. relative Markdown links resolve (living docs, docs/research, docs/canvas/README.md),
+#      and no footnote definition holds one (GitHub leaves it unrewritten, so it 404s);
 #   1c. docs/README.md names every Markdown file git tracks under docs/;
 #   1d. every type or function name docs/ARCHITECTURE.md gives in backticks is a word of the
 #      code (Apps, Packages, scripts/**/*.swift, project.yml, Config); system-names.txt lists
@@ -90,6 +91,11 @@ for f in $cited $research docs/canvas/README.md(N); do
   for l in ${(f)"$(grep -oE '\]\([^)#: ]+(#[^)]*)?\)' $f | sed -E 's/^\]\(//; s/\)$//; s/#.*//' | sort -u)"}; do
     [[ -z $l ]] && continue
     [[ -e ${f:h}/$l ]] || report "$f: liên kết không tới file nào: $l"
+  done
+  # GitHub does not rewrite relative links inside a footnote definition: on the repo's home
+  # page they resolve against github.com/<owner>/ and 404. Footnotes use absolute URLs.
+  grep -nE '^\[\^[^]]+\]:.*\]\([^)#: ]+(#[^)]*)?\)' $f | while IFS= read -r m; do
+    report "$f:${m%%:*}: chú thích cuối trang có liên kết tương đối (GitHub không đổi, ra 404); dùng URL đầy đủ"
   done
 done
 

@@ -88,7 +88,7 @@ Kiến trúc và luồng một phím: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE
 ## Giấy phép
 
 GPLv3. Xem [LICENSE](LICENSE).
-[^1]: D15 (Cài đặt mặc định), D30 (Kiểm tra chính tả). Trên 678 từ trong các câu tiếng Việt, gõ trong Safari và Chrome trên macOS 27.2, Dấu ra đúng 677 từ; từ còn lại là "taxi" thành "tãi", vì đó là âm tiết tiếng Việt hợp lệ. Điều kiện đo: [`docs/research/COMPETITOR-COMPARISON.md`](docs/research/COMPETITOR-COMPARISON.md).
+[^1]: D15 (Cài đặt mặc định), D30 (Kiểm tra chính tả). Trên 678 từ trong các câu tiếng Việt, gõ trong Safari và Chrome trên macOS 27.2, Dấu ra đúng 677 từ; từ còn lại là "taxi" thành "tãi", vì đó là âm tiết tiếng Việt hợp lệ. Điều kiện đo: [`docs/research/COMPETITOR-COMPARISON.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/COMPETITOR-COMPARISON.md).
 [^2]: D4 (Từ nước ngoài). Cùng lượt đo: trong câu trộn Việt–Anh, Dấu ra đúng 184/188 từ; với 105 từ tiếng Anh và từ trong mã có chứa phím dấu Telex, Dấu giữ nguyên 88 từ, 7 từ ra sai, 10 từ trùng với một từ tiếng Việt. Ở ứng dụng bật tự sửa chính tả, macOS có thể sửa từ vừa gõ sau dấu cách, với mọi bộ gõ; hoàn tác bằng ⌘Z.
 [^3]: D2 (Chuyển Việt/Anh). Đã thử không cần quyền Trợ năng trong Chrome, VS Code và Terminal: mục "Câu hỏi đã trả lời" của `docs/DECISIONS.md`.
 [^4]: N2 (Bộ gõ không có quyền mạng), D8 (Không telemetry).
