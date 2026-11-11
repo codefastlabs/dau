@@ -8,7 +8,7 @@ Mỗi phần của giao diện có một nguồn:
     - `docs/canvas/README.md`: mục lục.
     - `docs/canvas/<Tên>.png`: ảnh từng artboard.
     - `docs/canvas/src/<Tên>.dc.html`: nguồn của artboard (agent đọc file này).
-  - Canvas có hai trang. "Thiết kế" là nơi sửa. "Lưu trữ 06/11 (không sửa)" giữ mockup gốc trước khi cập nhật theo giao diện đã dựng, chỉ để đối chiếu (artboard tên `Archive-…`).
+  - Canvas có một trang, "Thiết kế", là nơi sửa.
 - **Bố cục, khoảng cách, control:** System Settings của macOS hiện hành (D9).
   - Số đo ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md`.
   - Mức đạt ở `scripts/selftest/settings-window/Reference.swift`.
