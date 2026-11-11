@@ -156,6 +156,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): "đo ở 0–30 ms chưa thấy hỏng" thay bằng dẫn tới dòng "D20 không chờ" của `docs/history/LogM0ToM4.md`. Chi phí mỗi lần đọc chuyển khỏi sổ, nguyên văn: "Chi phí mỗi lần đọc (bản Debug, trung vị `selectedRange` + `attributedSubstring`): TextEdit 0,4 + 1,0 ms, Safari 0,6 + 3,7 ms, Chrome 0,3 + 0,8 ms, VS Code 0,3 + 0,7 ms." Số đo "Từ hệ thống vừa sửa", nguyên văn: "đo 11/11/2026 ở Notes và Mail, bản Release, phím cách 120 ms, tự sửa bật: trước khi sửa 'Tôi hoc␣⌫j bài mỗi tối.' ra 'Tôi hocj bài mỗi tối.' 4/4, vì hệ thống đã đổi 'hoc' thành 'học' trước phím j và gõ lại phím dấu là bỏ dấu (D26); cùng ca trên 'toi hoc␣⌫j bai', tắt tự sửa thì ra 'học'. Sau khi sửa: 'Tôi học bài mỗi tối.' 4/4. 'Hôm nay con hoc␣⌫j bài' đúng cả trước (6/6) và sau (4/4) khi sửa, vì hệ thống không sửa 'hoc' ở đó." "Giới hạn còn lại … chưa làm" ghi thành hệ quả đã chấp nhận.
 - 11/11/2026 (D21, sổ viết lại): bỏ dẫn nhánh xử lý phím Space trong `Engine.cpp` của OpenKey (dẫn `docs/research/OpenKeyNotes.md`); lý do không làm Quick Telex chuyển từ bảng "Đã biết nhưng không làm" vào D21.
+- 12/11/2026 (theo D26): ngoại lệ của "Từ hệ thống vừa sửa", cách nói cũ: "Không áp dụng khi từ Dấu đã trả là từ người gõ đã bỏ dấu bằng gõ đúp (D26) hoặc từ D4 đã khôi phục"; nay là từ kết thúc lúc còn hiện chữ của phím gõ đúp, vì ⌫ xoá chữ đó mở khoá D26.
 
 ### D22. Gõ tắt loại trừ z, f, w, j
 
@@ -185,6 +186,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 29/10/2026: luật gốc, ngoại lệ "ooo" ("(29/10/2026)"); "Hệ quả đã chấp nhận (29/10/2026)": "password" → "pasword".
 - 05/11/2026: "Giới hạn đã biết (người dùng chốt 05/11/2026, từ so sánh với ca thử của bộ gõ khác, `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9)".
 - 05/11/2026: ngoại lệ chữ ư từ một phím w đứng riêng ("05/11/2026, người dùng giao phiên chính chọn sau khi phản biện").
+- 12/11/2026: Backspace xoá chữ của phím gõ đúp thì mở khoá (người dùng giao phiên chính chốt, sau một lượt kiểm tra độc lập). Cách nói cũ: "Khoá này giữ nguyên tới hết từ, kể cả sau Backspace ("tesst" ⌫ s → "tess")."; mục lục: "Gõ đúp bỏ dấu và khoá phím dấu tới hết từ." Lý do: chữ của phím gõ đúp đã bị xoá thì không còn dấu hiệu người gõ chọn chữ gốc, nên "tiếng Việt thắng" của D4 áp dụng lại; người lỡ gõ đúp phím dấu rồi ⌫ gõ lại dấu không ra chữ muốn ("carr⌫r" ra "car"); OpenKey, XKey (`testTelex_UndoBackspaceRetype_ToneMark`, `_DD`), bamboo-core (`TestProcessRefresh2`) và gonhanh (`bug7_backspace_resets_stroke_reverted`) cũng mở khoá như vậy; uvie-rs (`backspace_after_tone_cancel`) cũng bỏ trạng thái gõ đúp khi ⌫ nhưng xoá theo phím ("ass⌫" → "á"), nên ca đó vẫn khác Dấu theo D32. Số đo từ mô phỏng người gõ (`docs/research/EditingTypedText.md` mục 4, phương án d). Cùng lượt: D20 "Từ hệ thống vừa sửa" đổi "từ người gõ đã bỏ dấu bằng gõ đúp" thành "từ kết thúc lúc còn hiện chữ của phím gõ đúp"; D33 bỏ câu so sánh "như khoá gõ đúp của D26".
 
 ### D27. Không có phím gõ nhanh ơ, ư
 
@@ -220,6 +222,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 29/10/2026: luật gốc ("(29/10/2026)").
 - 05/11/2026: xoá hết từ bằng Backspace thì hết trạng thái đi thẳng ("người dùng chốt 05/11/2026, E9 của `docs/research/EXTERNAL-TEST-INPUTS.md`").
+- 12/11/2026 (theo D26): bỏ "như khoá gõ đúp của D26 (Gõ đúp phím dấu)" sau câu trên, vì khoá D26 nay mở khi ⌫ xoá chữ của phím gõ đúp, không phải khi xoá hết từ.
 
 ### D34. Chữ hoa với phím biến đổi
 

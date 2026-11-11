@@ -34,24 +34,21 @@ struct SimVariant: OptionSet, Hashable, Sendable {
     /// while the word is locked by spelling (D30) puts the engine back as it was before
     /// that key, raw keys included (only the last raw key is dropped). Any other ⌫: D32.
     static let tailStraight = SimVariant(rawValue: 4)
-    /// (d) ⌫ that deletes the letter a double key (D26) added releases D26's lock:
-    /// "carr⌫r" → "cả", "tesst⌫s" still "tess".
-    static let releaseDouble = SimVariant(rawValue: 8)
+    // (d), ⌫ that deletes the letter a double key added releases D26's lock, was measured
+    // here and is Dấu's rule since 12/11/2026 (D26): it is in the engine, not a variant.
 
     var label: String {
         if isEmpty { return "a" }
         var parts: [String] = []
         if contains(.rewriteOnBackspace) { parts.append("b′") } else if contains(.restoredKeys) { parts.append("b") }
         if contains(.tailStraight) { parts.append("c") }
-        if contains(.releaseDouble) { parts.append("d") }
         return parts.joined(separator: "+")
     }
 
     /// The options of section 4, in table order.
     static let options: [SimVariant] = [
-        [], [.restoredKeys], [.restoredKeys, .rewriteOnBackspace], [.tailStraight], [.releaseDouble],
-        [.restoredKeys, .tailStraight], [.restoredKeys, .releaseDouble], [.restoredKeys, .tailStraight, .releaseDouble],
-        [.restoredKeys, .rewriteOnBackspace, .tailStraight, .releaseDouble],
+        [], [.restoredKeys], [.restoredKeys, .rewriteOnBackspace], [.tailStraight],
+        [.restoredKeys, .tailStraight], [.restoredKeys, .rewriteOnBackspace, .tailStraight],
     ]
 }
 
@@ -91,8 +88,7 @@ struct ImkField: SimField {
     var memory: Memory?
     /// (c): the engine before each character typed straight on a word locked by spelling.
     var tail: [VietEngine] = []
-    /// (d): index of the letter the double key added.
-    var doubleAt: Int?
+
     /// False: the engine alone, as `Typist` drives it (no D20 read), with the variant.
     var reads = true
 
@@ -116,7 +112,6 @@ struct ImkField: SimField {
             field.knownNoWord = false
             memory = nil
             tail.removeAll()
-            doubleAt = nil
             return
         }
         if key == "⏎" {
@@ -125,7 +120,6 @@ struct ImkField: SimField {
             field.knownNoWord = false
             memory = nil
             tail.removeAll()
-            doubleAt = nil
             return
         }
         let before = field.engine
@@ -167,12 +161,7 @@ struct ImkField: SimField {
         } else {
             tail.removeAll()
         }
-        // (d): the key undid a mark and locked the word (D26).
-        if variant.contains(.releaseDouble), !before.lockedByDouble || !before.isComposing,
-           field.engine.lockedByDouble, field.engine.lastShown != nil {
-            doubleAt = field.engine.shown.count - 1
-        }
-        if !field.engine.isComposing { doubleAt = nil }
+
     }
 
     /// (b) at the D20 read: the remembered keys and `key` typed into a fresh engine.
@@ -196,7 +185,7 @@ struct ImkField: SimField {
         if variant.contains(.tailStraight), field.engine.isSpellingLocked, let snapshot = tail.popLast() {
             field.engine = snapshot
             if !field.text.isEmpty { field.text.removeLast() }
-            if !field.engine.isComposing { field.knownNoWord = false; doubleAt = nil }
+            if !field.engine.isComposing { field.knownNoWord = false }
             return
         }
         tail.removeAll()
@@ -208,12 +197,6 @@ struct ImkField: SimField {
             field.apply(action, passing: nil)
         }
         if !field.engine.isComposing { field.knownNoWord = false }
-        if variant.contains(.releaseDouble), let d = doubleAt, field.engine.isComposing,
-           field.engine.shown.count <= d {
-            field.engine.lockedByDouble = false
-            doubleAt = nil
-        }
-        if !field.engine.isComposing { doubleAt = nil }
 
         guard !composing else { return }
         switch remembered {

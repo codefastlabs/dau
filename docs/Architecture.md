@@ -188,7 +188,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
   - Từ tiếng Việt mà sau phím không còn là tiền tố hợp lệ (`isValidPrefix`): với chữ cái thường, và với phím dấu/biến đổi không áp dụng được (gõ đúp D26 (Gõ đúp phím dấu) là áp dụng), bỏ từ đã đọc, reset engine và xử lý phím như phím đầu của từ mới.
   - Từ seed đã khoá chính tả là chữ thật của app nên không kiểm lại theo D11 (`checkedLockedWord`). Lần đọc để đồng bộ của D11 dùng cùng `seedWord` nhưng không áp các luật này (`SeedRule.resync`).
 - **Từ hệ thống vừa sửa** (`seedWord`, trước khi đưa phím vào engine):
-  - Composer nhớ từ nó vừa trả (`InPlaceComposer.produced`), đặt khi một ký tự kết thúc từ gõ ở đây kết thúc từ; không đặt cho từ D4 đã khôi phục (`producedWord`; khác với mở rộng của D21 (Gõ tắt phụ âm), nhận ra bằng bản sao engine tắt gõ tắt) hay từ có phím gõ đúp bỏ dấu (`undidMark`).
+  - Composer nhớ từ nó vừa trả (`InPlaceComposer.produced`), đặt khi một ký tự kết thúc từ gõ ở đây kết thúc từ; không đặt cho từ D4 đã khôi phục (`producedWord`; khác với mở rộng của D21 (Gõ tắt phụ âm), nhận ra bằng bản sao engine tắt gõ tắt) hay từ kết thúc khi còn hiện chữ của phím gõ đúp bỏ dấu (`undidMark`; ⌫ xoá chữ đó thì từ lại được nhớ như mọi từ).
   - Từ nhớ sống qua đúng một phím, cộng một ⌫ ở giữa; phím khác, ⌫ thứ hai, `reset` và `activate` xoá nó.
   - Phím dấu/biến đổi ngay sau ⌫ đó: nếu từ đọc được khác từ nhớ mà engine thử (`isSystemFix`) ra đúng từ đọc được, không phân biệt hoa thường, thì engine giữ từ đọc được, không gửi gì, phím bị nuốt (kind `seed_kept`). Không thêm lời gọi nào ngoài lần đọc của D20.
 - **Lỗi đọc** (D18): chuỗi sai độ dài, không có chữ, từ có chữ số mà `seed` không nhận, có vùng chọn thì không seed, phím xử lý như phím đầu của từ mới.

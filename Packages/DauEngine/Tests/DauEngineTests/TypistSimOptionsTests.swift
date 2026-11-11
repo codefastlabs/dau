@@ -44,7 +44,7 @@ struct TypistSimOptionsTests {
     static let matrix: [(String, String, String)] = [
         ("A8", "nhaq⌫f␣", "nhà"), ("A9", "ddeo⌫pj␣", "đẹp"), ("A10", "vieetk⌫j␣", "việt"),
         ("A11", "ddungsg⌫␣", "đúng"), ("A12", "nhuwngg⌫x␣", "những"), ("A14", "tieeng⌫⌫⌫eengs␣", "tiếng"),
-        ("A16", "nhaamff⌫f␣", "nhâmf"), ("A17", "bass⌫s␣", "bas"), ("A18", "nghieengg⌫␣", "nghieeng"),
+        ("A16", "nhaamff⌫f␣", "nhầm"), ("A17", "bass⌫s␣", "bá"), ("A18", "nghieengg⌫␣", "nghieeng"),
         ("A19", "bans⌫f␣", "bà"), ("A20", "windoes⌫⌫ws␣", "ưindows"), ("A21", "Sunrisr⌫e␣", "Sủnise"),
         ("B1", "ban␣⌫f␣", "bàn"), ("B2", "bans␣⌫f␣", "bàn"), ("B3", "bans␣⌫z␣", "ban"),
         ("B5", "ban.⌫f.", "bàn."), ("B7", "viet␣⌫ej␣", "việt"), ("B8", "cow␣⌫o␣", "cô"),
@@ -67,7 +67,7 @@ struct TypistSimOptionsTests {
     /// Inputs the review of the note named, with what Dấu gives today (engine and model).
     static let reviewInputs: [(String, String, String)] = [
         ("đẹp gõ thừa q", "ddeq⌫p␣", "đep"), ("rồi thêm dấu", "ddeq⌫p␣⌫j␣", "đẹp"),
-        ("boot", "boot␣⌫s␣", "boots"), ("Hasaki", "Hasak⌫i␣", "Hấi"), ("carr⌫r", "carr⌫r␣", "car"),
+        ("boot", "boot␣⌫s␣", "boots"), ("Hasaki", "Hasak⌫i␣", "Hấi"), ("carr⌫r", "carr⌫r␣", "cả"),
         ("tesst⌫s (D26)", "tesst⌫s␣", "tess"), ("withq⌫", "withq⌫␣", "ưith"),
     ]
 
@@ -213,7 +213,7 @@ struct TypistSimOptionsTests {
     // MARK: - Existing engine tests
 
     /// `Case("keys", "expected")` with ⌫ in the engine's tests, typed through the engine
-    /// with each engine option (c, d), no D20 read, as `Typist` types them. Options per
+    /// with each engine option (b, c), no D20 read, as `Typist` types them. Options per
     /// file: VNI for VNITests.swift, Telex otherwise; a case that does not pass today
     /// with that is skipped (its options are elsewhere).
     @Test(.enabled(if: ProcessInfo.processInfo.environment["DAU_SIM"] != nil))
@@ -348,8 +348,8 @@ struct TypistSimOptionsTests {
     // MARK: - Sensitivity
 
     /// What a dead end of today would need: replays its keys with each single option.
+    /// (K4, D26's lock after ⌫, is gone since 12/11/2026.)
     enum Cause: String, CaseIterable {
-        case doubleLock = "K4 khoá gõ đúp sau ⌫ (d sửa)"
         case restored = "K1 từ đã khôi phục (b′ sửa)"
         case baseline = "K3 mốc sau ⌫ (c sửa)"
         case other = "khác"
@@ -364,7 +364,7 @@ struct TypistSimOptionsTests {
             let start = text.lastIndex(of: " ").map { $0 + 1 } ?? 0
             return SimTypist<ImkField>.matches(text[start...], e.token)
         }
-        if fixedBy([.releaseDouble]) { return .doubleLock }
+
         if fixedBy([.restoredKeys, .rewriteOnBackspace]) { return .restored }
         if fixedBy([.tailStraight]) { return .baseline }
         return .other

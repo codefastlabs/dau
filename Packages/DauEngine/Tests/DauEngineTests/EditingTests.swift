@@ -1,5 +1,5 @@
 import Testing
-import DauEngine
+@testable import DauEngine
 
 /// Group 5 — Backspace (D32), word length (D33), letter case (D34), digits.
 @Suite("5. Backspace, độ dài từ, chữ hoa, chữ số")
@@ -12,13 +12,47 @@ struct EditingTests {
     ])
     func backspaceReplacesTone(_ c: Case) { expectTyped(c.keys, c.expected) }
 
-    /// D26: the double-key lock survives Backspace until the word ends.
+    /// D26: the double-key lock holds while the double key's letter is shown, also after
+    /// ⌫, and never carries into the next word.
     @Test(arguments: [
-        Case("tesst⌫s", "tess"), Case("carr⌫r", "car"), Case("carr⌫⌫as", "cas"),
+        Case("tesst⌫s", "tess"), Case("tesst⌫s ", "tess "), Case("carrs", "cars"), Case("carrs⌫r", "carr"),
+        Case("carrt⌫r", "carr"),
+        Case("wnw⌫w", "ww"),   // "ưn" + w turns ư back into w: that letter is still shown
         Case("tesst⌫s cas", "tess cá"),
         Case("aaa⌫⌫a", "a"),   // erasing the whole word ends it, and its lock with it
     ])
-    func doubleLockSurvivesBackspace(_ c: Case) { expectTyped(c.keys, c.expected) }
+    func doubleLockHoldsWhileShown(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D26: ⌫ that deletes the double key's letter releases the lock; the next key marks
+    /// again (Vietnamese wins, D4).
+    @Test(arguments: [
+        Case("carr⌫r", "cả"), Case("carr⌫r ", "cả "), Case("aaa⌫a", "â"), Case("aaa⌫a ", "â "),
+        Case("ddd⌫d", "đ"), Case("ddd⌫d ", "đ "), Case("nhaamff⌫f", "nhầm"), Case("bass⌫f", "bà"),
+        Case("tooiss⌫f", "tồi"), Case("carr⌫⌫as", "cá"), Case("carrt⌫⌫r", "cả"),
+        Case("CARR⌫R", "CẢ"), Case("huaww⌫w", "hưa"),
+        // Accepted consequences (D26).
+        Case("tesst⌫⌫st", "tét"), Case("tesst⌫⌫st ", "tét "), Case("passs⌫⌫ssword", "pasword"),
+        Case("tesst⌫⌫sst ", "test "),   // to keep the keys, double again
+        Case("carr⌫r⌫r", "cr"),          // ⌫ on "cả" drops "ả" (D32)
+        Case("ofif⌫⌫ffice.", "ofice."),  // the simulator's "office": "ff" is a double again
+    ])
+    func backspaceReleasesDoubleLock(_ c: Case) { expectTyped(c.keys, c.expected) }
+
+    /// D26 × D32: the ⌫ that releases the lock gives what it gave with the lock (the
+    /// release counts from the next key), so it still goes straight to the app.
+    @Test(arguments: ["carr", "aaa", "ddd", "nhaamff", "bass", "tooiss", "tesst⌫", "hoaff", "tooiff"])
+    func releasingBackspaceUnchanged(_ keys: String) {
+        var t = Typist()
+        t.type(keys)
+        var locked = t.engine
+        let action = t.engine.backspace()
+        // The same ⌫ on an engine that keeps the lock: same action, same text shown.
+        locked.doubleLetters = 0
+        let lockedAction = locked.backspace()
+        #expect(action == lockedAction)
+        #expect(t.engine.shown == locked.shown)
+        #expect(!t.engine.lockedByDouble && locked.lockedByDouble)
+    }
 
     /// D33: deleting the whole overflowed word ends the pass-through state (like D26's lock).
     @Test(arguments: [

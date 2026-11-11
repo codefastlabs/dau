@@ -149,6 +149,17 @@ struct MarkedComposerTests {
         #expect(s.app.document == "tess ")
     }
 
+    @Test("D26 lock ends when ⌫ deletes the double key's letter in the marked word")
+    func doubledLetterDeleted() {
+        var s = Session()
+        s.type("carr")
+        #expect(s.app.marked == "car")
+        s.key(.backspace)
+        #expect(s.app.marked == "ca")
+        s.type("r ")
+        #expect(s.app.document == "cả ")
+    }
+
     @Test("reset keys commit what is shown, unrestored (D4), then go to the app")
     func resetKeys() {
         var s = Session()

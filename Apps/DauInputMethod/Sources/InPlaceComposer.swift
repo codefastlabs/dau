@@ -112,8 +112,8 @@ struct InPlaceComposer {
     /// after that character ("hoc" → "học"); a mark key after one ⌫ over the character
     /// then compares the word read with it (`seedWord`). Kept for exactly the next key,
     /// plus one ⌫ in between: any other key, a reset (click, arrows, shortcuts, source
-    /// change) or an activation forgets it. Not set for a word the user un-toned with a
-    /// double key (D26) or that D4 restored.
+    /// change) or an activation forgets it. Not set for a word that ends still showing the
+    /// letter of a double key (D26) or that D4 restored.
     struct ProducedWord: Equatable {
         var word: [Unicode.Scalar]
         /// One ⌫ (over the word-ending character) came after the word.
@@ -122,9 +122,12 @@ struct InPlaceComposer {
     private(set) var produced: ProducedWord?
     /// The produced word the current key may compare with (a key right after the one ⌫).
     private var keyProduced: [Unicode.Scalar]?
-    /// A key of the current word undid a mark by a double key (D26): the word is not
-    /// remembered as `produced` when it ends.
-    private var wordUndidMark = false
+    /// A key of the current word undid a mark by a double key (D26): how many characters
+    /// the word showed right after it, the last being the key's. While that letter is
+    /// shown, the word is not remembered as `produced` when it ends. A ⌫ that deletes it
+    /// clears this, as it releases the engine's lock (D26: "carr⌫r" → "cả" ends like any
+    /// other word).
+    private var undidMarkLetters: Int?
     /// The word `seedWord` read for the current key (to tell a double key on it, D26).
     private var keySeededWord: [Unicode.Scalar]?
 
@@ -201,7 +204,7 @@ struct InPlaceComposer {
         before = .unknown
         checkedLockedWord = false
         produced = nil
-        wordUndidMark = false
+        undidMarkLetters = nil
     }
 
     /// A click (or any non-key event that moves the cursor) at `time`.
@@ -256,14 +259,18 @@ struct InPlaceComposer {
         keySeededWord = nil
         var shownBefore: [Unicode.Scalar]?
         if case .character = route, engine.lastShown != nil { shownBefore = engine.shown }
-        if case .character = route, !engine.isComposing { wordUndidMark = false }  // a new word
+        if case .character = route, !engine.isComposing { undidMarkLetters = nil }  // a new word
         let outcome = handleKey(route, time: time, engine: &engine, client: client)
         // D26: remember that this word was un-toned by a double key, so it is not taken
-        // for a word the system changed when it ends (`produced`).
+        // for a word the system changed when it ends (`produced`), until a ⌫ deletes the
+        // double key's letter.
         if case .character(let key) = route, engine.lastShown != nil,
            let prior = shownBefore ?? keySeededWord,
            Self.undidMark(before: prior, after: engine.shown, key: key) {
-            wordUndidMark = true
+            undidMarkLetters = engine.shown.count
+        }
+        if case .backspace = route, let letters = undidMarkLetters, engine.shown.count < letters {
+            undidMarkLetters = nil
         }
         guard !eraseByDelete else { return outcome }
         switch outcome.kind {
@@ -497,11 +504,11 @@ struct InPlaceComposer {
             if failed { tracker.invalidate() } else { tracker.endWord() }
             before = failed ? .unknown : .noWord
             checkedLockedWord = false
-            if !failed, tracked, !wordUndidMark, let wordBefore,
+            if !failed, tracked, undidMarkLetters == nil, let wordBefore,
                let word = Self.producedWord(wordBefore, ending: scalar, action: action, engineBefore: engineBefore) {
                 produced = ProducedWord(word: word)
             }
-            wordUndidMark = false
+            undidMarkLetters = nil
         }
         return result
     }

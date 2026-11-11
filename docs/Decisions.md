@@ -39,7 +39,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D23](#d23-w--qu-chỉ-ở-vni) | w → qu chỉ ở VNI | Telex: w đầu từ luôn là ư. |
 | [D24](#d24-tên-và-định-danh) | Tên và định danh | "Dấu" luôn có dấu trước người dùng; định danh theo tên miền đảo. |
 | [D25](#d25-nhận-diện) | Nhận diện | Biểu tượng chuẩn chỉ ở bản chính thức. |
-| [D26](#d26-gõ-đúp-phím-dấu) | Gõ đúp phím dấu | Gõ đúp bỏ dấu và khoá phím dấu tới hết từ. |
+| [D26](#d26-gõ-đúp-phím-dấu) | Gõ đúp phím dấu | Gõ đúp bỏ dấu và khoá phím dấu tới hết từ, hoặc tới khi ⌫ xoá chữ của phím gõ đúp. |
 | [D27](#d27-không-có-phím-gõ-nhanh-ơ-ư) | Không có phím gõ nhanh ơ, ư | `[` và `]` luôn là dấu câu. |
 | [D28](#d28-bỏ-dấu-tự-do) | Bỏ dấu tự do | Phím dấu gõ ở đâu cũng được, dấu tự vào đúng chỗ. |
 | [D29](#d29-telex-đơn-giản) | Telex đơn giản | Telex trừ w thành ư, `[ ]` và w → qu. |
@@ -344,7 +344,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
   - (b) thắng (a), vì chữ hoa giữa một từ nước ngoài là kiểu viết camelCase ("foo" + "Bar" → "fooBar", như gõ liền). Đánh đổi: từ tiếng Việt gõ dính sau từ nước ngoài cũng đi thẳng ("iPhone" + "mowis" → "iPhonemowis", như gõ liền).
   - (c) Phím đầu tiên là phím dấu/biến đổi mà không áp dụng được lên từ tiếng Việt có sẵn (từ ghép hết hợp lệ) thì bắt đầu từ mới như chữ cái ("anh" + "emx" → "anhẽm", "tôi" + "ddi" → "tôiđi"). Gõ đúp bỏ dấu theo D26 vẫn là áp dụng ("cả" + "r" → "car").
 - **Từ hệ thống vừa sửa:** tự sửa chính tả của macOS (D4) có thể đổi từ Dấu vừa trả ngay sau dấu cách. Khi người gõ ⌫ qua dấu cách hoặc dấu câu vừa kết thúc từ (không tính Return, Tab) rồi gõ phím dấu, và kết quả D20 trên từ Dấu đã trả trùng với chữ đang hiện (không phân biệt hoa thường), Dấu giữ nguyên chữ: kết quả như khi hệ thống không sửa ("Tôi hoc␣⌫j bài" → "Tôi học bài", không thành "hocj"). Hệ thống sửa thành chữ khác kết quả đó ("cat" → "cắt", ⌫ s) thì D20 tính trên chữ đang hiện như cũ.
-  - Không áp dụng khi từ Dấu đã trả là từ người gõ đã bỏ dấu bằng gõ đúp (D26) hoặc từ D4 đã khôi phục: người gõ đã chọn chữ không dấu ("carr" → "car", hệ thống sửa thành "cả", ⌫ r vẫn ra "car").
+  - Không áp dụng khi từ Dấu đã trả kết thúc lúc còn hiện chữ của phím gõ đúp (D26) hoặc là từ D4 đã khôi phục: người gõ đã chọn chữ không dấu ("carr" → "car", hệ thống sửa thành "cả", ⌫ r vẫn ra "car"). Từ mà Backspace đã xoá chữ của phím gõ đúp thì tính như mọi từ ("carr" ⌫ r → "cả").
   - Dấu chỉ nhớ đúng từ vừa trả, quên khi có click, mũi tên, phím tắt, đổi nguồn hay ⌫ thứ hai; đây không phải "lịch sử từ" ở trên.
 - **Sau sự kiện reset của D4:** sự kiện reset của D4 (mũi tên, click, đổi nguồn, ⌘/⌃/⌥) chỉ xoá bộ đệm, không chặn D20. Phím dấu kế tiếp có thể đặt dấu vào chữ ngay trước con trỏ ("tooi" rồi ← thì con trỏ ở "tô|i"; gõ "s": phần trước con trỏ "tô" thành "tố", chữ "i" sau con trỏ giữ nguyên, cả từ là "tối"; "to" đổi nguồn rồi về, "o" → "tô"). Muốn không có hành vi này thì tắt công tắc D20.
 
@@ -424,10 +424,11 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 
 ### D26. Gõ đúp phím dấu
 
-Sau khi gõ đúp phím dấu để giữ chữ gốc (chuẩn Telex, D4 (Từ nước ngoài)), các phím dấu tiếp theo trong cùng từ đi thẳng như chữ cái cho tới khi kết thúc từ (ranh giới theo D4): "carr" → "car", "carrs" → "cars". Khớp với ví dụ ở D20 (Thêm dấu cho từ đã gõ).
+Sau khi gõ đúp phím dấu để giữ chữ gốc (chuẩn Telex, D4 (Từ nước ngoài)), các phím dấu tiếp theo trong cùng từ đi thẳng như chữ cái cho tới khi kết thúc từ (ranh giới theo D4), hoặc tới khi Backspace xoá chữ của phím gõ đúp: "carr" → "car", "carrs" → "cars". Khớp với ví dụ ở D20 (Thêm dấu cho từ đã gõ).
 
 - Cùng luật cho gõ đúp phím biến đổi ("aaa" → "aa", "ddd" → "dd", "ww" → "w") và cho VNI ("a11" → "a1").
-- Khoá này giữ nguyên tới hết từ, kể cả sau Backspace ("tesst" ⌫ s → "tess").
+- **Backspace:** khi chữ của phím gõ đúp còn trên màn hình, khoá giữ nguyên ("tesst" ⌫ s → "tess"). Backspace xoá chữ đó thì mở khoá, phím sau lại đặt dấu và biến đổi như thường ("carr" ⌫ r → "cả", "nhaamff" ⌫ f → "nhầm", "aaa" ⌫ a → "â", VNI "a11" ⌫ 1 → "á"). Chính Backspace đó cho kết quả như khi còn khoá.
+- Khoá không sang từ sau ("tesst" ⌫ s, dấu cách, "cas" → "tess cá").
 - Ngoại lệ "ooo": "ooo" → "oo" nhưng **không** khoá phím dấu sau đó, để gõ được "xoong", "boong", "xoòng" ("xooongf" → "xoòng").
 - "ww" trên "ưa" cũng bỏ móc như mọi nguyên âm khác ("huaww" → "huaw").
 - Ngoại lệ chữ ư từ một phím w đứng riêng (D23 (w → qu chỉ ở VNI)): khi sau chữ ư đó đã có nguyên âm khác, nó không bị phím w sau bỏ móc ("ww" → "w" vẫn theo D26); phím w đó là chữ cái, kết thúc từ thì D4 khôi phục ("Warwick", "waxwing" giữ nguyên).
@@ -436,13 +437,16 @@ Sau khi gõ đúp phím dấu để giữ chữ gốc (chuẩn Telex, D4 (Từ n
 
 - Từ tiếng Anh có chữ cái lặp trùng phím dấu mất một chữ nếu gõ bình thường ("password" → "pasword", "coffee" → "cofee"); muốn giữ thì gõ chữ đó 3 lần ("passsword", "cofffee").
 - Từ tiếng Anh có chữ cái lặp trùng phím dấu hoặc phím biến đổi mất cả dấu lẫn một chữ ("worry" → "ưory", "express" → "êps", "versus" → "veus"). Giữ nguyên hành vi; gõ tiếng Anh bằng U.S. (D2 (Chuyển Việt/Anh)).
+- Backspace lùi qua chữ của phím gõ đúp rồi gõ lại thì từ thành chữ Việt: "tesst" ⌫⌫ "st" → "tét", "passs" ⌫⌫ "ssword" → "pasword". Muốn giữ chữ gốc thì gõ đúp lại ("tesst" ⌫⌫ "sst" → "test").
+- "carr" ⌫ r ⌫ r → "cr": Backspace trên "cả" bỏ cả chữ "ả" (D32 (Backspace)).
 
 **Vì sao:**
 
 - Đã cân nhắc khôi phục theo phím gốc thay vì chữ hiển thị: gõ "password" tự nhiên được, nhưng các từ vừa là tiếng Anh vừa là âm tiết hợp lệ có phím dấu giữa từ (test, best, list, most, post) không còn cách nào gõ ở chế độ Tiếng Việt. Loại, vì mọi từ phải gõ được.
 - Ngoại lệ chữ ư: đã loại cách áp D26 ở đây, vì "Warwick" → "Waick", "waxwing" → "waing", mất chữ không khôi phục được.
+- Backspace mở khoá: khoá là dấu hiệu người gõ chọn chữ gốc, và dấu hiệu đó là chữ của phím gõ đúp trên màn hình. Xoá chữ đó thì không còn dấu hiệu, nên "tiếng Việt thắng" của D4 áp dụng lại. Người lỡ gõ đúp phím dấu thường xoá đúng chữ thừa rồi gõ lại dấu; khi khoá còn giữ qua Backspace, cách sửa đó không ra chữ muốn. OpenKey, XKey, bamboo-core và gonhanh cũng mở khoá như vậy.
 
-**Xem thêm:** ca thử của bộ gõ khác ở [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) mục 1.
+**Xem thêm:** ca thử của bộ gõ khác ở [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) mục 1; mô phỏng người gõ sửa chữ ở [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) mục 4.
 
 ### D27. Không có phím gõ nhanh ơ, ư
 
@@ -525,7 +529,7 @@ Backspace bỏ chữ cuối đang hiển thị khỏi bộ đệm và đặt l�
 Từ dài hơn âm tiết dài nhất (7 chữ cái, như "nghiêng") thì khôi phục ngay về chuỗi phím đã gõ (nếu đã biến đổi, không chờ kết thúc từ) và để mọi phím còn lại đi thẳng tới hết từ.
 
 - Khi tắt công tắc "Tự khôi phục từ không phải tiếng Việt" thì chỉ ngừng biến đổi, không khôi phục (cùng ý nghĩa công tắc ở D30 (Kiểm tra chính tả)).
-- Xoá hết từ bằng Backspace thì hết trạng thái đi thẳng, như khoá gõ đúp của D26 (Gõ đúp phím dấu): "permission" + 10 ⌫ + "vieetj" → "việt".
+- Xoá hết từ bằng Backspace thì hết trạng thái đi thẳng: "permission" + 10 ⌫ + "vieetj" → "việt".
 
 **Vì sao:** nhờ vậy bộ đệm có dung lượng cố định, không cấp phát thêm, không mất chữ.
 

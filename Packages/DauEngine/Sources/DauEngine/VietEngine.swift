@@ -24,8 +24,13 @@ public struct VietEngine: Sendable {
     var word = Word()
     var screen = TextBuffer()
     var raw = TextBuffer()
-    /// D26: a doubled key; transforms stay off until the word ends, even after ⌫.
+    /// D26: a doubled key; transforms stay off until the word ends, or until ⌫ deletes
+    /// the letter the double key left (`doubleLetters`).
     var lockedByDouble = false
+    /// D26: letters of the word up to and including the one the double key left (the
+    /// key itself, or the letter it turned back: "ww" → "w"). A ⌫ that leaves fewer
+    /// letters releases `lockedByDouble`.
+    var doubleLetters = 0
     /// D30: the word is no longer a prefix of a valid syllable.
     var lockedBySpelling = false
     /// D33: the word grew past 7 letters; everything passes through until it ends.
@@ -73,6 +78,7 @@ public struct VietEngine: Sendable {
         screen.removeAll()
         raw.removeAll()
         lockedByDouble = false
+        doubleLetters = 0
         lockedBySpelling = false
         overflow = false
         overflowShown = 0
@@ -113,9 +119,11 @@ public struct VietEngine: Sendable {
     }
 
     /// Backspace (D32): drops the last letter shown, re-places the tone for the rest,
-    /// and makes the text shown the new restore baseline. D26's lock stays; D30's is
-    /// recomputed. Returns `.passThrough` when the app's own Backspace gives the right
-    /// result (or when the engine is not tracking a word).
+    /// and makes the text shown the new restore baseline. D30's lock is recomputed.
+    /// D26's lock stays while the double key's letter is shown; deleting that letter
+    /// releases it from the next key on, so this ⌫ gives what it gave locked (a
+    /// `.passThrough` stays one, N3). Returns `.passThrough` when the app's own Backspace
+    /// gives the right result (or when the engine is not tracking a word).
     public mutating func backspace() -> Action {
         if overflow {
             // D33: deleting the whole word ends the pass-through state.
@@ -148,6 +156,8 @@ public struct VietEngine: Sendable {
             action = .passThrough
         }
         screen = rendered
+        // D26: the double key's letter is gone; Vietnamese wins again (D4).
+        if word.count < doubleLetters { lockedByDouble = false }
         if word.count == 0 { reset() }
         return action
     }
@@ -271,8 +281,11 @@ public struct VietEngine: Sendable {
                     w.append(base: info.base, mod: Mod.none, upper: info.upper)
                 }
                 // A double key always undoes, also on a seeded word (D20: "cả" + r → "car").
+                if lock {
+                    lockedByDouble = true
+                    doubleLetters = appendKey ? w.count : VietEngine.firstChange(word, w) + 1
+                }
                 word = w
-                if lock { lockedByDouble = true }
                 lockedBySpelling = !isValid(word, .prefix)
                 if !isLocked { word.placeTone(modern: modern) }
                 let rendered = render(word)
@@ -293,6 +306,13 @@ public struct VietEngine: Sendable {
             }
         }
         return appendLiteral(v, info)
+    }
+
+    /// Index of the first letter that differs between two words of the same length.
+    static func firstChange(_ a: Word, _ b: Word) -> Int {
+        var i = 0
+        while i < b.count - 1, a.base[i] == b.base[i], a.mod[i] == b.mod[i] { i += 1 }
+        return i
     }
 
     /// Adds the key as an ordinary letter.

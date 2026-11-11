@@ -76,13 +76,15 @@ struct SpellingTests {
         expectTyped("aas⏎", "ấ\n")
     }
 
-    /// D31 lone letters × D26: a double key gives the keys back, and the lock holds.
+    /// D31 lone letters × D26: a double key gives the keys back, and the lock holds while
+    /// the double key's letter is shown.
     @Test(arguments: [
         Case("aaa ", "aa "), Case("ddd ", "dd "), Case("AAA ", "AA "), Case("DDD ", "DD "),
         Case("aww ", "aw "), Case("AWW ", "AW "),
         Case("aaas ", "aas "), Case("ddda ", "dda "), Case("awws ", "aws "), Case("dddd ", "ddd "),
         Case("aass ", "âs "),                 // D26 baseline: the text shown after the double
-        Case("aaa⌫ ", "a "), Case("aaa⌫a ", "aa "), Case("ddd⌫d ", "dd "),   // the lock survives ⌫
+        Case("aaa⌫ ", "a "), Case("aaa⌫a ", "â "), Case("ddd⌫d ", "đ "),   // ⌫ of the letter releases it
+        Case("aaas⌫ ", "aa "), Case("aaas⌫s ", "aas "),                    // the letter is still shown
         Case("aaa⌫⌫aa ", "â "),              // word deleted: the lock is gone
     ])
     func loneLettersAndDoubleKeys(_ c: Case) { expectTyped(c.keys, c.expected) }

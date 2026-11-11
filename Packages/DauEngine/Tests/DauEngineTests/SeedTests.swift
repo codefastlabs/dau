@@ -55,7 +55,8 @@ struct SeedTests {
         SeedCase("viet", "e", "viêt"),
         SeedCase("cả", "r", "car"),         // D20 + D26: a double key undoes the tone
         SeedCase("cả", "r ", "car "),       // D4: the baseline after the double is the text shown
-        SeedCase("cả", "rs", "cars"),       // D26: locked until the word ends
+        SeedCase("cả", "rs", "cars"),       // D26: locked while the double key's letter is shown
+        SeedCase("cả", "r⌫r", "cả"),        // D26 × D32: ⌫ of that letter releases the lock
         SeedCase("hoc", "f", "hòc"),        // D30 prefix: the tone can still change…
         SeedCase("hoc", "f ", "hocf "),     // …but "hòc" is not a syllable at the boundary (D31)
         SeedCase("tra", "w ", "traw "),     // …but not a syllable at the boundary

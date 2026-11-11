@@ -59,11 +59,13 @@ struct VNITests {
         expectTyped(c.keys, c.classic, vniClassic)
     }
 
-    /// D26: doubling a digit undoes it and locks the rest of the word, also after ⌫.
+    /// D26: doubling a digit undoes it and locks the rest of the word while the digit is
+    /// shown; ⌫ of the digit releases the lock.
     @Test(arguments: [
         Case("a11", "a1"), Case("a111", "a11"), Case("a11 ", "a1 "), Case("a113", "a13"),
         Case("a66", "a6"), Case("a88", "a8"), Case("o77", "o7"), Case("d99", "d9"),
-        Case("ca33 ", "ca3 "), Case("a11⌫1", "a1"), Case("uo77", "uo7"),
+        Case("ca33 ", "ca3 "), Case("uo77", "uo7"), Case("a113⌫1", "a11"),
+        Case("a11⌫1", "á"), Case("la22⌫2", "là"), Case("to6i11⌫1", "tối"), Case("d99⌫9", "đ"),
     ])
     func doubleDigit(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
 

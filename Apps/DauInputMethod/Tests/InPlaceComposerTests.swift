@@ -345,6 +345,50 @@ struct InPlaceComposerTests {
         #expect(s.doc.text == "cars ")
     }
 
+    @Test("D26: the ⌫ that deletes the double key's letter goes to the app with no call (N3); the next key marks again",
+          arguments: [
+            ("carr", "car", "ca", "r", "cả"), ("aaa", "aa", "a", "a", "â"), ("ddd", "dd", "d", "d", "đ"),
+            ("nhaamff", "nhâmf", "nhâm", "f", "nhầm"), ("bass", "bas", "ba", "f", "bà"),
+            ("tooiss", "tôis", "tôi", "f", "tồi"), ("tesst⌫", "tes", "te", "s", "té"),
+          ])
+    func backspaceReleasesDoubleLock(_ typed: String, _ locked: String, _ afterBackspace: String,
+                                     _ key: String, _ expected: String) {
+        for var s in Self.sessions() {
+            s.type(typed)
+            #expect(s.doc.text == locked)
+            let before = s.doc.calls.count
+            s.type("⌫")
+            #expect(s.doc.text == afterBackspace)
+            #expect(s.consumed.last == false)
+            #expect(s.kinds.last == .pass)
+            #expect(s.doc.calls.count == before, "the releasing ⌫ made a call: \(Array(s.doc.calls[before...]))")
+            let beforeKey = s.doc.calls.count
+            s.type(key)
+            #expect(s.doc.text == expected)
+            #expect(s.kinds.last == .replace)
+            // An ordinary in-word replacement: one selectedRange, one insertText.
+            #expect(s.doc.calls.count == beforeKey + 2)
+            #expect(s.overCalls == 0)
+        }
+    }
+
+    @Test("D26: while the double key's letter is shown, ⌫ keeps the lock — tesst⌫s → tess")
+    func backspaceKeepsDoubleLock() {
+        for var s in Self.sessions() {
+            s.type("tesst⌫s ")
+            #expect(s.doc.text == "tess ")
+            #expect(s.overCalls == 0)
+        }
+    }
+
+    @Test("D20 + D26 + D32: cả + r → car, ⌫ → ca, r → cả")
+    func seededDoubleThenBackspace() {
+        var s = Session("cả")
+        s.type("r⌫r ")
+        #expect(s.doc.text == "cả ")
+        #expect(s.overCalls == 0)
+    }
+
     @Test("D20 + D30/D31: hoc + f → hòc, the word end restores hocf")
     func hocF() {
         var s = Session("hoc")
@@ -1190,6 +1234,18 @@ struct InPlaceComposerSystemFixTests {
         s.type("⌫r")
         #expect(s.doc.text == "car")
         #expect(s.kinds.last == .seed)
+    }
+
+    @Test("6: ⌫ that deletes the double key's letter ends the exclusion — carr⌫r → cả is remembered")
+    func doubleKeyLetterDeleted() {
+        var s = Self.session()
+        s.type("carr⌫r ")
+        #expect(s.doc.text == "cả ")
+        #expect(s.composer.produced == InPlaceComposer.ProducedWord(word: Array("cả".unicodeScalars)))
+        var t = Self.session()
+        t.type("carrs⌫ ")   // "car": the double key's letter is still shown
+        #expect(t.doc.text == "car ")
+        #expect(t.composer.produced == nil)
     }
 
     @Test("6: the exclusion decides when the un-toned word is still Vietnamese — xooong → xoong")
