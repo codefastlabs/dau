@@ -7,7 +7,7 @@
 # DEVELOPMENT_TEAM lives in Config/Signing.xcconfig: the maintainer's free Personal Team
 # (M58DANM3ZP) unless Config/Local.xcconfig (git-ignored) sets another one (CONTRIBUTING.md).
 # Builds are signed "Apple Development" with automatic signing: the App Group needs a real
-# Team ID, macOS rejects it for ad-hoc signed builds (see DECISIONS.md). No provisioning
+# Team ID, macOS rejects it for ad-hoc signed builds (see Decisions.md). No provisioning
 # profile is needed: a Team-ID-prefixed App Group is allowed on macOS without one.
 # Developer ID signing + notarization are set up in M7 (CI overrides via xcodebuild settings).
 
@@ -108,7 +108,7 @@ targets:
         CODE_SIGN_ENTITLEMENTS: Apps/Dau/Dau.entitlements
         # Temporary icons from scripts/assets/make-app-icon.sh (Resources/Brand); the set is
         # chosen by DAU_OFFICIAL (D25). The input method shares this asset catalog for its
-        # Finder icon. TODO(M7): Icon Composer icon (docs/BRAND.md).
+        # Finder icon. TODO(M7): Icon Composer icon (docs/Brand.md).
         ASSETCATALOG_COMPILER_APPICON_NAME: $(DAU_APPICON)
     # build/generated/BuildCommit.txt is written by the input method's "Stamp build
     # commit" phase; this target builds after it (dependency below).
@@ -135,7 +135,7 @@ targets:
       # bundle gets the same Finder icon as Dấu.app (CFBundleIconName, Assets.car).
       # The input source icons (menu bar V, ⌃Space indicator) are not app icons: they
       # stay the template TIFF named in Info.plist (tsInputMethodIconFileKey, mode keys,
-      # TISIconIsTemplate; docs/history/COMPATIBILITY-FIXED.md).
+      # TISIconIsTemplate; docs/history/CompatibilityFixed.md).
       - path: Apps/Dau/Resources/Assets.xcassets
       - path: build/generated/BuildCommit.txt
         optional: true

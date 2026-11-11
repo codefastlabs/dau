@@ -1,4 +1,4 @@
-// Real-window checker of the Settings window (docs/UI-CHECKS.md). run.sh launches the
+// Real-window checker of the Settings window (docs/UIChecks.md). run.sh launches the
 // Debug app itself, as the user opens it (`open -n Dau.app --args … --settings-window`),
 // once per state, and compiles this file together with Reference.swift (every expected
 // value, with its source). Nothing here runs inside the app.
@@ -689,7 +689,7 @@ let sheetPage = "add-sheet"
 /// The sheet attached to the Settings window: a window has at most one, so the role is the identity.
 func attachedSheet() -> AXUIElement? { children(window).first { role($0) == "AXSheet" } }
 /// The app list, by its accessibility label, not by order. The list has been read with too
-/// few rows for a reason not known (docs/history/LOG-M5.md); reading another outline (the
+/// few rows for a reason not known (docs/history/LogM5.md); reading another outline (the
 /// Form) was not confirmed as the cause: at open the sheet holds only this outline.
 /// "app list settles" prints the outlines it finds.
 func appList(_ sheet: AXUIElement) -> AXUIElement? {
@@ -746,7 +746,7 @@ func closeSheet(_ d: String) {
 
 /// Reads of the app list's row count that must agree, 0.2 s apart, before it counts as
 /// settled: 2 s without a change. The list has been read at 1 and 13 rows for over a
-/// second before it grew to the full list (docs/history/LOG-M5.md), so a short window
+/// second before it grew to the full list (docs/history/LogM5.md), so a short window
 /// settled on a list still loading.
 let appListSettleReads = 11
 

@@ -90,7 +90,7 @@ extension String {
 }
 
 /// Sidebar icon: a tile at System Settings' sidebar icon size (20 pt, measured; see
-/// docs/research/SYSTEM-SETTINGS-REFERENCE.md) in a system color, with the mockup's
+/// docs/research/SystemSettingsReference.md) in a system color, with the mockup's
 /// line glyph (canvas artboards "Settings…": viewBox 24, white stroke, round caps and
 /// joins, no fill) scaled with the tile as in the mockup (glyph 14 in a 22 tile).
 /// Drawn into a non-template image so the sidebar's vibrancy does not wash it out.

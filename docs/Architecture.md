@@ -2,7 +2,7 @@
 
 ## Phạm vi
 
-Tài liệu này tả cấu trúc: thành phần nào làm gì, gọi nhau ra sao, luồng một phím đi qua đâu. Luật và lý do nằm ở [`docs/DECISIONS.md`](DECISIONS.md); ở đây chỉ dẫn số D/N. Số đo không nằm ở đây (hằng số kèm tên trong mã là giá trị cấu hình, không phải số đo): số đo theo ngày ở `docs/PROGRESS.md` (mốc đang làm) và `docs/history/` (mốc đã đóng; bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`), số đo giao diện ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md`. Lịch sử các thay đổi của tài liệu: `docs/history/DOCS-LOG.md`.
+Tài liệu này tả cấu trúc: thành phần nào làm gì, gọi nhau ra sao, luồng một phím đi qua đâu. Luật và lý do nằm ở [`docs/Decisions.md`](Decisions.md); ở đây chỉ dẫn số D/N. Số đo không nằm ở đây (hằng số kèm tên trong mã là giá trị cấu hình, không phải số đo): số đo theo ngày ở `docs/Progress.md` (mốc đang làm) và `docs/history/` (mốc đã đóng; bảng "Số đo (M1–M3)" ở `docs/history/LogM0ToM4.md`), số đo giao diện ở `docs/research/SystemSettingsReference.md`. Lịch sử các thay đổi của tài liệu: `docs/history/DocsLog.md`.
 
 ```
 dau/
@@ -61,7 +61,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 
 - `struct VietEngine: Sendable` giữ từ đang gõ trong bộ đệm dung lượng cố định.
   - Bộ đệm là `TextBuffer`: tối đa 32 scalar, lưu trong `SIMD32<UInt32>` (`InlineArray` cần macOS 26).
-  - Không cấp phát mỗi phím (số đo: bảng "Số đo (M1–M3)" ở `docs/history/LOG-M0-M4.md`, dòng cấp phát).
+  - Không cấp phát mỗi phím (số đo: bảng "Số đo (M1–M3)" ở `docs/history/LogM0ToM4.md`, dòng cấp phát).
 - API: mọi hàm `mutating`, trả `Action`.
   - `handle(_ key: Unicode.Scalar)`: chữ cái và chữ số nối vào từ; ký tự in ra khác (Space, Enter, Tab, dấu câu) kết thúc từ (D4) và nằm luôn trong `insert`; ký tự điều khiển, 0x7F và phím chức năng 0xF700–0xF8FF chỉ `reset()`.
   - `backspace()` (D32): IMK gọi hàm này cho phím xoá, **không** đưa 0x7F vào `handle`.
@@ -129,7 +129,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 
 - **Hiện tượng:**
   - Chrome khi trang bận: app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); vị trí dự đoán của composer (`expected`) chỉ có trong một từ nên không bắt được.
-  - Phím dồn ở Chrome, VS Code, Firefox (`docs/COMPATIBILITY.md` mục 6.2): app chậm cả loạt phím vừa gõ.
+  - Phím dồn ở Chrome, VS Code, Firefox (`docs/Compatibility.md` mục 6.2): app chậm cả loạt phím vừa gõ.
   - Trình soạn thảo của Cursor: `selectedRange` và vùng thay tính từ đầu từ đang gõ, về 0 sau mỗi dấu cách, nên vị trí app trả luôn khác vị trí Dấu theo dõi dù app không chậm. Vùng thay bắt đầu ngoài chữ app đang giữ thì bị bỏ. Ô nhập Agents của Cursor và VS Code tính từ đầu văn bản.
 - **Trạng thái của `CursorTracker`:**
   - `known`: vị trí con trỏ Dấu theo dõi qua ranh giới từ. Mất khi reset (click, mũi tên, phím tắt, Return/Tab, đổi client) và khi ⌫ đi thẳng mà không biết chữ bị xoá. `known` không thay cho `expected`: ở đầu từ, vị trí khác `known` vẫn có thể là app tự sửa chữ (tự sửa chính tả, gạch ngang thông minh).
@@ -161,7 +161,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 
 #### Ô bỏ qua vùng thay chữ
 
-`RangeIgnoreDetector` trong `InPlaceComposer` (D43). Ghostty và terminal dựng bằng xterm.js nhận chữ của `insertText` nhưng bỏ `replacementRange`; vị trí con trỏ app báo không theo chữ đã gõ (cơ chế: `docs/research/TERMINAL-AND-UNDERLINE.md`).
+`RangeIgnoreDetector` trong `InPlaceComposer` (D43). Ghostty và terminal dựng bằng xterm.js nhận chữ của `insertText` nhưng bỏ `replacementRange`; vị trí con trỏ app báo không theo chữ đã gõ (cơ chế: `docs/research/TerminalAndUnderline.md`).
 
 - **Nghi ngờ:** chỉ dùng các `selectedRange` composer vốn đã hỏi.
   - Detector đếm số đơn vị chữ bộ gõ đã thêm sau mỗi phím (`totals`, từ các `insertText` của nó và phím để đi thẳng) và chỗ bắt đầu từ đang gõ. Từ bắt đầu lại khi từ kết thúc, khi reset, và khi composer bắt đầu lại từ chữ của app (lệch D11, dựng lại, gieo của D20).
@@ -194,13 +194,13 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 - **Lỗi đọc** (D18): chuỗi sai độ dài, không có chữ, từ có chữ số mà `seed` không nhận, có vùng chọn thì không seed, phím xử lý như phím đầu của từ mới.
 - **Log perf:** kind `seed` (đã thay), `seed_pass` (đọc, seed, phím đi thẳng), `seed_kept`, `seed_none` (đọc, không có từ, hoặc chữ cái không nối được), trường `read_ns`; bản Debug thêm `d20=mark|letter|none`, `seeded=0|1`, `diff=0|1|-`. `scripts/perf/perf-report.sh` đếm các trường này.
 - Gõ liền qua dấu cách không đọc thêm lần nào; tối đa một lần ở phím đầu của phiên (test `sample`, `InPlaceComposerLetterTests.sentence`).
-- Terminal không chuyển phím ⌫ cho bộ gõ (`docs/COMPATIBILITY.md` mục 6.5), nên ở Terminal D20 sau ⌫ không bao giờ chạy và ⌫ giữa từ không qua D32: "hoaf⌫␣" ra "ho " thay vì "hò "; "tooi⌫s" ra "tôs" (`CursorTracker` bắt lệch).
+- Terminal không chuyển phím ⌫ cho bộ gõ (`docs/Compatibility.md` mục 6.5), nên ở Terminal D20 sau ⌫ không bao giờ chạy và ⌫ giữa từ không qua D32: "hoaf⌫␣" ra "ho " thay vì "hò "; "tooi⌫s" ra "tôs" (`CursorTracker` bắt lệch).
 
 ### Backspace thay tại chỗ
 
 D32. `backspace()` trả `passThrough` thì ⌫ đi thẳng. Trả `replace` (dấu phải dời, "hoà" ⌫ → "hò") thì vẫn **không nuốt phím**: một `selectedRange`, một `insertText` thay phần chữ cần đổi **kèm lại chữ cuối** ("oà" → "òà"), rồi lệnh xoá của chính ứng dụng bỏ chữ cuối đó (`VietEngine.lastShown`).
 
-- Lý do: Chromium/Electron luôn gửi phím ⌫ gốc cho trang sau chữ của bộ gõ, dù bộ gõ đã nuốt phím, nên nuốt phím làm mất thêm một chữ (`docs/history/COMPATIBILITY-FIXED.md`).
+- Lý do: Chromium/Electron luôn gửi phím ⌫ gốc cho trang sau chữ của bộ gõ, dù bộ gõ đã nuốt phím, nên nuốt phím làm mất thêm một chữ (`docs/history/CompatibilityFixed.md`).
 - Cách này cần ứng dụng áp `insertText` trước lệnh xoá: AppKit làm trong lúc `handle`, Chromium theo mã nguồn. Thứ tự ngược thì phím thay chữ kế tiếp thấy lệch (D11) và reset.
 - Chữ cuối là dấu kết hợp (NFD) thì không đoán: reset, ⌫ đi thẳng.
 
@@ -277,7 +277,7 @@ Dùng khi thay bộ gõ (D37) và khi gỡ (D16 (Bảo trì và gỡ cài đặt
 ### Bundle: biểu tượng, ký, entitlements
 
 - Biểu tượng của bundle (Finder) dùng chung `Apps/Dau/Resources/Assets.xcassets` với app chủ (AppIcon, AppIconDev, chọn theo cờ `DAU_OFFICIAL`, D25 (Nhận diện)), ra `CFBundleIconName`/`Assets.car` giống Dấu.app; tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
-- Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/history/COMPATIBILITY-FIXED.md`); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
+- Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/history/CompatibilityFixed.md`); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
 - Bản Release không có `get-task-allow` (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO`), nên không tiến trình nào gắn debugger vào bộ gõ để đọc từ đang gõ. Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-app.sh --debug`). `dau_check_input_method` (`scripts/lib/build.sh`) kiểm điều này, cùng universal và không có quyền mạng, trên bộ gõ nhúng trước khi cài.
 - Entitlements: App Sandbox, App Group, `temporary-exception.mach-register.global-name` cho tên kết nối IMK (theo mẫu IMK có sandbox; chưa thử bỏ). **Không** `com.apple.security.network.client`.
 - Khoá Info.plist: `InputMethodConnectionName`, `InputMethodServerControllerClass`, `LSBackgroundOnly`, `TISInputSourceID`, `TISIntendedLanguage`; `ComponentInputModeDict` (một mode `.vi`, icon template V), `tsInputMethodIconFileKey`, `TISIconIsTemplate`; `CFBundleIconName` do actool thêm; `DauHostAppBundleIdentifier`, `DauAppGroupIdentifier` của riêng Dấu.
@@ -296,7 +296,7 @@ Entitlement của app chủ chỉ có App Group, hardened runtime bật, không 
   - sidebar và trang là view SwiftUI trong hai `NSHostingController`; môi trường của scene chuyển vào hai cột bằng `SettingsEnvironment` (kể cả `openWindow`).
 - **Sidebar:** `List` kiểu `.sidebar` với 4 mục `Label`; ô tìm `NSSearchField` cỡ lớn ở đầu cột, lề chuẩn của sidebar (`searchable` của sidebar chỉ có trong `NavigationSplitView`); danh sách nhận tiêu điểm khi mở cửa sổ (`FocusState` đặt khi danh sách hiện; `defaultFocus` không có tác dụng trong hosting controller này); Edit › Find › Find… (⌘F, từ `TextEditingCommands` trong `DauApp`) đưa tiêu điểm vào ô tìm: split view controller xử lý `performFindPanelAction`; ô icon vẽ theo SVG của mockup, màu hệ thống.
 - **Thanh công cụ và tiêu đề:** cụm Lùi/Tiến là `ControlGroup` kiểu `.navigation` ở `ToolbarItemPlacement.navigation`, gắn quanh trang để bấm được qua trợ năng; tiêu đề là `navigationTitle`. Cả hai đến từ `NSHostingController` của cột trang, đưa lên cửa sổ bằng `sceneBridgingOptions`; cột sidebar không đưa gì. Lịch sử mục đã xem: `SectionHistory`; Lùi ⌘[ / Tiến ⌘] ở menu View (`focusedSceneValue`). Không có lệnh ẩn/hiện sidebar: không dùng `SidebarCommands`, hành động `toggleSidebar` của AppKit bị tắt. Mục Ứng dụng có nút "+" rồi ô tìm (`.searchable(placement: .toolbar)`), ngăn bằng `ToolbarSpacer(.flexible)`.
-- **Trang:** `SettingsPage` = `Form(.grouped)` với `Section`, control hệ thống và thông số mặc định; mảnh nội dung riêng của mockup (thẻ xem trước, chip, nhãn "Mới", phím, ô banner) nằm trong các section. Form tự cuộn và lấp cột chi tiết; trên macOS 26+, nội dung cuộn dưới header được che bằng `scrollEdgeEffectStyle(.hard, for: .top)`. Thanh cuộn theo cài đặt hệ thống (`docs/UI-CHECKS.md`).
+- **Trang:** `SettingsPage` = `Form(.grouped)` với `Section`, control hệ thống và thông số mặc định; mảnh nội dung riêng của mockup (thẻ xem trước, chip, nhãn "Mới", phím, ô banner) nằm trong các section. Form tự cuộn và lấp cột chi tiết; trên macOS 26+, nội dung cuộn dưới header được che bằng `scrollEdgeEffectStyle(.hard, for: .top)`. Thanh cuộn theo cài đặt hệ thống (`docs/UIChecks.md`).
 - **Control bọc:** `SegmentedPicker` bọc `NSSegmentedControl`, chỉ còn ở cửa sổ onboarding (`Picker(.segmented)` trên macOS 14–15 giữ độ rộng nội tại, không trải theo khung). Cửa sổ Cài đặt dùng `Picker(.segmented)` (macOS 26+: `buttonSizing(.flexible)`).
 - **Sheet thêm quy tắc** (`AddAppRuleSheet`), theo sheet của System Settings: hàng đầu gồm tiêu đề và ô tìm `NSSearchField`; danh sách ứng dụng là `List(selection:)` cao cố định trong `GroupBox` ngoài Form (`List` lồng trong `Form(.grouped)` không cuộn được), để "Khi đang gõ" (thẻ của một `Form(.grouped)`) luôn trong tầm nhìn; nút trên `toolbar` (`cancellationAction`, `confirmationAction`; "Chọn ứng dụng khác…" là `.automatic`).
 
@@ -312,7 +312,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 
 ### Cài, bật, thay, gỡ bộ gõ
 
-`InputMethodInstaller.swift`, theo `docs/research/INPUT-METHOD-INSTALL.md` mục 1–6; luật ở D37 và D16.
+`InputMethodInstaller.swift`, theo `docs/research/InputMethodInstall.md` mục 1–6; luật ở D37 và D16.
 
 `SystemInputMethodInstaller` đi qua sáu giao diện hẹp để test bằng đồ giả (`scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift`): `InputMethodFiles` (bundle trong app và bản ở `~/Library/Input Methods`), `TextInputSources` (TIS), `InputMethodProcesses`, `SystemSettingsControl` (bộ đệm và tiến trình System Settings), `InputSourceCaches` (bộ đệm danh sách nguồn của từng app; bản thật `UserInputSourceCaches` nhận thư mục gốc làm tham số nên test chạy trên thư mục tạm), `OwnerCopyCheck` (bản chủ; bản thật `ApplicationsOwnerCopy`).
 
@@ -330,7 +330,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 3. Đổi chỗ vào `DauInputMethod.app` bằng một lần `renamex_np(RENAME_SWAP)`. Đích không có (`ENOENT`): `InputMethodFiles.installEmbedded` chuyển bản tạm vào bằng `RENAME_EXCL`, còn `InputMethodFiles.replaceInstalledWithEmbedded` (đường thay) không cài, xoá bản tạm và trả về sai.
 4. Xoá bản cũ; dừng tiến trình cũ nếu đang chạy (mục "Thoát theo yêu cầu của app chủ"); `TISRegisterInputSource`. Không bật, không chọn nguồn nào.
 
-**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại"; `docs/research/INPUT-METHOD-INSTALL.md` mục 1 và 3):
+**Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại"; `docs/research/InputMethodInstall.md` mục 1 và 3):
 
 1. Bản chủ kiểm `InputMethodFiles.installedIsGenuine` trước mọi việc: sai thì trả `EnableOutcome.needsReinstall`, không làm gì thêm. `OnboardingFlow` hiện màn "Cài lại", `InputMethodActions.enableFromBanner` hiện `TamperedBanner`.
 2. Ngay trước `TISRegisterInputSource`, `InputSourceCaches.clearAll` xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con trực tiếp của `DARWIN_USER_CACHE_DIR` (mỗi app có sandbox giữ bộ đệm riêng ở đó, extension Bàn phím của System Settings là một). File ở gốc thư mục là bộ đệm chung, tự làm mới, không đụng. Thư mục không liệt kê được hay file không xoá được thì bỏ qua, đếm là lỗi, ghi nhật ký; không bao giờ làm `enable()` thất bại.
@@ -339,7 +339,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 5. **Đọc lại** mục lưu theo chu kỳ tới khi có mode `.vi` (tối đa `SystemInputMethodInstaller.enableTimeout`, để người dùng đọc và bấm Allow): có thì `enabled`; hết hạn thì `notEnabled` (giao diện hiện "Chưa bật được"; macOS ghi mục sau đó thì cửa sổ nhận ra).
 6. Mỗi lần ra `enabled` có đúng một lượt `InputSourceCaches.removeCaches(notMentioning:)`: thư mục con nào có `com.apple.IntlDataCache.le.kbdx` đọc được mà không chứa chuỗi UTF-8 `Input Methods/DauInputMethod.app` thì xoá bộ đệm đó; có ít nhất một thì `TISRegisterInputSource` thêm một lần. Đây là phỏng đoán trên định dạng không có tài liệu; lượt này không ném lỗi và không đổi kết quả.
 
-Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()`, "Thử lại"/"Quay lại" huỷ nó. Mã trả về của TIS không bao giờ là bằng chứng. App không tắt được Dấu (`TISDisableInputSource` từ app bị macOS chặn, `docs/research/INPUT-METHOD-INSTALL.md` mục 5.2); trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
+Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()`, "Thử lại"/"Quay lại" huỷ nó. Mã trả về của TIS không bao giờ là bằng chứng. App không tắt được Dấu (`TISDisableInputSource` từ app bị macOS chặn, `docs/research/InputMethodInstall.md` mục 5.2); trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
 
 **Kiểm bộ gõ đã cài:** mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`, yêu cầu mã ở D37); chỉ bản chủ hỏi. Không đạt thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng. Cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật, và lượt `reconcile` lúc mở app không chạy.
 
@@ -387,9 +387,9 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 
 `SystemUINames` (D38 (Chữ trên giao diện)).
 
-- Danh sách đủ là các case của enum `SystemUIName` (nơi duy nhất giữ danh sách; `docs/GLOSSARY.md` dẫn sang đây), mỗi case có một dòng trong `SystemUINames.location(of:)`: các tên của System Settings, thư mục Applications (`applications`), Trash của Finder (`trash`), Language & Region và mục Applications của nó (`languageAndRegion`, `languageRegionApplications`), tên tuỳ chọn "Automatically switch to a document’s input source", tên ngôn ngữ "Vietnamese", hộp thoại "Allow … to enable …?" (`allowDialogTitle`, `allowDialogBody`), và tên nguồn của chính Dấu (`dauInputSource`: đọc `InfoPlist.strings` của bộ gõ đã cài, chưa cài thì bản trong app, khoá là ID input mode).
+- Danh sách đủ là các case của enum `SystemUIName` (nơi duy nhất giữ danh sách; `docs/Glossary.md` dẫn sang đây), mỗi case có một dòng trong `SystemUINames.location(of:)`: các tên của System Settings, thư mục Applications (`applications`), Trash của Finder (`trash`), Language & Region và mục Applications của nó (`languageAndRegion`, `languageRegionApplications`), tên tuỳ chọn "Automatically switch to a document’s input source", tên ngôn ngữ "Vietnamese", hộp thoại "Allow … to enable …?" (`allowDialogTitle`, `allowDialogBody`), và tên nguồn của chính Dấu (`dauInputSource`: đọc `InfoPlist.strings` của bộ gõ đã cài, chưa cài thì bản trong app, khoá là ID input mode).
 - Ngôn ngữ lấy như `LayoutNames`. Chữ lấy từ bảng của chính hệ thống (`SystemUITable`; đường dẫn ở `SystemUINames.tableURLs` và `loadTables`; "Applications" từ `SystemFolderLocalizations` qua `folderNames`, "Trash" từ `Localizable.strings` của Finder qua `finderNames`; tên ngôn ngữ từ `Locale`), tìm khoá bằng cách khớp giá trị tiếng Anh; ngôn ngữ đầu là tiếng Anh, hoặc không khớp ở mọi ngôn ngữ ưu tiên, thì tiếng Anh.
-- Câu chữ của Dấu dùng `%@` cho các tên này; khái niệm chung dùng thuật ngữ Apple của từng ngôn ngữ (`docs/GLOSSARY.md`). Bộ gõ không dùng hai file này.
+- Câu chữ của Dấu dùng `%@` cho các tên này; khái niệm chung dùng thuật ngữ Apple của từng ngôn ngữ (`docs/Glossary.md`). Bộ gõ không dùng hai file này.
 
 #### Chuỗi giao diện
 
@@ -423,4 +423,4 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
   - chạy không mở cửa sổ, in một giá trị rồi thoát: các cờ `--print-…` ở đầu `main.swift`, và `--set-typing-method` ở `DebugSettingsCommand` (`--reconcile-input-method` có ở cả bản Release, mục "Cài, bật, thay, gỡ bộ gõ");
   - chụp với dịch vụ giả và chọn màn hình, trạng thái (`--capture-…`, `--onboarding`, `--shortcut`, `--active`, `--tampered`): `DebugCapture.swift`, `DauApp.swift`;
   - mở app thật để đo từ ngoài (`--settings-window`, `--appearance`): `DebugCapture.swift`.
-  - `scripts/selftest/settings-window` dùng các cờ này để kiểm giao diện (`docs/UI-CHECKS.md`).
+  - `scripts/selftest/settings-window` dùng các cờ này để kiểm giao diện (`docs/UIChecks.md`).

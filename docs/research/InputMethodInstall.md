@@ -1,6 +1,6 @@
 # Cài, bật, nâng cấp, gỡ bộ gõ; phát hiện bộ gõ cũ
 
-Nghiên cứu cho M5 (Onboarding, cài đặt, gỡ cài đặt) và D37 (Cài đặt bộ gõ): macOS làm gì khi một app cài, bật, thay và gỡ một bộ gõ InputMethodKit bên thứ ba. Mã làm theo kết luận ở đây: `SystemInputMethodInstaller` (`Apps/Dau/Sources/InputMethodInstaller.swift`), `InputMethodLifecycle` (`Packages/DauShared`). Các vòng thử theo giờ, kế hoạch đã bỏ và bản trước của file này: `docs/history/RESEARCH-LOG.md` mục 1.
+Nghiên cứu cho M5 (Onboarding, cài đặt, gỡ cài đặt) và D37 (Cài đặt bộ gõ): macOS làm gì khi một app cài, bật, thay và gỡ một bộ gõ InputMethodKit bên thứ ba. Mã làm theo kết luận ở đây: `SystemInputMethodInstaller` (`Apps/Dau/Sources/InputMethodInstaller.swift`), `InputMethodLifecycle` (`Packages/DauShared`). Các vòng thử theo giờ, kế hoạch đã bỏ và bản trước của file này: `docs/history/ResearchLog.md` mục 1.
 
 ## Hiện trạng (11/11/2026, macOS 27.2)
 
@@ -107,7 +107,7 @@ Apple không có trang web cho họ hàm TIS (các URL đoán trả 404 ngày 03
 - Yêu cầu chỉ được xử lý khi System Settings dựng mới extension Keyboard. Khi trang Keyboard đang mở sẵn, yêu cầu không để lại dòng nhật ký nào, không có hộp thoại. Vì vậy D37 thoát System Settings trước khi bật. [Máy/bản thử, 04/11/2026: bốn lần thành công đều đi cùng một tiến trình extension mới; ba lần bị bỏ qua đều lúc trang Keyboard đang mở]
 - Bấm "Don’t Allow" không để lại dấu vết nào: app chỉ thấy "chưa bật". Gửi lại yêu cầu (sau khi thoát System Settings) thì hộp thoại hiện lại; macOS không nhớ lần từ chối. [Máy/bản thử, 04/11/2026]
 - `NSRunningApplication.terminate()` thoát được System Settings cả khi sheet Input Sources đang mở. [Máy/bản thử]
-- Hình dạng hộp thoại (đo để vẽ artboard onboarding): [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](SYSTEM-SETTINGS-REFERENCE.md), mục "Hộp thoại xin phép bật bộ gõ".
+- Hình dạng hộp thoại (đo để vẽ artboard onboarding): [`docs/research/SystemSettingsReference.md`](SystemSettingsReference.md), mục "Hộp thoại xin phép bật bộ gõ".
 
 ### 2.2 Phía gọi và phía nhận [Diễn giải mã máy]
 
@@ -315,7 +315,7 @@ Ghi chú phát hành macOS 27.1 và ghi chú bản beta; tracker của fcitx5-ma
 
 ## Nguồn
 
-Mã nguồn tham khảo đọc ngoài repo (không chép mã nào vào Dấu); commit của hai đợt đọc 30/10 và 02/11/2026: `docs/history/RESEARCH-LOG.md` mục 1.1.
+Mã nguồn tham khảo đọc ngoài repo (không chép mã nào vào Dấu); commit của hai đợt đọc 30/10 và 02/11/2026: `docs/history/ResearchLog.md` mục 1.1.
 
 **Apple**
 - Header SDK: `/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/Carbon.framework/Versions/A/Frameworks/HIToolbox.framework/Versions/A/Headers/TextInputSources.h` và `HIToolbox.tbd` cùng SDK.

@@ -1,5 +1,5 @@
 #!/bin/zsh
-# UI checks of the Settings window, onboarding and uninstall alerts (docs/UI-CHECKS.md).
+# UI checks of the Settings window, onboarding and uninstall alerts (docs/UIChecks.md).
 # Side effects: builds, takes the screen, kills processes, changes user settings
 #
 # Usage: scripts/selftest/settings-window/run.sh [--focus] <output-dir> [Dau.app]
@@ -30,7 +30,7 @@
 #   6. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
 # The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (scripts/snapshot-settings).
 # Then check.swift checks the screenshots' pixels and the in-app captures.
-# What each real-window launch covers (the rows each item of docs/UI-CHECKS.md reads):
+# What each real-window launch covers (the rows each item of docs/UIChecks.md reads):
 #   4. the focus at launch (launch-focus), the page and Lùi/Tiến at launch; on every
 #      display (one pass per pixel scale, labelled 2x/1x) every section against
 #      Reference.swift; on the primary display only: a sidebar search with no match, the
@@ -46,7 +46,7 @@
 # (Apps/Dau/Sources). No launch uses `Automatic` scroll bars: the system turns it into
 # When scrolling or Always, both run. Waits, retries, FAIL and HARNESS rows: the header of
 # ax-check.swift; the letter checks (a)–(g): the headers of ax-check.swift and check.swift.
-# Tables: <dir>.txt per launch, check.txt (rows ok / FAIL / HARNESS: data, docs/UI-CHECKS.md).
+# Tables: <dir>.txt per launch, check.txt (rows ok / FAIL / HARNESS: data, docs/UIChecks.md).
 # Exit status 0 only if every row is ok. The script's own messages are Vietnamese, through
 # scripts/lib/log.sh; the rows shown under each step are the tail of those tables.
 #
@@ -207,7 +207,7 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   pid=""
   wait_until 10 new_app_pid "$before" || true
   if [[ -z $pid ]]; then
-    # The row is data (docs/UI-CHECKS.md): kept as it is in the result file.
+    # The row is data (docs/UIChecks.md): kept as it is in the result file.
     print -r -- "HARNESS real window ($name): the app did not start; not a UI result" > "$dir.txt"
     log_error "Không mở được app cho cửa sổ thật ($name); đây không phải kết quả giao diện."
     return 1

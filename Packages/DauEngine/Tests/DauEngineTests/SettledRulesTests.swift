@@ -3,7 +3,7 @@ import DauEngine
 
 /// Group 8 — rules settled on 05/11/2026 from the comparison with other input
 /// methods' test inputs (docs/research/external-test-inputs/README.md section 2: the
-/// former classes D and E). Expected values follow Vietnamese orthography and DECISIONS.md, never
+/// former classes D and E). Expected values follow Vietnamese orthography and Decisions.md, never
 /// another input method's output (D10).
 @Suite("8. Luật chốt 05/11/2026")
 struct SettledRulesTests {

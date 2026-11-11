@@ -1,13 +1,13 @@
 # Ghi chú đọc mã nguồn OpenKey
 
-Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, ở đâu Dấu làm khác và vì sao. Viết bằng lời của Dấu, **không chép mã**. Theo D10 (Engine tự viết), kết quả mong đợi trong test viết theo chính tả tiếng Việt và `docs/DECISIONS.md`, không lấy từ OpenKey. Bản trước (danh sách ca biên đã duyệt, các điểm mơ hồ đã chốt ngày 29/10/2026): `docs/history/RESEARCH-LOG.md` mục 2.
+Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, ở đâu Dấu làm khác và vì sao. Viết bằng lời của Dấu, **không chép mã**. Theo D10 (Engine tự viết), kết quả mong đợi trong test viết theo chính tả tiếng Việt và `docs/Decisions.md`, không lấy từ OpenKey. Bản trước (danh sách ca biên đã duyệt, các điểm mơ hồ đã chốt ngày 29/10/2026): `docs/history/ResearchLog.md` mục 2.
 
 ## Hiện trạng (11/11/2026)
 
 - **Đã đọc:** OpenKey https://github.com/tuyenvm/OpenKey, commit `89c2fd3` (15/06/2026), clone ra ngoài repo; `Sources/OpenKey/engine/` (`Engine.cpp`, `Engine.h`, `Vietnamese.cpp`, `DataType.h`, `Macro.cpp`, `SmartSwitchKey.cpp`, `ConvertTool.cpp`, `platforms/mac.h`) và `macOS/ModernKey/OpenKey.mm` để biết engine được gọi thế nào.
 - **Không chạy.** Mọi hành vi dưới đây có từ lần theo mã; chỗ chưa chắc ghi "(suy luận)". D10 cấm dùng OpenKey làm đáp án, nên không chạy để kiểm chứng. Test của XKey (engine chuyển từ OpenKey) cho một phần đối chiếu (mục 4).
 - **Kiến trúc khác hẳn:** OpenKey chặn phím bằng event tap, gửi Backspace giả, giữ một bộ đệm toàn cục theo mã phím vật lý. Dấu là bộ gõ InputMethodKit, mỗi ô nhập một engine, nhận ký tự (mục 1).
-- **Dấu làm phần lớn tính năng gõ của OpenKey**, theo D15 (Cài đặt mặc định) và các quyết định ở mục 2. Không làm: macro, viết hoa đầu câu, bảng mã cũ, chuyển mã, smart switch, phím chuyển và tạm tắt riêng, Quick Telex, `[ ]` thành ơ ư (`docs/DECISIONS.md` mục "Đã biết nhưng không làm").
+- **Dấu làm phần lớn tính năng gõ của OpenKey**, theo D15 (Cài đặt mặc định) và các quyết định ở mục 2. Không làm: macro, viết hoa đầu câu, bảng mã cũ, chuyển mã, smart switch, phím chuyển và tạm tắt riêng, Quick Telex, `[ ]` thành ơ ư (`docs/Decisions.md` mục "Đã biết nhưng không làm").
 - **Chỗ Dấu cố ý khác OpenKey ở cùng một tính năng:**
 
 | Điểm | OpenKey | Dấu |
@@ -34,7 +34,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 
 - **Trạng thái là biến toàn cục** (`Engine.cpp`): mọi ứng dụng dùng chung một bộ đệm. Dấu có một `VietEngine` cho mỗi client.
 - **Đầu vào là mã phím vật lý** (theo vị trí bàn phím US, `platforms/mac.h`), nên Dvorak/AZERTY bị hiểu sai trừ khi bật "layout compat". Engine của Dấu nhận `Unicode.Scalar`.
-- **Đầu ra** gồm mã hành động (không làm gì, xử lý, khôi phục, thay macro, khôi phục rồi mở từ mới), số Backspace cần gửi và chuỗi ký tự mới. Tầng macOS gửi Backspace giả rồi gõ chuỗi mới qua event tap (Dấu đã loại cách này: `docs/DECISIONS.md` mục "Đã cân nhắc và loại bỏ"). Khi khôi phục, tầng macOS tự gõ thêm phím vừa nhấn.
+- **Đầu ra** gồm mã hành động (không làm gì, xử lý, khôi phục, thay macro, khôi phục rồi mở từ mới), số Backspace cần gửi và chuỗi ký tự mới. Tầng macOS gửi Backspace giả rồi gõ chuỗi mới qua event tap (Dấu đã loại cách này: `docs/Decisions.md` mục "Đã cân nhắc và loại bỏ"). Khi khôi phục, tầng macOS tự gõ thêm phím vừa nhấn.
 - **Hai bộ đệm song song**, mỗi bộ 32 phần tử: bộ đệm chữ (chữ cái kèm cờ hoa, mũ, móc/trăng, dấu thanh, "w đứng riêng") và bộ đệm phím gốc dùng để khôi phục.
 - **Cờ "tạm tắt xử lý"** (`tempDisableKey`) bật khi từ sai chính tả hoặc vừa gõ đúp; khi bật, mọi phím biến đổi còn lại đi thẳng như chữ thường. Bộ đệm chỉ reset ở ranh giới từ.
 - **Lịch sử từ trong dòng** (`_typingStates`): Backspace lùi qua dấu cách lấy lại từ trước để sửa tiếp (mục 2.17).
@@ -165,7 +165,7 @@ Dấu: D4; khác OpenKey ở B7.
 
 ### 2.10 Quick Telex
 
-Gõ hai lần c, g, k, n, q, p, t thì ra ch, gi, kh, ng, qu, ph, th (`handleQuickTelex`), ở **bất kỳ vị trí nào** trong từ ("conn" → "cong"), nên phá từ tiếng Anh có phụ âm đôi và theo B7 không được khôi phục ("connect" → "congect"). Chữ hoa của chữ đầu lấy theo phím thứ hai (B14). Dấu không làm (`docs/DECISIONS.md` mục "Đã biết nhưng không làm"); gõ tắt phụ âm (D21) là tính năng khác.
+Gõ hai lần c, g, k, n, q, p, t thì ra ch, gi, kh, ng, qu, ph, th (`handleQuickTelex`), ở **bất kỳ vị trí nào** trong từ ("conn" → "cong"), nên phá từ tiếng Anh có phụ âm đôi và theo B7 không được khôi phục ("connect" → "congect"). Chữ hoa của chữ đầu lấy theo phím thứ hai (B14). Dấu không làm (`docs/Decisions.md` mục "Đã biết nhưng không làm"); gõ tắt phụ âm (D21) là tính năng khác.
 
 ### 2.11 Gõ tắt phụ âm
 
@@ -269,7 +269,7 @@ XKey (macOS, MIT, commit ở `docs/research/external-test-inputs/README.md` mụ
 
 ## 5. Ca Dấu cố ý khác OpenKey
 
-Kết quả mong đợi theo chính tả và `docs/DECISIONS.md` (D10), cấu hình mặc định D15 trừ khi ghi khác. Mọi ca này nằm trong test của engine (`Packages/DauEngine/Tests/DauEngineTests`), trừ dòng ghi "chưa có test". Ca kiểm từng tính năng mà Dấu và OpenKey cho cùng kết quả cũng nằm trong các test đó.
+Kết quả mong đợi theo chính tả và `docs/Decisions.md` (D10), cấu hình mặc định D15 trừ khi ghi khác. Mọi ca này nằm trong test của engine (`Packages/DauEngine/Tests/DauEngineTests`), trừ dòng ghi "chưa có test". Ca kiểm từng tính năng mà Dấu và OpenKey cho cùng kết quả cũng nằm trong các test đó.
 
 | Chuỗi phím | Dấu | OpenKey | Căn cứ | Test |
 |---|---|---|---|---|

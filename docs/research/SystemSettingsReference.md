@@ -121,7 +121,7 @@ Rà bằng Accessibility API ở các pane Wi-Fi, Mạng, Bàn phím, Bàn di ch
 
 ### Hộp thoại xin phép bật bộ gõ
 
-Quan sát trên bản thử (bundle đổi ID, không phải Dấu), dùng để vẽ artboard onboarding, không rút kết luận về hành vi: đo 04/11/2026, đọc qua trợ năng và ảnh chụp, macOS 27.2, giao diện tối. Hộp thoại là `Allow “…” to enable “…”?` ([`docs/research/INPUT-METHOD-INSTALL.md`](INPUT-METHOD-INSTALL.md) mục 2).
+Quan sát trên bản thử (bundle đổi ID, không phải Dấu), dùng để vẽ artboard onboarding, không rút kết luận về hành vi: đo 04/11/2026, đọc qua trợ năng và ảnh chụp, macOS 27.2, giao diện tối. Hộp thoại là `Allow “…” to enable “…”?` ([`docs/research/InputMethodInstall.md`](InputMethodInstall.md) mục 2).
 
 - Sheet rộng 260 pt, cao 234 pt, nằm giữa cửa sổ System Settings.
 - Không có biểu tượng. Tiêu đề đậm, canh trái, xuống dòng khi dài.
@@ -133,7 +133,7 @@ Quan sát trên bản thử (bundle đổi ID, không phải Dấu), dùng để
 Mọi số ở mục trên mà không có trong danh sách này thì SwiftUI mặc định cho đúng (app thử, 02/11/2026): thanh công cụ 52 và tiêu đề 15 đậm, hàng và vùng chọn sidebar, lề và màu thẻ, tiêu đề nhóm, chiều cao các hàng có control, control và cỡ chữ. Chưa đo trên SwiftUI: khoảng giữa hai thẻ không tiêu đề (app thử luôn có tiêu đề nhóm), hàng nhãn + thanh trượt. `footer:` của `Section` cho chú thích dưới thẻ 11, thường, màu chữ phụ, x = mép thẻ + 10, cách thẻ 10.
 
 - **Độ rộng sidebar của `NavigationSplitView`:** 144, làm cụt chữ "Cập nhật & hỗ trợ". Đặt `navigationSplitViewColumnWidth(232)` thì mọi số sidebar và lề form trùng System Settings.
-- **Ô tìm sidebar:** không có sẵn; `.searchable(placement: .sidebar)` trên `NavigationSplitView` cho đúng khung của System Settings. Không có `NavigationSplitView` thì ô tìm này lên thanh công cụ ([`docs/research/SWIFTUI-WINDOW-API.md`](SWIFTUI-WINDOW-API.md)).
+- **Ô tìm sidebar:** không có sẵn; `.searchable(placement: .sidebar)` trên `NavigationSplitView` cho đúng khung của System Settings. Không có `NavigationSplitView` thì ô tìm này lên thanh công cụ ([`docs/research/SwiftUIWindowAPI.md`](SwiftUIWindowAPI.md)).
 - **Nút sidebar:** `NavigationSplitView` thêm nút ẩn/hiện sidebar (44 × 52 ở mép phải cột sidebar). Gỡ bằng `.toolbar(removing: .sidebarToggle)` mà thanh không còn mục nào thì thanh co còn 32 và tiêu đề thành chữ tiêu đề cửa sổ nhỏ (màn 1x). Có một mục ở `.navigation` (cụm Lùi/Tiến) thì thanh giữ 52 và tiêu đề 15 đậm.
 - **Lề trên form:** 20 (y 72) thay vì 12. `.contentMargins(.top, …, for: .scrollContent)` cộng thêm vào 20 chứ không thay (đặt 12 ra 32), nên không giảm được bằng API công khai.
 - **Thẻ của `Form(.grouped)` tối đa 704**, đặt giữa pane. Pane ≤ 744 thì thẻ = pane − 40; pane 856 → thẻ 704 (lề 76); pane 1256 → thẻ 704 (lề 276). `.frame(maxWidth: .infinity)` và `.contentMargins(.horizontal, 20, for: .scrollContent)` không gỡ được. Cửa sổ 740 cho thẻ 468, trùng System Settings.
@@ -150,7 +150,7 @@ Mọi số ở mục trên mà không có trong danh sách này thì SwiftUI m�
 
 ## Dấu so với chuẩn
 
-Cửa sổ Cài đặt của Dấu dùng số của System Settings ở mọi chỗ trên, trừ các chỗ cố ý khác dưới đây. Cách dựng cửa sổ: [`docs/research/SWIFTUI-WINDOW-API.md`](SWIFTUI-WINDOW-API.md).
+Cửa sổ Cài đặt của Dấu dùng số của System Settings ở mọi chỗ trên, trừ các chỗ cố ý khác dưới đây. Cách dựng cửa sổ: [`docs/research/SwiftUIWindowAPI.md`](SwiftUIWindowAPI.md).
 
 | Chỗ | System Settings | Dấu | Lý do |
 |---|---|---|---|

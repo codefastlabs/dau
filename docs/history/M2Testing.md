@@ -1,6 +1,6 @@
 # M2 — Gõ thử trên máy thật
 
-Danh sách việc người dùng làm trên máy để kiểm chứng mốc M2. Kết quả ở đây là đầu vào để giải **câu hỏi mở A/B** (chi phí `selectedRange`) và câu hỏi **Chrome/Terminal** trong `DECISIONS.md`. Mọi ô kết quả để trống cho tới khi đo (N5); không chép kết quả vào giao diện hay website trước khi phiên chính tổng hợp và cập nhật `DECISIONS.md`.
+Danh sách việc người dùng làm trên máy để kiểm chứng mốc M2. Kết quả ở đây là đầu vào để giải **câu hỏi mở A/B** (chi phí `selectedRange`) và câu hỏi **Chrome/Terminal** trong `Decisions.md`. Mọi ô kết quả để trống cho tới khi đo (N5); không chép kết quả vào giao diện hay website trước khi phiên chính tổng hợp và cập nhật `Decisions.md`.
 
 ## 0. Chuẩn bị
 
@@ -38,7 +38,7 @@ Mỗi ứng dụng: mở một ô soạn thảo trống, gõ câu mẫu, ghi l�
 - **Gạch chân:** chữ đang gõ có bị gạch chân không. Dấu không dùng marked text ở M2, nên gạch chân (nếu có) là điều bất thường cần ghi lại.
 - **Nhảy chữ:** có ký tự bị lặp, mất, đảo thứ tự, con trỏ nhảy, hoặc chữ bị thay sai chỗ không.
 
-Kết quả (30/10/2026): agent tự gõ câu mẫu qua System Events, 30 ms/phím, bản Debug. Số đo là phím có thay (n=12 mỗi app ở 5 app đầu), chép từ `docs/PROGRESS.md` mục "Số đo". "—" ở cột `count_unsupported`: lượt đo 29/10 không ghi riêng số này.
+Kết quả (30/10/2026): agent tự gõ câu mẫu qua System Events, 30 ms/phím, bản Debug. Số đo là phím có thay (n=12 mỗi app ở 5 app đầu), chép từ `docs/Progress.md` mục "Số đo". "—" ở cột `count_unsupported`: lượt đo 29/10 không ghi riêng số này.
 
 | Ứng dụng | Bundle ID (cho `--app`) | Kết quả thực tế | Gạch chân? | Nhảy chữ? | `selectedRange` p50 / p99 (µs) | `count_unsupported` / `count_mismatch` | Ghi chú |
 |---|---|---|---|---|---|---|---|
@@ -79,7 +79,7 @@ Các dòng cần chép vào bảng: `selectedRange_us` (chi phí của cách A),
 
 Làm trong TextEdit (và lặp lại ở ứng dụng nào có kết quả lạ ở mục 2).
 
-Kết quả (30/10/2026): agent tự gõ qua System Events. 9, 10 ĐẠT sau khi bỏ chế độ Anh. 16 (VoiceOver): hệ thống có đọc mỗi lần chuyển nguồn (người dùng, 30/10/2026); kiểm tên đọc đúng hoãn sang M7. Phần còn lại của 14 (xem biểu tượng V) hoãn sang M7 (người dùng chốt 30/10/2026). 3 bỏ qua (người dùng không cho gửi tin). Mong đợi của 6 và 10 đã sửa theo D4 × D20 (DECISIONS D20, 30/10/2026); kết quả ĐẠT ở M2 của hai dòng này là theo mong đợi cũ, trước khi có D20.
+Kết quả (30/10/2026): agent tự gõ qua System Events. 9, 10 ĐẠT sau khi bỏ chế độ Anh. 16 (VoiceOver): hệ thống có đọc mỗi lần chuyển nguồn (người dùng, 30/10/2026); kiểm tên đọc đúng hoãn sang M7. Phần còn lại của 14 (xem biểu tượng V) hoãn sang M7 (người dùng chốt 30/10/2026). 3 bỏ qua (người dùng không cho gửi tin). Mong đợi của 6 và 10 đã sửa theo D4 × D20 (Decisions D20, 30/10/2026); kết quả ĐẠT ở M2 của hai dòng này là theo mong đợi cũ, trước khi có D20.
 
 | # | Thao tác | Mong đợi | Kết quả |
 |---|---|---|---|
@@ -92,7 +92,7 @@ Kết quả (30/10/2026): agent tự gõ qua System Events. 9, 10 ĐẠT sau khi
 | 7 | Chọn một đoạn chữ bằng chuột, gõ `tooi` | đoạn chọn bị thay bằng "tôi" | ĐẠT |
 | 8 | Gõ `tooi`, nhấn ⌘Z | ứng dụng hoàn tác bình thường, không lỗi | ĐẠT (⌘Z hoàn tác bình thường) |
 | 9 | Chuyển sang ABC (hoặc U.S.) bằng phím tắt nguồn nhập liệu của macOS, gõ `tooi` | "tooi" (D2: tiếng Anh dùng nguồn của hệ thống) | ĐẠT (30/10, ⌃Space, 2/2 lần): "tôi" → U.S. → "tooi" giữ nguyên |
-| 10 | Chuyển lại "Dấu – Tiếng Việt", gõ `tooi` | "tôi". Đổi nguồn giữa chừng một từ chỉ xoá bộ đệm (D4), không chặn D20: D20 bật (mặc định) thì `to`, đổi nguồn đi rồi về, `o` → "tô" (D20 đọc lại "to", D4 × D20); D20 tắt thì ra "too" | ĐẠT ở M2 với ⌃Space theo mong đợi cũ (trước khi có D20): `to`, đổi nguồn đi rồi về, `o` ra "too" (đã reset). Chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì không reset ("tô"); M3 đã sửa (6c1c055, nghe `kTISNotifySelectedKeyboardInputSourceChanged`) và kiểm bằng `to⇄cj␣` → "tocj" (ARCHITECTURE.md), vì "tô" nay là hành vi của D20 |
+| 10 | Chuyển lại "Dấu – Tiếng Việt", gõ `tooi` | "tôi". Đổi nguồn giữa chừng một từ chỉ xoá bộ đệm (D4), không chặn D20: D20 bật (mặc định) thì `to`, đổi nguồn đi rồi về, `o` → "tô" (D20 đọc lại "to", D4 × D20); D20 tắt thì ra "too" | ĐẠT ở M2 với ⌃Space theo mong đợi cũ (trước khi có D20): `to`, đổi nguồn đi rồi về, `o` ra "too" (đã reset). Chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì không reset ("tô"); M3 đã sửa (6c1c055, nghe `kTISNotifySelectedKeyboardInputSourceChanged`) và kiểm bằng `to⇄cj␣` → "tocj" (Architecture.md), vì "tô" nay là hành vi của D20 |
 | 11 | Menu nguồn nhập liệu: có nhóm "Kiểu gõ" với Telex ✓ / VNI / Telex đơn giản và mục "Mở cài đặt Bàn phím…" | đúng như mô tả, chữ có dấu, tên "Dấu" | ĐẠT: Kiểu gõ Telex ✓ / VNI / Telex đơn giản, "Cài đặt Dấu…", "Mở cài đặt Bàn phím…"; chữ có dấu đúng |
 | 12 | Chọn VNI trong menu, gõ `to6i` | "tôi"; mở menu lại thấy VNI ✓. Chọn lại Telex sau khi thử | ĐẠT: `to6i` → "tôi", menu VNI ✓, đã chọn lại Telex |
 | 13 | Bấm "Mở cài đặt Bàn phím…" | Cài đặt hệ thống mở đúng mục Bàn phím (N4) | ĐẠT |
@@ -104,5 +104,5 @@ Kết quả (30/10/2026): agent tự gõ qua System Events. 9, 10 ĐẠT sau khi
 ## 5. Gửi lại
 
 Gửi lại bảng ở mục 2 và 4 (có thể chép nguyên văn kết quả `perf-report.sh`). Phiên chính dùng số liệu này để:
-- quyết định giữ cách A hay chuyển sang cách B (câu hỏi mở A/B), và ghi số đo vào `DECISIONS.md` / `PROGRESS.md`;
+- quyết định giữ cách A hay chuyển sang cách B (câu hỏi mở A/B), và ghi số đo vào `Decisions.md` / `Progress.md`;
 - quyết định ứng dụng nào cần gạch chân (D13) và trả lời câu hỏi Chrome/Terminal (không xin quyền Accessibility, N4).

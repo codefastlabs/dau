@@ -37,7 +37,7 @@ struct SmartSettingsView: View {
                     }
                     // D20 scope (30/10/2026): only the text right before the cursor,
                     // never in apps with a "Có gạch chân" rule. N5: stability on web
-                    // editors is an open question in DECISIONS.md; the placeholder
+                    // editors is an open question in Decisions.md; the placeholder
                     // stays until it is measured.
                     Text("Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule. [Test results on Google Docs, Notion…]")
                 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 // Back/Forward of the Settings window, as System Settings has them (D9, "Vỏ cửa sổ Cài
-// đặt"; docs/research/SWIFTUI-WINDOW-API.md, section 3). SwiftUI has no history for a
+// đặt"; docs/research/SwiftUIWindowAPI.md, section 3). SwiftUI has no history for a
 // split view (`NavigationStack` only goes back), so the window keeps its own:
 // `SectionHistory`, shown as a Back/Forward cluster in the toolbar's navigation placement
 // (`SettingsHistoryButtons`) and as View menu commands (`SettingsHistoryCommands`), since
@@ -70,7 +70,7 @@ struct SectionHistory: Equatable {
 /// (https://developer.apple.com/documentation/swiftui/controlgroup,
 /// https://developer.apple.com/documentation/swiftui/controlgroupstyle/navigation). A
 /// probe of this exact cluster matched System Settings' pair (two buttons, 73 × 36 at
-/// x 240; docs/research/SYSTEM-SETTINGS-REFERENCE.md). Being an item, it also keeps the
+/// x 240; docs/research/SystemSettingsReference.md). Being an item, it also keeps the
 /// toolbar at its full height with the system's large inline title: with no item at all
 /// AppKit shrinks it to a title bar (measured on macOS 27.2).
 struct SettingsHistoryButtons: View {

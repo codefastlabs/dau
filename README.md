@@ -43,13 +43,13 @@ Bộ gõ không có quyền kết nối mạng. Không telemetry. Bản phát h�
 
 ### Ít hơn, có chủ đích.
 
-Việc macOS đã làm tốt, Dấu không làm lại: gõ tắt văn bản đã có Thay thế văn bản, chuyển Việt/Anh đã có phím tắt nguồn đầu vào. Không bảng mã cũ, không quảng cáo, không bản trả phí. Mọi quy tắc gõ đều được viết ra, kèm lý do, trong [`docs/DECISIONS.md`](docs/DECISIONS.md).
+Việc macOS đã làm tốt, Dấu không làm lại: gõ tắt văn bản đã có Thay thế văn bản, chuyển Việt/Anh đã có phím tắt nguồn đầu vào. Không bảng mã cũ, không quảng cáo, không bản trả phí. Mọi quy tắc gõ đều được viết ra, kèm lý do, trong [`docs/Decisions.md`](docs/Decisions.md).
 
 ---
 
 ## Sắp ra mắt
 
-Dấu chưa có bản tải về. Yêu cầu: macOS 14 trở lên (D1 (Nền tảng)); tới nay mới thử trên macOS 27.2.[^8] Các mốc tới khi phát hành: [`docs/ROADMAP.md`](docs/ROADMAP.md). Những ứng dụng đã thử và giới hạn còn lại: [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
+Dấu chưa có bản tải về. Yêu cầu: macOS 14 trở lên (D1 (Nền tảng)); tới nay mới thử trên macOS 27.2.[^8] Các mốc tới khi phát hành: [`docs/Roadmap.md`](docs/Roadmap.md). Những ứng dụng đã thử và giới hạn còn lại: [`docs/Compatibility.md`](docs/Compatibility.md).
 
 ## Dành cho nhà phát triển
 
@@ -59,7 +59,7 @@ Build, cài bằng Apple ID của bạn và chạy mọi bộ test: [CONTRIBUTIN
 swift test --package-path Packages/DauEngine
 ```
 
-Kiến trúc, cấu trúc thư mục và luồng một phím: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Thiết kế mọi màn hình: [`docs/canvas/README.md`](docs/canvas/README.md). Mục lục tài liệu: [`docs/README.md`](docs/README.md). Làm việc cùng Claude Code: [CLAUDE.md](CLAUDE.md).
+Kiến trúc, cấu trúc thư mục và luồng một phím: [`docs/Architecture.md`](docs/Architecture.md). Thiết kế mọi màn hình: [`docs/canvas/README.md`](docs/canvas/README.md). Mục lục tài liệu: [`docs/README.md`](docs/README.md). Làm việc cùng Claude Code: [CLAUDE.md](CLAUDE.md).
 
 **Báo lỗi gõ:** mở issue, kèm tên ứng dụng, Telex hay VNI, và chuỗi phím đã gõ. Đừng dán nội dung riêng tư.
 
@@ -68,10 +68,10 @@ Kiến trúc, cấu trúc thư mục và luồng một phím: [`docs/ARCHITECTUR
 GPLv3. Xem [LICENSE](LICENSE).
 
 [^1]: D15 (Cài đặt mặc định), D29 (Telex đơn giản), D30 (Kiểm tra chính tả). Kiểm bằng test của engine (`TonePlacementTests`, `VNITests`, `SpellingTests`): [`Packages/DauEngine/Tests`](https://github.com/codefastlabs/dau/tree/main/Packages/DauEngine/Tests).
-[^2]: Một lượt đo ngày 09/11/2026, một máy, macOS 27.2: Telex gõ theo thứ tự chuẩn, phím cách nhau 30 ms. Từ sai duy nhất là "taxi" ra "tãi", vì đó là âm tiết tiếng Việt hợp lệ (D4 (Từ nước ngoài)). Cách chấm không xét vị trí dấu thanh. Điều kiện và giới hạn: [`docs/research/COMPETITOR-COMPARISON.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/COMPETITOR-COMPARISON.md), mục 1.
+[^2]: Một lượt đo ngày 09/11/2026, một máy, macOS 27.2: Telex gõ theo thứ tự chuẩn, phím cách nhau 30 ms. Từ sai duy nhất là "taxi" ra "tãi", vì đó là âm tiết tiếng Việt hợp lệ (D4 (Từ nước ngoài)). Cách chấm không xét vị trí dấu thanh. Điều kiện và giới hạn: [`docs/research/CompetitorComparison.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/CompetitorComparison.md), mục 1.
 [^3]: D28 (Bỏ dấu tự do). Kiểm bằng test của engine (`TonePlacementTests`): [`Packages/DauEngine/Tests`](https://github.com/codefastlabs/dau/tree/main/Packages/DauEngine/Tests).
 [^4]: D20 (Thêm dấu cho từ đã gõ), D32 (Backspace). Thêm dấu cho từ đã gõ không chạy ở ứng dụng đang dùng gạch chân (D13 (Gạch chân là đường lui cuối cùng)) và ở ô không cho đọc chữ, như terminal Ghostty (D43 (Ô bỏ qua vùng thay chữ)).
-[^5]: D4. Cùng lượt đo với chú thích 2: trong câu trộn Việt–Anh, Dấu ra đúng 184/188 từ; với 105 từ tiếng Anh và từ trong mã có chứa phím dấu Telex, Dấu giữ nguyên 88 từ, 7 từ ra sai, 10 từ trùng với một từ tiếng Việt. Ở ứng dụng bật tự sửa chính tả, macOS có thể sửa từ vừa gõ sau dấu cách, với mọi bộ gõ; hoàn tác bằng ⌘Z. Nguồn: [`docs/research/COMPETITOR-COMPARISON.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/COMPETITOR-COMPARISON.md), mục 1.
-[^6]: D2 (Chuyển Việt/Anh). Đã thử không cần quyền Trợ năng trong Chrome, VS Code và Terminal. Nguồn: [`docs/DECISIONS.md`](https://github.com/codefastlabs/dau/blob/main/docs/DECISIONS.md), N4 (Không tự đổi cài đặt hệ thống).
-[^7]: N2 (Bộ gõ không có quyền mạng), D8 (Không telemetry). Nguồn: [`docs/DECISIONS.md`](https://github.com/codefastlabs/dau/blob/main/docs/DECISIONS.md).
-[^8]: D1. Nguồn: [`docs/DECISIONS.md`](https://github.com/codefastlabs/dau/blob/main/docs/DECISIONS.md); các mốc đã thử: [`docs/ROADMAP.md`](https://github.com/codefastlabs/dau/blob/main/docs/ROADMAP.md), M7.
+[^5]: D4. Cùng lượt đo với chú thích 2: trong câu trộn Việt–Anh, Dấu ra đúng 184/188 từ; với 105 từ tiếng Anh và từ trong mã có chứa phím dấu Telex, Dấu giữ nguyên 88 từ, 7 từ ra sai, 10 từ trùng với một từ tiếng Việt. Ở ứng dụng bật tự sửa chính tả, macOS có thể sửa từ vừa gõ sau dấu cách, với mọi bộ gõ; hoàn tác bằng ⌘Z. Nguồn: [`docs/research/CompetitorComparison.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/CompetitorComparison.md), mục 1.
+[^6]: D2 (Chuyển Việt/Anh). Đã thử không cần quyền Trợ năng trong Chrome, VS Code và Terminal. Nguồn: [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md), N4 (Không tự đổi cài đặt hệ thống).
+[^7]: N2 (Bộ gõ không có quyền mạng), D8 (Không telemetry). Nguồn: [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md).
+[^8]: D1. Nguồn: [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md); các mốc đã thử: [`docs/Roadmap.md`](https://github.com/codefastlabs/dau/blob/main/docs/Roadmap.md), M7.

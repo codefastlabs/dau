@@ -4,7 +4,7 @@ Những gì tài liệu và header chính thức của Apple nói về các API 
 
 ## Hiện trạng (11/11/2026)
 
-- Header đọc trong Xcode 27.1, SDK `MacOSX27.0.sdk`, lúc làm M2 (Bộ gõ tối thiểu) và M3 (Độ tin cậy); chưa đọc lại trên SDK mới hơn. Chuyển nguyên từ `docs/research/OPENKEY-NOTES.md` ngày 11/11/2026 vì không thuộc OpenKey.
+- Header đọc trong Xcode 27.1, SDK `MacOSX27.0.sdk`, lúc làm M2 (Bộ gõ tối thiểu) và M3 (Độ tin cậy); chưa đọc lại trên SDK mới hơn. Chuyển nguyên từ `docs/research/OpenKeyNotes.md` ngày 11/11/2026 vì không thuộc OpenKey.
 - Hệ quả chính:
   - Tham số của IMK có thể nil, và `NSEvent.characters` ném ngoại lệ trên sự kiện không phải phím: cơ sở của D18 (Phòng thủ với IMK).
   - Ứng dụng không hỗ trợ TSMDocumentAccess bỏ qua `replacementRange` và trả `NSNotFound` cho `selectedRange()`: ở đó thay chữ tại chỗ không thể đúng, cần marked text (D13 (Gạch chân là đường lui cuối cùng)).
@@ -22,7 +22,7 @@ Những gì tài liệu và header chính thức của Apple nói về các API 
   - Với phím chết (dead key, ví dụ ⌥e) nó là chuỗi rỗng.
   - Phải kiểm tra loại sự kiện trước khi đọc (D18).
   - https://developer.apple.com/documentation/appkit/nsevent/characters
-- `NSEvent.keyCode` là mã phím ảo, không phụ thuộc phần cứng. Còn `characters` được suy ra từ bảng ánh xạ bàn phím. Dấu dùng ký tự thay cho mã phím để tránh lỗi B17 của OpenKey ([`docs/research/OPENKEY-NOTES.md`](OPENKEY-NOTES.md) mục 3). https://developer.apple.com/documentation/appkit/nsevent/keycode
+- `NSEvent.keyCode` là mã phím ảo, không phụ thuộc phần cứng. Còn `characters` được suy ra từ bảng ánh xạ bàn phím. Dấu dùng ký tự thay cho mã phím để tránh lỗi B17 của OpenKey ([`docs/research/OpenKeyNotes.md`](OpenKeyNotes.md) mục 3). https://developer.apple.com/documentation/appkit/nsevent/keycode
 - `IMKTextInput` (header `HIToolbox.framework/Headers/IMKInputSession.h`; trang tài liệu web của protocol này trả 404 khi tra):
   - `insertText(_:replacementRange:)`: `replacementRange` tính từ đầu tài liệu của client. Truyền `NSNotFound` thì chèn tại vùng chọn hiện tại.
     - **Nếu client không hỗ trợ TSMDocumentAccess thì `replacementRange` bị bỏ qua.**

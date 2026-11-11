@@ -5,13 +5,13 @@ Danh sách phải chạy hết trước khi báo xong bất kỳ thay đổi gia
 ## Khi nào chạy, đạt nghĩa là gì
 
 - Chạy sau mọi thay đổi giao diện, trước khi cho người dùng xem bản build (CLAUDE.md mục "Cách làm việc đã rút ra", ý "Giao diện").
-- File này không ghi số. Mức đạt nằm ở [`scripts/selftest/settings-window/Reference.swift`](../scripts/selftest/settings-window/Reference.swift), kèm nguồn của từng số; số đo System Settings gốc ở [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](research/SYSTEM-SETTINGS-REFERENCE.md) (D9 (Giao diện)).
+- File này không ghi số. Mức đạt nằm ở [`scripts/selftest/settings-window/Reference.swift`](../scripts/selftest/settings-window/Reference.swift), kèm nguồn của từng số; số đo System Settings gốc ở [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) (D9 (Giao diện)).
 - Mỗi hàng của bảng kết quả là một trong ba:
   - `ok`: đạt;
   - `FAIL`: giao diện không hiện thứ phải hiện, hiện sai trạng thái hoặc lệch `Reference.swift`;
   - `HARNESS`: bộ kiểm không chạy được (thiếu quyền, app không mở, lời gọi Accessibility lỗi, một trạng thái cần chờ không đến: hàng `wait: …`). Không phải kết quả giao diện; sửa bộ kiểm hay máy rồi chạy lại.
 - Không có kết quả bỏ qua. Đạt khi mọi hàng `ok` và mọi mục dưới đây đạt.
-- Lịch sử (ngày phát hiện lỗi, bài học): [`docs/history/DOCS-LOG.md`](history/DOCS-LOG.md).
+- Lịch sử (ngày phát hiện lỗi, bài học): [`docs/history/DocsLog.md`](history/DocsLog.md).
 
 ## Danh sách
 

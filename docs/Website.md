@@ -1,10 +1,10 @@
 # Trang web
 
-Nội dung và quy tắc của trang web Dấu: trang tải về (M8 (Website)) và trang so sánh cách gõ (M10 (Học cách gõ)). Mốc, tiêu chí xong: [`docs/ROADMAP.md`](ROADMAP.md). Nhận diện: [`docs/BRAND.md`](BRAND.md). Giao diện app: [`docs/UI.md`](UI.md).
+Nội dung và quy tắc của trang web Dấu: trang tải về (M8 (Website)) và trang so sánh cách gõ (M10 (Học cách gõ)). Mốc, tiêu chí xong: [`docs/Roadmap.md`](Roadmap.md). Nhận diện: [`docs/Brand.md`](Brand.md). Giao diện app: [`docs/UI.md`](UI.md).
 
 Chung cho mọi trang:
 
-- Chỉ hứa điều đã kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)): ô số liệu để trống dạng `[Kết quả bài test tải nặng]` tới khi có kết quả test thật; không ghi "chạy tốt trong mọi app" hay danh sách logo ứng dụng trước khi có số đo ([`docs/COMPATIBILITY.md`](COMPATIBILITY.md)).
+- Chỉ hứa điều đã kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)): ô số liệu để trống dạng `[Kết quả bài test tải nặng]` tới khi có kết quả test thật; không ghi "chạy tốt trong mọi app" hay danh sách logo ứng dụng trước khi có số đo ([`docs/Compatibility.md`](Compatibility.md)).
 - Không gọi tên sản phẩm khác.
 - Không dùng logo Apple trên nút tải (nhãn hiệu của Apple); dùng biểu tượng mũi tên tải xuống.
 
@@ -48,4 +48,4 @@ Thứ tự mục:
 
 ## Trang "Dấu khác các bộ gõ khác thế nào" (M10)
 
-Chưa có artboard. Nội dung và nguồn: [`docs/ROADMAP.md`](ROADMAP.md) mục M10; làm artboard trước khi viết mã ([CLAUDE.md](../CLAUDE.md), mục "Giao diện").
+Chưa có artboard. Nội dung và nguồn: [`docs/Roadmap.md`](Roadmap.md) mục M10; làm artboard trước khi viết mã ([CLAUDE.md](../CLAUDE.md), mục "Giao diện").

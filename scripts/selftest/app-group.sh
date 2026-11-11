@@ -35,7 +35,7 @@
 #
 # `synchronize=failed` from the app is only reported, not a failure: on macOS 27 the
 # App Group suite's synchronize() returns false even when the write goes through (the
-# input method and a new app process both read it back; docs/DECISIONS.md, "Câu hỏi đã
+# input method and a new app process both read it back; docs/Decisions.md, "Câu hỏi đã
 # trả lời").
 #
 # Ends with a "✓" verdict or a "✗" verdict plus hints (scripts/lib/log.sh); exit status 0 only on success.

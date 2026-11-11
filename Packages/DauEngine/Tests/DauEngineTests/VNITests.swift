@@ -68,7 +68,7 @@ struct VNITests {
     func doubleDigit(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
 
     /// A digit that changes nothing is an ordinary character; the engine and the
-    /// screen stay in step (OPENKEY-NOTES B13).
+    /// screen stay in step (OpenKeyNotes B13).
     @Test(arguments: [
         Case("2024 ", "2024 "), Case("a7", "a7"), Case("a71 ", "a71 "), Case("o8", "o8"),
         Case("x2y ", "x2y "), Case("mp3 ", "mp3 "), Case("Win10 ", "Win10 "), Case("h2o ", "h2o "),

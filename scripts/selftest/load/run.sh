@@ -21,7 +21,7 @@
 # per-key log of the Debug input method (scripts/perf/perf-report.sh):
 #   H1  the busy app lets queued keys go in a burst: keys reach the input method < 10 ms
 #       apart (gap_a/gap_b) although they were sent evenly (evgap_d), lag_us is large,
-#       and the known < 10 ms failure follows (docs/COMPATIBILITY.md 6.2).
+#       and the known < 10 ms failure follows (docs/Compatibility.md 6.2).
 #   H2  keys arrive evenly (gap_d) but the app has not applied the previous insertText
 #       yet, so selectedRange is stale: mismatch/resync at gaps ≥ 10 ms (gap_ge10_*),
 #       or wrong text with even gaps.

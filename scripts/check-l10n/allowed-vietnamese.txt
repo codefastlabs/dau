@@ -1,6 +1,6 @@
 # Vietnamese phrases allowed in catalog keys and "en" texts (check.sh, check 5).
 # One literal phrase per line; longer phrases before the shorter ones they contain.
-# Keep in step with docs/GLOSSARY.md, "Không dịch".
+# Keep in step with docs/Glossary.md, "Không dịch".
 # The name (D24).
 Dấu
 # Labels of other input methods, copied as those apps show them.

@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Regenerates the temporary app icons: standard and development (docs/BRAND.md "Biểu tượng", "Biểu tượng bản phát triển"; D25).
+# Regenerates the temporary app icons: standard and development (docs/Brand.md "Biểu tượng", "Biểu tượng bản phát triển"; D25).
 # Side effects: builds, writes repo files
 #
 #   scripts/assets/make-app-icon.sh [<preview-dir>]

@@ -2,7 +2,7 @@ import Testing
 import DauEngine
 
 /// Expects `keys` to produce exactly `expected`, scalar for scalar (so NFC is
-/// enforced, D3). Expected values follow Vietnamese orthography and DECISIONS.md,
+/// enforced, D3). Expected values follow Vietnamese orthography and Decisions.md,
 /// never OpenKey's output (D10).
 func expectTyped(
     _ keys: String,

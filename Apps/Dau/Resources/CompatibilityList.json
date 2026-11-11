@@ -1,7 +1,7 @@
 {
   "version": 4,
   "updated": "2026-11-10",
-  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong: Cursor. Every app types without underline until the user turns it on. Brave, Arc, Zalo, Discord, Slack, Notion, Obsidian and Figma were labeled by technology class without measurement and lost the label; Chrome, Edge, Firefox and VS Code lost it on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/COMPATIBILITY.md section 3.",
+  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong: Cursor. Every app types without underline until the user turns it on. Brave, Arc, Zalo, Discord, Slack, Notion, Obsidian and Figma were labeled by technology class without measurement and lost the label; Chrome, Edge, Firefox and VS Code lost it on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/Compatibility.md section 3.",
   "apps": [
     {
       "name": "Visual Studio Code",

@@ -42,7 +42,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 - terminal: Ghostty, dòng lệnh không bao giờ Return;
 - ô ngắn: ô tìm kiếm Finder hoặc ô tìm (⌘F) trong app.
 
-Không dùng: TextEdit (`docs/TROUBLESHOOTING.md`), ô mật khẩu, trang hay app đã đăng nhập tài khoản thật, bất kỳ ô nào mà Return hay ⌘↩ gửi đi (Messages, Slack, ô chat).
+Không dùng: TextEdit (`docs/Troubleshooting.md`), ô mật khẩu, trang hay app đã đăng nhập tài khoản thật, bất kỳ ô nào mà Return hay ⌘↩ gửi đi (Messages, Slack, ô chat).
 
 ## Văn bản
 
@@ -80,7 +80,7 @@ Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cử
 ## Sau lượt gõ
 
 1. Bảng quan sát, mỗi hàng: app và ô; chế độ (thay tại chỗ, gạch chân); đang làm gì; phím đã gõ; muốn ra; ra gì; lặp lại được không; Telex của Apple ra gì; mức độ (sai chữ, phải sửa tay, chỉ khó chịu).
-2. Ghi bảng vào nhật ký `docs/PROGRESS.md` dưới mục có nhãn "Quan sát khi gõ tự nhiên", không rút kết luận (CLAUDE.md, "Bản thử không phải kết luận"). Chuỗi phím của các hàng đáng theo chép vào repo cùng hàng đó.
-3. Hàng lặp lại được và Telex của Apple ra đúng: tái hiện offline trước (test engine với chuỗi phím đó), không được thì một lệnh `typing/run.sh --keys … --expect …`; rồi đề xuất cách sửa (CLAUDE.md, "Sửa lỗi trước, đường lui sau"), đối chiếu `docs/DECISIONS.md`.
-4. Hàng là hành vi đúng theo một quyết định nhưng vẫn khó chịu: nêu quyết định đó và đề xuất cho người dùng; không tự sửa `DECISIONS.md`.
+2. Ghi bảng vào nhật ký `docs/Progress.md` dưới mục có nhãn "Quan sát khi gõ tự nhiên", không rút kết luận (CLAUDE.md, "Bản thử không phải kết luận"). Chuỗi phím của các hàng đáng theo chép vào repo cùng hàng đó.
+3. Hàng lặp lại được và Telex của Apple ra đúng: tái hiện offline trước (test engine với chuỗi phím đó), không được thì một lệnh `typing/run.sh --keys … --expect …`; rồi đề xuất cách sửa (CLAUDE.md, "Sửa lỗi trước, đường lui sau"), đối chiếu `docs/Decisions.md`.
+4. Hàng là hành vi đúng theo một quyết định nhưng vẫn khó chịu: nêu quyết định đó và đề xuất cho người dùng; không tự sửa `Decisions.md`.
 5. Thao tác gõ nào xuất hiện nhiều lần mà `typing/run.sh --keys` chưa diễn tả được (nhấp đúp, ⌥⌫, ⌘Z, dán, chuyển app) thì ghi vào đề xuất, chưa xây công cụ khi chưa có lỗi cần nó.

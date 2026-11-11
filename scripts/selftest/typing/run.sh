@@ -18,10 +18,10 @@
 #           Chrome page: the terminal of Electron apps such as the Claude desktop app)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
-#     (docs/TROUBLESHOOTING.md); Safari's test page is the AppKit/WebKit reference.
+#     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
 #   --delay MS        pause between keys in ms (default 30). 0 sends the whole string in
 #                     one System Events keystroke (about 1 ms per key): a stress test that
-#                     Chrome, VS Code and Terminal fail with method A (docs/PROGRESS.md);
+#                     Chrome, VS Code and Terminal fail with method A (docs/Progress.md);
 #                     120 is close to normal typing.
 #   --keys "…"        keys to type (default: the sample sentence below). Two marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
@@ -30,7 +30,7 @@
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
-#                     (docs/ARCHITECTURE.md, "Đổi nguồn nhập liệu không qua
+#                     (docs/Architecture.md, "Đổi nguồn nhập liệu không qua
 #                     `activateServer`"). Example (D20, K7): --keys "hoc ⌫j " --expect "học "
 #   --expect "…"      expected text (default: what the sample sentence must give)
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
@@ -216,7 +216,7 @@ DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # disagree (TIS alone has been wrong on macOS 27.2).
 [[ -n "$DAU_SOURCE" ]] || {
   log_error "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)."
-  log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (không bật được: docs/COMPATIBILITY.md mục 4.1)."
+  log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (không bật được: docs/Compatibility.md mục 4.1)."
   exit 1
 }
 if [[ -n "$SOURCE_ID" ]]; then
@@ -373,7 +373,7 @@ front_ok() { osascript -e "$(front_guard "$1" "${2:-}")" -e 'return' >/dev/null 
 guarded() {
   local out start=$SECONDS waited where
   # 15 s: on a Mac under heavy load the test page has been seen not to report the focus
-  # within 3 s (docs/PROGRESS.md, 10/11/2026). A longer wait that passes is reported, and
+  # within 3 s (docs/Progress.md, 10/11/2026). A longer wait that passes is reported, and
   # a failure says where the keyboard focus is, to tell a slow page from a focus elsewhere.
   wait_until -i 0.4 15 front_ok "$1" "$2"
   waited=$(( SECONDS - start ))
@@ -393,7 +393,7 @@ stopped() { [[ -e "$STOP_FILE" ]]; }
 # macOS reports the wanted source. The system then switches the source for the focused
 # field itself; a source selected from this script's process (TISSelectInputSource) is
 # reported as current, and shown in the menu bar, while the field keeps the old input
-# method (docs/PROGRESS.md, 10/11/2026). Only called when the wanted source is not the
+# method (docs/Progress.md, 10/11/2026). Only called when the wanted source is not the
 # current one. Shortcut off or unreadable: falls back to the API, and says so.
 cycle_to_source() { # source-id
   local json key mods using="" n
@@ -541,14 +541,14 @@ open_test_page() {
   wait_until -i 0.3 5 front_ok "$2" "$PAGE_TITLE" && return 0
   # `open -a` on a running Safari has been seen to load the page without bringing Safari
   # to the front (another browser stayed frontmost for 15 s, 11/11/2026); `activate`
-  # then did (docs/PROGRESS.md, 11/11/2026). Only the app being tested is activated.
+  # then did (docs/Progress.md, 11/11/2026). Only the app being tested is activated.
   osascript -e "tell application \"$1\" to activate" >/dev/null 2>&1
   wait_until -i 0.3 10 front_ok "$2" "$PAGE_TITLE"
 }
 
 # Puts the keyboard focus in the test page's text field of browser process $1 when the
 # page does not report it (title without "[focus]"): Safari has been seen to open the
-# page with the focus in its address field (docs/PROGRESS.md, 10/11/2026), and the
+# page with the focus in its address field (docs/Progress.md, 10/11/2026), and the
 # page's autofocus does not take it back. Clicks the middle of the browser's focused
 # window, only while the browser is frontmost with the test page in that window: the
 # text field fills the page (96vw × 90vh) so that the middle of the window is inside
@@ -941,7 +941,7 @@ run_sublime() {
 #   compared with --expect: what a zsh prompt would hold. ⌃D is bound to accept the line,
 #   so no Return is needed (keys ending with ↩ show whether Ghostty passes Return on: the
 #   raw bytes then hold <0d>). Ghostty drops most keys that commit marked text (Return, ⌃C…,
-#   docs/research/TERMINAL-AND-UNDERLINE.md), so with --underline and keys that do not
+#   docs/research/TerminalAndUnderline.md), so with --underline and keys that do not
 #   end a word, the first ⌃D may only commit it: run_ghostty sends a second one;
 # - sets the window title to dau-selftest just before the line editor reads its first
 #   key: the guard waits for that title, so no key is sent before the editor is ready.

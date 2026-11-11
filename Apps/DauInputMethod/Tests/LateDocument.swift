@@ -7,7 +7,7 @@ import Testing
 /// ranges) but answers `selectedRange` and `attributedSubstring` from an earlier state
 /// of its text: Chrome with a busy page (M6 step 1, log of 09/11/2026), and apps that
 /// apply keys asynchronously when keys come in a burst (Chromium, Electron, Firefox;
-/// `docs/COMPATIBILITY.md` 6.2).
+/// `docs/Compatibility.md` 6.2).
 ///
 /// Which earlier state: `lag` edits ago (set per key, so each word of a log can be
 /// replayed exactly), or, with `clock` set, the latest state the app has reported by
@@ -52,7 +52,7 @@ final class LateDocument: InPlaceClient {
         /// The start of the document.
         case document
         /// The start of the word being typed (Cursor's editor, runs of 10/11/2026 in
-        /// `docs/PROGRESS.md`: at 100 ms between keys `selectedRange` was the number of
+        /// `docs/Progress.md`: at 100 ms between keys `selectedRange` was the number of
         /// letters of the word at every replacement, 0-based again after each space,
         /// also after a replacement whose text ends with a space; VS Code and Cursor's
         /// Agents input count from the start of the document).

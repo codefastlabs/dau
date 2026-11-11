@@ -5,7 +5,7 @@ import DauEngine
 import DauShared
 
 /// One instance per client session (IMKServer creates it). Each controller owns its own
-/// `VietEngine` and cursor tracker: no global mutable state (ARCHITECTURE.md).
+/// `VietEngine` and cursor tracker: no global mutable state (Architecture.md).
 ///
 /// Dấu has a single input mode, "Tiếng Việt" (D2, 30/10/2026). English is typed with a
 /// system input source (U.S.…), so there is no mode state here: whatever mode ID IMK
@@ -184,7 +184,7 @@ final class DauInputController: IMKInputController {
 
     /// Underline mode (D13): at most one `setMarkedText` or `insertText` per key, both
     /// with replacementRange NSNotFound; never `selectedRange` (N3), and no D20 read
-    /// (see ARCHITECTURE.md). See `MarkedComposer`.
+    /// (see Architecture.md). See `MarkedComposer`.
     private func processMarked(_ route: KeyRoute, client: TimedClient) -> KeyResult {
         let outcome = composer.handle(route, engine: &engine, client: client)
         markedClient = composer.isComposing ? (client.client as AnyObject) : nil

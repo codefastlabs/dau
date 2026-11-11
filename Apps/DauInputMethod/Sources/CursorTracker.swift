@@ -1,6 +1,6 @@
 import Foundation
 
-/// Method A of the open question A/B (DECISIONS.md): ask the client for `selectedRange`
+/// Method A of the open question A/B (Decisions.md): ask the client for `selectedRange`
 /// on every key whose result replaces text, and compute the absolute replacement range
 /// from it. On top of that, remember where the cursor should be after each key of the
 /// current word, so a cursor that moved without the input method noticing (a click IMK
@@ -56,7 +56,7 @@ struct CursorTracker: Equatable {
     /// How many of the latest edits were made by keys that came in a burst, one after
     /// the other: no person can click or press ⌘A between them, and an app that applies
     /// keys late may be behind all of them (M3: Chrome, VS Code, Firefox wrong under
-    /// 10 ms; `docs/COMPATIBILITY.md` 6.2).
+    /// 10 ms; `docs/Compatibility.md` 6.2).
     private(set) var burst = 0
 
     /// One edit of the document made by this composer or by a key it let through.
@@ -236,7 +236,7 @@ struct CursorTracker: Equatable {
     /// `m` (latest edits first) that fits and that `accept` takes. nil: not an app
     /// answering late (or no way to tell).
     ///
-    /// The text the app gives is one of two forms (sources in `docs/ARCHITECTURE.md`,
+    /// The text the app gives is one of two forms (sources in `docs/Architecture.md`,
     /// "App trả lời chậm"): the text as it was before those edits (Firefox, and Chrome
     /// when none of them was inserted at the caret); or that text plus the latest of
     /// them that was inserted at the caret (`Edit.atCaret`), which Chromium writes into

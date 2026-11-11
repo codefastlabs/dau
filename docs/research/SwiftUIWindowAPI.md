@@ -1,6 +1,6 @@
 # Cửa sổ Cài đặt: API Apple cho sidebar, thanh công cụ, tiêu đề
 
-Cửa sổ Cài đặt của app chủ dựng theo System Settings (D9 (Giao diện)). File này ghi API Apple nào làm việc gì cho sidebar, thanh công cụ, tiêu đề và Lùi/Tiến, có nguồn, và vì sao Dấu dựng cửa sổ như hiện nay. Mã: `SettingsWindow` (`Apps/Dau/Sources/SettingsWindow.swift`), `SettingsHistoryButtons` và `SettingsHistoryCommands` (`Apps/Dau/Sources/SettingsHistory.swift`). Số đo giao diện ở [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](SYSTEM-SETTINGS-REFERENCE.md).
+Cửa sổ Cài đặt của app chủ dựng theo System Settings (D9 (Giao diện)). File này ghi API Apple nào làm việc gì cho sidebar, thanh công cụ, tiêu đề và Lùi/Tiến, có nguồn, và vì sao Dấu dựng cửa sổ như hiện nay. Mã: `SettingsWindow` (`Apps/Dau/Sources/SettingsWindow.swift`), `SettingsHistoryButtons` và `SettingsHistoryCommands` (`Apps/Dau/Sources/SettingsHistory.swift`). Số đo giao diện ở [`docs/research/SystemSettingsReference.md`](SystemSettingsReference.md).
 
 ## Hiện trạng (11/11/2026)
 
@@ -34,7 +34,7 @@ API AppKit dùng:
 
 - Dấu dùng cấu hình thứ hai. Con trỏ ở đường chia là mũi tên thường nhờ `splitView(_:effectiveRect:forDrawnRect:ofDividerAt:)` trả `.zero`.
 - 20 lần đổi cỡ cửa sổ 740 ↔ 976 trên app thử: trung vị 9,7 ms, tối đa 22,2 ms mỗi lần; sidebar không lệch lần nào. Không có số so sánh với `NavigationSplitView`.
-- [Đo của Dấu] Sidebar cố định đã kiểm trên cửa sổ thật bằng `scripts/selftest/settings-window/run.sh` (trang `sidebar-fixed`, [`docs/UI-CHECKS.md`](../UI-CHECKS.md)).
+- [Đo của Dấu] Sidebar cố định đã kiểm trên cửa sổ thật bằng `scripts/selftest/settings-window/run.sh` (trang `sidebar-fixed`, [`docs/UIChecks.md`](../UIChecks.md)).
 
 ## 2. Vì sao không dùng `NavigationSplitView`
 
@@ -43,7 +43,7 @@ API AppKit dùng:
 - [Tài liệu] `navigationSplitViewStyle` (`.balanced`, `.prominentDetail`) chỉ đổi cách cột chi tiết co giãn khi sidebar ẩn/hiện. https://developer.apple.com/documentation/swiftui/navigationsplitviewstyle
 - [SDK] Không có API nào khác để khoá sidebar.
 - [Đo của Dấu] Bản dùng `NavigationSplitView` (trước 06/11/2026): đường chia vẫn kéo được dù độ rộng cố định, kéo có thể thu gọn sidebar mà không có cách mở lại.
-- [HIG] Sidebars và Split views khuyên cân nhắc cho ẩn sidebar, và nếu cho thì "Provide multiple ways to reveal hidden panes". System Settings không cho thu gọn sidebar (số đo ở `SYSTEM-SETTINGS-REFERENCE.md`), nên Dấu theo System Settings và không cần lệnh mở lại. https://developer.apple.com/design/human-interface-guidelines/sidebars, https://developer.apple.com/design/human-interface-guidelines/split-views
+- [HIG] Sidebars và Split views khuyên cân nhắc cho ẩn sidebar, và nếu cho thì "Provide multiple ways to reveal hidden panes". System Settings không cho thu gọn sidebar (số đo ở `SystemSettingsReference.md`), nên Dấu theo System Settings và không cần lệnh mở lại. https://developer.apple.com/design/human-interface-guidelines/sidebars, https://developer.apple.com/design/human-interface-guidelines/split-views
 - Khoá sidebar của `NavigationSplitView` bằng cách tìm `NSSplitView` mà nó dựng thì dựa trên cấu trúc bên trong SwiftUI không công bố; D9 đã loại cách này. Chặn thu gọn bằng `columnVisibility` không có tài liệu ủng hộ; hướng này đã bỏ, không đo.
 - [WWDC] Apple nói System Settings dựng bằng SwiftUI, "built using the navigation split view and stacks" (WWDC22 "What's new in SwiftUI"), nhưng không nói sidebar của nó cố định bằng cách nào. https://developer.apple.com/videos/play/wwdc2022/10052/
 
@@ -68,7 +68,7 @@ Lùi/Tiến:
 
 Chiều cao thanh công cụ:
 - Không có trang tài liệu, mục HIG hay phiên WWDC nào tả chiều cao thanh khi không còn mục nào.
-- [Đo của Dấu] Không còn mục nào thì thanh co lại và tiêu đề thành chữ tiêu đề cửa sổ nhỏ; có cụm Lùi/Tiến ở `.navigation` thì thanh và tiêu đề đúng chuẩn System Settings (số ở `SYSTEM-SETTINGS-REFERENCE.md`).
+- [Đo của Dấu] Không còn mục nào thì thanh co lại và tiêu đề thành chữ tiêu đề cửa sổ nhỏ; có cụm Lùi/Tiến ở `.navigation` thì thanh và tiêu đề đúng chuẩn System Settings (số ở `SystemSettingsReference.md`).
 - [Đo của Dấu] Gắn `.toolbar` của cụm lên trang trong cột chi tiết thì đổi trang làm mục dựng lại, và AXPress trên Lùi/Tiến trả lỗi -25205 dù vẫn chạy. Dấu gắn cụm quanh trang, ở `SettingsDetailChrome`, không đổi theo trang; System Settings trả 0.
 
 Kiểu thanh công cụ và cửa sổ (tham khảo):
@@ -91,7 +91,7 @@ Kiểu thanh công cụ và cửa sổ (tham khảo):
 - [Tài liệu] `SidebarCommands`: "These commands are optional and can be explicitly requested". https://developer.apple.com/documentation/swiftui/sidebarcommands
 - [Tài liệu] `CommandGroup(replacing:)` thay toàn bộ nhóm, nên thay nhóm `.sidebar` sẽ bỏ cả mục toàn màn hình. https://developer.apple.com/documentation/swiftui/commandgroup/init(replacing:addition:)
 - [HIG] Menu View: "Show/Hide Sidebar — In a window that includes a sidebar, toggles the sidebar's visibility." https://developer.apple.com/design/human-interface-guidelines/the-menu-bar
-- Dấu: `SettingsHistoryCommands` thêm Lùi ⌘[ và Tiến ⌘] **trước** nhóm `.sidebar` (`CommandGroup(before:)`), không dùng `SidebarCommands`. Menu View còn mục toàn màn hình, không có Show/Hide Sidebar; `SettingsSplitViewController` giữ `toggleSidebar(_:)` luôn tắt. Kiểm bằng `swift test` ("Settings window shell", [`docs/UI-CHECKS.md`](../UI-CHECKS.md)); chưa đọc riêng menu View trên cửa sổ thật.
+- Dấu: `SettingsHistoryCommands` thêm Lùi ⌘[ và Tiến ⌘] **trước** nhóm `.sidebar` (`CommandGroup(before:)`), không dùng `SidebarCommands`. Menu View còn mục toàn màn hình, không có Show/Hide Sidebar; `SettingsSplitViewController` giữ `toggleSidebar(_:)` luôn tắt. Kiểm bằng `swift test` ("Settings window shell", [`docs/UIChecks.md`](../UIChecks.md)); chưa đọc riêng menu View trên cửa sổ thật.
 
 ## Nguồn Apple đã tra
 

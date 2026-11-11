@@ -5,7 +5,7 @@ import Foundation
 /// xterm.js) from a text field, using only the `selectedRange` answers in-place mode
 /// already asks for at keys that replace text (N3: no call of its own).
 ///
-/// Measured (docs/PROGRESS.md, log of 11/11/2026, third typing round): a text field's
+/// Measured (docs/Progress.md, log of 11/11/2026, third typing round): a text field's
 /// position grows with what is typed (up to 8 in Chrome, Safari and Sublime Text over
 /// "toois vieetj "); Ghostty always answers {0,0}; the xterm.js test page answers 0–2.
 ///
@@ -184,7 +184,7 @@ struct RangeIgnoreDetector {
     /// "viê" was typed), or may give back less than was asked (an app clamps the range to
     /// its text). What was read must match up to its last word plus that word's first
     /// letter, and hold a letter: Ghostty gives no text or the text selected on screen
-    /// (docs/research/TERMINAL-AND-UNDERLINE.md), xterm.js the content of its hidden
+    /// (docs/research/TerminalAndUnderline.md), xterm.js the content of its hidden
     /// textarea, neither of which lines up with what was typed.
     static func isOwnText(_ read: String, typed: [UInt16]) -> Bool {
         // A hostile client may answer with a lot of text (D18): only the start counts.

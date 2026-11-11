@@ -31,7 +31,7 @@ Kết quả (zsh, 120 ms giữa hai phím, một lượt mỗi ô; Telex của A
 | D43 | — | — | — | "toôis việt đi học nhà người hò windows ": từ đầu sai, còn lại đúng; zsh và vim |
 
 - D43 ở 30 ms giữa hai phím: không nhận ra (phím dồn không được xét), dòng ra như trước D43.
-- Thời gian xử lý mỗi phím của D43 ngang thay tại chỗ thường; số ở nhật ký [`docs/PROGRESS.md`](../PROGRESS.md) ngày 11/11.
+- Thời gian xử lý mỗi phím của D43 ngang thay tại chỗ thường; số ở nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11.
 - Gạch chân trong Ghostty: chữ đúng, nhưng `toois vieetj↩` không gửi Return (byte gửi không có `<0d>`), với cả Dấu và Telex của Apple.
 - Gạch chân không thuộc tính gạch không giúp: Ghostty tự vẽ gạch chân cho chữ đang soạn.
 
@@ -80,7 +80,7 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 ## 4. Bộ gõ khác
 
 - VietTelex (bộ gõ IMK): README ghi phải cấp quyền Accessibility mới gõ được trong Terminal, iTerm, Chrome/Edge/Brave, và nhắc "dấu Backspace của tap", tức Backspace giả qua event tap. https://github.com/ptrinh/viettelex
-- OpenKey: Backspace giả qua event tap ([`docs/research/OPENKEY-NOTES.md`](OPENKEY-NOTES.md)). goxkey bắt buộc quyền Accessibility (https://github.com/huytd/goxkey); cơ chế chi tiết không có trong phần README đã đọc.
+- OpenKey: Backspace giả qua event tap ([`docs/research/OpenKeyNotes.md`](OpenKeyNotes.md)). goxkey bắt buộc quyền Accessibility (https://github.com/huytd/goxkey); cơ chế chi tiết không có trong phần README đã đọc.
 - Bộ gõ tiếng Việt của Apple dùng marked text; một PR không merge tả bộ gõ đó trong Ghostty giữ từ gạch chân tới ký tự ngắt từ: https://github.com/ghostty-org/ghostty/pull/12976
 - Chương trình trong terminal cũng có lỗi riêng: Claude Code làm rơi chữ với bộ gõ Backspace giả (https://github.com/anthropics/claude-code/issues/22853); lỗi Backspace của IME trong Ghostty: https://github.com/ghostty-org/ghostty/issues/7225
 - Không tìm thấy issue nào của Ghostty về `replacementRange` hay IME tiếng Việt trên macOS (tìm 10/11/2026).
@@ -94,7 +94,7 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 
 ## Phương pháp và bản mã đã đọc
 
-- Chuỗi phím và đáp án: [`scripts/research/terminal-underline/run.sh`](../../scripts/research/terminal-underline/run.sh) (gọi `scripts/selftest/typing/run.sh` cho từng ô; đáp án là chữ đúng theo luật Telex, không phải chữ dự đoán). Số đo từng lượt: nhật ký [`docs/PROGRESS.md`](../PROGRESS.md) ngày 11/11/2026.
+- Chuỗi phím và đáp án: [`scripts/research/terminal-underline/run.sh`](../../scripts/research/terminal-underline/run.sh) (gọi `scripts/selftest/typing/run.sh` cho từng ô; đáp án là chữ đúng theo luật Telex, không phải chữ dự đoán). Số đo từng lượt: nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11/2026.
 - Đối chứng: Telex của Apple trong cùng ô. Byte gửi cho shell đọc ở Ghostty, dữ liệu xterm.js gửi đọc ở trang thử.
 - Bản đã đọc (bản sao tạm ngoài repo, không chép mã nào vào Dấu, D10 (Engine tự viết)):
   - Ghostty: nhánh main, commit de70b9f476c39ce3f5b293ecba813b674f037a80 (10/11/2026), đã so với tag v1.4.0: SurfaceView_AppKit.swift (vùng IME) và src/input/key_encode.zig giống hệt. https://github.com/ghostty-org/ghostty
@@ -110,7 +110,7 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 
 ## Phụ lục: khả năng nhập liệu theo app
 
-Ghostty và xterm.js theo mã nguồn (kết quả đo ở mục 1, 2); Terminal của Apple theo số đo của Dấu ([`docs/COMPATIBILITY.md`](../COMPATIBILITY.md)).
+Ghostty và xterm.js theo mã nguồn (kết quả đo ở mục 1, 2); Terminal của Apple theo số đo của Dấu ([`docs/Compatibility.md`](../Compatibility.md)).
 
 | Khả năng | Ghostty 1.4.0 | xterm.js trong Chromium | Terminal của Apple |
 |---|---|---|---|

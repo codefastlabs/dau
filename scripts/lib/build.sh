@@ -16,7 +16,7 @@
 #                                 get-task-allow. Status 1 with the reason when one fails.
 #
 # It never passes -allowProvisioningUpdates: that flag can create a new certificate and
-# revoke the one of another Mac on the same Apple ID (docs/history/LOG-M5.md), so it is
+# revoke the one of another Mac on the same Apple ID (docs/history/LogM5.md), so it is
 # the user's action, printed below, never a script's.
 
 # %x is the file being sourced; :A resolves it, each :h drops one path component.

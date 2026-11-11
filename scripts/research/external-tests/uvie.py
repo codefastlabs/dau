@@ -25,7 +25,7 @@ def map_settings(st):
         opts.append("src:relaxedCoda=on")
     skip = None
     if st.get("set_quick_telex") == "true":
-        skip = "Quick Telex (cc → ch…), listed under 'Đã biết nhưng không làm' in DECISIONS.md"
+        skip = "Quick Telex (cc → ch…), listed under 'Đã biết nhưng không làm' in Decisions.md"
     return method, opts, skip
 
 

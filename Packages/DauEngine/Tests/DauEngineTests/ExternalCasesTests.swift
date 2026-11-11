@@ -5,7 +5,7 @@ import Testing
 /// Step 2 of "test inputs from other Vietnamese input methods"
 /// (docs/research/external-test-inputs/README.md): replays the key sequences of
 /// `docs/research/external-test-inputs/*.tsv` through the engine and checks
-/// invariants derived from DECISIONS.md. The other projects' expected outputs are
+/// invariants derived from Decisions.md. The other projects' expected outputs are
 /// never read (D10); the checks below need no per-case answer.
 ///
 /// Dấu's own output per case goes to `build/external-dau-output/<source>.tsv`

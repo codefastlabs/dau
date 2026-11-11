@@ -1,18 +1,18 @@
 # Giao diện
 
-Hành vi, trạng thái và quy tắc của giao diện app Dấu: những gì hình vẽ và mã không tự nói ra. Trang web ở [`docs/WEBSITE.md`](WEBSITE.md).
+Hành vi, trạng thái và quy tắc của giao diện app Dấu: những gì hình vẽ và mã không tự nói ra. Trang web ở [`docs/Website.md`](Website.md).
 
 ## Nguồn của từng phần
 
 - **Trông như thế nào:** canvas mockup https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln, trang "Thiết kế" (mục, thứ tự, icon, trạng thái). Thứ tự sửa: canvas trước, mã sau (D9 (Giao diện)).
   - Bản chụp chỉ đọc trong repo: [`docs/canvas/README.md`](canvas/README.md) (mục lục), `docs/canvas/<Tên>.png` (ảnh), `docs/canvas/src/<Tên>.dc.html` (nguồn artboard, agent đọc file này); sinh lại bằng `scripts/design/render-canvas.sh`.
-- **Bố cục, khoảng cách, control:** System Settings của macOS hiện hành (D9). Số đo ở [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](research/SYSTEM-SETTINGS-REFERENCE.md), mức đạt ở [`scripts/selftest/settings-window/Reference.swift`](../scripts/selftest/settings-window/Reference.swift), cách kiểm ở [`docs/UI-CHECKS.md`](UI-CHECKS.md).
+- **Bố cục, khoảng cách, control:** System Settings của macOS hiện hành (D9). Số đo ở [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md), mức đạt ở [`scripts/selftest/settings-window/Reference.swift`](../scripts/selftest/settings-window/Reference.swift), cách kiểm ở [`docs/UIChecks.md`](UIChecks.md).
 - **Chữ:** String Catalog trong mã (`Localizable.xcstrings`), theo D41 (Ngôn ngữ giao diện). Canvas viết tiếng Việt; câu mới giao cho mã kèm câu tiếng Anh làm khoá.
-  - Tên giao diện của macOS (System Settings, Keyboard, Input Sources, Allow, Log Out, Applications, Thùng rác, tên bàn phím…) theo D38 (Chữ trên giao diện): đúng như macOS của người dùng đang hiện (`SystemUINames`, `LayoutNames` trong [`docs/ARCHITECTURE.md`](ARCHITECTURE.md)).
+  - Tên giao diện của macOS (System Settings, Keyboard, Input Sources, Allow, Log Out, Applications, Thùng rác, tên bàn phím…) theo D38 (Chữ trên giao diện): đúng như macOS của người dùng đang hiện (`SystemUINames`, `LayoutNames` trong [`docs/Architecture.md`](Architecture.md)).
   - Câu tiếng Việt không dùng chữ "app", nói "ứng dụng".
-- **File này** không liệt kê chữ hay bố cục của phần đã có mã; tên nút, nhãn được nêu chỉ để tả hành vi. Phần chưa có mã (cuối file) tạm mô tả nội dung tới khi dựng. Lịch sử duyệt: [`docs/history/DOCS-LOG.md`](history/DOCS-LOG.md).
+- **File này** không liệt kê chữ hay bố cục của phần đã có mã; tên nút, nhãn được nêu chỉ để tả hành vi. Phần chưa có mã (cuối file) tạm mô tả nội dung tới khi dựng. Lịch sử duyệt: [`docs/history/DocsLog.md`](history/DocsLog.md).
 
-Khi các nguồn lệch nhau, `DECISIONS.md` quyết định; sửa bên sai cho khớp.
+Khi các nguồn lệch nhau, `Decisions.md` quyết định; sửa bên sai cho khớp.
 
 ## Menu nguồn đầu vào
 
@@ -51,7 +51,7 @@ Artboard: [OnboardingMoveToApplications](canvas/OnboardingMoveToApplications.png
 
 Artboard: [OnboardingConflict](canvas/OnboardingConflict.png).
 
-- Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 8). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
+- Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 8). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
 - Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng. App chưa kiểm thì ghi chung "Thoát `<tên>`" và đường dẫn Mục đăng nhập (N5).
 - Tự kiểm tra lại khi cửa sổ được kích hoạt. Cho phép bỏ qua.
 

@@ -4,9 +4,9 @@ Cảm ơn bạn muốn góp sức. Dấu là phần mềm tự do theo giấy ph
 
 ## Trước khi bắt đầu
 
-- Đọc [`docs/DECISIONS.md`](docs/DECISIONS.md). Đây là sổ quyết định, nguồn chuẩn duy nhất của dự án. Thay đổi trái với một nguyên tắc (N) hay quyết định (D) sẽ không được nhận; muốn đổi một quyết định thì mở issue nêu lý do trước khi viết mã.
+- Đọc [`docs/Decisions.md`](docs/Decisions.md). Đây là sổ quyết định, nguồn chuẩn duy nhất của dự án. Thay đổi trái với một nguyên tắc (N) hay quyết định (D) sẽ không được nhận; muốn đổi một quyết định thì mở issue nêu lý do trước khi viết mã.
 - Việc lớn (tính năng mới, đổi hành vi gõ, đổi giao diện): mở issue trước để thống nhất. Sửa lỗi nhỏ thì gửi PR thẳng.
-- Kiến trúc và luồng một phím: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Lộ trình: [`docs/ROADMAP.md`](docs/ROADMAP.md).
+- Kiến trúc và luồng một phím: [`docs/Architecture.md`](docs/Architecture.md). Lộ trình: [`docs/Roadmap.md`](docs/Roadmap.md).
 
 ## Chuẩn bị máy
 
@@ -47,11 +47,11 @@ Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ 
 4. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu", rồi Allow trong hộp thoại của macOS. Không cần đăng xuất; không bật được thì làm theo màn "Chưa bật được Dấu" của app. Script không cài bộ gõ lần đầu và không bật gì (N4 (Không tự đổi cài đặt hệ thống)).
 5. Các lần sau: chạy lại `scripts/dev/install-app.sh`. Dấu.app vừa cài tự thay bộ gõ đã cài bằng bản nằm trong nó và không đổi danh sách nguồn đầu vào đã bật.
 
-Gõ hằng ngày dùng bản Release. `scripts/dev/install-app.sh --debug` cài bản Debug, bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry); cách đo: [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md) mục 4).
+Gõ hằng ngày dùng bản Release. `scripts/dev/install-app.sh --debug` cài bản Debug, bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry); cách đo: [`docs/Compatibility.md`](docs/Compatibility.md) mục 4).
 
 Bản bạn dựng là **bản phát triển** (D7 (Cập nhật và loại bản dựng)), không phải bản chính thức. Bản chính thức chỉ do quy trình phát hành ký Developer ID tạo ra; quy trình đó chưa có.
 
-Gặp lỗi ký, App Group hay chứng chỉ bị thu hồi: [`docs/TROUBLESHOOTING.md`](docs/TROUBLESHOOTING.md).
+Gặp lỗi ký, App Group hay chứng chỉ bị thu hồi: [`docs/Troubleshooting.md`](docs/Troubleshooting.md).
 
 ## Gỡ và quay về bản chính thức
 
@@ -64,7 +64,7 @@ Gặp lỗi ký, App Group hay chứng chỉ bị thu hồi: [`docs/TROUBLESHOOT
 Quy ước đầy đủ nằm trong [CLAUDE.md](CLAUDE.md), áp dụng cho cả người lẫn Claude Code:
 
 - Mã nguồn (Swift 6, Swift Testing, tiếng Anh trong mã và commit, String Catalog): mục "Quy ước mã nguồn".
-- Engine và OpenKey (không chép mã từ OpenKey hay UniKey; đáp án test theo chính tả và `DECISIONS.md`): mục "OpenKey là tài liệu tham khảo, không phải đáp án".
+- Engine và OpenKey (không chép mã từ OpenKey hay UniKey; đáp án test theo chính tả và `Decisions.md`): mục "OpenKey là tài liệu tham khảo, không phải đáp án".
 - Viết tài liệu: mục "Viết tài liệu".
 - Script trong `scripts/`: [`scripts/README.md`](scripts/README.md).
 
@@ -73,7 +73,7 @@ Thêm cho người đóng góp:
 - Commit theo [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`…).
 - `Dau.xcodeproj` được sinh từ `project.yml`: sửa `project.yml`, không sửa và không commit `.xcodeproj`.
 - Giao diện: dùng thành phần của macOS, bố cục theo System Settings (D9 (Giao diện)); nội dung từng màn hình ở [`docs/UI.md`](docs/UI.md). Muốn đổi giao diện thì mở issue kèm ảnh chụp hoặc phác thảo trước khi viết mã.
-- Chuỗi giao diện: khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện)); thuật ngữ ở [`docs/GLOSSARY.md`](docs/GLOSSARY.md); không ghi lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)). Kiểm bằng `scripts/check-l10n/check.sh`.
+- Chuỗi giao diện: khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện)); thuật ngữ ở [`docs/Glossary.md`](docs/Glossary.md); không ghi lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)). Kiểm bằng `scripts/check-l10n/check.sh`.
 - Sửa tài liệu thì đọc lại phần đã sửa và grep `docs/` tìm đường dẫn, tên, số mục mà thay đổi làm lỗi thời (CLAUDE.md, mục "Viết tài liệu").
 
 ## Gửi PR

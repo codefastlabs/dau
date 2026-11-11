@@ -2,8 +2,8 @@
 
 Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) đang có hiệu lực. Mỗi mục có số và tên ngắn; tài liệu khác dẫn dạng "D4 (Từ nước ngoài)", lần dẫn đầu trong mỗi file kèm tên.
 
-- **Cách đọc:** tra số ở mục lục. Mỗi quyết định gồm luật, hệ quả đã chấp nhận (nếu có), **Vì sao** và **Xem thêm**. Sổ chỉ ghi luật và lý do: cách mã làm ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md), số đo theo ngày ở nhật ký.
-- **Cách đổi:** sửa luật và lý do ở đây; ghi ngày, bản cũ và số đo dẫn tới thay đổi vào [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md); cùng commit với thay đổi mã.
+- **Cách đọc:** tra số ở mục lục. Mỗi quyết định gồm luật, hệ quả đã chấp nhận (nếu có), **Vì sao** và **Xem thêm**. Sổ chỉ ghi luật và lý do: cách mã làm ở [`docs/Architecture.md`](Architecture.md), số đo theo ngày ở nhật ký.
+- **Cách đổi:** sửa luật và lý do ở đây; ghi ngày, bản cũ và số đo dẫn tới thay đổi vào [`docs/history/DecisionsLog.md`](history/DecisionsLog.md); cùng commit với thay đổi mã.
 
 ## Mục lục
 
@@ -80,7 +80,7 @@ Tối thiểu lời gọi vào ứng dụng đích khi đang gõ.
 
 **Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Tự cộng dồn không cứu được app áp phím bất đồng bộ: vị trí gốc cũng là ảnh chụp cũ, và VS Code đổi gốc toạ độ.
 
-**Xem thêm:** bảng phím nào hỏi gì ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "Vị trí thay chữ"; chi phí đo được của `selectedRange` ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục "Vị trí thay chữ".
+**Xem thêm:** bảng phím nào hỏi gì ở [`docs/Architecture.md`](Architecture.md) mục "Vị trí thay chữ"; chi phí đo được của `selectedRange` ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục "Vị trí thay chữ".
 
 ### N4. Không tự đổi cài đặt hệ thống
 
@@ -131,7 +131,7 @@ Một quy tắc duy nhất:
 
 **Vì sao:** từ điển tiếng Anh chỉ có tác dụng ở đúng nhóm từ trùng, và ở đó nó làm hỏng các từ tiếng Việt rất phổ biến như "cả", "sẽ". Mũi tên, Esc, click và tổ hợp phím không khôi phục vì lúc đó con trỏ có thể đã đi chỗ khác: chuỗi phím trong bộ đệm không còn ứng với chữ ở vị trí mới, khôi phục theo nó dễ thay sai vùng. Vì vậy bộ đệm bị xoá; phím sau đó chỉ sửa chữ ngay trước con trỏ khi đọc lại được chính chữ đó từ app (D20).
 
-**Xem thêm:** các ca tự sửa đã thấy ở [`docs/COMPATIBILITY.md`](COMPATIBILITY.md) mục 6.1.
+**Xem thêm:** các ca tự sửa đã thấy ở [`docs/Compatibility.md`](Compatibility.md) mục 6.1.
 
 ### D5. Quy tắc theo ứng dụng
 
@@ -196,13 +196,13 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases, Homebrew cask (kha
 - Nút "Nâng cao": System Settings không có hàng mở/thu nào, còn `DisclosureGroup` trong Form không có vạch ngăn dưới hàng mở và không có AXPress cho trợ năng (đo trên macOS 27.2).
 - Sidebar cố định: kéo thu sidebar bị giật và System Settings không cho thu. SwiftUI không có API khoá sidebar của `NavigationSplitView`, nên dùng `NSSplitViewController` của chính app. Đã loại: duyệt cây view tìm `NSSplitView` mà `NavigationSplitView` dựng, phủ view lên đường chia.
 
-**Xem thêm:** số đo của System Settings ở [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](research/SYSTEM-SETTINGS-REFERENCE.md) và `scripts/selftest/settings-window/Reference.swift`; API cửa sổ ở [`docs/research/SWIFTUI-WINDOW-API.md`](research/SWIFTUI-WINDOW-API.md) (số đo trên app thử: mục 1); cách dựng ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "Cửa sổ Cài đặt".
+**Xem thêm:** số đo của System Settings ở [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) và `scripts/selftest/settings-window/Reference.swift`; API cửa sổ ở [`docs/research/SwiftUIWindowAPI.md`](research/SwiftUIWindowAPI.md) (số đo trên app thử: mục 1); cách dựng ở [`docs/Architecture.md`](Architecture.md) mục "Cửa sổ Cài đặt".
 
 ### D10. Engine tự viết
 
 Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation).
 
-- OpenKey chỉ là tài liệu tham khảo: đọc mã nguồn để hiểu tính năng và ca biên, ghi vào `docs/research/OPENKEY-NOTES.md`; không nhúng mã, không dùng kết quả chạy OpenKey làm đáp án test.
+- OpenKey chỉ là tài liệu tham khảo: đọc mã nguồn để hiểu tính năng và ca biên, ghi vào `docs/research/OpenKeyNotes.md`; không nhúng mã, không dùng kết quả chạy OpenKey làm đáp án test.
 - UniKey không dùng.
 
 ### D11. Kiểm tra ngữ cảnh
@@ -228,7 +228,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ.
 - Đầu văn bản: ở từ đầu tiên của tài liệu mới trong VS Code, "Chieeuf" từng ra "êhieuf" khi VS Code chưa báo phím nào của loạt phím dồn.
 
-**Xem thêm:** cơ chế và giới hạn ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "App trả lời chậm"; số lượt đo ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục D11.
+**Xem thêm:** cơ chế và giới hạn ở [`docs/Architecture.md`](Architecture.md) mục "App trả lời chậm"; số lượt đo ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D11.
 
 ### D12. Ưu tiên tiến trình
 
@@ -236,7 +236,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 
 **Vì sao:** dưới tải nặng ở M6, Dấu đúng chữ ở Safari, Chrome, VS Code và thời gian mỗi phím gần như không đổi so với lúc rảnh; số đo đó không cho thấy cần bật gì. App Nap và việc bị xếp vào nhân tiết kiệm điện chưa đo trực tiếp.
 
-**Xem thêm:** số đo ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục D12.
+**Xem thêm:** số đo ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D12.
 
 ### D13. Gạch chân là đường lui cuối cùng
 
@@ -253,7 +253,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 - Brave, Arc và các app Electron khác từng mang nhãn chỉ vì công nghệ giao diện, chưa đo. Nhãn chỉ gắn khi số đo cho thấy sai (luật trên), và kết quả đo ở app này không suy ra cho app kia (Cursor cũng là Electron mà còn sai), nên các app đó không có nhãn cho tới khi đo.
 - Terminal: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ).
 
-**Xem thêm:** [`docs/COMPATIBILITY.md`](COMPATIBILITY.md) mục 6.2; số lượt đo theo app ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục D13.
+**Xem thêm:** [`docs/Compatibility.md`](Compatibility.md) mục 6.2; số lượt đo theo app ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D13.
 
 ### D14. Onboarding
 
@@ -265,7 +265,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 
 **Vì sao:** bộ gõ chặn phím bằng event tap biến đổi phím bất kể nguồn nào đang chọn, nên gõ chồng với Dấu. Bộ gõ IMK chỉ xử lý phím khi chính nó đang được chọn, nên không gõ chồng.
 
-**Xem thêm:** danh sách bộ gõ và cách tắt ở [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 8; mã ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "Danh sách tương thích, bộ gõ cũ".
+**Xem thêm:** danh sách bộ gõ và cách tắt ở [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 8; mã ở [`docs/Architecture.md`](Architecture.md) mục "Danh sách tương thích, bộ gõ cũ".
 
 ### D15. Cài đặt mặc định
 
@@ -291,12 +291,12 @@ Telex, đặt dấu kiểu mới (hoà, thuý), bỏ dấu tự do bật, tự k
 - Container riêng của bộ gõ: app khác đụng container có thể làm macOS hỏi quyền.
 - Đã cân nhắc và loại gỡ tự động không cần "–" (xoá bộ gõ và bộ đệm, đo bằng bản thử): mọi chỗ người dùng thấy đều sạch nhưng mục "đã bật" của Dấu còn ẩn trong `com.apple.inputsources`, và cài lại thì macOS bật Dấu ngay không hỏi. Dấu chọn máy sạch và việc gỡ do chính người dùng xác nhận bằng "–".
 
-**Xem thêm:** [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 5.
+**Xem thêm:** [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 5.
 
 ### D17. Trợ năng
 
 - Chuyển Việt/Anh là chuyển nguồn nhập liệu của hệ thống, VoiceOver tự đọc tên nguồn (N1 (Không làm lại việc hệ thống đã có)); Dấu không tự thông báo thêm.
-- Đã kiểm bằng VoiceOver: hệ thống có đọc khi chuyển nguồn (`docs/history/LOG-M0-M4.md`). Đọc đúng tên "Dấu – Tiếng Việt" hay không: câu hỏi mở.
+- Đã kiểm bằng VoiceOver: hệ thống có đọc khi chuyển nguồn (`docs/history/LogM0ToM4.md`). Đọc đúng tên "Dấu – Tiếng Việt" hay không: câu hỏi mở.
 - Nếu hệ thống không đọc thì xét lại.
 
 **Vì sao:** tránh đọc hai lần.
@@ -355,12 +355,12 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 
 **Vì sao:**
 
-- Ngưỡng 50 ms: app áp phím bất đồng bộ trả vị trí và chữ từ ảnh chụp cũ khi phím dồn, và chữ đọc từ ảnh chụp cũ có thể bị thay sai chỗ. Ở các app đã thử, không chờ cũng chưa hỏng chữ (`docs/history/LOG-M0-M4.md`, bảng "Số đo (M1–M3)", dòng "D20 không chờ"); vẫn giữ biên vì người quay lại sửa từ không gõ nhanh như vậy.
+- Ngưỡng 50 ms: app áp phím bất đồng bộ trả vị trí và chữ từ ảnh chụp cũ khi phím dồn, và chữ đọc từ ảnh chụp cũ có thể bị thay sai chỗ. Ở các app đã thử, không chờ cũng chưa hỏng chữ (`docs/history/LogM0ToM4.md`, bảng "Số đo (M1–M3)", dòng "D20 không chờ"); vẫn giữ biên vì người quay lại sửa từ không gõ nhanh như vậy.
 - Chữ cái gõ sát chữ có sẵn: chọn bằng mô phỏng engine trên 10.303 ca ngoài và các tình huống sửa chữ, so với chỉ đọc ở phím dấu và với luôn nối (luôn nối làm hỏng 34 ca gõ từ mới sát từ cũ).
 - Ba ngoại lệ: trên cùng 10.303 ca, (a) không đổi ca nào, (b) đổi 2, (c) đổi 24, không bất biến nào hỏng.
 - Từ hệ thống vừa sửa: ở app bật tự sửa, hệ thống đổi "hoc" thành "học" trước phím j, và gõ lại phím dấu là bỏ dấu (D26), nên "Tôi hoc␣⌫j bài" từng ra "hocj".
 
-**Xem thêm:** mô phỏng ở [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) mục 3.4; chi phí mỗi lần đọc và số đo "Từ hệ thống vừa sửa" ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục D20; cơ chế ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "Thêm dấu cho từ đã gõ".
+**Xem thêm:** mô phỏng ở [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) mục 3.4; chi phí mỗi lần đọc và số đo "Từ hệ thống vừa sửa" ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D20; cơ chế ở [`docs/Architecture.md`](Architecture.md) mục "Thêm dấu cho từ đã gõ".
 
 ### D21. Gõ tắt phụ âm
 
@@ -373,7 +373,7 @@ Thuộc nhóm Nâng cao, mặc định tắt.
 
 **Vì sao:** Quick Telex kích hoạt cả giữa từ nên phá từ tiếng Anh có phụ âm đôi ("connect" → "congect"), và trùng mục đích với gõ tắt phụ âm.
 
-**Xem thêm:** cách OpenKey làm ở [`docs/research/OPENKEY-NOTES.md`](research/OPENKEY-NOTES.md) (B9).
+**Xem thêm:** cách OpenKey làm ở [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) (B9).
 
 ### D22. Gõ tắt loại trừ z, f, w, j
 
@@ -420,7 +420,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 - Kênh Beta dùng biểu tượng chuẩn: người dùng Beta là người dùng thật, đổi biểu tượng mỗi lần đổi kênh chỉ gây rối.
 - Không ghi "Release": đặt cạnh "Bản phát triển" thì đọc thành hai từ đối nhau (phát triển / phát hành). Release là trạng thái bình thường; Debug là ngoại lệ (log mỗi phím, `get-task-allow`, D8) nên mới cần ghi.
 
-**Xem thêm:** màu và artboard ở [`docs/BRAND.md`](BRAND.md).
+**Xem thêm:** màu và artboard ở [`docs/Brand.md`](Brand.md).
 
 ### D26. Gõ đúp phím dấu
 
@@ -466,7 +466,7 @@ Telex đơn giản là Telex trừ các điểm sau:
 - Không có `[ ]` (như D27 (Không có phím gõ nhanh ơ, ư)).
 - Không có gõ tắt w → qu (D23 (w → qu chỉ ở VNI)).
 
-**Xem thêm:** Simple Telex 1 của OpenKey ở [`docs/research/OPENKEY-NOTES.md`](research/OPENKEY-NOTES.md) mục 2.5.
+**Xem thêm:** Simple Telex 1 của OpenKey ở [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) mục 2.5.
 
 ### D30. Kiểm tra chính tả
 
@@ -574,7 +574,7 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
   - **Giới hạn:** kiểm chữ ký chỉ phát hiện, không chặn. Mọi tiến trình của người dùng ghi được `~/Library/Input Methods`; bản thay thế giữ trạng thái đã bật của Dấu nên macOS không hỏi lại, và nhận phím tới lúc người dùng mở app chủ. Cách chặn là cài bộ gõ vào thư mục chỉ quản trị viên ghi được (câu hỏi mở "Cài cho riêng mình hay cho cả máy").
 - **Chữ ký sai thì không tự thay:** bộ gõ đã cài có chữ ký sai hoặc khác Team ID thì app không tự thay, kể cả khi nó khác bản nhúng; banner "Cài lại" hiện và người dùng bấm. Trong onboarding (D14 (Onboarding)), bước 2 hiện thông báo đó và nút "Cài lại" thay cho "Bật Dấu": cài lại xong mới bật. Bản chủ không bật một bộ gõ có chữ ký sai (bản không phải bản chủ không kiểm chữ ký).
 
-**Hệ quả đã chấp nhận:** nếu một bản đổi biểu tượng, macOS còn hiện biểu tượng cũ tới khi đăng xuất, vì Dấu không dừng tiến trình hệ thống giữ ảnh đó (đã đo, `docs/research/INPUT-METHOD-INSTALL.md` mục 6); tên nguồn chưa đo (câu hỏi mở "Loại bản dựng"). Nên giữ cả hai không đổi.
+**Hệ quả đã chấp nhận:** nếu một bản đổi biểu tượng, macOS còn hiện biểu tượng cũ tới khi đăng xuất, vì Dấu không dừng tiến trình hệ thống giữ ảnh đó (đã đo, `docs/research/InputMethodInstall.md` mục 6); tên nguồn chưa đo (câu hỏi mở "Loại bản dựng"). Nên giữ cả hai không đổi.
 
 **Vì sao:**
 
@@ -591,7 +591,7 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
 - Bản chủ: khi bản Dấu.app nào cũng cài và thay được bộ gõ, và chỉ thay khi số build của bản nhúng lớn hơn, thì mở một bản mới hơn từ ảnh đĩa làm bộ gõ khác bản app đã cài, quay về bản trước (D19 (Quay về bản trước)) không lùi được bộ gõ, và bản phát triển cùng số build không bao giờ được thay.
 - So mã băm với bản trong Applications, không xét đường dẫn đang chạy: macOS có thể chạy app từ một đường dẫn ngẫu nhiên (App Translocation); điều kiện không được Apple công bố và không có cách được hỗ trợ để nhận biết hay lấy đường dẫn gốc (Apple DTS, Developer Forums 724969).
 
-**Xem thêm:** [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) (mục 6 nâng cấp; mục 1 và 3 số đo khi bật); cách mã làm ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "Cài, bật, thay, gỡ bộ gõ".
+**Xem thêm:** [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) (mục 6 nâng cấp; mục 1 và 3 số đo khi bật); cách mã làm ở [`docs/Architecture.md`](Architecture.md) mục "Cài, bật, thay, gỡ bộ gõ".
 
 ### D38. Chữ trên giao diện
 
@@ -650,7 +650,7 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 
 **Vì sao:** ngưỡng cao hơn mức đã đo ở M6 (p50 tới 1,92 ms, p99 tới 13,2 ms) khoảng 1,5 lần, để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)); bản Debug có thêm một lời gọi chẩn đoán sau mỗi lần thay chữ nên số của nó cao hơn bản phát hành.
 
-**Xem thêm:** số đo M6 ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục D42.
+**Xem thêm:** số đo M6 ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D42.
 
 ### D43. Ô bỏ qua vùng thay chữ
 
@@ -682,11 +682,11 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 - Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
 
-**Xem thêm:** cơ chế đọc từ mã ở [`docs/research/TERMINAL-AND-UNDERLINE.md`](research/TERMINAL-AND-UNDERLINE.md); [`docs/COMPATIBILITY.md`](COMPATIBILITY.md) mục 6.8; cách nhận ra ở [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "Ô bỏ qua vùng thay chữ"; số đo ở [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) mục D43.
+**Xem thêm:** cơ chế đọc từ mã ở [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md); [`docs/Compatibility.md`](Compatibility.md) mục 6.8; cách nhận ra ở [`docs/Architecture.md`](Architecture.md) mục "Ô bỏ qua vùng thay chữ"; số đo ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D43.
 
 ## Đã biết nhưng không làm
 
-Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết và cố ý không làm; lý do nằm ở quyết định được dẫn. Muốn làm một mục thì sửa quyết định đó trước. Cột "Bộ gõ khác có" ghi bộ gõ đã đối chiếu: OpenKey theo `docs/research/OPENKEY-NOTES.md`, uvie-rs theo ca thử ở `docs/research/external-test-inputs/README.md`; "—" là chưa đối chiếu.
+Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết và cố ý không làm; lý do nằm ở quyết định được dẫn. Muốn làm một mục thì sửa quyết định đó trước. Cột "Bộ gõ khác có" ghi bộ gõ đã đối chiếu: OpenKey theo `docs/research/OpenKeyNotes.md`, uvie-rs theo ca thử ở `docs/research/external-test-inputs/README.md`; "—" là chưa đối chiếu.
 
 | Tính năng | Bộ gõ khác có | Vì sao Dấu không làm |
 |---|---|---|
@@ -711,10 +711,10 @@ Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM v
 
 ## Câu hỏi mở
 
-Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào quyết định liên quan, diễn biến vào [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md).
+Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào quyết định liên quan, diễn biến vào [`docs/history/DecisionsLog.md`](history/DecisionsLog.md).
 
-- **Hộp thoại và đăng xuất khi bật bộ gõ** (D37): trên macOS 27.2 có hộp thoại xin phép và không cần đăng xuất. Chưa biết trên macOS 14–26, với bản ký Developer ID (kể cả bản mang quarantine) và trên tài khoản macOS mới. Nguồn trái nhau: Apple DTS nói cần đăng xuất, một dự án khác nói không (`docs/research/INPUT-METHOD-INSTALL.md` mục Hiện trạng, 1, 2, 10.4).
-- **Cài cho riêng mình hay cho cả máy** (D37, ý "Kiểm chữ ký"; cách duy nhất chặn việc thay bundle bộ gõ): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` hoặc `/Library/Input Methods` để mọi tài khoản dùng được. Chưa thiết kế; khi làm phải sửa D16, D37, có thể cả D6 (`.pkg` hay app chủ xin quyền quản trị) và D7 (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không (`docs/history/RESEARCH-LOG.md` mục 1, kế hoạch vòng thử 8.2 cũ).
+- **Hộp thoại và đăng xuất khi bật bộ gõ** (D37): trên macOS 27.2 có hộp thoại xin phép và không cần đăng xuất. Chưa biết trên macOS 14–26, với bản ký Developer ID (kể cả bản mang quarantine) và trên tài khoản macOS mới. Nguồn trái nhau: Apple DTS nói cần đăng xuất, một dự án khác nói không (`docs/research/InputMethodInstall.md` mục Hiện trạng, 1, 2, 10.4).
+- **Cài cho riêng mình hay cho cả máy** (D37, ý "Kiểm chữ ký"; cách duy nhất chặn việc thay bundle bộ gõ): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` hoặc `/Library/Input Methods` để mọi tài khoản dùng được. Chưa thiết kế; khi làm phải sửa D16, D37, có thể cả D6 (`.pkg` hay app chủ xin quyền quản trị) và D7 (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không (`docs/history/ResearchLog.md` mục 1, kế hoạch vòng thử 8.2 cũ).
 - **Bản chủ trong `~/Applications`** (D37): sandbox của bộ gõ không đọc được bản trong thư mục nhà, nên mục "Cài đặt Dấu…" không kiểm được chữ ký của nó và chỉ mở nó khi `/Applications` không có bản nào đạt. Mở được thật từ sandbox hay không thì chưa đo (bản chủ trong `/Applications`: mở được, kiểm chữ ký chạy trong sandbox).
 - **Hộp thoại App Group với bản ký Developer ID** (D24): bản có Team ID Personal Team không có hộp thoại; bản Developer ID chưa kiểm.
 - **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không. Không được thì hàng "Ngôn ngữ" trong Cài đặt nói rõ menu bộ gõ theo ngôn ngữ hệ thống, nếu cần.

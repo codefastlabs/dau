@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Types the cells of docs/research/TERMINAL-AND-UNDERLINE.md (sections 1–3) in Sublime Text, Ghostty, xterm.js and text fields, with Dấu and Apple's Vietnamese Telex as the control.
+# Types the cells of docs/research/TerminalAndUnderline.md (sections 1–3) in Sublime Text, Ghostty, xterm.js and text fields, with Dấu and Apple's Vietnamese Telex as the control.
 # Side effects: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/research/terminal-underline/run.sh [--delay MS] [CELL]...
@@ -35,7 +35,7 @@ DELAY=120
 # the underline cell ends with Return.
 # Second and third rounds (11/11/2026, t2- and t3- cells): Debug trials that D43 replaced
 # (DEL erase in the key, after the key, a document length probe); they ran builds 13d4df7
-# and 237e68f, results in the log of docs/PROGRESS.md. Their cells went with the trials.
+# and 237e68f, results in the log of docs/Progress.md. Their cells went with the trials.
 # Fourth round (t4-): D43 as built. The terminals (Ghostty with zsh and vim, xterm.js)
 # must be told apart and come out right from the word where they are; the text fields
 # (Chrome, also with a busy page; Safari; Sublime Text) must never be taken for one

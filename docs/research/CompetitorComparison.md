@@ -36,8 +36,8 @@ Một lượt `scripts/research/compare-ims/run.sh`, 22 phút 29 giây, khoảng
 
 ### 1.2 Giới hạn
 
-- **Số của Apple (53/105, 169/188, 677/678):** lượt đo chọn nguồn của Apple bằng API từ tiến trình của script (`--source`), không bằng phím tắt hệ thống kèm bước xác nhận trong ô gõ. Ngày 10/11/2026 đã xác định cách chọn đó có thể để ô gõ không dùng bộ gõ của Apple (các ô "ra nguyên chuỗi phím" là đo hỏng, `docs/PROGRESS.md` nhật ký 10/11). Chữ Apple ra ở lượt này là chữ kiểu Telex chứ không phải nguyên chuỗi phím; việc bộ gõ của Apple thật sự xử lý phím ở mọi ô là suy luận, chưa kiểm chứng.
-- **Focus:** script tự gõ lúc đó chưa kiểm focus (sửa 09/11/2026, `docs/COMPATIBILITY.md` mục Hiện trạng), nên chưa loại được việc một số lượt gõ vào thanh địa chỉ thay vì ô của trang. Chữ của Dấu vẫn trùng engine nên kết quả về chữ đứng được; chỉ chưa chắc là ô nào.
+- **Số của Apple (53/105, 169/188, 677/678):** lượt đo chọn nguồn của Apple bằng API từ tiến trình của script (`--source`), không bằng phím tắt hệ thống kèm bước xác nhận trong ô gõ. Ngày 10/11/2026 đã xác định cách chọn đó có thể để ô gõ không dùng bộ gõ của Apple (các ô "ra nguyên chuỗi phím" là đo hỏng, `docs/Progress.md` nhật ký 10/11). Chữ Apple ra ở lượt này là chữ kiểu Telex chứ không phải nguyên chuỗi phím; việc bộ gõ của Apple thật sự xử lý phím ở mọi ô là suy luận, chưa kiểm chứng.
+- **Focus:** script tự gõ lúc đó chưa kiểm focus (sửa 09/11/2026, `docs/Compatibility.md` mục Hiện trạng), nên chưa loại được việc một số lượt gõ vào thanh địa chỉ thay vì ô của trang. Chữ của Dấu vẫn trùng engine nên kết quả về chữ đứng được; chỉ chưa chắc là ô nào.
 - Một máy, một lượt, chỉ 30 ms giữa hai phím, chỉ Telex thứ tự chuẩn.
 - Dữ liệu do Dấu tự viết. Danh sách từ tiếng Anh cố ý chọn từ có phím dấu hoặc phím biến đổi của Telex (từ không có các phím đó thì bộ gõ nào cũng để nguyên), nên 88/105 và 53/105 không phải tỉ lệ trên tiếng Anh nói chung.
 - Cách chấm bỏ qua vị trí dấu thanh (hoà/hòa coi như nhau), nên không bắt được dấu đặt sai nguyên âm.
@@ -72,7 +72,7 @@ Câu hỏi: hành vi engine của Dấu khác các bộ gõ tiếng Việt khác
 
 ## 3. Nhịp gõ thật: hai phím cách nhau dưới 10 ms
 
-Câu hỏi: gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms không (D13, `docs/COMPATIBILITY.md` mục 6.2). Kết quả cần có là phân bố khoảng cách giữa hai phím liên tiếp và tỉ lệ cặp dưới 10 ms theo tốc độ gõ, từ dữ liệu công khai của nhiều người gõ thật; không ghi nhật ký trên máy người dùng thay thế.
+Câu hỏi: gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms không (D13, `docs/Compatibility.md` mục 6.2). Kết quả cần có là phân bố khoảng cách giữa hai phím liên tiếp và tỉ lệ cặp dưới 10 ms theo tốc độ gõ, từ dữ liệu công khai của nhiều người gõ thật; không ghi nhật ký trên máy người dùng thay thế.
 
 - **Dừng (09/11/2026): dữ liệu công khai không trả lời được.**
   - Bộ dữ liệu duy nhất tải được công khai, có dấu thời gian từng phím của nhiều người, là bộ 136 triệu lần gõ phím của Đại học Aalto (Dhakal và cộng sự, CHI 2018, https://userinterfaces.aalto.fi/136Mkeystrokes/). Bộ này đo bằng trình duyệt, và chính bài báo ghi độ chính xác của cách đo khoảng 10–15 ms, nên không phân biệt được hai phím cách nhau dưới 10 ms.
@@ -80,7 +80,7 @@ Câu hỏi: gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms khôn
   - Giấy phép ghi "nghiên cứu, phi thương mại, ghi nguồn", chưa rõ có cho công bố số phái sinh không.
   - Bộ Buffalo phải xin qua email; KeyRecs chỉ có độ trễ theo cặp chữ, gõ câu cố định.
   - Kể cả có dữ liệu thì người trong đó gõ tiếng Anh; Telex có cặp phím riêng ("ee", "ow", phím dấu ở cuối từ), nên chỉ ước lượng được.
-- **Câu hỏi đặt sai chỗ (đo ở M6, 09/11/2026, `docs/PROGRESS.md` nhật ký): app bận không dồn phím; lỗi khi Chrome bận là vị trí con trỏ cũ, ở nhịp gõ bình thường.** Giả thuyết ban đầu là phím dồn dưới 10 ms không do người gõ nhanh mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc; nếu vậy thì bài test tải nặng của M6 mới là chỗ trả lời câu hỏi của D13.
+- **Câu hỏi đặt sai chỗ (đo ở M6, 09/11/2026, `docs/Progress.md` nhật ký): app bận không dồn phím; lỗi khi Chrome bận là vị trí con trỏ cũ, ở nhịp gõ bình thường.** Giả thuyết ban đầu là phím dồn dưới 10 ms không do người gõ nhanh mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc; nếu vậy thì bài test tải nặng của M6 mới là chỗ trả lời câu hỏi của D13.
 
 ## Để sau
 

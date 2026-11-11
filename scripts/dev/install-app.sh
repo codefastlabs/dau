@@ -16,7 +16,7 @@
 #    put back; no Finder, so no Automation prompt) and the new one is renamed into place.
 #    It is then registered with LaunchServices: ditto alone does not register it, and
 #    Spotlight and "Open With" miss an unregistered copy (HostApp, behind the input
-#    menu's "Cài đặt Dấu…", also looks in /Applications itself: docs/ARCHITECTURE.md).
+#    menu's "Cài đặt Dấu…", also looks in /Applications itself: docs/Architecture.md).
 # 3. Runs `Dau --reconcile-input-method` from the copy now in /Applications, the owner
 #    copy (D37): the app itself replaces the installed input method with the one inside
 #    it, as it does at every launch, and stops the old input method process. The script
@@ -124,7 +124,7 @@ fi
 # D25: a bundle must hold only the icon set its Info.plist names. Xcode's incremental build
 # keeps the other set's .icns after DAU_OFFICIAL changes (assetcatalog_output and the
 # product bundle are never pruned), and AppKit then showed the standard icon on a
-# development build (measured 11/11/2026, docs/PROGRESS.md). Prints the stray files.
+# development build (measured 11/11/2026, docs/Progress.md). Prints the stray files.
 stray_icons() { # bundle
   local named
   named=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$1/Contents/Info.plist" 2>/dev/null) || named=""

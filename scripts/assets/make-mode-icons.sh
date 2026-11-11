@@ -4,7 +4,7 @@
 # Template TIFF, 22 × 16 pt @1x + @2x, written into Apps/DauInputMethod/Resources.
 # Apple's headers document .tif/.icns for input method
 # icons (TextServices.h, tsInputMethodIconFileKey); built-in input methods use multi-
-# resolution TIFF the same way. TODO(M7): official identity files (docs/BRAND.md).
+# resolution TIFF the same way. TODO(M7): official identity files (docs/Brand.md).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

@@ -1,5 +1,5 @@
 // Pixel checks of the real Settings window's screenshots, and frame checks of the in-app
-// onboarding and uninstall captures (docs/UI-CHECKS.md). run.sh compiles this file with
+// onboarding and uninstall captures (docs/UIChecks.md). run.sh compiles this file with
 // Reference.swift (every pass value) and runs it after the app launches.
 //
 // Usage: check <out-dir> whenScrolling:<dir> always:<dir>…

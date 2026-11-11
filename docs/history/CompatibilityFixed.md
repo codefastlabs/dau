@@ -1,6 +1,6 @@
 # Tương thích: lỗi đã sửa và lượt chạy ma trận 30/10/2026
 
-Chuyển từ [`docs/COMPATIBILITY.md`](../COMPATIBILITY.md) ngày 11/11/2026 (mục cũ 5.1, 6.4, 6.6, 6.7): các lỗi đã sửa kèm chẩn đoán, và nhật ký lượt chạy ma trận M3. Hiện trạng tương thích ở `docs/COMPATIBILITY.md`.
+Chuyển từ [`docs/Compatibility.md`](../Compatibility.md) ngày 11/11/2026 (mục cũ 5.1, 6.4, 6.6, 6.7): các lỗi đã sửa kèm chẩn đoán, và nhật ký lượt chạy ma trận M3. Hiện trạng tương thích ở `docs/Compatibility.md`.
 
 ## Lượt chạy ma trận ngày 30/10/2026 (mục cũ 5.1)
 

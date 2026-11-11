@@ -3,7 +3,7 @@ import DauEngine
 import DauShared
 import Testing
 
-/// A terminal like Ghostty 1.4.0 (docs/research/TERMINAL-AND-UNDERLINE.md): `insertText`
+/// A terminal like Ghostty 1.4.0 (docs/research/TerminalAndUnderline.md): `insertText`
 /// sends the text to the shell as typed, whatever the range, except text that starts with
 /// a control character while Ghostty handles a key (dropped, the key then sends nothing);
 /// `selectedRange` is always {0,0}; no text can be read. The shell's line editor erases

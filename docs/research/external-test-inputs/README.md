@@ -1,6 +1,6 @@
 # Đầu vào test lấy từ bộ gõ khác (thu thập và so sánh)
 
-Chạy engine của Dấu trên **chuỗi phím** lấy từ bộ test của 10 bộ gõ tiếng Việt khác, rồi so với đáp án của họ để tìm ca đáng xem lại. Đáp án của họ không bao giờ là kết quả mong đợi của Dấu (D10 (Engine tự viết)): engine được kiểm bằng bất biến rút từ chính tả và `docs/DECISIONS.md`, đáp án của họ chỉ dùng để so. Ghi công nguồn và giấy phép: [`docs/research/external-test-inputs/NOTICE.md`](NOTICE.md). Diễn biến các lần đếm, quy trình dự kiến ban đầu và các bước chốt quyết định: `docs/history/RESEARCH-LOG.md` mục 3.
+Chạy engine của Dấu trên **chuỗi phím** lấy từ bộ test của 10 bộ gõ tiếng Việt khác, rồi so với đáp án của họ để tìm ca đáng xem lại. Đáp án của họ không bao giờ là kết quả mong đợi của Dấu (D10 (Engine tự viết)): engine được kiểm bằng bất biến rút từ chính tả và `docs/Decisions.md`, đáp án của họ chỉ dùng để so. Ghi công nguồn và giấy phép: [`docs/research/external-test-inputs/NOTICE.md`](NOTICE.md). Diễn biến các lần đếm, quy trình dự kiến ban đầu và các bước chốt quyết định: `docs/history/ResearchLog.md` mục 3.
 
 ## Hiện trạng (11/11/2026)
 
@@ -114,7 +114,7 @@ Bốn kiểu lỗi (lớp D) ở lần xét đầu ngày 05/11/2026, sửa ở c
 
 ### 2.2 Câu hỏi đã chốt thành quyết định
 
-Chín câu hỏi lớp E của lần xét đầu (mã E1–E9) và hai câu của lần xét thứ hai, đều chốt ngày 05/11/2026; ca nào còn khác nay thuộc lớp A. Bảng câu hỏi, số ca và ví dụ: `docs/history/RESEARCH-LOG.md` mục 3.
+Chín câu hỏi lớp E của lần xét đầu (mã E1–E9) và hai câu của lần xét thứ hai, đều chốt ngày 05/11/2026; ca nào còn khác nay thuộc lớp A. Bảng câu hỏi, số ca và ví dụ: `docs/history/ResearchLog.md` mục 3.
 - D30: huyền/hỏi/ngã trên vần tắc nhận giữa từ, kết thúc từ khôi phục (E1).
 - D28: phím biến đổi khác loại đổi sang dấu mới, kể cả "ươ" + o → "uô" (E2).
 - D31: dấu ngay sau "qu" được nhận, "qui" vẫn không hợp lệ (E3); b, m, p, v đi với âm đệm (E5); thêm vần "uêu", "oao" (E7). D32: "quá" ⌫ → "qu".
@@ -127,7 +127,7 @@ Chín câu hỏi lớp E của lần xét đầu (mã E1–E9) và hai câu củ
 
 ### 3.1 Bất biến thay cho đáp án từng ca
 
-`ExternalCasesTests` (`Packages/DauEngine/Tests/DauEngineTests`) chạy mọi ca qua engine, kiểm các bất biến rút từ chính tả và `docs/DECISIONS.md`, và ghi đầu ra của Dấu vào `build/external-dau-output/`. Không ai viết đáp án từng ca; người viết test chỉ đọc các file `*.tsv` và file này, không mở đáp án của họ.
+`ExternalCasesTests` (`Packages/DauEngine/Tests/DauEngineTests`) chạy mọi ca qua engine, kiểm các bất biến rút từ chính tả và `docs/Decisions.md`, và ghi đầu ra của Dấu vào `build/external-dau-output/`. Không ai viết đáp án từng ca; người viết test chỉ đọc các file `*.tsv` và file này, không mở đáp án của họ.
 
 ### 3.2 So với đáp án của họ
 
@@ -147,7 +147,7 @@ Mỗi ca mà Dấu và đáp án của họ khác nhau thuộc đúng một lớ
 - **B**: khác do tuỳ chọn `src:` của nguồn mà Dấu không có (mục 4.2);
 - **C**: đáp án của họ sai chính tả;
 - **D**: Dấu có vẻ sai, không quyết định nào biện minh;
-- **E**: `docs/DECISIONS.md` chưa nói hoặc nói chưa rõ, cần người dùng chọn;
+- **E**: `docs/Decisions.md` chưa nói hoặc nói chưa rõ, cần người dùng chọn;
 - **X**: không so được.
 
 Ca vừa thuộc B vừa có quyết định cụ thể của Dấu xếp vào A ("pass" ở nguồn có từ điển tiếng Anh, Dấu ra "pas" theo D26). Các ca còn lại: `agree` (khớp), `no-answer` (họ không kiểm chữ), `unreviewed` (khác nhưng chưa xếp).
@@ -166,7 +166,7 @@ D20 chọn nối có điều kiện cùng ba ngoại lệ. Lớp IMK làm ở `I
 
 ### 3.5 Đếm sơ bộ không xem đáp án
 
-`scripts/research/external-tests/answer_stats.py` đếm đáp án của họ có từ không phải âm tiết hợp lệ, bằng một bộ kiểm âm tiết tạm, chỉ in số đếm. Đã dùng một lần trước khi xem từng ca; số đếm đó nay được thay bằng các lớp ở mục 1 (bảng cũ: `docs/history/RESEARCH-LOG.md` mục 3).
+`scripts/research/external-tests/answer_stats.py` đếm đáp án của họ có từ không phải âm tiết hợp lệ, bằng một bộ kiểm âm tiết tạm, chỉ in số đếm. Đã dùng một lần trước khi xem từng ca; số đếm đó nay được thay bằng các lớp ở mục 1 (bảng cũ: `docs/history/ResearchLog.md` mục 3).
 
 ## 4. Định dạng dữ liệu
 
@@ -294,7 +294,7 @@ Số "ca" là số hàng trong TSV. "Bỏ" ghi đơn vị: ca (một chuỗi ph�
 - File: `tests/*.rs`. Trích tự động `type_seq`, `type_seq_vni`, `type_diff`, hàm phụ hai tham số, vòng lặp trên mảng cặp, chuỗi `type_chars`/`press_space`/`press_backspace` và hàm phụ xoá một chữ kèm kiểm `screen`, vòng trên chuỗi và mảng chữ.
 - 947 ca: Telex 925, VNI 22; 922 có đáp án.
 - Cấu hình: `set_modern_orthography` mặc định tắt → `tone=classic`; "english override" mặc định bật → `src:englishDictionary`; `set_quick_start` → `advanced=consonantShortcuts`; `set_relaxed_coda` → `src:relaxedCoda=on`.
-- Bỏ: 14 ca Quick Telex (`docs/DECISIONS.md` mục "Đã biết nhưng không làm"); 3 test đọc file dữ liệu (kho lớn); 9 test chỉ in kết quả; 68 test không trích được (bảng nội bộ, kích thước diff, lịch sử sửa từ, bất biến ngẫu nhiên).
+- Bỏ: 14 ca Quick Telex (`docs/Decisions.md` mục "Đã biết nhưng không làm"); 3 test đọc file dữ liệu (kho lớn); 9 test chỉ in kết quả; 68 test không trích được (bảng nội bộ, kích thước diff, lịch sử sửa từ, bất biến ngẫu nhiên).
 
 ### 5.8 ibus-telex (Rust)
 
@@ -317,7 +317,7 @@ Số "ca" là số hàng trong TSV. "Bỏ" ghi đơn vị: ca (một chuỗi ph�
 - https://github.com/xmannv/xkey, commit `398e78e9c1a92f740d5cbf1673914a3b3c458eff` (11/10/2026). MIT, © 2025 XKey.
 - File: `XKeyTests/VNEngineTests.swift`, `VNEngineBackspaceRestoreTests.swift`, `VNEngineBufferIntegrationTests.swift`, `TypingBufferTests.swift` (chuỗi `processKey`/`typeWord`/`typeTelex`/`vni([...])` và các lần kiểm `getCurrentWord()`), danh sách `corpus` của `ScreenSimulationTests.swift` (chỉ phím).
 - 263 ca: Telex 240, VNI 23; 234 có đáp án (từ đang gõ). Hai nhánh của một `if … else` trên trạng thái engine của họ là hai ca riêng; `their_note` ghi điều kiện của nhánh.
-- Engine của XKey ghi là bản chuyển từ engine OpenKey (`XKey/Core/Engine/VNEngine.swift`), nên đáp án gần với hành vi OpenKey (`docs/research/OPENKEY-NOTES.md` mục 4).
+- Engine của XKey ghi là bản chuyển từ engine OpenKey (`XKey/Core/Engine/VNEngine.swift`), nên đáp án gần với hành vi OpenKey (`docs/research/OpenKeyNotes.md` mục 4).
 - Cấu hình: mặc định kiểu mới, kiểm tra chính tả và khôi phục bật, **Quick Telex bật**: ca có cặp phụ âm đôi mà Quick Telex có thể đổi thì bỏ, ca còn lại chạy với mặc định Dấu; `vUseModernOrthography = 0` → `tone=classic`; `vCheckSpelling = 0` → `src:spellcheck=off`; `vCustomConsonants` → `advanced=allowZFWJ` và/hoặc `src:customConsonants`.
 - Bỏ: `XKeyTests/Resources/telex_test_suite.csv` (8.046 ca, chính tác giả ghi là do một engine khác sinh ra, không nêu engine hay giấy phép); 4 test macro và file viết hoa đầu câu (D3); 14 ca D27; 1 ca Quick Telex; kiểu "adaptive" Telex+VNI; 166 test không có chuỗi phím kèm kiểm chữ; các file test của phần ứng dụng.
 

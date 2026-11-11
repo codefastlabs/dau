@@ -1,22 +1,22 @@
 # Nhật ký M0–M4 (29–30/10/2026)
 
-Chuyển từ `docs/PROGRESS.md` ngày 03/11/2026 khi M0–M4 đã đóng; file này không cập nhật nữa.
+Chuyển từ `docs/Progress.md` ngày 03/11/2026 khi M0–M4 đã đóng; file này không cập nhật nữa.
 
-> Các mã commit ghi trước 02/11/2026 là mã cũ (trước khi viết lại lịch sử); tra `docs/history/COMMIT-MAP.md` để ra mã mới.
+> Các mã commit ghi trước 02/11/2026 là mã cũ (trước khi viết lại lịch sử); tra `docs/history/CommitMap.md` để ra mã mới.
 
 (ngày — việc — agent — kết quả — commit)
 
 - 29/10/2026 — người dùng duyệt đề xuất khởi động: ranh giới từ (D4, D21), D26 gõ đúp phím dấu, D27 bỏ `[` `]`, ô trống cho nhãn web editor (UI.md, N5), đưa D18 về đúng thứ tự — phiên chính — xong (6e4f17a)
-- 29/10/2026 — M1a OPENKEY-NOTES — researcher — xong (b0739c7)
+- 29/10/2026 — M1a OpenKeyNotes — researcher — xong (b0739c7)
 - 29/10/2026 — M0 khung + sửa tên hiển thị en (D24) — release-eng — xong (b2a331d, 06f0dcb, 6fe660b, 0b188dd); kiểm toán M0 ĐẠT
-- 29/10/2026 — người dùng duyệt 13 điểm engine từ OPENKEY-NOTES mục 7: D28 bỏ dấu tự do, D29 Telex đơn giản, D30 chính tả luôn chạy, D31 âm tiết hợp lệ, D32 Backspace, D33 độ dài từ; sửa D4 (ranh giới: mọi ký tự in ra khôi phục; mũi tên/Esc/chuột/⌘ chỉ reset), D20, D21, D22, D23, D26; Quick Telex và tạm tắt ⌃/⌘ vào mục loại bỏ — phiên chính — xong
-- 29/10/2026 — người dùng duyệt 8 điểm từ kiểm toán M0 + OPENKEY-NOTES: D4 mốc khôi phục, D26 khoá giữ sau ⌫, D28 phím không cần sát + tắt thì dd liền, D29 câu chữ, D30 tiền tố hợp lệ, D33 khôi phục ngay, D34 chữ hoa với phím biến đổi — phiên chính — xong
-- 29/10/2026 — M1b engine Telex + Telex đơn giản — engine-dev — 50 test xanh debug/release, 0,148 µs/phím, 0 cấp phát (cf5c2bb, ebfce9a). Phát hiện: D26 + mốc khôi phục làm từ Anh có ss/ff/rr mất một chữ — chờ người dùng. Chốt theo cách engine đang làm (không đổi DECISIONS câu chữ, ghi ở đây): tắt bỏ dấu tự do vẫn tự dời dấu; "uow" đứng riêng → "uơ", gõ tiếp → ươ
+- 29/10/2026 — người dùng duyệt 13 điểm engine từ OpenKeyNotes mục 7: D28 bỏ dấu tự do, D29 Telex đơn giản, D30 chính tả luôn chạy, D31 âm tiết hợp lệ, D32 Backspace, D33 độ dài từ; sửa D4 (ranh giới: mọi ký tự in ra khôi phục; mũi tên/Esc/chuột/⌘ chỉ reset), D20, D21, D22, D23, D26; Quick Telex và tạm tắt ⌃/⌘ vào mục loại bỏ — phiên chính — xong
+- 29/10/2026 — người dùng duyệt 8 điểm từ kiểm toán M0 + OpenKeyNotes: D4 mốc khôi phục, D26 khoá giữ sau ⌫, D28 phím không cần sát + tắt thì dd liền, D29 câu chữ, D30 tiền tố hợp lệ, D33 khôi phục ngay, D34 chữ hoa với phím biến đổi — phiên chính — xong
+- 29/10/2026 — M1b engine Telex + Telex đơn giản — engine-dev — 50 test xanh debug/release, 0,148 µs/phím, 0 cấp phát (cf5c2bb, ebfce9a). Phát hiện: D26 + mốc khôi phục làm từ Anh có ss/ff/rr mất một chữ — chờ người dùng. Chốt theo cách engine đang làm (không đổi Decisions câu chữ, ghi ở đây): tắt bỏ dấu tự do vẫn tự dời dấu; "uow" đứng riêng → "uơ", gõ tiếp → ươ
 - 29/10/2026 — M1c VNI — engine-dev — 68 test xanh debug/release, 0,142 µs/phím (8bddba8, ecd81b3)
 - 29/10/2026 — người dùng chọn giữ cách A: chữ cái lặp trùng phím dấu gõ 3 lần (passsword); ghi vào D26 — phiên chính — xong
 - 29/10/2026 — người dùng duyệt 4 điểm: D33 khi tắt tự khôi phục chỉ ngừng biến đổi; D20 hợp lệ theo mức tiền tố + gõ đúp là bỏ dấu; D28 tắt vẫn dời dấu; D35 uơ/ươ — phiên chính — xong
 - 29/10/2026 — sửa engine theo D20/D33 mới, 70 test xanh, Telex 0,151 / VNI 0,141 µs/phím release (a59c44f, ba6a2b8); làm rõ câu chữ D20 cho khớp ví dụ "viet" + j → "vietj" người dùng đã duyệt — engine-dev, phiên chính
-- 29/10/2026 — kiểm toán M1 lần 1 — auditor — CHƯA ĐẠT (ARCHITECTURE DauEngine lệch mã; OPENKEY-NOTES `uow` + 3 chỗ cũ) → phiên chính sửa tài liệu
+- 29/10/2026 — kiểm toán M1 lần 1 — auditor — CHƯA ĐẠT (Architecture DauEngine lệch mã; OpenKeyNotes `uow` + 3 chỗ cũ) → phiên chính sửa tài liệu
 - 29/10/2026 — siết D31 (iê/yê, c + oa/uy) + test VNI hoa, hofa kiểu cũ, ⌫ hết từ — engine-dev — 72 test xanh, Telex 0,152 / VNI 0,144 µs/phím (19fd8f1, 48c839c)
 - 29/10/2026 — người dùng duyệt: D28 tắt vẫn cho phím biến đổi từ xa; D31 nới k/âm cuối k/kr cho địa danh (đo ảnh hưởng); D36 VNI chữ số sau âm tiết thành dấu — phiên chính — xong
 - 29/10/2026 — M2 mã bộ gõ (cách A, chỉ hỏi selectedRange khi deleteCount > 0; dự đoán con trỏ trong từ, lệch thì reset), menu Kiểu gõ, icon V/E tạm (TIFF), script cài Debug + perf-report, checklist 6 app — imk-dev — build universal, 14 test IMK + 72 test engine xanh, không quyền mạng, log perf không chứa chữ gõ (9999122, 0420967, 49936c2, a775289, d5f0123). Mở: khe hở click trước lần thay đầu tiên của từ (D11), D17 để sau khi thử VoiceOver, App Group dời sang M4, icon PDF vs TIFF (M7), gạch chân D13 chưa làm
@@ -40,31 +40,31 @@ Chuyển từ `docs/PROGRESS.md` ngày 03/11/2026 khi M0–M4 đã đóng; file 
 - 29/10/2026 — tách ô tìm và nút + ở header Ứng dụng (ToolbarSpacer), bỏ mọi phần tự vẽ theo D9 — app-ui-dev (0cdcffa, 439e0b1)
 - 29/10/2026 — nút + ở header Ứng dụng méo (bezel 36 cao, label hẹp) → nới label, đo lại bezel tròn — phiên chính
 - 29/10/2026 — header che nội dung cuộn (scrollEdgeEffectStyle .hard) + thanh cuộn nằm trong cửa sổ (trước nằm ngoài vì ScrollView macOS 26 trải dưới sidebar), chừa cột scroller khi luôn hiện để không nhảy — app-ui-dev (da3ae8d)
-- 29/10/2026 — bỏ khoảng chừa 17 pt (gây dải hở phải); scroll view tới mép cửa sổ; ma trận cửa sổ thật `scripts/check-settings-window/run.sh` + `docs/UI-CHECKS.md` — app-ui-dev (62a07f5, 9e0dbf3). Chốt: thanh cuộn legacy làm mục có cuộn hẹp 17 pt như macOS chuẩn (x/y không đổi)
+- 29/10/2026 — bỏ khoảng chừa 17 pt (gây dải hở phải); scroll view tới mép cửa sổ; ma trận cửa sổ thật `scripts/check-settings-window/run.sh` + `docs/UIChecks.md` — app-ui-dev (62a07f5, 9e0dbf3). Chốt: thanh cuộn legacy làm mục có cuộn hẹp 17 pt như macOS chuẩn (x/y không đổi)
 - 29/10/2026 — người dùng xác nhận giao diện Cài đặt (mép phải, thanh cuộn) đã ổn
 - 29/10/2026 — đẩy repo công khai lên repo ở tài khoản cũ (nhánh main, theo yêu cầu người dùng); đã quét lịch sử không có khoá/token — phiên chính
 - 29/10/2026 — người dùng cấp quyền Trợ năng cho Claude; phiên chính tự gõ thử bằng System Events: TextEdit đúng; VS Code và Terminal SAI (lệch dự đoán con trỏ → reset). Slack không cài. Chờ chẩn đoán (imk-dev)
-- 29/10/2026 — kiểm toán M4 lần 1 — auditor — CHƯA ĐẠT; ma trận UI mã 0, test 25/76/30/9 xanh. Giao app-ui-dev sửa N5 + mã chết + ARCHITECTURE; imk-dev thêm "Cài đặt Dấu…" sau chẩn đoán VS Code/Terminal; hỏi người dùng D9/D25 (ngoại lệ màu, banner cam, nút Nâng cao)
+- 29/10/2026 — kiểm toán M4 lần 1 — auditor — CHƯA ĐẠT; ma trận UI mã 0, test 25/76/30/9 xanh. Giao app-ui-dev sửa N5 + mã chết + Architecture; imk-dev thêm "Cài đặt Dấu…" sau chẩn đoán VS Code/Terminal; hỏi người dùng D9/D25 (ngoại lệ màu, banner cam, nút Nâng cao)
 - 29/10/2026 — người dùng chốt: không ngoại lệ màu (icon sidebar dùng màu hệ thống), banner cam hệ thống, chấp nhận nút "Nâng cao" ghép — ghi vào D9 — phiên chính
-- 29/10/2026 — sửa kiểm toán M4: N5 (gạch chân, D20 tạm tắt kèm ô trống), màu hệ thống cho icon sidebar, banner cam hệ thống, gỡ SettingsExamples, ARCHITECTURE — app-ui-dev (d922a70, 373db68, 073bc75); ma trận UI mã 0. Chờ imk-dev (App Group selftest, chẩn đoán VS Code/Terminal, "Cài đặt Dấu…") rồi kiểm toán lại M4
+- 29/10/2026 — sửa kiểm toán M4: N5 (gạch chân, D20 tạm tắt kèm ô trống), màu hệ thống cho icon sidebar, banner cam hệ thống, gỡ SettingsExamples, Architecture — app-ui-dev (d922a70, 373db68, 073bc75); ma trận UI mã 0. Chờ imk-dev (App Group selftest, chẩn đoán VS Code/Terminal, "Cài đặt Dấu…") rồi kiểm toán lại M4
 - 29/10/2026 — chẩn đoán VS Code/Terminal — imk-dev — không phải lỗi dự đoán: app áp phím bất đồng bộ (Chromium/Electron, Terminal chờ shell echo) nên `selectedRange` là ảnh chụp cũ khi phím đến dồn (< ~10 ms; VS Code < ~20 ms); ảnh chụp không cập nhật trong lúc `handle` chạy (hỏi lại 10 × 2 ms vẫn y nguyên). Đã thử và bỏ: hỏi lại chờ app; so chữ trước con trỏ bằng `attributedSubstring` (Safari trả chữ cũ → hỏng cả Safari; VS Code textarea chỉ là cửa sổ nhỏ nên so khớp vô nghĩa). Từ 20 ms/phím cả 5 app đúng. Chờ phiên chính chốt A/B + gạch chân D13
 - 29/10/2026 — người dùng chốt A/B: cách A, sửa N3 "tối thiểu lời gọi"; M3 thử D13 cho app bất đồng bộ. App Group ad-hoc bị từ chối → người dùng sẽ dùng Personal Team miễn phí để lấy Team ID — phiên chính
 - 30/10/2026 — Team ID `M58DANM3ZP` (Personal Team) vào project.yml, ký tự động; `scripts/selftest-app-group.sh` PASS (cả khi bộ gõ vừa khởi động). Sửa script: chờ `settings-loaded` thay cho `sleep 1` (bộ gõ mới chạy mất ~7 s mới nạp cài đặt), `synchronize=failed` chỉ ghi chú, thêm kiểm tra tiến trình app mới đọc lại giá trị. M4-TESTING bước 1 (store=appGroup, không hộp thoại) và bước 2 (app đặt VNI, gõ `Vie65t` trong TextEdit ra "Việt") ĐẠT — phiên chính
-- 30/10/2026 — kiểm toán M2 lần 1 — auditor — CHƯA ĐẠT chỉ vì tài liệu (mã khớp N1–N5, D4, D5, D8, D13, D24). Người dùng duyệt: D11 theo cách A, sửa tỉ lệ selectedRange theo số đo từng app, trả lời câu Accessibility (không cần), D4 thêm các sự kiện chỉ reset; thay Slack bằng Telegram. Đã sửa DECISIONS, ROADMAP, M2-TESTING, ghi chú canvas — phiên chính
-- 30/10/2026 — người dùng duyệt bỏ chế độ "Dấu – Tiếng Anh" (D2). Thử TIS từ bộ gõ có sandbox (imk-dev): `TISSelectInputSource` đổi được nguồn nhưng bước báo app đang gõ bị chặn (`deny mach-lookup com.apple.tsm.portname`, temporary-exception không gỡ được) → theo phương án dự phòng đã duyệt: quy tắc theo app chỉ còn gạch chân, bỏ nhớ chế độ theo app, dùng tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu". Sửa D2, D5, D14, D17 và ghi chú canvas. M2-TESTING mục 4: 11 ĐẠT, 0 hỏng (agent tự gõ); Telegram tự gõ 30 ms đúng, selectedRange p50 240 / p99 1.670 µs, insertText p50 1.830 µs, mismatch 0; test IMK 34 xanh — phiên chính
-- 30/10/2026 — kiểm toán lại M2+M4 — auditor — CHƯA ĐẠT (tài liệu, bằng chứng); sửa README, ROADMAP, OPENKEY-NOTES, điền M2/M4-TESTING — general-purpose (agent tài liệu) — xong (9162fd8)
+- 30/10/2026 — kiểm toán M2 lần 1 — auditor — CHƯA ĐẠT chỉ vì tài liệu (mã khớp N1–N5, D4, D5, D8, D13, D24). Người dùng duyệt: D11 theo cách A, sửa tỉ lệ selectedRange theo số đo từng app, trả lời câu Accessibility (không cần), D4 thêm các sự kiện chỉ reset; thay Slack bằng Telegram. Đã sửa Decisions, Roadmap, M2Testing, ghi chú canvas — phiên chính
+- 30/10/2026 — người dùng duyệt bỏ chế độ "Dấu – Tiếng Anh" (D2). Thử TIS từ bộ gõ có sandbox (imk-dev): `TISSelectInputSource` đổi được nguồn nhưng bước báo app đang gõ bị chặn (`deny mach-lookup com.apple.tsm.portname`, temporary-exception không gỡ được) → theo phương án dự phòng đã duyệt: quy tắc theo app chỉ còn gạch chân, bỏ nhớ chế độ theo app, dùng tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu". Sửa D2, D5, D14, D17 và ghi chú canvas. M2Testing mục 4: 11 ĐẠT, 0 hỏng (agent tự gõ); Telegram tự gõ 30 ms đúng, selectedRange p50 240 / p99 1.670 µs, insertText p50 1.830 µs, mismatch 0; test IMK 34 xanh — phiên chính
+- 30/10/2026 — kiểm toán lại M2+M4 — auditor — CHƯA ĐẠT (tài liệu, bằng chứng); sửa README, Roadmap, OpenKeyNotes, điền M2/M4-TESTING — general-purpose (agent tài liệu) — xong (9162fd8)
 - 30/10/2026 — M4 bước 5, 6, 8 ĐẠT, bước 7 không áp dụng; M2 dòng 9–10 ĐẠT với ⌃Space (agent tự gõ). Sửa popup gạch chân của quy tắc vẫn chọn được "Có gạch chân" (`.disabled` trên mục Picker kiểu menu không có tác dụng trên macOS; binding giờ từ chối). Câu mẫu `selftest-typing` đổi thành "windows carr tooi yeeu tieengs Vieetj, Sunrise " (3/3 ĐẠT) để né tự sửa chính tả. Ma trận UI 12/12 ĐẠT trên bản mới. M3 thêm: reset khi đổi nguồn mà không có `activateServer` — phiên chính
 - 30/10/2026 — kiểm toán lần 3 M2 + M4 — auditor — ĐẠT cả hai (sửa dòng tóm tắt trong commit đóng mốc); ma trận UI 12/12, test 76/21/25/10 xanh. Đóng M2, M4 — phiên chính
 - 30/10/2026 — **[Đọc nhầm miền: chỗ "báo enabled trong khi `AppleEnabledInputSources` không có" đã đối chiếu sai miền, xem `docs/research/M5-INSTALL.md` mục 2.6; phần bộ đệm TIS còn giữ ID bundle cũ vẫn đứng]** đổi Bundle ID sang com.codefastlabs.dau (3b8864b): cài đè cùng đường dẫn `~/Library/Input Methods/DauInputMethod.app` với ID khác làm bộ đệm TIS lệch (ID nguồn mới nhưng `kTISPropertyBundleID` vẫn là ID cũ, báo enabled trong khi `AppleEnabledInputSources` không có) → thêm nguồn không kích hoạt được. Cách sửa: đăng xuất/đăng nhập. Ghi cho M5 (cài/gỡ, cập nhật): không đổi ID bộ gõ giữa các bản; nếu phải đổi thì hướng dẫn đăng xuất — phiên chính
 - 30/10/2026 — **[Cùng chuỗi đọc nhầm miền: kết luận "đăng xuất sửa được" dựa trên đối chiếu sai, xem `docs/research/M5-INSTALL.md` mục 2.6]** sau khi người dùng đăng xuất/đăng nhập và bật lại "Dấu – Tiếng Việt": TIS đúng ID mới (com.codefastlabs.dau.inputmethod.Dau.vi); `selftest-app-group.sh` PASS với App Group M58DANM3ZP.com.codefastlabs.dau.shared; `selftest-typing textedit` PASS — phiên chính
 - 30/10/2026 — M3 T1 chế độ gạch chân D13 (`MarkedComposer`, mỗi phím ≤ 1 lời gọi, không hỏi `selectedRange`) — imk-dev (285b873, 0d3f6f0); test IMK 37. Thử câu mẫu, thay tại chỗ / gạch chân ép (Debug `defaults -g DauDebugForceUnderline`): Chrome 0 ms FAIL / PASS, 5–30 ms PASS / PASS; VS Code 0 ms FAIL / PASS, 5 ms FAIL / PASS, 10–30 ms PASS / PASS; Terminal 0 ms FAIL / FAIL (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau), 5–30 ms PASS / PASS; TextEdit, Safari gạch chân 0 và 30 ms PASS. Sự cố: một lần chạy Chrome, script cũ gõ vào app Claude desktop (người dùng đang dùng máy) → script giờ chỉ gửi phím khi app thử đứng trước — phiên chính ghi
-- 30/10/2026 — M3 T5 `docs/COMPATIBILITY.md` khung ma trận, 42 app (26 có trên máy) — researcher (2d59abf)
+- 30/10/2026 — M3 T5 `docs/Compatibility.md` khung ma trận, 42 app (26 có trên máy) — researcher (2d59abf)
 - 30/10/2026 — M3 T2: D20 ở bộ gõ, reset khi đổi nguồn không qua `activateServer` (nghe `kTISNotifySelectedKeyboardInputSourceChanged`), rà D18 — imk-dev (8ab965e, b1de6f0, c59f512); test IMK 64. Người dùng duyệt phạm vi D20 (không ở app gạch chân, ngưỡng 50 ms, chỉ chữ trước con trỏ). Phát hiện: Terminal không gửi ⌫ cho bộ gõ (D32 không giữ được ở đó) → đo ở T6
 - 30/10/2026 — M3 T3+T4: danh sách tương thích có sẵn (`Apps/Dau/Resources/CompatibilityList.json`, 12 app Electron/Chromium + VS Code, không Terminal), mục "Đề xuất" riêng với nút "Bật gạch chân" (người dùng góp ý: đề xuất phải mang nghĩa nên gạch chân), mở lại lựa chọn gạch chân và công tắc D20 — app-ui-dev (e7da5e6, 83ebc48); test DauShared 32, IMK 64, snapshot 10; ma trận UI 12/12; artboard SettingsApps cập nhật
 - 30/10/2026 — D17: người dùng bật VoiceOver, mỗi lần chuyển nguồn (⌃Space) hệ thống có đọc → Dấu không tự thông báo (đúng D17). Chưa xác nhận VoiceOver đọc đúng tên "Dấu – Tiếng Việt" (người dùng không nghe rõ) → kiểm ở M7 — phiên chính
 - 30/10/2026 — sửa ⌫ xoá hai lần ở Chromium/Electron (Chromium luôn chạy lệnh xoá của ⌫ khi không có marked text) — imk-dev (08f3281); test IMK 70, engine 77. Hồi quy khi máy rảnh (phiên chính): ⌫ ở 30 ms 18/18 PASS (6 app × 3 chuỗi), câu mẫu 30 ms 6/6 PASS, `vieetj⌫s` 120 ms 3/3 PASS. Firefox thêm vào danh sách đề xuất (94ada11); D17 VoiceOver có đọc khi chuyển nguồn (người dùng)
 - 30/10/2026 — kiểm toán M3 lần 1 — auditor — CHƯA ĐẠT (tài liệu, một xung đột D4 × D20 chưa ghi); người dùng chốt D20 thắng (9b32e00), V → M7, ma trận → M6; dọn tài liệu — (5d1cb50)
-- 30/10/2026 — kiểm toán M3 lần 2 — auditor — CHƯA ĐẠT (2 việc nhỏ: ghi M7 cho UpdatesSupportView:56, đồng bộ canvas). Đã sửa: ghi nhớ M7, D11 nhắc ngoại lệ D20, M2-TESTING dòng 4, 5, 14, comment test; ghi chú canvas đồng bộ N3, D13 (Firefox), D20 (D4 × D20) — phiên chính
+- 30/10/2026 — kiểm toán M3 lần 2 — auditor — CHƯA ĐẠT (2 việc nhỏ: ghi M7 cho UpdatesSupportView:56, đồng bộ canvas). Đã sửa: ghi nhớ M7, D11 nhắc ngoại lệ D20, M2Testing dòng 4, 5, 14, comment test; ghi chú canvas đồng bộ N3, D13 (Firefox), D20 (D4 × D20) — phiên chính
 - 30/10/2026 — kiểm toán M3 lần 3 — auditor — ĐẠT. Đóng M3 — phiên chính
 - 30/10/2026 — biểu tượng nguồn nhập liệu theo góp ý người dùng (không giống kiểu hệ thống, cỡ lệch với "A"): vẽ lại thành ô tô đặc 22 × 16 pt, chữ V khoét rỗng 9 × 8,5 pt, đo khớp ô "A" trên thanh menu Retina (36c2771, 8c45ac0). Người dùng cấp quyền Ghi màn hình để phiên chính tự chụp kiểm tra. Ảnh cũ trong bộ đệm của `TextInputMenuAgent` chỉ đổi sau khi khởi động lại tiến trình đó. Ô chỉ báo khi ⌃Space trống và màu sai ở màn hình phụ: xem dòng sau — phiên chính
 - 30/10/2026 — ô chỉ báo ⌃Space trống + ô V đen ở thanh menu tối màn hình phụ: cùng một nguyên nhân, `TISIconIsTemplate` chỉ ở cấp bundle, cờ của input mode là false. Thêm cờ ở cấp mode — imk-dev (bcb1227; tìm bằng lldb: ô chỉ báo do `CursorUIViewService` vẽ, nhãn chữ chỉ có cho ID nguồn của Apple). Phiên chính chụp kiểm: ô chỉ báo hiện ô V trắng; thanh menu xám trên nền sáng, trắng trên nền tối ở cả hai màn hình. Ghi chú: `CursorUIViewService` giữ ảnh cũ, cần đăng xuất hoặc `killall -9 CursorUIViewService` trên máy đã cài bản cũ — phiên chính
@@ -76,7 +76,7 @@ Chuyển từ `docs/PROGRESS.md` ngày 03/11/2026 khi M0–M4 đã đóng; file 
 
 ## Số đo (M1–M3, 29–30/10/2026)
 
-Chuyển từ `docs/PROGRESS.md` ngày 09/11/2026. Bảng này là nguồn duy nhất của các số đo M1–M3; `docs/ARCHITECTURE.md`, `docs/DECISIONS.md` và `docs/COMPATIBILITY.md` dẫn tới nó theo tên dòng. Số đo của mốc đã đóng ở lại `docs/history/` (`CLAUDE.md` mục "Nguồn chuẩn"); số mới đo lại ghi ở nhật ký `docs/PROGRESS.md`, không sửa bảng.
+Chuyển từ `docs/Progress.md` ngày 09/11/2026. Bảng này là nguồn duy nhất của các số đo M1–M3; `docs/Architecture.md`, `docs/Decisions.md` và `docs/Compatibility.md` dẫn tới nó theo tên dòng. Số đo của mốc đã đóng ở lại `docs/history/` (`CLAUDE.md` mục "Nguồn chuẩn"); số mới đo lại ghi ở nhật ký `docs/Progress.md`, không sửa bảng.
 
 | Ngày | Số đo | Giá trị | Cách đo |
 |---|---|---|---|
@@ -101,7 +101,7 @@ Chuyển từ `docs/PROGRESS.md` ngày 09/11/2026. Bảng này là nguồn duy n
 
 ## Ghi chú từng mốc M0–M4
 
-Chuyển từ `docs/PROGRESS.md` ngày 10/11/2026.
+Chuyển từ `docs/Progress.md` ngày 10/11/2026.
 
 - M0: build Debug universal cần `-destination generic/platform=macOS`.
 - M1:
@@ -110,17 +110,17 @@ Chuyển từ `docs/PROGRESS.md` ngày 10/11/2026.
   - 0 từ sai / 474 từ; 0 khôi phục nhầm / 15.796 âm tiết;
   - fuzz 800k thao tác không crash.
 - M2:
-  - thay chữ tại chỗ, hỏi vị trí ở mỗi phím có thay chữ (cách A, theo `docs/DECISIONS.md`, mục "Vị trí thay chữ");
+  - thay chữ tại chỗ, hỏi vị trí ở mỗi phím có thay chữ (cách A, theo `docs/Decisions.md`, mục "Vị trí thay chữ");
   - tự gõ 30 ms/phím đúng ở TextEdit, Safari, Chrome, VS Code, Terminal, Telegram (thay Slack); Sublime gõ tay;
   - `selectedRange` p50 0,2–0,6 ms (Debug);
-  - M2-TESTING mục 4 ĐẠT trừ việc hoãn (VoiceOver, biểu tượng V → M3; Telegram Return bỏ qua);
+  - M2Testing mục 4 ĐẠT trừ việc hoãn (VoiceOver, biểu tượng V → M3; Telegram Return bỏ qua);
   - test engine 76, IMK 25.
 - M3:
   - gạch chân (D13) theo quy tắc, mặc định tắt; danh sách đề xuất 13 app (VS Code, Electron/Chromium, Firefox);
   - D20 (Thêm dấu cho từ đã gõ) ở bộ gõ: đọc lại 1–4 ms, chỉ ở phím dấu đầu khi bộ đệm trống;
   - reset khi đổi nguồn không báo;
   - sửa ⌫ xoá hai lần ở Chromium;
-  - ma trận `COMPATIBILITY.md`: 11 app đã đo;
+  - ma trận `Compatibility.md`: 11 app đã đo;
   - D17 (Trợ năng): hệ thống tự đọc khi chuyển nguồn;
   - test engine 77, IMK 70, DauShared 32.
 - M4:

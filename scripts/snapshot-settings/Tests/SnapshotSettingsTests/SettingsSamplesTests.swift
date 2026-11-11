@@ -5,7 +5,7 @@ import DauShared
 
 /// Pins every "keys → result" the Settings window shows (computed by the engine at run
 /// time) and the shortcut parsing, so the window says what its labels claim (N5).
-/// Expected values follow Vietnamese spelling and DECISIONS.md.
+/// Expected values follow Vietnamese spelling and Decisions.md.
 @Suite("Settings samples")
 struct SettingsSamplesTests {
     static let allSettings: [DauSettings] = DauSettings.TypingMethod.allCases.flatMap { method in

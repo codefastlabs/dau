@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// The Settings window, built like System Settings (D9: native components with their
-/// default metrics; numbers in docs/research/SYSTEM-SETTINGS-REFERENCE.md): a fixed
+/// default metrics; numbers in docs/research/SystemSettingsReference.md): a fixed
 /// sidebar, 232 pt wide, with a search field and the four sections, and a grouped `Form`
 /// per section. The toolbar holds the Back/Forward cluster (`SettingsHistoryButtons`)
 /// and the system's own page title (`navigationTitle`, set by `SettingsDetail`). The
@@ -14,7 +14,7 @@ import SwiftUI
 /// (`SettingsSplitViewController`), wrapped in an `NSViewControllerRepresentable`
 /// (https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentable). The
 /// sidebar and the pages stay SwiftUI views, each in an `NSHostingController`; nothing
-/// here reaches into views SwiftUI builds (docs/research/SWIFTUI-WINDOW-API.md, section 1).
+/// here reaches into views SwiftUI builds (docs/research/SwiftUIWindowAPI.md, section 1).
 struct SettingsWindow: View {
     @State private var state: SettingsWindowState
     @Environment(SettingsModel.self) private var model
@@ -304,7 +304,7 @@ struct SettingsSidebar: View {
         // The search field at the top of the sidebar, under the toolbar, above the list
         // (https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)).
         // `searchable(placement: .sidebar)` needs a `NavigationSplitView` sidebar: in this
-        // hosting controller it went to the toolbar (docs/research/SWIFTUI-WINDOW-API.md,
+        // hosting controller it went to the toolbar (docs/research/SwiftUIWindowAPI.md,
         // section 4). The field's height is its own at the large control size (no frame
         // height), set on the SwiftUI side too
         // (https://developer.apple.com/documentation/swiftui/view/controlsize(_:)); the
@@ -430,7 +430,7 @@ struct SettingsDetail: View {
 
 enum SettingsScene {
     static let id = "settings"
-    /// System Settings' window (docs/research/SYSTEM-SETTINGS-REFERENCE.md).
+    /// System Settings' window (docs/research/SystemSettingsReference.md).
     static let defaultSize = CGSize(width: 740, height: 560)
     /// System Settings' sidebar column, fixed (`SettingsSplitViewController`).
     static let sidebarWidth: CGFloat = 232

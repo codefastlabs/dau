@@ -64,7 +64,7 @@ struct InPlaceComposer {
     /// In the key (xterm.js) is held back: on the xterm.js test page it went wrong once a
     /// range replacement made before the field was told apart had reached the page (each
     /// fix sent again with every earlier one, fourth typing round of 11/11/2026 in
-    /// docs/PROGRESS.md); it was right when on from the first key (second round). Until
+    /// docs/Progress.md); it was right when on from the first key (second round). Until
     /// that is understood such a client keeps in-place replacement, wrong as before D43.
     static func eraseMode(for send: RangeIgnoreDetector.Send) -> EraseMode? {
         switch send {
@@ -138,7 +138,7 @@ struct InPlaceComposer {
     /// `selectedRange`/`attributedSubstring` from a snapshot that can still miss the
     /// previous keys; a word read from such a snapshot could be replaced at the wrong
     /// place. M2 measured method A wrong below 10–20 ms between keys in Chrome, VS Code
-    /// and Terminal. Trial 30/10/2026 with no wait (ARCHITECTURE.md): no damage in five
+    /// and Terminal. Trial 30/10/2026 with no wait (Architecture.md): no damage in five
     /// apps even at 0 ms, VS Code at 0 ms read a stale snapshot (no word found). 50 ms
     /// keeps a margin over the 20 ms seen in M2; a person going back to a word is slower.
     static let settleInterval: TimeInterval = 0.05
@@ -332,7 +332,7 @@ struct InPlaceComposer {
                 // D32 re-places the tone ("hoà" ⌫ → "hò"). Chromium and Electron run
                 // their own Delete for this key even when the input method consumes it
                 // (the raw key-down goes to the page after the input method's text;
-                // docs/history/COMPATIBILITY-FIXED.md), so a consumed ⌫ lost one letter more there
+                // docs/history/CompatibilityFixed.md), so a consumed ⌫ lost one letter more there
                 // ("h"). So the key is never consumed: every app deletes the last
                 // character itself, and the replacement puts that character back at the
                 // end ("hoà" → "hòà" → app's Delete → "hò"). Same calls as before (N3).

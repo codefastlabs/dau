@@ -345,7 +345,7 @@ public struct VietEngine: Sendable {
     /// VNI: 1–5 tones, 0 removes the tone, 6 circumflex, 7 horn, 8 breve, 9 đ.
     /// Letters are never transforms. A digit that does nothing here is an ordinary
     /// character of the word (it then makes the word invalid, D30), so the engine and
-    /// the screen never disagree (OPENKEY-NOTES B13).
+    /// the screen never disagree (OpenKeyNotes B13).
     func vniTransform(_ w: inout Word, key: UInt8, mode: SpellMode) -> Outcome {
         switch key {
         case UInt8(ascii: "1"): return toneKey(&w, Tone.acute)

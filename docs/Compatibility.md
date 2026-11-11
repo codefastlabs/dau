@@ -1,6 +1,6 @@
 # Tương thích ứng dụng
 
-Dấu gõ đúng hay sai trong từng ứng dụng, ở nhịp nào và vì sao; giới hạn còn lại và cách thử. Mọi số đo trên máy M1 (M1 Pro), macOS 27.2; ô nào chưa thử thì để trống, không điền bằng phỏng đoán. Đây không phải lời hứa (N5 (Chỉ hứa điều đã kiểm chứng)): trang web chỉ dùng kết quả theo [`docs/WEBSITE.md`](WEBSITE.md).
+Dấu gõ đúng hay sai trong từng ứng dụng, ở nhịp nào và vì sao; giới hạn còn lại và cách thử. Mọi số đo trên máy M1 (M1 Pro), macOS 27.2; ô nào chưa thử thì để trống, không điền bằng phỏng đoán. Đây không phải lời hứa (N5 (Chỉ hứa điều đã kiểm chứng)): trang web chỉ dùng kết quả theo [`docs/Website.md`](Website.md).
 
 ## Hiện trạng (11/11/2026)
 
@@ -38,7 +38,7 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 - AppKit, WebKit (TextEdit, Safari, Notes): áp phím ngay, chưa thấy lỗi.
 - Chromium, Electron, Terminal: áp phím bất đồng bộ, trả vị trí cũ khi phím dồn hay app bận (mục 6.2).
 - Terminal tự vẽ (Ghostty) và xterm.js: bỏ qua vùng thay (mục 6.8).
-- Client không hỗ trợ TSMDocumentAccess thì `selectedRange` trả `NSNotFound` và `replacementRange` bị bỏ qua (header `IMKInputSession.h`, SDK macOS 27.0; header ghi trường hợp này "cực kỳ hiếm"). Bộ gõ đếm là `unsupported`; chưa gặp ở ứng dụng nào. Trang tài liệu web của `IMKTextInput` trả 404 ([`docs/research/IMK-API-NOTES.md`](research/IMK-API-NOTES.md)); phía ứng dụng: https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange() và https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
+- Client không hỗ trợ TSMDocumentAccess thì `selectedRange` trả `NSNotFound` và `replacementRange` bị bỏ qua (header `IMKInputSession.h`, SDK macOS 27.0; header ghi trường hợp này "cực kỳ hiếm"). Bộ gõ đếm là `unsupported`; chưa gặp ở ứng dụng nào. Trang tài liệu web của `IMKTextInput` trả 404 ([`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md)); phía ứng dụng: https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange() và https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
 - Gạch chân dùng `setMarkedText(_:selectionRange:replacementRange:)`, không hỏi vị trí nên không bị lỗi bất đồng bộ; đổi lại không có D20 (Thêm dấu cho từ đã gõ).
 
 ## 3. Ứng dụng và công nghệ giao diện
@@ -77,7 +77,7 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 | Văn phòng | Pages | `com.apple.Pages` (bản "Creator Studio" 15.4) và `com.apple.iWork.Pages` (14.5) | có, cả hai bản | AppKit, bộ soạn chữ riêng của iWork | chưa biết; quy tắc phải ghi cả hai ID |
 | Văn phòng | Numbers | `com.apple.Numbers` (Creator Studio 15.4); ID cũ `com.apple.iWork.Numbers` không có trên máy | có | như Pages | chưa biết; ô bảng tính |
 | Văn phòng | Keynote | `com.apple.Keynote` (Creator Studio 15.4); ID cũ `com.apple.iWork.Keynote` không có trên máy | có | như Pages | chưa biết |
-| Văn phòng | Google Docs | web | web | trình duyệt; vẽ bằng canvas từ 2021 ([Google Workspace Updates](https://workspaceupdates.googleblog.com/2021/05/Google-Docs-Canvas-Based-Rendering-Update.html)), chữ nhập qua một ô ẩn (suy luận) | rủi ro cao (suy luận); D20 trên web editor là câu hỏi mở trong `DECISIONS.md` |
+| Văn phòng | Google Docs | web | web | trình duyệt; vẽ bằng canvas từ 2021 ([Google Workspace Updates](https://workspaceupdates.googleblog.com/2021/05/Google-Docs-Canvas-Based-Rendering-Update.html)), chữ nhập qua một ô ẩn (suy luận) | rủi ro cao (suy luận); D20 trên web editor là câu hỏi mở trong `Decisions.md` |
 | Văn phòng | Google Sheets | web | web | trình duyệt | chưa biết |
 | Văn phòng | Notion | `notion.id` | có (7.41.1) | Electron | như VS Code (suy luận) |
 | Văn phòng | Obsidian | `md.obsidian` | không | Electron (suy luận) | như VS Code (suy luận) |
@@ -98,7 +98,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
 2. Cài bản Debug: `scripts/dev/install-app.sh --debug` (chỉ bản Debug có nhật ký từng phím, D8 (Không telemetry)). Thử xong cài lại bản dùng hằng ngày: `scripts/dev/install-app.sh --ref stable`.
-3. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu" rồi Allow (D37 (Cài đặt bộ gõ)). Không bật được thì theo đường lui của D37: tự thêm bằng "+" trong danh sách nguồn đầu vào của System Settings, "+" không có Dấu thì đăng xuất một lần ([`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) mục 1.3, 3.2).
+3. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu" rồi Allow (D37 (Cài đặt bộ gõ)). Không bật được thì theo đường lui của D37: tự thêm bằng "+" trong danh sách nguồn đầu vào của System Settings, "+" không có Dấu thì đăng xuất một lần ([`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 1.3, 3.2).
 4. Giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách nguồn: Dấu chỉ có nguồn tiếng Việt (D2 (Chuyển Việt/Anh)).
 5. Máy bật "Automatically switch to a document’s input source" thì mỗi ứng dụng nhớ nguồn riêng: chọn lại Dấu sau khi chuyển sang ứng dụng cần thử.
 6. Bộ gõ không chạy: xem log bằng `/usr/bin/log stream --predicate 'process == "DauInputMethod"'` (trong zsh, `log` là lệnh có sẵn khác).
@@ -133,14 +133,14 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 
 ## 5. Số đo theo ứng dụng
 
-Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`docs/history/LOG-M0-M4.md`](history/LOG-M0-M4.md) và nhật ký 30/10 cùng file; lượt chạy ma trận 30/10/2026 ở [`docs/history/COMPATIBILITY-FIXED.md`](history/COMPATIBILITY-FIXED.md); số M6 trở đi ở nhật ký [`docs/PROGRESS.md`](PROGRESS.md) theo ngày. Số µs là `selectedRange` p50 / p99 ở 30 ms, phím có thay chữ, bản Debug. Phím dồn M6: nhịp danh nghĩa 5, 10, 20 ms, khoảng cách phím thật phần lớn 10–20 ms. Trang bận M6: trang thử chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms.
+Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) và nhật ký 30/10 cùng file; lượt chạy ma trận 30/10/2026 ở [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md); số M6 trở đi ở nhật ký [`docs/Progress.md`](Progress.md) theo ngày. Số µs là `selectedRange` p50 / p99 ở 30 ms, phím có thay chữ, bản Debug. Phím dồn M6: nhịp danh nghĩa 5, 10, 20 ms, khoảng cách phím thật phần lớn 10–20 ms. Trang bận M6: trang thử chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms.
 
 ### 5.1 Safari, TextEdit
 
 - Câu mẫu đúng ở 0 và 30 ms, gõ tay đúng; gạch chân đúng ở 0 và 30 ms (29–30/10/2026).
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng.
 - `selectedRange`: TextEdit 327 / 606, Safari 622 / 1.057 µs; mismatch 0.
-- TextEdit: mũi tên reset đạt theo mong đợi cũ (trước D20), mong đợi theo D4 × D20 chưa chạy lại ([`docs/history/M2-TESTING.md`](history/M2-TESTING.md) mục 4). TextEdit không còn trong script vì tự lưu tài liệu thử lên iCloud Drive ([`docs/TROUBLESHOOTING.md`](TROUBLESHOOTING.md)).
+- TextEdit: mũi tên reset đạt theo mong đợi cũ (trước D20), mong đợi theo D4 × D20 chưa chạy lại ([`docs/history/M2Testing.md`](history/M2Testing.md) mục 4). TextEdit không còn trong script vì tự lưu tài liệu thử lên iCloud Drive ([`docs/Troubleshooting.md`](Troubleshooting.md)).
 
 ### 5.2 Chrome, Edge, Firefox
 
@@ -194,7 +194,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 
 ## 6. Giới hạn đã biết
 
-Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tượng nguồn): [`docs/history/COMPATIBILITY-FIXED.md`](history/COMPATIBILITY-FIXED.md).
+Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tượng nguồn): [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md).
 
 ### 6.1 Tự sửa chính tả của macOS đè lên chữ đã giữ
 
@@ -212,22 +212,22 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 - Chromium, Electron và Terminal áp phím bất đồng bộ, nên khi phím đến dồn hay app bận, `selectedRange` trả vị trí cũ; trước M6, bộ gõ thấy lệch (`mismatch`), reset từ đang gõ, chữ ra thiếu dấu hoặc thay nhầm vùng. Ảnh chụp cũ không cập nhật trong lúc `handle` đang chạy (hỏi lại 10 lần, cách 2 ms, vẫn y nguyên).
 - Ngưỡng đo ở M3 (29–30/10/2026, app rảnh): sai dưới khoảng 10 ms ở Chrome, Terminal; dưới khoảng 20 ms ở VS Code (mục 5).
 - Không phải do thiếu quyền Trợ năng: bộ gõ không có quyền đó mà vẫn đúng ở 20 ms trở lên.
-- Hiện hành (M6, D11 ý "App trả lời chậm"; cơ chế: [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) mục "App trả lời chậm"): Dấu vẫn hỏi `selectedRange` ở phím có thay chữ và tự theo dõi vị trí con trỏ. Khi vị trí app trả khác, Dấu đọc chữ trước con trỏ một lần để chứng minh app chỉ chưa áp các thao tác vừa gõ, rồi thay ở vị trí tự theo dõi; không chứng minh được thì dựng lại hoặc reset.
+- Hiện hành (M6, D11 ý "App trả lời chậm"; cơ chế: [`docs/Architecture.md`](Architecture.md) mục "App trả lời chậm"): Dấu vẫn hỏi `selectedRange` ở phím có thay chữ và tự theo dõi vị trí con trỏ. Khi vị trí app trả khác, Dấu đọc chữ trước con trỏ một lần để chứng minh app chỉ chưa áp các thao tác vừa gõ, rồi thay ở vị trí tự theo dõi; không chứng minh được thì dựng lại hoặc reset.
 - Còn sai sau khi sửa: trình soạn thảo Cursor (mục 5.4). Terminal chưa đo lại.
 - Đã thử và bỏ (29/10/2026): tự cộng dồn vị trí từ một vị trí gốc thay cho việc hỏi (vị trí gốc cũng là ảnh chụp cũ, VS Code đổi gốc toạ độ); chờ ứng dụng rồi hỏi lại; so chữ trước con trỏ bằng `attributedSubstring` làm phép thay (Safari trả chữ cũ nên hỏng cả Safari).
 - Người gõ tay hiếm khi có hai phím cách nhau dưới 10 ms, nhưng phím lặp khi giữ phím, máy tải nặng hay ứng dụng tạm đứng có thể làm phím đến dồn (suy luận).
 
 ### 6.3 Ô mật khẩu
 
-Ở ô nhập bảo mật (ví dụ ô mật khẩu trong Safari), macOS giữ bàn phím `com.apple.keylayout.US` và Dấu không nhận phím nào. Đây là hành vi của hệ thống, không phải lỗi ([`docs/history/M2-TESTING.md`](history/M2-TESTING.md) mục 4 dòng 17).
+Ở ô nhập bảo mật (ví dụ ô mật khẩu trong Safari), macOS giữ bàn phím `com.apple.keylayout.US` và Dấu không nhận phím nào. Đây là hành vi của hệ thống, không phải lỗi ([`docs/history/M2Testing.md`](history/M2Testing.md) mục 4 dòng 17).
 
 ### 6.5 Terminal không gửi ⌫ cho bộ gõ
 
-Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó và D20 sau ⌫ không chạy ("hocj"; phát hiện ở lượt đo D20 ngày 30/10/2026, nhật ký 30/10 trong [`docs/history/LOG-M0-M4.md`](history/LOG-M0-M4.md)). Chưa kiểm chứng lại bằng `hoaf⌫␣` (mục 7).
+Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó và D20 sau ⌫ không chạy ("hocj"; phát hiện ở lượt đo D20 ngày 30/10/2026, nhật ký 30/10 trong [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md)). Chưa kiểm chứng lại bằng `hoaf⌫␣` (mục 7).
 
 ### 6.8 Terminal bỏ qua vùng thay; gạch chân không sửa được từ đã chốt
 
-- Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TERMINAL-AND-UNDERLINE.md`](research/TERMINAL-AND-UNDERLINE.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
+- Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
 - Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Hệ quả đã chấp nhận"; số đo: mục 5.6.
 - Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Cách gửi ký tự xoá trong phím của D43 làm chữ dồn lại mỗi lần sửa (chưa rõ nguyên nhân), nên tạm tắt cho kiểu ô này: Dấu thay tại chỗ như trước D43. Chính app Claude chưa đo.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).

@@ -7,7 +7,7 @@ import Foundation
 ///
 /// Run the binary inside the bundle directly (not through `open`), so the line and the
 /// exit status reach the caller. The exit status says what happened
-/// (`Status`; docs/ARCHITECTURE.md lists the values).
+/// (`Status`; docs/Architecture.md lists the values).
 enum ReconcileCommand {
     static let flag = "--reconcile-input-method"
 

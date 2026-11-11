@@ -41,7 +41,7 @@ private struct EditorSession {
 }
 
 /// Cursor's editor answers `selectedRange` from the start of the word being typed
-/// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/PROGRESS.md`, logs in
+/// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/Progress.md`, logs in
 /// build/load/cursor-20261110-094602 and cursor2-20261110-100405, not committed).
 @Suite("In-place mode in an app that counts positions from the start of the word (M6: Cursor's editor)")
 struct CursorEditorTests {

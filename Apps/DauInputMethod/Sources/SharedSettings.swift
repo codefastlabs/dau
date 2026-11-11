@@ -21,7 +21,7 @@ extension SettingsStore {
     ///
     /// Note: an ad-hoc signed build (no Team ID) may get a suite that is *not* shared
     /// with the Settings app even though it opens fine; that cannot be detected here
-    /// without touching the group container, so it is checked by hand (PROGRESS.md).
+    /// without touching the group container, so it is checked by hand (Progress.md).
     static var inputMethod: SettingsStore { inputMethodChoice.store }
 
     /// Which suite `inputMethod` uses, for diagnostics.

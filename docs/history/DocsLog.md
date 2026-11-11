@@ -2,22 +2,22 @@
 
 Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống khi chúng được viết lại để đọc hiện trạng cho nhanh (09/11/2026, người dùng duyệt cách làm): ngày, người chốt, số phiên bản canvas, cách nói và mã nội bộ của các vòng làm việc trước. Tài liệu này ghi lại quá khứ, không sửa cho khớp hiện trạng; hiện trạng chỉ đọc ở tài liệu gốc. Mỗi mục "## <file>" gồm các đoạn chuyển nguyên văn từ file đó, kèm mục nguồn.
 
-## docs/ARCHITECTURE.md
+## docs/Architecture.md
 
 - Mục "DauShared", `DauSettings`/`AppRule`: "Giải mã dễ dãi: khoá lạ hoặc khoá cũ (`rememberModePerApp`, `mode` của quy tắc, từ bản trước 30/10/2026) bị bỏ qua" (bản hiện hành bỏ cụm "từ bản trước 30/10/2026").
-- Mục "DauInputMethod", thay tại chỗ: "(N3, cách A đã chốt trong `DECISIONS.md`)". Cách A: hỏi `selectedRange` một lần ở phím có thay chữ để có vị trí tuyệt đối (mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính" của `docs/DECISIONS.md`).
-- Mục "Đổi nguồn nhập liệu không qua `activateServer`": "(M3)" trong tiêu đề; "Kịch bản cũ của ROADMAP (`to` ⇄ `o`) không còn phân biệt được: sau reset, D20 đọc lại "to" và `o` cho "tô" đúng như D20 định."
+- Mục "DauInputMethod", thay tại chỗ: "(N3, cách A đã chốt trong `Decisions.md`)". Cách A: hỏi `selectedRange` một lần ở phím có thay chữ để có vị trí tuyệt đối (mục "Vị trí thay chữ: hỏi con trỏ ở mỗi phím hay tự tính" của `docs/Decisions.md`).
+- Mục "Đổi nguồn nhập liệu không qua `activateServer`": "(M3)" trong tiêu đề; "Kịch bản cũ của Roadmap (`to` ⇄ `o`) không còn phân biệt được: sau reset, D20 đọc lại "to" và `o` cho "tô" đúng như D20 định."
 - Mục "Thêm dấu cho từ đã gõ": các nhãn "E8 ở D20" (phím chữ cái, mục "Chữ cái gõ sát chữ có sẵn" của D20), "ngoại lệ (b)", "ngoại lệ (a)", "ngoại lệ (c)" (các ngoại lệ (a) chữ hoa giữa từ, (b) từ có sẵn không phải tiếng Việt, (c) phím dấu không áp dụng được, đều ở D20), "D20, phạm vi (2)" (chờ 50 ms) và "D20, phạm vi (1)" (không áp dụng ở app gạch chân); "D20 ngoại lệ (b), D33" ở `seedOverflow`.
 - Mục "Khởi chạy bộ gõ: người dùng hay hệ thống": tiêu đề "(02/11/2026, `LaunchOrigin.swift`, `InputMethodAppDelegate.swift`)".
 - Mục "Đo lường": "ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain (02/11/2026)".
 - Mục "Build": "(Xcode không thay biến trong khoá plist, đã thử 30/10/2026)".
-- Mục "DauShared", `CompatibilityList`: "Nội dung ở M3 (Độ tin cậy): VS Code, các app Electron/Chromium của `docs/COMPATIBILITY.md` và Firefox (61daeec), không có Terminal (D13)." Danh sách đổi sau đó (Chrome, Firefox, VS Code bỏ nhãn 10/11/2026); nay mục chỉ dẫn `CompatibilityList.json`.
+- Mục "DauShared", `CompatibilityList`: "Nội dung ở M3 (Độ tin cậy): VS Code, các app Electron/Chromium của `docs/Compatibility.md` và Firefox (61daeec), không có Terminal (D13)." Danh sách đổi sau đó (Chrome, Firefox, VS Code bỏ nhãn 10/11/2026); nay mục chỉ dẫn `CompatibilityList.json`.
 - Mục "DauInputMethod", thay tại chỗ: "số đo M2 (Bộ gõ tối thiểu) làm trên Debug có lời gọi thừa này".
 - Mục "App trả lời chậm": tiêu đề "(M6, …)"; "trong mô hình, mã trước M6 cũng sai ở đây"; "từng coi app đúng giờ là app chậm" (Cursor, trước khi sửa); "từng ra đúng từ trong engine" ("ở đâu" ra "ở dâu"); "(lượt 1d: ghi đè làm lần trả lời chậm sau trùng với `known` sai, "kóo")".
 - Mục "Đổi nguồn nhập liệu không qua `activateServer`": tiêu đề "(thêm ở M3)".
-- Mục "Thêm dấu cho từ đã gõ": "Đã thử không chờ (`settleInterval` = 0)" (số đo ở bảng "Số đo (M1–M3)" của `docs/history/LOG-M0-M4.md`).
+- Mục "Thêm dấu cho từ đã gõ": "Đã thử không chờ (`settleInterval` = 0)" (số đo ở bảng "Số đo (M1–M3)" của `docs/history/LogM0ToM4.md`).
 - Mục "DauInputMethod", biểu tượng: "Đã kiểm lại TIS … và ảnh thanh menu sau khi cài"; Info.plist: "(chạy được trên macOS 27 ở M2)".
-- Các dẫn "`docs/PROGRESS.md`, bảng Số đo, 29/10 và 30/10/2026" và "nhật ký 30/10/2026": PROGRESS không còn bảng đó (chuyển sang `docs/history/LOG-M0-M4.md`, `docs/history/LOG-M5.md` ngày 09/11/2026); nay dẫn thẳng các file đó.
+- Các dẫn "`docs/Progress.md`, bảng Số đo, 29/10 và 30/10/2026" và "nhật ký 30/10/2026": Progress không còn bảng đó (chuyển sang `docs/history/LogM0ToM4.md`, `docs/history/LogM5.md` ngày 09/11/2026); nay dẫn thẳng các file đó.
 - Mục "Đo lường": "Test hiệu năng engine trong CI" (chưa có CI; chạy tay, CI là việc của M7).
 
 ## docs/UI.md
@@ -30,7 +30,7 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 - Mục "Onboarding", dòng cuối thanh bước: "(đã đo 30/10/2026)".
 - Mục "Onboarding": đoạn "Mọi bước dùng chung một khung" nằm ở Bước 2, nay chuyển lên "Khung chung".
 
-## docs/UI-CHECKS.md
+## docs/UIChecks.md
 
 - Mục "Lệnh", lần mở 6: "Giao diện hệ thống đang không dùng (`--appearance light|dark`; `-AppleInterfaceStyle` truyền như đối số không đổi được giao diện cửa sổ, đo 02/11/2026)" (ngày đo 02/11/2026 giữ ở đây; file chỉ còn câu giải thích).
 - Mục "Lệnh", cuối phần cửa sổ thật: "Bài học 02/11/2026: một `layoutProbe` đặt ngoài `listRowInsets` làm ảnh chụp ngoài màn hình lệch so với cửa sổ thật mà các kiểm vẫn đạt. Từ 03/11/2026 cửa sổ Cài đặt chỉ được đo trên cửa sổ thật; `layoutProbe` chỉ còn cho ảnh chụp onboarding và bảng so mockup, luôn cùng một cấu trúc view dù có probe hay không, và chỉ đặt trên nội dung hàng hoặc cả control, không bọc ngoài modifier của hàng list."
@@ -38,33 +38,33 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 - Danh sách, mục 18: "(đo 06/11/2026 trên bản sidebar cố định đầu tiên)".
 - Tiêu đề mục cuối: "Quy tắc thanh cuộn (chốt 29/10/2026)".
 
-## docs/BRAND.md
+## docs/Brand.md
 
 - Không có đoạn lịch sử nào cần chuyển. Chỉ tách câu dài thành gạch đầu dòng; số đo "30/10/2026" của biểu tượng thanh menu giữ nguyên cạnh số.
 
-## docs/ROADMAP.md
+## docs/Roadmap.md
 
-- M2: "**Giải quyết câu hỏi A/B** (đã chốt cách A, D11) (vị trí thay chữ): đo chi phí `selectedRange` trên TextEdit, Safari, Chrome, Telegram (thay Slack, 30/10/2026), VS Code, Terminal; cập nhật `DECISIONS.md`." (Trong bản hiện hành: "câu hỏi A/B" = hỏi `selectedRange` ở mỗi phím hay tự cộng dồn vị trí; "cách A" = hỏi ở mỗi phím, theo `docs/DECISIONS.md`, mục "Vị trí thay chữ".)
+- M2: "**Giải quyết câu hỏi A/B** (đã chốt cách A, D11) (vị trí thay chữ): đo chi phí `selectedRange` trên TextEdit, Safari, Chrome, Telegram (thay Slack, 30/10/2026), VS Code, Terminal; cập nhật `Decisions.md`." (Trong bản hiện hành: "câu hỏi A/B" = hỏi `selectedRange` ở mỗi phím hay tự cộng dồn vị trí; "cách A" = hỏi ở mỗi phím, theo `docs/Decisions.md`, mục "Vị trí thay chữ".)
 - M3: "Reset khi nguồn nhập liệu đổi mà bộ gõ không nhận `activateServer` — xong (6c1c055). Đo 30/10/2026 lúc M2: chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì từ đang gõ dở không được reset. Kịch bản đo cũ (`to` → U.S. → Dấu → `o` ra "tô") nay không còn là lỗi: "tô" là hành vi của D20 sau sự kiện reset (D4 × D20). Bản sửa được kiểm bằng `to⇄cj␣` → "tocj" (tắt bộ nghe để đối chứng: "tọc")."
-- M6: "Chạy tiếp ma trận tương thích `docs/COMPATIBILITY.md` (người dùng chốt 30/10/2026): … K5, K6 cho phần lớn app (K6 theo D4 × D20)."
+- M6: "Chạy tiếp ma trận tương thích `docs/Compatibility.md` (người dùng chốt 30/10/2026): … K5, K6 cho phần lớn app (K6 theo D4 × D20)."
 - M7: "Làm trước: phần nền đa ngôn ngữ (mục M9, D41)."; "Kiểm tra trước phát hành (cần người, hoãn từ M4)"; "VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn (M3 mới xác nhận là hệ thống có đọc, D17); biểu tượng "V" trên thanh menu đơn sắc, đổi màu theo nền sáng/tối (hoãn từ M2/M3, người dùng chốt 30/10/2026)".
 - M9: "Người dùng nêu 04/11/2026: Dấu có thể thành bộ gõ được người Việt dùng rộng rãi, và người nước ngoài học tiếng Việt cũng muốn dùng."; "**Phần nền — làm trước M7** (D41, người dùng chốt 06/11/2026)".
 - M10: "Người dùng nêu 04/11/2026: người dùng biết và học được cách gõ, và khác biệt về cách gõ giữa các bộ gõ."
 
-## docs/PROGRESS.md
+## docs/Progress.md
 
 - Trạng thái hiện tại: "Giữa M5 và M6: M5 đóng 05/11/2026; M6 (hiệu năng dưới tải) chưa bắt đầu, lập kế hoạch ở đầu mốc. Từ 05/11 làm ngoài mốc: phần nền đa ngôn ngữ của M9 (D41; mã xong 06/11, hàng "Ngôn ngữ" xong 08/11, nhật ký ở `docs/history/LOG-M5-M6.md`), rút gọn script và test (09/11, nhật ký dưới đây)." (Nội dung hiện hành giữ trong bản viết lại; dòng này ghi để thấy cách nói cũ.)
 - Mốc, bảng cũ, cột "Ghi chú" của M9 và M10: "thêm 04/11; phần nền (D41) xong 06–08/11, còn duyệt câu chữ tiếng Anh" và "thêm 04/11" (hai mốc M9, M10 được thêm ngày 04/11).
-- Mốc, hàng M2, cột "Ghi chú" cũ: "cách A" (cách A: hỏi `selectedRange` ở mỗi phím có thay chữ, theo `docs/DECISIONS.md`).
-- Mốc, hàng M5, cột "Ghi chú" cũ: "T4 bỏ" (T4: lượt đo trên tài khoản macOS mới; bỏ theo `docs/history/DECISIONS-LOG.md`, 04/11/2026).
-- Ghi nhớ cho M7: "(hoãn từ kiểm toán M3)" ở gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó"; "(hoãn từ M3, ARCHITECTURE.md)" ở `temporary-exception.mach-register.global-name`; "M7: đưa phép đếm cấp phát (`malloc_logger`) vào CI (người dùng giữ cho M7, 09/11/2026; chưa làm CI trước đó)."
+- Mốc, hàng M2, cột "Ghi chú" cũ: "cách A" (cách A: hỏi `selectedRange` ở mỗi phím có thay chữ, theo `docs/Decisions.md`).
+- Mốc, hàng M5, cột "Ghi chú" cũ: "T4 bỏ" (T4: lượt đo trên tài khoản macOS mới; bỏ theo `docs/history/DecisionsLog.md`, 04/11/2026).
+- Ghi nhớ cho M7: "(hoãn từ kiểm toán M3)" ở gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó"; "(hoãn từ M3, Architecture.md)" ở `temporary-exception.mach-register.global-name`; "M7: đưa phép đếm cấp phát (`malloc_logger`) vào CI (người dùng giữ cho M7, 09/11/2026; chưa làm CI trước đó)."
 
 ## .claude/agents/app-ui-dev.md
 
-- Mục "Quy tắc", bản cũ (các sự kiện đã có chỗ ở nơi khác: `docs/DECISIONS.md`, `docs/UI.md`, `docs/GLOSSARY.md`):
-  - "Nội dung theo `docs/UI.md` và artboard; bố cục, khoảng cách, control theo System Settings với thông số mặc định (D9, số đo trong `docs/research/SYSTEM-SETTINGS-REFERENCE.md`). Không dùng màu thương hiệu trong app (D25)."
+- Mục "Quy tắc", bản cũ (các sự kiện đã có chỗ ở nơi khác: `docs/Decisions.md`, `docs/UI.md`, `docs/Glossary.md`):
+  - "Nội dung theo `docs/UI.md` và artboard; bố cục, khoảng cách, control theo System Settings với thông số mặc định (D9, số đo trong `docs/research/SystemSettingsReference.md`). Không dùng màu thương hiệu trong app (D25)."
   - "Làm theo artboard phiên chính đưa (canvas đã được người dùng duyệt trước khi giao mã)."
-  - "Chuỗi giao diện trong String Catalog: khoá là câu tiếng Anh, có bản tiếng Việt (D41), thuật ngữ theo `docs/GLOSSARY.md`; chạy `scripts/check-l10n/check.sh`. Không đưa lời hứa chưa kiểm chứng (N5); để ô trống dạng `[...]`."
+  - "Chuỗi giao diện trong String Catalog: khoá là câu tiếng Anh, có bản tiếng Việt (D41), thuật ngữ theo `docs/Glossary.md`; chạy `scripts/check-l10n/check.sh`. Không đưa lời hứa chưa kiểm chứng (N5); để ô trống dạng `[...]`."
   - "Có giao diện tối, VoiceOver đọc được mọi control, phím Tab đi hết các control."
 
 ## .claude/agents/engine-dev.md
@@ -87,7 +87,7 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 
 ## .claude/agents/web-dev.md
 
-- Mục "Quy tắc", bản cũ: "nhận diện theo `docs/BRAND.md` (D25). Tên luôn viết "Dấu", không bao giờ "dau" đứng một mình (D24)."; "Ngôn ngữ theo D41 khi phần M9 của trang web đến lượt."
+- Mục "Quy tắc", bản cũ: "nhận diện theo `docs/Brand.md` (D25). Tên luôn viết "Dấu", không bao giờ "dau" đứng một mình (D24)."; "Ngôn ngữ theo D41 khi phần M9 của trang web đến lượt."
 
 ## .claude/agents/release-eng.md
 

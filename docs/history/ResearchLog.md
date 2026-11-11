@@ -2,7 +2,7 @@
 
 Ghi lại quá khứ: kế hoạch đã bỏ hay đã xong, các vòng thử theo giờ, danh sách đã duyệt và các bước chốt quyết định, chuyển khỏi ba tài liệu nghiên cứu khi chúng được viết lại chỉ còn hiện trạng (11/11/2026). Chép nguyên văn từ bản ngay trước đó (commit `01bce82`), chỉ hạ một bậc tiêu đề; số mục dẫn trong từng phần là số mục **cũ** của file gốc, đọc bản cũ bằng `git show 01bce82:<đường dẫn>`. Kết luận còn đúng nằm ở tài liệu hiện hành, không ở đây.
 
-## 1. `docs/research/INPUT-METHOD-INSTALL.md`
+## 1. `docs/research/InputMethodInstall.md`
 
 Bảng đổi số mục cũ sang mục mới nằm ở cuối phần này.
 
@@ -53,16 +53,16 @@ Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế ho�
 - Hệ quả: mục ẩn để lại vẫn dọn được về sau bằng cài lại cùng ID rồi "–"; cài lại cùng ID khi còn mục ẩn thì nguồn được bật ngay, không hỏi.
 - **Đọc lại sau lần đăng xuất kế tiếp** (không tốn gì): nếu phép hồi sinh chưa chạy trước lần đăng xuất tự nhiên kế tiếp, sau khi đăng nhập lại đọc `defaults export com.apple.inputsources -` xem mục `DauProbeC1` còn không (msime và Shanjie cho thấy mục không tự mất, chưa đo trên máy này). Phép hồi sinh đã chạy và dọn `DauProbeC1`, nên phép này chỉ làm được nếu tạo lại một mục ẩn (mục 10.8).
 
-### 1.3 Mục 6.2 cũ: tình trạng các đề xuất cho DECISIONS (đọc 03/11/2026)
+### 1.3 Mục 6.2 cũ: tình trạng các đề xuất cho Decisions (đọc 03/11/2026)
 
 - App chủ không sandbox: đã vào **D37**.
 - N4 cho D14 bước 2 (chép/đăng ký là phần cài đặt; bật chỉ khi người dùng bấm, có Hoàn tác; đọc lại trạng thái): **N4** đã sửa 30/10/2026.
   - Câu "không tự chọn nguồn" của đề xuất cũ **không** nằm trong N4 (xem mục 6.1 điểm 3).
   - Phương án thay thế giống msime (bỏ nút bật, chỉ hướng dẫn) còn mở.
 - Danh sách định danh không đổi giữa các bản (mục 3): đã vào **D37**.
-- Cask chỉ có `app` (mục 1.4): đã vào **D37** (cask chỉ khai `app`); `DECISIONS.md` không ghi bước `uninstall`/`zap` của cask.
+- Cask chỉ có `app` (mục 1.4): đã vào **D37** (cask chỉ khai `app`); `Decisions.md` không ghi bước `uninstall`/`zap` của cask.
 - Trình tự gỡ ở mục 4: đã vào **D16 (Bảo trì và gỡ cài đặt)** (người dùng bấm "–", app không tự chuyển bàn phím).
-- **Chưa thấy trong `DECISIONS.md`:**
+- **Chưa thấy trong `Decisions.md`:**
   - D14 bước 1 chỉ coi bộ gõ chặn phím đang chạy là xung đột, bộ gõ IMK tiếng Việt khác chỉ nhắc nhẹ (mục 5);
   - D7 thay bộ gõ bằng chép tạm rồi đổi chỗ cả khối, dừng bằng thông báo Darwin, không đụng `imklaunchagent` và bộ đệm hệ thống, chấp nhận biểu tượng cũ còn tới khi đăng xuất (mục 3);
   - Cần người dùng chốt.
@@ -97,7 +97,7 @@ Thứ tự **đề xuất** (của người nghiên cứu, 03/11/2026; đã thay
 - Nếu hướng cài vào `/Library/Input Methods` cho kết quả "hiện ngay, không đăng xuất", đó là thay đổi D16/D6/D37 và phải qua người dùng.
 - Nếu hướng làm mới tiến trình/bộ đệm làm menu hiện ra mà không cần "+", cân nhắc nút "Làm mới danh sách" (vẫn trong N4), kèm ghi chú phát hành cho từng bản macOS.
 
-Các bước của lần thử đã bỏ (mục 7.2–7.5 cũ: chuẩn bị, các bước, bảng kiểm, cách đọc kết quả) nằm ở `docs/history/PLANS.md`.
+Các bước của lần thử đã bỏ (mục 7.2–7.5 cũ: chuẩn bị, các bước, bảng kiểm, cách đọc kết quả) nằm ở `docs/history/Plans.md`.
 
 #### 7.6 Việc còn lại ngoài vòng thử
 - Gỡ bản Debug rồi chép lại, **cùng ID** và giữa phiên: TIS có thấy ngay không? Chưa đo.
@@ -266,7 +266,7 @@ Nguyên lý:
   - Các bước sau có thể làm tiến trình giao diện nạp lại danh mục và vô tình làm hiện cả biến thể trước đó (và Dấu thật).
   - Vì vậy sau **mỗi** bước phải chạy lại `tis-probe` và nhìn giao diện cho **mọi ID đã cài**, không chỉ ID đang thử. Nếu một ID cũ bỗng hiện ra sau bước N, bước N là thủ phạm (ghi lại).
 
-Các bước (bảng kiểm như mục 7.4 cũ, nay ở `docs/history/PLANS.md`, thêm: một công cụ đọc `tis-probe` chạy bằng tiến trình mới: ID nào có, enabled / enableCapable / selectCapable / selected, ba lần cách nhau 3 s; `pgrep -fl DauProbe`; thông báo `kTISNotifyEnabledKeyboardInputSourcesChanged` qua `tis-probe --watch`).
+Các bước (bảng kiểm như mục 7.4 cũ, nay ở `docs/history/Plans.md`, thêm: một công cụ đọc `tis-probe` chạy bằng tiến trình mới: ID nào có, enabled / enableCapable / selectCapable / selected, ba lần cách nhau 3 s; `pgrep -fl DauProbe`; thông báo `kTISNotifyEnabledKeyboardInputSourcesChanged` qua `tis-probe --watch`).
 - Cần mật khẩu quản trị ở bước cài vào `/Library/Input Methods` (người dùng tự gõ).
 - Dừng tiến trình của phiên ở ba bước làm mới (LaunchAgent, macOS tự chạy lại), người dùng cho phép lúc chạy.
 - Bước trần trên chỉ trên tài khoản thử.
@@ -282,12 +282,12 @@ Các bước (bảng kiểm như mục 7.4 cũ, nay ở `docs/history/PLANS.md`,
 | **Bật từ app có tên sau khi làm mới** | Ngay sau bước làm mới, cùng biến thể: gọi bật mục cha từ một app có tên (`TisAct.app`, không phải công cụ dòng lệnh); xem hộp thoại "Allow “…” to enable “…”?" có hiện không, bấm "Allow" thì có bật thật không (đọc `com.apple.inputsources`) | Giả thuyết mục 2.2: Cài đặt báo "Invalid value" vì danh sách nguồn của nó chưa có ID; bước làm mới làm nó thấy ID thì có thể dựng được hộp thoại. Nếu được: bật một chạm, không đăng xuất | Như bước làm mới |
 | **Kiểu vChewing** | Dừng `TextInputMenuAgent`, chờ 0,5 s, sau đó `Register`, bật mode (rồi cha nếu cần), đọc lại. Rồi một lần thử thứ hai: đã `Register` xong, dừng `TextInputMenuAgent` lần nữa và nhìn menu | Hướng làm mới tiến trình/bộ đệm giao diện, phần menu | Vừa: LaunchAgent của phiên, tự dựng lại |
 | **Dừng ba tiến trình giao diện cùng lúc** | `Register`, bật cha, rồi dừng **cùng lúc** `TextInputSwitcher`, `CursorUIViewService`, `TextInputMenuAgent` (ba lần cách nhau 0,5 s) | Làm mới tối đa, không đụng `imklaunchagent` | Vừa |
-| **Cài vào `/Library/Input Methods`** | `sudo` chép vào **`/Library/Input Methods/`** (chủ sở hữu root), `Register` từ tiến trình người dùng, bật cha, bật mode. Đo thêm cho câu hỏi mở "cài cho riêng mình hay cho cả máy" (`docs/DECISIONS.md`): có tài khoản thứ hai thì đăng nhập vào đó xem "+" có biến thể này ngay không; nếu người dùng thêm biến thể này bằng "+" rồi chép thêm cùng biến thể vào `~/Library/Input Methods`, tiến trình chạy từ đường dẫn nào | Hướng cài vào `/Library/Input Methods`; cài cho cả máy | Cần mật khẩu quản trị (người dùng tự gõ); bản ở `/Library` gỡ cũng cần mật khẩu |
-| **Chọn nguồn bằng TIS** | Như bước đối chứng ở mục 7.3 cũ (`docs/history/PLANS.md`) rồi, **sau cùng**, `TISSelectInputSource` cho mode: ghi mã trả về, xem biến thể có chạy không (`pgrep`), `TISCopyCurrentKeyboardInputSource` đổi không | Hướng chọn nguồn bằng TIS, chẩn đoán | Nhẹ; chỉ để đo, không đưa vào Dấu (N4) |
+| **Cài vào `/Library/Input Methods`** | `sudo` chép vào **`/Library/Input Methods/`** (chủ sở hữu root), `Register` từ tiến trình người dùng, bật cha, bật mode. Đo thêm cho câu hỏi mở "cài cho riêng mình hay cho cả máy" (`docs/Decisions.md`): có tài khoản thứ hai thì đăng nhập vào đó xem "+" có biến thể này ngay không; nếu người dùng thêm biến thể này bằng "+" rồi chép thêm cùng biến thể vào `~/Library/Input Methods`, tiến trình chạy từ đường dẫn nào | Hướng cài vào `/Library/Input Methods`; cài cho cả máy | Cần mật khẩu quản trị (người dùng tự gõ); bản ở `/Library` gỡ cũng cần mật khẩu |
+| **Chọn nguồn bằng TIS** | Như bước đối chứng ở mục 7.3 cũ (`docs/history/Plans.md`) rồi, **sau cùng**, `TISSelectInputSource` cho mode: ghi mã trả về, xem biến thể có chạy không (`pgrep`), `TISCopyCurrentKeyboardInputSource` đổi không | Hướng chọn nguồn bằng TIS, chẩn đoán | Nhẹ; chỉ để đo, không đưa vào Dấu (N4) |
 | **Trần trên** (không có biến thể riêng) | **Chỉ chẩn đoán, không bao giờ vào Dấu**: sau khi mọi bước trên đã đo, dừng `imklaunchagent` và `keyboardservicesd` rồi nhìn lại mọi ID | Biết có cách làm hiện mà không đăng xuất hay không, và xem tiến trình nào là chủ | Cao: có thể làm hỏng gõ phím trong tài khoản thử; làm cuối cùng |
 
 Cách đọc:
-- **Bước chỉ đăng ký mà HIỆN:** `Register` là đủ trên bản macOS đó; các bước sau chỉ còn để xem bật có được không. Ca 03/11 (app không gọi `Register`, `docs/PROGRESS.md`) khi đó là lỗi của app, không phải giới hạn của macOS.
+- **Bước chỉ đăng ký mà HIỆN:** `Register` là đủ trên bản macOS đó; các bước sau chỉ còn để xem bật có được không. Ca 03/11 (app không gọi `Register`, `docs/Progress.md`) khi đó là lỗi của app, không phải giới hạn của macOS.
 - **Bước bật từ app có tên có hộp thoại và bấm "Allow" thì bật thật:** đường tốt nhất cho onboarding (một nút, một lần xác nhận, không đăng xuất), nhưng bước làm mới trước nó xoá bộ đệm và dừng extension của hệ thống: cần người dùng quyết theo N4.
 - **Bước cài vào `/Library/Input Methods` HIỆN, các bước còn lại KHÔNG:** hướng cài vào thư mục của cả máy đáng cân nhắc; mở câu hỏi D16/D6/D37 cho người dùng.
 - **Bước làm mới bộ đệm làm "+" HIỆN mà menu thì không:** có thể hướng dẫn thêm thủ công (đúng chữ N4) và vẫn không cần đăng xuất; menu sẽ sau.
@@ -404,7 +404,7 @@ Dấu thật đã bật; app thử có sandbox `local.probe.cacheL1`, ký ad-hoc
 
 Tài liệu cũ, chú thích trong mã và nhật ký dẫn số mục cũ; "(b)N" là mục 9.N cũ, "(d)N" là mục 10.N cũ.
 
-| Mục cũ | Mục mới của `docs/research/INPUT-METHOD-INSTALL.md` |
+| Mục cũ | Mục mới của `docs/research/InputMethodInstall.md` |
 |---|---|
 | 0 | Hiện trạng |
 | 1.1–1.3, 1.4 | 7 |
@@ -420,7 +420,7 @@ Tài liệu cũ, chú thích trong mã và nhật ký dẫn số mục cũ; "(b)
 | 5 | 8 |
 | 6.1 | Hiện trạng, 1.1, 5.1 |
 | 6.2, 7, 8.2 | chỉ ở đây |
-| 8.1, 8.1b | 1.4, 2.1, 3.3, 5.1 (tóm tắt); bảng theo giờ ở đây; hình dạng hộp thoại: `docs/research/SYSTEM-SETTINGS-REFERENCE.md` |
+| 8.1, 8.1b | 1.4, 2.1, 3.3, 5.1 (tóm tắt); bảng theo giờ ở đây; hình dạng hộp thoại: `docs/research/SystemSettingsReference.md` |
 | 9.1 | 6 |
 | 9.2, 9.3 | 7 |
 | 9.4, 9.5, 9.6, 9.8, 9.9 | 1.2, 1.3 |
@@ -437,15 +437,15 @@ Tài liệu cũ, chú thích trong mã và nhật ký dẫn số mục cũ; "(b)
 | 10.9 | 10.6 |
 | 10.10 | 3, 10.7 |
 
-## 2. `docs/research/OPENKEY-NOTES.md`
+## 2. `docs/research/OpenKeyNotes.md`
 
 Mục 6 và 7 cũ. Ca nào Dấu cố ý khác OpenKey vẫn nằm ở mục 5 của tài liệu hiện hành, kèm tên test; mọi ca khác của mục 6 cũ có trong test của engine (`Packages/DauEngine/Tests/DauEngineTests`), kiểm bằng grep ngày 11/11/2026.
 
-Đổi số mục: 1, 2 giữ số; 3.N thành 2.N; 4 (B1–B19) thành 3; 5 chuyển sang `docs/research/IMK-API-NOTES.md`; 6 thành 5 (chỉ ca Dấu cố ý khác) và phần dưới đây; 7 chỉ ở đây; 8 (XKey) thành 4.
+Đổi số mục: 1, 2 giữ số; 3.N thành 2.N; 4 (B1–B19) thành 3; 5 chuyển sang `docs/research/IMKAPINotes.md`; 6 thành 5 (chỉ ca Dấu cố ý khác) và phần dưới đây; 7 chỉ ở đây; 8 (XKey) thành 4.
 
 ### 6. Ca biên đề xuất cho bộ test
 
-Kết quả mong đợi viết theo chính tả tiếng Việt và DECISIONS.md, **không** lấy từ OpenKey (D10).
+Kết quả mong đợi viết theo chính tả tiếng Việt và Decisions.md, **không** lấy từ OpenKey (D10).
 Cấu hình mặc định theo D15: Telex, kiểu mới, bỏ dấu tự do bật, tự khôi phục bật, nâng cao tắt. Dòng nào khác cấu hình mặc định thì ghi rõ.
 
 Cột "So với OpenKey" có hai giá trị:
@@ -608,7 +608,7 @@ Cột "Ghi chú" dẫn số quyết định khi kết quả do quyết định �
 
 #### 6.9 Ca thêm theo quyết định mới (đã duyệt 29/10/2026)
 
-Người dùng đã duyệt câu chữ DECISIONS cho các ca này (D4 mốc khôi phục, D26, D28, D29, D30, D33). Dùng làm tiêu chí đóng mốc.
+Người dùng đã duyệt câu chữ Decisions cho các ca này (D4 mốc khôi phục, D26, D28, D29, D30, D33). Dùng làm tiêu chí đóng mốc.
 
 | Chuỗi phím | Mong đợi | Căn cứ | Ghi chú |
 |---|---|---|---|
@@ -630,16 +630,16 @@ Người dùng đã duyệt câu chữ DECISIONS cho các ca này (D4 mốc khô
 | seed `cả` + `r` | `car` | D20 + D26 | |
 | `uown`, `nguwowif` | `ươn`, `người` | D35 | |
 
-### 7. Mâu thuẫn và điểm mơ hồ với DECISIONS.md
+### 7. Mâu thuẫn và điểm mơ hồ với Decisions.md
 
 Ban đầu mục này chỉ liệt kê. Đến 29/10/2026 (commit `22f3e4d`) mọi điểm đều đã được chốt, trừ điểm "Ví dụ trong D20 dễ đọc nhầm" và điểm cuối (không có vi phạm) là ghi chú.
 Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
 
 - **Ranh giới từ kích hoạt khôi phục và gõ tắt phụ âm.**
-  - D4 và D21 ghi "khi nhấn Space", còn ARCHITECTURE (luồng một phím, bước 4) ghi "Space/dấu câu".
+  - D4 và D21 ghi "khi nhấn Space", còn Architecture (luồng một phím, bước 4) ghi "Space/dấu câu".
   - OpenKey: Space cùng một tập dấu câu và Enter/Tab/Esc/mũi tên, nhưng không có ! ( ) (3.16, B10).
   - Đề xuất ở 3.16: mọi phím kết thúc từ có in ra ký tự, gồm Space, Return, Tab và mọi dấu câu; không khôi phục khi mũi tên, Esc, chuột hoặc tổ hợp phím.
-  - Cần sửa D4/D21 hoặc ARCHITECTURE cho khớp.
+  - Cần sửa D4/D21 hoặc Architecture cho khớp.
   - **Đã chốt: D4 (phần "Ranh giới từ") và D21.** Mọi ký tự kết thúc từ có in ra (Space, Enter, Tab, mọi dấu câu) kích hoạt khôi phục và gõ tắt; mũi tên, Esc, chuột, tổ hợp phím chỉ reset.
 - **"Bỏ dấu tự do" chưa được định nghĩa** (D15 chỉ ghi mặc định bật). Có hai cách hiểu:
   - (a) cho phép gõ phím dấu và phím biến đổi ở bất kỳ đâu trong từ, kể cả sau phụ âm cuối, và dấu tự vào đúng chỗ. Khi tắt thì phím dấu phải gõ ngay sau nguyên âm.
@@ -689,11 +689,11 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - Đề xuất ghi chú hoặc chỉ hiện "w" khi dùng VNI/Telex đơn giản.
   - **Đã chốt: D22.** Giao diện ghi chú "cho phép w" không có tác dụng khi dùng Telex.
 - **Phím mũi tên.**
-  - ARCHITECTURE: mũi tên chỉ reset; OpenKey: mũi tên còn khôi phục.
-  - Đề xuất giữ như ARCHITECTURE (điểm "Ranh giới từ" ở trên).
+  - Architecture: mũi tên chỉ reset; OpenKey: mũi tên còn khôi phục.
+  - Đề xuất giữ như Architecture (điểm "Ranh giới từ" ở trên).
   - **Đã chốt: D4 (phần "Ranh giới từ").** Mũi tên chỉ reset, không khôi phục.
 - **Backspace chưa được đặc tả.**
-  - ARCHITECTURE không nói Backspace tác động lên bộ đệm và phím gốc thế nào.
+  - Architecture không nói Backspace tác động lên bộ đệm và phím gốc thế nào.
   - Đề xuất: Backspace bỏ chữ cuối hiển thị, đặt lại dấu, và đổi mốc khôi phục của từ thành "chữ đang hiển thị". Tránh lệch kiểu OpenKey (3.17, B12).
   - **Đã chốt: D32.** Backspace bỏ chữ cuối, đặt lại dấu, mốc khôi phục là chữ đang hiển thị.
 - **"Thêm dấu cho từ đã gõ" (D20) cần chốt chi tiết:**
@@ -735,11 +735,11 @@ Quy trình dự kiến, các lần sửa `extract.sh`, đếm sơ bộ, diễn b
 
 ### 1. Quy trình mù
 
-1. Engine-dev chỉ đọc `docs/research/external-test-inputs/*.tsv` và file này, viết kết quả mong đợi theo chính tả tiếng Việt và `docs/DECISIONS.md` (D10 (Engine tự viết): không lấy kết quả của bộ gõ khác làm đáp án).
+1. Engine-dev chỉ đọc `docs/research/external-test-inputs/*.tsv` và file này, viết kết quả mong đợi theo chính tả tiếng Việt và `docs/Decisions.md` (D10 (Engine tự viết): không lấy kết quả của bộ gõ khác làm đáp án).
 2. Chạy engine của Dấu trên các ca đó; ca nào Dấu khác đáp án của chính Dấu là lỗi của Dấu. (Đã làm bằng bất biến thay cho đáp án từng ca, xem Hiện trạng.)
 3. Chỉ sau bước 2, người so sánh mới mở `build/external-answers/` và đánh dấu các ca Dấu khác họ.
-   - Mỗi ca khác nhau được xét theo DECISIONS.md. Kết quả là một trong ba:
-     - Dấu cố ý khác (ghi vào `docs/research/OPENKEY-NOTES.md` hoặc ghi chú test);
+   - Mỗi ca khác nhau được xét theo Decisions.md. Kết quả là một trong ba:
+     - Dấu cố ý khác (ghi vào `docs/research/OpenKeyNotes.md` hoặc ghi chú test);
      - đáp án của Dấu sai;
      - cần quyết định mới (hỏi người dùng).
    - Đáp án của họ không bao giờ được chép thẳng vào test.
@@ -811,7 +811,7 @@ Sau đó, cùng ngày:
 
 Người dùng đã chốt chín câu hỏi ngày 05/11/2026; các ca còn khác nay thuộc lớp A (mục 9.3).
 Vòng xét đầu đặt mã E1–E9 cho chín câu hỏi này.
-Mã chỉ còn trong cột đầu của bảng dưới, để tra ngược: `docs/history/DECISIONS-LOG.md` (lưu trữ, không sửa) còn dẫn theo "E8" và "E9".
+Mã chỉ còn trong cột đầu của bảng dưới, để tra ngược: `docs/history/DecisionsLog.md` (lưu trữ, không sửa) còn dẫn theo "E8" và "E9".
 
 | Mã cũ | Câu hỏi | Ca lần đầu | Quyết định |
 |---|---|---|---|

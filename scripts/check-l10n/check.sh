@@ -15,7 +15,7 @@
 #      out ("one");
 #   4. no key is marked stale (Xcode no longer finds it in the code);
 #   5. keys and "en" texts hold no Vietnamese besides the phrases listed in
-#      allowed-vietnamese.txt (docs/GLOSSARY.md, "Không dịch");
+#      allowed-vietnamese.txt (docs/Glossary.md, "Không dịch");
 #   6. the name is "Dấu" in every language (D24, a brand like Phở): no text, and no key
 #      of a Localizable catalog, has "Dau" without diacritics as a word (technical ids
 #      like com.codefastlabs.dau are fine; "dầu", "đau" are real Vietnamese words).

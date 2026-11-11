@@ -4,7 +4,7 @@
 /// show nothing. So a user launch opens the host app (Dấu, Settings) and the process
 /// quits; a launch by the system to serve typing keeps running as before.
 ///
-/// Signals measured on macOS 27.2 (02/11/2026, ARCHITECTURE.md "Khởi chạy bộ gõ"):
+/// Signals measured on macOS 27.2 (02/11/2026, Architecture.md "Khởi chạy bộ gõ"):
 /// - System (imklaunchagent asks LaunchServices, no launch event, flags dontSwitch):
 ///   no Apple event reaches the app; in `applicationDidFinishLaunching` the current
 ///   event is the `aevt/oapp` that AppKit makes up, whose sender is the process itself.

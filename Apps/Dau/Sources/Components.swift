@@ -72,7 +72,7 @@ struct SettingsPage<Content: View>: View {
             content
         }
         .formStyle(.grouped)
-        // Content scrolled under the toolbar must not show through the title (UI-CHECKS
+        // Content scrolled under the toolbar must not show through the title (UIChecks
         // item 9): the system's hard scroll edge on macOS 26+.
         .modifier(HardTopScrollEdge())
         .modifier(PageSearch(text: search, prompt: searchPrompt, add: add))

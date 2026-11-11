@@ -1,5 +1,5 @@
 ---
-description: Gọi auditor kiểm tra toàn repo với docs/DECISIONS.md
+description: Gọi auditor kiểm tra toàn repo với docs/Decisions.md
 disable-model-invocation: true
 ---
-Gọi subagent `auditor` kiểm tra toàn bộ repo (hoặc phạm vi: $ARGUMENTS). Auditor chỉ đọc; phiên chính ghi kết luận và danh sách việc phải sửa vào `docs/PROGRESS.md`. Không sửa gì khác trong lượt này.
+Gọi subagent `auditor` kiểm tra toàn bộ repo (hoặc phạm vi: $ARGUMENTS). Auditor chỉ đọc; phiên chính ghi kết luận và danh sách việc phải sửa vào `docs/Progress.md`. Không sửa gì khác trong lượt này.

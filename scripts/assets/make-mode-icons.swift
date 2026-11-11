@@ -1,14 +1,14 @@
 // Draws the temporary input mode icon "V" (Dấu – Tiếng Việt, the only mode, D2) for the
 // input source menu: a monochrome template image, a filled rounded
 // badge with the letter cut out
-// (docs/BRAND.md, "Biểu tượng thanh menu"). Letters are stroked paths, not a font, so
+// (docs/Brand.md, "Biểu tượng thanh menu"). Letters are stroked paths, not a font, so
 // no font license is involved.
 //
 // The same image is drawn, tinted white, inside the blue ⌃Space indicator under the
 // caret; that only works when the input mode declares TISIconIsTemplate (Info.plist,
-// docs/history/COMPATIBILITY-FIXED.md). The system cannot draw a text label ("A") for us.
+// docs/history/CompatibilityFixed.md). The system cannot draw a text label ("A") for us.
 //
-// TODO(M7): replace with the official identity files (BRAND.md "File cần xuất").
+// TODO(M7): replace with the official identity files (Brand.md "File cần xuất").
 //
 // Usage: scripts/assets/make-mode-icons.sh (wraps this script and tiffutil).
 //        swift scripts/assets/make-mode-icons.swift <output-dir>  → V.png, V@2x.png
@@ -26,7 +26,7 @@ guard args.count == 2 else {
 let outDir = URL(fileURLWithPath: args[1], isDirectory: true)
 
 /// Canvas in points: the system's "A" badge of U.S. is 22 × 16 pt on the menu bar
-/// (docs/BRAND.md, "Biểu tượng thanh menu"), so the icon uses the same canvas.
+/// (docs/Brand.md, "Biểu tượng thanh menu"), so the icon uses the same canvas.
 let canvasWidth = 22, canvasHeight = 16
 
 /// Draws in a 22×16 pt space, origin bottom-left: a filled rounded badge with the letter
@@ -40,7 +40,7 @@ func draw(_ letter: Character, in ctx: CGContext) {
 
     // The letter is erased from the badge (transparent), not drawn on top of it. It is a
     // filled outline, not a stroke, so its box is exact: 9 × 8.5 pt centred in the badge,
-    // the size of the system's "A" (docs/BRAND.md).
+    // the size of the system's "A" (docs/Brand.md).
     ctx.setBlendMode(.clear)
     ctx.setFillColor(CGColor(gray: 0, alpha: 1))
     let path = CGMutablePath()

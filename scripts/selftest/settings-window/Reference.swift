@@ -1,12 +1,12 @@
 // Every pass value of the Settings window UI checks, in one place. Compiled together
 // with ax-check.swift (the real window, through the Accessibility API) and check.swift
 // (pixels of its screenshots, and the in-app onboarding and uninstall captures) by
-// run.sh; docs/UI-CHECKS.md holds no numbers, it points here. Unit: pt, origin at the
+// run.sh; docs/UIChecks.md holds no numbers, it points here. Unit: pt, origin at the
 // window's (or sheet's) top-left, unless a name says otherwise.
 //
 // Where a number comes from:
 // - System Settings: measured on macOS 27.2 with the Accessibility API and pixels
-//   (docs/research/SYSTEM-SETTINGS-REFERENCE.md); D9 makes it the layout reference.
+//   (docs/research/SystemSettingsReference.md); D9 makes it the layout reference.
 // - Deliberate: Dấu's own choice, noted where it differs from System Settings.
 // - System: a value the system or SwiftUI fixes (measured, not chosen).
 // - Mockup: the artboards in docs/UI.md (content only under D9; noted where a size
@@ -45,7 +45,7 @@ enum Reference {
     static let contentMinHeight: CGFloat = 400
     static let minWindowHeight: CGFloat = contentMinHeight + toolbarHeight
     /// Widest window: System Settings' window has a fixed width (setting another width
-    /// reads back 740, measured on macOS 27.2; SYSTEM-SETTINGS-REFERENCE.md, "Cửa sổ có đổi
+    /// reads back 740, measured on macOS 27.2; SystemSettingsReference.md, "Cửa sổ có đổi
     /// rộng được không"), and so has Dấu's.
     static let maxWindowWidth: CGFloat = windowWidth
     /// Probe: sizes the real window is asked for to read its limits.
@@ -85,7 +85,7 @@ enum Reference {
 
     /// The system's page title (an AXStaticText in the toolbar) starts here. Probe
     /// (the same toolbar in a test app): text frame at x ≈ 317, glyphs from
-    /// ≈ 326; System Settings' glyphs start at ≈ 324 (SYSTEM-SETTINGS-REFERENCE.md). Not
+    /// ≈ 326; System Settings' glyphs start at ≈ 324 (SystemSettingsReference.md). Not
     /// yet measured on Dấu: the first run.sh of the new shell confirms or replaces it.
     static let titleX: CGFloat = 317
     /// ... and is centered in the toolbar.
