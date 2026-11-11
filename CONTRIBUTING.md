@@ -17,7 +17,7 @@ Cảm ơn bạn muốn góp sức. Dấu là phần mềm tự do theo giấy ph
 | Giao diện app chủ (`Apps/Dau`), kiểm bằng snapshot | Không | `swift test --package-path scripts/snapshot-settings` |
 | Cài và gõ thử bộ gõ thật trên máy bạn | Có: Apple ID miễn phí của chính bạn | xem mục dưới |
 
-Cần Xcode (README ghi bản đã thử) và XcodeGen (`brew install xcodegen`). Nếu `xcode-select -p` trỏ tới Command Line Tools, đặt `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` trước các lệnh trên.
+Cần Xcode (đã thử với Xcode 27.1 và Swift 6.4; Command Line Tools không chạy được `swift test` khi build sạch vì thiếu plugin `TestingMacros`) và XcodeGen (`brew install xcodegen`). Nếu `xcode-select -p` trỏ tới Command Line Tools, đặt `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` trước các lệnh trên.
 
 Chạy `scripts/dev/doctor.sh` trước: lệnh này không cài hay đổi gì trên hệ thống (chỉ ghi vào `build/` và `.build/`, dòng `# Side effects: builds` trong script) và liệt kê máy bạn còn thiếu gì (Xcode, XcodeGen, chứng chỉ ký khớp Team, bản đã cài, nguồn nhập liệu) và lệnh sửa từng mục.
 

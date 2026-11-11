@@ -638,6 +638,9 @@ Quy tắc kèm theo khi gỡ:
 
 ## Build
 
+- `Dau.xcodeproj` sinh từ `project.yml` bằng XcodeGen, không sửa tay và không commit. Scheme `Dau` build cả bộ gõ và nhúng nó vào `Dau.app/Contents/Library/Input Methods/DauInputMethod.app`.
+- Định danh (D24 (Tên và định danh)): `BUNDLE_ID_PREFIX = com.codefastlabs.dau` trong `project.yml`; app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, input mode duy nhất `com.codefastlabs.dau.inputmethod.Dau.vi` (D2 (Chuyển Việt/Anh)), App Group `M58DANM3ZP.com.codefastlabs.dau.shared`.
+  - `DEVELOPMENT_TEAM` ở `Config/Signing.xcconfig` (Personal Team `M58DANM3ZP`), `Config/Local.xcconfig` (git bỏ qua) đặt team khác; ký tự động "Apple Development" vì App Group cần Team ID thật. Bản phát hành ký Developer ID ở M7 (Phát hành).
 - Debug lệnh trơn chỉ build arm64 (Xcode build package local theo kiến trúc máy).
   - Debug universal dùng `-destination 'generic/platform=macOS'`; Release luôn universal.
   - CI phải dùng destination này.
