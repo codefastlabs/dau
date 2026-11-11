@@ -6,21 +6,21 @@
 - `src/*.dc.html`: nguồn của artboard (nội dung, câu chữ chính xác); agent đọc file này thay cho canvas.
 - `canvas.json`: vị trí, kích thước và tiêu đề các artboard.
 
-## Chào mừng
+## Thiết lập Dấu
 
-- [Chào mừng – bước 1: tắt bộ gõ cũ](OnboardingConflict.png) · [nguồn](src/OnboardingConflict.dc.html)
-- [Chào mừng – bước 1: đã tắt bộ gõ cũ (sau khi bấm Quay lại ở bước 2)](OnboardingConflictDone.png) · [nguồn](src/OnboardingConflictDone.dc.html)
-- [Chào mừng – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)](OnboardingMoveToApplications.png) · [nguồn](src/OnboardingMoveToApplications.dc.html)
-- [Chào mừng – bước 2: bật Dấu](OnboardingEnable.png) · [nguồn](src/OnboardingEnable.dc.html)
-- [Chào mừng – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác](OnboardingEnableNotes.png) · [nguồn](src/OnboardingEnableNotes.dc.html)
-- [Chào mừng – bước 2: chưa cài được](OnboardingEnableError.png) · [nguồn](src/OnboardingEnableError.dc.html)
-- [Chào mừng – bước 2: bộ gõ trên máy đã bị thay đổi (cài lại trước khi bật)](OnboardingEnableTampered.png) · [nguồn](src/OnboardingEnableTampered.dc.html)
-- [Chào mừng – bước 2: chờ bấm Allow](OnboardingEnableWaiting.png) · [nguồn](src/OnboardingEnableWaiting.dc.html)
-- [Chào mừng – bước 2: chưa bật được](OnboardingEnableFailed.png) · [nguồn](src/OnboardingEnableFailed.dc.html)
-- [Chào mừng – bước 2: đã bật](OnboardingEnableDone.png) · [nguồn](src/OnboardingEnableDone.dc.html)
-- [Chào mừng – bước 2: đã bật, chưa có phím tắt](OnboardingEnableDoneNoShortcut.png) · [nguồn](src/OnboardingEnableDoneNoShortcut.dc.html)
-- [Chào mừng – bước 3: chọn kiểu gõ](Onboarding.png) · [nguồn](src/Onboarding.dc.html)
-- [Chào mừng – bước 3: Dấu chưa là nguồn đang dùng](OnboardingNotSelected.png) · [nguồn](src/OnboardingNotSelected.dc.html)
+- [Thiết lập Dấu – bước 1: tắt bộ gõ cũ](OnboardingConflict.png) · [nguồn](src/OnboardingConflict.dc.html)
+- [Thiết lập Dấu – bước 1: đã tắt bộ gõ cũ (sau khi bấm Quay lại ở bước 2)](OnboardingConflictDone.png) · [nguồn](src/OnboardingConflictDone.dc.html)
+- [Thiết lập Dấu – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)](OnboardingMoveToApplications.png) · [nguồn](src/OnboardingMoveToApplications.dc.html)
+- [Thiết lập Dấu – bước 2: bật Dấu](OnboardingEnable.png) · [nguồn](src/OnboardingEnable.dc.html)
+- [Thiết lập Dấu – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác](OnboardingEnableNotes.png) · [nguồn](src/OnboardingEnableNotes.dc.html)
+- [Thiết lập Dấu – bước 2: chưa cài được](OnboardingEnableError.png) · [nguồn](src/OnboardingEnableError.dc.html)
+- [Thiết lập Dấu – bước 2: bộ gõ trên máy đã bị thay đổi (cài lại trước khi bật)](OnboardingEnableTampered.png) · [nguồn](src/OnboardingEnableTampered.dc.html)
+- [Thiết lập Dấu – bước 2: chờ bấm Allow](OnboardingEnableWaiting.png) · [nguồn](src/OnboardingEnableWaiting.dc.html)
+- [Thiết lập Dấu – bước 2: chưa bật được](OnboardingEnableFailed.png) · [nguồn](src/OnboardingEnableFailed.dc.html)
+- [Thiết lập Dấu – bước 2: đã bật](OnboardingEnableDone.png) · [nguồn](src/OnboardingEnableDone.dc.html)
+- [Thiết lập Dấu – bước 2: đã bật, chưa có phím tắt](OnboardingEnableDoneNoShortcut.png) · [nguồn](src/OnboardingEnableDoneNoShortcut.dc.html)
+- [Thiết lập Dấu – bước 3: chọn kiểu gõ](Onboarding.png) · [nguồn](src/Onboarding.dc.html)
+- [Thiết lập Dấu – bước 3: Dấu chưa là nguồn đang dùng](OnboardingNotSelected.png) · [nguồn](src/OnboardingNotSelected.dc.html)
 
 ## Cài đặt
 
