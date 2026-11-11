@@ -204,4 +204,18 @@ enum Letters {
         default: return nil
         }
     }
+
+    /// Whether the modifier mark `v` (U+0302, U+0306 or U+031B) makes a Vietnamese
+    /// letter on `base`: circumflex on a/e/o (â ê ô), breve on a (ă), horn on o/u
+    /// (ơ ư). Any other pairing ("i\u{302}" = î, "u\u{306}" = ŭ, "a\u{31B}") is a
+    /// letter the engine does not know (D20 exception (b)).
+    @inline(__always)
+    static func modifierMarkFits(_ v: UInt32, base: UInt8) -> Bool {
+        switch v {
+        case 0x0302: return base == Ch.a || base == Ch.e || base == Ch.o
+        case 0x0306: return base == Ch.a
+        case 0x031B: return base == Ch.o || base == Ch.u
+        default: return false
+        }
+    }
 }

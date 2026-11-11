@@ -31,7 +31,12 @@ public struct VietEngine: Sendable {
     /// D33: the word grew past 7 letters; everything passes through until it ends.
     var overflow = false
     /// D33: letters the app shows for the overflowed word; ⌫ to zero ends the state.
+    /// At most `overflowShownLimit`.
     var overflowShown = 0
+    /// D18: ceiling for `overflowShown`, so neither a hostile count from the IMK layer
+    /// nor an endless word can overflow the counter. Far above any word a person
+    /// types; past it, ⌫ ends the pass-through state early, which only resets.
+    static let overflowShownLimit = 1 << 20
     /// D20: the next key is the first one after `seed(displayed:)`.
     var seedPending = false
 
@@ -93,7 +98,7 @@ public struct VietEngine: Sendable {
             return finishWord(appending: v)
         }
         if overflow {
-            overflowShown += 1
+            if overflowShown < VietEngine.overflowShownLimit { overflowShown += 1 }
             return .passThrough
         }
         return handleLetter(v, info)
@@ -155,8 +160,8 @@ public struct VietEngine: Sendable {
     /// "viet" + e → "viêt"); a double key still undoes (D26: "cả" + r → "car").
     ///
     /// Accepts precomposed or decomposed (NFD) text. Returns false, and stays empty,
-    /// if the text is not a word the engine can track (non-letters, more than 7
-    /// letters, too long).
+    /// if the text is not a word the engine can track (non-letters, letters the engine
+    /// does not know such as "i\u{302}" or "u\u{306}", more than 7 letters, too long).
     @discardableResult
     public mutating func seed<S: Sequence>(displayed: S) -> Bool where S.Element == Unicode.Scalar {
         reset()
@@ -173,7 +178,14 @@ public struct VietEngine: Sendable {
                     w.tone = mark.tone
                     w.tonePos = last
                 } else {
-                    if w.mod[last] != Mod.none || !w.isVowel(last) { reset(); return false }
+                    if w.mod[last] != Mod.none || !Letters.modifierMarkFits(v, base: w.base[last]) {
+                        reset(); return false
+                    }
+                    // Circumflex and breve share combining class 230 with the tone
+                    // marks above the letter, so after one of those they are a
+                    // different text (stacked the other way), not "ấ" or "ắ".
+                    // The dot below (220) and the horn (216) reorder freely.
+                    if v != 0x031B && w.tonePos == last && w.tone != Tone.dot { reset(); return false }
                     w.mod[last] = mark.mod
                 }
                 shown.append(v)
@@ -207,12 +219,12 @@ public struct VietEngine: Sendable {
     /// unchanged until the word ends, and nothing is restored (D4: the engine never
     /// changed it). `shown`: how many characters the app shows for the word; ⌫ ends
     /// the state once they are all deleted. A count of zero or less leaves the engine
-    /// empty.
+    /// empty; a larger count than `overflowShownLimit` is clamped to it (D18).
     public mutating func seedOverflow(shown: Int) {
         reset()
         guard shown > 0 else { return }
         overflow = true
-        overflowShown = shown
+        overflowShown = shown < VietEngine.overflowShownLimit ? shown : VietEngine.overflowShownLimit
     }
 
     // MARK: - Letter keys

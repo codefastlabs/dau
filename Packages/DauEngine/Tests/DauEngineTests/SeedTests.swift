@@ -1,5 +1,6 @@
+import Foundation
 import Testing
-import DauEngine
+@testable import DauEngine
 
 /// Group 6 — "Thêm dấu cho từ đã gõ" (D20): the engine is seeded from the text shown
 /// in the app (read as letters), then the key is handled.
@@ -118,4 +119,120 @@ struct SeedTests {
         do { let result = engine.seed(displayed: "\u{0301}a".unicodeScalars); #expect(!result) }
         #expect(!engine.isComposing)
     }
+
+    /// D20 exception (b): a combining modifier mark the engine cannot place in a
+    /// Vietnamese letter (circumflex only on a/e/o, breve only on a, horn only on o/u)
+    /// is a letter the engine does not know. Seeding fails and the key goes straight,
+    /// as with the precomposed "maître" + s.
+    @Test(arguments: [
+        SeedCase("mai\u{302}tre", "s", "mai\u{302}tres"),
+        SeedCase("maître", "s", "maîtres"),
+        SeedCase("i\u{302}le", "s", "i\u{302}les"),
+        SeedCase("du\u{302}", "t", "du\u{302}t"),
+        SeedCase("hodiau\u{306}", "n", "hodiau\u{306}n"),
+        SeedCase("u\u{306}", "s", "u\u{306}s"),
+        SeedCase("bo\u{306}", "s", "bo\u{306}s"),
+        SeedCase("a\u{31B}", "n", "a\u{31B}n"),
+        SeedCase("E\u{31B}", "s", "E\u{31B}s"),
+        SeedCase("y\u{302}", "s", "y\u{302}s"),
+        // A circumflex or breve written after a tone mark above the same letter is
+        // not canonically "ấ" (both have combining class 230).
+        SeedCase("a\u{301}\u{302}", "f", "a\u{301}\u{302}f"),
+        SeedCase("á\u{306}", "f", "á\u{306}f"),
+    ])
+    func rejectsMarksNotInVietnamese(_ c: SeedCase) {
+        var t = Typist()
+        do { let result = t.seed(c.displayed); #expect(!result) }
+        #expect(!t.engine.isComposing)
+        t.type(c.keys)
+        #expect(t.text.map(\.value) == scalars(c.expected), "got \"\(t.string)\"")
+    }
+
+    /// The marks in their Vietnamese pairs still seed, in either canonical order.
+    @Test(arguments: [
+        SeedCase("a\u{302}", "s", "ấ"), SeedCase("e\u{302}", "s", "ế"), SeedCase("O\u{302}", "s", "Ố"),
+        SeedCase("a\u{306}", "n", "ăn"), SeedCase("A\u{306}", "f", "Ằ"),
+        SeedCase("o\u{31B}", "s", "ớ"), SeedCase("u\u{31B}", "s", "ứ"), SeedCase("U\u{31B}", "f", "Ừ"),
+        SeedCase("a\u{302}\u{301}", "f", "ầ"),          // NFD order of "ấ"
+        SeedCase("a\u{323}\u{302}", "n", "ận"),         // NFD order of "ậ": dot below first
+        SeedCase("o\u{31B}\u{323}", "i", "ợi"),         // NFD order of "ợ"
+        SeedCase("o\u{301}\u{31B}", "f", "ờ"),          // horn after the tone reorders
+        SeedCase("ọ\u{302}", "i", "ội"),                // precomposed ọ + circumflex = ộ
+        SeedCase("ó\u{31B}", "f", "ờ"),                 // precomposed ó + horn = ớ
+    ])
+    func acceptsVietnameseMarks(_ c: SeedCase) {
+        var t = Typist()
+        do { let result = t.seed(c.displayed); #expect(result) }
+        t.type(c.keys)
+        #expect(t.text.map(\.value) == scalars(c.expected), "got \"\(t.string)\"")
+    }
+
+    /// Invariant: when `seed` accepts a text, the word it builds renders to a text
+    /// canonically equivalent to it. Otherwise the next key would rewrite letters the
+    /// user never touched.
+    @Test(arguments: [
+        "việt", "nghiêng", "người", "được", "thuở", "khuỷu", "quyền", "ĐẮK", "Hà", "cả",
+        "ươ", "uơ", "ưo", "gi", "qu", "ă", "â", "đ", "a1", "U23",
+        "maître", "dû", "naïve", "über", "ŭ", "õ", "ỹ", "î", "ô", "Ô", "ç", "ñ", "keyboard",
+    ])
+    func seededWordRendersAsTheText(_ word: String) {
+        for text in [word, word.decomposedStringWithCanonicalMapping] {
+            let input = Array(text.unicodeScalars)
+            var e = VietEngine()
+            guard e.seed(displayed: input) else { continue }
+            let rendered = Array(e.render(e.word))
+            #expect(nfc(rendered) == nfc(input), "\(escaped(input)) read as \(escaped(rendered))")
+        }
+    }
+
+    /// D18: an absurd count from the IMK layer cannot overflow the counter; it is
+    /// clamped, so typing and deleting stay well defined.
+    @Test func seedOverflowClampsTheCount() {
+        for shown in [Int.max, Int.max - 1, VietEngine.overflowShownLimit, VietEngine.overflowShownLimit + 1] {
+            var t = Typist()
+            t.engine.seedOverflow(shown: shown)
+            #expect(t.engine.overflowShown == VietEngine.overflowShownLimit)
+            t.type("abc")
+            #expect(t.engine.overflowShown == VietEngine.overflowShownLimit)
+            t.type("⌫")
+            #expect(t.engine.isComposing && t.string == "ab")
+            t.type(" ")
+            #expect(!t.engine.isComposing)
+        }
+        for shown in [Int.min, -1, 0] {
+            var e = VietEngine()
+            e.seedOverflow(shown: shown)
+            #expect(!e.isComposing)
+            #expect(e.handle("a") == .passThrough)
+        }
+    }
+
+    /// The table above, with expected acceptance, so the invariant is not vacuous.
+    @Test func seedAcceptance() {
+        for (text, accepted) in [
+            ("vie\u{302}\u{323}t", true), ("ngu\u{31B}o\u{31B}\u{300}i", true), ("I\u{302}", false),
+            ("du\u{302}", false), ("u\u{306}", false), ("a\u{31B}", false), ("na\u{308}ive", false),
+            ("ü", false), ("c\u{327}a", false), ("o\u{303}", true),
+        ] {
+            var e = VietEngine()
+            #expect(e.seed(displayed: text.unicodeScalars) == accepted, "\(escaped(Array(text.unicodeScalars)))")
+        }
+    }
+}
+
+/// NFC of a scalar list (tests only: the engine itself has no Foundation, D10).
+func nfc(_ text: [Unicode.Scalar]) -> [Unicode.Scalar] {
+    var view = String.UnicodeScalarView()
+    view.append(contentsOf: text)
+    return Array(String(view).precomposedStringWithCanonicalMapping.unicodeScalars)
+}
+
+/// Scalars with everything outside printable ASCII written as \u{…}, for messages.
+func escaped(_ text: [Unicode.Scalar]) -> String {
+    var out = ""
+    for s in text {
+        if s.value >= 0x21 && s.value < 0x7F { out.unicodeScalars.append(s) }
+        else { out += "\\u{" + String(s.value, radix: 16, uppercase: true) + "}" }
+    }
+    return out
 }
