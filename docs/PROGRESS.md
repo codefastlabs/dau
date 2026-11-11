@@ -21,7 +21,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - `HostApp` kiểm chữ ký ứng viên app chủ từ 11/11 (rà soát bảo mật, nhật ký 11/11; đã chạy thật trong sandbox).
 
 Chờ người dùng:
-- Quyết định các đề xuất sửa sổ quyết định của rà soát bảo mật (D43 (Ô bỏ qua vùng thay chữ) nhận ra ô, D4 (Từ nước ngoài), D8 (Không telemetry), D18 (Phòng thủ với IMK), D37 (Cài đặt bộ gõ)).
+- Chọn giờ cho một lượt chạy thật của D43 (Ô bỏ qua vùng thay chữ) sau khi thêm bằng chứng dương (khoảng 5 phút, chiếm màn hình): Ghostty zsh 120 ms, Chrome, Chrome trang bận, Safari, trang xterm.js; bảng dự đoán ở nhật ký 11/11 ("D43 bằng chứng dương").
 
 Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
 - Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
@@ -362,3 +362,8 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - "Dấu Settings…" khi `/Applications/Dau.app` chưa chạy: `host-app-open reason=same-version` rồi `host-app-opened`, không có `host-app-signature-invalid` hay `-unreadable`: kiểm chữ ký app chủ chạy được trong sandbox.
   - Safari không chạy được: focus ở thanh địa chỉ, script dừng trước phím đầu (như ghi chú 09/11).
   - Dọn: Dấu.app đã thoát, bản Release đã cài lại, `build/sec*` đã xoá, không còn khoá `DauPerfLog`/`DauDebug…`, nguồn đầu vào là Dấu như trước lượt chạy.
+- 11/11/2026 — Safari chạy lại được (sau báo nhầm "không chạy được" ở lượt trên) — phiên chính — lần hỏng là `open -a` không đưa Safari lên trước (Chrome còn ở trước); `activate` thì được. Chạy lại: đổi nguồn thật "tọc", một `source-changed-reset`; thông báo giả 81 lần tới, 81 `source-unchanged-kept`, chữ đúng. `typing/run.sh` nay gọi `activate` khi `open` để trình duyệt ở sau (chưa chạy nhánh này thật). Dọn: Release đã cài lại, `build/sec5`, `build/sec6` đã xoá.
+- 11/11/2026 — sửa sổ quyết định sau rà soát bảo mật (người dùng duyệt cả năm đề xuất) — phiên chính, imk-dev — N3 (ngoại lệ đọc của D43), D4 (lý do chỉ reset), D8 (log Release không ghi app đích), D18 (kiểm biên, hoãn lời gọi lồng, thông báo chỉ là gợi ý, fuzz bắt buộc), D37 (yêu cầu mã, giới hạn "chỉ phát hiện", cài cho cả máy trước M7), D43 (bằng chứng dương, xét lại khi kích hoạt lại, kiểu xterm.js vẫn thay tại chỗ); `DECISIONS-LOG.md`, `superseded.txt`, ghi chú canvas (bản 157, thêm dòng D43 còn thiếu).
+  - D43 bằng chứng dương (imk-dev): ở phím vừa đủ để nhận ra ô, đọc chữ một lần ở vùng Dấu tự theo dõi; app trả đúng chữ Dấu đã gõ thì không nhận ra. Client giả luôn `{0,0}` đọc được chữ: ra như trước D43, không có DEL; Ghostty giả vẫn nhận ra ở phím 9, thêm một lần đọc. Test bộ gõ 199 → 206 (11 known issue, thêm `stalledPastTheRead`).
+  - Dự đoán cho lượt chạy thật: Ghostty nhận ra như lượt thứ tư; Chrome, Safari không đọc thêm, không sự kiện; Chrome trang bận nếu vị trí đủ để nhận ra thì `range-ignore-refuted`, không DEL; xterm.js vẫn `mode=in-key`, thay tại chỗ như cũ.
+  - Commit `eaaee14`, `7c0cd29`, `e9dc432`.
