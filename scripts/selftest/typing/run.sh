@@ -527,7 +527,12 @@ test_page_closed() { [[ "$(window_names "$1")" != *"$PAGE_TITLE"* ]]; }
 # time: type_keys's guard reports it and stops the run.
 open_test_page() {
   open -a "$1" "$PAGE"
-  wait_until -i 0.3 15 front_ok "$2" "$PAGE_TITLE"
+  wait_until -i 0.3 5 front_ok "$2" "$PAGE_TITLE" && return 0
+  # `open -a` on a running Safari has been seen to load the page without bringing Safari
+  # to the front (another browser stayed frontmost for 15 s, 11/11/2026); `activate`
+  # then did (docs/PROGRESS.md, 11/11/2026). Only the app being tested is activated.
+  osascript -e "tell application \"$1\" to activate" >/dev/null 2>&1
+  wait_until -i 0.3 10 front_ok "$2" "$PAGE_TITLE"
 }
 
 # Puts the keyboard focus in the test page's text field of browser process $1 when the
@@ -1233,6 +1238,10 @@ for app in "${APPS[@]}"; do
   ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( app=$(bundle_id "$app"))?\$" | grep -o "event=range-ignored mode=[a-z-]*" | head -1)"
   if [[ -n "$ignored" ]]; then
     log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}"
+  elif [[ -s "$WORK/perf.log" ]] && grep -q "name=range-ignore-refuted" "$WORK/perf.log"; then
+    # Debug only (PerfLog): the position looked like such a field, but the app gave back
+    # the text Dấu typed (D43, "Bằng chứng dương").
+    log_detail "D43: vị trí giống ô bỏ qua vùng thay chữ nhưng app trả đúng chữ đã gõ, không nhận ra"
   else
     log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"
   fi
