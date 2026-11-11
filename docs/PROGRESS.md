@@ -36,8 +36,6 @@ Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11, làm ở một p
 - Chờ người dùng:
   - duyệt tên "Thiết lập Dấu" cho các artboard onboarding trên canvas (hiện "Chào mừng – bước…", trong app là "Thiết lập Dấu");
   - duyệt bản rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ): thuật toán chuyển sang `docs/ARCHITECTURE.md`, sổ quyết định giữ luật, bất biến và lý do. Làm sau khi mạch Ghostty và xterm.js ở trên đóng, vì D43 (Ô bỏ qua vùng thay chữ) dẫn tới D11 và D20 và mạch đó còn có thể đổi chúng; D43 là mẫu viết ở mức quyết định.
-- Phiên đó tự chốt rồi báo lại:
-  - xếp lớp ca `aw␣` của gonhanh (`docs/research/external-test-inputs/README.md` mục 9).
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
@@ -347,3 +345,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Dọn: Release 60b0517 đã cài lại (bản đã cài 60b0517, tiến trình bộ gõ khởi động lại khi gõ), không còn khoá `DauPerfLog`, `DauDebugForceUnderline`; Ghostty và Sublime Text vẫn chạy như trước lượt. `build/terminal-underline/` đã xoá sau khi ghi số (dữ liệu ô xterm.js giữ ngoài repo cho lần chẩn đoán).
 - 11/11/2026 — tạm giữ lại cách gửi trong phím của D43 (người dùng chọn sau lượt thứ tư) — phiên phụ. `InPlaceComposer.eraseMode(for:)`: ô được nhận ra theo kiểu xterm.js thì vẫn thay tại chỗ như trước D43 (sai như cách cũ, không dồn chữ), chỉ ghi `event=range-ignored mode=in-key`; Ghostty không đổi. Test 166 đạt, 10 known issue như trước.
 - 11/11/2026 — dọn `docs/history/` (dọn tài liệu sau rà soát 10/11) — phiên phụ — xoá `KICKOFF.md`, `M4-TESTING.md`, `RESEARCH-LOG.md` (không tài liệu sống nào dẫn tới, git còn giữ); bảng "Số đo (M1–M3)" ở lại `docs/history/LOG-M0-M4.md` theo quy ước số đo của mốc đã đóng nằm ở `docs/history/`, đầu bảng và `docs/README.md` ghi rõ đó là nguồn mà ARCHITECTURE, DECISIONS và COMPATIBILITY dẫn.
+- 11/11/2026 — xếp lớp ca ngoài còn lại (dọn tài liệu sau rà soát 10/11) — phiên phụ — gonhanh `auto_restore_dynamic_test.rs:w_final_comprehensive#1` (`aw␣`, Dấu "ă␣" theo D31 (Âm tiết tiếng Việt hợp lệ) ý "Chữ cái đứng một mình") vào lớp A; ghi chú nhóm `A-D4raw` bỏ các chữ đứng một mình nay được giữ. Test engine xanh (110 test), `compare.sh`: A 426, chưa xếp 0; `docs/research/external-test-inputs/README.md` sửa theo.

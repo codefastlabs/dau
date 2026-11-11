@@ -11,7 +11,7 @@ Mục đích: lấy **chuỗi phím** trong bộ test của các bộ gõ tiến
 - Không có kết quả mong đợi nào của dự án khác trong `docs/research/external-test-inputs/`.
 - Trong file này chỉ mục 9.7 và 9.8 trích nguyên văn đáp án của họ cho vài ca ví dụ thuộc lớp D và lớp E, có ghi nguồn (các lớp xếp ca khác nhau: xem mục Hiện trạng ngay dưới).
 
-## Hiện trạng (10/11/2026)
+## Hiện trạng (11/11/2026)
 
 - **Các lớp xếp ca khác nhau** (dùng khắp file này và ở `scripts/research/external-tests/compare.py`; mỗi ca mà Dấu và đáp án của họ khác nhau được xếp vào đúng một lớp):
   - **A**: Dấu cố ý khác, chỉ khi quyết định được dẫn thật sự sinh ra đầu ra của Dấu.
@@ -49,13 +49,13 @@ Mục đích: lấy **chuỗi phím** trong bộ test của các bộ gõ tiến
 - **Bước 3** (mục 9): đo 05/11/2026, đếm lại 10/11/2026 sau D31 (Âm tiết tiếng Việt hợp lệ), bằng `scripts/research/external-tests/compare.sh`, trên engine sau commit 0a9bb4b (từ dài quá 7 chữ bị xoá hết bằng ⌫ thì hết trạng thái đi thẳng, D33 (Độ dài từ)) và khung test mô phỏng D20 theo cách đọc ở chữ cái đầu tiên cùng ba ngoại lệ của D20.
   - 10.303 ca, 235 ca họ không kiểm chữ, 8.078 ca khớp, 1.990 ca khác (đếm lại 10/11/2026 sau khi D31 (Âm tiết tiếng Việt hợp lệ) đổi, mục 9.2).
   - Trong 1.990 ca khác:
-    - 425 ca lớp A: Dấu cố ý khác theo một quyết định;
+    - 426 ca lớp A: Dấu cố ý khác theo một quyết định (gồm ca gonhanh "aw␣" xếp ngày 11/11/2026, mục 9.3);
     - 1.493 ca lớp B: do tuỳ chọn của nguồn mà Dấu không có;
     - 67 ca lớp C: đáp án của họ sai chính tả;
     - **0 ca lớp D (lỗi của Dấu)**: bốn kiểu lỗi của lần xét đầu đã sửa (mục 9.7);
     - **0 ca lớp E (cần người dùng quyết định)**: chín câu hỏi của lần xét đầu người dùng đã chốt (D20, D26 (Gõ đúp phím dấu), D28 (Bỏ dấu tự do), D30 (Kiểm tra chính tả), D31 (Âm tiết tiếng Việt hợp lệ), D32 (Backspace), D33, D40 (Chữ dựng sẵn và phím z); mục 9.8); ca nào còn khác nay thuộc lớp A;
     - 4 ca lớp X, không so được (mục 9.6): lỗi trích đã sửa, ca thiếu mô phỏng D20 nay khớp hết;
-    - 1 ca chưa xếp lớp (gonhanh `auto_restore_dynamic_test.rs:w_final_comprehensive#1`, "aw␣": Dấu ra "ă␣" theo D31 "Chữ cái đứng một mình", họ khôi phục chữ tiếng Anh); chờ người so xếp lớp.
+    - không còn ca chưa xếp lớp.
 - **Đếm sơ bộ trên đáp án của họ** (mục 6) đã được xem từng ca ở bước 3.
   - Các từ có dấu không phải âm tiết hợp lệ trong đáp án của họ phần lớn đúng là do cấu hình test của họ (lớp B): từ điển của ibus-teni, danh sách từ tiếng Anh của gonhanh và uvie-rs, tắt kiểm tra chính tả của fcitx5-unikey.
   - Phần còn lại là đáp án sai chính tả (lớp C).
@@ -65,7 +65,7 @@ Mục đích: lấy **chuỗi phím** trong bộ test của các bộ gõ tiến
   3. Chưa trích các kho lớn sinh máy móc, để làm sau (mục 7).
   4. Script trích nằm ở `scripts/research/external-tests/extract.sh`, ghim commit của từng nguồn và tạo lại đúng từng byte các TSV đã commit (kiểm 05/11/2026 bằng `git diff` sau khi chạy lại trên bản clone ở đúng commit).
 - Không có khẳng định nào về API Apple trong file này.
-- **Các số ca ở mục 9 đếm lại ngày 10/11/2026**, sau khi D31 đổi cùng ngày (chữ ă, â, đ đứng một mình được giữ khi kết thúc từ): chạy lại `ExternalCasesTests` rồi `scripts/research/external-tests/compare.sh`. 20 ca đổi đầu ra vì D31, đều là ca chữ ă, â, đ đứng một mình; 17 trong đó đổi kết quả so (mục 9.2); các số khác không đổi so với đếm 05/11/2026.
+- **Các số ca ở mục 9 đếm lại ngày 10/11/2026**, sau khi D31 đổi cùng ngày (chữ ă, â, đ đứng một mình được giữ khi kết thúc từ): chạy lại `ExternalCasesTests` rồi `scripts/research/external-tests/compare.sh`. 20 ca đổi đầu ra vì D31, đều là ca chữ ă, â, đ đứng một mình; 17 trong đó đổi kết quả so (mục 9.2); các số khác không đổi so với đếm 05/11/2026. Chạy lại 11/11/2026 (test engine xanh, `compare.sh`) khi xếp ca "aw␣" vào lớp A: chỉ cột A và cột chưa xếp của gonhanh đổi.
 
 ## 1. Quy trình mù
 
@@ -462,7 +462,7 @@ Theo lớp (chỉ ca khác):
 
 | Nguồn | A | B | C | D | E | X | Chưa xếp |
 |---|---|---|---|---|---|---|---|
-| gonhanh | 197 | 21 | 34 | 0 | 0 | 1 | 1 |
+| gonhanh | 198 | 21 | 34 | 0 | 0 | 1 | 0 |
 | ibus-teni | 0 | 1.416 | 6 | 0 | 0 | 0 | 0 |
 | fcitx5-unikey | 84 | 8 | 0 | 0 | 0 | 0 | 0 |
 | uvie-rs | 102 | 46 | 17 | 0 | 0 | 0 | 0 |
@@ -472,7 +472,7 @@ Theo lớp (chỉ ca khác):
 | bamboo-core | 8 | 0 | 0 | 0 | 0 | 2 | 0 |
 | ibus-bamboo | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
 | goxkey | 1 | 0 | 0 | 0 | 0 | 0 | 0 |
-| **Tổng** | **425** | **1.493** | **67** | **0** | **0** | **4** | **1** |
+| **Tổng** | **426** | **1.493** | **67** | **0** | **0** | **4** | **0** |
 
 **Lần xét đầu** (cùng ngày, trước khi sửa engine, khung test và `extract.sh`): 10.320 ca, 240 họ không kiểm chữ, 7.971 khớp, 2.109 khác (A 359, B 1.492, C 73, D 10, E 77, X 98).
 Từ đó:
@@ -501,7 +501,7 @@ Sau đó, cùng ngày:
   - 2 ca B của uvie-rs ra chữ khác nhau nhưng vẫn B;
   - 22 ca còn lại vẫn khớp.
 
-### 9.3 Lớp A — Dấu cố ý khác (425)
+### 9.3 Lớp A — Dấu cố ý khác (426)
 
 | Quyết định | Ca | Điểm khác |
 |---|---|---|
@@ -524,6 +524,7 @@ Sau đó, cùng ngày:
 | D31 ("qui" không hợp lệ) | 2 | "quis", "quir" (kiểu cũ) giữ nguyên; uvie-rs ra "quí", "quỉ" |
 | D40 (phím z) | 2 | z khi từ chưa có dấu thanh là chữ z, không bỏ mũ ("kongoz" hiện "kôngz" khi tắt tự khôi phục); gonhanh bỏ mọi dấu phụ |
 | D31 (iê không đứng đầu âm tiết) | 1 | "ieje" không biến đổi |
+| D31 (chữ cái đứng một mình) | 1 | "aw␣" ra "ă␣" (ý "Chữ cái đứng một mình"); gonhanh khôi phục "aw" theo danh sách từ tiếng Anh (`src:`, lớp B nhường A), xếp ngày 11/11/2026 |
 | D21, D23 (w → qu chỉ ở VNI), D36 (VNI: chữ số thành dấu) | 1 mỗi quyết định | gõ tắt phụ âm chỉ khi kết thúc từ; Telex không có w → qu; chữ số không đặt được dấu thì đi thẳng |
 
 ### 9.4 Lớp B — do tuỳ chọn của nguồn (1.493)
