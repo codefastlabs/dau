@@ -43,6 +43,9 @@
 #                     back: for a caller that runs several calls in a row with the same
 #                     source and puts the first one back itself (load/heavy.sh), so the
 #                     source is switched once per source, not twice per call.
+#   --word-pause MS   an extra pause of MS ms after each space, on top of --delay and
+#                     --jitter: people type a word in one burst and stop between words.
+#                     Example close to everyday typing: --delay 80 --jitter 30 --word-pause 250
 #   --jitter MS       each pause is --delay plus a random whole number of ms between -MS
 #                     and +MS (never below 0), drawn per key: closer to a human than an
 #                     even pace. With --delay 0 the keys still go one by one.
@@ -142,6 +145,7 @@ SOURCE_ID=""
 SAVE_DIR=""
 KEEP_SOURCE=0
 JITTER_MS=0
+WORD_PAUSE_MS=0
 BUSY=""
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
@@ -158,6 +162,7 @@ while [[ $# -gt 0 ]]; do
     --save) SAVE_DIR="${2:?--save cần thư mục}"; shift 2 ;;
     --keep-source) KEEP_SOURCE=1; shift ;;
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
+    --word-pause) WORD_PAUSE_MS="${2:?--word-pause cần số ms}"; shift 2 ;;
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
@@ -168,6 +173,7 @@ done
 [[ ${#APPS[@]} -gt 0 ]] || { usage; exit 2; }
 (( SHOT == 0 )) || [[ -n "$SAVE_DIR" ]] || log_die 2 "--shot cần --save DIR"
 [[ "$JITTER_MS" =~ ^[0-9]+$ ]] || log_die 2 "--jitter phải là số nguyên ms"
+[[ "$WORD_PAUSE_MS" =~ ^[0-9]+$ ]] || log_die 2 "--word-pause phải là số nguyên ms"
 # --save DIR need not exist yet (compare-ims and load/run.sh create theirs; a call by hand may not).
 [[ -z "$SAVE_DIR" ]] || mkdir -p "$SAVE_DIR" || log_die "Không tạo được thư mục $SAVE_DIR"
 BUSY_MS=0; BUSY_PERIOD=0
@@ -416,7 +422,7 @@ type_keys() { # process [window-title-substring]
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" <<'OSA'
+  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" "$WORD_PAUSE_MS" <<'OSA'
 on run argv
   set s to item 1 of argv
   set dms to (item 2 of argv) as integer
@@ -424,6 +430,7 @@ on run argv
   set p to item 3 of argv
   set sw to item 4 of argv
   set j to (item 5 of argv) as integer
+  set wp to (item 6 of argv) as integer
   tell application "System Events"
     if (name of first process whose frontmost is true) is not p then error "frontmost changed"
     if d = 0 and j = 0 and s does not contain "⌫" and s does not contain "←" and s does not contain "↩" and s does not contain "⇄" then
@@ -457,6 +464,8 @@ on run argv
         else if d > 0 then
           delay d
         end if
+        -- --word-pause: a person stops after a word, not inside it.
+        if wp > 0 and (c as text) is " " then delay wp / 1000
       end repeat
     end if
   end tell

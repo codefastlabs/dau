@@ -56,7 +56,7 @@ Mỗi câu có nghĩa và mang ý tích cực, kể cả câu dựng riêng cho 
 ## Cách gõ
 
 Gõ như người, không như máy:
-- nhịp không đều: 60–200 ms một phím, chùm nhanh trong một từ quen, nghỉ 0,5–3 giây giữa câu, đôi khi nghỉ giữa từ;
+- nhịp như người: trong một từ 50–110 ms một phím, nghỉ sau mỗi từ (như `typing/run.sh --delay 80 --jitter 30 --word-pause 250`), nghỉ 0,5–3 giây giữa câu; nhịp đều từng phím không phải cách người gõ;
 - bỏ dấu tự do: dấu ở cuối từ (`tieengs`), giữa từ (`tiesng`), đổi dấu (`as` rồi `f`), xoá dấu (`z`), gõ nhầm rồi ⌫ vài phím, ⌫ cả từ rồi gõ lại;
 - quay lại sửa: ← về giữa từ đã gõ thêm hay đổi dấu, nhấp đúp chọn một từ rồi gõ đè, ⌥⌫ xoá một từ, ⌘Z rồi gõ tiếp;
 - lẫn thao tác khác: dán một đoạn rồi gõ tiếp ngay sau, Return xuống dòng giữa đoạn, Tab nhận gợi ý tự động (VS Code), chuyển sang app khác rồi quay lại gõ tiếp giữa câu, sang U.S. bằng phím tắt chuyển nguồn của hệ thống để gõ một từ tiếng Anh rồi chuyển lại, như D2 (Chuyển Việt/Anh) hướng dẫn.
@@ -66,6 +66,7 @@ Công cụ: phím gửi bằng `osascript` (System Events `keystroke`, `key code
 ## Quan sát
 
 - Chụp cửa sổ app (`screencapture -l <window id>`) sau mỗi câu và ngay sau mỗi thao tác sửa, xem ảnh bằng Read: chữ có đúng không, gạch chân có hiện không, con trỏ ở đâu, gợi ý tự động hay sửa chính tả của macOS có chen vào không.
+- Bong bóng gợi ý sửa của macOS (chữ đề xuất kèm ×) hiện dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận gợi ý. Người thật nhìn thấy nó, script thì không: chụp màn hình trước dấu cách ở chỗ dừng sau từ, ghi gợi ý như một quan sát, và soạn bước tiếp theo như người đã thấy nó (gõ tiếp, bấm ×, hay chấp nhận rồi sửa).
 - Cuối mỗi ô đọc lại toàn bộ chữ (⌘A ⌘C, khôi phục clipboard như `typing/run.sh`) và so từng từ với chữ muốn ra.
 - Ghi cả chỗ "đúng nhưng khó chịu": phải gõ lại, phải nghĩ cách gõ, gạch chân ở chỗ không cần, chữ nhảy, chậm thấy được, hành vi khác Telex của Apple mà người quen Telex của Apple sẽ bất ngờ.
 - Chỗ nghi ngờ: gõ lại đúng đoạn đó một lần nữa bằng Dấu (có lặp lại không), rồi bằng Telex của Apple trong cùng ô, chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô đã có focus (CLAUDE.md, "Đo độ đúng khi gõ"). Telex của Apple ra cùng kết quả thì ghi là hành vi của app hay macOS, không phải lỗi Dấu. Telex của Apple cũng hiện chữ bằng gạch chân, nên nó là đối chứng sát nhất cho chế độ gạch chân của Dấu.
