@@ -30,6 +30,22 @@
 #   6. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
 # The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (scripts/snapshot-settings).
 # Then check.swift checks the screenshots' pixels and the in-app captures.
+# What each real-window launch covers (the rows each item of docs/UI-CHECKS.md reads):
+#   4. the focus at launch (launch-focus), the page and Lùi/Tiến at launch; on every
+#      display (one pass per pixel scale, labelled 2x/1x) every section against
+#      Reference.swift; on the primary display only: a sidebar search with no match, the
+#      add-rule sheet (AXPress "+", list, search field, selection, then "Huỷ"; no rule is
+#      added), the window's size limits (resized through Accessibility), and the window
+#      shell (Lùi/Tiến by AXPress and by ⌘[ ⌘], also under the sheet; the sidebar width at
+#      the widest and narrowest window).
+#   5. primary display: (a) and a screenshot of every section; the section that overflows
+#      (Reference.scrollingSection) scrolled through its scroll bar's value: (d).
+#   6. the focus at launch, Tab and ⌘F into the search field, the sidebar search, then as
+#      launch 5 plus the add-rule sheet shots (the sheet is not checked again).
+# The screens of the onboarding captures and their fake services: DebugCapture.swift
+# (Apps/Dau/Sources). No launch uses `Automatic` scroll bars: the system turns it into
+# When scrolling or Always, both run. Waits, retries, FAIL and HARNESS rows: the header of
+# ax-check.swift; the letter checks (a)–(g): the headers of ax-check.swift and check.swift.
 # Tables: <dir>.txt per launch, check.txt (rows ok / FAIL / HARNESS: data, docs/UI-CHECKS.md).
 # Exit status 0 only if every row is ok. The script's own messages are Vietnamese, through
 # scripts/lib/log.sh; the rows shown under each step are the tail of those tables.
