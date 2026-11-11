@@ -32,9 +32,8 @@ Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở c
 - Tạm thời (11/11, người dùng chọn): ô nhận ra theo kiểu xterm.js (gửi trong phím) giữ cách thay tại chỗ cũ, D43 chỉ chạy ở Ghostty.
 - Việc tiếp theo của mạch này: chẩn đoán xterm.js (giả thuyết: một `insertText` có vùng thay trước lúc nhận ra để lại trạng thái trong textarea của xterm.js), rồi bật lại gửi trong phím. Thử tay trong terminal của app Claude để sau khi sửa. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
 
-Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11, làm ở một phiên riêng.
-- Chờ người dùng:
-  - duyệt bản rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ): thuật toán chuyển sang `docs/ARCHITECTURE.md`, sổ quyết định giữ luật, bất biến và lý do. Làm sau khi mạch Ghostty và xterm.js ở trên đóng, vì D43 (Ô bỏ qua vùng thay chữ) dẫn tới D11 và D20 và mạch đó còn có thể đổi chúng; D43 là mẫu viết ở mức quyết định.
+Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11; còn một việc, chờ mạch Ghostty và xterm.js ở trên đóng (nhật ký 11/11).
+- Rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ) về mức quyết định, người dùng duyệt câu chữ trước khi sửa: thuật toán chuyển sang `docs/ARCHITECTURE.md`, sổ quyết định giữ luật, bất biến và lý do. Làm sau khi mạch Ghostty và xterm.js ở trên đóng, vì D43 (Ô bỏ qua vùng thay chữ) dẫn tới D11 và D20 và mạch đó còn có thể đổi chúng; D43 là mẫu viết ở mức quyết định.
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
@@ -346,3 +345,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
 - 11/11/2026 — dọn `docs/history/` (dọn tài liệu sau rà soát 10/11) — phiên phụ — xoá `KICKOFF.md`, `M4-TESTING.md`, `RESEARCH-LOG.md` (không tài liệu sống nào dẫn tới, git còn giữ); bảng "Số đo (M1–M3)" ở lại `docs/history/LOG-M0-M4.md` theo quy ước số đo của mốc đã đóng nằm ở `docs/history/`, đầu bảng và `docs/README.md` ghi rõ đó là nguồn mà ARCHITECTURE, DECISIONS và COMPATIBILITY dẫn.
 - 11/11/2026 — xếp lớp ca ngoài còn lại (dọn tài liệu sau rà soát 10/11) — phiên phụ — gonhanh `auto_restore_dynamic_test.rs:w_final_comprehensive#1` (`aw␣`, Dấu "ă␣" theo D31 (Âm tiết tiếng Việt hợp lệ) ý "Chữ cái đứng một mình") vào lớp A; ghi chú nhóm `A-D4raw` bỏ các chữ đứng một mình nay được giữ. Test engine xanh (110 test), `compare.sh`: A 426, chưa xếp 0; `docs/research/external-test-inputs/README.md` sửa theo.
 - 11/11/2026 — tên onboarding trên canvas (dọn tài liệu sau rà soát 10/11; người dùng duyệt) — phiên phụ — 13 artboard trang "Thiết kế" và tiêu đề nhóm đổi "Chào mừng" thành "Thiết lập Dấu" cho khớp String Catalog và `docs/GLOSSARY.md`; câu "cửa sổ chào mừng" trên artboard biểu tượng ứng dụng thành "cửa sổ thiết lập". Trang lưu trữ 06/11 của canvas ghi "không sửa", nên giữ tên cũ. Canvas bản 154, chụp lại `docs/canvas/`.
+- 11/11/2026 — rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ) (dọn tài liệu sau rà soát 10/11) — phiên phụ — hoãn: mạch Ghostty và xterm.js chưa đóng (chẩn đoán xterm.js còn mở, D43 (Ô bỏ qua vùng thay chữ) còn tạm chỉ chạy ở Ghostty), và mạch đó còn có thể đổi D11, D20; chưa soạn bản đề xuất.
