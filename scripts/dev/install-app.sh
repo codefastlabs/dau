@@ -36,6 +36,10 @@
 #   scripts/dev/install-app.sh               build Release, install
 #   scripts/dev/install-app.sh --debug       Debug instead of Release
 #   scripts/dev/install-app.sh --build-only  build and check only, touch nothing outside the repo
+#   scripts/dev/install-app.sh --ref stable  build and install Release of a commit or tag (here the
+#                                            local tag "stable", the build for day-to-day use) from
+#                                            a clean worktree in build/ref-src, whatever the working
+#                                            tree holds
 #   scripts/dev/install-app.sh --no-build    skip xcodegen and xcodebuild: check and install the
 #                                            build already in build/DerivedData.noindex (for a
 #                                            caller that has just built it, e.g.
@@ -53,17 +57,42 @@ LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchSe
 CONFIG=Release
 BUILD_ONLY=0
 SKIP_BUILD=0
-for arg in "$@"; do
-  case "$arg" in
+REF=""
+args=("$@")
+i=1
+while (( i <= ${#args} )); do
+  case "${args[i]}" in
     --debug) CONFIG=Debug ;;
     --build-only) BUILD_ONLY=1 ;;
     --no-build) SKIP_BUILD=1 ;;
+    --ref) (( i++ )); REF="${args[i]:-}"; [[ -n "$REF" ]] || log_die 2 "--ref cần một commit hoặc tag (ví dụ --ref stable)." ;;
     -h|--help) log_usage "$0"; exit 0 ;;
-    *) log_die 2 "Tham số không hợp lệ: $arg (dùng --debug, --build-only, --no-build hoặc không có tham số)" ;;
+    *) log_die 2 "Tham số không hợp lệ: ${args[i]} (dùng --debug, --build-only, --no-build, --ref <commit> hoặc không có tham số)" ;;
   esac
+  (( i++ ))
 done
 if [[ "$SKIP_BUILD" == 1 && "$BUILD_ONLY" == 1 ]]; then
   log_die 2 "--no-build và --build-only không đi cùng nhau."
+fi
+
+# --ref: the stable build (CLAUDE.md, "Dọn sau mỗi lần chạy"). The commit is checked out in
+# a worktree of its own (build/ref-src, kept between runs so its DerivedData stays warm),
+# and that worktree's own install-app.sh builds and installs it: uncommitted changes here
+# never reach it, and its stamp is the exact commit.
+if [[ -n "$REF" ]]; then
+  [[ "$CONFIG" == Release && "$BUILD_ONLY" == 0 && "$SKIP_BUILD" == 0 ]] \
+    || log_die 2 "--ref chỉ đi một mình: nó cài bản Release của commit đó."
+  commit=$(git -C "$ROOT" rev-parse --verify --quiet "$REF^{commit}") \
+    || log_die 2 "Không có commit hay tag \"$REF\". Chốt bản ổn định: git tag -f stable <commit>"
+  src="$ROOT/build/ref-src"
+  log_step "Cài bản Release của $REF (${commit[1,7]}) từ worktree $src"
+  if git -C "$src" rev-parse --git-dir >/dev/null 2>&1; then
+    git -C "$src" checkout --quiet --detach "$commit"
+  else
+    rm -rf "$src"
+    git -C "$ROOT" worktree add --quiet --detach "$src" "$commit"
+  fi
+  exec "$src/scripts/dev/install-app.sh"
 fi
 
 if [[ "$SKIP_BUILD" == 0 ]]; then
