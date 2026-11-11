@@ -1,44 +1,45 @@
 # Tài liệu
 
-Mục lục mọi tài liệu trong `docs/`. Cách ghi (mỗi sự kiện ở một chỗ, khi nào sửa file nào) xem mục "Nguồn chuẩn" trong `CLAUDE.md`.
+Mục lục mọi tài liệu trong `docs/`. Cách ghi (mỗi sự kiện ở một chỗ, khi nào sửa file nào): [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn" và "Viết tài liệu". Mỗi dòng chỉ nói file chứa gì; trạng thái và ngày nằm ở đầu từng file.
 
-## Đang dùng
+## Đọc khi bắt đầu một phiên
 
-Đọc khi bắt đầu một phiên (thứ tự trong `CLAUDE.md`):
-
-| File | Chứa gì |
-|---|---|
-| `docs/DECISIONS.md` | nguyên tắc N và quyết định D (nguồn chuẩn duy nhất), câu hỏi mở |
-| `docs/ARCHITECTURE.md` | thành phần, build, luồng một phím |
-| `docs/ROADMAP.md` | các mốc và tiêu chí hoàn thành |
-| `docs/UI.md` | nội dung từng màn hình (mockup trên canvas) |
-| `docs/canvas/README.md` | bản chụp canvas thiết kế trong repo: ảnh và nguồn từng artboard đã duyệt (sinh bằng `scripts/design/render-canvas.sh`) |
-| `docs/BRAND.md` | biểu tượng, màu, chữ, file nhận diện cần xuất |
-| `docs/PROGRESS.md` | trạng thái hiện tại, bảng mốc, kế hoạch mốc đang làm, số đo, nhật ký theo ngày |
-
-Tra khi cần:
+Theo thứ tự trong [CLAUDE.md](../CLAUDE.md):
 
 | File | Chứa gì |
 |---|---|
-| `docs/UI-CHECKS.md` | danh sách kiểm giao diện và lệnh chạy |
-| `docs/COMPATIBILITY.md` | ma trận ứng dụng: cách thử, kết quả, giới hạn đã biết |
-| `docs/GLOSSARY.md` | thuật ngữ Anh–Việt của chuỗi giao diện (input source / nguồn đầu vào…) và cách viết câu tiếng Anh |
-| `docs/TROUBLESHOOTING.md` | sự cố hay gặp khi phát triển (Dấu bị xám, app chưa đăng ký, TextEdit và iCloud…) và cách xử lý |
+| [`docs/PROGRESS.md`](PROGRESS.md) | mốc đang làm, việc đang chờ, số đo, nhật ký theo ngày |
+| [`docs/DECISIONS.md`](DECISIONS.md) | nguyên tắc N và quyết định D (nguồn chuẩn duy nhất), câu hỏi mở |
+| [`docs/ARCHITECTURE.md`](ARCHITECTURE.md) | thành phần, cấu trúc thư mục, build, luồng một phím |
+| [`docs/ROADMAP.md`](ROADMAP.md) | các mốc, tiêu chí hoàn thành, việc tồn đọng |
+| [`docs/UI.md`](UI.md) | nội dung từng màn hình (mockup trên canvas) |
+| [`docs/BRAND.md`](BRAND.md) | biểu tượng, màu, chữ, file nhận diện cần xuất |
+
+## Tra khi cần
+
+| File | Chứa gì |
+|---|---|
+| [`docs/canvas/README.md`](canvas/README.md) | bản chụp canvas thiết kế: ảnh và nguồn từng artboard đã duyệt |
+| [`docs/UI-CHECKS.md`](UI-CHECKS.md) | danh sách kiểm giao diện và lệnh chạy |
+| [`docs/COMPATIBILITY.md`](COMPATIBILITY.md) | ma trận ứng dụng: cách thử, kết quả, giới hạn đã biết |
+| [`docs/GLOSSARY.md`](GLOSSARY.md) | thuật ngữ Anh–Việt của chuỗi giao diện và cách viết câu tiếng Anh |
+| [`docs/TROUBLESHOOTING.md`](TROUBLESHOOTING.md) | sự cố đã gặp khi dùng và khi phát triển, cách xử lý |
+| [`scripts/README.md`](../scripts/README.md) | thư mục script, tác dụng phụ, quy ước viết script |
 
 ## Nghiên cứu
 
-Mỗi chủ đề một file; kết luận hiện hành ở đầu file, mỗi khẳng định có nguồn.
+Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hiện trạng" đầu file, mỗi khẳng định có nguồn.
 
 | File | Chủ đề |
 |---|---|
-| `docs/research/OPENKEY-NOTES.md` | đọc mã OpenKey: tính năng, ca biên, Dấu làm hay không; ghi chú API InputMethodKit có nguồn (mục 5); ca biên đã duyệt cho bộ test và chỗ Dấu cố ý khác OpenKey (mục 6) |
-| `docs/research/INPUT-METHOD-INSTALL.md` | cài, bật, nâng cấp, gỡ bộ gõ; lần cài đầu; bộ gõ cũ cần phát hiện |
-| `docs/research/SYSTEM-SETTINGS-REFERENCE.md` | số đo giao diện của System Settings dùng làm chuẩn (script kiểm đọc theo) |
-| `docs/research/SWIFTUI-WINDOW-API.md` | API cửa sổ của Apple cho cửa sổ Cài đặt (`NavigationSplitView`, thanh công cụ, tiêu đề, Lùi/Tiến), có nguồn; đối chiếu từng chỗ vá với API chính thức |
-| `docs/research/external-test-inputs/README.md` | ca thử (chuỗi phím, không đáp án) gom từ bộ test của 10 bộ gõ tiếng Việt khác, để viết đáp án mù cho engine; ghi công ở `docs/research/external-test-inputs/NOTICE.md` |
-| `docs/research/COMPETITOR-COMPARISON.md` | so sánh với bộ gõ khác (nghiên cứu cho M10): Telex của macOS trong Safari và Chrome (đã đo 09/11), khác biệt engine từ số đã có, nhịp gõ dưới 10 ms (dữ liệu công khai không đủ) |
-| `docs/research/TERMINAL-AND-UNDERLINE.md` | vì sao thay tại chỗ hỏng trong Ghostty và terminal của Claude (đọc mã Ghostty, xterm.js, Chromium; chưa đo), gạch chân không sửa được dấu cho từ đã gõ; giả thuyết, chuỗi phân biệt, hướng sửa kèm quyết định bị đụng |
-| `docs/research/WEB-INPUT-DELAY.md` | luồng chính của trang web bận bao lâu khi gõ: INP theo origin (CrUX 09/2026, desktop) cho 17 trang, giới hạn khi suy ra rủi ro của thay chữ tại chỗ trong Chrome (D13 (Gạch chân là đường lui cuối cùng)) |
+| [`docs/research/OPENKEY-NOTES.md`](research/OPENKEY-NOTES.md) | đọc mã OpenKey: tính năng, ca biên, Dấu làm hay không; ghi chú API InputMethodKit; chỗ Dấu cố ý khác OpenKey |
+| [`docs/research/INPUT-METHOD-INSTALL.md`](research/INPUT-METHOD-INSTALL.md) | cài, bật, nâng cấp, gỡ bộ gõ; lần cài đầu; bộ gõ cũ cần phát hiện |
+| [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](research/SYSTEM-SETTINGS-REFERENCE.md) | số đo giao diện của System Settings dùng làm chuẩn |
+| [`docs/research/SWIFTUI-WINDOW-API.md`](research/SWIFTUI-WINDOW-API.md) | API cửa sổ của Apple cho cửa sổ Cài đặt; đối chiếu từng chỗ vá với API chính thức |
+| [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) | ca thử (chuỗi phím, không đáp án) gom từ bộ test của các bộ gõ tiếng Việt khác; ghi công ở [`docs/research/external-test-inputs/NOTICE.md`](research/external-test-inputs/NOTICE.md) |
+| [`docs/research/COMPETITOR-COMPARISON.md`](research/COMPETITOR-COMPARISON.md) | so sánh Dấu với bộ gõ khác: Telex của macOS trong ứng dụng thật, các bộ gõ khác ở mức engine |
+| [`docs/research/TERMINAL-AND-UNDERLINE.md`](research/TERMINAL-AND-UNDERLINE.md) | vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.js; giới hạn của gạch chân |
+| [`docs/research/WEB-INPUT-DELAY.md`](research/WEB-INPUT-DELAY.md) | luồng chính của trang web bận bao lâu khi gõ, và giới hạn khi suy ra rủi ro cho thay chữ tại chỗ |
 
 ## Lưu trữ
 
@@ -46,11 +47,11 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 
 | File | Chứa gì |
 |---|---|
-| `docs/history/PLANS.md` | kế hoạch của các mốc đã đóng; các bước của lần thử cài trên máy sạch đã bỏ (04/11/2026) |
-| `docs/history/M2-TESTING.md` | gõ thử M2 trên máy thật và kết quả (cách thử hiện hành: `docs/COMPATIBILITY.md` mục 4) |
-| `docs/history/LOG-M0-M4.md` | nhật ký M0–M4 (29–30/10/2026), chuyển từ `PROGRESS.md` khi đóng M4; bảng "Số đo (M1–M3)" là nguồn của các số đo M1–M3 mà ARCHITECTURE, DECISIONS và COMPATIBILITY dẫn |
-| `docs/history/LOG-M5.md` | nhật ký M5 (30/10–05/11/2026), chuyển từ `PROGRESS.md` khi đóng M5 |
-| `docs/history/LOG-BETWEEN-M5-M6.md` | nhật ký giữa M5 và M6 (05–08/11/2026), chuyển từ `PROGRESS.md` ngày 09/11/2026 |
-| `docs/history/DECISIONS-LOG.md` | lịch sử từng nguyên tắc và quyết định của `DECISIONS.md`: ngày, ai chốt, bản trước, cách nói cũ |
-| `docs/history/DOCS-LOG.md` | phần lịch sử (ngày chốt, bản trước, số phiên bản canvas) tách khỏi ARCHITECTURE, UI, ROADMAP, PROGRESS, CONTRIBUTING và file agent khi các file đó chuyển sang chỉ ghi hiện trạng (09/11/2026) |
-| `docs/history/COMMIT-MAP.md` | mã commit cũ → mới sau khi viết lại lịch sử (02/11/2026) |
+| [`docs/history/PLANS.md`](history/PLANS.md) | kế hoạch của các mốc đã đóng; các bước của lần thử cài trên máy sạch đã bỏ |
+| [`docs/history/M2-TESTING.md`](history/M2-TESTING.md) | gõ thử M2 trên máy thật và kết quả |
+| [`docs/history/LOG-M0-M4.md`](history/LOG-M0-M4.md) | nhật ký M0–M4; bảng "Số đo (M1–M3)" là nguồn của các số đo M1–M3 mà tài liệu khác dẫn |
+| [`docs/history/LOG-M5.md`](history/LOG-M5.md) | nhật ký M5 |
+| [`docs/history/LOG-BETWEEN-M5-M6.md`](history/LOG-BETWEEN-M5-M6.md) | nhật ký giữa M5 và M6 |
+| [`docs/history/DECISIONS-LOG.md`](history/DECISIONS-LOG.md) | lịch sử từng nguyên tắc và quyết định: ngày, ai chốt, bản trước, cách nói cũ |
+| [`docs/history/DOCS-LOG.md`](history/DOCS-LOG.md) | phần lịch sử tách khỏi các tài liệu khi chúng chuyển sang chỉ ghi hiện trạng |
+| [`docs/history/COMMIT-MAP.md`](history/COMMIT-MAP.md) | mã commit cũ → mới sau khi viết lại lịch sử |
