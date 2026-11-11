@@ -63,7 +63,7 @@ struct ExternalCasesTests {
         return cases
     }
 
-    /// Maps `method` and the Dấu-side options (docs/research/external-test-inputs/README.md 2.2).
+    /// Maps `method` and the Dấu-side options (docs/research/external-test-inputs/README.md 4.2).
     static func engineOptions(_ c: ExternalCase) -> EngineOptions {
         var o = EngineOptions()
         switch c.method {

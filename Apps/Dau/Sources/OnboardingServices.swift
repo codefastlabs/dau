@@ -32,7 +32,7 @@ protocol OldInputMethodDetector {
 }
 
 /// The key-intercepting input methods step 1 looks for, with the bundle IDs read from
-/// each app's released Info.plist (docs/research/INPUT-METHOD-INSTALL.md section 5, 30/10/2026).
+/// each app's released Info.plist (docs/research/INPUT-METHOD-INSTALL.md section 8, 30/10/2026).
 /// Matched by bundle ID, never by process name. UniKey, VietKey and Laban Key have no
 /// macOS app. XKey also installs an IMK input method (`com.codetay.inputmethod.XKey`,
 /// process `XKeyIM`): as an input source it is only a soft note
@@ -165,7 +165,7 @@ enum EnableOutcome: Equatable, Sendable {
     /// "Dấu – Tiếng Việt" is among the enabled input sources.
     case enabled
     /// The calls went through but the source is still off (macOS may wait for the user
-    /// to allow it, or ignore the call: docs/research/INPUT-METHOD-INSTALL.md section 2.2).
+    /// to allow it, or ignore the call: docs/research/INPUT-METHOD-INSTALL.md section 2.1).
     case notEnabled
     /// Text Input Sources does not list Dấu at all: macOS shows a new input method only
     /// after a logout (D37), when none of the ways around it worked.
@@ -231,7 +231,7 @@ struct UninstallReport: Equatable, Sendable {
 /// Installs, enables, reconciles and removes Dấu's input method. The user starts enable
 /// and uninstall (N4); results are read back from Text Input Sources (N5). Dấu cannot
 /// switch its own input source off (macOS blocks `TISDisableInputSource` from an app,
-/// docs/research/INPUT-METHOD-INSTALL.md section 4): only the user removes it, in System
+/// docs/research/INPUT-METHOD-INSTALL.md section 5.2): only the user removes it, in System
 /// Settings, so there is no undo and uninstall waits for that.
 @MainActor
 protocol InputMethodInstaller: AnyObject {

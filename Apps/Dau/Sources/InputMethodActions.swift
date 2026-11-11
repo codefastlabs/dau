@@ -332,7 +332,7 @@ enum UninstallAlert {
         let alert = NSAlert()
         alert.messageText = String(localized: "Uninstall Dấu?")
         // macOS lets only the user remove an input source, so the alert says what happens
-        // in order (docs/research/INPUT-METHOD-INSTALL.md section 4).
+        // in order (docs/research/INPUT-METHOD-INSTALL.md section 5.1).
         let ui = SystemUINames.system()   // macOS's own names (D38)
         alert.informativeText = String(localized: "You’ll remove Dấu from \(ui.inputSources) in \(ui.systemSettings). Then the input method is moved to \(ui.trash).")
         let remove = alert.addButton(withTitle: String(localized: "Uninstall"))
