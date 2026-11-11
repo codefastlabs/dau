@@ -5,8 +5,10 @@
 # typing (no get-task-allow, no per-key log, D8); Debug only while measuring.
 #
 # 1. Builds scheme Dau (the app with the input method inside it, universal) and checks the
-#    build before anything outside the repo is touched: the app's signature (--deep
-#    --strict) and the input method inside it (dau_check_input_method, scripts/lib/build.sh).
+#    build before anything outside the repo is touched: each bundle holds only the icon set
+#    its Info.plist names (an earlier build's other set, left by Xcode after DAU_OFFICIAL
+#    changed, is removed by one clean rebuild; D25), the app's signature (--deep --strict)
+#    and the input method inside it (dau_check_input_method, scripts/lib/build.sh).
 #    --build-only stops here.
 # 2. Quits a running Dấu.app normally. The new copy is written next to the installed one
 #    first (a hidden sibling in /Applications), so a failed copy leaves the installed app
@@ -89,6 +91,30 @@ if [[ "$SKIP_BUILD" == 1 ]]; then
     log_warn "Cây làm việc có thay đổi chưa commit: không biết bản đã build có gồm chúng không."
   fi
 fi
+
+# D25: a bundle must hold only the icon set its Info.plist names. Xcode's incremental build
+# keeps the other set's .icns after DAU_OFFICIAL changes (assetcatalog_output and the
+# product bundle are never pruned), and AppKit then showed the standard icon on a
+# development build (measured 11/11/2026, docs/PROGRESS.md). Prints the stray files.
+stray_icons() { # bundle
+  local named
+  named=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$1/Contents/Info.plist" 2>/dev/null) || named=""
+  local f
+  for f in "$1"/Contents/Resources/*.icns(N); do
+    [[ ${f:t:r} == ${named%.icns} ]] || print -r -- "${f#$DAU_ROOT/}"
+  done
+}
+stray=("${(@f)$(stray_icons "$APP"; stray_icons "$EMBEDDED_IM")}")
+stray=(${stray:#})
+if (( ${#stray} )) && [[ "$SKIP_BUILD" == 0 ]]; then
+  log_warn "Bản build còn biểu tượng của lần build trước: ${stray[*]}. Xoá đầu ra asset catalog cũ rồi build lại."
+  rm -rf "$DERIVED"/Build/Intermediates.noindex/Dau.build/"$CONFIG"/*.build/assetcatalog_output \
+         "$DERIVED/Build/Products/$CONFIG/Dau.app" "$DERIVED/Build/Products/$CONFIG/DauInputMethod.app"
+  dau_build Dau "$CONFIG" || exit 1
+  stray=("${(@f)$(stray_icons "$APP"; stray_icons "$EMBEDDED_IM")}")
+  stray=(${stray:#})
+fi
+(( ${#stray} )) && log_die "Bản build có biểu tượng không đúng tên trong Info.plist: ${stray[*]} (D25): không cài."
 
 log_step "Kiểm tra bản build"
 if ! codesign --verify --deep --strict "$APP" 2>/dev/null; then
