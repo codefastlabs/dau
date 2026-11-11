@@ -61,8 +61,8 @@ Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
 4. Xong 10/11: D12 (Ưu tiên tiến trình) giữ nguyên kèm số đo; ngưỡng ở D42 (Ngưỡng hiệu năng). Ngưỡng bộ nhớ chưa chốt.
 
 So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
-- Phần B, C xong 09/11.
-- Phần A dừng: dữ liệu công khai không đủ độ chính xác.
+- So sánh trong ứng dụng thật (mục 1) và ở mức engine (mục 2) xong 09/11; số của Apple ở mục 1 cần đo lại.
+- Nhịp gõ thật (mục 3) dừng: dữ liệu công khai không đủ độ chính xác.
 - Câu hỏi của D13 (Gạch chân là đường lui cuối cùng) chuyển sang M6 bước 1 (kế hoạch M6 ở trên).
 
 Việc còn mở:
