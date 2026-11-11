@@ -11,7 +11,6 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/perf/` | đọc số đo từ nhật ký |
 | `scripts/assets/` | sinh biểu tượng tạm (chuẩn và bản phát triển) |
 | `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận (`load/`), cửa sổ Cài đặt, App Group |
-| `scripts/check-docs/` | kiểm tài liệu |
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
@@ -53,7 +52,7 @@ Dấu viết bằng Swift, nên script chỉ dùng thứ có sẵn khi đã cài
 - **Swift** cho phần cần API của Apple (Accessibility, nguồn nhập liệu, pasteboard, vẽ ảnh) hoặc có logic đáng kể (đọc JSON, plist, so văn bản tiếng Việt). Script gọi bản đã biên dịch qua `dau_swift_tool` (`scripts/lib/swift-tool.sh`), không chạy `swift file.swift`: chạy kiểu thông dịch thì mỗi lần mất khoảng một giây để biên dịch lại.
 - **Công cụ có sẵn của macOS**: `defaults`, `plutil`, `PlistBuddy`, `awk`, `sed`, `osascript` (AppleScript là cách duy nhất để điều khiển app khác).
 
-Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command Line Tools, cũ và không được hứa giữ lâu dài, còn người đóng góp cho một dự án Swift không cần đọc thêm ngôn ngữ khác. Ngoại lệ duy nhất là `scripts/research/external-tests/`: công cụ đọc file test của dự án khác cho tài liệu nghiên cứu, không chạm vào máy hay sản phẩm, giữ nguyên bằng Python. `scripts/check-docs/check.sh` kiểm luật này.
+Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command Line Tools, cũ và không được hứa giữ lâu dài, còn người đóng góp cho một dự án Swift không cần đọc thêm ngôn ngữ khác. Ngoại lệ duy nhất là `scripts/research/external-tests/`: công cụ đọc file test của dự án khác cho tài liệu nghiên cứu, không chạm vào máy hay sản phẩm, giữ nguyên bằng Python.
 
 ## Viết script zsh
 
@@ -64,8 +63,6 @@ Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command
 - Thư mục Xcode lấy qua `dau_developer_dir` (`scripts/lib/xcode.sh`), không viết cứng. Riêng `dev/doctor.sh` tự tìm, vì chính việc tìm Xcode là thứ nó kiểm.
 - Chờ một trạng thái bằng `scripts/lib/wait.sh`, không bằng `sleep` cố định. `sleep` chỉ còn ở chỗ không có gì để đọc, kèm chú thích lý do.
 - ShellCheck không đọc zsh nên không có chú thích `# shellcheck`.
-
-`scripts/check-docs/check.sh` kiểm `zsh -n`, `-u` và `pipefail` (cả hook trong `.claude/hooks/`).
 
 ## Đầu ra
 
@@ -97,7 +94,7 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 - Màu chỉ có khi luồng đó là terminal; `NO_COLOR=1` tắt màu. Ghi ra file thì còn dấu, không có mã màu, nên vẫn grep được.
 - Tên kỹ thuật (đường dẫn, lệnh, cờ, khoá, bundle ID, số D/N) giữ nguyên trong câu tiếng Việt.
 - Không đi qua `log.sh`: dữ liệu cho máy đọc hay để so (TSV, JSON, bảng số, các dòng in theo cột); đầu ra của công cụ Swift mà script đọc lại; đầu ra của lệnh khác (`xcodebuild`, `git`, `codesign`).
-- Chỉ `log.sh` được viết mã màu ANSI và dấu `==>` (`scripts/check-docs/check.sh` kiểm).
+- Chỉ `log.sh` được viết mã màu ANSI và dấu `==>`.
 
 ## `scripts/snapshot-settings`
 
@@ -106,9 +103,3 @@ Gói Swift chứa bộ test đơn vị của app chủ và công cụ chụp c�
 ```
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings
 ```
-
-## File dữ liệu của check-docs
-
-- `scripts/check-docs/superseded.txt`: danh sách cách nói đã bị thay, do `check.sh` đọc.
-- `scripts/check-docs/not-ours.txt`: đường dẫn tài liệu được dẫn dù không phải file của repo (file của dự án khác, công cụ đã xoá, file mỗi máy tự tạo), do `check.sh` đọc.
-- `scripts/check-docs/system-names.txt`: tên của Apple xuất hiện trong `docs/ARCHITECTURE.md` (không có trong mã của Dấu), do `check.sh` đọc.

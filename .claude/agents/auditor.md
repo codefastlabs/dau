@@ -23,9 +23,8 @@ Luật làm việc:
 3. Grep chuỗi giao diện, tài liệu, website:
    - lời hứa chưa có số đo (N5);
    - chữ "dau" đứng một mình trước người dùng (D24 (Tên và định danh));
-   - tính năng đã loại bỏ (mục "Đã biết nhưng không làm" của `DECISIONS.md`; `scripts/check-docs/superseded.txt`).
-4. Chạy `scripts/check-docs/check.sh` và `scripts/check-l10n/check.sh` (D41 (Ngôn ngữ giao diện)).
-   - Lệch tài liệu mà script không bắt được thì báo, kèm mẫu nên thêm vào `scripts/check-docs/superseded.txt`.
+   - tính năng đã loại bỏ (mục "Đã biết nhưng không làm" của `DECISIONS.md`).
+4. Chạy `scripts/check-l10n/check.sh` (D41 (Ngôn ngữ giao diện)). Đọc tài liệu trong phạm vi: đường dẫn và liên kết tương đối có thật, số mục và tiêu đề được dẫn còn tồn tại, số D/N có trong `DECISIONS.md`, cách nói cũ của quyết định đã đổi không còn.
    - Canvas và cửa sổ thật nằm ngoài phạm vi (không đọc được); phiên chính tự ghi bằng chứng.
 5. Chạy lại test; so số đo với `docs/PROGRESS.md`.
 

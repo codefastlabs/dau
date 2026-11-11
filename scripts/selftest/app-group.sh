@@ -172,7 +172,7 @@ im_running || fail "bộ gõ vẫn chưa chạy sau khi chọn nguồn Dấu"
 IM_PID="$(pgrep -f "$IM_APP/Contents/MacOS/" | head -1)"
 log_detail "bộ gõ đang chạy (pid $IM_PID)"
 # The Debug input method starts observing right after its event=settings-loaded line.
-# The log is read whole, then matched (no `grep -q` at the end of a pipeline, scripts/README.md "Mở đầu").
+# The log is read whole, then matched (no `grep -q` at the end of a pipeline, scripts/README.md "Viết script zsh").
 im_loaded() {
   local lines
   lines="$("$LOG" show --last 10m --style compact --predicate \

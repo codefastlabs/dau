@@ -1,4 +1,0 @@
-# Names in docs/ARCHITECTURE.md that belong to Apple, not to this repo.
-# One per line: name<TAB>what it is. Read by check 1d of scripts/check-docs/check.sh.
-NSApplicationLaunchIsDefaultLaunchKey	khoá userInfo của AppKit
-TextInputMenuAgent	tiến trình của macOS

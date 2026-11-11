@@ -1,5 +1,5 @@
 #!/bin/zsh
-# PreToolUse hook (Bash): blocks repo scripts the user must schedule (scripts/README.md, "Ai chạy").
+# PreToolUse hook (Bash): blocks repo scripts the user must schedule (CLAUDE.md, section "Điều phối").
 # Side effects: none
 #
 # Splits the command into simple commands (on ; && || | & and parentheses). When one of
@@ -10,8 +10,8 @@
 # A command that contains DAU_USER_APPROVED=1 passes: only the main session writes it,
 # after the user said yes in chat. A speed bump, not a lock: a script run after `cd`
 # into its own folder is not seen.
-# The table is explicit; scripts/check-docs/check.sh fails when a script whose
-# "# Side effects:" line disturbs the user is missing from it.
+# The table is explicit: a new script whose "# Side effects:" line disturbs the user
+# must be added to it by hand.
 set -uo pipefail
 setopt extendedglob
 

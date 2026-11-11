@@ -28,14 +28,14 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - Lệnh `/milestone M#` chạy trọn một mốc; `/audit` kiểm tra toàn repo; `/dogfood` phiên chính tự gõ như người dùng thật để tìm chỗ vấp (chiếm màn hình, hỏi giờ chạy trước).
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
 - Giao song song các việc độc lập (ví dụ engine song song với khung dự án; giao diện app chủ song song với bộ gõ khi model cài đặt chung đã xong).
-- Mỗi việc xong → kiểm chứng lại bằng lệnh thật → `scripts/check-docs/check.sh` (đổi chuỗi giao diện thì thêm `scripts/check-l10n/check.sh`) → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test hoặc kiểm tra tài liệu đỏ.
+- Mỗi việc xong → kiểm chứng lại bằng lệnh thật (đổi chuỗi giao diện thì thêm `scripts/check-l10n/check.sh`) → đọc lại tài liệu đã sửa và grep tài liệu tìm tên, cách nói mà thay đổi làm lỗi thời (mục "Viết tài liệu") → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test đỏ.
 - **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ; bật nguồn nhập liệu, đăng xuất, cấp quyền, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `DECISIONS.md`, trừ khi người dùng đã giao quyết định đó cho phiên chính trong chat; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/selftest/settings-window/run.sh`, mở app thật, gõ thử tự động; tác dụng phụ của từng script: `scripts/README.md`): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Hook `.claude/hooks/guard-scripts.sh` chặn các script này; người dùng đồng ý trong chat rồi mới chạy lại với tiền tố `DAU_USER_APPROVED=1`. Trong lúc chờ, tiếp tục các việc không bị chặn.
 - **Ai chạy script:** đọc dòng `# Side effects:` ở đầu script (chú giải ở `scripts/README.md`). Subagent chỉ chạy script có tác dụng phụ `none`, `builds`, `writes repo files`. Còn lại phiên chính chạy, sau khi người dùng chọn giờ (điểm dừng ở trên). Riêng `scripts/dev/clean-dau.sh --yes` (gỡ Dấu khỏi máy) do người dùng tự chạy.
 
 ## Nguồn chuẩn
 
 - `docs/DECISIONS.md` là nguồn chuẩn **duy nhất** cho quyết định. Canvas không chép sổ quyết định. Lịch sử trò chuyện trên claude.ai có nhiều đề xuất đã bị thay thế (Rust/WASM, nhúng UniKey, từ điển tiếng Anh, `NSSpellChecker`, phím chuyển nhấn-nhả ⇧, chạy OpenKey làm đáp án test…). Gặp thông tin trái với `DECISIONS.md` ở bất kỳ đâu thì theo `DECISIONS.md`, và sửa hoặc báo chỗ lệch.
-- Khi một quyết định thay đổi (người dùng đã chốt, hoặc đã giao quyết định đó trong chat): sửa `DECISIONS.md` trước, ghi lý do, trong cùng commit với thay đổi; thêm cách nói cũ vào `scripts/check-docs/superseded.txt`, rồi cập nhật artboard và các tài liệu khác cho khớp trong cùng lượt làm việc (chạy `check.sh` để tìm chỗ còn sót).
+- Khi một quyết định thay đổi (người dùng đã chốt, hoặc đã giao quyết định đó trong chat): sửa `DECISIONS.md` trước, ghi lý do, trong cùng commit với thay đổi; grep cách nói cũ trong mọi tài liệu (`docs/`, CLAUDE.md, CONTRIBUTING, README, `.claude/`), rồi sửa các chỗ đó, artboard và các tài liệu khác cho khớp trong cùng lượt làm việc.
 - **Mỗi sự kiện chỉ ghi ở một chỗ.** Quyết định ở `DECISIONS.md` (nơi khác dẫn số D/N, không chép lại nội dung); số đo giao diện ở `docs/research/SYSTEM-SETTINGS-REFERENCE.md` và script kiểm; số test và số đo theo ngày ở nhật ký `PROGRESS.md` (mốc đã đóng: trong `docs/history/`); kiến trúc ở `ARCHITECTURE.md` tả cấu trúc, không chép số. Dẫn mã bằng tên kiểu/hàm, không bằng số dòng. File agent trong `.claude/agents/` chỉ nêu vai trò và nơi đọc, không chép sự kiện.
 - **Đóng mốc nào thì chuyển nhật ký và ghi nhớ của mốc đó sang `docs/history/`.** Mọi phiên đều đọc `PROGRESS.md`, nên nó chỉ giữ việc của mốc đang làm.
 - **Tài liệu nghiên cứu (`docs/research/`) có mục "Hiện trạng" ở đầu, ghi ngày.** Kết luận đổi thì sửa thẳng vào mục đó và vào thân bài, không viết thêm mục "Đính chính" ở cuối.
@@ -47,14 +47,14 @@ Tài liệu mục nhanh hơn mã, vì không có test nào đỏ khi nó sai. C�
 - **Chỉ ghi điều mã không tự nói.** Quyết định và lý do (`DECISIONS.md`), cấu trúc và luồng giữa các thành phần (`ARCHITECTURE.md`), cách dùng (README, CONTRIBUTING), kết luận nghiên cứu. Chi tiết đổi theo mã (giá trị hằng số, các bước bên trong một hàm, tuỳ chọn của script) nằm trong comment của mã hay đầu script; tài liệu dẫn tên kiểu, hàm, script.
 - **Ghi hiện trạng, không ghi nhật ký.** File tra cứu chỉ giữ điều đang đúng. Việc xong thì xoá kế hoạch và danh sách bước của nó, kết quả thay vào chỗ câu hỏi; diễn biến theo lượt, theo ngày vào nhật ký `PROGRESS.md` (rồi `docs/history/`), không vào file tra cứu.
 - **Thứ tự theo người đọc.** Mở đầu bằng mục đích và kết luận; kết quả nằm cạnh câu hỏi nó trả lời; phần quan trọng trước, phần đã dừng hay để sau ở cuối. Câu ngắn; gạch đầu dòng cho các ý ngang hàng, không cho một đoạn văn.
-- **Đổi mã thì sửa tài liệu trong cùng commit.** Đổi hành vi, tên kiểu, tên script hay tuỳ chọn: grep tên và cách nói cũ trong `docs/`, CLAUDE.md, CONTRIBUTING, README rồi sửa; cách nói cũ có thể quay lại thì thêm vào `scripts/check-docs/superseded.txt`.
+- **Đổi mã thì sửa tài liệu trong cùng commit.** Đổi hành vi, tên kiểu, tên script hay tuỳ chọn: grep tên và cách nói cũ trong `docs/`, CLAUDE.md, CONTRIBUTING, README rồi sửa.
 - **Viết cho GitHub.** Tài liệu công khai trên GitHub: file trong repo dẫn bằng liên kết bấm được (``[`docs/DECISIONS.md`](docs/DECISIONS.md)``); chú thích cuối trang dùng URL đầy đủ (GitHub không đổi liên kết tương đối ở đó); thoát `|` trong bảng; chuỗi `<…>` để trong backtick.
-- **Lỗi tài liệu tìm được bằng máy thì thêm vào `check.sh`**, như mọi lỗi kiểm tĩnh bắt được.
+- **Tự soát trước khi commit.** Không có script kiểm tài liệu: đọc lại các tài liệu đã sửa, grep `docs/` và các file hướng dẫn tìm tên, cách nói, số mục mà thay đổi làm lỗi thời, sửa hết trong cùng lượt; đổi tiêu đề hay số mục thì grep chỗ dẫn tới nó (cả comment trong mã và script).
 
 ## Quy tắc làm việc
 
 - **Đối chiếu sổ quyết định trước mọi đề xuất hay thay đổi.** Nếu một thay đổi mâu thuẫn với một nguyên tắc (N1–N5) hoặc quyết định (D1–D…) thì dừng lại và nêu mâu thuẫn, không tự ý làm. Quyết định cần đổi thì hỏi người dùng (điểm dừng ở mục "Điều phối"), rồi sửa theo mục "Nguồn chuẩn".
-- **Sau mỗi mốc, tự rà soát cơ học:** `scripts/check-docs/check.sh`, rồi grep code và chuỗi giao diện tìm chỗ trái với sổ quyết định (ví dụ: lời hứa về mạng, tính năng đã bỏ, phím tắt riêng).
+- **Sau mỗi mốc, tự rà soát:** grep code, chuỗi giao diện và tài liệu tìm chỗ trái với sổ quyết định (ví dụ: lời hứa về mạng, tính năng đã bỏ, phím tắt riêng).
 - **Kiểm tra chéo các tính năng cùng tác động lên một đầu vào.** Với mỗi cặp tính năng như vậy, liệt kê các đầu vào mà chúng cho kết quả trái nhau và quyết định bên nào thắng, ghi vào `DECISIONS.md` (bài học từ D4 (Từ nước ngoài)).
 - **Đo trước khi tối ưu.** Mọi khẳng định về hiệu năng phải có số đo (os_signpost / Instruments / test hiệu năng).
 - **Không ghi lời hứa chưa kiểm chứng vào giao diện** (N5 (Chỉ hứa điều đã kiểm chứng)). Dùng ô trống dạng `[Kết quả bài test tải nặng]`.
@@ -83,8 +83,8 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Lượt chạy chiếm màn hình:** build xong mọi thứ trước, báo "sẵn sàng, khoảng N phút", chạy ngay khi người dùng đồng ý, ở tiền cảnh, báo lúc bắt đầu và lúc xong. Một lần đồng ý chỉ có hiệu lực cho lần chạy đó. Không giao lượt chạy chiếm màn hình cho subagent chạy nền.
 - **Dọn sau mỗi lần chạy, kể cả khi dừng giữa chừng:** tiến trình đã mở, tab và server localhost, clipboard, khoá `defaults` có chữ `Dau`, file trong `build/`, bản đã cài (lượt nào cài bản khác, Debug để đo hay bản build thử, thì cài lại bản ổn định ngay trong lượt đó: `scripts/dev/install-app.sh --ref stable`; `stable` là tag git cục bộ chỉ vào commit người dùng dùng hằng ngày, chỉ chuyển khi người dùng đồng ý, không push). Thoát app bình thường, không Force Quit. Báo đã dọn gì. Không dùng TextEdit để thử gõ (`docs/TROUBLESHOOTING.md`).
 - **Tính offline trước:** câu hỏi nào trả lời được bằng mô phỏng, test đơn vị hay số đã có thì không chạy app thật. Chạy app thật chỉ cho phần không mô phỏng được, ít ca, một lượt. Mỗi bài test phải đáng với cái giá của nó; hỏi điều này trước khi xây công cụ để làm một bài test qua.
-  - Kiểm từ rẻ tới đắt: kiểm tĩnh (`scripts/check-docs/check.sh`, cú pháp), rồi test với đồ giả, rồi một lượt chạy thật gộp mọi ô cần đo, xin người dùng một lần.
-  - Một loại lỗi chỉ lộ ra khi chạy thật mà kiểm tĩnh bắt được thì thêm phép kiểm đó vào `check.sh` ngay trong lượt sửa.
+  - Kiểm từ rẻ tới đắt: kiểm tĩnh (cú pháp, `zsh -n`), rồi test đơn vị và test với đồ giả, rồi một lượt chạy thật gộp mọi ô cần đo, xin người dùng một lần.
+  - Một loại lỗi chỉ lộ ra khi chạy thật mà test đơn vị hay test với đồ giả bắt được thì thêm test đó ngay trong lượt sửa.
 - **Mỗi mạch việc một phiên:** xong một mạch việc, hoặc khi ngữ cảnh đã dài, ghi trạng thái vào `docs/PROGRESS.md` rồi đề xuất phiên mới; phiên mới đọc `PROGRESS.md` và tài liệu liên quan, không mang theo ngữ cảnh cũ.
 - **Giao việc gọn:** một tính năng một bản giao việc, phủ mọi phần nó chạm tới (cửa sổ, sheet, tài liệu, canvas). Đo một lần rồi dùng lại. Việc nhỏ (vài dòng tài liệu, một artboard) phiên chính tự làm.
   - Model theo loại việc: thiết kế, quyết định, kiểm toán, chẩn đoán dùng model mạnh nhất; script, công cụ đo, chụp canvas, ghi tài liệu từ báo cáo có sẵn, sửa chữ dùng sonnet; tra một chỗ hay đối chiếu cơ học dùng haiku. Model mặc định ghi trong tệp của từng agent; phiên chính đổi theo từng lần giao khi việc khác loại.
@@ -131,7 +131,6 @@ Tuỳ chọn và tác dụng phụ của từng script ghi ở đầu script.
 - `scripts/dev/clean-dau.sh` — liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` do người dùng tự chạy.
 - `swift test --package-path Packages/DauEngine` — test engine. Các bộ test khác: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings` — test của app chủ.
-- `scripts/check-docs/check.sh` — kiểm tài liệu lệch; `.githooks/pre-commit` chạy nó trước mỗi commit khi đã bật bằng `git config core.hooksPath .githooks`.
 - `scripts/check-l10n/check.sh` — kiểm String Catalog (D41).
 - `scripts/selftest/typing/run.sh` — gõ thử trong app thật, chiếm màn hình.
 - `scripts/design/render-canvas.sh <thư mục>` — chụp canvas thành bản trong `docs/canvas/`.

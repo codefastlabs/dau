@@ -74,8 +74,7 @@ Thêm cho người đóng góp:
 - `Dau.xcodeproj` được sinh từ `project.yml`: sửa `project.yml`, không sửa và không commit `.xcodeproj`.
 - Giao diện: dùng thành phần của macOS, bố cục theo System Settings (D9 (Giao diện)); nội dung từng màn hình ở [`docs/UI.md`](docs/UI.md). Muốn đổi giao diện thì mở issue kèm ảnh chụp hoặc phác thảo trước khi viết mã.
 - Chuỗi giao diện: khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện)); thuật ngữ ở [`docs/GLOSSARY.md`](docs/GLOSSARY.md); không ghi lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)). Kiểm bằng `scripts/check-l10n/check.sh`.
-- Sửa tài liệu trong `docs/` thì chạy `scripts/check-docs/check.sh`; nó bắt đường dẫn và liên kết sai, file chưa có trong mục lục, tên kiểu không còn trong mã, số quyết định không tồn tại, cách nói đã bị thay.
-- Bật hook chạy phép kiểm này trước mỗi commit, một lần cho mỗi bản clone: `git config core.hooksPath .githooks`.
+- Sửa tài liệu thì đọc lại phần đã sửa và grep `docs/` tìm đường dẫn, tên, số mục mà thay đổi làm lỗi thời (CLAUDE.md, mục "Viết tài liệu").
 
 ## Gửi PR
 
