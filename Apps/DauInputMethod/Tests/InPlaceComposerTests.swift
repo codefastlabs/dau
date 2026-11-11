@@ -1151,6 +1151,17 @@ struct InPlaceComposerSystemFixTests {
         #expect(s.overCalls == 0)
     }
 
+    @Test("⌫ over the kept word, then a new word — Tôi học ⌫⌫ oaf → Tôi hoà")
+    func backspaceAfterKept() {
+        var s = Self.session()
+        s.type("Tooi hoc ")
+        s.doc.autocorrect(to: "học")
+        s.type("⌫j⌫⌫")
+        #expect(s.doc.text == "Tôi h")
+        s.type("oaf ")
+        #expect(s.doc.text == "Tôi hoà ")
+    }
+
     @Test("4: another key than the system's is D20 as usual — học ⌫s → hóc")
     func otherKey() {
         var s = Self.session()
