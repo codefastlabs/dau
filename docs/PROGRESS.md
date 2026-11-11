@@ -9,11 +9,10 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 Chờ người dùng: không có việc nào.
 
 Việc tiếp theo, theo thứ tự:
-1. Canvas: artboard trang Ứng dụng (`SettingsApps`, `SettingsAppsEmpty`, `SettingsAppsAdd`, `SettingsAppsAddEmpty`) còn vẽ nhãn "Đề xuất" cho Zalo, Notion, Slack; theo D13 (Gạch chân là đường lui cuối cùng) chỉ Cursor có nhãn. Sửa artboard, chụp lại `docs/canvas/`.
-2. Chẩn đoán lỗi chữ dồn ở ô kiểu xterm.js (D43 (Ô bỏ qua vùng thay chữ); `docs/research/TERMINAL-AND-UNDERLINE.md`), rồi bật D43 cho ô đó. Giả thuyết: một `insertText` có vùng thay trước lúc nhận ra ô để lại trạng thái trong textarea của xterm.js. Thử tay trong terminal của app Claude sau khi sửa.
-3. M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (chiếm màn hình, hỏi giờ).
-4. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
-5. Test engine cho `wen␣` ở Telex đơn giản bật gõ tắt phụ âm (`docs/research/OPENKEY-NOTES.md` mục 5: ca duy nhất chưa có test).
+1. Chẩn đoán lỗi chữ dồn ở ô kiểu xterm.js (D43 (Ô bỏ qua vùng thay chữ); `docs/research/TERMINAL-AND-UNDERLINE.md`), rồi bật D43 cho ô đó. Giả thuyết: một `insertText` có vùng thay trước lúc nhận ra ô để lại trạng thái trong textarea của xterm.js. Thử tay trong terminal của app Claude sau khi sửa.
+2. M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (chiếm màn hình, hỏi giờ).
+3. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
+4. Test engine cho `wen␣` ở Telex đơn giản bật gõ tắt phụ âm (`docs/research/OPENKEY-NOTES.md` mục 5: ca duy nhất chưa có test).
 
 Việc mở:
 - Trình soạn thảo Cursor: sai ở 5 ms và ở ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa đều phải đổi N3 (Ít lời gọi vào ứng dụng đích) hoặc D11 (Kiểm tra ngữ cảnh). Đã chốt 10/11: dừng sửa, Cursor giữ nhãn "Đề xuất".
