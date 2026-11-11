@@ -20,7 +20,7 @@ Tiêu chí nhãn "Đề xuất" ở D13 (Gạch chân là đường lui cuối c
 | Notes | đúng ở 30 và 0 ms | chưa đo | không |
 | Mail, Telegram | đúng ở 30 ms | chưa đo | không |
 
-- Brave, Arc và các app Electron khác không có nhãn: chưa đo, và các nhân Chromium, Electron đã đo (Chrome, Edge, VS Code) đều đúng sau các lần sửa ở M6. Đo mà sai thì gắn lại theo D13.
+- Brave, Arc và các app Electron khác không có nhãn: chưa đo, nên chưa có số đo cho thấy sai (D13); không suy từ Chrome, Edge, VS Code (Cursor cũng là Electron mà còn sai). Đo mà sai thì gắn lại theo D13.
 - Kết quả trình duyệt trước 09/11/2026 (M3) chưa chắc là gõ vào ô của trang: script khi đó chỉ kiểm tiêu đề cửa sổ, nên phím có thể vào thanh địa chỉ mà lượt vẫn đạt. Từ 09/11/2026 script chỉ gõ khi ô của trang có focus; các số M6 của Chrome, Edge, Firefox đo sau ngày đó.
 - 13 trong 42 ứng dụng ở mục 3 có số đo; danh sách chưa đo ở mục 7.
 
@@ -199,6 +199,10 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 ### 6.1 Tự sửa chính tả của macOS đè lên chữ đã giữ
 
 - Ở ứng dụng bật tự sửa chính tả, khi phía trước là câu tiếng Việt, macOS 27.2 có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt ("…Sunrise car␣" → "cả"), kể cả khi gõ bằng U.S. Việc này xảy ra sau khi Dấu đã trả đúng chữ, nên đè lên kết quả gõ đúp ("carr" → "car").
+- Chữ cái đứng một mình cũng bị đổi ("Mình chọn phương án d." → "Mình chọn phương án Đ.").
+- Từ quên dấu có thể bị sửa thành từ khác ý người gõ ("Bé xây lâu đài cat␣" → "cắt"). Quay lại thêm dấu lúc đó tính trên chữ đang hiện ("cắt" + ⌫s → "căts"); Dấu không đoán từ người gõ định viết.
+- Các ca đã thấy đều là chữ còn thiếu dấu lúc bấm dấu cách; từ đã gõ dấu ngay trong từ không bị sửa ở lần đo nào ("Bé xây lâu đài cats␣" → "cát", gõ tay).
+- Hệ thống hiện chữ định sửa trong một bong bóng dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận chữ trong bong bóng.
 - Giới hạn và cách Dấu xử lý: D4 (đoạn "Giới hạn đã biết") và D20 (ý "Từ hệ thống vừa sửa"). Dấu không tắt tự sửa của hệ thống (N4 (Không tự đổi cài đặt hệ thống)); người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa.
 - Tự sửa là thuộc tính của từng ô do ứng dụng quyết định (ví dụ `NSTextView.isAutomaticSpellingCorrectionEnabled`, https://developer.apple.com/documentation/appkit/nstextview/isautomaticspellingcorrectionenabled), nên ứng dụng không dùng hệ thống văn bản của Apple có thể không bị (suy luận).
 - Câu mẫu của `typing/run.sh` đặt "carr" trước câu tiếng Việt để né (chú thích đầu script).
@@ -224,7 +228,7 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 ### 6.8 Terminal bỏ qua vùng thay; gạch chân không sửa được từ đã chốt
 
 - Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TERMINAL-AND-UNDERLINE.md`](research/TERMINAL-AND-UNDERLINE.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
-- Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Giới hạn"; số đo: mục 5.6.
+- Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Hệ quả đã chấp nhận"; số đo: mục 5.6.
 - Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Cách gửi ký tự xoá trong phím của D43 làm chữ dồn lại mỗi lần sửa (chưa rõ nguyên nhân), nên tạm tắt cho kiểu ô này: Dấu thay tại chỗ như trước D43. Chính app Claude chưa đo.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13) không có D20: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"); Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.

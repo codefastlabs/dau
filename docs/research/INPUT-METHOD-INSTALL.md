@@ -107,7 +107,7 @@ Apple không có trang web cho họ hàm TIS (các URL đoán trả 404 ngày 03
 - Yêu cầu chỉ được xử lý khi System Settings dựng mới extension Keyboard. Khi trang Keyboard đang mở sẵn, yêu cầu không để lại dòng nhật ký nào, không có hộp thoại. Vì vậy D37 thoát System Settings trước khi bật. [Máy/bản thử, 04/11/2026: bốn lần thành công đều đi cùng một tiến trình extension mới; ba lần bị bỏ qua đều lúc trang Keyboard đang mở]
 - Bấm "Don’t Allow" không để lại dấu vết nào: app chỉ thấy "chưa bật". Gửi lại yêu cầu (sau khi thoát System Settings) thì hộp thoại hiện lại; macOS không nhớ lần từ chối. [Máy/bản thử, 04/11/2026]
 - `NSRunningApplication.terminate()` thoát được System Settings cả khi sheet Input Sources đang mở. [Máy/bản thử]
-- Hình dạng hộp thoại (đo để vẽ artboard onboarding): `docs/research/SYSTEM-SETTINGS-REFERENCE.md`.
+- Hình dạng hộp thoại (đo để vẽ artboard onboarding): [`docs/research/SYSTEM-SETTINGS-REFERENCE.md`](SYSTEM-SETTINGS-REFERENCE.md), mục "Hộp thoại xin phép bật bộ gõ".
 
 ### 2.2 Phía gọi và phía nhận [Diễn giải mã máy]
 

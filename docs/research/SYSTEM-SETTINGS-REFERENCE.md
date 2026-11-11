@@ -119,6 +119,15 @@ Rà bằng Accessibility API ở các pane Wi-Fi, Mạng, Bàn phím, Bàn di ch
 - sau nút mở sheet ("Nâng cao…" ở Màn hình, "Chi tiết…" ở Wi-Fi);
 - nút "Show Detail" (i) ở cuối hàng.
 
+### Hộp thoại xin phép bật bộ gõ
+
+Quan sát trên bản thử (bundle đổi ID, không phải Dấu), dùng để vẽ artboard onboarding, không rút kết luận về hành vi: đo 04/11/2026, đọc qua trợ năng và ảnh chụp, macOS 27.2, giao diện tối. Hộp thoại là `Allow “…” to enable “…”?` ([`docs/research/INPUT-METHOD-INSTALL.md`](INPUT-METHOD-INSTALL.md) mục 2).
+
+- Sheet rộng 260 pt, cao 234 pt, nằm giữa cửa sổ System Settings.
+- Không có biểu tượng. Tiêu đề đậm, canh trái, xuống dòng khi dài.
+- Thân bài canh trái, hiện đủ 6 dòng ở bề rộng này, không cắt.
+- Hai nút hình viên thuốc 112 × 30 pt nằm ngang ở đáy: "Don’t Allow" xám bên trái, "Allow" xanh (nút mặc định) bên phải.
+
 ## Hành vi SwiftUI khác hệ thống
 
 Mọi số ở mục trên mà không có trong danh sách này thì SwiftUI mặc định cho đúng (app thử, 02/11/2026): thanh công cụ 52 và tiêu đề 15 đậm, hàng và vùng chọn sidebar, lề và màu thẻ, tiêu đề nhóm, chiều cao các hàng có control, control và cỡ chữ. Chưa đo trên SwiftUI: khoảng giữa hai thẻ không tiêu đề (app thử luôn có tiêu đề nhóm), hàng nhãn + thanh trượt. `footer:` của `Section` cho chú thích dưới thẻ 11, thường, màu chữ phụ, x = mép thẻ + 10, cách thẻ 10.
