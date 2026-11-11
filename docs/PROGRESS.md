@@ -37,6 +37,8 @@ Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11; còn một việ
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
+Mở từ 11/11: lượt `/dogfood` đầu tiên (nhật ký 11/11) tìm hai ca lặp lại được ở Notes, chế độ thay tại chỗ, chưa chẩn đoán: `hocj d. ` ra "học Đ." (Telex của Apple đúng), và D20 (Thêm dấu cho từ đã gõ) không chạy khi nghỉ giữa dấu cách và ⌫. Việc tiếp theo của mạch này: chẩn đoán bằng bản Debug (vị trí thay chữ), thêm đối chứng ở Mail.
+
 Việc tiếp theo: `heavy.sh` chạy trọn một lượt (M6 bước 2).
 
 Còn mở (nhật ký 10/11):
@@ -373,3 +375,12 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Trang xterm.js: nhận ra `in-key`, vẫn thay tại chỗ, sai như trước D43 ("toôoiís vieêetj dđdi…").
   - Chưa gặp trên app thật: ca bằng chứng dương bác một ô (chỉ có trên client giả).
   - Dọn: Release đã cài lại, `build/d43*` đã xoá, không còn khoá `DauPerfLog`/`DauDebugForceUnderline`, nguồn là Dấu, không còn tab thử.
+- 11/11/2026 — lượt `/dogfood` đầu tiên, quan sát khi gõ tự nhiên, chưa rút kết luận (người dùng cho chạy; bản Release 30830f7 đã cài; Notes, Chrome trang thử cục bộ, VS Code tài liệu chưa lưu; mỗi ô gõ hai chế độ: thay tại chỗ, rồi gạch chân bật bằng quy tắc theo app trong cửa sổ Cài đặt; phím gửi bằng System Events, mỗi phím 60–200 ms, thêm tới 300 ms sau dấu cách) — phiên chính.
+  - Đoạn văn thật (ghi chú họp, tin nhắn có URL và chèn chữ giữa câu, comment trong mã có ⌥⌫ xoá từ gõ nhầm): đúng ở cả ba app, cả hai chế độ.
+  - Thay tại chỗ, Notes, lặp lại được, Telex của Apple khác: `hocj d. ` ra "học Đ." (4/4 lượt, cả khi đi qua `hoc←→j`); Telex của Apple ra "học d."; engine ra "học d. " (thử offline). Chữ sai sinh ra ở khâu giữa Dấu và Notes. Giả thuyết chưa phân biệt: sửa chính tả tự động của macOS cho tiếng Việt (cùng họ với "car" → "cả", D4 (Từ nước ngoài)) chỉ chạy với chữ chèn thẳng mà không chạy với chữ gạch chân; hoặc lỗi thay chữ của Dấu ở Notes. Chưa thử ở app khác có sửa chính tả tự động (Mail).
+  - Thay tại chỗ, Notes, lặp lại được: D20 (Thêm dấu cho từ đã gõ) không chạy khi người gõ nghỉ giữa dấu cách và ⌫ (`hoc ‖⌫‖j` ra "Hocj", 2/2; `hoc ‖⌫j` ra "Học", 1/1; `hoc ⌫‖j` ra "Học", 1/1; ‖ là nghỉ 1,2 s). Notes viết hoa đầu câu ("hoc" thành "Hoc") ngay trong lúc nghỉ; giả thuyết: chữ đổi sau lưng Dấu nên phép kiểm ngữ cảnh của D11 (Kiểm tra ngữ cảnh) từ chối. Ở Chrome và VS Code D20 đúng mọi lượt.
+  - Gạch chân, cả ba app: `tieeng←→s` ra "tiêngs", D20 không chạy (`chep ⌫s` ra "cheps"), đúng như D13 (Gạch chân là đường lui cuối cùng) và D20 quy định; thay tại chỗ ra "tiếng", "chép". Telex của Apple ở Notes cũng ra "tiêngs".
+  - Gạch chân, Notes: `chep ⌫s` lúc ra "chéps" lúc ra "cheps", `hoc ⌫j` ra "Họcj"; Telex của Apple ra "chéps", "Họcj" mọi lượt. Hành vi của Notes với chữ gạch chân, không riêng Dấu.
+  - Cửa sổ Cài đặt: gõ "ghi chú" bằng Dấu ở ô tìm của sheet thêm quy tắc tìm ra Ghi chú; ba nút cuối sheet báo cho Accessibility tên "nút", không có nhãn (chưa kiểm bằng VoiceOver).
+  - Giới hạn: phím từ System Events; một máy; Notes là app duy nhất có hai ca lạ, chưa đo Mail hay Safari.
+  - Dọn: quy tắc theo app về trống như trước lượt, ghi chú thử đã xoá (vào Recently Deleted), tab thử và tài liệu VS Code đã đóng, clipboard và nguồn (Dấu) như trước; `build/dogfood/` đã xoá.
