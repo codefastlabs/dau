@@ -37,7 +37,7 @@ Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11; còn một việ
 
 Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
 
-Xong 11/11: mạch `/dogfood` và tự sửa chính tả của macOS (nhật ký 11/11). Hai ca sai ở Notes và Mail là do tự sửa của macOS, với mọi bộ gõ; D20 (Thêm dấu cho từ đã gõ) thêm ý "Từ hệ thống vừa sửa" (đã có mã), D4 (Từ nước ngoài) ghi thêm giới hạn. Còn mở: `typing/run.sh` để lại một ghi chú rỗng ở Notes sau mỗi lượt.
+Xong 11/11: mạch `/dogfood` và tự sửa chính tả của macOS (nhật ký 11/11). Hai ca sai ở Notes và Mail là do tự sửa của macOS, với mọi bộ gõ; D20 (Thêm dấu cho từ đã gõ) thêm ý "Từ hệ thống vừa sửa" (đã có mã), D4 (Từ nước ngoài) ghi thêm giới hạn.
 
 Việc tiếp theo: `heavy.sh` chạy trọn một lượt (M6 bước 2).
 
@@ -415,3 +415,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Người dùng gõ tay trong Notes với Dấu "bé xây lâu đài cát rất đẹp" (gõ `cats`): không bị sửa; ca "cắt" của script là do `cat␣` còn thiếu dấu lúc bấm dấu cách, không do nhịp.
   - Test: bộ gõ 206 → 221 đạt (11 known issue như trước), engine 116 đạt; `check-docs`, `check-l10n` xanh.
   - Kiểm toán: ĐẠT, không mục chặn; bốn mục chữ (câu "Chỉ gặp khi" của D4 rộng hơn số đo, dòng số đo D20 thiếu kết quả sau khi sửa, "ký tự kết thúc từ" chưa loại Return/Tab, thiếu số test ở nhật ký) đã sửa. Ghi chú chưa làm: test riêng cho `activate` và phím tắt ⌘ xoá từ nhớ (cùng đường `reset` với click, mũi tên đã có test).
+- 11/11/2026 — `typing/run.sh` không còn để sót ghi chú rỗng ở Notes (người dùng cho chạy; Release, 2 lượt `notes`, nhịp `--delay 80 --jitter 30 --word-pause 250`) — phiên chính. Notes giữ ghi chú rỗng khi nó đang được chọn, và ⌘N chọn lại ghi chú rỗng đang chọn thay vì tạo ghi chú mới; script nay lấy ghi chú đang chọn khi nó rỗng, gõ, xoá trắng rồi xoá nó qua AppleScript của Notes (vào Recently Deleted). Lượt 1 dùng lại ghi chú rỗng còn sót: 55 → 54; lượt 2: 54 → 54; chữ đúng cả hai lượt.

@@ -6,7 +6,8 @@
 # timings: a Release build types the same but logs nothing per key, D8), the Dấu input
 # source enabled (scripts/dev/install-app.sh, with --debug for a Debug build; the first
 # time, "Bật Dấu" in Dấu.app), and the apps installed. Terminal and Ghostty are driven
-# through AppleScript too: the Automation permission for each, asked by macOS once.
+# through AppleScript too, and Notes for deleting its test note: the Automation
+# permission for each, asked by macOS once.
 #
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
@@ -87,7 +88,7 @@
 #
 # Edge, Firefox: the same local test page as Safari/Chrome, closed with ⌘W.
 # Notes: a new note (⌘N) in the folder shown; it syncs while it exists. The script
-# empties it, and Notes drops an empty new note (docs/COMPATIBILITY.md, cleanup line).
+# empties it and deletes it through Notes' AppleScript (to Recently Deleted).
 # Mail: a new message (⌘N), keys go to the body focused through Accessibility, the To
 # field stays empty, Send is never pressed; the body is emptied and the window closed
 # with "Don't Save". Apps launched by the script stay running.
@@ -597,16 +598,27 @@ run_firefox() {
   close_test_tab firefox
 }
 
-# Notes: a new note (⌘N) in the folder shown; read with ⌘A ⌘C, then emptied. Notes
-# discards an empty new note, so no note is kept (the note syncs while it exists).
+# Notes: a new note (⌘N) in the folder shown; read with ⌘A ⌘C, then emptied and deleted
+# through Notes' AppleScript (it goes to Recently Deleted). Notes keeps an empty note
+# while it is selected, so emptying alone left one behind after each run (11/11/2026).
+# The note syncs while it exists. When the selected note is already empty, ⌘N selects
+# it again instead of making another, so the note to type in is "the selected note once
+# it is empty", new or reused.
+notes_selected_empty_id() {
+  osascript -e 'tell application "Notes"' -e 'set s to selection' \
+    -e 'if (count of s) is 1 and plaintext of item 1 of s is "" then return id of item 1 of s' \
+    -e 'end tell' 2>/dev/null
+}
+notes_empty_selected() { [[ -n "$(notes_selected_empty_id)" ]]; }
 run_notes() {
   open -a Notes
   wait_until -i 0.3 15 front_ok Notes
   guarded Notes "" 'tell application "System Events" to keystroke "n" using {command down}' \
     >/dev/null || return 0
-  # Fixed: the new note takes the focus with no change the script can read without
-  # Automation permission for Notes (the window title stays the folder's).
-  sleep 1; select_dau; type_keys Notes
+  local note=""
+  wait_until -i 0.2 5 notes_empty_selected && note="$(notes_selected_empty_id)"
+  [[ -n "$note" ]] || log_warn "Không đọc được ghi chú mới (quyền Automation cho Notes?): sẽ không xoá được nó"
+  select_dau; type_keys Notes
   copy_all Notes
   # The delay between the keys stays fixed: pacing, nothing read in between.
   guarded Notes "" 'tell application "System Events"
@@ -614,6 +626,16 @@ run_notes() {
     delay 0.1
     key code 51
   end tell' >/dev/null
+  # Only the note this run created, and only once it is empty.
+  [[ -n "$note" ]] || return 0
+  osascript - "$note" <<'OSA' >/dev/null 2>&1 || log_warn "Không xoá được ghi chú thử trong Notes: xoá tay"
+on run argv
+  tell application "Notes"
+    set n to note id (item 1 of argv)
+    if plaintext of n is "" then delete n
+  end tell
+end run
+OSA
 }
 
 # Mail: a new message (⌘N); the keys go to the body (focused through Accessibility), the
