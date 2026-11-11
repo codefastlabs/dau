@@ -111,6 +111,13 @@ struct SimProfile: Sendable {
     var noticeAtOncePercent: Int
     /// Percentage of failed fixes after which the typist deletes and retypes the word.
     var retypeAfterDeadEndPercent: Int
+    /// Percentage of fixes made from the keys the typist remembers typing rather than from
+    /// the word on screen. After the space: ⌫ over it, then the fix they would have made
+    /// inside the word ("ddep␣⌫j" for a forgotten tone, though D4 shows "ddep"). Inside an
+    /// English or code word, whose letters Telex shows changed until it ends ("ưith"): one
+    /// ⌫ per key typed since the mistake, then the right keys ("withq⌫"). The rest delete
+    /// back to what is right on screen first.
+    var byKeysPercent: Int = 50
 
     static let all: [SimProfile] = [.beginner, .ordinary, .skilled, .veryFast]
 
@@ -124,7 +131,8 @@ struct SimProfile: Sendable {
         corrections: [(.immediate, 50), (.afterSpace, 20), (.giveUp, 15), (.retypeWord, 15)],  // giả định
         markKeysPercent: 30,               // giả định
         noticeAtOncePercent: 60,           // giả định
-        retypeAfterDeadEndPercent: 80      // giả định
+        retypeAfterDeadEndPercent: 80,     // giả định
+        byKeysPercent: 50        // giả định
     )
 
     /// Người gõ bình thường. Giả định: chưa có nguồn.
@@ -137,7 +145,8 @@ struct SimProfile: Sendable {
         corrections: [(.immediate, 55), (.afterSpace, 20), (.giveUp, 15), (.retypeWord, 10)],  // giả định
         markKeysPercent: 50,               // giả định
         noticeAtOncePercent: 50,           // giả định
-        retypeAfterDeadEndPercent: 70      // giả định
+        retypeAfterDeadEndPercent: 70,     // giả định
+        byKeysPercent: 50        // giả định
     )
 
     /// Người gõ thạo. Giả định: chưa có nguồn.
@@ -150,7 +159,8 @@ struct SimProfile: Sendable {
         corrections: [(.immediate, 65), (.afterSpace, 20), (.giveUp, 5), (.retypeWord, 10)],   // giả định
         markKeysPercent: 80,               // giả định
         noticeAtOncePercent: 70,           // giả định
-        retypeAfterDeadEndPercent: 90      // giả định
+        retypeAfterDeadEndPercent: 90,     // giả định
+        byKeysPercent: 50        // giả định
     )
 
     /// Người gõ rất nhanh. Giả định: chưa có nguồn.
@@ -163,6 +173,7 @@ struct SimProfile: Sendable {
         corrections: [(.immediate, 40), (.afterSpace, 30), (.giveUp, 20), (.retypeWord, 10)],  // giả định
         markKeysPercent: 80,               // giả định
         noticeAtOncePercent: 40,           // giả định
-        retypeAfterDeadEndPercent: 60      // giả định
+        retypeAfterDeadEndPercent: 60,     // giả định
+        byKeysPercent: 50        // giả định
     )
 }

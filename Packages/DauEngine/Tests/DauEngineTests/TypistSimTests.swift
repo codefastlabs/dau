@@ -9,7 +9,8 @@
 // Profiles and their assumed numbers: TypistSim/SimProfiles.swift. Corrections after the
 // space (⌫ over it, then fix) need the input method to read the word back (D20 (Thêm dấu
 // cho từ đã gõ)); they are counted as outside the engine's scope, and run only on the
-// test model of that read (`MirrorField`).
+// test model of that read (`ImkField`, checked against the input method in
+// TypistSimOptionsTests). Options for correcting text: TypistSimOptionsTests.
 import Foundation
 import Testing
 import DauEngine
@@ -36,7 +37,7 @@ struct TypistSimTests {
             let words = tokens[(n * step) % tokens.count]
             let a = SimTypist<EngineField>.run(words, profile: profile, options: options,
                                                seed: runSeed, sentence: n, cache: &cache)
-            let b = SimTypist<MirrorField>.run(words, profile: profile, options: options,
+            let b = SimTypist<ImkField>.run(words, profile: profile, options: options,
                                                seed: runSeed, sentence: n, cache: &cache)
             run.engine.add(a)
             run.mirror.add(b)

@@ -55,6 +55,8 @@ struct SimEpisode: Sendable {
     var minKeys = 0
     /// Needs the input method to read the word back (⌫ over the space, D20).
     var outOfScope = false
+    /// A correction after the space made from the keys remembered, not from the screen.
+    var byKeys = false
     /// On an ideal input method, where every correction works: right unless left.
     var ideal = true
     /// Clean keys (no mistake) in the profile's order did not give the word.
@@ -100,10 +102,10 @@ struct SimTypist<F: SimField> {
     var field: F
     var script: [Unicode.Scalar] = []
 
-    init(_ profile: SimProfile, _ options: EngineOptions) {
+    init(_ profile: SimProfile, _ options: EngineOptions, variant: SimVariant = []) {
         self.profile = profile
         self.options = options
-        field = F(options)
+        field = F(options, variant: variant)
     }
 
     var method: EngineOptions.InputMethod { options.inputMethod }
@@ -133,8 +135,9 @@ struct SimTypist<F: SimField> {
     /// Types one sentence into a fresh field. `sentence` seeds every random choice, so the
     /// engine-only and the mirror field get the same mistakes and reactions.
     static func run(_ tokens: [SimToken], profile: SimProfile, options: EngineOptions,
-                    seed: UInt64, sentence: Int, cache: inout SimOrderCache) -> [SimEpisode] {
-        var t = SimTypist<F>(profile, options)
+                    seed: UInt64, sentence: Int, cache: inout SimOrderCache,
+                    variant: SimVariant = []) -> [SimEpisode] {
+        var t = SimTypist<F>(profile, options, variant: variant)
         var r = SplitMix(seed: seed, index: UInt64(sentence) &* 1024)
         let order = r.weighted(profile.orders)
         var episodes: [SimEpisode] = []
@@ -183,6 +186,7 @@ struct SimTypist<F: SimField> {
         let style: SimFixStyle = r.chance(profile.markKeysPercent) ? .markKeys : .backspaceToError
         let atOnce = r.chance(profile.noticeAtOncePercent)
         let retype = r.chance(profile.retypeAfterDeadEndPercent)
+        let byKeys = r.chance(profile.byKeysPercent)
         var er = SplitMix(seed: r.next(), index: 0)
 
         guard hasError, let (bad, errorEnd) = Self.inject(kind, clean, token, method, &er) else {
@@ -228,17 +232,39 @@ struct SimTypist<F: SimField> {
             e.style = style
             if correction == .immediate {
                 press(noticed)
+                if token.english && byKeys {
+                    // One ⌫ per key since the first wrong one, then the right keys.
+                    e.byKeys = true
+                    var from = 0
+                    while from < min(noticed.count, clean.count), noticed[from].key == clean[from].key { from += 1 }
+                    for _ in from..<noticed.count { press("⌫") }
+                    press(Array(clean[from...]))
+                } else {
+                    repair(token, style: style, modsAtEnd: modsAtEnd)
+                }
             } else {
                 e.outOfScope = true
                 press(bad)
+                // By keys: the fix they would have made before the space, worked out on
+                // the word as it was then (the keys of `repair` on a copy).
+                var plan = self
+                plan.script = []
+                if byKeys { plan.repair(token, style: style, modsAtEnd: modsAtEnd) }
+                e.byKeys = byKeys
                 press(trail)
                 press(" ")
                 for _ in 0...trail.count { press("⌫") }
+                if byKeys {
+                    for k in plan.script { press(k) }
+                } else {
+                    repair(token, style: style, modsAtEnd: modsAtEnd)
+                }
             }
-            repair(token, style: style, modsAtEnd: modsAtEnd)
             if !endsRight(token) && !e.alteredAnyway {
                 e.deadEnd = true
-                noteDeadEnd(&e, Self.pattern(kind, correction, style, wordAtEnd, token))
+                var label = Self.pattern(kind, correction, style, wordAtEnd, token)
+                if e.byKeys { label = label.replacingOccurrences(of: " · sửa", with: " · theo phím, sửa") }
+                noteDeadEnd(&e, label)
                 if retype {
                     e.retyped = true
                     deleteScreenWord()
