@@ -6,7 +6,8 @@ import DauEngine
 protocol InPlaceClient {
     func selectedRange() -> NSRange
     /// Plain text of `range` in the document (`attributedSubstring(from:)`), or nil if
-    /// the client gives none. Only called for D20, never while a word is being typed.
+    /// the client gives none. Called for the reads N3 allows: D20, D11, and the D43
+    /// evidence.
     func text(in range: NSRange) -> String?
     func insertText(_ text: String, replacementRange: NSRange)
 }
@@ -26,7 +27,10 @@ protocol InPlaceClient {
 /// - D20 "Thêm dấu cho từ đã gõ" (see `addMarks`): on a tone or transform key, or a
 ///   plain letter (E8), typed with no word in the engine and an unknown text before the
 ///   cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
-///   one `insertText`.
+///   one `insertText`;
+/// - D43: at the one key where the positions are enough to take the client for one that
+///   ignores the range, one `text(in:)` more (`confirmRangeIgnore`), at most once per
+///   activation.
 ///
 /// Pure value type over `InPlaceClient`, no IMK, unit tested in DauInputMethodTests.
 struct InPlaceComposer {
@@ -182,7 +186,8 @@ struct InPlaceComposer {
     }
 
     /// New activation (or another client): the client may give text again, and whether it
-    /// ignores `replacementRange` is judged from the start (D43).
+    /// ignores `replacementRange` is judged from the start (D43). The only place the
+    /// verdict of `detector` is dropped: a click or a reset keeps it.
     mutating func activate() {
         readUnavailable = false
         lastEventTime = nil
@@ -234,6 +239,7 @@ struct InPlaceComposer {
             break
         }
         let own = outcome.consumed ? 0 : (keyEffect ?? 0)
+        if !outcome.consumed, keyEffect != nil { detector.keyWentThrough(route) }
         detector.keyHandled(delta: keyDelta.addingSaturated(own), inBurst: tracker.keyInBurst)
         // The word ended, or the cursor may have moved (shortcut, arrow, Return/Tab).
         if outcome.kind == .reset || !engine.isComposing { detector.endWord() }
@@ -455,7 +461,8 @@ struct InPlaceComposer {
                                           client: some InPlaceClient) -> Outcome? {
         checkedLockedWord = true
         let selection = Self.selectedRange(of: client)
-        if let mode = detector.observe(selection, inBurst: tracker.keyInBurst), let found = Self.eraseMode(for: mode) {
+        if let mode = detector.observe(selection, inBurst: tracker.keyInBurst),
+           let found = confirmRangeIgnore(mode, client: client) {
             // D43: from this key on, the word's keys pass or are erased and typed again.
             eraseMode = found
             return nil
@@ -806,7 +813,7 @@ struct InPlaceComposer {
         // units, also for a word seeded from decomposed (NFD) text (D20).
         let selection = known ?? Self.selectedRange(of: client)
         if known == nil, let mode = detector.observe(selection, inBurst: tracker.keyInBurst),
-           let found = Self.eraseMode(for: mode) {
+           let found = confirmRangeIgnore(mode, client: client) {
             // D43: this client ignores the range; this key is the first one erased.
             eraseMode = found
             return erase(deleteCount: deleteCount, insert: insert, appending: extra, client: client)
@@ -846,6 +853,8 @@ struct InPlaceComposer {
             attempt.replacement = range
             client.insertText(text, replacementRange: range)
             keyDelta = keyDelta.addingSaturated(text.utf16.count - range.length)
+            // A selection after the cursor (an app's suggestion) is not text this composer typed.
+            detector.edited(removing: deleteCount, inserting: text.utf16)
             tracker.didReplace(range, text: text)
             result.kind = .replace
         case .unsupported:
@@ -871,6 +880,7 @@ struct InPlaceComposer {
         let range = NSRange(location: followed - deleteCount, length: deleteCount)
         client.insertText(text, replacementRange: range)
         keyDelta = keyDelta.addingSaturated(text.utf16.count - deleteCount)
+        detector.edited(removing: deleteCount, inserting: text.utf16)
         tracker.didReplace(range, text: text)
         var result = Outcome(consumed: true, kind: kind)
         result.attempt = attempt
@@ -897,11 +907,36 @@ struct InPlaceComposer {
         trailingWord(String(decoding: units, as: UTF16.self).precomposedStringWithCanonicalMapping)
     }
 
+    /// D43, positive evidence: the positions say the client ignores the range (`send`, a
+    /// candidate of `RangeIgnoreDetector.observe`). One read of the text this composer
+    /// typed (`RangeIgnoreDetector.evidence`, the N3 exception of D43; none when the
+    /// client already gave no text, `readUnavailable`) decides, for the rest of the
+    /// activation: the client's own text back is a text field that reports a wrong
+    /// position (`refute`, replaced in place as before); no text, or other text, is a
+    /// field that ignores the range (`confirm`). Returns the erase mode from this key on,
+    /// or nil to keep replacing in place (also for a confirmed `.inKey`, `eraseMode(for:)`).
+    private mutating func confirmRangeIgnore(_ send: RangeIgnoreDetector.Send,
+                                             client: some InPlaceClient) -> EraseMode? {
+        if !readUnavailable, let (range, typed) = detector.evidence {
+            if let text = client.text(in: range) {
+                if RangeIgnoreDetector.isOwnText(text, typed: typed) {
+                    detector.refute()
+                    return nil
+                }
+            } else {
+                readUnavailable = true  // N3: a client that gave no text is not asked again
+            }
+        }
+        detector.confirm(send)
+        return Self.eraseMode(for: send)
+    }
+
     /// Inserts at the current selection without asking where it is (deleteCount 0).
     private mutating func insertAtCursor(_ insert: TextBuffer, client: some InPlaceClient) {
         let text = insert.description
         client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
         keyDelta = keyDelta.addingSaturated(text.utf16.count)
+        detector.edited(removing: 0, inserting: text.utf16)
         tracker.didInsertAtCursor(text)
     }
 

@@ -46,3 +46,7 @@ Nâng cấp trước, kiểm chữ ký sau	D37: a wrong signature is never repla
 `CFBundleVersion` của (bản trong app lớn hơn|bộ gõ nằm trong app với bản đã cài)	D37: the installed input method is compared with the embedded one by code hash at every architecture, build numbers are not compared (10/11/2026)
 install-input-method\.sh	scripts/dev/install-input-method.sh removed: scripts/dev/install-app.sh is the only install script, the owner copy replaces the input method (D37, 10/11/2026)
 --with-input-method	install-app.sh always lets the app replace the input method; the option is gone (D37, 10/11/2026)
+kiểm chữ ký và Team ID của bộ gõ	D37: kiểm theo yêu cầu mã (chứng chỉ Apple, Team ID, định danh), 11/11/2026
+same team as this app	D37: code requirement (Apple certificate, team, identifier), 11/11/2026
+đổi ô hoặc kích hoạt lại thì xét lại từ đầu	D43: chỉ xét lại khi IMK kích hoạt lại hay đổi client (11/11/2026)
+ghi lại chữ dễ thay sai vùng	D4: lý do viết lại cùng D20 (11/11/2026)

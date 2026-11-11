@@ -120,7 +120,16 @@ final class DauInputController: IMKInputController {
             result = processMarked(route, client: timed)
         } else {
             let wasKnown = inPlace.detector.send != nil
+            #if DEBUG
+            let wasRefuted = inPlace.detector.refuted
+            #endif
             let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
+            #if DEBUG
+            // D43: the positions said "ignores the range" and the evidence read gave back
+            // Dấu's own text (a field that reports a wrong position). Debug perf log only,
+            // so a typing run can tell it from a field never suspected.
+            if !wasRefuted, inPlace.detector.refuted { perf.note("range-ignore-refuted", app: clientApp) }
+            #endif
             if !wasKnown, let send = inPlace.detector.send {
                 // D43: once per activation, never text (D8). In the key is logged but not
                 // applied (`InPlaceComposer.eraseMode(for:)`). Which app is typed in is

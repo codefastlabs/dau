@@ -18,6 +18,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 05/11/2026: bổ sung phím chữ cái vào ngoại lệ của D20 ("bổ sung 05/11/2026, E8").
 - 10/11/2026: ngoại lệ đọc chữ khi lệch vị trí nay tính cả lần thay đầu của một từ, so với vị trí Dấu tự theo dõi (D11), người dùng duyệt; số lời gọi tối đa mỗi phím không đổi.
 
+- 11/11/2026: thêm ngoại lệ của D43: một lần đọc chữ trước con trỏ khi sắp nhận ra ô, tối đa một lần mỗi lần kích hoạt (rà soát bảo mật, người dùng duyệt).
+
 ### N4. Không tự đổi cài đặt hệ thống
 
 - Tên cũ: "Không tự ý đổi cài đặt hệ thống của người dùng."
@@ -38,6 +40,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 30/10/2026: "Cũng chỉ reset, không khôi phục (bổ sung 30/10/2026, khớp mã M2): đổi cài đặt, đổi nguồn nhập liệu, đổi ô nhập hoặc ứng dụng giữa chừng một từ."
 - 30/10/2026: "Giới hạn đã biết — tự sửa chính tả của macOS" ghi ngày 30/10/2026, kèm việc cần làm: "Ghi vào ma trận tương thích ở M3."
 
+- 11/11/2026: "Vì sao" của việc chỉ reset viết lại. Bản trước: "Mũi tên, Esc, click và tổ hợp phím chỉ reset vì lúc đó con trỏ có thể đã đi chỗ khác, ghi lại chữ dễ thay sai vùng." Câu đó trái với D20, nơi phím sau reset vẫn sửa chữ trước con trỏ; nay nói rõ lý do là không khôi phục theo chuỗi phím cũ, và D20 chỉ sửa chữ đọc lại được (rà soát bảo mật, người dùng duyệt).
+
 ### D5. Quy tắc theo ứng dụng
 
 - 30/10/2026: "Sửa 30/10/2026 cùng D2; bản trước: quy tắc có 'chế độ khi mở app' và tuỳ chọn nhớ chế độ theo app. Lý do: khi bỏ chế độ Anh, đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ; đo 30/10/2026: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng."
@@ -51,6 +55,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 ### D8. Không telemetry
 
 - 02/11/2026: nhật ký từng phím chỉ ở bản Debug, bật bằng `DauPerfLog` ("người dùng chốt 02/11/2026").
+
+- 11/11/2026: thêm ý log bộ gõ ở bản phát hành không ghi app đích hay thời điểm theo từng lần kích hoạt (hai dòng log Release từng ghi bundle ID ở mức công khai; rà soát bảo mật, người dùng duyệt).
 
 ### D9. Giao diện
 
@@ -100,6 +106,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 
 - 30/10/2026: "Sửa 30/10/2026 cùng D2; bản trước: Dấu thông báo khi đổi chế độ Việt/Anh của mình."
 - 30/10/2026: hệ thống có đọc khi chuyển nguồn, đo ở M3 (`docs/history/LOG-M0-M4.md` ngày 30/10/2026).
+
+### D18. Phòng thủ với IMK
+
+- 11/11/2026: thêm kiểm biên số do app trả, hoãn lời gọi lồng, thông báo từ tiến trình khác chỉ là gợi ý, và test fuzz bắt buộc (rà soát bảo mật tìm ra hai đường crash vì tràn số; người dùng duyệt).
 
 ### D20. Thêm dấu cho từ đã gõ
 
@@ -197,6 +207,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 10/11/2026: thêm "bản chủ" (bản trong Applications, nhận ra bằng mã băm chữ ký), chỉ bản chủ cài và thay bộ gõ, bộ gõ đã cài là bản nhúng của bản chủ; người dùng duyệt 10/11/2026. Bản trước: bản Dấu.app nào cũng cài được, và lúc mở app chỉ thay khi `CFBundleVersion` của bản nhúng lớn hơn. Cùng ngày, ý 05/11 đổi thành "Chữ ký sai thì không tự thay"; bản trước, nguyên văn: "Nâng cấp trước, kiểm chữ ký sau: khi bộ gõ đã cài vừa cũ hơn vừa có chữ ký sai, app nâng cấp trước; kiểm chữ ký và Team ID chạy sau khi nâng cấp xong, nên banner 'Cài lại' chỉ hiện khi bản đã cài sau đó vẫn sai." D19 thêm câu bộ gõ lùi theo bản chủ.
 - 10/11/2026 (sau kiểm toán, người dùng chọn): trong onboarding, bộ gõ đã cài có chữ ký sai thì bước 2 yêu cầu "Cài lại" trước khi bật (trước đó "Bật Dấu" bật luôn bộ gõ đã cài, không kiểm chữ ký); hơn một bản Dấu.app trong cùng thư mục Applications thì trùng bản nào cũng là bản chủ (trước đó sổ không quy định).
 
+- 11/11/2026: "Kiểm chữ ký" đổi từ so Team ID của bộ gõ với app chủ sang yêu cầu mã (chứng chỉ Apple, Team ID, định danh); thêm việc kiểm app chủ ở mục "Cài đặt Dấu…" và ý "Giới hạn" (chỉ phát hiện, không chặn). Bản trước: "app kiểm chữ ký và Team ID của bộ gõ đã cài; không khớp thì hiện banner 'Cài lại'." (rà soát bảo mật, người dùng duyệt).
+
 ### D38. Chữ trên giao diện
 
 - 04/11/2026: quyết định "người dùng chốt 04/11/2026"; bản đầu: chữ của Dấu chỉ tiếng Việt.
@@ -224,6 +236,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 - 10/11/2026: quyết định mới, người dùng duyệt, từ số đo bài tải nặng của M6. Thay câu hỏi mở "Ngưỡng hiệu năng (độ trễ p99, bộ nhớ): chốt sau khi đo, so với gõ bằng U.S."; bàn phím U.S. không dùng làm mốc vì không có log từng phím, đối chứng là Telex của Apple.
 - 10/11/2026 (rà soát tài liệu, người dùng duyệt): thêm dòng `heavy.sh` chưa chạy trọn lượt nào. Ngưỡng không đổi.
 
+### D43. Ô bỏ qua vùng thay chữ
+
+- 11/11/2026 (chốt cùng ngày): bản đầu nhận ra ô chỉ theo vị trí, "đổi ô hoặc kích hoạt lại thì xét lại từ đầu", và gửi trong phím cho kiểu xterm.js. Sau rà soát bảo mật (người dùng duyệt): thêm bằng chứng dương (một lần đọc chữ), kết quả chỉ xét lại khi kích hoạt lại hay đổi client (đúng với mã), kiểu xterm.js ghi là vẫn thay tại chỗ tới khi chẩn đoán xong.
+
 ## Đã biết nhưng không làm
 
 - 04/11/2026: "Tách thành mục riêng ngày 04/11/2026, người dùng chốt".
@@ -242,6 +258,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/DECISIONS.
 
 ### Cài cho riêng mình hay cho cả máy
 
+- 11/11/2026: chuyển từ "làm sau M5" sang "làm trước M7", vì là cách duy nhất chặn việc thay bundle bộ gõ (D37 ý "Giới hạn"; rà soát bảo mật, người dùng duyệt).
 - 04/11/2026: câu hỏi nêu ("người dùng nêu 04/11/2026, làm sau M5"). Bước đo một phần trong `docs/research/M5-INSTALL.md` mục 8.2 là bước P6.
 
 ### Hộp thoại App Group
