@@ -782,7 +782,7 @@ struct AllowDialogIllustration: View {
         .frame(width: 196, alignment: .leading)
         .background(Color(nsColor: .windowBackgroundColor), in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(.separator))
-        .shadow(color: .black.opacity(0.18), radius: 12, y: 8)
+        .shadow(radius: 12, y: 8)
         .accessibilityHidden(true)
     }
 }

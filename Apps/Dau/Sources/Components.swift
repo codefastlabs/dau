@@ -485,8 +485,8 @@ enum AppVersion {
     /// signed with get-task-allow (D25: Release is never written). Without a readable
     /// signature "Debug" is never claimed (N5); with neither commit nor Debug the bundle's
     /// version is shown, else "–". nil when no input method is installed. The app's own
-    /// line says what was opened; this says what types, which can differ (D37 never
-    /// replaces a development build of the same build number).
+    /// line says what was opened; this says what types, which can differ (D37 compares the
+    /// code-signature hash, not the build number, so a differing build is replaced).
     nonisolated static func installedInputMethodBuild(at url: URL) -> String? {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
         return buildInfo(commit: stampedCommit(at: url), debug: CodeSignature.hasGetTaskAllow(url) == true)

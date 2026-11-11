@@ -1,7 +1,7 @@
 {
   "version": 4,
   "updated": "2026-11-10",
-  "about": "Apps Dấu labels “Đề xuất” for underlining (D13). Every app types without underline until the user turns it on. Labeled: Brave, Arc and the Electron apps of docs/COMPATIBILITY.md. Chrome, Edge, Firefox and VS Code lost the label on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/COMPATIBILITY.md section 3.",
+  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong: Cursor. Every app types without underline until the user turns it on. Brave, Arc, Zalo, Discord, Slack, Notion, Obsidian and Figma were labeled by technology class without measurement and lost the label; Chrome, Edge, Firefox and VS Code lost it on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/COMPATIBILITY.md section 3.",
   "apps": [
     {
       "name": "Visual Studio Code",
@@ -32,7 +32,7 @@
       "bundleIDs": [
         "com.brave.Browser"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Chromium (inferred). Not measured."
     },
     {
@@ -40,7 +40,7 @@
       "bundleIDs": [
         "company.thebrowser.Browser"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Chromium (inferred). Not measured."
     },
     {
@@ -56,7 +56,7 @@
       "bundleIDs": [
         "com.vng.zalo"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Electron. Not measured."
     },
     {
@@ -64,7 +64,7 @@
       "bundleIDs": [
         "com.hnc.Discord"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Electron. Not measured."
     },
     {
@@ -72,7 +72,7 @@
       "bundleIDs": [
         "com.tinyspeck.slackmacgap"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Electron (inferred). Not measured."
     },
     {
@@ -80,7 +80,7 @@
       "bundleIDs": [
         "notion.id"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Electron. Not measured."
     },
     {
@@ -88,7 +88,7 @@
       "bundleIDs": [
         "md.obsidian"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Electron (inferred). Not measured."
     },
     {
@@ -96,7 +96,7 @@
       "bundleIDs": [
         "com.figma.Desktop"
       ],
-      "suggestUnderline": true,
+      "suggestUnderline": false,
       "note": "Electron, content drawn on a canvas. Not measured."
     },
     {

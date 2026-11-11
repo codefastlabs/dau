@@ -66,7 +66,7 @@ struct CompatibilityListTests {
         #expect(CompatibilityList.decode(data) == list)
     }
 
-    @Test("D13: shipped list suggests Brave, Arc and Electron apps; not Chrome, Edge, Firefox, VS Code (10/11/2026) or Terminal")
+    @Test("D13: shipped list suggests only Cursor")
     func shippedList() throws {
         let data = try Data(contentsOf: Self.shippedURL)
         // Strict decode too, so a typo cannot silently drop an entry.
@@ -76,22 +76,16 @@ struct CompatibilityListTests {
         #expect(list.version >= 1)
         #expect(list.apps.count == rawApps.count)
         let ids = list.suggestedBundleIDs
-        #expect(ids.first == "com.brave.Browser")
-        for id in ["com.brave.Browser",
-                   "company.thebrowser.Browser", "com.todesktop.230313mzl4w4u92", "com.vng.zalo",
+        #expect(ids == ["com.todesktop.230313mzl4w4u92"])
+        #expect(list.suggestion(for: "com.todesktop.230313mzl4w4u92")?.name == "Cursor")
+        for id in ["com.brave.Browser", "company.thebrowser.Browser", "com.vng.zalo",
                    "com.hnc.Discord", "com.tinyspeck.slackmacgap", "notion.id", "md.obsidian",
-                   "com.figma.Desktop"] {
-            #expect(ids.contains(id), "\(id)")
-        }
-        for id in ["com.google.Chrome", "com.microsoft.edgemac", "org.mozilla.firefox", "com.microsoft.VSCode",
-                   "com.apple.Terminal"] {
-            #expect(!ids.contains(id), "\(id)")
+                   "com.figma.Desktop", "com.google.Chrome", "com.microsoft.edgemac",
+                   "org.mozilla.firefox", "com.microsoft.VSCode"] {
             #expect(list.suggestion(for: id) == nil, "\(id)")
-        }
-        // The four entries stay in the file with the flag off.
-        for id in ["com.google.Chrome", "com.microsoft.edgemac", "org.mozilla.firefox", "com.microsoft.VSCode"] {
             #expect(list.apps.contains { $0.bundleIDs.contains(id) && !$0.suggestUnderline }, "\(id)")
         }
+        #expect(list.suggestion(for: "com.apple.Terminal") == nil)
         #expect(Set(ids).count == ids.count)
         #expect(list.apps.allSatisfy { $0.name?.isEmpty == false })
     }
