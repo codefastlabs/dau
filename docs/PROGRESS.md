@@ -18,9 +18,11 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - Còn mở: không có mục nào; việc của đợt này đã xong.
 - Đã chạy thật (nhật ký 10/11): cài bằng `scripts/dev/install-app.sh`, hai lượt, nhánh `replaced`; nguồn đang chọn không đổi ở cả hai lượt. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi; `scripts/selftest/app-group.sh --install`.
 - Hai màn onboarding mới: ảnh chụp trong app đạt và khớp artboard (sáng, tối); `scripts/selftest/settings-window/run.sh` đạt hết (nhật ký 10/11). Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
-- Giữ nguyên trong đợt này: cách `HostApp` tìm app chủ.
+- `HostApp` kiểm chữ ký ứng viên app chủ từ 11/11 (rà soát bảo mật, nhật ký 11/11).
 
-Chờ người dùng: không có việc nào.
+Chờ người dùng:
+- Chọn giờ cho một lượt chạy chiếm màn hình (rà soát bảo mật 11/11): `typing/run.sh --keys "to⇄cj " safari` (TIS đọc từ sandbox có trả đúng nguồn không, log `source-changed-reset`) và bấm "Cài đặt Dấu…" khi `/Applications/Dau.app` chưa chạy (kiểm chữ ký app chủ trong sandbox, log `host-app-open` hay `host-app-signature-invalid`).
+- Quyết định các đề xuất sửa sổ quyết định của rà soát bảo mật (D43 (Ô bỏ qua vùng thay chữ) nhận ra ô, D4 (Từ nước ngoài), D8 (Không telemetry), D18 (Phòng thủ với IMK), D37 (Cài đặt bộ gõ)).
 
 Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
 - Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
@@ -347,3 +349,11 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
 - 11/11/2026 — tên onboarding trên canvas (dọn tài liệu sau rà soát 10/11; người dùng duyệt) — phiên phụ — 13 artboard trang "Thiết kế" và tiêu đề nhóm đổi "Chào mừng" thành "Thiết lập Dấu" cho khớp String Catalog và `docs/GLOSSARY.md`; câu "cửa sổ chào mừng" trên artboard biểu tượng ứng dụng thành "cửa sổ thiết lập". Trang lưu trữ 06/11 của canvas ghi "không sửa", nên giữ tên cũ. Canvas bản 154, chụp lại `docs/canvas/`.
 - 11/11/2026 — rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ) (dọn tài liệu sau rà soát 10/11) — phiên phụ — hoãn: mạch Ghostty và xterm.js chưa đóng (chẩn đoán xterm.js còn mở, D43 (Ô bỏ qua vùng thay chữ) còn tạm chỉ chạy ở Ghostty), và mạch đó còn có thể đổi D11, D20; chưa soạn bản đề xuất.
 - 11/11/2026 — gỡ trang "Lưu trữ 06/11 (không sửa)" khỏi canvas (người dùng yêu cầu) — phiên phụ — bỏ 37 artboard `Archive-…`, 6 ghi chú và mục trang; canvas bản 155 chỉ còn trang "Thiết kế". Mockup gốc còn trong lịch sử phiên bản của canvas (bản 154 trở về trước). Bản chụp `docs/canvas/` chỉ đổi `canvas.json` (trang lưu trữ không được chụp).
+- 11/11/2026 — rà soát bảo mật và độ bền (người dùng yêu cầu) — auditor (hai lượt đọc mã và fuzz), engine-dev, imk-dev, phiên chính; kiểm toán lại ĐẠT — đã sửa:
+  - `selectedRange` dương rất lớn làm tràn số và dừng bộ gõ (D18 (Phòng thủ với IMK); tái hiện SIGTRAP); nay chuẩn hoá ở một chỗ, vượt `Int32.max` coi như không dùng được.
+  - D20 (Thêm dấu cho từ đã gõ) đọc sai chữ nước ngoài dạng NFD ("maître" + s → "maitres"); `seed` nay chỉ nhận dấu tổ hợp đúng cặp tiếng Việt. Test fuzz cố định seed, 72 cấu hình, chạy trong `swift test`; fuzz ngoài 600.000 ca sau khi sửa không vi phạm.
+  - Kiểm chữ ký bộ gõ ở app chủ theo code requirement (chứng chỉ Apple, Team ID, định danh) thay cho so hai Team ID (hai bản ad-hoc từng khớp nhau); `codesign -R` đạt trên bản đã cài.
+  - Thông báo đổi nguồn giả từ tiến trình khác cắt mọi từ; gọi ngược từ client trong `insertText` có thể trap; log Release ghi bundle ID app ở `.public`; "Cài đặt Dấu…" mở app trùng bundle ID không kiểm chữ ký; nạp cài đặt O(n²) theo số quy tắc.
+  - Test: engine 110 → 116, DauShared 35 → 39, bộ gõ 166 → 199, app chủ 178; `check.sh`, `check-l10n` đạt.
+  - Chưa đo trên máy thật: TIS đọc từ sandbox (đổi nguồn), kiểm chữ ký app chủ từ sandbox, IMK có gọi ngược không. Chưa sửa (chờ quyết định): D43 (Ô bỏ qua vùng thay chữ) nhận nhầm ô luôn báo `{0,0}` và gửi DEL vào đó; bundle bộ gõ trong `~/Library/Input Methods` thay được bởi mọi tiến trình của người dùng (kiểm chữ ký chỉ phát hiện khi mở app chủ).
+  - Commit `422e644`, `d1f33a4`, `39edfcb`, `2cfbeca`.
