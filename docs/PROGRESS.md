@@ -20,8 +20,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 - Hai màn onboarding mới: ảnh chụp trong app đạt và khớp artboard (sáng, tối); `scripts/selftest/settings-window/run.sh` đạt hết (nhật ký 10/11). Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
 - `HostApp` kiểm chữ ký ứng viên app chủ từ 11/11 (rà soát bảo mật, nhật ký 11/11; đã chạy thật trong sandbox).
 
-Chờ người dùng:
-- Chọn giờ cho một lượt chạy thật của D43 (Ô bỏ qua vùng thay chữ) sau khi thêm bằng chứng dương (khoảng 5 phút, chiếm màn hình): Ghostty zsh 120 ms, Chrome, Chrome trang bận, Safari, trang xterm.js; bảng dự đoán ở nhật ký 11/11 ("D43 bằng chứng dương").
+Chờ người dùng: không có việc nào.
 
 Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
 - Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
@@ -368,3 +367,9 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Dự đoán cho lượt chạy thật: Ghostty nhận ra như lượt thứ tư; Chrome, Safari không đọc thêm, không sự kiện; Chrome trang bận nếu vị trí đủ để nhận ra thì `range-ignore-refuted`, không DEL; xterm.js vẫn `mode=in-key`, thay tại chỗ như cũ.
   - Commit `eaaee14`, `7c0cd29`, `e9dc432`.
 - 11/11/2026 — bỏ ghi chú "Sổ quyết định (tóm tắt)" khỏi canvas (người dùng yêu cầu) — phiên chính — ghi chú chép lại `DECISIONS.md` và từng lệch (thiếu D43); canvas bản 158 chỉ còn tiêu đề các hàng, artboard không đổi; CLAUDE.md bỏ bước "cập nhật ghi chú trên canvas" khi đổi quyết định.
+- 11/11/2026 — lượt chạy thật D43 (Ô bỏ qua vùng thay chữ) có bằng chứng dương (người dùng cho chạy; bộ gõ Debug 30830f7, rồi cài lại Release; 120 ms, dòng `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows `, một lượt mỗi ô) — phiên chính. Khớp dự đoán ở mọi ô:
+  - Chrome, Safari, Chrome trang bận (300 ms mỗi giây): đúng cả dòng, không nhận ra ô, không `range-ignore-refuted` (vị trí không lần nào đủ để xét).
+  - Ghostty zsh: "toôis việt đi học nhà người hò windows" (từ đầu sai trước lúc nhận ra, như lượt thứ tư), nhận ra `after-key`; đúng một lần đọc thêm, ở phím nhận ra (`read_ns` 0,25 ms).
+  - Trang xterm.js: nhận ra `in-key`, vẫn thay tại chỗ, sai như trước D43 ("toôoiís vieêetj dđdi…").
+  - Chưa gặp trên app thật: ca bằng chứng dương bác một ô (chỉ có trên client giả).
+  - Dọn: Release đã cài lại, `build/d43*` đã xoá, không còn khoá `DauPerfLog`/`DauDebugForceUnderline`, nguồn là Dấu, không còn tab thử.
