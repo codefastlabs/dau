@@ -65,8 +65,8 @@ Bộ gõ của Apple chỉ đo được bằng cách gõ thật, vì không có 
 
 Câu hỏi: hành vi engine của Dấu khác các bộ gõ tiếng Việt khác ở đâu.
 
-- **Kết quả:** dùng lại phép so ở `docs/research/external-test-inputs/README.md` mục 9: 10.303 ca so với đáp án test của 10 bộ gõ khác (có Gõ Nhanh và XKey; XKey có engine chuyển từ OpenKey). Chạy lại trên engine HEAD ngày 09/11/2026 (sau faff8a3): số ca và số theo lớp không đổi so với 05/11 (khác: A 435, B 1.493, C 73, D 0, E 0, X 4; nghĩa các lớp ở mục Hiện trạng của file đó).
-- Bảng khác biệt theo chủ đề (từ tiếng Anh, đặt dấu, uơ/ươ, Backspace…), mỗi chủ đề có ví dụ và số D, ở mục 9.3–9.5 của file đó; trang M10 dùng bảng đó, không dựng bảng mới.
+- **Kết quả:** dùng lại phép so ở [`docs/research/external-test-inputs/README.md`](external-test-inputs/README.md): so từng ca với đáp án test của 10 bộ gõ khác (có Gõ Nhanh và XKey; XKey có engine chuyển từ OpenKey), xếp theo lớp. Số ca theo lớp và nghĩa các lớp nằm ở mục Hiện trạng của file đó, không chép ở đây.
+- Bảng khác biệt theo chủ đề (từ tiếng Anh, đặt dấu, uơ/ươ, Backspace…), mỗi chủ đề có ví dụ và số D, nằm ở phần kết quả so sánh của file đó; trang M10 dùng bảng đó, không dựng bảng mới.
 - Chạy lại offline, không chiếm màn hình: `scripts/research/external-tests/compare.sh`.
 - **Giới hạn:** đáp án test của họ cho biết hành vi engine theo cấu hình test, không phải hành vi trong ứng dụng thật với cài đặt mặc định.
 
