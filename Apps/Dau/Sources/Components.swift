@@ -481,42 +481,55 @@ enum AppVersion {
     }
 
     /// The installed input method's build, for the development build's header card
-    /// (docs/UI.md, artboard SettingsAboutDev): "a1b2c3d · Release"; a part that cannot be
-    /// read is left out (no signature: no configuration, N5), and with neither the bundle's
+    /// (docs/UI.md, artboard SettingsAboutDev): "a1b2c3d", or "a1b2c3d, Debug" when it is
+    /// signed with get-task-allow (D25: Release is never written). Without a readable
+    /// signature "Debug" is never claimed (N5); with neither commit nor Debug the bundle's
     /// version is shown, else "–". nil when no input method is installed. The app's own
-    /// label says what was opened; this says what types, which can differ (D37 never
+    /// line says what was opened; this says what types, which can differ (D37 never
     /// replaces a development build of the same build number).
     nonisolated static func installedInputMethodBuild(at url: URL) -> String? {
         guard FileManager.default.fileExists(atPath: url.path) else { return nil }
-        let configuration = CodeSignature.hasGetTaskAllow(url).map { $0 ? "Debug" : "Release" }
-        let parts = [stampedCommit(at: url), configuration].compactMap { $0 }
-        if !parts.isEmpty { return parts.joined(separator: " · ") }
-        return InputMethodBundleFiles.info(at: url)?.shortVersion ?? "–"
+        return buildInfo(commit: stampedCommit(at: url), debug: CodeSignature.hasGetTaskAllow(url) == true)
+            ?? InputMethodBundleFiles.info(at: url)?.shortVersion ?? "–"
     }
 
-    /// The build configuration of a development build (D7, D25): "Debug" or "Release";
-    /// nil for an official build. Only the CI release process sets DAU_OFFICIAL (D25), so
-    /// every other build, Release built locally included, is a development build.
-    static let developmentConfiguration: String? = {
-        #if DAU_OFFICIAL
-        return nil
-        #elseif DEBUG
-        return "Debug"
+    /// What goes in the parentheses after the version, as Apple's About window puts the
+    /// build there (D25): the commit, then "Debug" on a Debug build; Release adds nothing.
+    /// nil when there is neither.
+    nonisolated static func buildInfo(commit: String?, debug: Bool) -> String? {
+        let parts = [commit, debug ? "Debug" : nil].compactMap { $0 }
+        return parts.isEmpty ? nil : parts.joined(separator: ", ")
+    }
+
+    /// This build is a Debug build.
+    static let isDebug: Bool = {
+        #if DEBUG
+        return true
         #else
-        return "Release"
+        return false
         #endif
     }()
 
-    /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0" without a commit, or "Dấu" without a version.
+    /// Every build but the official one is a development build (D7, D25): only the CI
+    /// release process sets DAU_OFFICIAL, so a Release built locally is one too.
+    static let isDevelopmentBuild: Bool = {
+        #if DAU_OFFICIAL
+        return false
+        #else
+        return true
+        #endif
+    }()
+
+    /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0 (a1b2c3d, Debug)" on a Debug build, "Dấu 1.0.0"
+    /// with nothing to put in the parentheses, or "Dấu" without a version. The header card
+    /// and the sidebar's last line both show it (docs/UI.md, artboard SettingsAboutDev).
     static var nameAndVersion: String {
-        guard let marketing else { return "Dấu" }
-        return commit.map { "Dấu \(marketing) (\($0))" } ?? "Dấu \(marketing)"
+        nameAndVersion(marketing: marketing, commit: commit, debug: isDebug)
     }
 
-    /// The sidebar's version line: `nameAndVersion`, plus " · Debug"/" · Release" on a
-    /// development build (docs/UI.md, artboard SettingsAboutDev).
-    static var sidebarLine: String {
-        developmentConfiguration.map { "\(nameAndVersion) · \($0)" } ?? nameAndVersion
+    nonisolated static func nameAndVersion(marketing: String?, commit: String?, debug: Bool) -> String {
+        guard let marketing else { return "Dấu" }
+        return buildInfo(commit: commit, debug: debug).map { "Dấu \(marketing) (\($0))" } ?? "Dấu \(marketing)"
     }
 }
 

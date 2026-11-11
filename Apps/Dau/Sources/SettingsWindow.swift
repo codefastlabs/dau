@@ -295,7 +295,7 @@ struct SettingsSidebar: View {
         }
         .safeAreaInset(edge: .bottom, alignment: .leading) {
             // Mockup content: the app name and version under the sections.
-            Text(verbatim: AppVersion.sidebarLine)
+            Text(verbatim: AppVersion.nameAndVersion)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 20)

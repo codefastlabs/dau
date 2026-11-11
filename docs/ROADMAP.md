@@ -92,7 +92,7 @@ Tình trạng từng mốc: `docs/PROGRESS.md`, bảng Mốc. Lịch sử việc
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
   - mặc định là biểu tượng bản phát triển;
   - số build tăng dần, số hiển thị có chữ beta;
-  - trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit (vẽ trên canvas trước).
+  - trang Cập nhật & hỗ trợ của bản phát triển ghi "Bản phát triển" và commit, bản Debug thêm "Debug" (D25).
 - Xuất bộ file nhận diện theo `docs/BRAND.md` và gắn thẻ meta cho website. Bộ file gồm: biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, favicon, ảnh Open Graph, ảnh xem trước GitHub, nền DMG.
 - Việc cần tài khoản Apple Developer: chuẩn bị sẵn, dừng lại để người dùng thực hiện.
 - Kiểm tra trước phát hành (cần người):

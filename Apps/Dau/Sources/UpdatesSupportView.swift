@@ -29,9 +29,9 @@ struct UpdatesSupportView: View {
                     VStack(alignment: .leading, spacing: 2) {
                         Text(verbatim: AppVersion.nameAndVersion)
                             .font(.headline)
-                        // D25: a development build says so, with its configuration.
-                        if let configuration = AppVersion.developmentConfiguration {
-                            Subtitle(Text("Development build · \(configuration)"))
+                        // D25: a development build says so (Debug is in the version line).
+                        if AppVersion.isDevelopmentBuild {
+                            Subtitle(Text("Development build"))
                             switch installed {
                             case .unread: EmptyView()
                             case .notInstalled: Subtitle(Text("Input method not installed"))
@@ -105,7 +105,7 @@ struct UpdatesSupportView: View {
             }
         }
         .task(id: actions?.installedChecks) {
-            guard AppVersion.developmentConfiguration != nil else { return }
+            guard AppVersion.isDevelopmentBuild else { return }
             let url = InputMethodBundleFiles.standard().installedURL
             let build = await Task.detached { AppVersion.installedInputMethodBuild(at: url) }.value
             // A newer check replaced this task: its read wins, never this older one.

@@ -2,11 +2,12 @@ import Foundation
 import Testing
 @testable import SnapshotSettings
 
-// D25: a development build's Updates & Support card names its configuration and the
-// installed input method's build (commit · Debug/Release). Debug is read from the
-// get-task-allow entitlement, as scripts/dev/dau-version.sh does; without a readable
-// signature nothing is claimed (N5). The bundles are minimal .app folders around a copy of
-// /usr/bin/true, signed ad hoc here (or not signed).
+// D25: a development build's Updates & Support card says so; "Debug" goes in the
+// version's parentheses, for the app and for the installed input method, and "Release"
+// is never shown. Debug is read from the get-task-allow entitlement, as
+// scripts/dev/dau-version.sh does; without a readable signature nothing is claimed (N5).
+// The bundles are minimal .app folders around a copy of /usr/bin/true, signed ad hoc here
+// (or not signed).
 
 private enum Signing { case none, release, debug }
 
@@ -57,7 +58,7 @@ private func remove(_ apps: URL...) {
 
 @Suite("Development build label (D25)")
 struct DevelopmentBuildTests {
-    @Test("get-task-allow in the signature means Debug, its absence Release, no signature unknown")
+    @Test("get-task-allow in the signature means Debug, its absence not Debug, no signature unknown")
     func getTaskAllow() throws {
         let debug = try fakeBundle(.debug, commit: nil)
         let release = try fakeBundle(.release, commit: nil)
@@ -69,35 +70,46 @@ struct DevelopmentBuildTests {
         #expect(CodeSignature.hasGetTaskAllow(release.appendingPathComponent("missing")) == nil)
     }
 
-    @Test("the installed input method line names only what it could read")
+    @Test("the installed input method line: the commit, \", Debug\" only for Debug, never \"Release\"")
     func installedLine() throws {
         let debug = try fakeBundle(.debug, commit: "a1b2c3d")
-        let release = try fakeBundle(.release, commit: nil)
+        let release = try fakeBundle(.release, commit: "a1b2c3d")
+        let releaseNoCommit = try fakeBundle(.release, commit: nil, version: "1.0.0")
         let unsigned = try fakeBundle(.none, commit: "a1b2c3d")
-        let bare = try fakeBundle(.none, commit: nil, version: "1.0.0")
         let empty = try fakeBundle(.none, commit: nil)
-        defer { remove(debug, release, unsigned, bare, empty) }
-        // Neither commit nor signature: the bundle's version, else a dash, never a guess.
-        #expect(AppVersion.installedInputMethodBuild(at: bare) == "1.0.0")
-        #expect(AppVersion.installedInputMethodBuild(at: empty) == "–")
+        defer { remove(debug, release, releaseNoCommit, unsigned, empty) }
         #expect(AppVersion.stampedCommit(at: debug) == "a1b2c3d")
-        #expect(AppVersion.stampedCommit(at: release) == nil)
-        #expect(AppVersion.installedInputMethodBuild(at: debug) == "a1b2c3d · Debug")
-        #expect(AppVersion.installedInputMethodBuild(at: release) == "Release")
-        // No signature: the commit alone, never "Release" (N5).
+        #expect(AppVersion.stampedCommit(at: releaseNoCommit) == nil)
+        #expect(AppVersion.installedInputMethodBuild(at: debug) == "a1b2c3d, Debug")
+        #expect(AppVersion.installedInputMethodBuild(at: release) == "a1b2c3d")
+        // No signature: "Debug" is not claimed (N5).
         #expect(AppVersion.installedInputMethodBuild(at: unsigned) == "a1b2c3d")
+        // Neither commit nor Debug: the bundle's version, else a dash, never a guess.
+        #expect(AppVersion.installedInputMethodBuild(at: releaseNoCommit) == "1.0.0")
+        #expect(AppVersion.installedInputMethodBuild(at: empty) == "–")
         #expect(AppVersion.installedInputMethodBuild(at: debug.appendingPathComponent("missing")) == nil)
     }
 
-    @Test("a development build's sidebar line ends with its configuration")
-    func sidebarLine() {
+    @Test("what goes in the version's parentheses: the commit, then Debug; Release adds nothing")
+    func buildInfo() {
+        #expect(AppVersion.buildInfo(commit: "a1b2c3d", debug: true) == "a1b2c3d, Debug")
+        #expect(AppVersion.buildInfo(commit: "a1b2c3d", debug: false) == "a1b2c3d")
+        #expect(AppVersion.buildInfo(commit: nil, debug: true) == "Debug")
+        #expect(AppVersion.buildInfo(commit: nil, debug: false) == nil)
+    }
+
+    @Test("the version line: commit and Debug in the parentheses, never Release")
+    func versionLine() {
         // swift test builds without DAU_OFFICIAL, in whichever configuration it was asked for.
+        #expect(AppVersion.isDevelopmentBuild)
         #if DEBUG
-        let expected = "Debug"
+        #expect(AppVersion.isDebug)
         #else
-        let expected = "Release"
+        #expect(!AppVersion.isDebug)
         #endif
-        #expect(AppVersion.developmentConfiguration == expected)
-        #expect(AppVersion.sidebarLine == AppVersion.nameAndVersion + " · " + expected)
+        #expect(AppVersion.nameAndVersion(marketing: "1.0.0", commit: "a1b2c3d", debug: true) == "Dấu 1.0.0 (a1b2c3d, Debug)")
+        #expect(AppVersion.nameAndVersion(marketing: "1.0.0", commit: "a1b2c3d", debug: false) == "Dấu 1.0.0 (a1b2c3d)")
+        #expect(AppVersion.nameAndVersion(marketing: "1.0.0", commit: nil, debug: false) == "Dấu 1.0.0")
+        #expect(AppVersion.nameAndVersion(marketing: nil, commit: "a1b2c3d", debug: true) == "Dấu")
     }
 }

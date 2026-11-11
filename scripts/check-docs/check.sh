@@ -158,8 +158,9 @@ done
 
 # 6. Commit hashes in living docs must be commits in HEAD's history. An object left in
 # this clone by an amend or rebase is not enough: a fresh clone does not have it.
-# Hashes of other repositories: 89c2fd3 is the OpenKey commit docs/research/OPENKEY-NOTES.md read.
-foreign_hashes=(89c2fd3)
+# Hashes that are not this repository's: 89c2fd3 is the OpenKey commit docs/research/OPENKEY-NOTES.md
+# read; a1b2c3d is the sample commit of the version line (artboards, docs/UI.md, D25).
+foreign_hashes=(89c2fd3 a1b2c3d)
 hash_files=(); hash_tokens=()
 for f in $living docs/PROGRESS.md; do
   text=$(<$f)

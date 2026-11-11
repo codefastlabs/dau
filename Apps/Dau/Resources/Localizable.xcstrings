@@ -953,19 +953,19 @@
         }
       }
     },
-    "Development build · %@" : {
-      "comment" : "Updates & Support header card on a development build (D25). %@ = build configuration, Debug or Release (not translated).",
+    "Development build" : {
+      "comment" : "Updates & Support header card: the build is not the official one (D25). Debug, when it is, is in the version line.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Development build · %@"
+            "value" : "Development build"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bản phát triển · %@"
+            "value" : "Bản phát triển"
           }
         }
       }
@@ -1651,7 +1651,7 @@
       }
     },
     "Installed input method: %@" : {
-      "comment" : "Updates & Support header card on a development build (D25). %@ = the installed input method's commit and build configuration, e.g. a1b2c3d · Release (not translated).",
+      "comment" : "Updates & Support header card on a development build (D25). %@ = the installed input method's commit, plus Debug when it is a Debug build, e.g. a1b2c3d or a1b2c3d, Debug (not translated).",
       "localizations" : {
         "en" : {
           "stringUnit" : {

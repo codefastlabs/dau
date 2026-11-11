@@ -213,13 +213,14 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
     - Biểu tượng chuẩn chỉ có ở bản chính thức, chọn bằng một cờ build mà chỉ quy trình phát hành trên CI đặt. Mặc định, tức mọi bản phát triển (Debug, Release tự dựng, bản người khác build), dùng biểu tượng **bản phát triển**.
     - Biểu tượng bản phát triển giữ chữ "ấ", khác nền và có thêm một dấu hiệu bằng hình để vẫn nhận ra khi macOS bỏ màu (kiểu Trong suốt, Phủ màu của Icon Composer): **nền Chì, dải chéo màu Hổ phách ở góc dưới phải**. Không có chữ, không dùng Son cho dải, không đảo màu. Màu và artboard: `docs/BRAND.md`.
     - Kênh Beta dùng biểu tượng chuẩn, phân biệt bằng số phiên bản ("1.3 beta 2") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
-    - Debug và Release không có hai biểu tượng: trang Cập nhật & hỗ trợ của bản phát triển ghi cấu hình build và commit; `scripts/dev/dau-version.sh` cho biết commit của từng bản đã cài.
+    - Debug và Release không có hai biểu tượng. Theo cách Apple ghi bản build (bảng About chuẩn của AppKit, `orderFrontStandardAboutPanel`, ghi mã build trong ngoặc sau số phiên bản), bản phát triển ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug ghi thêm "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho bộ gõ đã cài; bản Release không ghi cấu hình. `scripts/dev/dau-version.sh` in commit và cấu hình (Debug/Release) của từng bản đã cài.
     - Bundle ID không đổi theo loại bản (D37 (Cài đặt bộ gõ)).
     - Biểu tượng "V" trên thanh menu giống nhau ở mọi bản (ảnh template, D9).
   - **Vì sao:**
     - Biểu tượng chỉ trả lời câu "đây có phải bản chính thức không"; bằng chứng là chữ ký Developer ID, app chủ kiểm chữ ký và Team ID của bộ gõ (D37).
     - Dải góc thay vì nền sọc: nền sọc mất ở 16–32 pt và ở kiểu Trong suốt. Không có chữ vì 16–32 pt không đọc được. Không đảo màu vì dễ nhầm với kiểu Tối của biểu tượng chuẩn.
     - Kênh Beta dùng biểu tượng chuẩn: người dùng Beta là người dùng thật, đổi biểu tượng mỗi lần đổi kênh chỉ gây rối.
+    - Không ghi "Release": đặt cạnh "Bản phát triển" thì đọc thành hai từ đối nhau (phát triển / phát hành). Release là trạng thái bình thường; Debug là ngoại lệ (log mỗi phím, `get-task-allow`, D8 (Không telemetry)) nên mới cần ghi.
 - **D26. Gõ đúp phím dấu.** Sau khi gõ đúp phím dấu để giữ chữ gốc (chuẩn Telex, D4 (Từ nước ngoài)), các phím dấu tiếp theo trong cùng từ đi thẳng như chữ cái cho tới khi kết thúc từ (ranh giới theo D4): "carr" → "car", "carrs" → "cars". Khớp với ví dụ ở D20 (Thêm dấu cho từ đã gõ).
   - Cùng luật cho gõ đúp phím biến đổi ("aaa" → "aa", "ddd" → "dd", "ww" → "w") và cho VNI ("a11" → "a1").
   - Khoá này giữ nguyên tới hết từ, kể cả sau Backspace ("tesst" ⌫ s → "tess").

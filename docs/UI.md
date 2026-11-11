@@ -223,9 +223,9 @@ Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
   - Không nhắc menu bộ gõ khi chưa đo (câu hỏi mở về bộ gõ, N5).
 - Trạng thái kiểm tra cập nhật và cách cài bản mới để ô trống cho tới M7 (Phát hành) (N5).
 - **Bản phát triển** (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện); artboard [bản phát triển](canvas/SettingsAboutDev.png)):
-  - thẻ đầu trang dùng biểu tượng bản phát triển và thêm dòng "Bản phát triển · Debug" (hoặc "· Release");
-  - dòng tiếp theo là bản của bộ gõ đã cài, thứ thật sự xử lý phím: "Bộ gõ đã cài: a1b2c3d · Release" (commit và cấu hình đọc từ bundle trong `~/Library/Input Methods`, như `scripts/dev/dau-version.sh`; phần nào không đọc được thì bỏ, không có chữ ký thì không ghi cấu hình, không đọc được cả hai thì ghi số phiên bản của bundle, không có thì "–", N5 (Chỉ hứa điều đã kiểm chứng); dòng chỉ hiện sau khi đọc xong), hoặc "Chưa cài bộ gõ"; nó có thể khác bản app đang mở (D37 (Cài đặt bộ gõ));
-  - dòng phiên bản cuối sidebar thêm "· Debug"/"· Release";
+  - thẻ đầu trang dùng biểu tượng bản phát triển; dưới tên và phiên bản là dòng "Bản phát triển" (D25 (Nhận diện)); bản Debug ghi "Debug" trong ngoặc cùng commit: "Dấu 1.0.0 (a1b2c3d, Debug)", bản Release không ghi cấu hình;
+  - dòng tiếp theo là bản của bộ gõ đã cài, thứ thật sự xử lý phím: "Bộ gõ đã cài: a1b2c3d", bộ gõ Debug thì "a1b2c3d, Debug" (commit và chữ ký đọc từ bundle trong `~/Library/Input Methods`, như `scripts/dev/dau-version.sh`; không có chữ ký thì không ghi "Debug", không có commit lẫn "Debug" thì ghi số phiên bản của bundle, không có thì "–", N5 (Chỉ hứa điều đã kiểm chứng); dòng chỉ hiện sau khi đọc xong), hoặc "Chưa cài bộ gõ"; nó có thể khác bản app đang mở (D37 (Cài đặt bộ gõ));
+  - dòng phiên bản cuối sidebar giống tên và phiên bản ở thẻ đầu trang (bản Debug có "Debug" trong ngoặc);
   - bản chính thức không có dòng này; Beta hiện số phiên bản dạng "1.3 beta 2".
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9).
 - Chú thích quyền riêng tư giữ đúng nội dung D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
