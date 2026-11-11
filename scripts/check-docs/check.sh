@@ -26,8 +26,10 @@
 #   5. UI.md, UI-CHECKS.md and ARCHITECTURE.md hold no UI measurements (pt, W×H):
 #      they live in scripts/selftest/settings-window/Reference.swift and
 #      docs/research/SYSTEM-SETTINGS-REFERENCE.md. Code spans in backticks are skipped.
-#   6. commit hashes in living docs exist in the repo (one `git cat-file --batch-check`
-#      for all of them): a 7+ hex token with at least one digit and one letter, inside
+#   6. commit hashes in living docs and in PROGRESS.md above its log are commits in HEAD's
+#      history (`git cat-file --batch-check` resolves them, `git rev-list HEAD` holds the
+#      history): an object an amend or rebase left in this clone does not pass, since a fresh
+#      clone lacks it. A hash is a 7+ hex token with at least one digit and one letter, inside
 #      backticks or parentheses. PROGRESS.md's log, docs/history and docs/research are not
 #      living docs, so they are not checked.
 #   7. scripts: every scripts/**/*.sh (not .build), .claude/hooks/*.sh and .githooks/* starts with
@@ -154,24 +156,30 @@ for f in docs/UI.md docs/UI-CHECKS.md docs/ARCHITECTURE.md; do
   sed -E 's/`[^`]*`//g' $f | grep -nE '[0-9]{2,} ?pt\b|[0-9]{2,} ?× ?[0-9]{2,}' | while read -r l; do report "$f: số đo giao diện phải nằm ở Reference.swift: ${l[1,140]}"; done
 done
 
-# 6. Commit hashes in living docs must exist.
+# 6. Commit hashes in living docs must be commits in HEAD's history. An object left in
+# this clone by an amend or rebase is not enough: a fresh clone does not have it.
 # Hashes of other repositories: 89c2fd3 is the OpenKey commit docs/research/OPENKEY-NOTES.md read.
 foreign_hashes=(89c2fd3)
 hash_files=(); hash_tokens=()
-for f in $living; do
+for f in $living docs/PROGRESS.md; do
+  text=$(<$f)
+  [[ $f == docs/PROGRESS.md ]] && text=${text%%$'\n'\#\# Nhật ký*}
   # Spans in backticks or parentheses only: plain words that look like hex stay out.
-  for h in ${(f)"$(grep -oE '`[^`]*`|\([^)]*\)' $f | grep -oE '\b[0-9a-f]{7,40}\b' | grep '[0-9]' | grep '[a-f]' | sort -u)"}; do
+  for h in ${(f)"$(print -r -- $text | grep -oE '`[^`]*`|\([^)]*\)' | grep -oE '\b[0-9a-f]{7,40}\b' | grep '[0-9]' | grep '[a-f]' | sort -u)"}; do
     [[ -z $h ]] && continue
     (( ${foreign_hashes[(Ie)$h]} )) && continue
     hash_files+=($f); hash_tokens+=($h)
   done
 done
 if (( $#hash_tokens )); then
-  # One git process: "<token>^{commit} missing" for each unknown or non-commit token.
+  # Two git processes: resolve every token to a full hash, then look it up in HEAD's history.
   hash_out=(${(f)"$(print -rl -- ${^hash_tokens}'^{commit}' | git cat-file --batch-check 2>/dev/null)"})
+  typeset -A in_history
+  for c in ${(f)"$(git rev-list HEAD 2>/dev/null)"}; do in_history[$c]=1; done
   for i in {1..$#hash_tokens}; do
-    [[ ${hash_out[i]-missing} == *' missing' || ${hash_out[i]-missing} == *ambiguous* ]] \
-      && report "${hash_files[i]}: commit ${hash_tokens[i]} không có trong repo này (hash cũ? xem docs/history/COMMIT-MAP.md)"
+    full=${${hash_out[i]-missing}%% *}
+    (( ${+in_history[$full]} )) \
+      || report "${hash_files[i]}: commit ${hash_tokens[i]} không nằm trong lịch sử của HEAD (hash cũ, đã amend/rebase? xem docs/history/COMMIT-MAP.md)"
   done
 fi
 

@@ -391,14 +391,14 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Nguyên nhân: tự sửa chính tả của macOS sửa chữ Dấu đã trả, như giới hạn đã biết của D4 (Từ nước ngoài) ("car" → "cả"). Thêm so với giới hạn đó: nó còn sửa chữ tiếng Việt không dấu ("hoc" → "học") và chữ đơn ("d" → "Đ"), và đè lên D20. Telex của Apple cũng bị sửa như vậy (mục "tự sửa chính tả với bộ gõ khác" ở dưới); lượt /dogfood Telex của Apple ra "học d." ở một lượt, chưa rõ vì sao khác.
   - `typing/run.sh` để lại một ghi chú rỗng "New Note" ở Notes sau lượt (Notes không tự bỏ như đầu script ghi); đã xoá tay (vào Recently Deleted).
   - Dọn: Release đã cài lại, không còn khoá `DauPerfLog`/`DauDebugForceUnderline`, nguồn là Dấu, tự sửa của Notes đang bật như trước, Notes 54 ghi chú như trước lượt, `build/diag*` đã xoá.
-- 11/11/2026 — tự sửa chính tả với bộ gõ khác (người dùng cho chạy; bộ gõ Debug c515581 có cờ thử chỉ trong lượt này, rồi cài lại Release từ mã sạch; `typing/run.sh`, Notes và Mail, 120 ms, `toi hocj d. hoc bai `, tự sửa của hệ thống bật như máy đang dùng) — phiên chính.
+- 11/11/2026 — tự sửa chính tả với bộ gõ khác (người dùng cho chạy; bộ gõ Debug 4e0c361 có cờ thử chỉ trong lượt này, rồi cài lại Release từ mã sạch; `typing/run.sh`, Notes và Mail, 120 ms, `toi hocj d. hoc bai `, tự sửa của hệ thống bật như máy đang dùng) — phiên chính.
   - Telex của Apple (`--source`), 3 lượt: cả 6 ô ra "Toi học Đ. Học bai", tức tự sửa đổi "d" thành "Đ" và "hoc" thành "Học" như với Dấu.
   - Dấu như bản phát hành, 1 lượt: cả 2 ô ra cùng chữ đó.
   - Bản thử chèn bằng `insertText` mọi phím mà Dấu thường để app tự gõ (một lượt chỉ chữ cái, 13 lần chèn trong Notes; một lượt mọi ký tự kể cả dấu cách, 19 lần): cả 4 ô vẫn ra cùng chữ đó. Cách Dấu trả chữ không quyết định việc bị tự sửa; không có hướng sửa tận gốc ở phía bộ gõ.
   - Lượt /dogfood Telex của Apple ra "học d." ở một lượt (gõ bằng công cụ khác, sau dòng tiêu đề ghi chú); lượt này không lặp lại được, nguyên nhân chưa rõ.
   - Luật bổ sung D20 (Thêm dấu cho từ đã gõ) "phím đã được app làm hộ thì giữ chữ" đã bàn rồi gác: nó đúng ở "hoc" → "học" rồi ⌫ j, nhưng nuốt phím ở từ tiếng Anh bị sửa thành tiếng Việt rồi gõ thêm chữ trùng phím dấu ("cat" → "cát", ⌫ s: muốn "cats", luật cho "cát"; hiện nay cho "cats").
   - Dọn: mã thử đã bỏ (`git checkout`), Release cài lại, không còn khoá `DauDebugInsert*`/`DauPerfLog`, nguồn là Dấu, ghi chú rỗng còn sót đã xoá (Notes 54), `build/ac` đã xoá.
-- 11/11/2026 — xác nhận ví dụ cho D4 (Từ nước ngoài) và D20 (Thêm dấu cho từ đã gõ) bằng câu có nghĩa (người dùng cho chạy; bản Release c515581, Notes và Mail, 120 ms, tự sửa bật) — phiên chính.
+- 11/11/2026 — xác nhận ví dụ cho D4 (Từ nước ngoài) và D20 (Thêm dấu cho từ đã gõ) bằng câu có nghĩa (người dùng cho chạy; bản Release 4e0c361, Notes và Mail, 120 ms, tự sửa bật) — phiên chính.
   - `Minhf chonj phuwowng ans d. `: "Mình chọn phương án Đ." ở cả hai app (muốn "d.").
   - `Hoom nay con hoc ⌫j baif raats chawm. `: đúng "Hôm nay con học bài rất chăm." 3 lượt × 2 app.
   - `Tooi hoc ⌫j baif mooix toois. `: "Tôi hocj bài mỗi tối." 2 lượt × 2 app (muốn "học"). Tự sửa đổi "hoc" sau "Tôi", không đổi sau "con".
