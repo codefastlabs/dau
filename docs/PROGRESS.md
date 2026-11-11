@@ -2,88 +2,36 @@
 
 Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị nén) tiếp tục đúng chỗ. Phiên chính cập nhật file này sau mỗi bước.
 
-> Từ 02/11/2026 repo ở https://github.com/codefastlabs/dau và lịch sử đã được viết lại: các mã commit ghi trước ngày này là mã cũ, tra `docs/history/COMMIT-MAP.md` để ra mã mới.
-
 ## Trạng thái hiện tại
 
-Đang làm M6 (Hiệu năng dưới tải), bắt đầu 09/11/2026.
-- M5 đóng 05/11/2026.
-- Từ 05/11 tới khi bắt đầu M6 làm ngoài mốc:
-  - phần nền của M9 (Đa ngôn ngữ), theo D41 (Ngôn ngữ giao diện): mã xong 06/11, hàng "Ngôn ngữ" xong 08/11; nhật ký ở `docs/history/LOG-BETWEEN-M5-M6.md`;
-  - rút gọn script và test (09/11; nhật ký ở dưới).
-
-Đang làm ngoài mốc từ 10/11: "bản chủ" của bộ gõ, D37 (Cài đặt bộ gõ), và gộp script cài về một đường.
-- Xong (nhật ký 10/11): sổ quyết định, artboard, mã app chủ, lệnh `--reconcile-input-method` chạy trên máy thật, `scripts/dev/install-app.sh` là script cài duy nhất.
-- Kiểm toán 10/11: lượt đầu chưa đạt; các mục nó nêu đã sửa (nhật ký 10/11); lượt kiểm toán lại đạt, không còn mục chặn.
-- Còn mở: không có mục nào; việc của đợt này đã xong.
-- Đã chạy thật (nhật ký 10/11): cài bằng `scripts/dev/install-app.sh`, hai lượt, nhánh `replaced`; nguồn đang chọn không đổi ở cả hai lượt. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi; `scripts/selftest/app-group.sh --install`.
-- Hai màn onboarding mới: ảnh chụp trong app đạt và khớp artboard (sáng, tối); `scripts/selftest/settings-window/run.sh` đạt hết (nhật ký 10/11). Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
-- `HostApp` kiểm chữ ký ứng viên app chủ từ 11/11 (rà soát bảo mật, nhật ký 11/11; đã chạy thật trong sandbox).
+Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026. Ngoài mốc, 11/11: viết lại toàn bộ tài liệu theo mục "Viết tài liệu" của `CLAUDE.md` và bỏ script kiểm tài liệu (nhật ký 11/11).
 
 Chờ người dùng: không có việc nào.
 
-Mở từ 10/11: gõ trong Ghostty, terminal của Claude, và sửa chữ ở chế độ gạch chân (phản hồi sau khi gõ hằng ngày). Cơ chế ở `docs/research/TERMINAL-AND-UNDERLINE.md`; lượt gõ thử 11/11 (nhật ký 11/11) khớp dự đoán ở mọi ô đã đo.
-- Sublime Text: thay tại chỗ sửa được dấu cho từ đã gõ ở cả ba ca; gạch chân không sửa được, giống Telex của Apple. Gạch chân ở Sublime do người dùng tự bật (không có quy tắc mặc định nào), nên tắt gạch chân cho Sublime là đủ, không đụng quyết định nào.
-- Ghostty: thay tại chỗ sai (nhân đôi chữ hoặc ra chuỗi phím gốc); gạch chân đúng chữ nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple. Terminal của Claude chưa đo (không tự động hoá được).
-- Hướng đang theo (11/11): thay tại chỗ ở cả hai terminal bằng API chính thống, gạch chân chỉ là đường lui. Bản thử xoá bằng DEL (chỉ có ở Debug) đúng ở xterm.js, sai ở Ghostty (nhật ký 11/11, lượt thứ hai).
-- Đã đo (nhật ký 11/11, lượt thứ ba): Ghostty "sửa sau phím" đúng; `selectedRange` phân biệt ô kiểu terminal với ô gõ thường.
-- Đã chốt 11/11: D43 (Ô bỏ qua vùng thay chữ). Đã viết trong bộ gõ (nhật ký 11/11, "D43 trong bộ gõ"), test xanh; bản thử Debug đã bỏ.
-- Lượt gõ thử thứ tư (nhật ký 11/11): Ghostty đúng từ từ thứ hai, không nhận nhầm ô gõ thường nào; **trang xterm.js sai nặng hơn trước** sau khi nhận ra ô (chữ dồn lại mỗi lần sửa).
-- Tạm thời (11/11, người dùng chọn): ô nhận ra theo kiểu xterm.js (gửi trong phím) giữ cách thay tại chỗ cũ, D43 chỉ chạy ở Ghostty.
-- Việc tiếp theo của mạch này: chẩn đoán xterm.js (giả thuyết: một `insertText` có vùng thay trước lúc nhận ra để lại trạng thái trong textarea của xterm.js), rồi bật lại gửi trong phím. Thử tay trong terminal của app Claude để sau khi sửa. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
+Việc tiếp theo, theo thứ tự:
+1. Canvas: artboard trang Ứng dụng (`SettingsApps`, `SettingsAppsEmpty`, `SettingsAppsAdd`, `SettingsAppsAddEmpty`) còn vẽ nhãn "Đề xuất" cho Zalo, Notion, Slack; theo D13 (Gạch chân là đường lui cuối cùng) chỉ Cursor có nhãn. Sửa artboard, chụp lại `docs/canvas/`.
+2. Chẩn đoán lỗi chữ dồn ở ô kiểu xterm.js (D43 (Ô bỏ qua vùng thay chữ); `docs/research/TERMINAL-AND-UNDERLINE.md`), rồi bật D43 cho ô đó. Giả thuyết: một `insertText` có vùng thay trước lúc nhận ra ô để lại trạng thái trong textarea của xterm.js. Thử tay trong terminal của app Claude sau khi sửa.
+3. M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (chiếm màn hình, hỏi giờ).
+4. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
+5. Test engine cho `wen␣` ở Telex đơn giản bật gõ tắt phụ âm (`docs/research/OPENKEY-NOTES.md` mục 5: ca duy nhất chưa có test).
 
-Mở từ 10/11: dọn tài liệu sau lượt rà soát 10/11; còn một việc, chờ mạch Ghostty và xterm.js ở trên đóng (nhật ký 11/11).
-- Rút gọn D11 (Kiểm tra ngữ cảnh) và D20 (Thêm dấu cho từ đã gõ) về mức quyết định, người dùng duyệt câu chữ trước khi sửa: thuật toán chuyển sang `docs/ARCHITECTURE.md`, sổ quyết định giữ luật, bất biến và lý do. Làm sau khi mạch Ghostty và xterm.js ở trên đóng, vì D43 (Ô bỏ qua vùng thay chữ) dẫn tới D11 và D20 và mạch đó còn có thể đổi chúng; D43 là mẫu viết ở mức quyết định.
+Việc mở:
+- Trình soạn thảo Cursor: sai ở 5 ms và ở ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa đều phải đổi N3 (Ít lời gọi vào ứng dụng đích) hoặc D11 (Kiểm tra ngữ cảnh). Đã chốt 10/11: dừng sửa, Cursor giữ nhãn "Đề xuất".
+- VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
+- Đối chứng Telex của Apple: các ô đo trước khi sửa cách chuyển nguồn (VS Code, Chrome và Firefox phím dồn; số của Apple trong `docs/research/COMPETITOR-COMPARISON.md` mục 1) phải đo lại.
+- "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome, chưa tái hiện; thử lại khi chạy ma trận Chrome.
+- Bộ đệm nguồn nhập liệu của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/INPUT-METHOD-INSTALL.md` mục 10.7).
+- Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
+- Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ; `scripts/selftest/app-group.sh --install`. Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
+- Việc của M7 (Phát hành): `docs/ROADMAP.md` mục M7 và mục "Tồn đọng chưa gắn mốc".
 
-Đã chốt 10/11: dừng sửa trình soạn thảo Cursor, Cursor giữ nhãn "Đề xuất".
+Kế hoạch M6 (tiêu chí: `docs/ROADMAP.md` mục M6):
+1. Xong 10/11 trong phạm vi đã đo: thay chữ tại chỗ khi trang bận (D11, ý "App trả lời chậm"). Số đo trước và sau khi sửa: nhật ký 09/11 và 10/11. Chưa đo: VS Code khi app bận, kiểu tải khác.
+2. Bài tải nặng: lần ba (nhật ký 10/11) dừng ở nhóm 5; chưa chạy trọn lượt nào; chưa đo bộ nhớ theo thời gian.
+3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn.
+4. Xong 10/11: D12 (Ưu tiên tiến trình) giữ nguyên; ngưỡng ở D42 (Ngưỡng hiệu năng). Ngưỡng bộ nhớ chưa chốt.
 
-Xong 11/11: mạch `/dogfood` và tự sửa chính tả của macOS (nhật ký 11/11). Hai ca sai ở Notes và Mail là do tự sửa của macOS, với mọi bộ gõ; D20 (Thêm dấu cho từ đã gõ) thêm ý "Từ hệ thống vừa sửa" (đã có mã), D4 (Từ nước ngoài) ghi thêm giới hạn.
-
-Việc tiếp theo: `heavy.sh` chạy trọn một lượt (M6 bước 2).
-
-Còn mở (nhật ký 10/11):
-- trình soạn thảo Cursor: nhóm lỗi ở 5 ms và ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa cần đổi N3 (Ít lời gọi vào ứng dụng đích) hoặc D11;
-- một lượt VS Code mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ;
-- các ô đối chứng Telex của Apple đo trước khi sửa cách chuyển nguồn (VS Code, Chrome và Firefox phím dồn) chưa đo lại.
-
-Kế hoạch M6 (tiêu chí ở `docs/ROADMAP.md` mục M6):
-1. Xong 10/11 trong phạm vi đã đo: thay chữ tại chỗ khi trang bận (câu hỏi của D13).
-   - Trước khi sửa (nhật ký 09/11): Chrome, trang chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms: thay tại chỗ sai 8/9 lượt với chuỗi Telex thứ tự chuẩn, 5/6 với chuỗi có sửa dấu. Gạch chân đúng 9/9, mới đo với chuỗi thứ tự chuẩn.
-   - Cơ chế: Chrome trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ; hai kiểu sai (a) và (b) của nhật ký 09/11 cùng một gốc (`docs/ARCHITECTURE.md` mục "App trả lời chậm").
-   - Sau khi sửa (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"; nhật ký 10/11): trang bận đúng 3/3 ở Chrome, Edge và Firefox, mỗi app trên một máy, một kiểu tải.
-   - Đối chứng Telex của Apple cùng điều kiện (Chrome, nhật ký 09/11, bước 1b): hai ô trang bận ra cùng chữ với ô trang rảnh; ô thứ ba ra nguyên chuỗi phím là đo hỏng (cách script chuyển nguồn, nhật ký 10/11).
-   - Chưa đo: VS Code khi app bận, kiểu tải khác.
-2. Bài tải nặng theo `docs/ROADMAP.md` mục M6. Đo 10/11 (nhật ký, `heavy.sh` lần ba): Dấu đúng chữ ở Safari, Chrome, VS Code lúc rảnh và dưới tải; thời gian mỗi phím dưới tải không cao hơn lúc rảnh, trừ `handle` p99 của Chrome (6,0 lên 6,7 ms).
-   - Giới hạn: mỗi điều kiện mới một nhóm, nhóm rảnh chạy trước nhóm tải.
-   - `heavy.sh` chưa chạy trọn lượt nào: lần ba dừng ở nhóm 5, bản sửa focus của Safari chưa chạy thật.
-   - Chưa đo: bộ nhớ theo thời gian.
-3. Phần còn lại của ma trận tương thích, kể cả gạch chân trên thanh địa chỉ Chrome và các trình soạn thảo web lớn (mục "Việc còn mở").
-4. Xong 10/11: D12 (Ưu tiên tiến trình) giữ nguyên kèm số đo; ngưỡng ở D42 (Ngưỡng hiệu năng). Ngưỡng bộ nhớ chưa chốt.
-
-So sánh với bộ gõ khác (`docs/research/COMPETITOR-COMPARISON.md`, nghiên cứu cho M10 (Học cách gõ)):
-- So sánh trong ứng dụng thật (mục 1) và ở mức engine (mục 2) xong 09/11; số của Apple ở mục 1 cần đo lại.
-- Nhịp gõ thật (mục 3) dừng: dữ liệu công khai không đủ độ chính xác.
-- Câu hỏi của D13 (Gạch chân là đường lui cuối cùng) chuyển sang M6 bước 1 (kế hoạch M6 ở trên).
-
-Việc còn mở:
-- Các tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, bộ đệm của Shortcuts) không xoá được bộ đệm.
-  - Ảnh hưởng chưa đo.
-  - Gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/INPUT-METHOD-INSTALL.md` mục 10.7).
-- "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome, chưa tái hiện. Phiên chính thử lại thanh địa chỉ khi chạy ma trận Chrome ở M6.
-- Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (bảng tên `LayoutNames` chỉ có bàn phím).
-
-Việc hoãn:
-- Về M6: phần còn lại của ma trận tương thích.
-- Về M7 (Phát hành): danh sách kiểm và việc ghi lại nằm ở `docs/ROADMAP.md` mục M7 và mục "Tồn đọng chưa gắn mốc".
-
-Ký và máy (hai máy phát triển, gọi theo chip: máy M1 (M1 Pro) và máy M3 Max):
-- Ký bằng Personal Team (Team ID trong D24 (Tên và định danh)), ký tự động "Apple Development". Bản phát hành dùng Developer ID ở M7.
-- Máy M1 ký được (09/11: mọi bản build ký hợp lệ).
-- Máy M3 Max dùng chứng chỉ tạo ngày 05/11.
-- Bản đã cài trên từng máy: `scripts/dev/dau-version.sh` (không ghi ở đây, đổi sau mỗi lượt đo).
-- Xcode 27.2 ở `/Applications/Xcode.app`, nhưng `xcode-select` đang trỏ CommandLineTools. Swift 6.4.
-  - Script tự chọn Xcode (`scripts/lib/xcode.sh`).
-  - Lệnh gõ tay (`swift test`) cần `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+Máy phát triển (gọi theo chip: máy M1, máy M3 Max): ký bằng Personal Team, ký tự động "Apple Development" (D24 (Tên và định danh)); bản đã cài trên từng máy xem bằng `scripts/dev/dau-version.sh`; cách chọn Xcode khi `xcode-select` trỏ Command Line Tools: [`docs/TROUBLESHOOTING.md`](TROUBLESHOOTING.md).
 
 ## Mốc
 
@@ -91,18 +39,15 @@ Ký và máy (hai máy phát triển, gọi theo chip: máy M1 (M1 Pro) và máy
 |---|---|---|
 | M0 Khung dự án | xong | ĐẠT (29/10) |
 | M1 Engine | xong | ĐẠT (29/10, lần 2) |
-| M2 Bộ gõ tối thiểu | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) |
-| M3 Độ tin cậy | xong | ĐẠT (30/10, lần 3; lần 1, 2 CHƯA ĐẠT vì tài liệu) |
+| M2 Bộ gõ tối thiểu | xong | ĐẠT (30/10, lần 3) |
+| M3 Độ tin cậy | xong | ĐẠT (30/10, lần 3) |
 | M4 App Cài đặt | xong | ĐẠT (30/10, lần 3) |
-| M5 Onboarding, cài, gỡ | xong | ĐẠT (05/11, lần 1; các mục nên sửa đã xử lý) |
-| M6 Hiệu năng dưới tải | chưa | — |
+| M5 Onboarding, cài, gỡ | xong | ĐẠT (05/11) |
+| M6 Hiệu năng dưới tải | đang làm | — |
 | M7 Phát hành | chưa | — |
 | M8 Website | chưa | — |
-| M9 Đa ngôn ngữ | phần nền và câu chữ tiếng Anh xong (09/11) | — |
+| M9 Đa ngôn ngữ | phần nền (D41 (Ngôn ngữ giao diện)) và câu chữ tiếng Anh xong 06–09/11 | — |
 | M10 Học cách gõ | chưa | — |
-
-Ghi chú từng mốc:
-- M9: phần nền (D41) xong 06–08/11; câu chữ tiếng Anh chốt và sửa trong catalog 09/11.
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LOG-M5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LOG-BETWEEN-M5-M6.md`.
@@ -418,7 +363,7 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
 - 11/11/2026 — `typing/run.sh` không còn để sót ghi chú rỗng ở Notes (người dùng cho chạy; Release, 2 lượt `notes`, nhịp `--delay 80 --jitter 30 --word-pause 250`) — phiên chính. Notes giữ ghi chú rỗng khi nó đang được chọn, và ⌘N chọn lại ghi chú rỗng đang chọn thay vì tạo ghi chú mới; script nay lấy ghi chú đang chọn khi nó rỗng, gõ, xoá trắng rồi xoá nó qua AppleScript của Notes (vào Recently Deleted). Lượt 1 dùng lại ghi chú rỗng còn sót: 55 → 54; lượt 2: 54 → 54; chữ đúng cả hai lượt.
 - 11/11/2026 — rà lại 7 commit D20 "Từ hệ thống vừa sửa" và `typing/run.sh` (`b8d820c`…`8a2a7f6`) — phiên chính. Không thấy lỗi; N3 giữ (chữ giữ nguyên thì không gửi gì, không thêm lần đọc). Thêm test ⌫ qua chữ vừa giữ rồi gõ từ mới (`InPlaceComposerTests.backspaceAfterKept`). Test: IMK 222 đạt, 11 known issue; engine 116; DauShared 39; check-docs, check-l10n xanh.
 - 11/11/2026 — nhận ra loại bản đang chạy (D25 (Nhận diện)) — phiên chính, release-eng.
-  - Bản phát triển: dòng "Bản phát triển · Debug/Release" và dòng "Bộ gõ đã cài: <commit> · <cấu hình>" (hoặc "Chưa cài bộ gõ") ở thẻ đầu trang Cập nhật & hỗ trợ; dòng phiên bản cuối sidebar thêm "· Debug/Release". Artboard SettingsAboutDev thêm dòng bộ gõ (người dùng duyệt). Cấu hình của bộ gõ đọc từ quyền `get-task-allow` trong chữ ký, như `scripts/dev/dau-version.sh` (script cũng in thêm cấu hình).
+  - Bản phát triển: dòng "Bản phát triển · Debug/Release" và dòng "Bộ gõ đã cài: `<commit> · <cấu hình>`" (hoặc "Chưa cài bộ gõ") ở thẻ đầu trang Cập nhật & hỗ trợ; dòng phiên bản cuối sidebar thêm "· Debug/Release". Artboard SettingsAboutDev thêm dòng bộ gõ (người dùng duyệt). Cấu hình của bộ gõ đọc từ quyền `get-task-allow` trong chữ ký, như `scripts/dev/dau-version.sh` (script cũng in thêm cấu hình).
   - Biểu tượng bản phát triển (`AppIconDev`, `make-app-icon.sh`) là mặc định; cờ `DAU_OFFICIAL=YES` chọn biểu tượng chuẩn và `-DDAU_OFFICIAL`. Kiểm bằng `xcodebuild -showBuildSettings` cả bốn ô Debug/Release × có/không cờ, và build Release có cờ (`CFBundleIconName` = `AppIcon`).
   - Lỗi bắt được trước commit: đặt `SWIFT_ACTIVE_COMPILATION_CONDITIONS` trong `project.yml` làm bản Debug mất `DEBUG`; chuyển sang `OTHER_SWIFT_FLAGS`, thêm phép kiểm 12 vào `check.sh`.
   - Test app chủ 181/181 đạt; build Release và Debug đạt; ảnh dựng ngoài màn hình (SnapshotSettings) khớp artboard, đọc đúng bộ gõ đã cài trên máy M1 (Release, khác bản Debug của trình dựng). Chưa xem biểu tượng trong Finder/Dock.
@@ -430,3 +375,4 @@ Nhật ký M0–M4 ở `docs/history/LOG-M0-M4.md` (kèm bảng số đo M1–M3
   - Lý do: "Bản phát triển · Release" đọc thành hai từ đối nhau. D25 đổi: Release không ghi cấu hình; chỉ bản Debug ghi "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho dòng bộ gõ đã cài; dòng dưới chỉ là "Bản phát triển". Artboard SettingsAboutDev, UI.md, GLOSSARY, ROADMAP, catalog, `superseded.txt` sửa theo; `dau-version.sh` vẫn in Debug/Release.
   - Test app chủ 182/182 đạt; check-docs, check-l10n đạt; kiểm toán ĐẠT. Cửa sổ thật (người dùng cho chạy, 18:47–18:49; cài Release dựng từ cây làm việc trước commit, nhãn `3154590+`): `settings-window/run.sh` mọi hàng ok (300 + 15 + 28 + 330); thẻ đầu trang "Dấu 0.1.0 (3154590+, Debug)", "Bản phát triển", "Bộ gõ đã cài: 3154590+", biểu tượng bản phát triển; sidebar giống dòng phiên bản.
 - 11/11/2026 — bản ổn định để dùng hằng ngày (người dùng chọn) — phiên chính. `install-app.sh --ref <commit|tag>` dựng và cài bản Release của commit đó từ worktree sạch `build/ref-src` (giữ lại giữa các lần, DerivedData riêng); tag git cục bộ `stable` chỉ vào bản dùng hằng ngày (máy M1: `89543e5`, đã kiểm toán và chạy thật), không push. CLAUDE.md: lượt nào cài bản khác thì cài lại `--ref stable` trong lượt đó. Thử: `--ref` với tag không có và đi cùng `--debug` đều dừng với lời nhắc; `--ref stable` cài xong 40 giây, app và bộ gõ `89543e5 · Release`.
+- 11/11/2026 — viết lại tài liệu — phiên chính, 5 auditor (rà), 6 agent (sửa), 1 agent (ghép nối) — rà 40 file Markdown (trừ `docs/history/`): gần như file nào cũng viết như kế hoạch rồi nối kết quả, chép một sự kiện ở nhiều nơi, có câu lỗi thời so với mã, lỗi hiển thị trên GitHub. Thêm mục "Viết tài liệu" vào `CLAUDE.md`; README viết lại thành trang giới thiệu; DECISIONS mỗi D một tiêu đề, có mục lục, thuật toán sang ARCHITECTURE, ngày và số lượt sang `docs/history/DECISIONS-LOG.md`; COMPATIBILITY, UI, UI-CHECKS, ROADMAP, CONTRIBUTING, TROUBLESHOOTING và các file nghiên cứu giữ hiện trạng, lịch sử sang `docs/history/` (`RESEARCH-LOG.md`, `COMPATIBILITY-FIXED.md`); file mới `docs/WEBSITE.md`, `docs/research/IMK-API-NOTES.md`. Quyết định (người dùng giao phiên chính): D13 chỉ Cursor có nhãn "Đề xuất" (`CompatibilityList.json` sửa theo); D7, D37 ghi trình tự thay bộ gõ; D14 ghi cách xử lý bộ gõ IMK khác; bóng đổ hình minh hoạ onboarding dùng màu hệ thống (D9). Bỏ `scripts/check-docs/` và hook pre-commit: người dùng không muốn script kiểm tài liệu, tài liệu giữ đúng bằng luật trong `CLAUDE.md` và tự soát trước commit. Kiểm: engine 116, DauShared 39, app chủ 182, bộ gõ 222 test đạt; `check-l10n` khớp; build Debug đạt. — 01bce82…d8cb61e
