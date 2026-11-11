@@ -16,6 +16,8 @@
 #           opened on a file, as cursor is) | sublime (Sublime Text) | ghostty (Ghostty)
 #           | ghosttyvim (vim in insert mode in a Ghostty window) | xterm (xterm.js in a
 #           Chrome page: the terminal of Electron apps such as the Claude desktop app)
+#           | tiptap (a TipTap/ProseMirror editor in a Chrome page: the message box of the
+#           Claude desktop app and of claude.ai)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
@@ -168,7 +170,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -536,8 +538,10 @@ test_page_closed() { [[ "$(window_names "$1")" != *"$PAGE_TITLE"* ]]; }
 # Opens the test page in browser $1 (app name) and waits until process $2 is frontmost
 # with the page in its focused window (the title comes from the loaded page). Not there in
 # time: type_keys's guard reports it and stops the run.
-open_test_page() {
-  open -a "$1" "$PAGE"
+open_test_page() { open_test_page_of "$PAGE" "$1" "$2"; }
+open_test_page_of() { # page file, browser app name, process
+  local file="$1"; shift
+  open -a "$1" "$file"
   wait_until -i 0.3 5 front_ok "$2" "$PAGE_TITLE" && return 0
   # `open -a` on a running Safari has been seen to load the page without bringing Safari
   # to the front (another browser stayed frontmost for 15 s, 11/11/2026); `activate`
@@ -1175,6 +1179,66 @@ run_xterm() {
   print -r -- "${got%%$'\n'*}"
 }
 
+# tiptap: the message box of the Claude desktop app and of claude.ai (a TipTap/ProseMirror
+# contenteditable, which handles beforeinput and composition itself), rebuilt as a local
+# page in Chrome: TipTap 2.26.1 (core + starter-kit, pinned) from jsDelivr as ES modules
+# (needs the network), in a div.tiptap.ProseMirror like the real one. Read back with ⌘C,
+# which the page answers with the editor's text (editor.getText(), not the HTML; a no-break
+# space, which a browser may put for a typed space, counts as a space) and, on a second
+# line, the inputType of every beforeinput the editor received ("insertText",
+# "insertReplacementText", "deleteContentBackward"…, with the data for the replacing
+# ones), so what the input method's calls became is visible. The focus title is set only
+# while the editor itself has the focus. Return is never typed (↩ is an error here).
+TIPTAP_PAGE="$WORK/dau-tiptap.html"
+cat > "$TIPTAP_PAGE" <<HTML
+<!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
+<style>
+  body { margin: 8px; font: 18px -apple-system, sans-serif; }
+  #e { width: 96vw; height: 80vh; border: 1px solid #888; padding: 8px; overflow: auto; }
+  .ProseMirror { outline: none; min-height: 100%; }
+</style>
+<div id="e"></div>
+<script type="module">
+import { Editor } from "https://cdn.jsdelivr.net/npm/@tiptap/core@2.26.1/+esm";
+import StarterKit from "https://cdn.jsdelivr.net/npm/@tiptap/starter-kit@2.26.1/+esm";
+var editor = new Editor({
+  element: document.getElementById("e"),
+  extensions: [StarterKit],
+  content: "<p></p>",
+  autofocus: "end",
+  editorProps: { attributes: { spellcheck: "false", autocomplete: "off", autocorrect: "off" } }
+});
+var dom = editor.view.dom, events = [];
+dom.addEventListener("beforeinput", function (e) {
+  events.push(e.inputType + (e.data && e.inputType !== "insertText" ? "(" + e.data + ")" : ""));
+}, true);
+window.addEventListener("copy", function (e) {
+  var text = editor.getText().replace(/\u00a0/g, " ");
+  e.clipboardData.setData("text/plain", text + "\n" + events.join(" | "));
+  e.preventDefault(); e.stopImmediatePropagation();
+}, true);
+function mark() {
+  document.title = document.hasFocus() && dom.contains(document.activeElement) ? "$FOCUS_TITLE" : "$PAGE_TITLE";
+}
+["focus", "blur"].forEach(function (e) { window.addEventListener(e, mark, true); });
+setInterval(mark, 200);
+mark();
+window.dauEditor = editor;
+</script>
+HTML
+# Prints the editor's text; the beforeinput types go to SAVE_DIR/tiptap.events (with
+# --save) and stderr.
+run_tiptap() {
+  local got
+  open_test_page_of "$TIPTAP_PAGE" "Google Chrome" "Google Chrome"
+  select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
+  got="$(copy_all "Google Chrome" "$FOCUS_TITLE")"
+  close_test_tab "Google Chrome"
+  log_detail "beforeinput del editor: \"${got#*$'\n'}\"" >&2
+  [[ -n "$SAVE_DIR" ]] && print -r -- "${got#*$'\n'}" > "$SAVE_DIR/tiptap.events"
+  print -r -- "${got%%$'\n'*}"
+}
+
 # --- run -------------------------------------------------------------------------------
 trim_right() { sed -e 's/[[:space:]]*$//'; }
 EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
@@ -1192,7 +1256,7 @@ bundle_id() {
     cursor|cursoragents) echo com.todesktop.230313mzl4w4u92 ;;
     vscodefile) echo com.microsoft.VSCode ;;
     sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
-    xterm) echo com.google.Chrome ;;
+    xterm|tiptap) echo com.google.Chrome ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
@@ -1248,7 +1312,7 @@ for app in "${APPS[@]}"; do
     --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
   case "$app" in
-    safari) filter=Safari ;; chrome|xterm) filter=Chrome ;;
+    safari) filter=Safari ;; chrome|xterm|tiptap) filter=Chrome ;;
     vscode) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac
