@@ -66,8 +66,7 @@ public struct DauSettings: Sendable, Codable, Equatable {
         self.autoRestore = autoRestore
         self.addMarksToTypedWords = addMarksToTypedWords
         self.advanced = advanced
-        self.appRules = []
-        for rule in appRules { upsert(rule) }
+        self.appRules = Self.merged(appRules)
     }
 
     /// The D15 defaults.
@@ -106,6 +105,25 @@ public struct DauSettings: Sendable, Codable, Equatable {
         appRules.first { $0.bundleID == bundleID }
     }
 
+    /// At most one rule per bundle ID, in O(n): a later rule for the same bundle ID
+    /// replaces the earlier one in its place (what `upsert` does one rule at a time,
+    /// which made a long list O(n²)).
+    static func merged(_ rules: [AppRule]) -> [AppRule] {
+        var result: [AppRule] = []
+        result.reserveCapacity(rules.count)
+        var index: [String: Int] = [:]
+        index.reserveCapacity(rules.count)
+        for rule in rules {
+            if let i = index[rule.bundleID] {
+                result[i] = rule
+            } else {
+                index[rule.bundleID] = result.count
+                result.append(rule)
+            }
+        }
+        return result
+    }
+
     /// Adds `rule`, or replaces the existing rule for the same bundle ID in place.
     public mutating func upsert(_ rule: AppRule) {
         if let index = appRules.firstIndex(where: { $0.bundleID == rule.bundleID }) {
@@ -134,7 +152,7 @@ public struct DauSettings: Sendable, Codable, Equatable {
             // `try?` also absorbs unknown enum raw values and wrong types.
             ((try? c.decodeIfPresent(T.self, forKey: key)) ?? nil) ?? fallback
         }
-        let rules = ((try? c.decodeIfPresent([Lenient<AppRule>].self, forKey: .appRules)) ?? nil) ?? []
+        let rules = Self.decodeRules(c)
         self.init(
             typingMethod: value(.typingMethod, d.typingMethod),
             tonePlacement: value(.tonePlacement, d.tonePlacement),
@@ -142,8 +160,29 @@ public struct DauSettings: Sendable, Codable, Equatable {
             autoRestore: value(.autoRestore, d.autoRestore),
             addMarksToTypedWords: value(.addMarksToTypedWords, d.addMarksToTypedWords),
             advanced: value(.advanced, d.advanced),
-            appRules: rules.compactMap(\.value)
+            appRules: rules
         )
+    }
+
+    /// Most app rules read from stored settings. Far more than one Mac has apps to set
+    /// a rule for (rules are added one app at a time, plus the compatibility list), and
+    /// small enough that decoding stays a few milliseconds: the input method decodes the
+    /// settings at every activation and change notification, which any process can post
+    /// (D18). Elements past it are not decoded; the next save drops them.
+    public static let maxAppRules = 4096
+
+    /// The `appRules` array, element by element, up to `maxAppRules` elements; a
+    /// malformed element is dropped (`Lenient`), a missing or malformed array is empty.
+    private static func decodeRules(_ c: KeyedDecodingContainer<CodingKeys>) -> [AppRule] {
+        guard var array = try? c.nestedUnkeyedContainer(forKey: .appRules) else { return [] }
+        var rules: [AppRule] = []
+        var read = 0
+        while !array.isAtEnd, read < maxAppRules {
+            read += 1
+            guard let element = try? array.decode(Lenient<AppRule>.self) else { break }
+            if let rule = element.value { rules.append(rule) }
+        }
+        return rules
     }
 
     public func encode(to encoder: any Encoder) throws {

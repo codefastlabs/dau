@@ -1,6 +1,7 @@
 // swift-tools-version: 6.0
 // DauShared: code shared by the host app and the input method
-// (settings model and store, compatibility list model and signature check).
+// (settings model and store, compatibility list model; the signed download and its
+// signature check come with M7, D7).
 //
 // Depends on DauEngine so both apps map settings to `EngineOptions` the same way and the
 // host app can drive the real engine for its previews. DauEngine itself stays free of
