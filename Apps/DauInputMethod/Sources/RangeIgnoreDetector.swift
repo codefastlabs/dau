@@ -48,7 +48,8 @@ struct RangeIgnoreDetector {
     /// How to send a replacement once the field is known to ignore the range (D43, "Lúc
     /// gửi").
     enum Send: Equatable {
-        /// One `insertText` at the cursor while the app handles the key (xterm.js).
+        /// xterm.js: it would take the fix as one `insertText` at the cursor while it
+        /// handles the key; D43 replaces it in place instead (`InPlaceComposer.eraseMode(for:)`).
         case inKey
         /// The key goes to the app, the fix right after (Ghostty, which drops text that
         /// starts with a control character while it handles a key).

@@ -56,7 +56,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D40](#d40-chữ-dựng-sẵn-và-phím-z) | Chữ dựng sẵn và phím z | Chữ dựng sẵn là chữ cái của từ; z không bỏ mũ/móc. |
 | [D41](#d41-ngôn-ngữ-giao-diện) | Ngôn ngữ giao diện | Tiếng Việt và tiếng Anh, theo ngôn ngữ ưu tiên của macOS. |
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Chạy bài tải nặng trước mỗi bản phát hành; vượt ngưỡng thì không phát hành. |
-| [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Ô bỏ qua vùng thay nhận ký tự xoá rồi chữ mới. |
+| [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Ô kiểu Ghostty nhận ký tự xoá rồi chữ mới; ô kiểu xterm.js thì không. |
 
 Cuối sổ: [Đã biết nhưng không làm](#đã-biết-nhưng-không-làm), [Đã cân nhắc và loại bỏ](#đã-cân-nhắc-và-loại-bỏ), [Câu hỏi mở](#câu-hỏi-mở).
 
@@ -658,12 +658,13 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 
 ### D43. Ô bỏ qua vùng thay chữ
 
-Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ (đã đo: Ghostty, và terminal dựng bằng xterm.js). Ở các ô này, Dấu vẫn thay chữ tại chỗ bằng cách gửi ký tự xoá (DEL, U+007F) cho từng chữ cần xoá rồi tới chữ mới, trong một lần `insertText` tại con trỏ; chương trình trong terminal xoá rồi in lại.
+Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ (đã đo: Ghostty, và terminal dựng bằng xterm.js). Ở ô kiểu Ghostty, Dấu vẫn thay chữ tại chỗ bằng cách gửi ký tự xoá (DEL, U+007F) cho từng chữ cần xoá rồi tới chữ mới, trong một lần `insertText` tại con trỏ; chương trình trong terminal xoá rồi in lại.
 
 - **Nhận ra ô:** dựa vào vị trí con trỏ app báo ở các phím có thay chữ (Dấu vốn đã hỏi ở các phím này, N3 (Ít lời gọi vào ứng dụng đích)), cộng một bằng chứng dương. Kết quả giữ tới hết lần kích hoạt; chỉ xét lại khi IMK kích hoạt lại bộ gõ hoặc đổi client, còn click hay đổi ô trong cùng app mà IMK không báo thì giữ.
 - **Bằng chứng dương:** ở phím mà vị trí vừa đủ để nhận ra ô, Dấu đọc chữ trước con trỏ một lần. Ô loại này không cho đọc chữ đã gõ: app không trả chữ, hoặc trả chữ không chứa chữ Dấu vừa gõ ở đó. App trả về đúng chữ Dấu vừa gõ thì ô đó gõ được bình thường, chỉ báo vị trí sai: không nhận ra, thay tại chỗ như cũ trong lần kích hoạt đó. Vị trí nhỏ một mình không đủ, vì ô tự vẽ báo vị trí hằng số và app đứng hình ở đầu văn bản trống cũng trả vị trí 0.
 - **Yêu cầu với ngưỡng nhận ra** (ngưỡng nằm ở mã và test): không nhận nhầm ô gõ thường nào trong các lượt đo đã có, kể cả Chrome khi trang bận và đầu văn bản (vị trí 0 là vị trí thật); nhận ra Ghostty càng sớm càng tốt trong từ đầu tiên.
-- **Lúc gửi:** ô nhận ra theo kiểu Ghostty (vị trí luôn 0): để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm. Ô nhận ra theo kiểu xterm.js (vị trí dao động 0–2): gửi phần sửa trong lúc app xử lý phím, thay cho phím; chỉ bắt đầu khi từ phím Return gần nhất (hay từ lúc kích hoạt, nếu chưa có Return) Dấu chưa gửi lần thay có vùng thay nào, tức thường là từ phím Return đầu tiên sau khi nhận ra. Trước đó ô vẫn được thay tại chỗ như ô thường.
+- **Lúc gửi:** ô nhận ra theo kiểu Ghostty (vị trí luôn 0): để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm.
+- **Ô kiểu xterm.js (vị trí dao động 0–2) không nhận ký tự xoá:** Dấu nhận ra ô (ghi nhật ký) nhưng vẫn thay tại chỗ như ô thường, nên chữ trong ô này sai như trước D43. Chỉ bật lại khi có cách bảo đảm không ký tự xoá nào tới ô soạn thảo nằm cùng view với terminal, đã đo trên app thật.
 - **Khi đã gửi ký tự xoá:** không hỏi vị trí con trỏ, không đọc chữ; mỗi phím vẫn tối đa một lần `insertText`.
 - **Khác "event tap + Backspace giả" đã loại:** không event tap, không giả lập phím, không xin quyền Trợ năng (N4 (Không tự đổi cài đặt hệ thống)). Ký tự xoá là chữ gửi qua API của InputMethodKit, chỉ tới ô đã nhận ra là bỏ qua vùng thay.
 - **Gạch chân không phải cách sửa** cho những ô này: D13 (Gạch chân là đường lui cuối cùng) giữ nguyên, gạch chân vẫn chỉ do người dùng tự bật.
@@ -671,9 +672,11 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 **Hệ quả đã chấp nhận:**
 
 - D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
-- Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty và ô kiểu xterm.js: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
+- Terminal dựng bằng xterm.js (terminal tích hợp của VS Code, Cursor, terminal trong app Claude) gõ sai như trước D43: trên trang thử, `toois vieetj dd ` ra "toôoiís vieêetj dđd "; các app đó chưa đo.
+- Trang xterm.js mà mọi câu trả lời vị trí đều 0 bị xếp vào kiểu Ghostty và nhận ký tự xoá. Ký tự xoá khi đó có thể lọt sang trình soạn thảo cùng view. Theo mô hình, việc này xảy ra khi view đó từng có chữ gạch chân (Telex của Apple, phím chết ⌥); chưa đo.
+- Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
-- Trước khi nhận ra, các phím đầu ra như ô thường (ở xterm.js có thể sai ở từ đầu tiên). Ở ô kiểu xterm.js, dòng đang gõ lúc nhận ra thường vẫn sai như vậy tới phím Return.
+- Trước khi nhận ra, các phím đầu ra như ô thường (ở Ghostty: từ đầu tiên sai).
 - Chữ có thể chớp một khung hình ở cách gửi sau phím: chưa đo.
 - Ô vừa báo vị trí hằng số 0 vừa không cho đọc chữ mà không phải terminal (nếu có) vẫn bị nhận ra và nhận ký tự xoá như chữ thường; chưa gặp app nào như vậy.
 - Lần đọc chỉ bác được khi app trả chữ Dấu vừa gõ ở chỗ Dấu tự theo dõi (tính từ lúc kích hoạt). Ô báo vị trí hằng số 0 mà lúc kích hoạt đã có chữ trước con trỏ, hoặc đã click trong cùng lần kích hoạt, và app đứng hình tới mức chưa có chữ nào của Dấu trong vùng đọc, vẫn bị nhận ra như khi không có bằng chứng dương. Mới thấy trên client giả, chưa gặp trên app thật.
@@ -683,7 +686,7 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - Thay tại chỗ thường hỏng ở các ô này: Ghostty `dd` ra "dđ", `vieetj` ra "vieetj"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ". Telex của Apple ra đúng ở cả hai.
 - Bản thử ký tự xoá ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim), thời gian xử lý mỗi phím ngang thay tại chỗ thường.
 - Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. xterm.js phải gửi trong phím: theo mã, chữ tới sau phím (trước khi nhả phím) bị bỏ.
-- Kiểu xterm.js chờ Return: lần thay có vùng thay để chữ lại sau con trỏ trong ô nhập ẩn của xterm.js, và từ đó mỗi lần gửi ký tự xoá xterm.js gửi lại cả ô (chữ dồn ở lượt gõ thử khi bật ngay lúc nhận ra). Return làm rỗng ô đó. Đo trên trang thử xterm.js (Chrome, 120 ms, một lượt): dòng sau Return ra đúng; terminal của app Claude chưa đo.
+- Không gửi ký tự xoá ở kiểu xterm.js: chữ đúng trong terminal không đáng đổi lấy rủi ro làm hỏng chữ ở nơi người dùng soạn thảo. Ở app Electron, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK, và click giữa chúng không tới bộ gõ (mã Chromium), nên kết luận "terminal" giữ khi người dùng chuyển sang trình soạn thảo. Trên mô hình, ký tự xoá khi đó lọt vào trình soạn thảo ở mọi phím thay chữ. Cách bỏ kết luận khi vị trí lại tăng vẫn để lọt ký tự xoá ở từ đầu của ô rỗng. Gửi trong phím chỉ đúng từ dòng sau Return (đo trên trang thử, một lượt), dòng đầu vẫn sai.
 - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 - Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
 

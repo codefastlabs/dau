@@ -313,11 +313,12 @@ struct RangeIgnoreTests {
         #expect(text.hasSuffix(expected))
     }
 
-    @Test("xterm.js: told apart from its answers of 0 to 2 (in the key); in place until a Return, as ranges were sent")
+    @Test("xterm.js: told apart from its answers of 0 to 2 (in the key), still replaced in place (D43)")
     func xtermDetected() {
         let (_, run) = xterm("toois vieetj nguwowif ddi hocj nhaf ")
         #expect(run.composer.detector.send == .inKey)
-        // `InPlaceComposer.eraseMode(for:)`: range replacements came before (XtermPageTests).
+        // `InPlaceComposer.eraseMode(for:)`: never DEL for xterm.js, also after a Return
+        // (`XtermPageTests.inPlaceAfterReturn`).
         #expect(!run.composer.eraseByDelete)
     }
 
@@ -325,7 +326,7 @@ struct RangeIgnoreTests {
     /// t4- cells): the prediction written before the run.
     static let t4Line = "toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows "
 
-    @Test("the t4 line: Ghostty right from the second word; xterm.js told apart, in place until a Return")
+    @Test("the t4 line: Ghostty right from the second word; xterm.js told apart, replaced in place")
     func t4Line() {
         let (gh, ghRun, _) = ghostty(Self.t4Line)
         print("t4 ghostty: \"\(gh)\" detected at key \(ghRun.detectedAt.map(String.init) ?? "-")")
@@ -336,31 +337,23 @@ struct RangeIgnoreTests {
         #expect(!xtRun.composer.eraseByDelete)
     }
 
-    @Test("Ghostty: Return (which empties an xterm.js line) changes nothing, the same calls and text")
+    @Test("Ghostty: a Return in between keeps sending after the key, right on the next line")
     func ghosttyReturn() {
-        func run(endsLine: Bool) -> (String, Int, Int, InPlaceComposer.EraseMode) {
-            var engine = VietEngine()
-            var composer = InPlaceComposer()
-            let terminal = FakeGhostty()
-            var now: TimeInterval = 0
-            for scalar in (Self.t4Line + "↩" + Self.t4Line).unicodeScalars {
-                now += 0.15
-                let route: KeyRoute = scalar == "⌫" ? .backspace : scalar == "↩" ? .endWord : .character(scalar)
-                terminal.inKey = true
-                let outcome = composer.handle(route, time: now, engine: &engine, client: terminal,
-                                              endsLine: endsLine && scalar == "↩")
-                terminal.inKey = false
-                if !outcome.consumed { terminal.defaultAction(route) }
-                if let deferred = outcome.deferredText { terminal.send(deferred) }
-            }
-            return (String(terminal.line), terminal.inserts, terminal.selectedRangeCalls, composer.eraseMode)
+        var engine = VietEngine()
+        var composer = InPlaceComposer()
+        let terminal = FakeGhostty()
+        var now: TimeInterval = 0
+        for scalar in (Self.t4Line + "↩" + Self.t4Line).unicodeScalars {
+            now += 0.15
+            let route: KeyRoute = scalar == "⌫" ? .backspace : scalar == "↩" ? .endWord : .character(scalar)
+            terminal.inKey = true
+            let outcome = composer.handle(route, time: now, engine: &engine, client: terminal)
+            terminal.inKey = false
+            if !outcome.consumed { terminal.defaultAction(route) }
+            if let deferred = outcome.deferredText { terminal.send(deferred) }
         }
-        let with = run(endsLine: true), without = run(endsLine: false)
-        #expect(with.0 == without.0)
-        #expect(with.1 == without.1)
-        #expect(with.2 == without.2)
-        #expect(with.3 == .afterKey)
-        #expect(with.0.hasSuffix("windows tối việt đi học nhà người hò windows "))
+        #expect(composer.eraseMode == .afterKey)
+        #expect(String(terminal.line).hasSuffix("windows tối việt đi học nhà người hò windows "))
     }
 
     @Test("keys in a burst are never judged: a terminal typed at 30 ms is not told apart")

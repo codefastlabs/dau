@@ -52,6 +52,10 @@ private final class CountingField: InPlaceClient {
 /// - O3 (fourth round, DEL sent in the key from the detection key at the j of "vieetj",
 ///   after a range replacement at its second e): "toôoiís vieêeệtê ệtđêi hoệtọcê…", each
 ///   chunk sending again every earlier fix and an "ê" at its end.
+///
+/// O2 and O3 set `EraseMode.inKey` by hand: they describe the page. D43 never chooses
+/// that mode for a field it tells apart as xterm.js (`InPlaceComposer.eraseMode(for:)`):
+/// such a field is replaced in place, as in O1 (MARK "The policy").
 @Suite("D43 on the xterm.js page (FakeXtermPage)")
 struct XtermPageTests {
     struct Run {
@@ -75,13 +79,12 @@ struct XtermPageTests {
     }
 
     static func type(_ keys: String, on page: FakeXtermPage, run: inout Run) {
-        for (route, endsLine) in routes(keys) {
+        for (route, isReturn) in routes(keys) {
             run.now += 0.12
             var inserts = 0
-            page.key(route, isReturn: endsLine) {
+            page.key(route, isReturn: isReturn) {
                 let before = page.inserts
-                let outcome = run.composer.handle(route, time: run.now, engine: &run.engine, client: page,
-                                                  endsLine: endsLine)
+                let outcome = run.composer.handle(route, time: run.now, engine: &run.engine, client: page)
                 inserts = page.inserts - before
                 #expect(outcome.deferredText == nil)
                 return outcome.consumed
@@ -140,58 +143,48 @@ struct XtermPageTests {
         #expect(page.chunks.first == "\u{7F}\u{7F}ệt")
     }
 
-    // MARK: The fix
+    // MARK: The policy
 
     /// The page answering 0, 1, 2 in turn (`scripted`): told apart as xterm.js (in the key).
     static let scripted = [0, 1, 2]
 
-    @Test("detected with range replacements behind: in place until Return, then right from the next line")
-    func waitsForReturn() {
+    @Test("told apart as xterm.js: replaced in place before and after Return, as in O1 (D43)")
+    func inPlaceAfterReturn() {
         let page = FakeXtermPage(scripted: Self.scripted)
         var run = Run()
         Self.type(RangeIgnoreTests.t4Line, on: page, run: &run)
         #expect(run.composer.detector.send == .inKey)
         #expect(run.composer.eraseMode == .off)
         let firstLine = page.lineText
-        let calls = (page.selectedRangeCalls, page.reads)
         Self.type("↩", on: page, run: &run)
-        #expect(run.composer.eraseMode == .inKey)
+        #expect(run.composer.eraseMode == .off)
         #expect(page.value.isEmpty)
-        let chunksBefore = page.chunks.count
         run.mostInserts = 0
-        let secondLine = RangeIgnoreTests.t4Line + "toois vieetj "
-        Self.type(secondLine, on: page, run: &run)
-        print("xterm page, first line (in place until Return): \"\(firstLine)\"")
-        #expect(page.lineText == firstLine + "tối việt đi học nhà người hò windows tối việt ")
-        // No stacking: one chunk per key, the textarea's caret at its end; no
-        // selectedRange, no read; at most one insertText per key (N3).
-        #expect(page.chunks.count - chunksBefore == secondLine.unicodeScalars.count)
-        #expect(page.caret == page.value.count)
-        #expect(page.selectedRangeCalls == calls.0)
-        #expect(page.reads == calls.1)
+        Self.type(RangeIgnoreTests.t4Line + "toois vieetj ", on: page, run: &run)
+        print("xterm page, in place: \"\(firstLine)\" then \"\(page.lineText.dropFirst(firstLine.count))\"")
+        #expect(run.composer.eraseMode == .off)
+        // Wrong as in O1: the key typed reaches the shell after each replacement.
+        #expect(page.lineText == firstLine + "toôois vieêetệtj ddi hocj nhaàf nguwoơwiờif hoa windows toôois vieêetệtj ")
         #expect(run.mostInserts <= 1)
     }
 
-    @Test("the erase mode waits only when a range was sent since the last Return (or the activation)")
+    @Test("the erase mode: after the key for Ghostty, never for xterm.js; Return changes nothing")
     func eraseModePolicy() {
         var composer = InPlaceComposer()
-        #expect(composer.eraseMode(for: .inKey) == nil)  // activation: unknown
+        #expect(composer.eraseMode(for: .inKey) == nil)
         #expect(composer.eraseMode(for: .afterKey) == .afterKey)
         var engine = VietEngine()
         let field = CountingField()
-        _ = composer.handle(.endWord, time: 1, engine: &engine, client: field, endsLine: true)
-        #expect(composer.eraseMode(for: .inKey) == .inKey)
-        for (i, c) in "dd".unicodeScalars.enumerated() {
-            let outcome = composer.handle(.character(c), time: 2 + Double(i), engine: &engine, client: field)
-            field.key(.character(c), consumed: outcome.consumed)
+        for (i, (route, _)) in Self.routes("↩dd↩").enumerated() {
+            let outcome = composer.handle(route, time: 1 + Double(i), engine: &engine, client: field)
+            field.key(route, consumed: outcome.consumed)
         }
-        #expect(field.string == "đ")
-        #expect(composer.eraseMode(for: .inKey) == nil)  // "đ" went in with a range
-        _ = composer.handle(.endWord, time: 5, engine: &engine, client: field, endsLine: false)
-        #expect(composer.eraseMode(for: .inKey) == nil)  // Tab does not empty a line
-        composer.activate()
+        #expect(field.string == "\nđ\n")
+        #expect(composer.eraseMode == .off)
         #expect(composer.eraseMode(for: .inKey) == nil)
     }
+
+    // MARK: In the key, set by hand (what the page does; D43 does not choose it)
 
     @Test("in the key: Delete that re-places the tone is consumed and right (D32)",
           arguments: [("hoaf⌫ ", "hò "), ("toois⌫ ", "tố "), ("hoaf⌫⌫ ", "h ")])
@@ -224,29 +217,5 @@ struct XtermPageTests {
         #expect(page.chunks.last == (key == "↩" ? "\r" : "\t"))
         #expect(!page.lineText.hasPrefix("windows"))
         #expect(!page.chunks.contains { $0.unicodeScalars.first == "\u{7F}" && $0.hasSuffix("windows") })
-    }
-
-    // MARK: Unchanged elsewhere
-
-    @Test("a text field: Return changes no call and no text (N3)")
-    func textFieldUnchanged() {
-        func run(endsLine: Bool) -> (String, Int, InPlaceComposer.EraseMode) {
-            var composer = InPlaceComposer()
-            var engine = VietEngine()
-            let field = CountingField()
-            var now: TimeInterval = 0
-            for (route, isReturn) in Self.routes("toois vieetj↩ddi hocj↩nhaf ") {
-                now += 0.12
-                let outcome = composer.handle(route, time: now, engine: &engine, client: field,
-                                              endsLine: isReturn && endsLine)
-                field.key(route, consumed: outcome.consumed)
-            }
-            return (field.string, field.calls, composer.eraseMode)
-        }
-        let with = run(endsLine: true), without = run(endsLine: false)
-        #expect(with.0 == "tối việt\nđi học\nnhà ")
-        #expect(with.0 == without.0)
-        #expect(with.1 == without.1)
-        #expect(with.2 == .off)
     }
 }

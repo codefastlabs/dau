@@ -47,16 +47,20 @@ struct InPlaceComposer {
     /// activation (`activate`).
     enum EraseMode: Equatable {
         case off
-        /// One `insertText` while the key is handled (`RangeIgnoreDetector.Send.inKey`):
-        /// right in xterm.js; Ghostty drops IME text that starts with a control character
-        /// there.
+        /// One `insertText` while the key is handled: right in xterm.js; Ghostty drops IME
+        /// text that starts with a control character there.
+        ///
+        /// D43: never chosen for a client `detector` finds (`eraseMode(for:)`): an xterm.js
+        /// terminal shares one IMK client with the editors of its page (VS Code, Cursor,
+        /// the Claude app), and a click between them reaches no input method, so DEL
+        /// would reach the editor (`SharedViewTests`). Set only by the tests of the
+        /// measured page (`XtermPageTests`).
         ///
         /// xterm.js (5.5.0, src/browser/input/CompositionHelper.ts) gets such a key as a
         /// keydown with keyCode 229 and sends its hidden textarea's new value minus the
         /// old one (`_handleAnyTextareaChanges`: `newValue.replace(oldValue, '')`), right
-        /// only while the caret is at the end of that textarea. So:
-        /// - it is used only once the textarea is known to have its caret at the end
-        ///   (`rangedSinceLineEnd`);
+        /// only while the caret is at the end of that textarea (emptied on Return; a
+        /// replacement with a range leaves text after the caret). So:
         /// - the key is consumed whenever text is sent (a Delete let through would reach
         ///   the page as a real keydown too, in an order the page decides), and Return or
         ///   Tab send nothing (the real keydown would come before the fix);
@@ -74,24 +78,16 @@ struct InPlaceComposer {
     var eraseMode = EraseMode.off
     var eraseByDelete: Bool { eraseMode != .off }
 
-    /// The erase mode for a client `detector` found, or nil to keep replacing in place for
-    /// now. In the key (xterm.js) waits for a textarea with its caret at the end: a
-    /// replacement with a range leaves Blink's caret where it was when that was before the
-    /// range (`ReplaceTextAndKeepSelection`), so the replaced text stays after the caret,
-    /// and from then on xterm.js sends its whole textarea with every fix (the fourth
-    /// typing round of 11/11/2026, docs/Progress.md; `XtermPageTests`). Return or keypad
-    /// Enter empties the textarea (xterm.js `_keyDown`), and only `insertText` with a range
-    /// puts text after the caret, so the mode starts at the detection key if no such call
-    /// was made since the last Return, otherwise at the next Return (`handle`).
+    /// The erase mode for a client `detector` found, or nil to keep replacing in place.
+    /// D43: a field told apart as xterm.js (`.inKey`) is replaced in place like any field,
+    /// never with DEL: no DEL may reach an editor sharing its IMK client (see
+    /// `EraseMode.inKey`).
     func eraseMode(for send: RangeIgnoreDetector.Send) -> EraseMode? {
         switch send {
         case .afterKey: return .afterKey
-        case .inKey: return rangedSinceLineEnd ? nil : .inKey
+        case .inKey: return nil
         }
     }
-    /// An `insertText` with a replacement range was sent since the client last emptied its
-    /// line (Return or keypad Enter let through), or since the activation (unknown then).
-    private(set) var rangedSinceLineEnd = true
     /// Tells a client that ignores `replacementRange` from the `selectedRange` answers
     /// (D43); sets `eraseMode`.
     private(set) var detector = RangeIgnoreDetector()
@@ -243,24 +239,16 @@ struct InPlaceComposer {
         lastEventTime = nil
         detector.reset()
         eraseMode = .off
-        rangedSinceLineEnd = true
         produced = nil
     }
 
     // MARK: - Keys
 
     /// One key in in-place mode. `time` is the event's timestamp (nil if unknown: then
-    /// D20 does not wait for anything). `endsLine`: the key is Return or keypad Enter
-    /// (`KeyRouter.endsLine`), which empties the line of a terminal built on xterm.js.
+    /// D20 does not wait for anything).
     mutating func handle(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
-                         client: some InPlaceClient, endsLine: Bool = false) -> Outcome {
-        let outcome = handleKeyAndTrace(route, time: time, engine: &engine, client: client)
-        if endsLine, case .endWord = route, !outcome.consumed {
-            // D43: the app emptied its line; nothing this composer sent is left in it.
-            rangedSinceLineEnd = false
-            if eraseMode == .off, detector.send == .inKey { eraseMode = .inKey }
-        }
-        return outcome
+                         client: some InPlaceClient) -> Outcome {
+        handleKeyAndTrace(route, time: time, engine: &engine, client: client)
     }
 
     private mutating func handleKeyAndTrace(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
@@ -1037,7 +1025,6 @@ struct InPlaceComposer {
         case .replace(let range):
             attempt.replacement = range
             client.insertText(text, replacementRange: range)
-            rangedSinceLineEnd = true
             keyDelta = keyDelta.addingSaturated(text.utf16.count - range.length)
             // A selection after the cursor (an app's suggestion) is not text this composer typed.
             detector.edited(removing: deleteCount, inserting: text.utf16)
@@ -1065,7 +1052,6 @@ struct InPlaceComposer {
                                            client: some InPlaceClient) -> Outcome {
         let range = NSRange(location: followed - deleteCount, length: deleteCount)
         client.insertText(text, replacementRange: range)
-        rangedSinceLineEnd = true
         keyDelta = keyDelta.addingSaturated(text.utf16.count - deleteCount)
         detector.edited(removing: deleteCount, inserting: text.utf16)
         tracker.didReplace(range, text: text)
@@ -1101,8 +1087,7 @@ struct InPlaceComposer {
     /// activation: the client's own text back is a text field that reports a wrong
     /// position (`refute`, replaced in place as before); no text, or other text, is a
     /// field that ignores the range (`confirm`). Returns the erase mode from this key on,
-    /// or nil to keep replacing in place (also for a confirmed `.inKey` until the client's
-    /// line is known to be clean, `eraseMode(for:)`).
+    /// or nil to keep replacing in place (also for a confirmed `.inKey`, `eraseMode(for:)`).
     private mutating func confirmRangeIgnore(_ send: RangeIgnoreDetector.Send,
                                              client: some InPlaceClient) -> EraseMode? {
         if !readUnavailable, let (range, typed) = detector.evidence {

@@ -7,7 +7,11 @@ import Testing
 /// `RenderWidgetHostViewCocoa` (VS Code and Cursor: the integrated terminal next to the
 /// editor; the Claude app: an xterm.js terminal and a TipTap editor in one bundle, read
 /// from its code, not measured). D43 (Ô bỏ qua vùng thay chữ) keeps its verdict until IMK
-/// activates the input method again.
+/// activates the input method again. This is why a field told apart as xterm.js is
+/// replaced in place and never sent DEL (`InPlaceComposer.eraseMode(for:)`): with the
+/// earlier policy (DEL in the key from the first Return), the editor after a click got
+/// every fix as DEL and new text ("ho␡ôm nay to␡ôi…"), and a Return typed in the editor
+/// before the terminal's first one started that mode there.
 ///
 /// A click from one element to the other, from Chromium's code (main of 12/11/2026,
 /// content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm):
@@ -97,11 +101,11 @@ final class FakeSharedView: InPlaceClient {
     /// One key: the app's path for it, with `handle` the input method's `handleEvent`;
     /// a deferred text (D43, after the key) goes in once the app has handled the key, as
     /// `DauInputController` sends it.
-    func key(_ route: KeyRoute, endsLine: Bool, handle: () -> InPlaceComposer.Outcome) {
+    func key(_ route: KeyRoute, isReturn: Bool, handle: () -> InPlaceComposer.Outcome) {
         var deferred: String?
         switch (focus, terminal) {
         case (.terminal, .xterm(let page)):
-            page.key(route, isReturn: endsLine) {
+            page.key(route, isReturn: isReturn) {
                 let outcome = handle()
                 deferred = outcome.deferredText
                 return outcome.consumed
@@ -150,11 +154,11 @@ struct SharedViewTests {
 
     /// Keys 120 ms apart: `⌫` Delete, `↩` Return, `⇥` Tab (`XtermPageTests.routes`).
     static func type(_ keys: String, on view: FakeSharedView, run: inout Run) {
-        for (route, endsLine) in XtermPageTests.routes(keys) {
+        for (route, isReturn) in XtermPageTests.routes(keys) {
             run.now += 0.12
             let before = (view.inserts, view.selections, view.reads)
-            view.key(route, endsLine: endsLine) {
-                run.composer.handle(route, time: run.now, engine: &run.engine, client: view, endsLine: endsLine)
+            view.key(route, isReturn: isReturn) {
+                run.composer.handle(route, time: run.now, engine: &run.engine, client: view)
             }
             run.most.inserts = max(run.most.inserts, view.inserts - before.0)
             run.most.selections = max(run.most.selections, view.selections - before.1)
@@ -198,33 +202,28 @@ struct SharedViewTests {
 
     // MARK: Terminal, then the field
 
-    @Test("a: xterm.js after Return, then a click to the editor: DEL reaches the editor in every replacement",
+    @Test("a: xterm.js, Return, then a click to the editor: right, no DEL (D43: xterm.js replaced in place)",
           arguments: fieldStarts)
     func xtermAfterReturnThenField(start: String) {
         let view = FakeSharedView(terminal: .xterm(FakeXtermPage(scripted: XtermPageTests.scripted)),
                                   field: LateDocument(start))
         var run = Run()
         Self.type(RangeIgnoreTests.t4Line + "↩", on: view, run: &run)
-        #expect(run.composer.eraseMode == .inKey)
+        #expect(run.composer.detector.send == .inKey)
+        #expect(run.composer.eraseMode == .off)
         let mark = Self.click(to: .field, on: view, run: &run)
-        withKnownIssue("D43 keeps the verdict for the activation; Chromium tells the input method of no click") {
-            Self.type(Self.fieldKeys, on: view, run: &run)
-            #expect(view.field.text == start + Self.fieldAnswer)
-            #expect(view.fieldDeletes == 0)
-        }
+        Self.type(Self.fieldKeys, on: view, run: &run)
         Self.report("a", view, run, since: mark)
-        // What comes out: every fix goes in at the caret as DEL characters and the new
-        // text, the letters it was meant to replace left before them.
-        #expect(view.field.text == start + "ho\u{7F}ôm nay to\u{7F}ôi d\u{7F}đi hoc\u{7F}\u{7F}ọc vui ve\u{7F}ẻ \n"
-                + "cam\u{7F}\u{7F}ảm o\u{7F}ơn ban\u{7F}\u{7F}ạn ")
-        #expect(view.fieldDeletes == 11)
-        // N3 holds: no selectedRange, no read, at most one insertText per key.
-        #expect(view.selections == mark.selections)
+        #expect(view.field.text == start + Self.fieldAnswer)
+        #expect(view.fieldDeletes == 0)
+        #expect(run.erasingAt == nil)
+        // One selectedRange per replacing key (8), no read, at most one insertText per key.
+        #expect(view.selections - mark.selections == 8)
         #expect(view.reads == mark.reads)
         #expect(run.most.inserts <= 1)
     }
 
-    @Test("b: xterm.js told apart, no Return yet, then the editor: right until a Return there, DEL after it",
+    @Test("b: xterm.js told apart, no Return yet, then the editor: right, a Return there starts no DEL",
           arguments: fieldStarts)
     func xtermBeforeReturnThenField(start: String) {
         let view = FakeSharedView(terminal: .xterm(FakeXtermPage(scripted: XtermPageTests.scripted)),
@@ -232,20 +231,13 @@ struct SharedViewTests {
         var run = Run()
         Self.type(RangeIgnoreTests.t4Line, on: view, run: &run)
         #expect(run.composer.detector.send == .inKey)
-        #expect(run.composer.eraseMode == .off)
         let mark = Self.click(to: .field, on: view, run: &run)
-        withKnownIssue("the editor's Return starts sending DEL (InPlaceComposer.handle, endsLine)") {
-            Self.type(Self.fieldKeys, on: view, run: &run)
-            #expect(view.field.text == start + Self.fieldAnswer)
-            #expect(view.fieldDeletes == 0)
-        }
+        Self.type(Self.fieldKeys, on: view, run: &run)
         Self.report("b", view, run, since: mark)
-        #expect(view.field.text == start + "hôm nay tôi đi học vui vẻ \ncam\u{7F}\u{7F}ảm o\u{7F}ơn ban\u{7F}\u{7F}ạn ")
-        #expect(view.fieldDeletes == 5)
-        // The Return typed in the editor (the 32nd key after the click) starts the erase mode.
-        #expect(run.erasingAt == mark.keys + 31)
-        // Before it, one selectedRange per replacing key (5), as in any field; none after.
-        #expect(view.selections - mark.selections == 5)
+        #expect(view.field.text == start + Self.fieldAnswer)
+        #expect(view.fieldDeletes == 0)
+        #expect(run.erasingAt == nil)
+        #expect(view.selections - mark.selections == 8)
         #expect(view.reads == mark.reads)
         #expect(run.most.inserts <= 1)
     }
@@ -257,7 +249,7 @@ struct SharedViewTests {
         Self.type(RangeIgnoreTests.t4Line, on: view, run: &run)
         #expect(run.composer.eraseMode == .afterKey)
         let mark = Self.click(to: .field, on: view, run: &run)
-        withKnownIssue("D43 keeps the verdict for the activation") {
+        withKnownIssue("D43 keeps the verdict for the activation (Ghostty is an app of its own, another client)") {
             Self.type(Self.fieldKeys, on: view, run: &run)
             #expect(view.field.text == Self.fieldAnswer)
             #expect(view.fieldDeletes == 0)
@@ -275,31 +267,39 @@ struct SharedViewTests {
     // MARK: The field, then the terminal
 
     /// The terminal after the click: the t4 line, Return, the t4 line again, Return, a
-    /// last line (`XtermPageTests.waitsForReturn` types the same in a new activation).
+    /// last line.
     static let terminalKeys = RangeIgnoreTests.t4Line + "↩" + RangeIgnoreTests.t4Line + "↩toois vieetj "
-    /// What a new activation gives with those keys (`waitsForReturn`): told apart at key
-    /// 39 of the first line, in place until its Return, right from the second line.
-    static let terminalAnswer = "toôois vieetj dđdi hocj nhaàf nguưwoơwiờif hoa windows "
-        + "tối việt đi học nhà người hò windows tối việt "
 
-    @Test("d: the editor, then a click to xterm.js: told apart two lines late, never sending DEL in these keys")
+    /// The same keys in the same terminal in a new activation, with nothing typed before.
+    static func freshTerminal() -> (line: String, detectedAt: Int?) {
+        let view = FakeSharedView(terminal: .xterm(FakeXtermPage(scripted: XtermPageTests.scripted)))
+        var run = Run()
+        Self.type(terminalKeys, on: view, run: &run)
+        return (view.line, run.detectedAt)
+    }
+
+    @Test("d: the editor, then a click to xterm.js: told apart two lines later than in a new activation")
     func fieldThenXterm() {
+        let fresh = Self.freshTerminal()
+        #expect(fresh.detectedAt == 39)
         let view = FakeSharedView(terminal: .xterm(FakeXtermPage(scripted: XtermPageTests.scripted)),
                                   focus: .field)
         var run = Run()
         Self.type("hoom nay tooi ddi hocj vui ver ", on: view, run: &run)
         #expect(view.field.text == "hôm nay tôi đi học vui vẻ ")
         let mark = Self.click(to: .terminal, on: view, run: &run)
-        withKnownIssue("the composer keeps the editor's caret and D20 state over a click it never sees") {
-            Self.type(Self.terminalKeys, on: view, run: &run)
-            #expect(run.detectedAt == mark.keys + 39)
-            #expect(view.line == Self.terminalAnswer)
-        }
+        Self.type(Self.terminalKeys, on: view, run: &run)
         Self.report("d", view, run, since: mark)
-        // Told apart at key 113 after the click (the third line), after the last Return:
-        // every line is replaced in place, as before D43.
+        print("fresh terminal: \"\(Self.shown(fresh.line))\"")
+        withKnownIssue("the composer keeps the editor's caret and D20 state over a click it never sees") {
+            #expect(run.detectedAt == mark.keys + 39)
+            #expect(view.line == fresh.line)
+        }
+        // Told apart at key 113 after the click (the third line). Replaced in place either
+        // way: no DEL, and the text is the in-place text of those keys.
         #expect(run.detectedAt == mark.keys + 113)
         #expect(run.erasingAt == nil)
+        #expect(!view.line.unicodeScalars.contains("\u{7F}"))
         #expect(view.line == "tooiís vieêetj dđdi hocọcj nhaf nguưwowif hoa windows "
                 + "toois vieêetj dđdi hocọcj nhaf nguưwowif hoaà windows toôois vieêetệtj ")
         #expect(run.most.inserts <= 1)
@@ -312,6 +312,7 @@ struct SharedViewTests {
         // As `DauInputController` handles a mouse down it is given (an NSTextView app);
         // Chromium gives none. The difference with `fieldThenXterm` is the composer's own
         // state (CursorTracker, what precedes the cursor), not the detector.
+        let fresh = Self.freshTerminal()
         let view = FakeSharedView(terminal: .xterm(FakeXtermPage(scripted: XtermPageTests.scripted)),
                                   focus: .field)
         var run = Run()
@@ -322,11 +323,11 @@ struct SharedViewTests {
         Self.type(Self.terminalKeys, on: view, run: &run)
         Self.report("d, click seen", view, run, since: mark)
         #expect(run.detectedAt == mark.keys + 39)
-        #expect(view.line == Self.terminalAnswer)
+        #expect(view.line == fresh.line)
         #expect(run.most.inserts <= 1)
     }
 
-    @Test("d (hypothetical): the editor, then a Ghostty-like field: its answers of 1–2 make it 'in the key', which Ghostty drops")
+    @Test("d (hypothetical): the editor, then a Ghostty-like field: its answers of 1–2 make it 'in the key', so in place")
     func fieldThenGhosttyLike() {
         let view = FakeSharedView(terminal: .ghostty(FakeGhostty()), focus: .field)
         var run = Run()
@@ -339,7 +340,8 @@ struct SharedViewTests {
         Self.report("d, Ghostty-like", view, run, since: mark)
         #expect(run.composer.detector.send == .inKey)
         #expect(run.detectedAt == mark.keys + 25)
-        // The fixes in the key are dropped: the last line keeps no mark ("toi viet").
-        #expect(view.line.hasSuffix("toi viet "))
+        // Replaced in place, which Ghostty ignores: wrong as before D43.
+        #expect(run.erasingAt == nil)
+        #expect(view.line.hasSuffix("toois vieetj "))
     }
 }

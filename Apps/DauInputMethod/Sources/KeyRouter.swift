@@ -36,12 +36,6 @@ enum KeyRouter {
     /// Modifiers that turn a key into a shortcut or an alternate character: reset only (D4).
     static let shortcutModifiers: NSEvent.ModifierFlags = [.command, .control, .option]
 
-    /// Return or keypad Enter (not Tab): a terminal built on xterm.js empties its hidden
-    /// textarea on it (D43, `InPlaceComposer.eraseMode(for:)`).
-    static func endsLine(keyCode: UInt16) -> Bool {
-        keyCode == keyReturn || keyCode == keyKeypadEnter
-    }
-
     /// - Parameters:
     ///   - characters: `NSEvent.characters`, read only for key-down events (it throws for
     ///     other event types). nil or empty for dead keys.
