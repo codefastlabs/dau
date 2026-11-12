@@ -101,9 +101,11 @@
 # a newline.
 #
 # Sublime Text: `subl -n` opens an empty file of this run in a new window; read with ⌘A ⌘C
-# (nothing is saved: an unregistered copy may ask to buy a license on save); ⌘W closes
-# that tab and "Don't Save" is chosen; Sublime closes the window once its last tab is
-# closed (close_windows_when_empty, on by default on macOS). Other windows are not touched.
+# (nothing is saved: an unregistered copy may ask to buy a license on save); before the
+# close the buffer is reverted to the empty file on disk (`subl --command revert`), so it is
+# clean and ⌘W closes the tab without any save prompt (no dialog, no button label to match);
+# Sublime closes the window once its last tab is closed (close_windows_when_empty, on by
+# default on macOS). Other windows are not touched.
 #
 # Ghostty: a new window (Ghostty's AppleScript `new window`, which needs the Automation
 # permission for Ghostty once) runs a line editor of its own instead of a shell; the keys
@@ -875,49 +877,6 @@ sublime_front() {
   return 1
 }
 sublime_closed() { [[ "$(window_names "$SUBLIME_PROC")" != *"$SELFTEST_TITLE"* ]]; }
-# Clicks "Don't Save" in the prompt Sublime shows for this run's file (a sheet of its
-# window, or a dialog window whose text names the file), only while Sublime is frontmost.
-# Status 0 when clicked.
-sublime_discard() {
-  osascript - "$SUBLIME_PROC" "$SELFTEST_TITLE" <<'OSA' >/dev/null 2>&1
-on run argv
-  set p to item 1 of argv
-  set t to item 2 of argv
-  tell application "System Events"
-    if name of first process whose frontmost is true is not p then error "not front"
-    tell process p
-      repeat with w in windows
-        set cands to {}
-        if (count of sheets of w) > 0 then
-          if name of w contains t then set cands to buttons of sheet 1 of w
-        else
-          set isDialog to false
-          try
-            set isDialog to (subrole of w is in {"AXDialog", "AXSystemDialog"})
-          end try
-          if isDialog then
-            set mine to false
-            repeat with s in static texts of w
-              if (value of s as text) contains t then set mine to true
-            end repeat
-            if mine then set cands to buttons of w
-          end if
-        end if
-        repeat with b in cands
-          if name of b is in {"Don't Save", "Don’t Save"} then
-            click b
-            return
-          end if
-        end repeat
-      end repeat
-    end tell
-  end tell
-  error "no prompt for this file"
-end run
-OSA
-}
-# The tab closed without asking, or its prompt was answered.
-sublime_closed_or_discarded() { sublime_closed || sublime_discard; }
 run_sublime() {
   local file="$WORK/$SELFTEST_TITLE.txt"
   : > "$file"
@@ -926,12 +885,20 @@ run_sublime() {
   wait_until -i 0.5 15 sublime_front
   select_dau; type_keys "$SUBLIME_PROC" "$SELFTEST_TITLE"
   copy_all "$SUBLIME_PROC" "$SELFTEST_TITLE"
-  # ⌘W on this tab (the guard checks its title), then "Don't Save": nothing is written.
-  # Its window closes with its last tab (close_windows_when_empty, on by default on macOS).
+  # Why revert and not answer the prompt: the typed text makes the buffer dirty, and ⌘W on a
+  # dirty buffer opens a save dialog whose button has to be found by its English label and
+  # that has been left open twice. Reverting to the empty file on disk makes the buffer clean,
+  # so ⌘W never asks. `subl --command` acts on the focused window, so it runs only while
+  # this run's window is the focused one (front_ok checks its title); otherwise nothing runs
+  # and the user's windows are never touched.
+  front_ok "$SUBLIME_PROC" "$SELFTEST_TITLE" && "$SUBLIME_CLI" --background --command revert >/dev/null 2>&1
+  sleep 0.5
+  # ⌘W on this tab (the guard checks its title). Its window closes with its last tab
+  # (close_windows_when_empty, on by default on macOS).
   guarded "$SUBLIME_PROC" "$SELFTEST_TITLE" \
     'tell application "System Events" to keystroke "w" using {command down}' >/dev/null || return 0
-  wait_until 5 sublime_closed_or_discarded && wait_until 5 sublime_closed
-  sublime_closed || log_warn "Còn tab \"$SELFTEST_TITLE\" hoặc hộp thoại lưu của Sublime Text, đóng tay giúp (Don't Save)"
+  wait_until 5 sublime_closed
+  sublime_closed || log_warn "Còn tab \"$SELFTEST_TITLE\" của Sublime Text (có thể còn hộp thoại lưu), đóng tay giúp (Don't Save)"
 }
 
 # Ghostty (System Events process "ghostty"). Its AppleScript cannot read a window's text,
