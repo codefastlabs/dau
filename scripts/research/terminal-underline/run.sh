@@ -13,6 +13,9 @@
 # already (N4). xterm cells load xterm.js from jsDelivr (network). The text of each cell,
 # raw bytes or xterm.js data, pictures, the perf/diag log and the full output go to
 # build/terminal-underline/<time>/<cell>/, a table of all cells to summary.md there.
+# Exit status: 0 when every cell gave the expected text; 1 when a cell gave other text or
+# had no result (the run goes on); 3 the run stopped at a cell on a failed check before
+# typing (typing/run.sh, code 3).
 # "expect" is correct Vietnamese typing (Telex rules, D4, D20, D26, D32), not the
 # predicted result.
 set -uo pipefail
@@ -125,7 +128,7 @@ for cell in $CELLS; do
   case $rc in
     0) log_ok "$id: \"$got\"" ;;
     1) log_warn "$id: \"$got\" (mong đợi \"$expect\")" ;;
-    3) tail -5 "$dir/typing.log" >&2; log_error "Dừng ở ô $id: app khác ra trước (mã 3)"; FAILED=3; break ;;
+    3) tail -5 "$dir/typing.log" >&2; log_error "Dừng ở ô $id: kiểm tra trước khi gõ không đạt (mã 3, lý do ở dòng trên)"; FAILED=3; break ;;
     *) tail -5 "$dir/typing.log" >&2; log_error "Ô $id không có kết quả (mã $rc), sang ô sau"; FAILED=1 ;;
   esac
   grep -h 'Không thấy' "$dir/typing.log" | sed "s/^/$id: /" >&2

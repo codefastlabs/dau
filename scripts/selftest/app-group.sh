@@ -11,8 +11,8 @@
 #      and --no-build, so the build is not made twice): the Debug Dấu.app goes into
 #      /Applications (the old copy to the Trash) and replaces the installed input method
 #      with the Debug one inside it, stopping the old input method process. The Debug
-#      build then stays installed: the script ends by saying to put the Release build
-#      back (scripts/dev/install-app.sh).
+#      build then stays installed: the script ends by saying to put the stable build
+#      back (scripts/dev/install-app.sh --ref stable).
 #   2. Makes sure the input method runs. macOS launches it on demand, when a client
 #      activates it; if it is not running, the helper reselects the Dấu input source,
 #      which must already be enabled (the helper never enables or disables a source, N4),
@@ -35,14 +35,15 @@
 #
 # `synchronize=failed` from the app is only reported, not a failure: on macOS 27 the
 # App Group suite's synchronize() returns false even when the write goes through (the
-# input method and a new app process both read it back; docs/Decisions.md, "Câu hỏi đã
-# trả lời").
+# input method and a new app process both read it back; docs/Architecture.md, DauShared;
+# docs/history/DecisionsLog.md, "Câu hỏi đã trả lời", "App Group với bản ký ad-hoc").
 #
 # Ends with a "✓" verdict or a "✗" verdict plus hints (scripts/lib/log.sh); exit status 0 only on success.
 #
 # Usage: scripts/selftest/app-group.sh [--install] [--no-build]
 #   --install    install the Debug Dấu.app and its input method before the test (default: use
-#                what is installed); install the Release build again afterwards
+#                what is installed); the script only prints a hint to put
+#                the stable build back (scripts/dev/install-app.sh --ref stable)
 #   --no-build   do not build; use build/DerivedData.noindex as it is (with --install, install
 #                that build)
 #
@@ -107,7 +108,7 @@ remind_release() {
   [[ "$INSTALLED_DEBUG" == 1 ]] || return 0
   INSTALLED_DEBUG=0
   log_warn "Dấu.app và bộ gõ đang cài là bản Debug (do --install)."
-  log_hint "Cài lại bản Release: scripts/dev/install-app.sh"
+  log_hint "Cài lại bản ổn định: scripts/dev/install-app.sh --ref stable"
 }
 cleanup() { restore_typing_method; restore_source; remind_release; }
 trap cleanup EXIT

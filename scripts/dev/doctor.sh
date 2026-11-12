@@ -37,7 +37,7 @@ elif [[ -d /Applications/Xcode.app/Contents/Developer ]]; then
 fi
 if [[ -z $dev_dir ]]; then
   fail "Không tìm thấy Xcode (xcode-select -p: ${selected:-không có})." \
-    "Cài Xcode từ App Store rồi mở một lần để chấp nhận giấy phép; xem phiên bản đã thử trong README.md."
+    "Cài Xcode từ App Store rồi mở một lần để chấp nhận giấy phép; xem phiên bản đã thử trong CONTRIBUTING.md, mục \"Chuẩn bị máy\"."
 else
   xv=$(DEVELOPER_DIR=$dev_dir xcodebuild -version 2>/dev/null | tr '\n' ' ')
   if [[ -z $xv ]]; then
@@ -109,7 +109,7 @@ done < <(security find-identity -v -p codesigning 2>/dev/null | grep -E '^ +[0-9
 if (( ${#teams} == 0 )); then
   log_warn "Không có chứng chỉ \"Apple Development\" hợp lệ trong keychain."
   log_hint "Mở Xcode › Settings › Accounts, đăng nhập Apple ID (Personal Team miễn phí là đủ); Xcode tạo chứng chỉ khi build." \
-    "Chứng chỉ bị thu hồi (CSSMERR_TP_CERT_REVOKED) thì không nằm trong danh sách hợp lệ: xem CONTRIBUTING.md, mục dùng một Apple ID trên hai máy."
+    "Chứng chỉ bị thu hồi (CSSMERR_TP_CERT_REVOKED) thì không nằm trong danh sách hợp lệ: xem docs/Troubleshooting.md, mục dùng một Apple ID trên hai máy Mac."
 elif (( ${teams[(Ie)$want_team]} )); then
   log_ok "Có chứng chỉ \"Apple Development\" thuộc Team $want_team"
 else
@@ -153,10 +153,10 @@ else
       log_ok "Đã bật: ${src_out//$'\n'/, }"
     elif (( rc == 4 )); then
       log_warn "TIS và com.apple.inputsources không khớp: ${src_out%%$'\n'*}"
-      log_hint "Mở System Settings › Keyboard › Text Input › Input Sources, kiểm tra Dấu có trong danh sách; nếu không, bấm \"+\" và thêm."
+      log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (D14, D37); hoặc kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"."
     else
       log_warn "Nguồn nhập liệu Dấu chưa được bật."
-      log_hint "System Settings › Keyboard › Text Input › Input Sources › Edit… › \"+\" › Vietnamese › Dấu." \
+      log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (D14, D37); nếu không được: System Settings › Keyboard › \"All Input Sources\" › \"+\" › Vietnamese › Dấu." \
         "(Script không tự bật: việc này do bạn làm.)"
     fi
   fi
@@ -182,7 +182,7 @@ if (( n_ext > 0 && n_ans > 0 )); then
   log_ok "$ext: $n_ext bản clone; build/external-answers: $n_ans file"
 else
   log_warn "Thiếu dữ liệu so sánh ($ext: $n_ext bản clone; build/external-answers: $n_ans file). Chỉ cần cho nghiên cứu so sánh."
-  log_hint "scripts/research/external-tests/extract.sh   (cần mạng; ghi vào repo và build/, hỏi trước khi chạy)"
+  log_hint "scripts/research/external-tests/extract.sh   (cần mạng; ghi vào repo và build/)"
 fi
 
 echo

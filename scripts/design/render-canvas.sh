@@ -10,7 +10,7 @@
 #   --out   write the snapshot to <folder> instead of docs/canvas/ (to try a render without
 #           touching the repo). The folder must be missing, empty or an earlier snapshot.
 #
-# Renders every artboard on the canvas page "Thiết kế" (not the archive page) with one
+# Renders every artboard on the canvas page "Thiết kế" with one
 # headless Chrome for the whole run (canvas-render.swift drives it over the DevTools pipe):
 # no window is shown and the keyboard focus stays where it is. macOS lists that Chrome as a
 # foreground app for a few hundredths of a second while it starts, before Chrome declares

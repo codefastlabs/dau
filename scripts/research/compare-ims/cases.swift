@@ -15,8 +15,7 @@
 // Scoring compares token by token after NFC and after moving the tone mark out of the
 // word, so old and new tone placement ("hòa", "hoà") both count as right. That also hides
 // a tone placed on the wrong vowel: it is a limit of this comparison, not a finding.
-// Tokens are aligned the way Python's difflib.SequenceMatcher (no junk) does it, so the
-// score matches the one the earlier Python helper gave.
+// Tokens are aligned the way Python's difflib.SequenceMatcher (no junk) does it.
 import Foundation
 
 func fail(_ message: String, code: Int32 = 1) -> Never {

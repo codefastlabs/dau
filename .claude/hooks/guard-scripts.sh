@@ -63,7 +63,7 @@ done
 
 (( $#blocked )) || exit 0
 source "$root/scripts/lib/log.sh"
-log_error "Chặn: script người dùng tự chọn giờ chạy (scripts/README.md, \"Ai chạy\"):"
+log_error "Chặn: script người dùng tự chọn giờ chạy (CLAUDE.md, mục \"Điều phối\"):"
 log_hint "${(@)blocked}"
 log_hint "Subagent: không chạy; ghi vào mục 4 của báo cáo."
 log_hint "Phiên chính: hỏi người dùng giờ chạy; khi họ đồng ý trong chat, chạy lại với tiền tố DAU_USER_APPROVED=1."

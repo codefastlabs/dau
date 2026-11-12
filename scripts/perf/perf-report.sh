@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Prints per-app timing of the input method from the unified log.
 # Side effects: none
-# Approach A (N3/D11): p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole
+# Asks selectedRange on each replacing key (N3, D11): p50/p99 of `selectedRange()`, `insertText`, `attributedSubstring` (D20), and the whole
 # `handle`, plus event counts.
 #
 # Debug builds only (Release logs nothing per key, D8). The input method logs one line
@@ -30,8 +30,8 @@
 # Usage:
 #   scripts/perf/perf-report.sh                      last 1 hour, all apps
 #   scripts/perf/perf-report.sh --last 10m           any `log show --last` value
-#   scripts/perf/perf-report.sh --app TextEdit       bundle ID or part of it, any case
-#                                               (TextEdit, com.apple.Safari, chrome, slack)
+#   scripts/perf/perf-report.sh --app safari         bundle ID or part of it, any case
+#                                               (safari, com.apple.Safari, chrome, com.google.Chrome)
 #   scripts/perf/perf-report.sh --input FILE         parse saved `log show --style compact` output
 #
 # Subsystem = the input method's bundle ID, read from the installed bundle; override with

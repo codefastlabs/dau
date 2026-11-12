@@ -4,7 +4,7 @@
 //   canvas-index boards canvas.json   name<TAB>width<TAB>height, design page only
 //   canvas-index readme canvas.json   docs/canvas/README.md (index by section)
 //
-// Boards on the archive page ("page": "archive") are left out. Order: the canvas order.
+// Order: the canvas order.
 // A board's section is the part of its title before " – " ("Cài đặt – bản tối" → "Cài đặt").
 import Foundation
 
@@ -21,7 +21,7 @@ func number(_ value: Any?) -> String {
     return CFNumberIsFloatType(n) ? "\(n.doubleValue)" : "\(n.int64Value)"
 }
 
-/// (name, board) for every board not on the archive page, in canvas order.
+/// (name, board) for every board of the design page, in canvas order.
 func designBoards(_ path: String) -> [(String, [String: Any])] {
     guard let data = FileManager.default.contents(atPath: path) else { fail("Không đọc được \(path)") }
     guard let root = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],

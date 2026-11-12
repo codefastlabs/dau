@@ -183,22 +183,21 @@ enum Snapshot {
         }
     }
 
-    /// Settings for the Apps page: one stored rule, Slack, a suggestion the user
-    /// accepted ("Đề xuất" chip, "Có gạch chân"). Cursor and Zalo come from `sampleList`
-    /// without a rule, so they show under "Đề xuất" (only when installed, like in the app).
+    /// Settings for the Apps page: one stored rule, Slack, added by the user
+    /// ("Có gạch chân", no "Đề xuất" chip). Cursor, the only suggestion (D13), comes from
+    /// `sampleList` without a rule, so it shows under "Đề xuất" (only when installed, like
+    /// in the app).
     static func sampleSettings() -> DauSettings {
         var s = DauSettings.defaults
         s.upsert(AppRule(bundleID: "com.tinyspeck.slackmacgap", displayName: "Slack",
-                         underline: true, source: .suggested))
+                         underline: true, source: .user))
         return s
     }
 
-    /// A few suggestions instead of the shipped list, so the page does not depend on
-    /// which other suggested apps are installed.
+    /// The one suggestion (D13) instead of the shipped list, so the page does not depend
+    /// on which other suggested apps are installed.
     static let sampleList = CompatibilityList(version: 1, apps: [
         .init(bundleIDs: ["com.todesktop.230313mzl4w4u92"], name: "Cursor"),
-        .init(bundleIDs: ["com.tinyspeck.slackmacgap"], name: "Slack"),
-        .init(bundleIDs: ["com.vng.zalo"], name: "Zalo"),
     ])
 }
 

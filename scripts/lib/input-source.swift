@@ -1,5 +1,6 @@
 // Small helper for scripts/selftest/app-group.sh, scripts/selftest/typing/run.sh,
-// scripts/selftest/load/run.sh, scripts/dev/doctor.sh and scripts/dev/clean-dau.sh.
+// scripts/selftest/load/run.sh, scripts/selftest/load/heavy.sh, scripts/dev/doctor.sh and
+// scripts/dev/clean-dau.sh.
 //
 //   input-source current             prints the ID of the selected keyboard input source
 //   input-source select <ID>         selects an input source that is ALREADY enabled
@@ -21,9 +22,10 @@
 // prints a message on stderr, prints no source and exits with status 4.
 //
 // It never enables, disables, adds or removes an input source (N4): `select` refuses a
-// source that is not enabled and select-capable. The self test uses it only to reselect
-// Dấu (so macOS launches the input method) and to give back the source that was selected
-// before. `count` and `drop` are stdin-to-stdout filters that read and write no
+// source that is not enabled and select-capable. typing/run.sh switches sources with
+// the system shortcut and uses `select` only as a fallback (to reselect Dấu, so macOS
+// launches the input method, and to give back the source that was selected before);
+// heavy.sh uses `enabled`. `count` and `drop` are stdin-to-stdout filters that read and write no
 // preferences: clean-dau.sh itself runs `defaults export`/`defaults import` and reads the
 // domain back.
 import Carbon

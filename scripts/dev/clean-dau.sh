@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Removes every trace of Dấu from this user account.
 # Side effects: builds; with --yes also: kills processes, deletes data, changes user settings, changes input source
-# It lets an install test (M5 T4) start from a machine that never had Dấu.
+# It lets an install test start from a machine that never had Dấu.
 #
 # Usage:
 #   scripts/dev/clean-dau.sh         list what would be removed; changes nothing
@@ -201,7 +201,7 @@ for d in $data; do
     # Seen (09/11/2026): rm gets "Operation not permitted" on a container when the process
     # running the script has no Full Disk Access. Not tried with that permission granted.
     [[ $d == */Containers/* || $d == */"Group Containers"/* ]] &&
-      log_hint "Tiến trình chạy script có thể thiếu Full Disk Access (System Settings › Privacy & Security). Hoặc mở Finder › Đi › Đi tới Thư mục… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
+      log_hint "Tiến trình chạy script có thể thiếu Full Disk Access (System Settings › Privacy & Security). Hoặc mở Finder › Go › Go to Folder… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."
   else
     log_detail "đã xoá: ${d#$HOME/}"
   fi

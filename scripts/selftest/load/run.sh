@@ -21,7 +21,7 @@
 # per-key log of the Debug input method (scripts/perf/perf-report.sh):
 #   H1  the busy app lets queued keys go in a burst: keys reach the input method < 10 ms
 #       apart (gap_a/gap_b) although they were sent evenly (evgap_d), lag_us is large,
-#       and the known < 10 ms failure follows (docs/Compatibility.md 6.2).
+#       and the < 10 ms failure follows (measured before M6, docs/Compatibility.md 6.2).
 #   H2  keys arrive evenly (gap_d) but the app has not applied the previous insertText
 #       yet, so selectedRange is stale: mismatch/resync at gaps ≥ 10 ms (gap_ge10_*),
 #       or wrong text with even gaps.
@@ -72,8 +72,9 @@
 # DauDebugForceUnderline is set (typing/run.sh --underline deletes it at exit).
 #
 # Exit status: 0 when the matrix ran (wrong texts are results, not failures, and are in
-# the summary); 1 on an error; 2 on a bad call; 3/4 as typing/run.sh (another app came
-# to the front / Dấu could not be selected), which stops the matrix; 130 on ⌃C.
+# the summary); 1 on an error; 2 on a bad call; 3/4 as typing/run.sh (3: the run stopped on a
+# failed front/focus/window check; 4: on the input source, not selected or without effect
+# in the field), which stops the matrix; 130 on ⌃C.
 set -uo pipefail
 
 SELF="${0:A}"
@@ -264,7 +265,7 @@ for cell in $CELLS; do
   p="$dir/perf.txt"
   if [[ "$(metric "$p" gap_d_ge20ms)" == - ]]; then
     log_error "Ô $index không có thời điểm phím (t_ns) trong nhật ký: bộ gõ đã cài là bản Release, hoặc bản Debug cũ hơn thay đổi ghi t_ns."
-    log_hint "Cài bản Debug mới (scripts/dev/install-app.sh --debug) rồi chạy lại; đo xong cài lại bản Release (scripts/dev/install-app.sh)."
+    log_hint "Cài bản Debug mới (scripts/dev/install-app.sh --debug) rồi chạy lại; đo xong cài lại bản ổn định (scripts/dev/install-app.sh --ref stable)."
     STATUS=1
     break
   fi

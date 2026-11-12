@@ -5,7 +5,8 @@
 # Usage: scripts/dev/dau-version.sh
 #
 # Prints the commit (Resources/BuildCommit.txt, scripts/build/stamp-build-commit.sh) of the
-# installed input method and of the Debug Dấu.app, each installed bundle's build configuration
+# installed input method, of the Dấu.app in /Applications (with its signature) and of the
+# Debug Dấu.app, each installed bundle's build configuration
 # (Debug when signed with get-task-allow, D8), the repo's HEAD, and whether the
 # running input method process started after the installed bundle was written (if not,
 # switch input source away from Dấu and back, so macOS starts the new one). Also prints

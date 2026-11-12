@@ -148,7 +148,7 @@ fi
 log_step "Kiểm tra bản build"
 if ! codesign --verify --deep --strict "$APP" 2>/dev/null; then
   log_error "Chữ ký của $APP không hợp lệ: không cài."
-  log_hint "Xem chứng chỉ \"Apple Development\" trong Keychain Access (CONTRIBUTING.md)."
+  log_hint "Xem chứng chỉ \"Apple Development\" trong Keychain Access (docs/Troubleshooting.md)."
   exit 1
 fi
 log_ok "Dấu.app: chữ ký hợp lệ (--deep --strict)"

@@ -23,9 +23,10 @@
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
 #   --delay MS        pause between keys in ms (default 30). 0 sends the whole string in
 #                     one System Events keystroke (about 1 ms per key): a stress test that
-#                     Chrome, VS Code and Terminal fail with method A (docs/Progress.md);
+#                     Chrome, VS Code and Terminal failed with it
+#                     (measured before M6, docs/Compatibility.md 6.2);
 #                     120 is close to normal typing.
-#   --keys "…"        keys to type (default: the sample sentence below). Two marks are
+#   --keys "…"        keys to type (default: the sample sentence below). Four marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
 #                     key; ↩ the Return key (ghostty and the xterm page only: Return ends
 #                     the line, nothing runs; any other app is an error); ⇄ switches the
@@ -33,7 +34,7 @@
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
 #                     (docs/Architecture.md, "Đổi nguồn nhập liệu không qua
-#                     `activateServer`"). Example (D20, K7): --keys "hoc ⌫j " --expect "học "
+#                     `activateServer`"). Example (D20): --keys "hoc ⌫j " --expect "học "
 #   --expect "…"      expected text (default: what the sample sentence must give). With --keys
 #                     and no --expect there is no answer: the text read back is printed, with no
 #                     verdict (neither ✓ nor ✗), and the exit status is 0 unless the run stopped.
@@ -61,13 +62,15 @@
 #                     the page loads until its tab closes. The app stays responsive to the
 #                     window server; only the page (the renderer, which applies the text) is
 #                     late. The clean "busy app" condition of M6.
-#   --save DIR        also write the text read back from each app to DIR/<app>.txt and the
-#                     input method's perf and diag log (ReplaceDiag: positions of each
-#                     replacement) from the start of that app's run (`log show
-#                     --style compact`, numbers and bundle IDs only, D8; lines of other apps
-#                     too, if any typed meanwhile) to DIR/<app>.perf.log, for
-#                     `scripts/perf/perf-report.sh --input`; for ghostty also the raw
-#                     bytes Ghostty sent to the terminal, to DIR/ghostty.raw
+#   --save DIR        also write, per app, to DIR: <app>.txt (the text read back);
+#                     <app>.perf.log (the input method's perf and diag log, ReplaceDiag:
+#                     positions of each replacement, from the start of that app's run;
+#                     `log show --style compact`, numbers and bundle IDs only, D8; lines
+#                     of other apps too, if any typed meanwhile), for
+#                     `scripts/perf/perf-report.sh --input`. Also: ghostty and ghosttyvim:
+#                     <app>.raw (the raw bytes Ghostty sent to the terminal); xterm:
+#                     xterm.data (the onData chunks); tiptap: tiptap.events (the
+#                     beforeinput events); with --shot: <app>.png.
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
 #                     Debug input method only: the script writes the bundle ID into the
@@ -607,8 +610,9 @@ open_test_page_of() { # page file, browser app name, process
 # Puts the keyboard focus in the test page's text field of browser process $1 when the
 # page does not report it (title without "[focus]"): Safari has been seen to open the
 # page with the focus in its address field (docs/Progress.md, 10/11/2026), and the
-# page's autofocus does not take it back. Clicks the middle of the browser's focused
-# window, only while the browser is frontmost with the test page in that window: the
+# page's autofocus does not take it back. When the focus is in Safari's address field
+# (confirmed through Accessibility), sends Tab to reach the page's first field; otherwise
+# clicks the middle of the browser's focused window. Tries up to three times. Acts only while the browser is frontmost with the test page in that window: the
 # text field fills the page (96vw × 90vh) so that the middle of the window is inside
 # it. A first version looked for the page's AXTextArea through Accessibility and did
 # not click in Safari (why was not kept). A click, not a script in the page: it needs
@@ -1269,7 +1273,7 @@ run_tiptap() {
   select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
   got="$(copy_all "Google Chrome" "$FOCUS_TITLE")"
   close_test_tab "Google Chrome"
-  log_detail "beforeinput del editor: \"${got#*$'\n'}\"" >&2
+  log_detail "beforeinput của editor: \"${got#*$'\n'}\"" >&2
   [[ -n "$SAVE_DIR" ]] && print -r -- "${got#*$'\n'}" > "$SAVE_DIR/tiptap.events"
   print -r -- "${got%%$'\n'*}"
 }

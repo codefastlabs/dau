@@ -37,7 +37,7 @@ dau_signing_identities() {
 dau_require_signing_identity() {
   dau_signing_identities >/dev/null && return 0
   log_error "Không có chứng chỉ \"Apple Development\" dùng được trong keychain (thiếu, hết hạn hoặc bị thu hồi)."
-  log_hint "scripts/dev/dau-version.sh cho biết lý do. Chọn một trong hai cách (CONTRIBUTING.md):" \
+  log_hint "scripts/dev/dau-version.sh cho biết lý do. Chọn một trong hai cách (docs/Troubleshooting.md, \"Chữ ký bị thu hồi khi dùng một Apple ID trên hai máy Mac\"):" \
     "a) Máy Mac khác dùng cùng Apple ID đang có chứng chỉ hợp lệ: xuất nó kèm khoá riêng ra" \
     "   .p12 ở máy đó (Keychain Access › login › My Certificates › Export), nhập ở máy này." \
     "b) Tạo chứng chỉ mới cho máy này. Chứng chỉ của máy Mac kia có thể bị thu hồi. Tự chạy:" \
