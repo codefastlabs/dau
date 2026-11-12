@@ -174,7 +174,7 @@
 #
 # Exit status: 0 if every app gives the expected text (or, with --keys and no --expect,
 # the run finished: no verdict); 1 if an app gave other text; 3 the run stopped on a failed
-# front/focus/window check; 4 it stopped on the input source (not selected, or without
+# front/focus/window check, or before the first app without the Accessibility permission; 4 it stopped on the input source (not selected, or without
 # effect in the field). Per-key timings are reported only for Dấu, and only when the
 # installed input method is a Debug build (a Release one prints a line saying so); D43
 # lines only for Dấu. Messages: Vietnamese, through
@@ -1713,6 +1713,13 @@ run_tiptap() {
 trim_right() { sed -e 's/[[:space:]]*$//'; }
 EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
 FAILED=0
+# Accessibility for the process running the script, checked before any app opens: without
+# it System Events answers every window and focus query with an error, which the checks
+# below drop with stderr, so they report a missing window instead (seen 12/11/2026).
+if ! osascript -e 'tell application "System Events" to count windows of (first process whose frontmost is true)' >/dev/null 2>&1; then
+  log_error "Dừng: tiến trình chạy script chưa có quyền Trợ năng (System Events không trả lời câu hỏi về cửa sổ); chưa mở app nào, không gửi phím."
+  exit 3
+fi
 log_step "Script sẽ mở: ${APPS[*]}"
 log_detail "mỗi app một cửa sổ/tab mới, đóng lại sau khi đọc chữ; app nào chưa chạy thì vẫn để chạy"
 if (( NO_ANSWER )); then
