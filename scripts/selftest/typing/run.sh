@@ -85,7 +85,7 @@
 #                     phase, to read next to the perf log's activations) and, for
 #                     vscodeswitch, <app>.editor.txt (the editor's text); with --shot:
 #                     <app>.png. <app>.perf.log also holds the input method's
-#                     `event=range-ignored` lines (D43; the log's settings category) and, in a
+#                     `event=range-ignored` lines (D43; the log's settings category; Debug builds only, D8) and, in a
 #                     Debug build, its `event=web-host` lines (settings category), its
 #                     `name=range-ignore-refuted` lines (perf category) and `name=activate`
 #                     lines. There is no deactivation line: the input
@@ -1860,9 +1860,8 @@ for app in "${APPS[@]}"; do
     log_warn "--underline chỉ có tác dụng với Dấu: $SOURCE_ID không đọc khoá $FORCE_KEY"
   fi
   # D43: whether the input method took this field for one that ignores the replacement
-  # range, and how it sends (logged once per activation, also by Release builds; only
-  # Debug builds add the app's bundle ID, D8, so a line without one counts for the app
-  # this window of the log belongs to).
+  # range, and of what kind (logged once per activation by Debug builds only, D8: a
+  # Release build logs no D43 line, so its verdict is unknown here).
   if (( DAU_RUN )); then
     ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( blocked=[a-z]+)?( app=$(bundle_id "$app"))?\$" | grep -oE "event=range-ignored mode=[a-z-]*( blocked=[a-z]+)?" | head -1)"
     if [[ -n "$ignored" ]]; then
@@ -1873,7 +1872,7 @@ for app in "${APPS[@]}"; do
       # the text Dấu typed (D43, "Bằng chứng dương").
       log_detail "D43: vị trí giống ô bỏ qua vùng thay chữ nhưng app trả đúng chữ đã gõ, không nhận ra"
     else
-      log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"
+      if [[ "$IM_CONFIG" == Release ]]; then log_detail "D43: không biết (bộ gõ bản Release không ghi dòng D43, D8)"; else log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"; fi
     fi
   fi
 done

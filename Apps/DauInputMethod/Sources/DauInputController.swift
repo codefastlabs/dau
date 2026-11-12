@@ -1,6 +1,7 @@
 import AppKit
 import Carbon
 import InputMethodKit
+import os
 import DauEngine
 import DauShared
 
@@ -29,6 +30,8 @@ final class DauInputController: IMKInputController {
     private var inPlace = InPlaceComposer()
     /// Keeps the Darwin notification registration alive; dropped when the client closes.
     private var settingsObserver: SettingsChangeObserver?
+    /// `event=observe-failed` is logged once per process (D8).
+    private static let observeFailureLogged = OSAllocatedUnfairLock(initialState: false)
     /// Selected-input-source change observer (see `startObservingInputSource`).
     private var sourceObserver: InputSourceObserver?
     /// Quit request from the host app (main.swift), see `startObservingQuit`.
@@ -133,8 +136,7 @@ final class DauInputController: IMKInputController {
             if !wasRefuted, inPlace.detector.refuted { perf.note("range-ignore-refuted", app: clientApp) }
             #endif
             if !wasKnown, let send = inPlace.detector.send {
-                // D43: once per activation, never text (D8). Which app is typed in is typing
-                // metadata (D8): Release logs the mode only, Debug adds the app. "in-key"
+                // D43: once per activation, never text; Debug only (D8, `logRangeIgnore`). "in-key"
                 // (xterm.js) is logged but replaced in place (`InPlaceComposer.eraseMode(for:)`);
                 // so is "after-key" in an app that may host web pages (`blocked=`, `WebHost`).
                 let blocked = send == .afterKey ? webHost.blockedWord : nil
@@ -295,23 +297,21 @@ final class DauInputController: IMKInputController {
         // After `clientApp` is known, so the app's underline rule applies (D13).
         apply(SettingsStore.inputMethod.load())
         perf.note("activate", app: clientApp)
+        #if DEBUG
+        // D8: Debug only. Release logs nothing per activation, not even without the app:
+        // when focus went to an app (and to one in underline mode) is typing metadata.
         if underline {
-            // Which app is typed in is typing metadata (D8): Release logs no bundle ID.
-            #if DEBUG
             settingsLogger.notice("event=underline-on app=\(self.clientApp, privacy: .public)")
-            #else
-            settingsLogger.notice("event=underline-on")
-            #endif
         }
+        #endif
     }
 
-    /// D43 events: the mode only; which app is typed in is typing metadata (D8), Debug only.
+    /// D43 events, Debug only (D8): logged once per activation, so even without the app
+    /// they tell when the user typed in a terminal; Release logs nothing for them.
     private func logRangeIgnore(_ event: String, mode: String, blocked: String? = nil) {
-        let extra = blocked.map { " blocked=\($0)" } ?? ""
         #if DEBUG
+        let extra = blocked.map { " blocked=\($0)" } ?? ""
         settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public)\(extra, privacy: .public) app=\(self.clientApp, privacy: .public)")
-        #else
-        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public)\(extra, privacy: .public)")
         #endif
     }
 
@@ -497,7 +497,12 @@ final class DauInputController: IMKInputController {
             guard Thread.isMainThread else { return }
             target.controller?.settingsDidChange()
         }
-        if settingsObserver == nil {
+        if settingsObserver == nil, Self.observeFailureLogged.withLock({ logged in
+            defer { logged = true }
+            return !logged
+        }) {
+            // Once per process, not per activation: a line per activation would record
+            // when the user typed (D8).
             settingsLogger.error("event=observe-failed (changes apply at next activation)")
         }
     }

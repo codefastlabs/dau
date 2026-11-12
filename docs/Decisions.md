@@ -75,10 +75,10 @@ Tiến trình bộ gõ không có quyền mạng. Mọi kết nối nằm ở ap
 Tối thiểu lời gọi vào ứng dụng đích khi đang gõ.
 
 - Mỗi phím tối đa một lần gọi `insertText`.
-- Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc. Phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ).
+- Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc; trừ chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)) và ô đang nhận ký tự xoá (D43 (Ô bỏ qua vùng thay chữ)). Phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
 - Đọc chữ trước con trỏ chỉ ở các trường hợp một quyết định cho phép, mỗi trường hợp một lần đọc: lệch vị trí và từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)), phím đầu khi chưa biết chữ trước con trỏ (D20), nhận ra ô bỏ qua vùng thay (D43 (Ô bỏ qua vùng thay chữ)).
 
-**Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Tự cộng dồn không cứu được app áp phím bất đồng bộ: vị trí gốc cũng là ảnh chụp cũ, và VS Code đổi gốc toạ độ.
+**Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Chỉ cộng dồn từ một vị trí gốc thì không biết lúc app tự sửa chữ hay con trỏ đi chỗ khác, và VS Code đổi gốc toạ độ. Vị trí Dấu tự theo dõi chỉ dùng khi chữ đọc được chứng minh app trả lời chậm (D11, ý "App trả lời chậm").
 
 **Xem thêm:** bảng phím nào hỏi gì ở [`docs/Architecture.md`](Architecture.md) mục "Vị trí thay chữ"; chi phí đo được của `selectedRange` ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục "Vị trí thay chữ".
 
@@ -333,7 +333,8 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 - **Khi nào đọc:** ở phím chữ cái hoặc dấu/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng đi thẳng: một `selectedRange` và một lần đọc chữ trước con trỏ (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
 - **Phạm vi:**
   - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
-  - Không áp dụng ở ô bỏ qua vùng thay chữ (D43 (Ô bỏ qua vùng thay chữ)), vì ô đó không cho đọc chữ.
+  - Không áp dụng ở ô đang nhận ký tự xoá (D43 (Ô bỏ qua vùng thay chữ)), vì ô đó không cho đọc chữ.
+  - Ở mọi ô, app không trả chữ cho một lần đọc thì Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)).
   - Chỉ đọc lại chữ khi phím trước đó trên cùng ô nhập cách ít nhất 50 ms (biên an toàn khi gõ dồn).
   - Chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").
 - **Chữ cái gõ sát chữ có sẵn:** phím đầu tiên là chữ cái thường cũng đọc từ ngay trước con trỏ. Chữ đó nối vào từ chỉ khi từ ghép vẫn là tiền tố hợp lệ theo D30, ngược lại chữ đó bắt đầu từ mới ("q" có sẵn + "uer" → "quẻ", "g" + "ias" → "giá", "tiê" + "ngs" → "tiếng"; "tôi" + "laf" → "tôilà", "sắc" + "mauf" → "sắcmàu").
@@ -368,7 +369,7 @@ Thuộc nhóm Nâng cao, mặc định tắt.
 
 - Chỉ áp dụng khi kết thúc từ (ranh giới theo D4 (Từ nước ngoài)) và chỉ khi kết quả là âm tiết tiếng Việt hợp lệ; nếu không thì D4 khôi phục. Khác OpenKey, nơi gõ tắt chạy trước và chặn luôn bước khôi phục ("big" thành "bing" dù không hợp lệ).
 - Từ trùng như "bag" → "bang", "fix" → "phĩ" vẫn xảy ra vì người dùng đã chủ động bật; ghi rõ trong test.
-- Trong lúc gõ (trước khi kết thúc từ), khi tuỳ chọn bật thì f, j ở đầu từ và g, h, k ở cuối từ được coi là phụ âm tạm hợp lệ để phím dấu vẫn có tác dụng ("fanf" hiện "fàn", kết thúc từ ra "phàn").
+- Trong lúc gõ (trước khi kết thúc từ), khi tuỳ chọn bật thì f, j (VNI thêm w) ở đầu từ và g, h, k ở cuối từ được coi là phụ âm tạm hợp lệ để phím dấu vẫn có tác dụng ("fanf" hiện "fàn", kết thúc từ ra "phàn").
 - Không làm Quick Telex (cc → ch, nn → ng…).
 
 **Vì sao:** Quick Telex kích hoạt cả giữa từ nên phá từ tiếng Anh có phụ âm đôi ("connect" → "congect"), và trùng mục đích với gõ tắt phụ âm.
@@ -478,7 +479,7 @@ Kiểm tra chính tả luôn chạy trong engine, không có công tắc riêng:
 
 - Trong lúc gõ chỉ xét từ có còn là **tiền tố** của một âm tiết hợp lệ hay không ("viêt", "hoc", "tră" vẫn biến đổi tiếp: "vieetj" → "việt", "hocj" → "học", "trawngf" → "trằng"); quy tắc đầy đủ của D31 (Âm tiết tiếng Việt hợp lệ) chỉ áp khi kết thúc từ.
 - Sau Backspace (D32 (Backspace)), trạng thái sai chính tả được tính lại từ chữ còn hiển thị.
-- Công tắc "Tự khôi phục từ không phải tiếng Việt" chỉ điều khiển việc khôi phục khi kết thúc từ.
+- Công tắc "Tự khôi phục từ không phải tiếng Việt" chỉ điều khiển việc khôi phục (khi kết thúc từ, và giữa từ khi từ quá dài, D33).
 - **Dấu thanh trên vần tắc:** "tiền tố hợp lệ" xét chữ cái của âm tiết; dấu thanh chỉ kiểm theo D31 khi kết thúc từ. Vì vậy huyền, hỏi, ngã trên vần có âm cuối p, t, c, ch vẫn được nhận giữa từ ("hoc" + f hiện "hòc"); kết thúc từ thì D4 (Từ nước ngoài) khôi phục ("metric", "catr" giữ nguyên).
 
 **Hệ quả đã chấp nhận:** giữa từ tiếng Anh có thể nháy chữ có dấu ("mẻt…"); khi tắt tự khôi phục, chữ sai chính tả ở lại.
@@ -565,7 +566,7 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
 - **Đường lui:** hành vi bộ đệm của System Settings và của từng app không có tài liệu Apple, bản macOS sau có thể khác. Đọc lại không thấy mục của Dấu thì hướng dẫn tự thêm bằng "+", và nếu "+" không có Dấu thì đăng xuất một lần (Apple DTS).
 - **Một app vẫn không chọn được Dấu** (bộ đệm riêng không xoá được, như các thư mục được hệ thống bảo vệ): hướng dẫn đăng xuất rồi đăng nhập lại một lần, ở màn "Đã bật" của onboarding, sheet Báo lỗi và Hỏi đáp của trang tải về.
 - Homebrew cask chỉ khai `app`.
-- **Bản chủ:** Dấu.app nằm trực tiếp trong `/Applications` là bản chủ của bộ gõ đã cài; `/Applications` không có Dấu.app thì bản nằm trực tiếp trong `~/Applications` là bản chủ. Một bản Dấu đang chạy là bản chủ khi mã băm chữ ký (cdhash) của nó trùng với bản đó; không xét đường dẫn nó đang chạy. Thư mục đó có hơn một bản Dấu.app thì trùng với bản nào trong số đó cũng là bản chủ.
+- **Bản chủ:** Dấu.app (bản app mang bundle ID của Dấu, tìm theo bundle ID chứ không theo tên file; liên kết tượng trưng không tính) nằm trực tiếp trong `/Applications` là bản chủ của bộ gõ đã cài; `/Applications` không có Dấu.app thì bản nằm trực tiếp trong `~/Applications` là bản chủ. Một bản Dấu đang chạy là bản chủ khi mã băm chữ ký (cdhash) của nó trùng với bản đó; không xét đường dẫn nó đang chạy. Thư mục đó có hơn một bản Dấu.app thì trùng với bản nào trong số đó cũng là bản chủ.
 - **Chỉ bản chủ cài và thay bộ gõ:** bản không phải bản chủ (chạy từ ảnh đĩa, Downloads, thư mục build) không chép, không thay, không cài lại và không kiểm chữ ký bộ gõ đã cài. Khi bộ gõ chưa cài, nó hướng dẫn chuyển Dấu vào thư mục Applications rồi mở lại. Cài đặt, bật lại và gỡ cài đặt vẫn dùng được.
 - **Bộ gõ đã cài là bản nhúng của bản chủ:** mỗi lần mở, bản chủ so mã băm chữ ký của bộ gõ đã cài với bản nhúng, ở mọi kiến trúc; khác nhau thì thay bằng bản nhúng, không đổi trạng thái bật hay chọn. Không so số phiên bản. Chưa cài thì không làm gì: lần cài đầu do người dùng bấm.
 - **Thay bộ gõ đã cài** (cài lại, nâng cấp, lùi bản):
@@ -652,7 +653,7 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 - Bộ nhớ: tiến trình bộ gõ (RSS, đo trước và sau mỗi nhóm) không quá 96 MB.
 - Vượt ngưỡng thì không phát hành cho tới khi rõ nguyên nhân.
 
-**Vì sao:** ngưỡng cao hơn mức cao nhất đã đo ở M6 khoảng 1,4–1,6 lần (p50 1,92 ms, p99 14,2 ms; bộ nhớ 44–64 MB ở bản Debug), để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)); bản Debug có thêm một lời gọi chẩn đoán sau mỗi lần thay chữ nên số của nó cao hơn bản phát hành.
+**Vì sao:** ngưỡng cao hơn mức cao nhất đã đo ở M6 khoảng 1,4–1,6 lần (p50 1,92 ms, p99 14,2 ms; bộ nhớ 44–64 MB ở bản Debug), để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)). Lời gọi chẩn đoán sau mỗi lần thay chữ của bản Debug nằm ngoài thời gian đo; chênh lệch giữa Debug và Release chưa đo.
 
 **Xem thêm:** số đo M6 ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D42.
 
@@ -669,16 +670,17 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - **Khi đã gửi ký tự xoá:** không hỏi vị trí con trỏ, không đọc chữ; mỗi phím vẫn tối đa một lần `insertText`.
 - **Khác "event tap + Backspace giả" đã loại:** không event tap, không giả lập phím, không xin quyền Trợ năng (N4 (Không tự đổi cài đặt hệ thống)). Ký tự xoá là chữ gửi qua API của InputMethodKit, chỉ tới ô đã nhận ra là bỏ qua vùng thay.
 - **Gạch chân không phải cách sửa** cho những ô này: D13 (Gạch chân là đường lui cuối cùng) giữ nguyên, gạch chân vẫn chỉ do người dùng tự bật.
+- **App có quy tắc gạch chân (D13): gạch chân thắng.** Dấu không xét ô bỏ qua vùng thay ở app đó.
 
 **Hệ quả đã chấp nhận:**
 
-- D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
+- Ở ô đang nhận ký tự xoá, D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
 - Terminal dựng bằng xterm.js (terminal tích hợp của VS Code, Cursor, terminal trong app Claude) gõ sai như trước D43: trên trang thử, `toois vieetj dd ` ra "toôoiís vieêetj dđd "; trong terminal của VS Code cũng sai (đã đo); Cursor và app Claude chưa đo.
 - Nhân web mà cách đọc gói không thấy (nạp lúc chạy, nằm trong XPC service, plug-in hay framework lồng sâu hơn tầng đầu của `Frameworks` và `SharedFrameworks`) thì app bị coi là không chứa nhân web; nếu app đó có ô kiểu Ghostty cùng view với ô soạn thảo, ký tự xoá vẫn có thể lọt. Chưa gặp app nào như vậy.
 - Terminal không chứa nhân web nhưng đặt ngoài `/Applications` (ví dụ `~/Applications`, bộ gõ chạy sandbox không đọc được gói) gõ sai như trước D43.
 - Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
-- Trước khi nhận ra, các phím đầu ra như ô thường (ở Ghostty: từ đầu tiên sai).
+- Trước khi nhận ra, các phím đầu ra như ô thường (ở Ghostty: từ đầu, có khi cả từ thứ hai, sai mỗi lần kích hoạt).
 - Chữ có thể chớp một khung hình ở cách gửi sau phím: chưa đo.
 - Ô vừa báo vị trí hằng số 0 vừa không cho đọc chữ mà không phải terminal (nếu có) vẫn bị nhận ra và nhận ký tự xoá như chữ thường; chưa gặp app nào như vậy.
 - Lần đọc chỉ bác được khi app trả chữ Dấu vừa gõ ở chỗ Dấu tự theo dõi (tính từ lúc kích hoạt). Ô báo vị trí hằng số 0 mà lúc kích hoạt đã có chữ trước con trỏ, hoặc đã click trong cùng lần kích hoạt, và app đứng hình tới mức chưa có chữ nào của Dấu trong vùng đọc, vẫn bị nhận ra như khi không có bằng chứng dương. Mới thấy trên client giả, chưa gặp trên app thật.
@@ -708,6 +710,7 @@ Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết 
 | Tự đổi Việt/Anh theo ứng dụng | OpenKey | D5, D2 |
 | Từ điển tiếng Anh để giữ từ tiếng Anh | — | D4 |
 | Quick Telex (cc → ch, nn → ng…) | OpenKey | D21 |
+| `[ ]` thành ơ ư | OpenKey | D27 |
 | Phím chuyển Việt/Anh riêng (nhấn-nhả ⌃ hoặc ⇧), tiếng bíp khi chuyển | OpenKey | D2 |
 | Tạm tắt bộ gõ hoặc kiểm tra chính tả bằng nhấn-nhả ⌃/⌘ | OpenKey | D2, D30 |
 | Biểu tượng riêng trên thanh menu, mục "Thoát" | — | D2, N1 |

@@ -3,8 +3,9 @@ import DauShared
 import os
 
 /// Logger for settings and per-app rule events. D8: never the text typed; only fixed
-/// event names and settings values. The client's bundle ID is typing metadata: Debug
-/// builds only.
+/// event names and settings values. Release logs only Dấu's own events (which store was
+/// opened, once per process; a failure to observe settings); events per activation or
+/// per key, and the client's bundle ID, are typing metadata: Debug builds only.
 let settingsLogger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "DauInputMethod",
                             category: "settings")
 

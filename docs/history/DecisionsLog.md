@@ -9,6 +9,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026: sổ viết lại dạng tra cứu (phiên chính, theo rà soát tài liệu): mục lục có bảng số – tên – luật một dòng, mỗi N và D là một tiêu đề riêng (có liên kết trên GitHub), mỗi quyết định gồm luật, hệ quả đã chấp nhận, vì sao, xem thêm. Thuật toán, hằng số và cách mã làm chuyển sang `docs/Architecture.md`; ngày, số lượt đo và bảng số đo chuyển vào file này (các mục ghi "chuyển khỏi sổ 11/11/2026" bên dưới). Mục "Câu hỏi đã trả lời" bỏ: luật vào N3, N4, D24; số đo vào mục cùng tên cuối file này. Số và tên mọi N, D giữ nguyên; luật không đổi, trừ D7, D13, D14 (ghi ở từng mục).
 
+- 12/11/2026 (người dùng duyệt, sau ba lượt kiểm toán tài liệu so với mã): sửa câu cho khớp mã, không đổi hành vi, ở N3 (khi nào hỏi vị trí; "Vì sao" không còn đọc thành trái D11), D20 (chỉ ô đang nhận ký tự xoá; app không trả chữ thì không đọc lại tới lần kích hoạt sau), D21 (VNI thêm w), D30 (công tắc cũng điều khiển khôi phục giữa từ, D33), D37 (tìm bản chủ theo bundle ID), D42 (lời gọi chẩn đoán nằm ngoài thời gian đo), D43 (Ghostty sai một, hai từ đầu; D20 chỉ tắt ở ô đang nhận ký tự xoá; thêm cặp D13 × D43: gạch chân thắng); thêm hàng `[ ]` thành ơ ư (D27) vào "Đã biết nhưng không làm". Bản trước của từng câu: lịch sử git của `docs/Decisions.md` (commit này). D8 giữ nguyên; mã đổi theo D8.
+
 ## Nguyên tắc
 
 ### N3. Ít lời gọi vào ứng dụng đích
