@@ -8,7 +8,7 @@ import Testing
 /// a control character while Ghostty handles a key (dropped, the key then sends nothing);
 /// `selectedRange` is always {0,0}; no text can be read. The shell's line editor erases
 /// one character per DEL.
-private final class FakeGhostty: InPlaceClient {
+final class FakeGhostty: InPlaceClient {
     var line: [Character] = []
     var selectedRangeCalls = 0
     var reads = 0

@@ -6,11 +6,11 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026.
 
-Chờ người dùng: không có việc nào.
+Chờ người dùng: duyệt cách sửa D43 khi terminal và ô soạn thảo cùng một view (đề xuất ở `docs/research/TerminalAndUnderline.md` mục 2, "Chuyển ô trong cùng view").
 
 Việc tiếp theo, theo thứ tự:
 1. M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6); `heavy.sh` chạy trọn, đạt D42 trên máy đang bận (nhật ký 12/11).
-2. Thử tay D43 trong terminal của app Claude (xterm.js trong Electron; trang thử đã đạt 12/11).
+2. Đo D43 trên app thật trong một lượt chiếm màn hình: terminal của app Claude (ghi byte qua panel Terminal), terminal tích hợp của VS Code, chuyển ô từ terminal sang trình soạn thảo hay ô chat (trang thử đã đạt 12/11).
 
 Việc mở:
 - Ứng dụng chưa đo và các phép đo lại còn mở (VS Code, Terminal, Cursor…): `docs/Compatibility.md` mục 7.
@@ -373,3 +373,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - D43 với ô kiểu xterm.js (bộ gõ Debug f226cc4, 120 ms, một lượt): trang thử xterm, dòng sau Return đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu; dòng trước Return sai như dự đoán. Cùng chuỗi phím (không Return): Ghostty "toôis việt đi học nhà người hò windows" (như trước, D43 after-key), Chrome ô thường đúng cả dòng, không có sự kiện D43. Dòng `range-ignore-erasing` không có trong `<app>.perf.log` mà `--save` lưu: `logRangeIgnore` ghi vào nhật ký hệ thống ở category `settings`, còn file đó chỉ lấy category `perf` và `diag`.
   - Sublime Text (câu mẫu): đúng chữ; tab của lượt thử đóng không để lại hộp thoại lưu.
 - 12/11/2026 — M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (máy M1, macOS 27.2, bộ gõ Debug f226cc4, 6 nhóm, 16 ô, 227 phím mỗi ô, 50 ms): chữ đúng ở mọi ô của Dấu; đối chứng Telex của Apple dưới tải giống chữ lúc rảnh của chính nó (2/2). Thời gian thay chữ phía bộ gõ: p50 0,80–1,71 ms, p99 3,9–14,2 ms (ngưỡng D42: 3 ms, 20 ms), đạt mọi ô. Bộ nhớ của tiến trình bộ gõ 44–46 MB suốt lượt. Giới hạn: nhóm "rảnh" không rảnh, tải trung bình 1 phút 5–37 trên 8 nhân (máy đang dùng); một lượt.
+- 12/11/2026 — phản biện cách test D43 trên xterm.js, mô hình chuyển ô trong cùng view — phiên chính, imk-dev. Bundle Claude.app 5.1231.2: xterm.js 5.x, cùng logic nhập liệu với trang thử; khác trang thử ở bộ chặn phím riêng, bộ đệm phím khi pty chưa sẵn sàng, và shell thật. Rủi ro chưa có test: terminal và trình soạn thảo cùng một client IMK (VS Code, Cursor, có thể app Claude), click không tới bộ gõ. `SharedViewTests` (6 test, mô hình): sau khi nhận ra xterm.js và qua Return, ô soạn thảo nhận DEL ở mọi phím thay chữ; chưa có Return thì đúng tới phím Return đầu tiên gõ trong ô soạn thảo; chiều ngược lại thì terminal tới dòng thứ ba mới được nhận ra. Đề xuất sửa D43 chờ duyệt (`docs/research/TerminalAndUnderline.md` mục 2). Kiểm: bộ gõ 238 → 244 test xanh, known issue 11 → 54 (đếm theo lần ghi lỗi, mọi known issue mới thuộc `SharedViewTests`).
