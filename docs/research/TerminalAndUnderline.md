@@ -9,6 +9,7 @@ Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.j
   - Chữ dồn: lần thay có vùng thay trước lúc nhận ra để lại chữ sau con trỏ trong textarea ẩn của xterm.js. Từ đó, mỗi lần gửi ký tự xoá trong phím, xterm.js gửi lại cả textarea.
   - Cách chữa: chỉ gửi trong phím khi không có lần thay có vùng thay nào từ phím Return gần nhất, tức từ dòng sau Return.
   - Đo 12/11/2026 trên trang thử xterm.js (Chrome, bộ gõ Debug f226cc4, 120 ms, một lượt): dòng sau Return ra đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu, không lặp lần sửa trước; dòng trước Return sai như dự đoán. Cùng chuỗi phím: Ghostty ra như trước (từ đầu sai, rồi đúng), ô thường của Chrome đúng cả dòng.
+- **Gạch chân trong terminal tích hợp của VS Code: đúng** (đo 12/11/2026, một lượt), cả khi chuyển sang trình soạn thảo cùng cửa sổ; không cần nhận ra ô. Cái giá: bật gạch chân cho VS Code thì trình soạn thảo mất D20 (mục 2, cuối phần đo trên VS Code; mục 3).
 - **Terminal và ô soạn thảo trong cùng một view: kết luận "terminal" giữ khi chuyển ô (đã đo trên VS Code).** Ở VS Code, Cursor và có thể cả app Claude, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK. Đo 12/11/2026 trên VS Code: click từ terminal sang trình soạn thảo không kích hoạt lại bộ gõ (log không có `activate` giữa hai pha). Cách gửi trong phím trước đây sẽ gửi ký tự xoá vào trình soạn thảo (mô hình); vì vậy D43 không gửi ký tự xoá ở kiểu xterm.js, và trình soạn thảo ra đúng, không có ký tự xoá (mục 2, "Chuyển ô trong cùng view").
 - **Terminal trong app Claude chưa đo.** Theo bundle Claude.app 5.1231.2 (đọc 12/11/2026), terminal dùng xterm.js 5.x trong Electron 45.2.1 (Chromium 156), và ba hàm nhập liệu `_handleAnyTextareaChanges`, `_inputEvent`, `_keyDown` có cùng logic như mục 2, nên cùng cơ chế với trang thử. Khác trang thử ở ba điểm: app có bộ chặn phím riêng (`attachCustomKeyEventHandler`: ⌃Tab, ⌘ với phím điều hướng, ⌘⇧⌫, ⌘C khi đang bôi đen), có bộ đệm giữ phím khi pty chưa sẵn sàng, và chữ đi vào shell thật. Không đo tự động được: app Claude là nơi chạy phiên điều phối, script gõ phím vào nó sẽ gõ vào chính phiên đó. Thử tay (`docs/Progress.md`, chờ người dùng).
 - **Gạch chân không sửa được dấu cho từ đã chốt** (⌫ về từ cũ, ← vào giữa từ), giống Telex của Apple. Trong Sublime Text, thay tại chỗ sửa được cả ba ca, nên tắt gạch chân cho Sublime là đủ; không quyết định nào phải đổi (mục 3).
@@ -119,6 +120,12 @@ Lượt xác nhận `WebHost` (12/11/2026, bộ gõ Debug 2bea19c chạy sandbox
 - Ghostty: nhận ra ô (`after-key`, không bị chặn), gửi ký tự xoá; "toôi dungf windows để hò hát với bạn ": hai từ đầu sai (trước khi nhận ra), từ thứ ba trở đi đúng.
 - VS Code: lượt này không nhận ra ô; terminal sai như cách cũ, trình soạn thảo sau khi chuyển ô đúng "hôm nay đường đẹp vui vẻ ", 0 ký tự xoá. Terminal.app: đúng trừ ⌫ ("ho"). Telex của Apple trong terminal VS Code: "tôi dùng ưindows để ho hát với bạn ↩đường đẹp vui vẻ " (phép đo hợp lệ).
 - Cửa sổ mở trên một file trong thư mục chưa được tin cậy thì VS Code hỏi tin cậy trước khi tạo terminal; ô `vscodeterm` mở cửa sổ trống (VS Code mặc định tin cửa sổ trống).
+
+Gạch chân trong VS Code (12/11/2026, bộ gõ Debug 2122e53, 120 ms, một lượt mỗi ô; `scripts/research/terminal-underline/run.sh 't6-*'`; cùng chuỗi phím với lượt xác nhận `WebHost`; gạch chân ép cho cả app, như khi người dùng bật theo D13):
+
+- Terminal tích hợp: đúng cả hai dòng, "tôi dùng windows để hò hát với bạn ↩đường đẹp vui vẻ ". Byte gửi cho shell chỉ có chữ đã chốt và Return, không có phím gốc hay chữ lặp. Từ tiếng Anh (D4) và ⌫ giữa từ (D32) cũng đúng; Telex của Apple cùng ô khác ở hai chỗ này ("ưindows", "ho").
+- Chuyển ô: terminal đúng, rồi trình soạn thảo cùng cửa sổ đúng "hôm nay đường đẹp vui vẻ ". Trong trình soạn thảo, gạch chân mất D20 (mục 3); chuỗi phím này không có ca D20 nên không đo cái giá đó.
+- Log: mọi phím có chữ đi đường đánh dấu chữ (63 phím đánh dấu, 13 lần chốt), không có `range-ignored`: gạch chân không dùng vùng thay nên không cần nhận ra ô.
 
 Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượt mỗi ô; Telex của Apple ra đúng):
 
