@@ -672,7 +672,7 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 **Hệ quả đã chấp nhận:**
 
 - D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
-- Terminal dựng bằng xterm.js (terminal tích hợp của VS Code, Cursor, terminal trong app Claude) gõ sai như trước D43: trên trang thử, `toois vieetj dd ` ra "toôoiís vieêetj dđd "; các app đó chưa đo.
+- Terminal dựng bằng xterm.js (terminal tích hợp của VS Code, Cursor, terminal trong app Claude) gõ sai như trước D43: trên trang thử, `toois vieetj dd ` ra "toôoiís vieêetj dđd "; trong terminal của VS Code cũng sai (đã đo); Cursor và app Claude chưa đo.
 - Trang xterm.js mà mọi câu trả lời vị trí đều 0 bị xếp vào kiểu Ghostty và nhận ký tự xoá. Ký tự xoá khi đó có thể lọt sang trình soạn thảo cùng view. Theo mô hình, việc này xảy ra khi view đó từng có chữ gạch chân (Telex của Apple, phím chết ⌥); chưa đo.
 - Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
@@ -686,7 +686,7 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - Thay tại chỗ thường hỏng ở các ô này: Ghostty `dd` ra "dđ", `vieetj` ra "vieetj"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ". Telex của Apple ra đúng ở cả hai.
 - Bản thử ký tự xoá ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim), thời gian xử lý mỗi phím ngang thay tại chỗ thường.
 - Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. xterm.js phải gửi trong phím: theo mã, chữ tới sau phím (trước khi nhả phím) bị bỏ.
-- Không gửi ký tự xoá ở kiểu xterm.js: chữ đúng trong terminal không đáng đổi lấy rủi ro làm hỏng chữ ở nơi người dùng soạn thảo. Ở app Electron, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK, và click giữa chúng không tới bộ gõ (mã Chromium), nên kết luận "terminal" giữ khi người dùng chuyển sang trình soạn thảo. Trên mô hình, ký tự xoá khi đó lọt vào trình soạn thảo ở mọi phím thay chữ. Cách bỏ kết luận khi vị trí lại tăng vẫn để lọt ký tự xoá ở từ đầu của ô rỗng. Gửi trong phím chỉ đúng từ dòng sau Return (đo trên trang thử, một lượt), dòng đầu vẫn sai.
+- Không gửi ký tự xoá ở kiểu xterm.js: chữ đúng trong terminal không đáng đổi lấy rủi ro làm hỏng chữ ở nơi người dùng soạn thảo. Ở app Electron, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK, và click giữa chúng không tới bộ gõ (mã Chromium; đo trên VS Code: click từ terminal sang trình soạn thảo không kích hoạt lại bộ gõ), nên kết luận "terminal" giữ khi người dùng chuyển sang trình soạn thảo. Trên mô hình, ký tự xoá khi đó lọt vào trình soạn thảo ở mọi phím thay chữ. Cách bỏ kết luận khi vị trí lại tăng vẫn để lọt ký tự xoá ở từ đầu của ô rỗng. Gửi trong phím chỉ đúng từ dòng sau Return (đo trên trang thử, một lượt), dòng đầu vẫn sai.
 - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 - Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
 

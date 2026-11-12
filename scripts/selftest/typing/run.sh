@@ -18,6 +18,9 @@
 #           Chrome page: the terminal of Electron apps such as the Claude desktop app)
 #           | tiptap (a TipTap/ProseMirror editor in a Chrome page: the message box of the
 #           Claude desktop app and of claude.ai)
+#           | vscodeterm (the integrated terminal of VS Code: xterm.js in Electron, a cell
+#           of the same kind as ghostty's runs in it) | vscodeswitch (vscodeterm, then the
+#           focus moves to an empty editor of the same VS Code window and --keys2 is typed there)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
@@ -28,8 +31,10 @@
 #                     120 is close to normal typing.
 #   --keys "…"        keys to type (default: the sample sentence below). Four marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
-#                     key; ↩ the Return key (ghostty and the xterm page only: Return ends
-#                     the line, nothing runs; any other app is an error); ⇄ switches the
+#                     key; ↩ the Return key (ghostty, the xterm page, vscodeterm and
+#                     vscodeswitch only: nothing runs. In ghostty Return ends the line; in
+#                     the xterm page and the VS Code cells it is recorded as ↩ in the line
+#                     and typing goes on; any other app is an error); ⇄ switches the
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
@@ -38,6 +43,11 @@
 #   --expect "…"      expected text (default: what the sample sentence must give). With --keys
 #                     and no --expect there is no answer: the text read back is printed, with no
 #                     verdict (neither ✓ nor ✗), and the exit status is 0 unless the run stopped.
+#   --keys2 "…"       vscodeswitch only (required there): keys typed in the editor after
+#                     the focus moved from the terminal; same marks as --keys except ↩.
+#   --expect2 "…"     expected text of the editor for --keys2 (U+007F shown as ␡ in the
+#                     report). Without it the editor's text is printed with no verdict.
+#                     --expect is then the terminal's line, as for vscodeterm.
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
@@ -70,7 +80,15 @@
 #                     `scripts/perf/perf-report.sh --input`. Also: ghostty and ghosttyvim:
 #                     <app>.raw (the raw bytes Ghostty sent to the terminal); xterm:
 #                     xterm.data (the onData chunks); tiptap: tiptap.events (the
-#                     beforeinput events); with --shot: <app>.png.
+#                     beforeinput events); vscodeterm, vscodeswitch: <app>.raw (the raw
+#                     bytes xterm.js sent to the cell), <app>.phases (the time of each
+#                     phase, to read next to the perf log's activations) and, for
+#                     vscodeswitch, <app>.editor.txt (the editor's text); with --shot:
+#                     <app>.png. <app>.perf.log also holds the input method's
+#                     `event=range-ignored` / `event=range-ignore-refuted` lines (D43; the
+#                     log's settings category, only those) and, in a Debug build, its
+#                     `name=activate` lines. There is no deactivation line: the input
+#                     method does not log deactivateServer.
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
 #                     Debug input method only: the script writes the bundle ID into the
@@ -120,6 +138,26 @@
 # with --save). Details at run_ghostty. A Ghostty launched by the script opens no window
 # of its own (--initial-window=false).
 #
+# VS Code terminal (vscodeterm, vscodeswitch): a new, empty VS Code window (`code --new-window`
+# with no file: empty windows are trusted by default), found as the one window whose frame
+# was not there before: no key is sent unless the focused window of VS Code has exactly that
+# frame, no sheet and no "Restricted" in its title (not found or not unique: the run stops, exit
+# 3). Then ⌘N for an empty Untitled editor (the guard title is "Untitled"),
+# a new integrated terminal (⌃⇧`). The command that starts the cell is put on the clipboard
+# and pasted with ⌘V, then Return, so it never goes through the input method, whatever the
+# current source is (the clipboard is put back at the end); it lands in the user's zsh
+# history. The cell takes the terminal like Ghostty's does (raw bytes teed to a file, a zsh
+# line editor, ⌃D ends the line). Before any test key the script types the marker "qkpb"
+# (letters no Telex rule touches) and the cell reports having read it from its tty: a marker
+# that does not come back means the keys do not reach the terminal, and the run stops (exit
+# 3) without typing more. Nothing is saved: a window with text in the editor is closed with
+# "Don't Save", and only this run's window is closed, by its frame, also at exit after Ctrl-C or a
+# stop (the cell still running in the terminal is killed first). vscodeswitch then clicks in the editor area of the window (a real mouse
+# click, as the user does, so the input method gets no deactivation from this script); if
+# the click does not leave the focus in the editor (checked: ⌘A ⌘C on the empty editor must
+# copy nothing, in the terminal it copies its text) it presses ⌘1 (focus first editor group)
+# and checks again, then stops.
+#
 # Safety: keys and shortcuts (⌘A ⌘C ⌘W ⌃U ⌃D) are only sent while the app under test is
 # frontmost (browsers: with the test page in front and the keyboard focus in its text
 # field; VS Code: an Untitled editor; Mail: the New Message window; Sublime Text, Ghostty:
@@ -159,6 +197,10 @@ KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
 KEYS_GIVEN=0
 EXPECT_GIVEN=0
+KEYS2=""
+KEYS2_GIVEN=0
+EXPECT2=""
+EXPECT2_GIVEN=0
 DELAY_MS=30
 UNDERLINE=0
 SHOT=0
@@ -177,6 +219,8 @@ while [[ $# -gt 0 ]]; do
     --delay) DELAY_MS="${2:?--delay cần số ms}"; shift 2 ;;
     --keys) KEYS="${2?}"; KEYS_GIVEN=1; shift 2 ;;
     --expect) EXPECT="${2?}"; EXPECT_GIVEN=1; shift 2 ;;
+    --keys2) KEYS2="${2?}"; KEYS2_GIVEN=1; shift 2 ;;
+    --expect2) EXPECT2="${2?}"; EXPECT2_GIVEN=1; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
     --shot) SHOT=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
@@ -187,7 +231,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -223,8 +267,16 @@ if [[ "$KEYS" == *$'\n'*|| "$KEYS" == *$'\r'* ]]; then
 fi
 if [[ "$KEYS" == *↩* ]]; then
   for app in "${APPS[@]}"; do
-    [[ $app == ghostty || $app == xterm ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty và xterm, không với $app"
+    [[ $app == (ghostty|xterm|vscodeterm|vscodeswitch) ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty, xterm, vscodeterm và vscodeswitch, không với $app"
   done
+fi
+if [[ "$KEYS2" == *$'\n'*|| "$KEYS2" == *$'\r'* || "$KEYS2" == *↩* ]]; then
+  log_die 2 "--keys2 không được có xuống dòng hay ↩ (không nhấn Return trong trình soạn thảo)."
+fi
+if (( ${APPS[(Ie)vscodeswitch]} )); then
+  (( KEYS2_GIVEN )) || log_die 2 "vscodeswitch cần --keys2 (phím gõ trong trình soạn thảo)"
+elif (( KEYS2_GIVEN || EXPECT2_GIVEN )); then
+  log_die 2 "--keys2 và --expect2 chỉ dùng với vscodeswitch"
 fi
 
 # --- helpers -------------------------------------------------------------------------
@@ -258,6 +310,9 @@ WORK="$(mktemp -d)"
 # Written when the run must stop: "front" (another app came to the front) or "source"
 # (the input source did not become the one selected).
 STOP_FILE="$WORK/stop"
+# This run's VS Code window (its frame), for cleanup to close it after a stop or Ctrl-C: the
+# cells run in a subshell, so the shell that cleans up reads it from here.
+VSCODE_WINID_FILE="$WORK/vscode.winid"
 # The reason of the stop, in words, for the last message of the run: the check that failed.
 STOP_REASON_FILE="$WORK/stop-reason"
 stop_run() { # kind (front|source) reason
@@ -300,6 +355,8 @@ restore_perf_key() {
 }
 defaults write -g "$PERF_KEY" -bool true
 cleanup() {
+  # VS Code's terminal cell and window of this run, if any (functions defined further down).
+  (( $+functions[vscode_cleanup] )) && vscode_cleanup
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
@@ -391,7 +448,21 @@ front_guard() { # process [window-title-substring] → AppleScript that errors i
       end try
       if fw does not contain "${2:-}" then error "front window of $1 is " & fw & ", not the test page"
     end if
+$(vscode_guard_extra "$1")
   end tell
+OSA
+}
+# For process Code once this run's window is known (VSCODE_WIN_ID): the focused window must be
+# that one, with no sheet and not in Restricted Mode. Nothing for any other process.
+vscode_guard_extra() { # process
+  [[ "$1" == Code && -n "${VSCODE_WIN_ID:-}" ]] || return 0
+  cat <<OSA
+    set w2 to value of attribute "AXFocusedWindow" of process "Code"
+    set p2 to position of w2
+    set s2 to size of w2
+    if (((item 1 of p2) as text) & "_" & ((item 2 of p2) as text) & "_" & ((item 1 of s2) as text) & "_" & ((item 2 of s2) as text)) is not "$VSCODE_WIN_ID" then error "front window of Code is not this run's window"
+    if (count of sheets of w2) > 0 then error "front window of Code has a sheet (a dialog): not sending keys"
+    if (name of w2) contains "Restricted" then error "front window of Code is in Restricted Mode: not sending keys"
 OSA
 }
 # The guard alone: status 0 when process $1 is frontmost (with $2 in its focused window's
@@ -770,6 +841,12 @@ discard_front_document() {
   end tell' >/dev/null || return 0
   # Until the window is gone or shows its save sheet; the step below says which.
   wait_until 5 document_closed_or_asking "$1" "$2"
+  discard_save_sheet "$1" "$2"
+}
+
+# Answers the save prompt of the window of process $1 titled with $2 with the button that
+# discards; warns when the window is still there (no sheet, or no such button).
+discard_save_sheet() { # process title
   osascript - "$1" "$2" <<'OSA' >/dev/null 2>&1 || log_warn "Còn cửa sổ \"$2\" của $1, đóng tay giúp (không lưu)"
 on run argv
   set p to item 1 of argv
@@ -780,7 +857,7 @@ on run argv
         if (count of sheets of w) = 0 then error "window still open"
         set done to false
         repeat with b in buttons of sheet 1 of w
-          if name of b is in {"Don't Save", "Don’t Save", "Delete", "Delete Draft", "Revert Changes"} then
+          if name of b is in {"Don't Save", "Don’t Save", "Delete", "Delete Draft", "Revert Changes", "Terminate"} then
             click b
             set done to true
             exit repeat
@@ -821,6 +898,25 @@ run_vscode() {
 # closing the window asks nothing.
 file_editor() {
   local proc="$1" cli="$2" file="$WORK/dau-selftest.txt"
+  open_editor_window "$proc" "$cli" "$file"
+  select_dau; type_keys "$proc" dau-selftest
+  copy_all "$proc" dau-selftest
+  guarded "$proc" dau-selftest 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+    delay 0.2
+    keystroke "s" using {command down}
+    delay 0.5
+  end tell' >/dev/null
+  osascript -e "tell application \"System Events\" to tell process \"$proc\" to click (first button of (first window whose name contains \"dau-selftest\") whose subrole is \"AXCloseButton\")" >/dev/null 2>&1
+}
+
+# A new window of the editor $1 (process name; $2 its command-line tool) on the empty file
+# $3 (created here), raised until it is the focused one. Not there in time: the caller's
+# guard reports it and stops the run.
+open_editor_window() { # process cli file
+  local proc="$1" cli="$2" file="$3"
   : > "$file"
   "$cli" --new-window "$file" >/dev/null 2>&1
   osascript -e "tell application \"System Events\" to set frontmost of process \"$proc\" to true" >/dev/null 2>&1
@@ -835,23 +931,357 @@ file_editor() {
     (( i % 10 == 0 )) && "$cli" "$file" >/dev/null 2>&1
     sleep 0.5
   done
-  select_dau; type_keys "$proc" dau-selftest
-  copy_all "$proc" dau-selftest
-  guarded "$proc" dau-selftest 'tell application "System Events"
-    keystroke "a" using {command down}
-    delay 0.1
-    key code 51
-    delay 0.2
-    keystroke "s" using {command down}
-    delay 0.5
-  end tell' >/dev/null
-  osascript -e "tell application \"System Events\" to tell process \"$proc\" to click (first button of (first window whose name contains \"dau-selftest\") whose subrole is \"AXCloseButton\")" >/dev/null 2>&1
 }
 
 # Cursor's editor. ⌘N in Cursor opens a new agent, not an untitled file, hence the file.
 run_cursor() { file_editor Cursor /Applications/Cursor.app/Contents/Resources/app/bin/cursor; }
 # VS Code opened the same way as Cursor: the control for that way of opening an editor.
 run_vscodefile() { file_editor Code "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"; }
+
+# --- VS Code terminal (vscodeterm, vscodeswitch) ---------------------------------------
+# What runs, how the keys are known to reach the terminal and the editor: the leading
+# comment ("VS Code terminal"). The cell is Ghostty's (ghostty_cell) with two differences:
+# it reads the marker from its tty before the line editor starts, and Return does not end
+# the line: it is recorded as ↩ in it (as the xterm page does), so the keys after a Return
+# are typed at the start of a new line of the terminal, as in a real shell.
+VSCODE_CLI="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
+VSCODE_TITLE=Untitled          # the title of the empty editor, in the window title
+VSCODE_MARKER="qkpb "           # no Telex rule touches these letters; the space commits an input method's marked text (Apple's Telex holds "qkpb" underlined until then)
+VSCODE_RAW="$WORK/vscode.raw"
+VSCODE_LINE="$WORK/vscode.line"
+VSCODE_CELL="$WORK/vscode-cell.zsh"
+VSCODE_STARTED="$WORK/vscode.started"   # the cell runs (its pid inside) and is about to read the marker
+VSCODE_MARKER_FILE="$WORK/vscode.marker" # the marker as the cell read it from its tty
+VSCODE_READY="$WORK/vscode.ready"       # the line editor is about to read
+VSCODE_EDITOR_TEXT="$WORK/vscodeswitch.editor"
+VSCODE_PHASES="$WORK/vscode.phases"
+# The cell, a zsh script: $1 raw bytes file, $2 line file, $3 started, $4 marker, $5 ready.
+vscode_cell() {
+  cat <<'CELL'
+# Runs in the VS Code terminal opened by scripts/selftest/typing/run.sh (run_vscodeterm).
+export LC_ALL=en_US.UTF-8
+size=(${=$(stty size </dev/tty 2>/dev/null)})
+stty raw -echo </dev/tty
+print -r -- $$ > $3
+read -rs -k 5 marker </dev/tty
+print -rn -- "$marker" > $4
+/usr/bin/script -q /dev/null /bin/zsh -f -c '
+  (( $1 > 0 )) && stty rows $1 cols $2 2>/dev/null
+  zmodload zsh/zle
+  bindkey -e
+  bindkey "^D" accept-line
+  dau-return() { LBUFFER+="↩" }
+  zle -N dau-return
+  bindkey "^M" dau-return
+  line=
+  : > $4
+  vared -p "dau> " line
+  print -rn -- "$line" > $3
+' zsh "${size[1]:-0}" "${size[2]:-0}" "$2" "$5" < <(exec /usr/bin/tee "$1" </dev/tty)
+/usr/bin/pkill -P $$ -x tee
+stty sane </dev/tty
+exit 0
+CELL
+}
+phase() { print -r -- "$(strftime '%H:%M:%S' $EPOCHSECONDS) $1" >> "$VSCODE_PHASES"; }
+vscode_marker_back() { [[ -e "$VSCODE_MARKER_FILE" && "$(<"$VSCODE_MARKER_FILE")" == "$VSCODE_MARKER" ]]; }
+# --- this run's VS Code window ------------------------------------------------------------
+# Every key to VS Code goes through front_guard, which for process Code also asks that the
+# focused window is this run's window (VSCODE_WIN_ID: its position and size, "x_y_w_h", taken
+# from the one window that appeared after `code --new-window`; no window of the user's has
+# that frame) and that it has no sheet and is not in Restricted Mode. A VS Code dialog that is
+# HTML in the page (Workspace Trust) is not seen through Accessibility: in an empty window
+# VS Code trusts by default, so none is expected; one that appeared anyway would have to take
+# the keyboard focus out of the editor or terminal, which the marker (the cell reading it back)
+# and the title check catch. No id, or not unique: stop_run, no key sent.
+VSCODE_WIN_ID=""
+# One line "x_y_w_h" for each window of VS Code.
+vscode_geoms() {
+  osascript 2>/dev/null <<'OSA'
+tell application "System Events" to tell process "Code"
+  set out to ""
+  repeat with w in windows
+    set p to position of w
+    set s to size of w
+    set out to out & ((item 1 of p) as text) & "_" & ((item 2 of p) as text) & "_" & ((item 1 of s) as text) & "_" & ((item 2 of s) as text) & linefeed
+  end repeat
+  return out
+end tell
+OSA
+}
+# "open", "sheet" (a save prompt or another sheet on it) or "gone" for the window whose frame is $1.
+vscode_win_state() {
+  local st
+  st="$(osascript - "$1" 2>/dev/null <<'OSA'
+on run argv
+  tell application "System Events" to tell process "Code"
+    repeat with w in windows
+      set p to position of w
+      set s to size of w
+      if (((item 1 of p) as text) & "_" & ((item 2 of p) as text) & "_" & ((item 1 of s) as text) & "_" & ((item 2 of s) as text)) is (item 1 of argv) then
+        if (count of sheets of w) > 0 then return "sheet"
+        return "open"
+      end if
+    end repeat
+  end tell
+  return "gone"
+end run
+OSA
+)"
+  print -r -- "${st:-gone}"
+}
+# Opens an empty VS Code window and takes its frame as VSCODE_WIN_ID. An empty window, not a
+# file: VS Code trusts empty windows by default (security.workspace.trust.emptyWindow), while a
+# file in this run's temporary folder opens in Restricted Mode, where a new terminal first asks
+# "Do you trust the authors…?" (seen 12/11/2026: the paste went to that dialog and Return
+# trusted the folder). Status 1, the run stopped, when exactly one new window is not found.
+vscode_open_window() {
+  local -a before after new
+  local g i
+  before=("${(@f)$(vscode_geoms)}")
+  "$VSCODE_CLI" --new-window >/dev/null 2>&1
+  for i in {1..60}; do
+    after=("${(@f)$(vscode_geoms)}"); new=()
+    for g in $after; do [[ -n $g ]] && (( ! ${before[(Ie)$g]} )) && new+=($g); done
+    (( $#new >= 1 )) && break
+    sleep 0.25
+  done
+  # Fixed: a second new window (restored by a VS Code that was not running) would appear
+  # within this time; nothing observable says "no more are coming".
+  sleep 1
+  after=("${(@f)$(vscode_geoms)}"); new=()
+  for g in $after; do [[ -n $g ]] && (( ! ${before[(Ie)$g]} )) && new+=($g); done
+  if (( $#new != 1 )); then
+    log_error "Dừng: không tìm được đúng một cửa sổ VS Code mới (thấy $#new cửa sổ có khung chưa có trước đó); không gửi phím."
+    stop_run front "không xác định được cửa sổ VS Code của lượt này (thấy $#new cửa sổ mới, cần đúng 1)"
+    return 1
+  fi
+  VSCODE_WIN_ID="$new[1]"
+  print -r -- "$VSCODE_WIN_ID" > "$VSCODE_WINID_FILE"
+  osascript - "$VSCODE_WIN_ID" >/dev/null 2>&1 <<'OSA'
+on run argv
+  tell application "System Events" to tell process "Code"
+    repeat with w in windows
+      set p to position of w
+      set s to size of w
+      if (((item 1 of p) as text) & "_" & ((item 2 of p) as text) & "_" & ((item 1 of s) as text) & "_" & ((item 2 of s) as text)) is (item 1 of argv) then
+        perform action "AXRaise" of w
+        set frontmost to true
+      end if
+    end repeat
+  end tell
+end run
+OSA
+  # Not in front in time: the first guard says why and stops the run.
+  wait_until -i 0.3 10 front_ok Code
+  return 0
+}
+# Closes this run's window (found by its frame, focused or not) with its close button, no key,
+# and says "Don't Save" to a save prompt on it. Does nothing when the run never opened one.
+vscode_close_window() {
+  local id st i
+  [[ -s "$VSCODE_WINID_FILE" ]] || return 0
+  id="$(<"$VSCODE_WINID_FILE")"
+  [[ "$(vscode_win_state "$id")" == gone ]] || osascript - "$id" >/dev/null 2>&1 <<'OSA'
+on run argv
+  tell application "System Events" to tell process "Code"
+    repeat with w in windows
+      set p to position of w
+      set s to size of w
+      if (((item 1 of p) as text) & "_" & ((item 2 of p) as text) & "_" & ((item 1 of s) as text) & "_" & ((item 2 of s) as text)) is (item 1 of argv) then
+        click (first button of w whose subrole is "AXCloseButton")
+      end if
+    end repeat
+  end tell
+end run
+OSA
+  for i in {1..40}; do
+    st="$(vscode_win_state "$id")"
+    if [[ $st == gone ]]; then rm -f "$VSCODE_WINID_FILE"; return 0; fi
+    if [[ $st == sheet ]]; then
+      # "Terminate" is the terminal's confirm button when VS Code is set to ask on exit (label not seen on screen).
+      osascript - "$id" >/dev/null 2>&1 <<'OSA'
+on run argv
+  tell application "System Events" to tell process "Code"
+    repeat with w in windows
+      set p to position of w
+      set s to size of w
+      if (((item 1 of p) as text) & "_" & ((item 2 of p) as text) & "_" & ((item 1 of s) as text) & "_" & ((item 2 of s) as text)) is (item 1 of argv) then
+        repeat with b in buttons of sheet 1 of w
+          if name of b is in {"Don't Save", "Don’t Save", "Terminate"} then click b
+        end repeat
+      end if
+    end repeat
+  end tell
+end run
+OSA
+    fi
+    sleep 0.25
+  done
+  log_warn "Còn cửa sổ VS Code của lượt này, đóng tay giúp (không lưu)"
+}
+# Stops the cell still running in the terminal (the process the cell wrote to the started
+# file), only when that process's command line holds this run's cell file.
+vscode_stop_cell() {
+  local pid
+  [[ -s "$VSCODE_STARTED" ]] || return 0
+  pid="$(head -1 "$VSCODE_STARTED")"
+  [[ "$pid" =~ '^[0-9]+$' ]] || return 0
+  [[ "$(ps -p "$pid" -o command= 2>/dev/null)" == *"$VSCODE_CELL"* ]] || return 0
+  pkill -P "$pid" 2>/dev/null
+  kill "$pid" 2>/dev/null
+  return 0
+}
+# At exit, also after Ctrl-C or a stop: the cell, then the window.
+vscode_cleanup() { vscode_stop_cell; vscode_close_window; }
+
+# A new window with an empty Untitled editor and a new integrated terminal, the cell started
+# in it, the marker read back, the line editor ready. Status 0 when the keys can go into the
+# line editor; otherwise the run is stopped (stop_run) or the source did not take.
+vscode_start_cell() {
+  rm -f "$VSCODE_RAW" "$VSCODE_LINE" "$VSCODE_STARTED" "$VSCODE_MARKER_FILE" "$VSCODE_READY" "$VSCODE_PHASES"
+  vscode_cell > "$VSCODE_CELL"
+  vscode_open_window || return 1
+  # The empty document of the switch (also here: one way to open for both cells).
+  guarded Code "" 'tell application "System Events" to keystroke "n" using {command down}' \
+    >/dev/null || return 1
+  # Not there in time: the guard below reports it and stops the run.
+  wait_until -i 0.3 10 front_ok Code "$VSCODE_TITLE"
+  # ⌃⇧` opens a new terminal and gives it the focus (⌃` alone toggles the panel).
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to key code 50 using {control down, shift down}' \
+    >/dev/null || return 1
+  # Fixed: the terminal's shell starts after the panel shows and nothing says when it is ready
+  # to take the paste (its own start-up files may take seconds). The paste is held by the
+  # terminal's tty until the shell reads it, so a late shell loses nothing; only a paste
+  # before the panel has the focus would go astray, and the marker below catches that.
+  sleep 3
+  shot_window Code vscode-1-before-paste
+  # The command goes by the clipboard, not by keys: no input method between the script and
+  # the shell, whatever the current source is. A leading space keeps it out of some histories.
+  print -rn -- " /bin/zsh -f ${(qq)VSCODE_CELL} ${(qq)VSCODE_RAW} ${(qq)VSCODE_LINE} ${(qq)VSCODE_STARTED} ${(qq)VSCODE_MARKER_FILE} ${(qq)VSCODE_READY}" | pbcopy
+  # Two guarded steps: the guard (this run's window, no sheet, not Restricted Mode) is
+  # checked again right before Return, after the paste.
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "v" using {command down}' >/dev/null || return 1
+  # Fixed: lets the terminal take the paste before Return; nothing to read.
+  sleep 0.3
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to key code 36' >/dev/null || return 1
+  sleep 1; shot_window Code vscode-2-after-paste
+  if ! wait_until -i 0.3 20 test -e "$VSCODE_STARTED"; then
+    log_error "Dừng: cell không chạy trong terminal của VS Code sau 20 giây (lệnh dán không tới terminal?); không gõ gì thêm."
+    stop_run front "cell không chạy trong terminal của VS Code (không có tệp báo đã chạy sau 20 giây): lệnh dán không tới terminal, hoặc shell của terminal không chạy được nó"
+    return 1
+  fi
+  select_dau || return 1
+  # The marker, key by key; nothing reads the pace.
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events"
+    repeat with c in {"q", "k", "p", "b", " "}
+      keystroke c
+      delay 0.1
+    end repeat
+  end tell' >/dev/null || return 1
+  if ! wait_until -i 0.2 5 vscode_marker_back; then
+    log_error "Dừng: chuỗi đánh dấu \"$VSCODE_MARKER\" không tới cell sau 5 giây (cell đọc được: \"$(cat "$VSCODE_MARKER_FILE" 2>/dev/null)\"): phím không vào terminal; không gõ gì thêm."
+    stop_run front "phím không vào terminal của VS Code: chuỗi đánh dấu \"$VSCODE_MARKER\" không tới cell"
+    return 1
+  fi
+  if ! wait_until -i 0.2 5 test -e "$VSCODE_READY"; then
+    log_error "Dừng: trình sửa dòng của cell chưa sẵn sàng sau 5 giây; không gõ gì thêm."
+    stop_run front "trình sửa dòng của cell trong terminal VS Code chưa sẵn sàng"
+    return 1
+  fi
+}
+
+# ⌃D: the cell's line editor accepts the line; again once if the line file has not come
+# (⌃D may only commit marked text, as in Ghostty).
+vscode_end_line() {
+  stopped && return 1
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "d" using {control down}' >/dev/null || return 1
+  if ! wait_until 2 test -e "$VSCODE_LINE"; then
+    log_warn "VS Code: dòng chưa kết thúc 2 giây sau ⌃D (⌃D chỉ chốt chữ gạch chân?), gửi lại ⌃D"
+    guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "d" using {control down}' >/dev/null || return 1
+    wait_until 3 test -e "$VSCODE_LINE"
+  fi
+}
+
+# The terminal half of both cells: start, type --keys, end the line; prints the line.
+vscode_terminal_part() {
+  vscode_start_cell || return 1
+  phase "terminal-keys"
+  type_keys Code "$VSCODE_TITLE" || return 1
+  phase "terminal-keys-done"
+  vscode_end_line || return 1
+  [[ -e "$VSCODE_LINE" ]] && print -r -- "$(<"$VSCODE_LINE")"
+  return 0
+}
+
+run_vscodeterm() {
+  vscode_terminal_part
+  vscode_close_window
+  return 0
+}
+
+# --keys2 in the editor: type_keys reads $KEYS, so it gets --keys2 under that name.
+type_keys2() { local KEYS="$KEYS2"; type_keys "$@"; }
+# ⌘A ⌘C in the editor group must copy nothing while the empty editor has the focus; in the
+# terminal it copies the terminal's text. Status 0 when nothing was copied.
+vscode_editor_has_focus() {
+  stopped && return 1
+  printf '' | pbcopy
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.2
+    keystroke "c" using {command down}
+  end tell' >/dev/null || return 1
+  # Text on the clipboard within 2 s: the focus is in the terminal (or a view with text).
+  ! wait_until 2 clipboard_has_text
+}
+# The focus from the terminal to the empty editor: a click in the window's editor area (the
+# user's own action, so the input method hears no deactivation from this script, and no
+# keybinding of VS Code or the terminal can swallow it), at 60 % of the width and 25 % of
+# the height: right of the side bar, above the terminal panel. Not enough (checked above):
+# ⌘1, "focus first editor group".
+vscode_focus_editor() {
+  stopped && return 1
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to tell process "Code"
+    set w to value of attribute "AXFocusedWindow"
+    set {x, y} to position of w
+    set {sw, sh} to size of w
+    click at {x + sw * 0.6, y + sh * 0.25}
+  end tell' >/dev/null || return 1
+  # Fixed: the focus change shows nowhere readable (VS Code is an Electron page).
+  sleep 0.5
+  vscode_editor_has_focus && return 0
+  stopped && return 1
+  log_warn "VS Code: sau cú bấm chuột focus chưa ở trình soạn thảo trống, thử ⌘1"
+  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "1" using {command down}' >/dev/null || return 1
+  sleep 0.5
+  vscode_editor_has_focus && return 0
+  stopped && return 1
+  log_error "Dừng: focus không vào trình soạn thảo trống sau khi bấm chuột và ⌘1 (⌘A ⌘C còn chép được chữ); không gõ gì thêm."
+  stop_run front "focus không vào trình soạn thảo trống của VS Code sau khi bấm chuột và ⌘1"
+  return 1
+}
+
+# vscodeswitch prints the terminal's line; the editor's text goes to VSCODE_EDITOR_TEXT.
+run_vscodeswitch() {
+  rm -f "$VSCODE_EDITOR_TEXT"
+  if vscode_terminal_part && vscode_focus_editor; then
+    phase "editor-focus"
+    if type_keys2 Code "$VSCODE_TITLE"; then
+      phase "editor-keys-done"
+      copy_all Code "$VSCODE_TITLE" > "$VSCODE_EDITOR_TEXT"
+      # Empty, so closing asks nothing (if it still does, the window is closed with
+      # "Don't Save").
+      stopped || guarded Code "$VSCODE_TITLE" 'tell application "System Events"
+        keystroke "a" using {command down}
+        delay 0.1
+        key code 51
+      end tell' >/dev/null
+    fi
+  fi
+  vscode_close_window
+  return 0
+}
 
 # The prompt box of Cursor's "Cursor Agents" window. ⌘N starts a new agent with an empty
 # prompt; a prompt that is not empty (the user's draft) stops the run before anything is
@@ -1302,6 +1732,7 @@ bundle_id() {
     vscodefile) echo com.microsoft.VSCode ;;
     sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
     xterm|tiptap) echo com.google.Chrome ;;
+    vscodeterm|vscodeswitch) echo com.microsoft.VSCode ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
@@ -1349,17 +1780,59 @@ for app in "${APPS[@]}"; do
   fi
   if (( NO_ANSWER )); then log_detail "$app: không có đáp án, chữ đọc lại: \"$got_trimmed\""
   elif [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
-  # Ghostty: the bytes it sent to the terminal, before the line editor applied ⌫ (DEL).
-  if [[ "$app" == ghostty* && -e "$GHOSTTY_RAW" ]]; then
-    log_detail "byte Ghostty gửi xuống terminal: \"$(visible_bytes "$GHOSTTY_RAW")\""
-    [[ -n "$SAVE_DIR" ]] && cp "$GHOSTTY_RAW" "$SAVE_DIR/$app.raw"
+  # Ghostty and the VS Code terminal: the bytes the terminal sent, before the line editor
+  # applied ⌫ (DEL).
+  raw_file=""; raw_who=""
+  case "$app" in
+    ghostty*) raw_file="$GHOSTTY_RAW"; raw_who=Ghostty ;;
+    vscodeterm|vscodeswitch) raw_file="$VSCODE_RAW"; raw_who=xterm.js ;;
+  esac
+  if [[ -n "$raw_file" && -e "$raw_file" ]]; then
+    log_detail "byte $raw_who gửi xuống terminal: \"$(visible_bytes "$raw_file")\""
+    [[ -n "$SAVE_DIR" ]] && cp "$raw_file" "$SAVE_DIR/$app.raw"
   fi
+  # The editor half of vscodeswitch: its own verdict (U+007F shown as ␡).
+  if [[ "$app" == vscodeswitch && -e "$VSCODE_EDITOR_TEXT" ]]; then
+    editor_text="$(<"$VSCODE_EDITOR_TEXT")"
+    editor_trimmed="$(printf '%s' "$editor_text" | trim_right)"
+    del=$'\x7f'
+    del_only="${editor_text//[^$del]/}"
+    editor_shown="${editor_trimmed//$del/␡}"
+    [[ -n "$SAVE_DIR" ]] && print -r -- "$editor_text" > "$SAVE_DIR/$app.editor.txt"
+    log_detail "VS Code: số ký tự U+007F (␡) trong trình soạn thảo: ${#del_only}"
+    if [[ -n "$SOURCE_ID" && "$editor_trimmed" == "$(printf '%s' "$KEYS2" | trim_right)" && "$KEYS2" != "$EXPECT2" ]] && (( EXPECT2_GIVEN )); then
+      log_error "Ô không hợp lệ: trình soạn thảo ra nguyên chuỗi phím, $SOURCE_ID không có tác dụng trong ô gõ"
+      stop_run source "trình soạn thảo ra nguyên chuỗi phím: $SOURCE_ID không có tác dụng trong ô gõ"; break
+    fi
+    if (( ! EXPECT2_GIVEN )); then
+      log_detail "trình soạn thảo: không có đáp án (--keys2 không kèm --expect2), chữ đọc lại: \"$editor_shown\""
+    elif [[ "$editor_trimmed" == "$(printf '%s' "$EXPECT2" | trim_right)" ]]; then
+      log_ok "trình soạn thảo đạt: \"$editor_shown\""
+    else
+      log_error "trình soạn thảo sai: \"$editor_shown\""; FAILED=1
+    fi
+  elif [[ "$app" == vscodeswitch ]]; then
+    log_warn "vscodeswitch: không đọc được chữ của trình soạn thảo (phần soạn thảo không chạy tới)"
+    FAILED=1
+  fi
+  # The settings category carries only the D43 range-ignore lines wanted here (the rest of
+  # it, underline-on, is read below); perf and diag whole.
   "$LOG" show --start "$start" --style compact \
-    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
+    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\" OR (category == \"settings\" AND eventMessage CONTAINS \"event=range-ignore\"))" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
+  # VS Code terminal cells: the time of each phase and the activations (a Debug build logs
+  # `name=activate` for each; deactivateServer logs nothing), to see whether the switch to
+  # the editor activated the input method again.
+  if [[ ( "$app" == vscodeterm || "$app" == vscodeswitch ) && -s "$VSCODE_PHASES" ]]; then
+    log_detail "VS Code, các pha: $(tr '\n' ';' < "$VSCODE_PHASES")"
+    [[ -n "$SAVE_DIR" ]] && cp "$VSCODE_PHASES" "$SAVE_DIR/$app.phases"
+    if (( DAU_RUN )) && [[ "$IM_CONFIG" != Release ]]; then
+      log_detail "kích hoạt bộ gõ (name=activate): $(grep -c 'name=activate' "$WORK/perf.log") lần: $(grep 'name=activate' "$WORK/perf.log" | awk '{print $2}' | tr '\n' ' ')"
+    fi
+  fi
   case "$app" in
     safari) filter=Safari ;; chrome|xterm|tiptap) filter=Chrome ;;
-    vscode) filter=VSCode ;; terminal) filter=Terminal ;;
+    vscode|vscodeterm|vscodeswitch) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac
   # Timings come from the per-key log of a Debug Dấu (D8): a Release build and another input

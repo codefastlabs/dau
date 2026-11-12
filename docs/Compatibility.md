@@ -17,6 +17,7 @@ Tiêu chí nhãn "Đề xuất" ở D13 (Gạch chân là đường lui cuối c
 | Terminal | đúng từ 5 ms, sai ở 0 ms; ⌫ không tới bộ gõ (mục 6.5) | sai ở 0 ms | không |
 | Ghostty | theo D43: sai ở từ đầu mỗi lần kích hoạt, đúng từ từ thứ hai ở 120 ms; phím dồn sai (mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | không |
 | xterm.js (trang thử trong Chrome) | sai: D43 không gửi ký tự xoá ở kiểu xterm.js (mục 6.8) | đúng | không |
+| Terminal tích hợp của VS Code (xterm.js) | sai như trước D43 (D43 nhận ra, không gửi ký tự xoá); trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8) | chưa đo | không |
 | Sublime Text | đúng, cả thêm dấu cho từ đã gõ sau ⌫ và ← | không thêm dấu được cho từ đã chốt | không |
 | Notes | đúng ở 30 và 0 ms | chưa đo | không |
 | Mail, Telegram | đúng ở 30 ms | chưa đo | không |
@@ -216,7 +217,7 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 - Ngưỡng đo ở M3 (29–30/10/2026, app rảnh): sai dưới khoảng 10 ms ở Chrome, Terminal; dưới khoảng 20 ms ở VS Code (mục 5).
 - Không phải do thiếu quyền Trợ năng: bộ gõ không có quyền đó mà vẫn đúng ở 20 ms trở lên.
 - Hiện hành (M6, D11 ý "App trả lời chậm"; cơ chế: [`docs/Architecture.md`](Architecture.md) mục "App trả lời chậm"): Dấu vẫn hỏi `selectedRange` ở phím có thay chữ và tự theo dõi vị trí con trỏ. Khi vị trí app trả khác, Dấu đọc chữ trước con trỏ một lần để chứng minh app chỉ chưa áp các thao tác vừa gõ, rồi thay ở vị trí tự theo dõi; không chứng minh được thì dựng lại hoặc reset.
-- Còn sai sau khi sửa: trình soạn thảo Cursor (mục 5.4). Terminal chưa đo lại.
+- Còn sai sau khi sửa: trình soạn thảo Cursor (mục 5.4). Terminal đo lại 12/11/2026 (120 và 30 ms, một lượt mỗi mức): đúng, trừ ⌫ (mục 6.5).
 - Đã thử và bỏ (29/10/2026): tự cộng dồn vị trí từ một vị trí gốc thay cho việc hỏi (vị trí gốc cũng là ảnh chụp cũ, VS Code đổi gốc toạ độ); chờ ứng dụng rồi hỏi lại; so chữ trước con trỏ bằng `attributedSubstring` làm phép thay (Safari trả chữ cũ nên hỏng cả Safari).
 - Người gõ tay hiếm khi có hai phím cách nhau dưới 10 ms, nhưng phím lặp khi giữ phím, máy tải nặng hay ứng dụng tạm đứng có thể làm phím đến dồn (suy luận).
 
@@ -226,22 +227,22 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 
 ### 6.5 Terminal không gửi ⌫ cho bộ gõ
 
-Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó và D20 sau ⌫ không chạy ("hocj"; phát hiện ở lượt đo D20 ngày 30/10/2026, nhật ký 30/10 trong [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md)). Chưa kiểm chứng lại bằng `hoaf⌫␣` (mục 7).
+Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó và D20 sau ⌫ không chạy ("hocj"; phát hiện ở lượt đo D20 ngày 30/10/2026, nhật ký 30/10 trong [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md)). Lượt đo 12/11/2026 (`hoaf⌫` trong câu, 120 và 30 ms) xác nhận: Terminal ra "ho" thay vì "hò".
 
 ### 6.8 Terminal bỏ qua vùng thay; gạch chân không sửa được từ đã chốt
 
 - Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
 - Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Hệ quả đã chấp nhận"; số đo: mục 5.6.
-- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Gửi ký tự xoá trong phím ngay lúc nhận ra làm chữ dồn lại mỗi lần sửa (đã rõ nguyên nhân, [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 2). Chỉ gửi trong phím từ dòng sau Return thì đúng trên trang thử (12/11/2026, một lượt), nhưng D43 tắt cách này: ở app có terminal và trình soạn thảo cùng một view, ký tự xoá lọt vào trình soạn thảo (mô hình, chưa đo). Ô kiểu xterm.js nay gõ sai như cách cũ. Chính app Claude chưa đo.
+- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Gửi ký tự xoá trong phím ngay lúc nhận ra làm chữ dồn lại mỗi lần sửa (đã rõ nguyên nhân, [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 2). Chỉ gửi trong phím từ dòng sau Return thì đúng trên trang thử (12/11/2026, một lượt), nhưng D43 tắt cách này: ở app có terminal và trình soạn thảo cùng một view, ký tự xoá lọt vào trình soạn thảo (mô hình, chưa đo). Ô kiểu xterm.js nay gõ sai như cách cũ. Terminal tích hợp của VS Code đo 12/11/2026: sai như cách cũ, trình soạn thảo cùng cửa sổ đúng sau khi chuyển ô (số đo: research mục 2). Chính app Claude chưa đo.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13) không có D20: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"); Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
 
 ## 7. Còn mở
 
 - Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
-- Đo lại sau M6: Terminal (phím dồn, và ⌫ không tới bộ gõ bằng `hoaf⌫␣`); VS Code khi app bận.
+- Đo lại sau M6: Terminal ở nhịp dồn hơn 30 ms; VS Code khi app bận.
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo Cursor: nhóm lỗi ở 5 ms và ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa cần đổi N3 hoặc D11.
 - VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
-- Terminal trong app Claude và terminal tích hợp của VS Code (xterm.js trong Electron), cả việc chuyển từ terminal sang trình soạn thảo trong cùng app: chưa đo (mục 6.8).
+- Terminal trong app Claude (xterm.js trong Electron): chưa đo; VS Code dùng cùng cơ chế và đã đo (mục 6.8).
 - Pages có hai bundle ID trên cùng máy; Numbers, Keynote bản mới đổi ID. Nếu các ứng dụng này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

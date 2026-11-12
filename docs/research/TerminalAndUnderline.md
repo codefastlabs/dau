@@ -9,7 +9,7 @@ Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.j
   - Chữ dồn: lần thay có vùng thay trước lúc nhận ra để lại chữ sau con trỏ trong textarea ẩn của xterm.js. Từ đó, mỗi lần gửi ký tự xoá trong phím, xterm.js gửi lại cả textarea.
   - Cách chữa: chỉ gửi trong phím khi không có lần thay có vùng thay nào từ phím Return gần nhất, tức từ dòng sau Return.
   - Đo 12/11/2026 trên trang thử xterm.js (Chrome, bộ gõ Debug f226cc4, 120 ms, một lượt): dòng sau Return ra đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu, không lặp lần sửa trước; dòng trước Return sai như dự đoán. Cùng chuỗi phím: Ghostty ra như trước (từ đầu sai, rồi đúng), ô thường của Chrome đúng cả dòng.
-- **Terminal và ô soạn thảo trong cùng một view: trên mô hình, ký tự xoá lọt vào ô soạn thảo.** Ở VS Code, Cursor và có thể cả app Claude, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK. Click từ terminal sang trình soạn thảo không tới bộ gõ, nên kết luận "terminal" của D43 giữ nguyên và Dấu gửi ký tự xoá vào trình soạn thảo (mục 2, "Chuyển ô trong cùng view"). Chưa đo trên app thật. Vì rủi ro này, D43 không gửi ký tự xoá ở kiểu xterm.js.
+- **Terminal và ô soạn thảo trong cùng một view: kết luận "terminal" giữ khi chuyển ô (đã đo trên VS Code).** Ở VS Code, Cursor và có thể cả app Claude, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK. Đo 12/11/2026 trên VS Code: click từ terminal sang trình soạn thảo không kích hoạt lại bộ gõ (log không có `activate` giữa hai pha). Cách gửi trong phím trước đây sẽ gửi ký tự xoá vào trình soạn thảo (mô hình); vì vậy D43 không gửi ký tự xoá ở kiểu xterm.js, và trình soạn thảo ra đúng, không có ký tự xoá (mục 2, "Chuyển ô trong cùng view").
 - **Terminal trong app Claude chưa đo.** Theo bundle Claude.app 5.1231.2 (đọc 12/11/2026), terminal dùng xterm.js 5.x trong Electron 45.2.1 (Chromium 156), và ba hàm nhập liệu `_handleAnyTextareaChanges`, `_inputEvent`, `_keyDown` có cùng logic như mục 2, nên cùng cơ chế với trang thử. Khác trang thử ở ba điểm: app có bộ chặn phím riêng (`attachCustomKeyEventHandler`: ⌃Tab, ⌘ với phím điều hướng, ⌘⇧⌫, ⌘C khi đang bôi đen), có bộ đệm giữ phím khi pty chưa sẵn sàng, và chữ đi vào shell thật. Có thể đo tự động bằng panel Terminal của app, chạy trong đó một chương trình ghi byte như ở Ghostty; chưa thử.
 - **Gạch chân không sửa được dấu cho từ đã chốt** (⌫ về từ cũ, ← vào giữa từ), giống Telex của Apple. Trong Sublime Text, thay tại chỗ sửa được cả ba ca, nên tắt gạch chân cho Sublime là đủ; không quyết định nào phải đổi (mục 3).
 - **Ghostty nuốt Return ngay sau từ gạch chân**, cả với Telex của Apple: lỗi của Ghostty (mục 1).
@@ -82,7 +82,7 @@ Cách gửi trong phím (`InPlaceComposer.EraseMode.inKey`; nay `InPlaceComposer
 - Một đơn vị chữ khác phím vừa gõ (`w` ra "ư" ở đầu từ) gửi thành chữ, DEL, chữ: một đơn vị đi đường keydown thật, trên đường đó xterm.js gửi phím gốc chứ không gửi chữ.
 - Mỗi phím vẫn tối đa một `insertText`, không hỏi vị trí, không đọc chữ; Ghostty và ô thường không đổi (test `XtermPageTests`, `RangeIgnoreTests`).
 
-Chuyển ô trong cùng view (mô hình, chưa đo trên app thật; test `SharedViewTests`):
+Chuyển ô trong cùng view (mô hình: test `SharedViewTests`; phần đo trên VS Code ở cuối mục này):
 
 - Theo mã Chromium (`RenderWidgetHostViewCocoa`, nhánh main 12/11/2026), `mouseEvent:` không chuyển mouse down cho input context, còn `finishComposingText` thoát ngay khi không có marked text. Vì vậy click giữa hai phần tử của trang không tới bộ gõ: không reset, kết luận của D43 giữ nguyên. `insertText:replacementRange:` không lọc ký tự điều khiển.
 - Giả định của mô hình:
@@ -106,6 +106,13 @@ Cách đã xét để vẫn gửi trong phím (không chọn, D43: còn lọt k�
   - Mọi client giả của ô thường cho ra chữ như cũ.
   - Ca a–c đúng hết khi ô soạn thảo đã có chữ. Khi ô soạn thảo rỗng, từ đầu tiên còn lọt DEL ("ho␡ôm") vì vị trí lúc đó còn ≤ 2. Trình soạn thảo kiểu Cursor (vị trí tính từ đầu từ) còn lọt DEL ở các từ ngắn.
   - Ca d không sửa được bằng cách này.
+
+Đo trên VS Code (12/11/2026, bộ gõ Debug 3325750, 120 ms, một lượt mỗi ô; `scripts/research/terminal-underline/run.sh 't5-*'`):
+
+- Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4, và ở ⌫).
+- Chuyển ô: terminal `tooi vieetj ddi hocj ↩`, click sang tài liệu trống cùng cửa sổ, gõ `hoom nay tooi ddi hocj vui ver `: trình soạn thảo ra đúng "hôm nay tôi đi học vui vẻ ", 0 ký tự xoá; không có `activate` giữa lúc click và lúc gõ xong.
+- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty (D43 mục "Hệ quả đã chấp nhận").
+- Cửa sổ mở trên một file trong thư mục chưa được tin cậy thì VS Code hỏi tin cậy trước khi tạo terminal; ô `vscodeterm` mở cửa sổ trống (VS Code mặc định tin cửa sổ trống).
 
 Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượt mỗi ô; Telex của Apple ra đúng):
 
@@ -150,7 +157,7 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 ## Giới hạn
 
 - Một máy, một lượt mỗi ô, phím gửi bằng script, 120 ms giữa hai phím (một ô 30 ms). Ghostty 1.4.0, trang thử xterm.js 5.5.0.
-- App Claude, terminal tích hợp của VS Code và việc chuyển ô trong cùng view chưa đo. Bản xterm.js trong app Claude là 5.x, cùng logic nhập liệu như trang thử, nhưng chưa xác định bản cụ thể.
+- App Claude và Cursor chưa đo; terminal tích hợp của VS Code và việc chuyển ô ở VS Code đo một lượt (mục 2). Bản xterm.js trong app Claude là 5.x, cùng logic nhập liệu như trang thử, nhưng chưa xác định bản cụ thể.
 - Script gửi phím tuần tự: nhả phím trước rồi mới nhấn phím sau. Người gõ nhanh hay nhấn phím sau trước khi nhả phím trước. Khi đó `_keyDownSeen` của xterm.js còn đúng lúc chữ có vùng thay tới, nên theo mã `_inputEvent` bỏ chữ đó. Chưa mô hình, chưa đo.
 - Chưa đo: Ghostty khi còn vùng bôi đen bằng chuột (Ghostty mặc định bỏ bôi đen khi gõ, `selection-clear-on-typing`, nên theo mã chỉ ảnh hưởng phím đầu); Claude Code chạy trong terminal (chỉ đo ở dấu nhắc zsh và vim).
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường (theo mã, chưa đo; giới hạn đã ghi ở D43).

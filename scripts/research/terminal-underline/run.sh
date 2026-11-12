@@ -1,10 +1,10 @@
 #!/bin/zsh
-# Types the cells of docs/research/TerminalAndUnderline.md (sections 1–3) in Sublime Text, Ghostty, xterm.js and text fields, with Dấu and Apple's Vietnamese Telex as the control.
+# Types the cells of docs/research/TerminalAndUnderline.md (sections 1–3) in Sublime Text, Ghostty, xterm.js, Terminal.app, the terminal and editor of VS Code and text fields, with Dấu and Apple's Vietnamese Telex as the control.
 # Side effects: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/research/terminal-underline/run.sh [--delay MS] [CELL]...
 #   --delay MS   pause between keys (default 120, close to normal typing)
-#   CELL         ids or patterns (t4-*) from the table below (default: all, in table order)
+#   CELL         ids or patterns (t4-*, t5-*) from the table below (default: all, in table order)
 #
 # Each cell is one call of scripts/selftest/typing/run.sh (its safety rules apply: keys
 # only while the app's test window is in front; input source, clipboard and the Debug
@@ -26,7 +26,7 @@ APPLE_TELEX=com.apple.inputmethod.VietnameseIM.VietnameseTelex
 TYPING="$ROOT/scripts/selftest/typing/run.sh"
 DELAY=120
 
-# id | app | source (dau, apple) | mode | keys | expect
+# id | app | source (dau, apple) | mode | keys | expect [| keys2 | expect2]
 # Mode: words joined by "+": inplace; underline (--underline); shot (--shot: picture of
 # the window right after the keys, before the last word is committed); busy (--busy
 # 300:1000: the test page blocks its main thread 300 ms of every second, M6); fast (30 ms
@@ -44,6 +44,28 @@ DELAY=120
 # (Chrome, also with a busy page; Safari; Sublime Text) must never be taken for one
 # (typing/run.sh reports "D43: …" for each cell). One line covers D32 (hoaf ⌫), D4
 # (windows), a word whose first replacement comes late (nguwowif) and short ones.
+# Fifth round (t5-): D43 in terminals of Electron apps, and the move from a terminal to an
+# editor in the same window (docs/research/TerminalAndUnderline.md, section 2, "Chuyển ô
+# trong cùng view"). Terminal.app at 120 and 30 ms; VS Code's integrated terminal
+# (vscodeterm: xterm.js in Electron, also with a Return in the line); vscodeswitch types in
+# the terminal, then moves the focus to an empty editor of the same window and types there
+# (the 7th and 8th fields: keys and expected text of the editor); t5-vsterm-apple is the
+# control of t5-vsterm with Apple's Telex; t5-ghostty is the Ghostty cell with the same sentence
+# (no ↩: Return ends the line of the Ghostty cell). Roughly 9 to 11 minutes for the six cells
+# (VS Code opens a window and a terminal for each of the three: about 2 minutes each; the
+# others about 1 minute).
+# The sentence is Vietnamese with a meaning: "tôi dùng windows để hò hát với bạn", then, after a
+# Return, "đường đẹp vui vẻ". Keys checked one by one against the answer (Telex, D4, D32):
+# tooi→tôi (oo); dungf→dùng (tone f); windows→windows (D4, restored); ddeer→để (dd, ee, hỏi r);
+# hoaf⌫→hò (⌫ in the middle of a word that took a tone, D32); hats→hát; vowis→với (ow→ơ, sắc s on
+# ơ); banj→bạn; ↩; dduwowngf→đường (dd, uw→ư, ow→ơ, huyền f); ddepj→đẹp; vui; ver→vẻ. The
+# editor line of t5-vsswitch: hoom→hôm, nay, dduwowngf→đường, ddepj→đẹp, vui, ver→vẻ.
+# "expect" is the text the keys mean in Vietnamese, with ↩ shown as in the line of the
+# cell (typing/run.sh). For t5-vsterm it is not the prediction: D43 as built sends no DEL
+# to a field told apart as xterm.js, so the replacements double, as before D43; the cell
+# measures whether that is what the VS Code terminal gives. The line of the cell is the
+# verdict (what a zsh prompt shows); the raw bytes and the log's `event=range-ignored mode=`
+# line are what to read next to it.
 CELLS=(
   "sub-dau|sublime|dau|inplace|tooisf ba ⌫j tooi←s|tồi bạ tối"
   "sub-dau-ul|sublime|dau|underline|tooisf ba ⌫j tooi←s|tồi bạ tối"
@@ -64,6 +86,12 @@ CELLS=(
   "t4-chrome-busy|chrome|dau|inplace+busy|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
   "t4-safari|safari|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
   "t4-sublime|sublime|dau|inplace|toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows |tối việt đi học nhà người hò windows "
+  "t5-term120|terminal|dau|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj |tôi dùng windows để hò hát với bạn "
+  "t5-term30|terminal|dau|inplace+fast|tooi dungf windows ddeer hoaf⌫ hats vowis banj |tôi dùng windows để hò hát với bạn "
+  "t5-ghostty|ghostty|dau|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj |tôi dùng windows để hò hát với bạn "
+  "t5-vsterm|vscodeterm|dau|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩dduwowngf ddepj vui ver |tôi dùng windows để hò hát với bạn ↩đường đẹp vui vẻ "
+  "t5-vsswitch|vscodeswitch|dau|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩|tôi dùng windows để hò hát với bạn ↩|hoom nay dduwowngf ddepj vui ver |hôm nay đường đẹp vui vẻ "
+  "t5-vsterm-apple|vscodeterm|apple|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩dduwowngf ddepj vui ver |tôi dùng windows để hò hát với bạn ↩đường đẹp vui vẻ "
 )
 
 WANT=()
@@ -91,17 +119,18 @@ done
 OUT="$ROOT/build/terminal-underline/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
 {
-  print "| ô | phím | mong đợi | được | byte gửi cho shell | D43 | mã thoát |"
-  print "|---|---|---|---|---|---|---|"
+  print "| ô | phím | mong đợi | được | byte gửi cho shell | D43 | phím 2 (soạn thảo) | mong đợi 2 | được 2 (␡ = U+007F) | mã thoát |"
+  print "|---|---|---|---|---|---|---|---|---|---|"
 } > "$OUT/summary.md"
 
 FAILED=0
 for cell in $CELLS; do
   parts=("${(@s:|:)cell}")
-  id=$parts[1] app=$parts[2] src=$parts[3] mode=$parts[4] keys=$parts[5] expect=$parts[6]
+  id=$parts[1] app=$parts[2] src=$parts[3] mode=$parts[4] keys=$parts[5] expect=$parts[6] keys2=${parts[7]:-} expect2=${parts[8]:-}
   wanted "$id" || continue
   dir="$OUT/$id"; mkdir -p "$dir"
   args=(--delay "$DELAY" --keys "$keys" --expect "$expect" --save "$dir")
+  [[ -n $keys2 ]] && args+=(--keys2 "$keys2" --expect2 "$expect2")
   [[ $src == apple ]] && args+=(--source "$APPLE_TELEX")
   for m in ${(s:+:)mode}; do
     case $m in
@@ -119,12 +148,18 @@ for cell in $CELLS; do
   got="$(cat "$dir/$app.txt" 2>/dev/null)"
   raw=""
   if [[ -e "$dir/$app.raw" ]]; then
-    raw="$(grep -o 'byte Ghostty gửi xuống terminal: .*' "$dir/typing.log" | sed 's/^byte Ghostty gửi xuống terminal: //')"
+    # "byte Ghostty gửi xuống terminal: …" or "byte xterm.js gửi xuống terminal: …" (VS Code).
+    raw="$(grep -oE 'byte [^ ]+ gửi xuống terminal: .*' "$dir/typing.log" | sed -E 's/^byte [^ ]+ gửi xuống terminal: //')"
   elif [[ -e "$dir/xterm.data" ]]; then
     raw="\"$(<"$dir/xterm.data")\""
   fi
   d43="$(grep -o 'D43: .*' "$dir/typing.log" | head -1 | sed 's/^D43: //')"
-  print -r -- "| $id | \`$keys\` | $expect | ${got:-—} | ${raw:-—} | ${d43:-—} | $rc |" >> "$OUT/summary.md"
+  # vscodeswitch: the editor's text, U+007F as ␡.
+  got2=""; k2col=""; [[ -n $keys2 ]] && k2col="\`$keys2\`"
+  if [[ -e "$dir/$app.editor.txt" ]]; then
+    got2="$(<"$dir/$app.editor.txt")"; got2="${got2//$'\x7f'/␡}"
+  fi
+  print -r -- "| $id | \`$keys\` | $expect | ${got:-—} | ${raw:-—} | ${d43:-—} | ${k2col:-—} | ${expect2:-—} | ${got2:-—} | $rc |" >> "$OUT/summary.md"
   case $rc in
     0) log_ok "$id: \"$got\"" ;;
     1) log_warn "$id: \"$got\" (mong đợi \"$expect\")" ;;
