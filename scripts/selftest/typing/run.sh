@@ -34,7 +34,9 @@
 #                     which IMK does not report to the input method as a deactivation
 #                     (docs/Architecture.md, "Đổi nguồn nhập liệu không qua
 #                     `activateServer`"). Example (D20, K7): --keys "hoc ⌫j " --expect "học "
-#   --expect "…"      expected text (default: what the sample sentence must give)
+#   --expect "…"      expected text (default: what the sample sentence must give). With --keys
+#                     and no --expect there is no answer: the text read back is printed, with no
+#                     verdict (neither ✓ nor ✗), and the exit status is 0 unless the run stopped.
 #   --source ID       type with this input source instead of Dấu (an enabled one, such as
 #                     com.apple.inputmethod.VietnameseIM.VietnameseTelex); used by
 #                     scripts/research/compare-ims/run.sh. Dấu must still be installed;
@@ -116,17 +118,24 @@
 # of its own (--initial-window=false).
 #
 # Safety: keys and shortcuts (⌘A ⌘C ⌘W ⌃U ⌃D) are only sent while the app under test is
-# frontmost (browsers: with the test page in front; VS Code: an Untitled editor; Mail:
-# the New Message window; Sublime Text, Ghostty: the window titled dau-selftest). If
-# another app comes to the front, the script stops sending keys and exits with status 3,
-# also when that happens during the last app.
+# frontmost (browsers: with the test page in front and the keyboard focus in its text
+# field; VS Code: an Untitled editor; Mail: the New Message window; Sublime Text, Ghostty:
+# the window titled dau-selftest). If a check fails (another app in front, the focus
+# outside the test field, another window, a Cursor Agents box that is not empty, the
+# typing command failing), the script stops sending keys and exits with status 3, also
+# when that happens during the last app. The last message names the check that failed.
 #
 # After selecting the Dấu input source the script checks that Dấu is the current source
 # (TIS is trusted for the current source only); if not, it stops and exits with status 4.
 # The "Dấu is enabled" check is cross-checked against com.apple.inputsources ›
 # AppleEnabledThirdPartyInputSources (input-source.swift).
 #
-# Exit status 0 only if every app gives the expected text. Messages: Vietnamese, through
+# Exit status: 0 if every app gives the expected text (or, with --keys and no --expect,
+# the run finished: no verdict); 1 if an app gave other text; 3 the run stopped on a failed
+# front/focus/window check; 4 it stopped on the input source (not selected, or without
+# effect in the field). Per-key timings are reported only for Dấu, and only when the
+# installed input method is a Debug build (a Release one prints a line saying so); D43
+# lines only for Dấu. Messages: Vietnamese, through
 # scripts/lib/log.sh (the per-app text and verdict go to stdout, stops and warnings to stderr).
 set -uo pipefail
 
@@ -134,6 +143,7 @@ SELF="${0:A}"   # $0 inside a function is the function name in zsh
 ROOT="${SELF:h:h:h:h}"
 source "$ROOT/scripts/lib/log.sh"
 source "$ROOT/scripts/lib/wait.sh"
+source "$ROOT/scripts/lib/bundle-config.sh"
 HERE="$ROOT/scripts/selftest/typing"
 source "$ROOT/scripts/lib/xcode.sh"
 source "$ROOT/scripts/lib/swift-tool.sh"
@@ -144,6 +154,8 @@ LOG=/usr/bin/log
 # into "cả" (D4, known limit), which would hide what Dấu did.
 KEYS='windows carr tooi yeeu tieengs Vieetj, Sunrise '
 EXPECT='windows car tôi yêu tiếng Việt, Sunrise '
+KEYS_GIVEN=0
+EXPECT_GIVEN=0
 DELAY_MS=30
 UNDERLINE=0
 SHOT=0
@@ -160,8 +172,8 @@ usage() { log_usage "$SELF"; }
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --delay) DELAY_MS="${2:?--delay cần số ms}"; shift 2 ;;
-    --keys) KEYS="${2?}"; shift 2 ;;
-    --expect) EXPECT="${2?}"; shift 2 ;;
+    --keys) KEYS="${2?}"; KEYS_GIVEN=1; shift 2 ;;
+    --expect) EXPECT="${2?}"; EXPECT_GIVEN=1; shift 2 ;;
     --underline) UNDERLINE=1; shift ;;
     --shot) SHOT=1; shift ;;
     --source) SOURCE_ID="${2:?--source cần ID nguồn}"; shift 2 ;;
@@ -178,6 +190,10 @@ while [[ $# -gt 0 ]]; do
 done
 [[ ${#APPS[@]} -gt 0 ]] || { usage; exit 2; }
 (( SHOT == 0 )) || [[ -n "$SAVE_DIR" ]] || log_die 2 "--shot cần --save DIR"
+# Custom keys without --expect: the default sample's answer says nothing about them, so
+# there is no answer to compare with (the text read back is printed, no verdict).
+NO_ANSWER=0
+(( KEYS_GIVEN && ! EXPECT_GIVEN )) && NO_ANSWER=1
 [[ "$JITTER_MS" =~ ^[0-9]+$ ]] || log_die 2 "--jitter phải là số nguyên ms"
 [[ "$WORD_PAUSE_MS" =~ ^[0-9]+$ ]] || log_die 2 "--word-pause phải là số nguyên ms"
 # --save DIR need not exist yet (compare-ims and load/run.sh create theirs; a call by hand may not).
@@ -215,6 +231,8 @@ CLIPBOARD="$(dau_swift_tool clipboard "$HERE/clipboard.swift")" || exit 1
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
 [[ -f "$IM_PLIST" ]] || log_die "Chưa cài bộ gõ: chạy scripts/dev/install-app.sh, rồi mở Dấu trong /Applications và bấm \"Bật Dấu\"."
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_PLIST")"
+# Debug or Release (scripts/lib/bundle-config.sh): only Debug logs per key (D8).
+IM_CONFIG="$(bundle_config "${IM_PLIST:h:h}")"
 DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
 # disagree (TIS alone has been wrong on macOS 27.2).
@@ -237,6 +255,12 @@ WORK="$(mktemp -d)"
 # Written when the run must stop: "front" (another app came to the front) or "source"
 # (the input source did not become the one selected).
 STOP_FILE="$WORK/stop"
+# The reason of the stop, in words, for the last message of the run: the check that failed.
+STOP_REASON_FILE="$WORK/stop-reason"
+stop_run() { # kind (front|source) reason
+  echo "$1" > "$STOP_FILE"
+  [[ -e "$STOP_REASON_FILE" ]] || print -r -- "$2" > "$STOP_REASON_FILE"
+}
 # ⇄: U.S., then back to Dấu, from this (unsandboxed) process. AppleScript's `do shell
 # script` runs it with /bin/sh. Each select waits (3 s at most) until TIS reports the new
 # source as current; if it never does, "source" goes into the stop file and the keys stop.
@@ -341,7 +365,7 @@ select_dau() {
   local now="$("$INPUT_SOURCE" current 2>/dev/null)"
   log_error "Dừng: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". nguồn đó chưa được chọn nên không gõ gì."
   log_hint "Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"."
-  echo source > "$STOP_FILE"
+  stop_run source "nguồn nhập liệu hiện tại là \"${now:-không đọc được}\", không phải $DAU_SOURCE (sau khi chọn, đợi 3 giây)"
   return 1
 }
 
@@ -370,6 +394,23 @@ OSA
 # The guard alone: status 0 when process $1 is frontmost (with $2 in its focused window's
 # title, if given). Sends nothing.
 front_ok() { osascript -e "$(front_guard "$1" "${2:-}")" -e 'return' >/dev/null 2>&1; }
+# The failed check of front_guard, in words, from its error text: which app was in front,
+# whether the focus was outside the test field, or which window had the keys.
+guard_reason() { # error-text process title where
+  local fw
+  if [[ "$1" =~ 'frontmost is (.*), not ' ]]; then
+    print -r -- "app ở trước là \"${match[1]}\", không phải $2"
+  elif [[ "$1" =~ 'front window of .* is (.*), not the test page' ]]; then
+    fw="${match[1]%%[[:space:]]#\(-[0-9]#\)}"
+    if [[ "$3" == "$FOCUS_TITLE" && "$fw" == *"$PAGE_TITLE"* ]]; then
+      print -r -- "focus không nằm trong ô gõ của trang thử (cửa sổ \"$fw\" của $2 không có [focus]; focus đang ở: ${4:-không đọc được})"
+    else
+      print -r -- "cửa sổ nhận phím của $2 là \"$fw\", không phải cửa sổ thử \"$3\""
+    fi
+  else
+    print -r -- "kiểm tra trước khi gõ không đạt: ${1%%$'\n'*}"
+  fi
+}
 # Runs AppleScript $3 only if the guard for process $1 (title $2) passes.
 # The check alone is retried first (15 s at most): right after `open`, Safari 27 may
 # briefly report an untitled front window. Keys are still only sent
@@ -385,7 +426,7 @@ guarded() {
   if ! out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)"; then
     where="$(osascript -e "tell application \"System Events\" to tell process \"$1\" to get {role, description} of (value of attribute \"AXFocusedUIElement\")" 2>&1)"
     log_error "Dừng: $out — không gửi phím nào nữa (sau $waited giây; focus của $1 đang ở: ${where:-không đọc được})"
-    echo front > "$STOP_FILE"
+    stop_run front "$(guard_reason "$out" "$1" "${2:-}" "$where")"
     return 1
   fi
   printf '%s' "$out"
@@ -431,7 +472,7 @@ type_keys() { # process [window-title-substring]
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
-  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" "$WORD_PAUSE_MS" <<'OSA'
+  if ! osascript - "$KEYS" "$DELAY_MS" "$1" "$SWITCH_CMD" "$JITTER_MS" "$WORD_PAUSE_MS" 2>"$WORK/osa.err" <<'OSA'
 on run argv
   set s to item 1 of argv
   set dms to (item 2 of argv) as integer
@@ -483,8 +524,16 @@ OSA
   then
     if [[ "$(cat "$STOP_FILE" 2>/dev/null)" == source ]]; then
       log_error "Dừng: sau ⇄, nguồn nhập liệu không thành nguồn vừa chọn trong 3 giây; không gõ tiếp."
+      stop_run source "sau ⇄, nguồn nhập liệu không thành nguồn vừa chọn trong 3 giây"
     else
-      log_error "Dừng: app đổi giữa chừng"; echo front > "$STOP_FILE"
+      local oerr; oerr="$(<"$WORK/osa.err")"
+      if [[ "$oerr" == *"frontmost changed"* ]]; then
+        log_error "Dừng: app đang thử không còn ở trước giữa lúc gõ."
+        stop_run front "app đang thử không còn ở trước giữa lúc gõ"
+      else
+        log_error "Dừng: lệnh gõ phím lỗi giữa chừng: ${oerr:-không có thông báo}"
+        stop_run front "lệnh gõ phím (osascript) lỗi giữa chừng: ${oerr%%$'\n'*}"
+      fi
     fi
     return 1
   fi
@@ -817,7 +866,7 @@ run_cursoragents() {
   draft="$(copy_all Cursor "Cursor Agents")"
   if [[ -n "$draft" ]]; then
     log_error "Dừng: ô nhập của Cursor Agents không trống — không gõ gì"
-    echo front > "$STOP_FILE"
+    stop_run front "ô nhập của Cursor Agents không trống"
     return 0
   fi
   select_dau; type_keys Cursor "Cursor Agents"
@@ -1231,7 +1280,13 @@ EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
 FAILED=0
 log_step "Script sẽ mở: ${APPS[*]}"
 log_detail "mỗi app một cửa sổ/tab mới, đóng lại sau khi đọc chữ; app nào chưa chạy thì vẫn để chạy"
-log_detail "phím: \"$KEYS\"   mong đợi: \"$EXPECT\"   nghỉ giữa phím: ${DELAY_MS} ms"
+if (( NO_ANSWER )); then
+  log_detail "phím: \"$KEYS\"   mong đợi: không có đáp án (--keys không kèm --expect): chỉ in chữ đọc lại, không so   nghỉ giữa phím: ${DELAY_MS} ms"
+else
+  log_detail "phím: \"$KEYS\"   mong đợi: \"$EXPECT\"   nghỉ giữa phím: ${DELAY_MS} ms"
+fi
+DAU_RUN=1
+[[ -z "$SOURCE_ID" ]] || DAU_RUN=0   # a run of another input method: Dấu's own logs say nothing about it
 bundle_id() {
   case "$1" in
     safari) echo com.apple.Safari ;;
@@ -1284,11 +1339,12 @@ for app in "${APPS[@]}"; do
     fi
   fi
   # A control source that did not take: the text is the keys as typed. Not a result.
-  if [[ -n "$SOURCE_ID" && "$got_trimmed" == "$(printf '%s' "$KEYS" | trim_right)" && "$KEYS" != "$EXPECT" ]]; then
+  if (( ! NO_ANSWER )) && [[ -n "$SOURCE_ID" && "$got_trimmed" == "$(printf '%s' "$KEYS" | trim_right)" && "$KEYS" != "$EXPECT" ]]; then
     log_error "Ô không hợp lệ: $app ra nguyên chuỗi phím, $SOURCE_ID không có tác dụng trong ô gõ"
-    echo source > "$STOP_FILE"; break
+    stop_run source "$app ra nguyên chuỗi phím: $SOURCE_ID không có tác dụng trong ô gõ"; break
   fi
-  if [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
+  if (( NO_ANSWER )); then log_detail "$app: không có đáp án, chữ đọc lại: \"$got_trimmed\""
+  elif [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
   # Ghostty: the bytes it sent to the terminal, before the line editor applied ⌫ (DEL).
   if [[ "$app" == ghostty* && -e "$GHOSTTY_RAW" ]]; then
     log_detail "byte Ghostty gửi xuống terminal: \"$(visible_bytes "$GHOSTTY_RAW")\""
@@ -1302,39 +1358,56 @@ for app in "${APPS[@]}"; do
     vscode) filter=VSCode ;; terminal) filter=Terminal ;;
     *) filter="$(bundle_id "$app")" ;;
   esac
-  "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
-    | grep -E 'count_|gap_|lag_us|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
+  # Timings come from the per-key log of a Debug Dấu (D8): a Release build and another input
+  # method write none, so say that in one line instead of reporting "no measurements".
+  if (( ! DAU_RUN )); then
+    :   # another input method: nothing of Dấu's to report
+  elif [[ "$IM_CONFIG" == Release ]]; then
+    log_detail "bộ gõ bản Release không ghi nhật ký từng phím (D8): không có số đo thời gian"
+  else
+    "$ROOT/scripts/perf/perf-report.sh" --input "$WORK/perf.log" --app "$filter" \
+      | grep -E 'count_|gap_|lag_us|handle_replace_us|selectedRange_us|insertText_us|attributedSubstring_us|event_' || true
+  fi
   settings_log="$("$LOG" show --start "$start" --style compact \
       --predicate "subsystem == \"$IM_ID\" AND category == \"settings\"" 2>/dev/null)"
-  if [[ $UNDERLINE == 1 ]]; then
+  if [[ $UNDERLINE == 1 ]] && (( DAU_RUN )); then
     if [[ "$settings_log" == *"event=underline-on app=$(bundle_id "$app")"* ]]; then
       log_detail "underline-on"
+    elif [[ "$IM_CONFIG" == Release ]]; then
+      log_warn "Không thấy underline-on: bộ gõ bản Release không đọc khoá $FORCE_KEY (chỉ bản Debug)"
     else
-      log_warn "Không thấy underline-on (bộ gõ chưa nhận khoá Debug?)"
+      log_warn "Không thấy underline-on trong nhật ký của bộ gõ (cấu hình bộ gõ: $IM_CONFIG)"
     fi
+  elif [[ $UNDERLINE == 1 ]]; then
+    log_warn "--underline chỉ có tác dụng với Dấu: $SOURCE_ID không đọc khoá $FORCE_KEY"
   fi
   # D43: whether the input method took this field for one that ignores the replacement
   # range, and how it sends (logged once per activation, also by Release builds; only
   # Debug builds add the app's bundle ID, D8, so a line without one counts for the app
   # this window of the log belongs to).
-  ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( app=$(bundle_id "$app"))?\$" | grep -o "event=range-ignored mode=[a-z-]*" | head -1)"
-  if [[ -n "$ignored" ]]; then
-    log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}"
-  elif [[ -s "$WORK/perf.log" ]] && grep -q "name=range-ignore-refuted" "$WORK/perf.log"; then
-    # Debug only (PerfLog): the position looked like such a field, but the app gave back
-    # the text Dấu typed (D43, "Bằng chứng dương").
-    log_detail "D43: vị trí giống ô bỏ qua vùng thay chữ nhưng app trả đúng chữ đã gõ, không nhận ra"
-  else
-    log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"
+  if (( DAU_RUN )); then
+    ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( app=$(bundle_id "$app"))?\$" | grep -o "event=range-ignored mode=[a-z-]*" | head -1)"
+    if [[ -n "$ignored" ]]; then
+      log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}"
+    elif [[ -s "$WORK/perf.log" ]] && grep -q "name=range-ignore-refuted" "$WORK/perf.log"; then
+      # Debug only (PerfLog): the position looked like such a field, but the app gave back
+      # the text Dấu typed (D43, "Bằng chứng dương").
+      log_detail "D43: vị trí giống ô bỏ qua vùng thay chữ nhưng app trả đúng chữ đã gõ, không nhận ra"
+    else
+      log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"
+    fi
   fi
 done
 if stopped; then
   # Not overwritten by an earlier failure: the run did not finish.
+  stop_why="$(cat "$STOP_REASON_FILE" 2>/dev/null)"
   if [[ "$(cat "$STOP_FILE")" == source ]]; then
-    log_error "Đã dừng: không chọn được nguồn nhập liệu, hoặc nguồn không có tác dụng trong ô gõ (mã thoát 4)."; FAILED=4
+    log_error "Đã dừng: ${stop_why:-nguồn nhập liệu không được chọn, hoặc không có tác dụng trong ô gõ} (mã thoát 4)."; FAILED=4
   else
-    log_error "Đã dừng: app đang thử không còn ở trước (người dùng đang dùng máy?) (mã thoát 3)."; FAILED=3
+    log_error "Đã dừng: ${stop_why:-kiểm tra trước khi gõ không đạt (không có lý do ghi lại)} (mã thoát 3)."; FAILED=3
   fi
 fi
-if [[ $FAILED == 0 ]]; then log_ok "Mọi app cho đúng chữ mong đợi"; log_done; else log_error "Có app sai hoặc đã dừng (mã thoát $FAILED)"; fi
+if [[ $FAILED == 0 ]] && (( NO_ANSWER )); then log_detail "Đã gõ xong; không có đáp án (--keys không kèm --expect), nên không có kết quả đạt hay sai."; log_done
+elif [[ $FAILED == 0 ]]; then log_ok "Mọi app cho đúng chữ mong đợi"; log_done; elif (( FAILED == 1 )); then log_error "Có app cho chữ khác chữ mong đợi (mã thoát 1)"
+else log_error "Lượt chạy đã dừng, chưa đủ kết quả (mã thoát $FAILED)"; fi
 exit $FAILED

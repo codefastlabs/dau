@@ -148,11 +148,14 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
 
 if [[ ! -s "$TMP" ]]; then
   log_warn "Không có số đo nào (subsystem $SUBSYSTEM, --last $LAST${APP_FILTER:+, app $APP_FILTER})."
-  log_hint "Kiểm tra: bộ gõ bản Debug đã cài và đã gõ thử trong khoảng thời gian này chưa?"
+  log_hint "Chỉ bộ gõ bản Debug ghi nhật ký từng phím (D8), và chỉ khi có gõ trong khoảng thời gian này."
   if [[ -n "$APP_FILTER" ]]; then
-    log_hint "--app so khớp một phần bundle ID (không phân biệt hoa thường), không nhận PID."
-    log_step "Các app có số đo trong khoảng này"
-    read_log | grep -o 'app=[^ ]*' | sort -u | sed 's/^app=//' | while IFS= read -r a; do log_detail "$a"; done || true
+    others="$(read_log | grep -o 'app=[^ ]*' | sort -u | sed 's/^app=//')" || true
+    if [[ -n "$others" ]]; then
+      log_hint "--app so khớp một phần bundle ID (không phân biệt hoa thường), không nhận PID."
+      log_step "Các app có số đo trong khoảng này"
+      print -r -- "$others" | while IFS= read -r a; do log_detail "$a"; done
+    fi
   fi
   exit 0
 fi

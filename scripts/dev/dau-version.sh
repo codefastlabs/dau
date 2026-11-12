@@ -17,6 +17,7 @@
 set -uo pipefail
 root=${0:A:h:h:h}
 source "${0:A:h:h}/lib/log.sh"
+source "${0:A:h:h}/lib/bundle-config.sh"
 im="$HOME/Library/Input Methods/DauInputMethod.app"
 app="$root/build/DerivedData.noindex/Build/Products/Debug/Dau.app"
 host="/Applications/Dau.app"
@@ -37,17 +38,6 @@ stale_note() { # bundle label -> a warning when the bundle was built from anothe
   stale=1
 }
 
-config_of() { # bundle -> Debug or Release (only Debug is signed with get-task-allow); "cấu hình không rõ" without a readable signature
-  local ents
-  if ! ents=$(codesign -d --entitlements - --xml "$1" 2>/dev/null); then
-    print -r -- "cấu hình không rõ"
-  elif [[ ${ents//[[:space:]]/} == *'<key>com.apple.security.get-task-allow</key><true/>'* ]]; then
-    print -r -- Debug
-  else
-    print -r -- Release
-  fi
-}
-
 signature_of() { # bundle -> "hợp lệ, Team X" or the codesign error
   local out team
   team=$(codesign -dv "$1" 2>&1 | sed -n 's/^TeamIdentifier=//p')
@@ -64,14 +54,14 @@ head=$(git -C "$root" rev-parse --short=7 HEAD 2>/dev/null)
 print -r -- "Repo:              $head"
 
 if [[ -d $im ]]; then
-  print -r -- "Bộ gõ đã cài:      $(commit_of "$im") · $(config_of "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
+  print -r -- "Bộ gõ đã cài:      $(commit_of "$im") · $(bundle_config "$im")  (ghi lúc $(stat -f '%Sm' "$im/Contents/MacOS/DauInputMethod"))"
   stale_note "$im" "Bộ gõ đã cài"
   print -r -- "  chữ ký:          $(signature_of "$im")"
 else
   print -r -- "Bộ gõ đã cài:      chưa cài"
 fi
 if [[ -d $host ]]; then
-  print -r -- "Dấu.app (/Applications): $(commit_of "$host") · $(config_of "$host")"
+  print -r -- "Dấu.app (/Applications): $(commit_of "$host") · $(bundle_config "$host")"
   stale_note "$host" "Dấu.app"
   print -r -- "  chữ ký:          $(signature_of "$host")"
 fi
