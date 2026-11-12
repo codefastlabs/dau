@@ -171,7 +171,7 @@
 #
 # Exit status: 0 if every app gives the expected text (or, with --keys and no --expect,
 # the run finished: no verdict); 1 if an app gave other text; 3 the run stopped on a failed
-# front/focus/window check, or before the first app without the Accessibility permission; 4 it stopped on the input source (not selected, or without
+# front/focus/window check, or before the first app without the Accessibility permission; 4 it stopped on the input source (not selected, not the current one right after the keys, or without
 # effect in the field). Per-key timings are reported only for Dấu, and only when the
 # installed input method is a Debug build (a Release one prints a line saying so).
 # Messages: Vietnamese, through
@@ -615,8 +615,15 @@ OSA
   # The source in effect right after the last key. The check in select_dau is from before
   # the keys: with macOS's "Automatically switch to a document's input source" on, the
   # focused document may have its own source.
+  # Another source means the keys may have been typed by it: the text read back would be
+  # that source's, printed as if it were the wanted one's (a control cell typed by Dấu,
+  # 12/11/2026). No verdict for this app: status 4.
   local after="$("$INPUT_SOURCE" current 2>/dev/null)"
-  [[ "$after" == "$DAU_SOURCE" ]] || log_warn "Nguồn nhập liệu ngay sau khi gõ là \"$after\", không phải $DAU_SOURCE"
+  if [[ "$after" != "$DAU_SOURCE" ]]; then
+    log_error "Dừng: nguồn nhập liệu ngay sau khi gõ là \"$after\", không phải $DAU_SOURCE; chữ đọc lại không phải của nguồn cần đo."
+    stop_run source "nguồn nhập liệu sau khi gõ là \"$after\", không phải nguồn cần đo"
+    return 1
+  fi
   sleep 0.8
 }
 
