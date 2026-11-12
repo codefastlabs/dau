@@ -84,12 +84,9 @@
 #                     bytes xterm.js sent to the cell), <app>.phases (the time of each
 #                     phase, to read next to the perf log's activations) and, for
 #                     vscodeswitch, <app>.editor.txt (the editor's text); with --shot:
-#                     <app>.png. <app>.perf.log also holds the input method's
-#                     `event=range-ignored` lines (D43; the log's settings category; Debug builds only, D8) and, in a
-#                     Debug build, its `event=web-host` lines (settings category), its
-#                     `name=range-ignore-refuted` lines (perf category) and `name=activate`
-#                     lines. There is no deactivation line: the input
-#                     method does not log deactivateServer.
+#                     <app>.png. In a Debug build, <app>.perf.log also holds the
+#                     input method's `name=activate` lines (perf category). There is no
+#                     deactivation line: the input method does not log deactivateServer.
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
 #                     Debug input method only: the script writes the bundle ID into the
@@ -176,8 +173,8 @@
 # the run finished: no verdict); 1 if an app gave other text; 3 the run stopped on a failed
 # front/focus/window check, or before the first app without the Accessibility permission; 4 it stopped on the input source (not selected, or without
 # effect in the field). Per-key timings are reported only for Dấu, and only when the
-# installed input method is a Debug build (a Release one prints a line saying so); D43
-# lines only for Dấu. Messages: Vietnamese, through
+# installed input method is a Debug build (a Release one prints a line saying so).
+# Messages: Vietnamese, through
 # scripts/lib/log.sh (the per-app text and verdict go to stdout, stops and warnings to stderr).
 set -uo pipefail
 
@@ -1823,10 +1820,9 @@ for app in "${APPS[@]}"; do
     log_warn "vscodeswitch: không đọc được chữ của trình soạn thảo (phần soạn thảo không chạy tới)"
     FAILED=1
   fi
-  # The settings category carries only the D43 lines wanted here (range-ignored, and in Debug web-host; the rest of
-  # it, underline-on, is read below); perf and diag whole.
+  # Perf and diag whole; the settings category (underline-on) is read below.
   "$LOG" show --start "$start" --style compact \
-    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\" OR (category == \"settings\" AND (eventMessage CONTAINS \"event=range-ignore\" OR eventMessage CONTAINS \"event=web-host\")))" > "$WORK/perf.log" 2>/dev/null
+    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
   # VS Code terminal cells: the time of each phase and the activations (a Debug build logs
   # `name=activate` for each; deactivateServer logs nothing), to see whether the switch to
@@ -1865,22 +1861,6 @@ for app in "${APPS[@]}"; do
     fi
   elif [[ $UNDERLINE == 1 ]]; then
     log_warn "--underline chỉ có tác dụng với Dấu: $SOURCE_ID không đọc khoá $FORCE_KEY"
-  fi
-  # D43: whether the input method took this field for one that ignores the replacement
-  # range, and of what kind (logged once per activation by Debug builds only, D8: a
-  # Release build logs no D43 line, so its verdict is unknown here).
-  if (( DAU_RUN )); then
-    ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( blocked=[a-z]+)?( app=$(bundle_id "$app"))?\$" | grep -oE "event=range-ignored mode=[a-z-]*( blocked=[a-z]+)?" | head -1)"
-    if [[ -n "$ignored" ]]; then
-      blocked=""; [[ "$ignored" == *" blocked="* ]] && blocked=", blocked=${ignored##*blocked=}"
-      log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}$blocked"
-    elif [[ -s "$WORK/perf.log" ]] && grep -q "name=range-ignore-refuted" "$WORK/perf.log"; then
-      # Debug only (PerfLog): the position looked like such a field, but the app gave back
-      # the text Dấu typed (D43, "Bằng chứng dương").
-      log_detail "D43: vị trí giống ô bỏ qua vùng thay chữ nhưng app trả đúng chữ đã gõ, không nhận ra"
-    else
-      if [[ "$IM_CONFIG" == Release ]]; then log_detail "D43: không biết (bộ gõ bản Release không ghi dòng D43, D8)"; else log_detail "D43: không nhận ra ô bỏ qua vùng thay chữ"; fi
-    fi
   fi
 done
 if stopped; then

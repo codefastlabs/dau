@@ -17,9 +17,9 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 | VS Code | đúng ở 5–20 ms (một lượt sai không do vị trí thay chữ) | đúng ở 0 ms | không |
 | Cursor | trình soạn thảo sai ở 5 ms và một ca phím dồn ở 20 ms, đúng ở 100 ms; ô nhập Agents đúng | đúng ở 5 ms | **có** |
 | Terminal | đúng từ 5 ms, sai ở 0 ms; ⌫ không tới bộ gõ (mục 6.5) | sai ở 0 ms | không |
-| Ghostty | theo D43 (app không chứa nhân web, đặt trong `/Applications`): sai ở một, hai từ đầu mỗi lần kích hoạt (tới khi nhận ra ô), đúng từ đó ở 120 ms; phím dồn sai (mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | không |
-| xterm.js (trang thử trong Chrome) | sai: D43 không gửi ký tự xoá ở kiểu xterm.js (mục 6.8) | đúng | không |
-| Terminal tích hợp của VS Code (xterm.js) | sai như trước D43 (có lượt D43 nhận ra ô, có lượt không; không lượt nào gửi ký tự xoá); trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8) | chưa đo | không |
+| Ghostty | sai: app bỏ qua vùng thay, Dấu không xử lý riêng (D43; mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | **có** |
+| xterm.js (trang thử trong Chrome) | sai (D43; mục 6.8) | đúng | không |
+| Terminal tích hợp của VS Code (xterm.js) | sai (D43); trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8) | đúng, cả khi chuyển sang trình soạn thảo | không: bật cho cả app thì mọi ô mất D20 |
 | Sublime Text | đúng, cả thêm dấu cho từ đã gõ sau ⌫ và ← | không thêm dấu được cho từ đã chốt | không |
 | Notes | đúng ở 30 và 0 ms | chưa đo | không |
 | Mail, Telegram | đúng ở 30 ms | chưa đo | không |
@@ -175,14 +175,13 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 - Đúng ở 30 ms; sai ở 0 ms; đúng ở 5 và 10 ms (29/10/2026).
 - Gạch chân ở 0 ms vẫn sai (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau); 5–30 ms đúng. Vì vậy không đề xuất.
 - Thêm dấu cho từ đã gõ ra "hocj": ⌫ không tới bộ gõ (mục 6.5). `selectedRange` 408 / 637 µs.
-- Đo lại 12/11/2026 (120 và 30 ms, một lượt mỗi mức): đúng, trừ ⌫ (mục 6.5); D43 không nhận ra ô.
+- Đo lại 12/11/2026 (120 và 30 ms, một lượt mỗi mức): đúng, trừ ⌫ (mục 6.5).
 
 ### 5.6 Ghostty
 
 - 1.4.0, đo 11/11/2026, `scripts/research/terminal-underline/run.sh` và `typing/run.sh` (`ghostty`, `ghosttyvim`), dấu nhắc của trình sửa dòng zsh và vim, có đối chứng Telex của Apple.
-- Trước D43: thay tại chỗ sai ở 120 ms (`dd` → "dđ", `toois` → "toôis", `vieetj` → "vieetj"); `selectedRange` luôn `{0,0}`. Telex của Apple đúng.
-- Với D43 (Ô bỏ qua vùng thay chữ), bản thật: Ghostty được nhận ra, đúng từ từ thứ hai mỗi lần kích hoạt ở 120 ms (11/11/2026), ở zsh và vim; từ đầu còn sai. Ở bộ gõ chạy sandbox (12/11/2026, một lượt) đúng từ từ thứ ba. D43 chỉ gửi ký tự xoá ở app không chứa nhân web, đặt trong `/Applications` (Ghostty đạt điều kiện). Ở 30 ms (phím dồn) không nhận ra, sai như trước. Chrome (cả khi trang bận), Safari, Sublime Text không bị nhận nhầm.
-- Shell thật của người dùng (12/11/2026, oh-my-zsh, powerlevel10k, zsh-autosuggestions; bản Release dùng hằng ngày; `scripts/research/terminal-underline/real-shell.sh`): như trên, hai từ đầu sai rồi đúng. Lệnh thật thường ngắn và gõ ngay sau khi chuyển vào Ghostty, nên dùng thường ngày gần như luôn sai.
+- Thay tại chỗ sai ở 120 ms (`dd` → "dđ", `toois` → "toôis", `vieetj` → "vieetj"); `selectedRange` luôn `{0,0}`. Telex của Apple đúng.
+- Cách gửi ký tự xoá (D43 cũ, đã bỏ 12/11/2026) chỉ đúng từ từ thứ hai, thứ ba sau mỗi lần chuyển vào Ghostty, cả trong shell thật của người dùng (oh-my-zsh, powerlevel10k, zsh-autosuggestions; `scripts/research/terminal-underline/real-shell.sh`): lệnh thật thường ngắn nên gần như luôn sai. Số đo: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 1.
 - Gạch chân: chữ đúng, nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple (mục 6.8).
 
 ### 5.7 Sublime Text
@@ -235,8 +234,8 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 ### 6.8 Terminal bỏ qua vùng thay; gạch chân không sửa được từ đã chốt
 
 - Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
-- Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (một, hai từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Hệ quả đã chấp nhận"; số đo: mục 5.6.
-- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Gửi ký tự xoá trong phím ngay lúc nhận ra làm chữ dồn lại mỗi lần sửa (đã rõ nguyên nhân, [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 2). Chỉ gửi trong phím từ dòng sau Return thì đúng trên trang thử (12/11/2026, một lượt), nhưng D43 tắt cách này: ở app có terminal và trình soạn thảo cùng một view, ký tự xoá lọt vào trình soạn thảo (mô hình, chưa đo). Ô kiểu xterm.js nay gõ sai như cách cũ. Terminal tích hợp của VS Code đo 12/11/2026: thay tại chỗ sai như cách cũ, gạch chân đúng; trình soạn thảo cùng cửa sổ đúng sau khi chuyển ô ở cả hai cách (số đo: research mục 2). Chính app Claude chưa đo.
+- Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu không xử lý riêng (D43): thay tại chỗ sai, gạch chân đúng; Ghostty mang nhãn "Đề xuất". Số đo: mục 5.6.
+- Terminal dựng bằng xterm.js (terminal tích hợp của VS Code; Cursor và app Claude cùng cơ chế, chưa đo): thay tại chỗ sai, gạch chân đúng, kể cả trình soạn thảo cùng cửa sổ khi chuyển ô (số đo: research mục 2). Không gắn nhãn: các app này có nhiều ô gõ khác, bật gạch chân cho cả app thì mọi ô mất D20.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13) không có D20: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"); Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
 

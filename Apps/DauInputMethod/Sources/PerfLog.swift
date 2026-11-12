@@ -71,10 +71,6 @@ struct PerfLog {
         /// it (which an app that edited the text would show). Replaced at the followed
         /// position (`InPlaceComposer.replace`).
         case lateGuess = "late_guess"
-        /// D43: a client that ignores replacementRange (Ghostty, xterm.js): DEL characters and
-        /// the new text at the cursor, in the key or right after it (`deferredText`); no
-        /// selectedRange.
-        case erase
     }
 
     /// Off unless `DauPerfLog` is set, in Debug builds too: even without text, one line

@@ -6,8 +6,7 @@ import DauEngine
 protocol InPlaceClient {
     func selectedRange() -> NSRange
     /// Plain text of `range` in the document (`attributedSubstring(from:)`), or nil if
-    /// the client gives none. Called for the reads N3 allows: D20, D11, and the D43
-    /// evidence.
+    /// the client gives none. Called for the reads N3 allows: D20 and D11.
     func text(in range: NSRange) -> String?
     func insertText(_ text: String, replacementRange: NSRange)
 }
@@ -28,88 +27,16 @@ protocol InPlaceClient {
 ///   plain letter (D20, "Chữ cái gõ sát chữ có sẵn"), typed with no word in the
 ///   engine and an unknown text before the cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
 ///   one `insertText` (none when the system already changed the word that way, D20 "Từ
-///   hệ thống vừa sửa", `isSystemFix`);
-/// - D43: at the one key where the positions are enough to take the client for one that
-///   ignores the range, one `text(in:)` more (`confirmRangeIgnore`), at most once per
-///   activation.
+///   hệ thống vừa sửa", `isSystemFix`).
+///
+/// A field that ignores `replacementRange` (Ghostty, xterm.js terminals) gets the same
+/// calls as any field (D43: no special handling; underline per app, D13).
 ///
 /// Pure value type over `InPlaceClient`, no IMK, unit tested in DauInputMethodTests.
 struct InPlaceComposer {
     /// D20 on (`DauSettings.addMarksToTypedWords`, D15 default on). Set from the shared
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
-
-    /// D43 (Ô bỏ qua vùng thay chữ): the client takes the text of `insertText` but ignores
-    /// `replacementRange` and sends the text to a terminal as typed (Ghostty, xterm.js).
-    /// A replacement is then DEL (U+007F) per character to remove, then the new text, at
-    /// the cursor: the program in the terminal erases and retypes. No `selectedRange`, no
-    /// reads (D11 check, D20) for this client. Set by `detector` for the rest of the
-    /// activation (`activate`).
-    enum EraseMode: Equatable {
-        case off
-        /// One `insertText` while the key is handled: right in xterm.js; Ghostty drops IME
-        /// text that starts with a control character there.
-        ///
-        /// D43: never chosen for a client `detector` finds (`eraseMode(for:)`): an xterm.js
-        /// terminal shares one IMK client with the editors of its page (VS Code, Cursor,
-        /// the Claude app), and a click between them reaches no input method, so DEL
-        /// would reach the editor (`SharedViewTests`). Set only by the tests of the
-        /// measured page (`XtermPageTests`).
-        ///
-        /// xterm.js (5.5.0, src/browser/input/CompositionHelper.ts) gets such a key as a
-        /// keydown with keyCode 229 and sends its hidden textarea's new value minus the
-        /// old one (`_handleAnyTextareaChanges`: `newValue.replace(oldValue, '')`), right
-        /// only while the caret is at the end of that textarea (emptied on Return; a
-        /// replacement with a range leaves text after the caret). So:
-        /// - the key is consumed whenever text is sent (a Delete let through would reach
-        ///   the page as a real keydown too, in an order the page decides), and Return or
-        ///   Tab send nothing (the real keydown would come before the fix);
-        /// - one unit at the cursor that is not the key's own character goes as
-        ///   `x DEL x` (`insertAtCursor`): one unit takes Chromium's plain keydown path,
-        ///   on which xterm.js sends the key typed, not the text.
-        /// docs/research/TerminalAndUnderline.md section 2.
-        case inKey
-        /// The key goes to the app, then the fix is sent once the app has handled it
-        /// (`Outcome.deferredText`, `RangeIgnoreDetector.Send.afterKey`): Ghostty sends
-        /// text inserted outside its key handling as is, and sends a key the input method
-        /// consumed without text anyway. The fix also erases what the key did.
-        case afterKey
-    }
-    var eraseMode = EraseMode.off
-    var eraseByDelete: Bool { eraseMode != .off }
-
-    /// The erase mode for a client `detector` found, or nil to keep replacing in place.
-    /// D43: a field told apart as xterm.js (`.inKey`) is replaced in place like any field,
-    /// never with DEL: no DEL may reach an editor sharing its IMK client (see
-    /// `EraseMode.inKey`). After the key (Ghostty) only for an app known not to host web
-    /// pages (`afterKeyAllowed`, `WebHost`): an xterm.js page can answer like Ghostty.
-    func eraseMode(for send: RangeIgnoreDetector.Send) -> EraseMode? {
-        switch send {
-        case .afterKey: return afterKeyAllowed ? .afterKey : nil
-        case .inKey: return nil
-        }
-    }
-    /// D43: the client app is surely not a web host (`WebHost.Verdict.allowsAfterKey`), so
-    /// DEL may be sent after the key. Off until the controller says so (not sure: no DEL);
-    /// set at each activation and client change, kept by `activate`. The verdict is read
-    /// off the main thread, so it can come after the field was told apart as Ghostty:
-    /// then `.afterKey` starts at the next word (`handle`), never inside a word.
-    var afterKeyAllowed = false {
-        didSet { afterKeyPending = afterKeyAllowed && eraseMode == .off && detector.send == .afterKey }
-    }
-    /// A native verdict came after a Ghostty-like verdict: start `.afterKey` at the next word.
-    private(set) var afterKeyPending = false
-    /// Tells a client that ignores `replacementRange` from the `selectedRange` answers
-    /// (D43); sets `eraseMode`.
-    private(set) var detector = RangeIgnoreDetector()
-    /// Units the current key changed the document by through this composer's
-    /// `insertText` calls (the key's own effect, if it goes to the app, is added after).
-    private var keyDelta = 0
-    /// What the current key does in the app if it goes there: +1 a typed character, -1
-    /// Delete; nil for other keys (Return runs the line: never sent before the fix).
-    private var keyEffect: Int?
-    /// The character of the current key (`EraseMode.inKey`, `insertAtCursor`).
-    private var keyScalar: Unicode.Scalar?
 
     /// What the cursor is known to follow while the engine has no word (D20 needs a word
     /// right before the cursor; reading costs two client calls, so it is skipped when
@@ -193,9 +120,6 @@ struct InPlaceComposer {
         var consumed = false
         var kind = PerfLog.Kind.pass
         var attempt: Attempt?
-        /// D43, `EraseMode.afterKey`: text to insert at the cursor once the app has handled
-        /// the key (the controller sends it on the next turn of the main queue).
-        var deferredText: String?
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
         var d20: D20Trace?
@@ -242,15 +166,10 @@ struct InPlaceComposer {
         if let time { lastEventTime = time }
     }
 
-    /// New activation (or another client): the client may give text again, and whether it
-    /// ignores `replacementRange` is judged from the start (D43). The only place the
-    /// verdict of `detector` is dropped: a click or a reset keeps it.
+    /// New activation (or another client): the client may give text again.
     mutating func activate() {
         readUnavailable = false
         lastEventTime = nil
-        detector.reset()
-        eraseMode = .off
-        afterKeyPending = false
         produced = nil
     }
 
@@ -260,16 +179,6 @@ struct InPlaceComposer {
     /// D20 does not wait for anything).
     mutating func handle(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
                          client: some InPlaceClient) -> Outcome {
-        if afterKeyPending, !engine.isComposing {
-            // D43: a native verdict that came late; from this word on, DEL after the key.
-            afterKeyPending = false
-            if afterKeyAllowed, eraseMode == .off, detector.send == .afterKey { eraseMode = .afterKey }
-        }
-        return handleKeyAndTrace(route, time: time, engine: &engine, client: client)
-    }
-
-    private mutating func handleKeyAndTrace(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
-                                            client: some InPlaceClient) -> Outcome {
         #if DEBUG
         // Feed the key to the unseeded shadow before the real engine changes (see seedDiffers).
         if shadow != nil {
@@ -293,10 +202,10 @@ struct InPlaceComposer {
         #endif
     }
 
-    /// `handleKey`, then what the key did to the word, for `detector` (D43).
+    /// `handleKey`, then whether the key undid a mark by a double key (D26,
+    /// `undidMarkLetters`).
     private mutating func handleTracked(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
                                         client: some InPlaceClient) -> Outcome {
-        keyDelta = 0
         keySeededWord = nil
         var shownBefore: [Unicode.Scalar]?
         if case .character = route, engine.lastShown != nil { shownBefore = engine.shown }
@@ -313,20 +222,6 @@ struct InPlaceComposer {
         if case .backspace = route, let letters = undidMarkLetters, engine.shown.count < letters {
             undidMarkLetters = nil
         }
-        guard !eraseByDelete else { return outcome }
-        switch outcome.kind {
-        case .mismatch, .unsupported, .resync, .resyncPass, .seed, .seedPass, .seedNone, .seedKept:
-            // The composer started the word over at the app's cursor (D11, D20): the word
-            // starts where this key was typed.
-            detector.startWord()
-        default:
-            break
-        }
-        let own = outcome.consumed ? 0 : (keyEffect ?? 0)
-        if !outcome.consumed, keyEffect != nil { detector.keyWentThrough(route) }
-        detector.keyHandled(delta: keyDelta.addingSaturated(own), inBurst: tracker.keyInBurst)
-        // The word ended, or the cursor may have moved (shortcut, arrow, Return/Tab).
-        if outcome.kind == .reset || !engine.isComposing { detector.endWord() }
         return outcome
     }
 
@@ -339,12 +234,6 @@ struct InPlaceComposer {
         let settled = isSettled(at: time)
         if let time { lastEventTime = time }
         lateRead = nil
-        switch route {
-        case .character: keyEffect = 1
-        case .backspace: keyEffect = -1
-        default: keyEffect = nil
-        }
-        if case .character(let c) = route { keyScalar = c } else { keyScalar = nil }
         // The edits of a key in a burst may all be missing from a late answer (`rebuild`).
         tracker.keyInBurst = !settled
         // D20 "Từ hệ thống vừa sửa": the produced word lasts for this key only (one ⌫
@@ -393,11 +282,8 @@ struct InPlaceComposer {
                 } else {
                     result.kind = .reset
                 }
-                // D43 in the key (xterm.js): the fix leaves out the letter Delete would
-                // remove and the key is consumed (`EraseMode.inKey`, `erase`).
-                result.consumed = result.kind == .erase && eraseMode == .inKey
-                if result.kind == .replace || result.kind == .late || result.kind == .lateGuess
-                    || result.kind == .erase {
+                result.consumed = false
+                if result.kind == .replace || result.kind == .late || result.kind == .lateGuess {
                     tracker.backspacePassedThrough()
                 } else {
                     // Let the app's own Delete run; the engine no longer knows the word.
@@ -432,7 +318,7 @@ struct InPlaceComposer {
             return result
 
         case .character(let scalar):
-            if !engine.isComposing, addMarksEnabled, !eraseByDelete, before == .unknown, !readUnavailable, settled {
+            if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable, settled {
                 let method = engine.options.inputMethod
                 if Self.isMarkKey(scalar, method: method) {
                     return addMarks(scalar, letter: false, engine: &engine, client: client)
@@ -443,7 +329,7 @@ struct InPlaceComposer {
                     return addMarks(scalar, letter: true, engine: &engine, client: client)
                 }
             }
-            if !eraseByDelete, engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
+            if engine.isSpellingLocked, !checkedLockedWord, !readUnavailable, settled,
                Self.isMarkKey(scalar, method: engine.options.inputMethod),
                let outcome = checkLockedWord(scalar, engine: &engine, client: client) {
                 return outcome
@@ -639,12 +525,6 @@ struct InPlaceComposer {
                                           client: some InPlaceClient) -> Outcome? {
         checkedLockedWord = true
         let selection = Self.selectedRange(of: client)
-        if let mode = detector.observe(selection, inBurst: tracker.keyInBurst),
-           let found = confirmRangeIgnore(mode, client: client) {
-            // D43: from this key on, the word's keys pass or are erased and typed again.
-            eraseMode = found
-            return nil
-        }
         // A selection here is the app's: an autocomplete after the cursor, or text the user
         // selected with a shortcut the input method never saw (⌘A); the word before it is
         // what counts, the key replaces the selection either way.
@@ -715,7 +595,6 @@ struct InPlaceComposer {
         lastSeededWord = []
         #endif
         var selection = Self.selectedRange(of: client)
-        detector.note(selection)
         var read: String?
         var didRead = false
         if let known = tracker.known, selection.length == 0, selection.location != NSNotFound,
@@ -996,18 +875,9 @@ struct InPlaceComposer {
             insertAtCursor(insert, client: client)
             return result
         }
-        if eraseByDelete {
-            return erase(deleteCount: deleteCount, insert: insert, appending: extra, client: client)
-        }
         // Engine letters are BMP scalars, so deleteCount scalars == deleteCount UTF-16
         // units, also for a word seeded from decomposed (NFD) text (D20).
         let selection = known ?? Self.selectedRange(of: client)
-        if known == nil, let mode = detector.observe(selection, inBurst: tracker.keyInBurst),
-           let found = confirmRangeIgnore(mode, client: client) {
-            // D43: this client ignores the range; this key is the first one erased.
-            eraseMode = found
-            return erase(deleteCount: deleteCount, insert: insert, appending: extra, client: client)
-        }
         var text = insert.description
         if let extra { text.unicodeScalars.append(extra) }
         var attempt = Attempt(deleteCount: deleteCount, selection: selection, expected: tracker.expected,
@@ -1042,9 +912,6 @@ struct InPlaceComposer {
         case .replace(let range):
             attempt.replacement = range
             client.insertText(text, replacementRange: range)
-            keyDelta = keyDelta.addingSaturated(text.utf16.count - range.length)
-            // A selection after the cursor (an app's suggestion) is not text this composer typed.
-            detector.edited(removing: deleteCount, inserting: text.utf16)
             tracker.didReplace(range, text: text)
             result.kind = .replace
         case .unsupported:
@@ -1069,8 +936,6 @@ struct InPlaceComposer {
                                            client: some InPlaceClient) -> Outcome {
         let range = NSRange(location: followed - deleteCount, length: deleteCount)
         client.insertText(text, replacementRange: range)
-        keyDelta = keyDelta.addingSaturated(text.utf16.count - deleteCount)
-        detector.edited(removing: deleteCount, inserting: text.utf16)
         tracker.didReplace(range, text: text)
         var result = Outcome(consumed: true, kind: kind)
         result.attempt = attempt
@@ -1097,68 +962,10 @@ struct InPlaceComposer {
         trailingWord(String(decoding: units, as: UTF16.self).precomposedStringWithCanonicalMapping)
     }
 
-    /// D43, positive evidence: the positions say the client ignores the range (`send`, a
-    /// candidate of `RangeIgnoreDetector.observe`). One read of the text this composer
-    /// typed (`RangeIgnoreDetector.evidence`, the N3 exception of D43; none when the
-    /// client already gave no text, `readUnavailable`) decides, for the rest of the
-    /// activation: the client's own text back is a text field that reports a wrong
-    /// position (`refute`, replaced in place as before); no text, or other text, is a
-    /// field that ignores the range (`confirm`). Returns the erase mode from this key on,
-    /// or nil to keep replacing in place (also for a confirmed `.inKey`, `eraseMode(for:)`).
-    private mutating func confirmRangeIgnore(_ send: RangeIgnoreDetector.Send,
-                                             client: some InPlaceClient) -> EraseMode? {
-        if !readUnavailable, let (range, typed) = detector.evidence {
-            if let text = client.text(in: range) {
-                if RangeIgnoreDetector.isOwnText(text, typed: typed) {
-                    detector.refute()
-                    return nil
-                }
-            } else {
-                readUnavailable = true  // N3: a client that gave no text is not asked again
-            }
-        }
-        detector.confirm(send)
-        return eraseMode(for: send)
-    }
-
     /// Inserts at the current selection without asking where it is (deleteCount 0).
-    /// `EraseMode.inKey`: one unit that is not the key's own character goes as that unit,
-    /// DEL, that unit (see `EraseMode.inKey`).
     private mutating func insertAtCursor(_ insert: TextBuffer, client: some InPlaceClient) {
         let text = insert.description
-        var sent = text
-        if eraseMode == .inKey, text.utf16.count == 1, let key = keyScalar, text.unicodeScalars.first != key {
-            sent = text + "\u{7F}" + text
-        }
-        client.insertText(sent, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-        keyDelta = keyDelta.addingSaturated(text.utf16.count)
-        detector.edited(removing: 0, inserting: text.utf16)
-        tracker.didInsertAtCursor(text)
-    }
-
-    /// D43: replaces `deleteCount` characters before the cursor with `insert` (and
-    /// `extra`) by DEL characters and the new text, at the cursor; never asks where the
-    /// cursor is. `EraseMode.afterKey`: the key goes to the app and the fix follows it
-    /// (`Outcome.deferredText`), also erasing what the key did; a key whose effect is not
-    /// known (Return, Tab: they run the line) is fixed in the key, which Ghostty drops
-    /// (D43, "Hệ quả đã chấp nhận"). `EraseMode.inKey`: Delete is consumed, so `extra` (the
-    /// letter it would remove) is left out; Return and Tab send nothing.
-    private func erase(deleteCount: Int, insert: TextBuffer, appending extra: Unicode.Scalar?,
-                       client: some InPlaceClient) -> Outcome {
-        var result = Outcome(consumed: true, kind: .erase)
-        if eraseMode == .afterKey, let keyEffect, deleteCount + keyEffect >= 0 {
-            result.deferredText = String(repeating: "\u{7F}", count: deleteCount + keyEffect) + insert.description
-            result.consumed = false
-            return result
-        }
-        if eraseMode == .inKey, keyEffect == nil {
-            // xterm.js would run the real Return or Tab before the fix.
-            result.consumed = false
-            return result
-        }
-        var text = String(repeating: "\u{7F}", count: deleteCount) + insert.description
-        if let extra, eraseMode != .inKey { text.unicodeScalars.append(extra) }
         client.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-        return result
+        tracker.didInsertAtCursor(text)
     }
 }

@@ -24,7 +24,8 @@ struct SimVariant: OptionSet, Hashable, Sendable {
     /// are typed again into a fresh engine; if that gives a valid prefix (D30) that
     /// differs from the keys as letters, the word is replaced with it (the D20
     /// `insertText`) and the engine goes on from those keys. Otherwise D20 as today.
-    /// Not in underline mode, D43 fields or bursts (the model has none of those).
+    /// Not in underline mode, fields that ignore the replacement range (D43) or bursts
+    /// (the model has none of those).
     static let restoredKeys = SimVariant(rawValue: 1)
     /// (b′) as (b), and also rewrite at the ⌫ itself when the remembered keys left form a
     /// full valid syllable (D31): "ddungsg␣⌫⌫" shows "đúng". Costs a read, a
@@ -73,7 +74,8 @@ struct EngineField: SimField {
 /// and a fake client, and expects the same text.
 /// Not modelled: the 50 ms rule (`InPlaceComposer.settleInterval`, every read counts as
 /// settled), apps that answer late or give no text, autocorrect (D20 "Từ hệ thống vừa
-/// sửa"), underline mode (D13), D43 fields, arrows and clicks.
+/// sửa"), underline mode (D13), fields that ignore the replacement range (D43), arrows
+/// and clicks.
 struct ImkField: SimField {
     var field: ExternalCasesTests.Field
     let method: EngineOptions.InputMethod

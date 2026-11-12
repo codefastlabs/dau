@@ -175,14 +175,12 @@ targets:
       - path: Apps/DauInputMethod/Tests
       - path: Apps/DauInputMethod/Sources/KeyRouter.swift
       - path: Apps/DauInputMethod/Sources/CursorTracker.swift
-      - path: Apps/DauInputMethod/Sources/RangeIgnoreDetector.swift
       - path: Apps/DauInputMethod/Sources/MarkedComposer.swift
       - path: Apps/DauInputMethod/Sources/InPlaceComposer.swift
       - path: Apps/DauInputMethod/Sources/PerfLog.swift
       - path: Apps/DauInputMethod/Sources/EngineSettings.swift
       - path: Apps/DauInputMethod/Sources/HostApp.swift
       - path: Apps/DauInputMethod/Sources/LaunchOrigin.swift
-      - path: Apps/DauInputMethod/Sources/WebHost.swift
     dependencies:
       - package: DauEngine
       - package: DauShared

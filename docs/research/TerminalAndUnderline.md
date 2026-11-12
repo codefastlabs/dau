@@ -4,16 +4,12 @@ Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.j
 
 ## Hiện trạng (12/11/2026)
 
-- **Ghostty: D43 chỉ đúng từ từ thứ hai, thứ ba sau mỗi lần chuyển vào Ghostty; dùng thường ngày gần như luôn sai** (chỉ ở app không chứa nhân web, đọc từ gói app; Ghostty không chứa). Ghostty bỏ qua `replacementRange` và báo vị trí con trỏ luôn `{0,0}`. Dấu nhận ra ô này sau vài phím có thay chữ (một, hai từ đầu sai), rồi gửi ký tự xoá sau khi Ghostty xử lý xong phím. Lượt 11/11/2026 đúng từ từ thứ hai, ở zsh và vim; lượt 12/11/2026 ở bộ gõ chạy sandbox đúng từ từ thứ ba. Từ đầu còn sai vì lúc đó chưa nhận ra. Trong shell thật của người dùng (12/11/2026, bản dùng hằng ngày) cũng vậy; mỗi lần chuyển vào Ghostty lại bắt đầu từ chưa nhận ra, nên lệnh ngắn gần như luôn sai (mục 1).
-- **xterm.js: Dấu không gửi ký tự xoá, gõ sai như trước D43** (lý do ở ý kế tiếp). Cách gửi trong phím đã được chẩn đoán và đo trước khi tắt (mục 2):
-  - Chữ dồn: lần thay có vùng thay trước lúc nhận ra để lại chữ sau con trỏ trong textarea ẩn của xterm.js. Từ đó, mỗi lần gửi ký tự xoá trong phím, xterm.js gửi lại cả textarea.
-  - Cách chữa: chỉ gửi trong phím khi không có lần thay có vùng thay nào từ phím Return gần nhất, tức từ dòng sau Return.
-  - Đo 12/11/2026 trên trang thử xterm.js (Chrome, bộ gõ Debug f226cc4, 120 ms, một lượt): dòng sau Return ra đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu, không lặp lần sửa trước; dòng trước Return sai như dự đoán. Cùng chuỗi phím: Ghostty ra như trước (từ đầu sai, rồi đúng), ô thường của Chrome đúng cả dòng.
-- **Gạch chân trong terminal tích hợp của VS Code: đúng** (đo 12/11/2026, một lượt), cả khi chuyển sang trình soạn thảo cùng cửa sổ; không cần nhận ra ô. Cái giá: bật gạch chân cho VS Code thì trình soạn thảo mất D20 (mục 2, cuối phần đo trên VS Code; mục 3).
-- **Terminal và ô soạn thảo trong cùng một view: kết luận "terminal" giữ khi chuyển ô (đã đo trên VS Code).** Ở VS Code, Cursor và có thể cả app Claude, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK. Đo 12/11/2026 trên VS Code: click từ terminal sang trình soạn thảo không kích hoạt lại bộ gõ (log không có `activate` giữa hai pha). Cách gửi trong phím trước đây sẽ gửi ký tự xoá vào trình soạn thảo (mô hình); vì vậy D43 không gửi ký tự xoá ở kiểu xterm.js, và trình soạn thảo ra đúng, không có ký tự xoá (mục 2, "Chuyển ô trong cùng view").
-- **Terminal trong app Claude chưa đo.** Theo bundle Claude.app 5.1231.2 (đọc 12/11/2026), terminal dùng xterm.js 5.x trong Electron 45.2.1 (Chromium 156), và ba hàm nhập liệu `_handleAnyTextareaChanges`, `_inputEvent`, `_keyDown` có cùng logic như mục 2, nên cùng cơ chế với trang thử. Khác trang thử ở ba điểm: app có bộ chặn phím riêng (`attachCustomKeyEventHandler`: ⌃Tab, ⌘ với phím điều hướng, ⌘⇧⌫, ⌘C khi đang bôi đen), có bộ đệm giữ phím khi pty chưa sẵn sàng, và chữ đi vào shell thật. Không đo tự động được: app Claude là nơi chạy phiên điều phối, script gõ phím vào nó sẽ gõ vào chính phiên đó. Thử tay (`docs/Progress.md`, chờ người dùng).
-- **Gạch chân không sửa được dấu cho từ đã chốt** (⌫ về từ cũ, ← vào giữa từ), giống Telex của Apple. Trong Sublime Text, thay tại chỗ sửa được cả ba ca, nên tắt gạch chân cho Sublime là đủ; không quyết định nào phải đổi (mục 3).
+- **Dấu không xử lý riêng terminal bỏ qua vùng thay (D43, 12/11/2026).** Ở Ghostty và terminal dựng bằng xterm.js, Dấu thay tại chỗ như mọi ô nên chữ ra sai; cách gõ đúng là gạch chân, người dùng tự bật theo app. Ghostty mang nhãn "Đề xuất" (D13). Cách gửi ký tự xoá đã thử bên dưới (mục 1, 2) cùng mã và mô hình của nó (`RangeIgnoreDetector`, `WebHost`, `FakeXtermPage`, `SharedViewTests`) đã bỏ; còn trong git ở commit d916a0d.
+- **Gạch chân đúng ở cả hai loại terminal:** Ghostty (zsh, vim; mục 1) và terminal tích hợp của VS Code, kể cả trình soạn thảo cùng cửa sổ khi chuyển ô (mục 2, cuối phần đo trên VS Code). Telex của Apple, cũng là gạch chân, đúng ở cả hai.
+- **Vì sao bỏ cách gửi ký tự xoá:** ở Ghostty nó chỉ đúng từ từ thứ hai, thứ ba sau mỗi lần chuyển vào app; lệnh thật thường ngắn, nên trong shell thật dùng hằng ngày gần như luôn sai (mục 1). Ở xterm.js nó không bật được vì ký tự xoá lọt vào trình soạn thảo cùng view (mục 2). Tất cả tốn khoảng 2 600 dòng mã và test.
 - **Ghostty nuốt Return ngay sau từ gạch chân**, cả với Telex của Apple: lỗi của Ghostty (mục 1).
+- **Gạch chân không sửa được dấu cho từ đã chốt** (⌫ về từ cũ, ← vào giữa từ), giống Telex của Apple. Bật gạch chân cho app mà terminal chỉ là một ô (VS Code, Cursor, app Claude) thì mọi ô của app đó mất D20 (mục 3); vì vậy các app này không mang nhãn vì terminal.
+- **Terminal trong app Claude chưa đo.** Theo bundle Claude.app 5.1231.2 (đọc 12/11/2026), terminal dùng xterm.js 5.x trong Electron 45.2.1 (Chromium 156) với cùng logic nhập liệu như mục 2. Không đo tự động được: app Claude là nơi chạy phiên điều phối.
 
 ## 1. Ghostty
 
@@ -86,7 +82,7 @@ Giả thuyết đã xét, dự đoán cho từng quan sát (O1: cách cũ ra "to
 
 Mô hình: `FakeXtermPage` (test của bộ gõ) dựng ba lớp trên theo mã, dẫn từng hàm trong comment. Với view mới (`_markedRange` {0,0}), nó cho lại đúng O1 và O2. O3 cho lại đúng từng ký tự khi bắt đầu từ trạng thái textarea mà các khúc dữ liệu đo được buộc phải có (" ê", con trỏ ở 1); cùng phím đó với con trỏ ở cuối thì không dồn (H4). Mô hình chưa cho lại câu trả lời `selectedRange` 2 ở chữ e thứ hai: con số đó phụ thuộc `_markedRange` của view, không đọc được từ dữ liệu đã lưu (chưa rõ).
 
-Cách gửi trong phím (`InPlaceComposer.EraseMode.inKey`; nay `InPlaceComposer.eraseMode(for:)` không bao giờ chọn nó, D43, chỉ test đặt bằng tay để tả trang; phần chờ Return đã bỏ khỏi mã):
+Cách gửi trong phím (`EraseMode.inKey` của D43 cũ; đã bỏ cùng D43 cũ, 12/11/2026):
 
 - Bản đã đo 12/11 chỉ gửi trong phím khi không có `insertText` có vùng thay nào từ lần Return (hay Enter bàn phím số) gần nhất mà bộ gõ để đi tới app. Return làm xterm.js xoá textarea. Lúc kích hoạt coi như chưa biết. Thường là bắt đầu ở phím Return đầu tiên sau khi nhận ra.
 - Delete có sửa dấu (D32 (Backspace)) bị giữ lại và gửi phần sửa không kèm chữ mà Delete sẽ xoá: để Delete đi tiếp thì trang nhận keydown thật sau phần chữ, thứ tự giữa phần sửa và DEL của phím do trang quyết.
@@ -123,7 +119,7 @@ Cách đã xét để vẫn gửi trong phím (không chọn, D43: còn lọt k�
 
 - Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4, và ở ⌫).
 - Chuyển ô: terminal `tooi vieetj ddi hocj ↩`, click sang tài liệu trống cùng cửa sổ, gõ `hoom nay tooi ddi hocj vui ver `: trình soạn thảo ra đúng "hôm nay tôi đi học vui vẻ ", 0 ký tự xoá; không có `activate` giữa lúc click và lúc gõ xong.
-- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Ca đó nay cũng không gửi ký tự xoá: kiểu Ghostty chỉ dùng ở app không chứa nhân web (D43; `WebHost`).
+- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Bản sau đó chặn ca này bằng `WebHost` (app có nhân web không nhận ký tự xoá); cả hai đã bỏ cùng D43 cũ.
 
 Lượt xác nhận `WebHost` (12/11/2026, bộ gõ Debug 2bea19c chạy sandbox, 120 ms, một lượt mỗi ô; câu `tooi dungf windows ddeer hoaf⌫ hats vowis banj `, dòng hai `dduwowngf ddepj vui ver `):
 
@@ -145,7 +141,7 @@ Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượ
 | Thay tại chỗ, trước D43 | "toôoiís vieêetj dđd ": phím gốc và chữ thay đều tới shell |
 | Ký tự xoá gửi trong phím, bật từ đầu (bản thử) | "tối việt đ " |
 | D43 gửi trong phím ngay từ phím nhận ra (lượt thứ tư) | sai nặng hơn: mỗi lần gửi lặp lại các lần sửa trước cộng một chữ "ê" thừa (H1) |
-| D43 gửi trong phím từ dòng sau Return (đo 12/11/2026, chuỗi dài hơn có Return; nay đã tắt) | dòng đang gõ lúc nhận ra sai như trước D43; dòng sau Return đúng ("tối việt đi học nhà người hò windows ưa ước"), như mô hình dự đoán |
+| D43 gửi trong phím từ dòng sau Return (đo 12/11/2026, chuỗi dài hơn có Return; đã bỏ) | dòng đang gõ lúc nhận ra sai như trước D43; dòng sau Return đúng ("tối việt đi học nhà người hò windows ưa ước"), như mô hình dự đoán |
 
 ## 3. Gạch chân khi sửa chữ
 
@@ -184,8 +180,6 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 - App Claude và Cursor chưa đo; terminal tích hợp của VS Code và việc chuyển ô ở VS Code đo một lượt (mục 2). Bản xterm.js trong app Claude là 5.x, cùng logic nhập liệu như trang thử, nhưng chưa xác định bản cụ thể.
 - Script gửi phím tuần tự: nhả phím trước rồi mới nhấn phím sau. Người gõ nhanh hay nhấn phím sau trước khi nhả phím trước. Khi đó `_keyDownSeen` của xterm.js còn đúng lúc chữ có vùng thay tới, nên theo mã `_inputEvent` bỏ chữ đó. Chưa mô hình, chưa đo.
 - Chưa đo: Ghostty khi còn vùng bôi đen bằng chuột (Ghostty mặc định bỏ bôi đen khi gõ, `selection-clear-on-typing`, nên theo mã chỉ ảnh hưởng phím đầu); Claude Code chạy trong terminal (chỉ đo ở dấu nhắc zsh và vim).
-- Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường (theo mã, chưa đo; giới hạn đã ghi ở D43).
-- Cách sửa cho xterm.js đã kiểm trên mô hình mã (`FakeXtermPage`) và đo trên trang thử một lượt (120 ms; chưa đo phím dồn). Mô hình giả định `setTimeout(0)` của xterm.js chạy sau mọi sự kiện Chromium gửi cho cùng phím (Blink ưu tiên sự kiện nhập), và keyup tới trước phím kế; chưa đọc mã lịch chạy của Blink. Gửi sau phím (cách của Ghostty) ở xterm.js theo mã sẽ mất phần sửa (`_inputEvent` bỏ chữ tới trước keyup), chưa đo.
 
 ## Phương pháp và bản mã đã đọc
 

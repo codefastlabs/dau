@@ -117,10 +117,9 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 | Có thay chữ, vị trí khác vị trí Dấu theo dõi | một lần | một lần: chứng minh app chậm; dựng lại từ chữ đó chỉ khi phím trước cách đủ `settleInterval` | D11 |
 | Dấu/biến đổi đầu tiên trong từ đã hết hợp lệ, phím trước cách đủ `settleInterval` | một lần | tối đa một lần mỗi từ | D11 |
 | Chữ cái hoặc dấu/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, phím trước cách đủ `settleInterval` | một lần, kể cả khi phím đi thẳng | một lần | D20 |
-| Có thay chữ, vị trí vừa đủ để nhận ra ô bỏ qua vùng thay | (đã hỏi ở trên) | một lần mỗi lần kích hoạt | D43 (Ô bỏ qua vùng thay chữ) |
-| Mọi phím ở ô đã nhận ra, đang gửi ký tự xoá (`EraseMode.afterKey`: kiểu Ghostty, app không chứa nhân web) | không | không | D43 |
-| Mọi phím ở ô kiểu xterm.js, hay kiểu Ghostty ở app có nhân web (thay tại chỗ như ô thường) | như ô thường | như ô thường | D43 |
 | Mọi phím ở chế độ gạch chân | không | không | D13 |
+
+Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js) không được xử lý riêng: thay tại chỗ như mọi ô (D43 (Ô bỏ qua vùng thay chữ)).
 
 `InPlaceComposer.settleInterval` là ngưỡng chung cho các lần đọc dùng chữ để dựng từ (D20 nói vì sao). Phép chứng minh app chậm không chờ: nó không dựng từ từ chữ đọc được, chỉ quyết định thay ở vị trí nào.
 
@@ -159,24 +158,6 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 
 - Chromium: thay với `replacementRange` trong ô thường giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); với EditContext (VS Code dùng mặc định) con trỏ về cuối vùng vừa thay. Lời gọi của bộ gõ và phím vào cùng hàng đợi của trang. `selectedRange` và `attributedSubstring` trả từ bộ đệm phía trình duyệt, không hỏi trang; mỗi `insertText` không vùng thay được ghi ngay vào bộ đệm đó ở vị trí con trỏ trang báo lần trước, `insertText` có vùng thay thì không.
 - Firefox: vị trí và chữ trả từ bộ đệm của tiến trình cha, chỉ cập nhật khi tiến trình nội dung báo; thay với vùng thay là chọn vùng rồi chèn, con trỏ về cuối vùng vừa thay.
-
-#### Ô bỏ qua vùng thay chữ
-
-`RangeIgnoreDetector` trong `InPlaceComposer` (D43). Ghostty và terminal dựng bằng xterm.js nhận chữ của `insertText` nhưng bỏ `replacementRange`; vị trí con trỏ app báo không theo chữ đã gõ (cơ chế: `docs/research/TerminalAndUnderline.md`).
-
-- **Nghi ngờ:** chỉ dùng các `selectedRange` composer vốn đã hỏi.
-  - Detector đếm số đơn vị chữ bộ gõ đã thêm sau mỗi phím (`totals`, từ các `insertText` của nó và phím để đi thẳng) và chỗ bắt đầu từ đang gõ. Từ bắt đầu lại khi từ kết thúc, khi reset, và khi composer bắt đầu lại từ chữ của app (lệch D11, dựng lại, gieo của D20).
-  - Câu trả lời "kẹt": không vùng chọn, vị trí không quá `terminalLimit`, và nhỏ hơn số chữ của từ đang gõ ở trạng thái cũ nhất app có thể còn trả (lùi `CursorTracker.lateLimit` phím cộng loạt phím dồn). Phím thuộc loạt phím dồn không được xét.
-  - Một câu kẹt chỉ là nghi ngờ (⌘A mà bộ gõ không thấy cũng cho một câu như vậy). Câu kẹt thứ hai, trong từ đó hoặc từ ngay sau, mà vị trí không tăng theo số chữ đã thêm: `RangeIgnoreDetector.observe` trả một ứng viên. Câu trả lời lớn hơn `terminalLimit` xoá nghi ngờ.
-- **Bằng chứng dương** (`InPlaceComposer.confirmRangeIgnore`): ở đúng phím đó, một lần đọc chữ.
-  - Vùng đọc (`RangeIgnoreDetector.evidence`) kết thúc ở chỗ bộ gõ tự theo dõi con trỏ, tính từ 0 lúc kích hoạt (`totals`), dài tối đa `evidenceLength`, vì vị trí app báo là thứ đang bị nghi.
-  - So chữ (`RangeIgnoreDetector.isOwnText`): chữ đọc được so với chữ bộ gõ đã đặt ở vùng đó (`typed`), bỏ dấu, chữ hoa và đ (`folded`), từ đầu vùng; phải khớp tới hết từ cuối cộng chữ cái đầu của từ đó, và có ít nhất một chữ cái. Bỏ dấu và so từ đầu vùng để nhận cả app trả lời chậm và app cắt vùng đọc theo chữ nó có.
-  - Khớp: ô thường báo vị trí sai, không nhận ra (`refute`). Không trả chữ, trả chữ khác, hoặc client đã từng không trả chữ (`readUnavailable`): nhận ra (`confirm`).
-  - Kết quả giữ cho client đó tới hết lần kích hoạt; chỉ `InPlaceComposer.activate` xét lại.
-- **Lúc gửi** (`InPlaceComposer.EraseMode`), chọn theo các câu trả lời đã thấy trong lần kích hoạt: đã có câu 1 hoặc 2 là `inKey` (xterm.js); mọi câu đều 0 là `afterKey` (Ghostty): phím đi tới app, phần sửa (`Outcome.deferredText`) tới sau khi app xử lý xong phím, `DauInputController` gửi nó ở lượt kế của hàng đợi chính. Kiểu `inKey` không bao giờ được chọn (`InPlaceComposer.eraseMode(for:)` trả nil, D43): ô thay tại chỗ như ô thường. Đường gửi trong phím (`InPlaceComposer.EraseMode.inKey`) còn trong mã cho các test tả trang thử xterm.js.
-- **App chứa nhân web** (`WebHost`): `afterKey` chỉ được dùng khi `InPlaceComposer.afterKeyAllowed` bật. Mỗi lần kích hoạt hay đổi client, `DauInputController.classifyHost` tắt cờ; `lookUpHost`, ở lượt kế của hàng đợi chính (không trên phím), lấy URL gói qua `NSRunningApplication` (bundle ID lấy từ client, `clientBundleID`, lúc kích hoạt đã có; không có hay có nhiều bản: chặn), rồi `WebHost.read` đọc gói trên hàng đợi nền: `WebHost.classify` tìm helper "Renderer" hay framework Electron, CEF (Chromium), `XUL` (Gecko), và lệnh nạp WebKit hay Safari trong file thực thi chính và các framework, dylib tầng đầu của `Frameworks` và `SharedFrameworks` (`WebHost.loadedLibraries`, bỏ qua Sparkle; chỉ mở file thường, `WebHost.openRegularFile`). Kết quả nhớ theo đường dẫn gói và ngày sửa (`WebHost.verdict`). `WebHostGate` chỉ áp kết quả của lần hỏi gần nhất; chưa có kết quả, đọc lỗi hay app có nhân web thì cờ tắt, ô kiểu Ghostty thay tại chỗ như ô thường. Kết quả "không chứa nhân web" về sau khi ô đã được nhận ra thì `afterKey` bắt đầu ở từ kế tiếp (`InPlaceComposer.afterKeyPending`). Phần sửa gửi sau phím bị bỏ nếu client đã đổi hay bộ gõ đã huỷ kích hoạt (`ClientEpoch`). Bộ gõ chạy sandbox đọc được `/Applications` và `/System` (profile `application.sb`, dẫn trong comment của `WebHost`).
-- **Sau khi nhận ra:** bản Debug log `event=range-ignored` một lần mỗi lần kích hoạt (bản Release không ghi, D8), kèm kiểu ô (`mode=after-key` hay `mode=in-key`) và `blocked=web` hay `blocked=unknown` khi `afterKey` bị chặn. `mode=in-key` và `mode=after-key` có `blocked=` vẫn thay tại chỗ: log ghi kiểu ô nhận ra, không ghi cách gửi; dòng có bundle ID. Bản Debug ghi thêm `event=web-host` với kết quả và thời gian đọc gói. Khi đã gửi ký tự xoá: không hỏi vị trí, không đọc chữ. Bị bác: bản Debug ghi `range-ignore-refuted` vào log perf.
-- **Kiểm:** `XtermPageTests` (trang thử xterm.js qua `FakeXtermPage`, mô hình Chromium, Blink và xterm.js dựng từ mã); `RangeIgnoreTests` (Ghostty, xterm.js, ô thường có ⌘A mà bộ gõ không thấy, ô thường luôn báo `{0,0}`, app đứng hình ở đầu văn bản trống); `SharedViewTests` (terminal và ô thường trong cùng một client: kết luận giữ qua click; với xterm.js, và với kiểu Ghostty ở app chứa nhân web, không ký tự xoá nào tới ô thường); `WebHostTests` (gói giả của từng loại nhân web, gói không đọc được, kết quả về muộn, fuzz `WebHost.loadedLibraries` với seed cố định, D18); mọi client giả của `LateAnswerTests`, `RapidKeysTests`, `CursorEditorTests` và `InPlaceComposerTests` kiểm thêm rằng không bao giờ nhận nhầm.
 
 #### Thêm dấu cho từ đã gõ
 

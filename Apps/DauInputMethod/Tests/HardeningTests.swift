@@ -124,19 +124,6 @@ struct ClientRangeTests {
         #expect(t.rebuild(Array("to".utf16), at: NSRange(location: Int.max - 1, length: 0), accept: { _ in true }) == nil)
         #expect(t.rebuild(Array("to".utf16), at: NSRange(location: Int.min, length: 0), accept: { _ in true }) == nil)
     }
-
-    @Test("detector totals saturate instead of trapping")
-    func detectorTotals() {
-        var d = RangeIgnoreDetector()
-        d.keyHandled(delta: Int.max, inBurst: false)
-        d.keyHandled(delta: Int.max, inBurst: false)
-        d.keyHandled(delta: Int.min, inBurst: false)
-        d.keyHandled(delta: Int.min, inBurst: false)
-        _ = d.minimumAnswer
-        _ = d.observe(NSRange(location: 0, length: 0), inBurst: false)
-        _ = d.observe(NSRange(location: 0, length: 0), inBurst: false)
-        #expect(d.totals.count == 5)
-    }
 }
 
 @Suite("In-place mode with a client that answers huge ranges (D18)")

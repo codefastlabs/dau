@@ -165,15 +165,3 @@ enum InputSourceChange {
         return id.isEmpty ? nil : id
     }
 }
-
-/// Which client session work queued for later belongs to (D43: the fix sent after the key,
-/// the bundle read off the main thread). Advanced at every activation, deactivation, close
-/// and client change; work whose epoch is no longer current is dropped, so it never reaches
-/// another client or another activation.
-struct ClientEpoch: Equatable {
-    private(set) var value = 0
-
-    mutating func advance() { value &+= 1 }
-
-    func isCurrent(_ epoch: Int) -> Bool { epoch == value }
-}

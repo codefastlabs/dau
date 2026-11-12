@@ -381,10 +381,10 @@ struct CursorTracker: Equatable {
 
 
 /// D18 (Phòng thủ với IMK): every `selectedRange` answer goes through `sanitized` before
-/// any arithmetic in in-place mode (`InPlaceComposer`, `CursorTracker`,
-/// `RangeIgnoreDetector`). A client may answer anything: NSNotFound (no document
-/// access), a negative value, or a huge positive one that would overflow
-/// `location + length` or `location - deleteCount + …` and trap.
+/// any arithmetic in in-place mode (`InPlaceComposer`, `CursorTracker`). A client may
+/// answer anything: NSNotFound (no document access), a negative value, or a huge
+/// positive one that would overflow `location + length` or `location - deleteCount + …`
+/// and trap.
 ///
 /// The ceiling is `limit` (Int32.max UTF-16 units, 4 GiB of text): far beyond any text
 /// an app shows in one field, and low enough that a position at the ceiling plus every

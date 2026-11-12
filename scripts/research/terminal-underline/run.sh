@@ -36,17 +36,19 @@ DELAY=120
 # the mark (D26), ⌫ back into a committed word then add a mark (D20), move left into a
 # word then add a mark (D20). Ghostty cells start at an empty line, as right after Return;
 # the underline cell ends with Return.
-# Second and third rounds (11/11/2026, t2- and t3- cells): Debug trials that D43 replaced
-# (DEL erase in the key, after the key, a document length probe); they ran builds 13d4df7
-# and 237e68f, results in the log of docs/Progress.md. Their cells went with the trials.
-# Fourth round (t4-): D43 as built. The terminals (Ghostty with zsh and vim, xterm.js)
-# must be told apart and come out right from the word where they are; the text fields
-# (Chrome, also with a busy page; Safari; Sublime Text) must never be taken for one
-# (typing/run.sh reports "D43: …" for each cell). One line covers D32 (hoaf ⌫), D4
-# (windows), a word whose first replacement comes late (nguwowif) and short ones.
-# Fifth round (t5-): D43 in terminals of Electron apps, and the move from a terminal to an
-# editor in the same window (docs/research/TerminalAndUnderline.md, section 2, "Chuyển ô
-# trong cùng view"). Terminal.app at 120 and 30 ms; VS Code's integrated terminal
+# Second and third rounds (11/11/2026, t2- and t3- cells): Debug trials of erasing with
+# DEL (in the key, after the key, a document length probe); they ran builds 13d4df7 and
+# 237e68f, results in the log of docs/Progress.md. Their cells went with the trials.
+# Fourth round (t4-): measured the D43 code of the time, which told terminals apart and
+# erased with DEL; that code is gone (D43 now: no special handling, the old way in
+# docs/history/DecisionsLog.md section D43). The cells stay: the terminals (Ghostty with
+# zsh and vim, xterm.js) come out wrong in place and right with underline (D13); the text
+# fields (Chrome, also with a busy page; Safari; Sublime Text) must come out right. One
+# line covers D32 (hoaf ⌫), D4 (windows), a word whose first replacement comes late
+# (nguwowif) and short ones.
+# Fifth round (t5-): in-place typing in terminals of Electron apps, and the move from a
+# terminal to an editor in the same window (docs/research/TerminalAndUnderline.md,
+# section 2, "Chuyển ô trong cùng view"). Terminal.app at 120 and 30 ms; VS Code's integrated terminal
 # (vscodeterm: xterm.js in Electron, also with a Return in the line); vscodeswitch types in
 # the terminal, then moves the focus to an empty editor of the same window and types there
 # (the 7th and 8th fields: keys and expected text of the editor); t5-vsterm-apple is the
@@ -61,11 +63,10 @@ DELAY=120
 # ơ); banj→bạn; ↩; dduwowngf→đường (dd, uw→ư, ow→ơ, huyền f); ddepj→đẹp; vui; ver→vẻ. The
 # editor line of t5-vsswitch: hoom→hôm, nay, dduwowngf→đường, ddepj→đẹp, vui, ver→vẻ.
 # "expect" is the text the keys mean in Vietnamese, with ↩ shown as in the line of the
-# cell (typing/run.sh). For t5-vsterm it is not the prediction: D43 as built sends no DEL
-# to a field told apart as xterm.js, so the replacements double, as before D43; the cell
-# measures whether that is what the VS Code terminal gives. The line of the cell is the
-# verdict (what a zsh prompt shows); the raw bytes and the log's `event=range-ignored mode=`
-# line are what to read next to it.
+# cell (typing/run.sh). For t5-vsterm it is not the prediction: an xterm.js field ignores
+# the replacement range, so the replacements double (D43); the cell measures whether that
+# is what the VS Code terminal gives. The line of the cell is the verdict (what a zsh
+# prompt shows); the raw bytes are what to read next to it.
 # Sixth round (t6-): underline (D13) in VS Code, for the choice between D13 as it is (the
 # user turns underline on for the app) and underline only in xterm.js fields. Same keys as
 # t5-vsterm and t5-vsswitch; --underline forces it for the whole app, so the editor of
@@ -127,8 +128,8 @@ done
 OUT="$ROOT/build/terminal-underline/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
 {
-  print "| ô | phím | mong đợi | được | byte gửi cho shell | D43 | phím 2 (soạn thảo) | mong đợi 2 | được 2 (␡ = U+007F) | mã thoát |"
-  print "|---|---|---|---|---|---|---|---|---|---|"
+  print "| ô | phím | mong đợi | được | byte gửi cho shell | phím 2 (soạn thảo) | mong đợi 2 | được 2 (␡ = U+007F) | mã thoát |"
+  print "|---|---|---|---|---|---|---|---|---|"
 } > "$OUT/summary.md"
 
 FAILED=0
@@ -161,13 +162,12 @@ for cell in $CELLS; do
   elif [[ -e "$dir/xterm.data" ]]; then
     raw="\"$(<"$dir/xterm.data")\""
   fi
-  d43="$(grep -o 'D43: .*' "$dir/typing.log" | head -1 | sed 's/^D43: //')"
   # vscodeswitch: the editor's text, U+007F as ␡.
   got2=""; k2col=""; [[ -n $keys2 ]] && k2col="\`$keys2\`"
   if [[ -e "$dir/$app.editor.txt" ]]; then
     got2="$(<"$dir/$app.editor.txt")"; got2="${got2//$'\x7f'/␡}"
   fi
-  print -r -- "| $id | \`$keys\` | $expect | ${got:-—} | ${raw:-—} | ${d43:-—} | ${k2col:-—} | ${expect2:-—} | ${got2:-—} | $rc |" >> "$OUT/summary.md"
+  print -r -- "| $id | \`$keys\` | $expect | ${got:-—} | ${raw:-—} | ${k2col:-—} | ${expect2:-—} | ${got2:-—} | $rc |" >> "$OUT/summary.md"
   case $rc in
     0) log_ok "$id: \"$got\"" ;;
     1) log_warn "$id: \"$got\" (mong đợi \"$expect\")" ;;

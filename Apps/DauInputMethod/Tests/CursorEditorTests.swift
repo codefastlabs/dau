@@ -28,7 +28,6 @@ private struct EditorSession {
         doc.lag = lag
         doc.selections = 0; doc.reads = 0; doc.inserts = 0
         let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-        #expect(outcome.kind != .erase && !composer.eraseByDelete)  // D43: never a text field
         if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         outcomes.append(outcome)
         if !outcome.consumed { doc.typed(route) }

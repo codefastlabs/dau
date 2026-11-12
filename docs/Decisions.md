@@ -56,7 +56,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D40](#d40-chữ-dựng-sẵn-và-phím-z) | Chữ dựng sẵn và phím z | Chữ dựng sẵn là chữ cái của từ; z không bỏ mũ/móc. |
 | [D41](#d41-ngôn-ngữ-giao-diện) | Ngôn ngữ giao diện | Tiếng Việt và tiếng Anh, theo ngôn ngữ ưu tiên của macOS. |
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Chạy bài tải nặng trước mỗi bản phát hành; vượt ngưỡng thì không phát hành. |
-| [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Ô kiểu Ghostty ở app không chứa nhân web nhận ký tự xoá rồi chữ mới; ô kiểu xterm.js thì không. |
+| [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Không xử lý riêng; gõ đúng bằng gạch chân người dùng tự bật; Ghostty mang nhãn "Đề xuất". |
 
 Cuối sổ: [Đã biết nhưng không làm](#đã-biết-nhưng-không-làm), [Đã cân nhắc và loại bỏ](#đã-cân-nhắc-và-loại-bỏ), [Câu hỏi mở](#câu-hỏi-mở).
 
@@ -75,8 +75,8 @@ Tiến trình bộ gõ không có quyền mạng. Mọi kết nối nằm ở ap
 Tối thiểu lời gọi vào ứng dụng đích khi đang gõ.
 
 - Mỗi phím tối đa một lần gọi `insertText`.
-- Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc; trừ chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)) và ô đang nhận ký tự xoá (D43 (Ô bỏ qua vùng thay chữ)). Phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
-- Đọc chữ trước con trỏ chỉ ở các trường hợp một quyết định cho phép, mỗi trường hợp một lần đọc: lệch vị trí và từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)), phím đầu khi chưa biết chữ trước con trỏ (D20), nhận ra ô bỏ qua vùng thay (D43 (Ô bỏ qua vùng thay chữ)).
+- Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc; trừ chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)). Phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
+- Đọc chữ trước con trỏ chỉ ở các trường hợp một quyết định cho phép, mỗi trường hợp một lần đọc: lệch vị trí và từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)), phím đầu khi chưa biết chữ trước con trỏ (D20).
 
 **Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Chỉ cộng dồn từ một vị trí gốc thì không biết lúc app tự sửa chữ hay con trỏ đi chỗ khác, và VS Code đổi gốc toạ độ. Vị trí Dấu tự theo dõi chỉ dùng khi chữ đọc được chứng minh app trả lời chậm (D11, ý "App trả lời chậm").
 
@@ -216,7 +216,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
   - Vị trí app trả mà có thể là vị trí cũ thì không ghi đè vị trí Dấu theo dõi.
   - Không chứng minh được, ở giữa từ: như "Dựng lại khi lệch". Ở lần thay đầu của một từ, khi app chậm trong giới hạn và trước vị trí app trả không có đủ cả từ: vẫn thay ở vị trí Dấu theo dõi.
   - Ở đầu văn bản: khi mọi chữ trước con trỏ là chữ Dấu vừa gõ và phím đang xử lý thuộc cùng loạt phím dồn, coi là app chậm mà không cần chữ của app để so. Sau một quãng nghỉ thì không áp dụng.
-- **Ô bỏ qua vùng thay chữ** (vị trí app báo không theo chữ đã gõ, như terminal): D43 (Ô bỏ qua vùng thay chữ).
+- **Ô bỏ qua vùng thay chữ** (như terminal): không xử lý riêng, D43 (Ô bỏ qua vùng thay chữ).
 - **Từ đã hết hợp lệ:** từ trong bộ đệm đã hết hợp lệ (D30 (Kiểm tra chính tả), không tính D33 (Độ dài từ)) mà người dùng gõ phím dấu/biến đổi thì đọc chữ trước con trỏ một lần cho từ đó; khác bộ đệm thì dựng lại từ chữ thật rồi xử lý phím (cùng điều kiện 50 ms). Tối đa một lần đọc cho mỗi từ không phải tiếng Việt.
 
 **Vì sao:**
@@ -240,18 +240,19 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 
 ### D13. Gạch chân là đường lui cuối cùng
 
-- Thay tại chỗ là cách gõ của Dấu. Gõ sai ở một app là lỗi của Dấu và phải sửa, không giải quyết bằng gạch chân: gạch chân (marked text) là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn.
+- Thay tại chỗ là cách gõ của Dấu. Gõ sai ở một app là lỗi của Dấu và phải sửa, không giải quyết bằng gạch chân: gạch chân (marked text) là cách bộ gõ mặc định của macOS hiện chữ, thứ Dấu muốn làm tốt hơn. Ngoại lệ: ô bỏ qua vùng thay chữ (terminal như Ghostty, xterm.js), nơi gạch chân là cách gõ đúng và Dấu không xử lý riêng (D43 (Ô bỏ qua vùng thay chữ)).
 - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được, người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
 - Nhãn "Đề xuất" trong danh sách tương thích chỉ gắn cho app mà số đo cho thấy thay tại chỗ còn sai ở tốc độ gõ thật; sửa được ở app nào thì bỏ nhãn của app đó. Không gắn nhãn theo công nghệ giao diện khi chưa đo.
 - Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí.
-- Hiện chỉ Cursor có nhãn. Terminal không đề xuất.
+- Hiện Cursor và Ghostty có nhãn. Terminal của macOS không đề xuất.
 
 **Vì sao:**
 
 - Cursor: trình soạn thảo còn sai ở nhịp danh nghĩa 5 ms và ở một ca gõ dồn 20 ms; gạch chân đúng.
+- Ghostty: thay tại chỗ sai ở mọi nhịp (app bỏ qua vùng thay, D43); gạch chân đúng.
 - Chrome, Edge, Firefox và VS Code: sau các lần sửa ở M6 (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"), đúng ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms).
 - Brave, Arc và các app Electron khác từng mang nhãn chỉ vì công nghệ giao diện, chưa đo. Nhãn chỉ gắn khi số đo cho thấy sai (luật trên), và kết quả đo ở app này không suy ra cho app kia (Cursor cũng là Electron mà còn sai), nên các app đó không có nhãn cho tới khi đo.
-- Terminal: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ).
+- Terminal của macOS: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ).
 
 **Xem thêm:** [`docs/Compatibility.md`](Compatibility.md) mục 6.2; số lượt đo theo app ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D13.
 
@@ -333,7 +334,6 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 - **Khi nào đọc:** ở phím chữ cái hoặc dấu/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng đi thẳng: một `selectedRange` và một lần đọc chữ trước con trỏ (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
 - **Phạm vi:**
   - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
-  - Không áp dụng ở ô đang nhận ký tự xoá (D43 (Ô bỏ qua vùng thay chữ)), vì ô đó không cho đọc chữ.
   - Ở mọi ô, app không trả chữ cho một lần đọc thì Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)).
   - Chỉ đọc lại chữ khi phím trước đó trên cùng ô nhập cách ít nhất 50 ms (biên an toàn khi gõ dồn).
   - Chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").
@@ -659,43 +659,26 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 
 ### D43. Ô bỏ qua vùng thay chữ
 
-Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ (đã đo: Ghostty, và terminal dựng bằng xterm.js). Ở ô kiểu Ghostty, Dấu vẫn thay chữ tại chỗ bằng cách gửi ký tự xoá (DEL, U+007F) cho từng chữ cần xoá rồi tới chữ mới, trong một lần `insertText` tại con trỏ; chương trình trong terminal xoá rồi in lại.
+Có những ô nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ. Đã đo: Ghostty, và terminal dựng bằng xterm.js (terminal tích hợp của VS Code; Cursor và terminal trong app Claude cùng cơ chế, chưa đo). **Dấu không xử lý riêng các ô này:** thay tại chỗ như mọi ô, nên chữ ở đó ra sai. Cách gõ đúng là gạch chân, người dùng tự bật theo app (D13 (Gạch chân là đường lui cuối cùng)).
 
-- **Nhận ra ô:** dựa vào vị trí con trỏ app báo ở các phím có thay chữ (Dấu vốn đã hỏi ở các phím này, N3 (Ít lời gọi vào ứng dụng đích)), cộng một bằng chứng dương. Kết quả giữ tới hết lần kích hoạt; chỉ xét lại khi IMK kích hoạt lại bộ gõ hoặc đổi client, còn click hay đổi ô trong cùng app mà IMK không báo thì giữ.
-- **Bằng chứng dương:** ở phím mà vị trí vừa đủ để nhận ra ô, Dấu đọc chữ trước con trỏ một lần. Ô loại này không cho đọc chữ đã gõ: app không trả chữ, hoặc trả chữ không chứa chữ Dấu vừa gõ ở đó. App trả về đúng chữ Dấu vừa gõ thì ô đó gõ được bình thường, chỉ báo vị trí sai: không nhận ra, thay tại chỗ như cũ trong lần kích hoạt đó. Vị trí nhỏ một mình không đủ, vì ô tự vẽ báo vị trí hằng số và app đứng hình ở đầu văn bản trống cũng trả vị trí 0.
-- **Yêu cầu với ngưỡng nhận ra** (ngưỡng nằm ở mã và test): không nhận nhầm ô gõ thường nào trong các lượt đo đã có, kể cả Chrome khi trang bận và đầu văn bản (vị trí 0 là vị trí thật); nhận ra Ghostty càng sớm càng tốt trong từ đầu tiên.
-- **Lúc gửi:** ô nhận ra theo kiểu Ghostty (vị trí luôn 0): để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm.
-- **Chỉ app không chứa nhân web nhận ký tự xoá:** Dấu đọc gói của app đang gõ (ngoài đường phím, mỗi phiên bản app một lần trong mỗi tiến trình bộ gõ; chỉ đọc cấu trúc gói, không đọc chữ hay dữ liệu của người dùng). App có nhân web thì ô kiểu Ghostty cũng thay tại chỗ như ô thường. Nhân web là: Chromium hay Electron (helper "Renderer", framework Electron hay CEF), Gecko, hoặc WebKit (file thực thi, hay framework và dylib ở tầng đầu của `Frameworks` và `SharedFrameworks` trong gói, liên kết WebKit hay Safari; Sparkle không tính vì nó hiện web trong cửa sổ riêng). Không đọc được gói, hay chưa đọc xong, thì không gửi ký tự xoá; kết quả về sau khi ô đã được nhận ra thì cách gửi ký tự xoá bắt đầu từ từ kế tiếp.
-- **Ô kiểu xterm.js (vị trí dao động 0–2) không nhận ký tự xoá:** Dấu nhận ra ô (ghi nhật ký) nhưng vẫn thay tại chỗ như ô thường, nên chữ trong ô này sai như trước D43. Chỉ bật lại khi có cách bảo đảm không ký tự xoá nào tới ô soạn thảo nằm cùng view với terminal, đã đo trên app thật.
-- **Khi đã gửi ký tự xoá:** không hỏi vị trí con trỏ, không đọc chữ; mỗi phím vẫn tối đa một lần `insertText`.
-- **Khác "event tap + Backspace giả" đã loại:** không event tap, không giả lập phím, không xin quyền Trợ năng (N4 (Không tự đổi cài đặt hệ thống)). Ký tự xoá là chữ gửi qua API của InputMethodKit, chỉ tới ô đã nhận ra là bỏ qua vùng thay.
-- **Gạch chân không phải cách sửa** cho những ô này: D13 (Gạch chân là đường lui cuối cùng) giữ nguyên, gạch chân vẫn chỉ do người dùng tự bật.
-- **App có quy tắc gạch chân (D13): gạch chân thắng.** Dấu không xét ô bỏ qua vùng thay ở app đó.
+- **Ghostty mang nhãn "Đề xuất"** (D13): cả app là terminal, nên bật gạch chân không làm hại ô nào khác.
+- **App mà terminal chỉ là một ô** (VS Code, Cursor, app Claude): không gắn nhãn vì terminal. Bật gạch chân cho cả app thì mọi ô của app đó mất D20 (Thêm dấu cho từ đã gõ), để chữa một ô.
 
 **Hệ quả đã chấp nhận:**
 
-- Ở ô đang nhận ký tự xoá, D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
-- Terminal dựng bằng xterm.js (terminal tích hợp của VS Code, Cursor, terminal trong app Claude) gõ sai như trước D43: trên trang thử, `toois vieetj dd ` ra "toôoiís vieêetj dđd "; trong terminal của VS Code cũng sai (đã đo); Cursor và app Claude chưa đo.
-- Nhân web mà cách đọc gói không thấy (nạp lúc chạy, nằm trong XPC service, plug-in hay framework lồng sâu hơn tầng đầu của `Frameworks` và `SharedFrameworks`) thì app bị coi là không chứa nhân web; nếu app đó có ô kiểu Ghostty cùng view với ô soạn thảo, ký tự xoá vẫn có thể lọt. Chưa gặp app nào như vậy.
-- Terminal không chứa nhân web nhưng đặt ngoài `/Applications` (ví dụ `~/Applications`, bộ gõ chạy sandbox không đọc được gói) gõ sai như trước D43.
-- Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
-- Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
-- Trước khi nhận ra, các phím đầu ra như ô thường (ở Ghostty: từ đầu, có khi cả từ thứ hai, sai mỗi lần kích hoạt).
-- Chữ có thể chớp một khung hình ở cách gửi sau phím: chưa đo.
-- Ô vừa báo vị trí hằng số 0 vừa không cho đọc chữ mà không phải terminal (nếu có) vẫn bị nhận ra và nhận ký tự xoá như chữ thường; chưa gặp app nào như vậy.
-- Lần đọc chỉ bác được khi app trả chữ Dấu vừa gõ ở chỗ Dấu tự theo dõi (tính từ lúc kích hoạt). Ô báo vị trí hằng số 0 mà lúc kích hoạt đã có chữ trước con trỏ, hoặc đã click trong cùng lần kích hoạt, và app đứng hình tới mức chưa có chữ nào của Dấu trong vùng đọc, vẫn bị nhận ra như khi không có bằng chứng dương. Mới thấy trên client giả, chưa gặp trên app thật.
+- Không bật gạch chân thì chữ trong các ô này sai từ đầu tới cuối: Ghostty `toois` ra "toôis"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ".
+- Ghostty có gạch chân: Return nhấn ngay sau từ đang gạch chân bị nuốt, phải nhấn lại. Lỗi của Ghostty, Telex của Apple cũng bị ([`docs/Compatibility.md`](Compatibility.md) mục 6.8).
+- Gạch chân không có D20 (D13).
 
 **Vì sao:**
 
-- Thay tại chỗ thường hỏng ở các ô này: Ghostty `dd` ra "dđ", `vieetj` ra "vieetj"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ". Telex của Apple ra đúng ở cả hai.
-- Bản thử ký tự xoá ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim), thời gian xử lý mỗi phím ngang thay tại chỗ thường.
-- Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. xterm.js phải gửi trong phím: theo mã, chữ tới sau phím (trước khi nhả phím) bị bỏ.
-- Không gửi ký tự xoá ở kiểu xterm.js: chữ đúng trong terminal không đáng đổi lấy rủi ro làm hỏng chữ ở nơi người dùng soạn thảo. Ở app Electron, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK, và click giữa chúng không tới bộ gõ (mã Chromium; đo trên VS Code: click từ terminal sang trình soạn thảo không kích hoạt lại bộ gõ), nên kết luận "terminal" giữ khi người dùng chuyển sang trình soạn thảo. Trên mô hình, ký tự xoá khi đó lọt vào trình soạn thảo ở mọi phím thay chữ. Cách bỏ kết luận khi vị trí lại tăng vẫn để lọt ký tự xoá ở từ đầu của ô rỗng. Gửi trong phím chỉ đúng từ dòng sau Return (đo trên trang thử, một lượt), dòng đầu vẫn sai.
-- Chỉ app không chứa nhân web: trang xterm.js mà mọi câu trả lời vị trí đều 0 bị xếp vào kiểu Ghostty (mô hình: khi view đó từng có chữ gạch chân), và nhận theo hành vi thì không phân biệt được với Ghostty. Nhận theo cấu trúc gói thì không gãy khi app cập nhật thêm loại ô mới, như danh sách bundle ID sẽ gãy. Đọc thử trên các app cài trên một máy: Ghostty, Terminal, Zed, Sublime Text không chứa nhân web; VS Code, Cursor, app Claude, Chrome, Edge, Firefox, Safari, Telegram, Pages, Xcode có. Trong bộ gõ chạy sandbox (một lượt): Terminal và Ghostty đọc ra không chứa nhân web, VS Code có.
-- Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
-- Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
+- Gạch chân đo ra đúng ở cả hai loại ô: Ghostty (zsh, vim) và terminal tích hợp của VS Code, kể cả trình soạn thảo cùng cửa sổ khi chuyển ô. Telex của Apple (cũng là gạch chân) ra đúng ở cả hai.
+- Cách sửa tại chỗ đã thử (gửi ký tự xoá DEL qua InputMethodKit, nhận ra ô theo vị trí con trỏ, đọc gói app để tránh app có nhân web) tốn khoảng 2 600 dòng mã và test mà vẫn không đạt:
+  - Ghostty: một, hai từ đầu sai sau mỗi lần chuyển vào app; lệnh thật thường ngắn và gõ ngay sau khi chuyển vào, nên trong shell thật dùng hằng ngày gần như luôn sai.
+  - xterm.js: không bật được, vì ký tự xoá lọt vào trình soạn thảo cùng view.
+- Mỗi nhánh riêng trong đường xử lý phím là thêm chỗ để lỗi; mã đơn giản đáng hơn một cách sửa chỉ đúng một phần.
 
-**Xem thêm:** cơ chế đọc từ mã ở [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md); [`docs/Compatibility.md`](Compatibility.md) mục 6.8; cách nhận ra ở [`docs/Architecture.md`](Architecture.md) mục "Ô bỏ qua vùng thay chữ"; số đo ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D43.
+**Xem thêm:** cơ chế và số đo ở [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md); [`docs/Compatibility.md`](Compatibility.md) mục 5.6, 6.8; cách làm cũ và lý do bỏ ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D43.
 
 ## Đã biết nhưng không làm
 
@@ -721,7 +704,7 @@ Tính năng người dùng có thể đã quen ở bộ gõ khác. Dấu biết 
 
 ## Đã cân nhắc và loại bỏ
 
-Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM và đa nền tảng; thử gõ trên trang web; event tap + Backspace giả (cách của OpenKey; khác cách xoá bằng ký tự DEL qua InputMethodKit của D43); `NSSpellChecker` trong đường nóng; nhúng engine UniKey qua C++ interop; chạy engine OpenKey làm đáp án cho test (oracle); MIT/MPL tách riêng cho engine.
+Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM và đa nền tảng; thử gõ trên trang web; event tap + Backspace giả (cách của OpenKey); gửi ký tự xoá DEL qua InputMethodKit cho terminal (D43, bỏ 12/11/2026: không đạt, tốn mã); `NSSpellChecker` trong đường nóng; nhúng engine UniKey qua C++ interop; chạy engine OpenKey làm đáp án cho test (oracle); MIT/MPL tách riêng cho engine.
 
 ## Câu hỏi mở
 

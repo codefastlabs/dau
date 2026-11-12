@@ -154,8 +154,8 @@ X5: theo mã, D20 không gieo khi có vùng chọn và phím đầu bắt đầu
   - Sau khi từ đã chốt: mọi ca thay tại chỗ sửa được ở nhóm B, C đều hỏng (K7).
   - Telex của Apple cũng hỏng ở đây. Đã đo `tooisf ba ⌫j tooi←s`: Dấu thay tại chỗ ra "tồi bạ tối", Dấu gạch chân và Telex của Apple ra "tồi baj tôsi"; Notes `tieeng←→s` ra "tiêngs" ([`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) mục 3, nhật ký [`docs/Progress.md`](../Progress.md) 11/11).
 - **Ô bỏ qua vùng thay chữ (D43 (Ô bỏ qua vùng thay chữ)):**
-  - Theo D43, sau khi nhận ra ô, D20 và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy. Vì vậy nhóm A như thay tại chỗ, còn nhóm B, C hỏng như gạch chân (suy luận từ mã, chưa chạy đồ giả cho từng ca).
-  - Trước khi nhận ra ô, từ đầu tiên có thể sai.
+  - Dấu không xử lý riêng các ô này: thay tại chỗ như mọi ô, mà ô bỏ qua vùng thay, nên mọi phím có thay chữ ra sai, kể cả nhóm A.
+  - Người dùng bật gạch chân cho app (D13) thì kết quả như cột "Gạch chân": nhóm A đúng, nhóm B, C hỏng (K7).
   - Terminal của Apple không chuyển phím ⌫ cho bộ gõ, nên ⌫ trong từ không qua D32 ([`docs/Architecture.md`](../Architecture.md) mục "Thêm dấu cho từ đã gõ").
 
 ### F. Từ tiếng Anh và mã (kiểm hướng sửa không làm hỏng)
