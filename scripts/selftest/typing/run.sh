@@ -425,6 +425,9 @@ cycle_to_source() { # source-id
 
 type_keys() { # process [window-title-substring]
   stopped && return 1
+  # Safari has been seen to take the focus back to its address field after the page
+  # reported it (busy Mac, 12/11/2026): put it back once more right before typing.
+  [[ "${2:-}" == "$FOCUS_TITLE" ]] && focus_test_field "$1"
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
   guarded "$1" "${2:-}" 'return' >/dev/null || return 1
@@ -566,14 +569,29 @@ focus_test_field() { # process
   stopped && return 1
   wait_until -i 0.3 2 front_ok "$1" "$FOCUS_TITLE" && return 0
   log_warn "$1: ô nhập của trang thử chưa có focus, bấm vào ô"
-  local err
-  err="$(osascript -e "$(front_guard "$1" "$PAGE_TITLE")" -e "
+  # Under a busy Mac one click has been seen not to move the focus out of Safari's
+  # address field within 15 s (heavy.sh, 12/11/2026): click again, up to three times.
+  local err try
+  for try in 1 2 3; do
+    # Focus in Safari's address field ("smart search field"): clicks have been seen not to
+    # take it out under load (12/11/2026); Tab moves it to the page's first field. Sent only
+    # when that field is confirmed to hold the focus, never into a page's text field.
+    err="$(osascript -e "$(front_guard "$1" "$PAGE_TITLE")" -e "
     tell application \"System Events\" to tell process \"$1\"
+      try
+        if description of (value of attribute \"AXFocusedUIElement\") is \"smart search field\" then
+          key code 48
+          return
+        end if
+      end try
       set w to value of attribute \"AXFocusedWindow\"
       set {x, y} to position of w
       set {sw, sh} to size of w
       click at {x + sw / 2, y + sh / 2}
     end tell" 2>&1 >/dev/null)" || log_warn "$1: không bấm được vào ô nhập của trang thử: $err"
+    wait_until -i 0.3 5 front_ok "$1" "$FOCUS_TITLE" && return 0
+    (( try < 3 )) && log_warn "$1: vẫn chưa có focus, bấm lại (lần $((try + 1)))"
+  done
   return 0
 }
 

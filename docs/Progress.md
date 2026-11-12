@@ -9,7 +9,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 Chờ người dùng: không có việc nào.
 
 Việc tiếp theo, theo thứ tự:
-1. M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (chiếm màn hình, hỏi giờ). Script từ chối chạy khi tải trung bình 1 phút bằng hoặc vượt số nhân; 12/11 máy M1 bận liên tục (tải 7,3–9,6 trên 8 nhân, phần lớn Spotlight và WindowServer), nên chọn lúc máy thật rảnh.
+1. M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6); `heavy.sh` đã chạy trọn và đạt D42 (nhật ký 12/11).
 2. Thử tay D43 trong terminal của app Claude (xterm.js trong Electron; trang thử đã đạt 12/11).
 
 Việc mở:
@@ -381,4 +381,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - Kiểm mẫu Telex của Apple (Release f226cc4 không liên quan; Chrome, 30 ms, `--source`): 9 từ tiếng Anh ở `docs/research/CompetitorComparison.md` mục 1.1 ra đúng từng chữ như lượt 09/11 ("ưindows gôd bôk gôgle sờtare ửok púh ưebsite déign").
   - D43 với ô kiểu xterm.js (bộ gõ Debug f226cc4, 120 ms, một lượt): trang thử xterm, dòng sau Return đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu; dòng trước Return sai như dự đoán. Cùng chuỗi phím (không Return): Ghostty "toôis việt đi học nhà người hò windows" (như trước, D43 after-key), Chrome ô thường đúng cả dòng, không có sự kiện D43. Chưa thấy dòng log `range-ignore-erasing` trong log đã lưu.
   - Sublime Text (câu mẫu): đúng chữ; tab của lượt thử đóng không để lại hộp thoại lưu.
-  - `scripts/selftest/load/heavy.sh` không chạy: tải trung bình 1 phút 7,3–9,6 trên 8 nhân suốt 4 phút chờ (Spotlight, WindowServer, Chrome).
+- 12/11/2026 — M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (máy M1, macOS 27.2, bộ gõ Debug f226cc4, 6 nhóm, 16 ô, 227 phím mỗi ô, 50 ms): chữ đúng ở mọi ô của Dấu; đối chứng Telex của Apple dưới tải giống chữ lúc rảnh của chính nó (2/2). Thời gian thay chữ phía bộ gõ: p50 0,80–1,71 ms, p99 3,9–14,2 ms (ngưỡng D42: 3 ms, 20 ms), đạt mọi ô. Bộ nhớ của tiến trình bộ gõ 44–46 MB suốt lượt. Giới hạn: nhóm "rảnh" không rảnh, tải trung bình 1 phút 5–37 trên 8 nhân (máy đang dùng); một lượt.

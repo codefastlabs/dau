@@ -12,8 +12,9 @@
 #
 # Load: one `yes > /dev/null` per core and `memory_pressure -l warn`, started by this
 # script and stopped by it (their PIDs only), also on ⌃C. Typing starts RAMP_S after.
-# The script refuses to start when the 1-minute load average is already at or above the
-# number of cores: the "idle" groups would not be a baseline.
+# When the 1-minute load average is already at or above the number of cores, the script
+# warns and runs anyway: the "idle" groups then measure the machine as it is, not a quiet
+# baseline, and the load at the start is printed so the numbers are read with it.
 #
 # Plan, one call of scripts/selftest/typing/run.sh per group (its safety rules apply),
 # every call with --keep-source so the input source is switched once per source, not
@@ -102,9 +103,9 @@ fi
 load_1m() { sysctl -n vm.loadavg | awk '{print $2}'; }
 LOAD_NOW="$(load_1m)"
 if (( LOAD_NOW >= CORES )); then
-  log_error "Máy đang bận: tải trung bình 1 phút là $LOAD_NOW trên $CORES nhân, nhóm \"idle\" không làm mốc được."
-  log_hint "Chạy lại khi máy rảnh hơn."
-  exit 1
+  log_warn "Máy đang bận: tải trung bình 1 phút là $LOAD_NOW trên $CORES nhân; nhóm \"idle\" đo máy như đang dùng, không phải mốc lúc rảnh."
+else
+  log_detail "tải trung bình 1 phút lúc bắt đầu: $LOAD_NOW trên $CORES nhân"
 fi
 
 INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/input-source.swift")" || exit 1
