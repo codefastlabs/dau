@@ -649,10 +649,10 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 - Chữ gõ ra khớp đáp án ở mọi ô.
 - Phím có thay chữ: thời gian xử lý phía bộ gõ p50 không quá 3 ms, p99 không quá 20 ms.
 - Đối chứng: chữ của Telex của Apple dưới tải giống chữ của chính nó lúc rảnh; khác thì lượt đo không hợp lệ.
+- Bộ nhớ: tiến trình bộ gõ (RSS, đo trước và sau mỗi nhóm) không quá 96 MB.
 - Vượt ngưỡng thì không phát hành cho tới khi rõ nguyên nhân.
-- Chưa có ngưỡng bộ nhớ (câu hỏi mở).
 
-**Vì sao:** ngưỡng cao hơn mức đã đo ở M6 (p50 tới 1,92 ms, p99 tới 13,2 ms) khoảng 1,5 lần, để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)); bản Debug có thêm một lời gọi chẩn đoán sau mỗi lần thay chữ nên số của nó cao hơn bản phát hành.
+**Vì sao:** ngưỡng cao hơn mức cao nhất đã đo ở M6 khoảng 1,4–1,6 lần (p50 1,92 ms, p99 14,2 ms; bộ nhớ 44–64 MB ở bản Debug), để một lượt đo xấu không báo động giả. Đo trên bản Debug vì bản Release không ghi gì theo từng phím (D8 (Không telemetry)); bản Debug có thêm một lời gọi chẩn đoán sau mỗi lần thay chữ nên số của nó cao hơn bản phát hành.
 
 **Xem thêm:** số đo M6 ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D42.
 
@@ -683,7 +683,7 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - Thay tại chỗ thường hỏng ở các ô này: Ghostty `dd` ra "dđ", `vieetj` ra "vieetj"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ". Telex của Apple ra đúng ở cả hai.
 - Bản thử ký tự xoá ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim), thời gian xử lý mỗi phím ngang thay tại chỗ thường.
 - Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. xterm.js phải gửi trong phím: theo mã, chữ tới sau phím (trước khi nhả phím) bị bỏ.
-- Kiểu xterm.js chờ Return: lần thay có vùng thay để chữ lại sau con trỏ trong ô nhập ẩn của xterm.js, và từ đó mỗi lần gửi ký tự xoá xterm.js gửi lại cả ô (chữ dồn ở lượt gõ thử khi bật ngay lúc nhận ra). Return làm rỗng ô đó. Mới kiểm bằng mô hình dựng từ mã, chưa đo trên trang thật.
+- Kiểu xterm.js chờ Return: lần thay có vùng thay để chữ lại sau con trỏ trong ô nhập ẩn của xterm.js, và từ đó mỗi lần gửi ký tự xoá xterm.js gửi lại cả ô (chữ dồn ở lượt gõ thử khi bật ngay lúc nhận ra). Return làm rỗng ô đó. Đo trên trang thử xterm.js (Chrome, 120 ms, một lượt): dòng sau Return ra đúng; terminal của app Claude chưa đo.
 - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 - Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
 
@@ -725,7 +725,7 @@ Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào q
 - **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không. Không được thì hàng "Ngôn ngữ" trong Cài đặt nói rõ menu bộ gõ theo ngôn ngữ hệ thống, nếu cần.
 - **VoiceOver đọc tên nguồn** (D17): VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn không.
 - **Độ ổn định của "Thêm dấu cho từ đã gõ"** (D20) trên các web editor (Google Docs, Notion…).
-- **Ngưỡng bộ nhớ** (D42): mới đo trong một lượt ngắn, chưa đủ để đặt ngưỡng.
+- **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã đi thẳng (phương án c): [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
 - **Loại bản dựng** (D7, D25): kênh Beta có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID; artboard "Cập nhật & hỗ trợ (bản phát triển)" hiện vẫn vẽ phần Cập nhật như bản chính thức). Tên nguồn "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37).
 - **Liên kết ủng hộ trong app** (D39): có đặt liên kết "Ủng hộ dự án" trong app hay không (canvas trước).
 - **Tên "Dấu"** (D24): tra nhãn hiệu (Cục Sở hữu trí tuệ VN), tên miền (cân nhắc tên miền tiếng Việt có dấu "dấu.vn" bên cạnh một bản không dấu), tên cask Homebrew và tên tổ chức GitHub.

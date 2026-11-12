@@ -287,12 +287,15 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): bỏ "`heavy.sh` chưa chạy trọn lượt nào (10/11/2026): số ở 'Vì sao' lấy từ các nhóm đã chạy xong" (việc còn lại chuyển sang `docs/Roadmap.md`); "Ngưỡng bộ nhớ chưa chốt: mới đo trong một lượt 4 phút" thành câu hỏi mở. "Vì sao" bỏ ngày; nguyên văn cũ: "số đo M6 ngày 10/11/2026 trên một máy (chip M1 Pro): p50 0,65–1,92 ms, p99 3,7–13,2 ms".
 
+- 12/11/2026 (người dùng giao phiên chính): thêm ngưỡng bộ nhớ, tiến trình bộ gõ không quá 96 MB, khoảng 1,5 lần mức cao nhất đã thấy (64 MB, bản Debug, lượt `heavy.sh` dừng giữa chừng 10/11/2026); câu hỏi mở "Ngưỡng bộ nhớ" bỏ (nguyên văn: "mới đo trong một lượt ngắn, chưa đủ để đặt ngưỡng"). "Vì sao" thêm số của lượt chạy trọn 12/11/2026 (p99 tới 14,2 ms; bộ nhớ 44–46 MB); bản trước: "(p50 tới 1,92 ms, p99 tới 13,2 ms) khoảng 1,5 lần". Ngưỡng thời gian không đổi.
+
 ### D43. Ô bỏ qua vùng thay chữ
 
 - 11/11/2026 (chốt cùng ngày): bản đầu nhận ra ô chỉ theo vị trí, "đổi ô hoặc kích hoạt lại thì xét lại từ đầu", và gửi trong phím cho kiểu xterm.js. Sau rà soát bảo mật (người dùng duyệt): thêm bằng chứng dương (một lần đọc chữ), kết quả chỉ xét lại khi kích hoạt lại hay đổi client (đúng với mã), kiểu xterm.js ghi là vẫn thay tại chỗ tới khi chẩn đoán xong.
 
 - 11/11/2026 (sổ viết lại): hai mục "Vì sao" gộp làm một; bỏ ngày và số lượt. Chuyển khỏi sổ, nguyên văn: "Đã đo: Ghostty, và terminal dựng bằng xterm.js (trang thử trong Chrome, cùng cơ chế với terminal trong app Claude; chính app Claude chưa đo)." "Ô nhận ra theo kiểu xterm.js … tới khi chẩn đoán xong lỗi chữ dồn khi gửi trong phím (lượt gõ thử thứ tư, 11/11/2026, nhật ký `docs/Progress.md`)." "số đo ngày 11/11/2026, một lượt mỗi ô, trên một máy … Bản thử ký tự xoá, bật theo ứng dụng: … phím cách nhau 120 và 30 ms … (p50 0,29–0,37 ms, p99 0,44–0,76 ms)." "rà soát ngày 11/11/2026: … trước D43 ô đó ra gần như chuỗi phím gốc ('vieetj nguwowif tieengs ' ra 'vieetj nguưoưif tieengs ', vì w đứng riêng vẫn thành ư)."
 - 12/11/2026 (người dùng giao phiên chính; chẩn đoán chữ dồn ở xterm.js, imk-dev): kiểu xterm.js gửi ký tự xoá trong phím, nhưng chỉ khi từ phím Return gần nhất (hay từ lúc kích hoạt) Dấu chưa gửi lần thay có vùng thay nào; Return hay Tab ở ô kiểu xterm.js giữ từ như đang hiện như ở Ghostty. Bản trước: "Ô nhận ra theo kiểu xterm.js (vị trí dao động 0–2) vẫn thay tại chỗ như ô thường, chỉ ghi log." và "Kiểu xterm.js chưa gửi ký tự xoá vì gửi trong phím từng làm chữ dồn khi gõ thử, chưa rõ nguyên nhân." Nguyên nhân (mã Chromium, xterm.js 5.5.0, mô hình `FakeXtermPage`): `docs/research/TerminalAndUnderline.md` mục 2. Chưa đo trên trang thật.
+- 12/11/2026: đo trên trang thử xterm.js (Chrome, bộ gõ Debug f226cc4, 120 ms, một lượt): dòng sau Return ra đúng. "Vì sao", bản trước: "Mới kiểm bằng mô hình dựng từ mã, chưa đo trên trang thật."
 
 ## Đã biết nhưng không làm
 
@@ -330,6 +333,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 30/10/2026: bundle ID và tên miền chính chốt ở D24 ("đã chốt ở D24, 30/10/2026").
 
 - 11/11/2026 (sổ viết lại): chỉ giữ câu chưa có trả lời. Thêm từ thân các quyết định: VoiceOver đọc tên nguồn (D17), liên kết ủng hộ trong app (D39), ngưỡng bộ nhớ (D42). Câu "Hộp thoại và đăng xuất" bỏ phần đã trả lời và "cách làm hiện hành" (nay ở D37). Câu "Bản chủ trong `~/Applications`" bỏ ngày đo ("đo 02/11/2026 với bản trong thư mục build"; "11/11/2026").
+- 12/11/2026 (người dùng giao phiên chính): bỏ "Ngưỡng bộ nhớ" (nay là luật ở D42); thêm "Từ tiếng Anh gõ nhầm rồi ⌫ trong từ" (D32, D4), từ K3 của `docs/research/EditingTypedText.md`.
 
 ## Câu hỏi đã trả lời
 

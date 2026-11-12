@@ -85,7 +85,7 @@ Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượ
 | Thay tại chỗ, trước D43 | "toôoiís vieêetj dđd ": phím gốc và chữ thay đều tới shell |
 | Ký tự xoá gửi trong phím, bật từ đầu (bản thử) | "tối việt đ " |
 | D43 gửi trong phím ngay từ phím nhận ra (lượt thứ tư) | sai nặng hơn: mỗi lần gửi lặp lại các lần sửa trước cộng một chữ "ê" thừa (H1) |
-| D43 hiện nay | chưa đo; mô hình: dòng đang gõ lúc nhận ra như trước D43, từ dòng sau Return đúng |
+| D43 hiện nay (đo 12/11/2026, chuỗi dài hơn có Return) | dòng đang gõ lúc nhận ra sai như trước D43; dòng sau Return đúng ("tối việt đi học nhà người hò windows ưa ước"), như mô hình dự đoán |
 
 ## 3. Gạch chân khi sửa chữ
 
@@ -124,11 +124,11 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 - App Claude chưa đo; bản xterm.js trong app cũ hơn trang thử.
 - Chưa đo: Ghostty khi còn vùng bôi đen bằng chuột (Ghostty mặc định bỏ bôi đen khi gõ, `selection-clear-on-typing`, nên theo mã chỉ ảnh hưởng phím đầu); Claude Code chạy trong terminal (chỉ đo ở dấu nhắc zsh và vim).
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường (theo mã, chưa đo; giới hạn đã ghi ở D43).
-- Cách sửa cho xterm.js mới kiểm trên mô hình mã (`FakeXtermPage`). Mô hình giả định `setTimeout(0)` của xterm.js chạy sau mọi sự kiện Chromium gửi cho cùng phím (Blink ưu tiên sự kiện nhập), và keyup tới trước phím kế; chưa đọc mã lịch chạy của Blink. Gửi sau phím (cách của Ghostty) ở xterm.js theo mã sẽ mất phần sửa (`_inputEvent` bỏ chữ tới trước keyup), chưa đo.
+- Cách sửa cho xterm.js đã kiểm trên mô hình mã (`FakeXtermPage`) và đo trên trang thử một lượt (120 ms; chưa đo phím dồn). Mô hình giả định `setTimeout(0)` của xterm.js chạy sau mọi sự kiện Chromium gửi cho cùng phím (Blink ưu tiên sự kiện nhập), và keyup tới trước phím kế; chưa đọc mã lịch chạy của Blink. Gửi sau phím (cách của Ghostty) ở xterm.js theo mã sẽ mất phần sửa (`_inputEvent` bỏ chữ tới trước keyup), chưa đo.
 
 ## Phương pháp và bản mã đã đọc
 
-- Chuỗi phím và đáp án: [`scripts/research/terminal-underline/run.sh`](../../scripts/research/terminal-underline/run.sh) (gọi `scripts/selftest/typing/run.sh` cho từng ô; đáp án là chữ đúng theo luật Telex, không phải chữ dự đoán). Số đo từng lượt: nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11/2026.
+- Chuỗi phím và đáp án: [`scripts/research/terminal-underline/run.sh`](../../scripts/research/terminal-underline/run.sh) (gọi `scripts/selftest/typing/run.sh` cho từng ô; đáp án là chữ đúng theo luật Telex, không phải chữ dự đoán). Số đo từng lượt: nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11 và 12/11/2026 (lượt 12/11 dùng `scripts/selftest/typing/run.sh xterm` với phím Return trong chuỗi).
 - Đối chứng: Telex của Apple trong cùng ô. Byte gửi cho shell đọc ở Ghostty, dữ liệu xterm.js gửi đọc ở trang thử.
 - Bản đã đọc (bản sao tạm ngoài repo, không chép mã nào vào Dấu, D10 (Engine tự viết)):
   - Ghostty: nhánh main, commit de70b9f476c39ce3f5b293ecba813b674f037a80 (10/11/2026), đã so với tag v1.4.0: SurfaceView_AppKit.swift (vùng IME) và src/input/key_encode.zig giống hệt. https://github.com/ghostty-org/ghostty

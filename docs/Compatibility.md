@@ -2,20 +2,21 @@
 
 Dấu gõ đúng hay sai trong từng ứng dụng, ở nhịp nào và vì sao; giới hạn còn lại và cách thử. Mọi số đo trên máy M1 (M1 Pro), macOS 27.2; ô nào chưa thử thì để trống, không điền bằng phỏng đoán. Đây không phải lời hứa (N5 (Chỉ hứa điều đã kiểm chứng)): trang web chỉ dùng kết quả theo [`docs/Website.md`](Website.md).
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (12/11/2026)
 
 Tiêu chí nhãn "Đề xuất" ở D13 (Gạch chân là đường lui cuối cùng). Nhịp là khoảng cách giữa hai phím khi tự gõ; gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí. Chi tiết và điều kiện đo: mục 5.
 
 | Ứng dụng | Thay tại chỗ | Gạch chân | Nhãn "Đề xuất" |
 |---|---|---|---|
 | Safari, TextEdit | đúng ở mọi nhịp đã đo, cả 0 ms | đúng | không |
-| Chrome | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không (bỏ 10/11/2026) |
-| Edge | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không (bỏ 10/11/2026) |
-| Firefox | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không (bỏ 10/11/2026) |
-| VS Code | đúng ở 5–20 ms (một lượt sai không do vị trí thay chữ) | đúng ở 0 ms | không (bỏ 10/11/2026) |
+| Chrome | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không |
+| Edge | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không |
+| Firefox | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không |
+| VS Code | đúng ở 5–20 ms (một lượt sai không do vị trí thay chữ) | đúng ở 0 ms | không |
 | Cursor | trình soạn thảo sai ở 5 ms và một ca phím dồn ở 20 ms, đúng ở 100 ms; ô nhập Agents đúng | đúng ở 5 ms | **có** |
 | Terminal | đúng từ 5 ms, sai ở 0 ms; ⌫ không tới bộ gõ (mục 6.5) | sai ở 0 ms | không |
 | Ghostty | theo D43: sai ở từ đầu mỗi lần kích hoạt, đúng từ từ thứ hai ở 120 ms; phím dồn sai (mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | không |
+| xterm.js (trang thử trong Chrome) | theo D43: dòng đang gõ lúc nhận ra sai, đúng từ dòng sau Return ở 120 ms (mục 6.8) | đúng | không |
 | Sublime Text | đúng, cả thêm dấu cho từ đã gõ sau ⌫ và ← | không thêm dấu được cho từ đã chốt | không |
 | Notes | đúng ở 30 và 0 ms | chưa đo | không |
 | Mail, Telegram | đúng ở 30 ms | chưa đo | không |
@@ -147,6 +148,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 - Trước M6 (M3, 29–30/10/2026, trang thử cục bộ `spellcheck=false`): đúng ở 30 ms; sai ở 0 ms (mismatch 3–4, thay nhầm vùng ở lần thay đầu của từ; Firefox chữ nhảy chỗ). Chrome đúng từ 5 ms; Edge, Firefox sai ở 5 ms, đúng từ 10 ms. Gạch chân ở 0 ms đúng ở cả ba.
 - Trang bận trước khi sửa (Chrome, 09/11/2026): thay tại chỗ sai 8/9 lượt; gạch chân đúng 9/9.
 - Sau các lần sửa ở M6 (10/11/2026): phím dồn Chrome và Firefox đúng 7/7 lượt mỗi app, Edge 9/9; trang bận đúng 3/3 ở cả ba.
+- Trình soạn thảo TipTap/ProseMirror trong Chrome (12/11/2026, Dấu Release 4ae3646, `typing/run.sh tiptap`, câu mẫu 41 phím, 5/10/20 ms có jitter, 3 lượt mỗi mức): đúng 9/9 lượt; Telex của Apple cùng điều kiện ra cùng một chữ ở cả 9 lượt, khác Dấu chỉ ở từ tiếng Anh (D4), nên phép đo hợp lệ. Không tái hiện được lỗi mất dấu khi gõ nhanh trong trình soạn thảo web.
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng ở cả ba (Backspace sau bản sửa 82d9ecc).
 - `selectedRange`: Chrome 415 / 694, Edge 369 / 6.828, Firefox 265 / 1.174 µs.
 - Chưa đo: click reset, mũi tên reset; phím dồn khi trang bận.
@@ -201,6 +203,7 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 - Ở ứng dụng bật tự sửa chính tả, khi phía trước là câu tiếng Việt, macOS 27.2 có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt ("…Sunrise car␣" → "cả"), kể cả khi gõ bằng U.S. Việc này xảy ra sau khi Dấu đã trả đúng chữ, nên đè lên kết quả gõ đúp ("carr" → "car").
 - Chữ cái đứng một mình cũng bị đổi ("Mình chọn phương án d." → "Mình chọn phương án Đ.").
 - Từ quên dấu có thể bị sửa thành từ khác ý người gõ ("Bé xây lâu đài cat␣" → "cắt"). Quay lại thêm dấu lúc đó tính trên chữ đang hiện ("cắt" + ⌫s → "căts"); Dấu không đoán từ người gõ định viết.
+- Tự sửa cũng sửa từ mà D4 trả về chuỗi phím (12/11/2026, `typing/run.sh --keys`, 30 ms, một lượt mỗi câu): Mail sửa "ddep" → "đẹp", "vieet" → "việt", "ddungsg" → "đúng"; Notes sửa "vieet" → "việt", "ddungsg" → "đúng", nhưng "ddep" → "đé". Vì vậy ở ứng dụng bật tự sửa, nhóm lỗi K1 ([`docs/research/EditingTypedText.md`](research/EditingTypedText.md) mục 3) phần lớn không tới tay người gõ; ở ứng dụng không có tự sửa (Chrome, trình soạn thảo mã) vẫn còn.
 - Các ca đã thấy đều là chữ còn thiếu dấu lúc bấm dấu cách; từ đã gõ dấu ngay trong từ không bị sửa ở lần đo nào ("Bé xây lâu đài cats␣" → "cát", gõ tay).
 - Hệ thống hiện chữ định sửa trong một bong bóng dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận chữ trong bong bóng.
 - Giới hạn và cách Dấu xử lý: D4 (đoạn "Giới hạn đã biết") và D20 (ý "Từ hệ thống vừa sửa"). Dấu không tắt tự sửa của hệ thống (N4 (Không tự đổi cài đặt hệ thống)); người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa.
@@ -229,16 +232,16 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 - Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
 - Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Hệ quả đã chấp nhận"; số đo: mục 5.6.
-- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Gửi ký tự xoá trong phím ngay lúc nhận ra làm chữ dồn lại mỗi lần sửa (đã rõ nguyên nhân, [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 2); D43 nay chỉ gửi trong phím từ phím Return đầu tiên sau khi nhận ra, dòng đang gõ lúc đó vẫn sai như cách cũ. Cách mới chưa đo trên trang thật; chính app Claude chưa đo.
+- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Gửi ký tự xoá trong phím ngay lúc nhận ra làm chữ dồn lại mỗi lần sửa (đã rõ nguyên nhân, [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 2); D43 nay chỉ gửi trong phím từ phím Return đầu tiên sau khi nhận ra, dòng đang gõ lúc đó vẫn sai như cách cũ. Đo trên trang thử (12/11/2026, Chrome, bộ gõ Debug f226cc4, 120 ms, một lượt): dòng sau Return ra đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu; dòng trước Return sai như dự đoán. Chính app Claude chưa đo.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13) không có D20: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"); Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
 
 ## 7. Còn mở
 
-- Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail; terminal trong app Claude. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
+- Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
 - Đo lại sau M6: Terminal (phím dồn, và ⌫ không tới bộ gõ bằng `hoaf⌫␣`); VS Code khi app bận.
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo Cursor: nhóm lỗi ở 5 ms và ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa cần đổi N3 hoặc D11.
 - VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
-- xterm.js: đo cách gửi trong phím sau Return của D43 trên trang thử, rồi trong terminal của app Claude.
+- Terminal trong app Claude (xterm.js trong Electron): đo D43 (gửi trong phím sau Return); trang thử đã đo (mục 6.8).
 - Pages có hai bundle ID trên cùng máy; Numbers, Keynote bản mới đổi ID. Nếu các ứng dụng này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

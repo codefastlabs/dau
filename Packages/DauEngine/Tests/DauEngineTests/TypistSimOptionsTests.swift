@@ -58,7 +58,7 @@ struct TypistSimOptionsTests {
         ("B30", "ddungsg␣⌫⌫s␣", "ddungss"), ("B31", "ddungsg␣⌫⌫⌫s␣", "ddungs"),
         ("B32", "nghieengg␣⌫⌫␣", "nghieeng"),
         ("C1", "ban␣awn␣⌫⌫⌫⌫f␣awn␣", "bàn ăn"),
-        ("D3", "ddungsg␣⌫⌫⌫⌫⌫⌫⌫⌫ddungs␣", "đúng"), ("D4", "ddungsg␣⌫⌫⌫⌫⌫⌫ungs␣", "ddungs"),
+        ("X3", "ddungsg␣⌫⌫⌫⌫⌫⌫⌫⌫ddungs␣", "đúng"), ("X4", "ddungsg␣⌫⌫⌫⌫⌫⌫ungs␣", "ddungs"),
         ("F1", "test␣", "tét"), ("F2", "tesst␣", "test"), ("F3", "test␣⌫⌫st␣", "test"),
         ("F4", "windoes␣⌫⌫⌫ws␣", "windows"), ("F5", "carr␣⌫s␣", "cars"), ("F6", "windows␣⌫⌫␣", "window"),
         ("F7", "bosss␣⌫y␣", "bossy"), ("F8", "teh␣⌫⌫⌫he␣", "the"), ("F10", "taxxi␣", "taxi"),

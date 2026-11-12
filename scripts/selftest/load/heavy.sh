@@ -38,7 +38,8 @@
 # Output in build/load/heavy-<time>/: per group <n>-<source>-<load>/ with typing/run.sh's
 # files (<app>.txt, <app>.perf.log), its output (typing.log) and, for Dấu,
 # perf-report output (<app>.perf.txt); stats.tsv (load average, free memory, memory of
-# the input method process before and after each group); summary.tsv, one row per app
+# the input method process before and after each group; the highest is printed next to
+# the D42 memory threshold); summary.tsv, one row per app
 # of a group:
 #   group source load app text_ok late mismatch resync gap_lt10 lag_p50_us lag_p99_us
 #   replace_p50_us replace_p99_us
@@ -76,6 +77,7 @@ done
 
 TELEX=com.apple.inputmethod.VietnameseIM.VietnameseTelex
 RAMP_S=15
+MEMORY_LIMIT_MB=96 # D42
 CORES=$(sysctl -n hw.ncpu)
 KEYS="$("$TEXTS" --text std --print keys)"
 EXPECT="$("$TEXTS" --text std --print expect)"
@@ -151,6 +153,12 @@ cleanup() {
   log_step "Tóm tắt ($SUMMARY)"
   column -t -s $'\t' "$SUMMARY"
   column -t -s $'\t' "$STATS"
+  # D42 memory threshold, printed next to the highest reading, not judged (the time
+  # thresholds are not judged here either; the summary has the numbers). MB = KB / 1000,
+  # as the docs give these readings.
+  local max_kb
+  max_kb="$(awk -F'\t' 'NR > 1 && $5 ~ /^[0-9]+$/ && $5 > m { m = $5 } END { if (m) print m }' "$STATS")"
+  [[ -n "$max_kb" ]] && log_detail "bộ nhớ tiến trình bộ gõ cao nhất: $(( max_kb / 1000 )) MB (ngưỡng D42: $MEMORY_LIMIT_MB MB)"
   log_detail "kết quả: $OUT"
 }
 trap cleanup EXIT
