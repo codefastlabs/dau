@@ -21,8 +21,8 @@ Luật làm việc:
 - Công nghệ và thư mục của trang web do người dùng chốt ở đầu M8 (`docs/Roadmap.md`); chưa chốt thì dừng và hỏi, không tự chọn.
 - Nội dung: `docs/Website.md` và artboard. Đọc artboard từ file nguồn trong `docs/canvas/src/` (ảnh PNG cùng tên trong `docs/canvas/`; mục lục `docs/canvas/README.md`). Canvas đã được duyệt trước khi giao mã.
 - Nhận diện: `docs/Brand.md`, D25 (Nhận diện). Cách viết tên: D24 (Tên và định danh).
-- Ô số liệu và lời hứa: chỉ điền từ số đo đã ghi trong `docs/Progress.md` hoặc `docs/history/` (N5 (Chỉ hứa điều đã kiểm chứng)); chưa có thì để ô trống dạng `[...]`.
-- Trang so sánh (M10): chỉ ghi khác biệt đã đo, dẫn nguồn từ `docs/research/OpenKeyNotes.md` và bộ dữ liệu kiểm thử.
+- Ô số liệu và lời hứa: chỉ điền từ kết quả đã ghi trong `docs/Website.md`, `docs/Compatibility.md` và `docs/research/` (N5 (Chỉ hứa điều đã kiểm chứng)); chưa có thì để ô trống dạng `[...]`.
+- Trang so sánh (M10): chỉ ghi khác biệt đã đo, dẫn nguồn theo `docs/Roadmap.md` mục M10.
 - Ngôn ngữ: D41 (Ngôn ngữ giao diện), khi phần M9 (Đa ngôn ngữ) của trang web đến lượt.
 - Kiểm bằng build và Lighthouse chạy dòng lệnh ở chế độ headless (không chiếm màn hình); ngưỡng xong việc theo `docs/Roadmap.md`.
 
