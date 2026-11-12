@@ -4,7 +4,7 @@
 #
 # Usage: scripts/research/terminal-underline/run.sh [--delay MS] [CELL]...
 #   --delay MS   pause between keys (default 120, close to normal typing)
-#   CELL         ids or patterns (t4-*, t5-*) from the table below (default: all, in table order)
+#   CELL         ids or patterns (t4-*, t5-*, t6-*) from the table below (default: all, in table order)
 #
 # Each cell is one call of scripts/selftest/typing/run.sh (its safety rules apply: keys
 # only while the app's test window is in front; input source, clipboard and the Debug
@@ -66,6 +66,12 @@ DELAY=120
 # measures whether that is what the VS Code terminal gives. The line of the cell is the
 # verdict (what a zsh prompt shows); the raw bytes and the log's `event=range-ignored mode=`
 # line are what to read next to it.
+# Sixth round (t6-): underline (D13) in VS Code, for the choice between D13 as it is (the
+# user turns underline on for the app) and underline only in xterm.js fields. Same keys as
+# t5-vsterm and t5-vsswitch; --underline forces it for the whole app, so the editor of
+# t6-vsswitch-ul is underlined too and shows what a user who turns it on for VS Code gets.
+# The control (Apple's Telex in the same terminal) is t5-vsterm-apple, already measured.
+# About 4 to 5 minutes for the two cells.
 CELLS=(
   "sub-dau|sublime|dau|inplace|tooisf ba ⌫j tooi←s|tồi bạ tối"
   "sub-dau-ul|sublime|dau|underline|tooisf ba ⌫j tooi←s|tồi bạ tối"
@@ -92,6 +98,8 @@ CELLS=(
   "t5-vsterm|vscodeterm|dau|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩dduwowngf ddepj vui ver |tôi dùng windows để hò hát với bạn ↩đường đẹp vui vẻ "
   "t5-vsswitch|vscodeswitch|dau|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩|tôi dùng windows để hò hát với bạn ↩|hoom nay dduwowngf ddepj vui ver |hôm nay đường đẹp vui vẻ "
   "t5-vsterm-apple|vscodeterm|apple|inplace|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩dduwowngf ddepj vui ver |tôi dùng windows để hò hát với bạn ↩đường đẹp vui vẻ "
+  "t6-vsterm-ul|vscodeterm|dau|underline|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩dduwowngf ddepj vui ver |tôi dùng windows để hò hát với bạn ↩đường đẹp vui vẻ "
+  "t6-vsswitch-ul|vscodeswitch|dau|underline|tooi dungf windows ddeer hoaf⌫ hats vowis banj ↩|tôi dùng windows để hò hát với bạn ↩|hoom nay dduwowngf ddepj vui ver |hôm nay đường đẹp vui vẻ "
 )
 
 WANT=()
