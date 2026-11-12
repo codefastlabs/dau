@@ -182,7 +182,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 - 1.4.0, đo 11/11/2026, `scripts/research/terminal-underline/run.sh` và `typing/run.sh` (`ghostty`, `ghosttyvim`), dấu nhắc của trình sửa dòng zsh và vim, có đối chứng Telex của Apple.
 - Thay tại chỗ sai ở 120 ms (`dd` → "dđ", `toois` → "toôis", `vieetj` → "vieetj"); `selectedRange` luôn `{0,0}`. Telex của Apple đúng.
 - Cách gửi ký tự xoá (D43 cũ, đã bỏ 12/11/2026) chỉ đúng từ từ thứ hai, thứ ba sau mỗi lần chuyển vào Ghostty, cả trong shell thật của người dùng (oh-my-zsh, powerlevel10k, zsh-autosuggestions; `scripts/research/terminal-underline/real-shell.sh`): lệnh thật thường ngắn nên gần như luôn sai. Số đo: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 1.
-- Gạch chân: chữ đúng, nhưng Return ngay sau từ gạch chân bị nuốt, cả với Telex của Apple (mục 6.8).
+- Gạch chân: chữ đúng, cả trong shell thật của người dùng ngay từ từ đầu (12/11/2026, bản sau khi bỏ D43 cũ); Return ngay sau từ đang gạch chân bị nuốt, cả với Telex của Apple (mục 6.8).
 
 ### 5.7 Sublime Text
 

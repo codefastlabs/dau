@@ -47,6 +47,8 @@ Trong shell thật (12/11/2026, `scripts/research/terminal-underline/real-shell.
 - Cấu hình thật ra như ô thử: sai đến lúc nhận ra ô, sau đó đúng, cả qua Return. Không thấy dấu hiệu plugin hay theme làm khác.
 - Mỗi lần chuyển vào Ghostty là bắt đầu lại từ chưa nhận ra. Lệnh ngắn gõ ngay sau khi chuyển vào thì gần như luôn rơi vào một, hai từ đầu, nên trong cách dùng thường ngày gõ tiếng Việt ở Ghostty gần như luôn sai.
 
+Gạch chân, sau khi bỏ D43 cũ (12/11/2026, cùng script và ba dòng; cửa sổ Ghostty mới, cùng cấu hình zsh; Dấu Debug 9590ff3, gạch chân ép cho Ghostty bằng khoá Debug như khi người dùng bật theo D13; một lượt): Dấu ra đúng cả ba dòng ngay từ từ đầu, "tôi dùng windows để hò hát với bạn ", "đường đẹp vui vẻ ", "hôm nay tôi đi học "; Telex của Apple ra như lượt trên. Return ở đây đi sau dấu cách, nên không gặp lỗi Ghostty nuốt Return sau từ đang gạch chân.
+
 ## 2. Terminal dựng bằng xterm.js (trang thử và app Claude)
 
 Cơ chế (mã Chromium nhánh main ngày 12/11/2026 và xterm.js 5.5.0, bản trang thử nạp):
