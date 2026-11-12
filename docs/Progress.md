@@ -6,8 +6,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026.
 
-Chờ người dùng:
-- Chuyển tag `stable` (bản dùng hằng ngày, đang 89543e5) sang bản có thay đổi ngày 12/11 (bỏ D43 cũ, nhãn Ghostty, D26), rồi `scripts/dev/install-app.sh --ref stable`.
+Chờ người dùng: không có.
 
 Việc tiếp theo:
 - M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6).
@@ -392,3 +391,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
 - 12/11/2026 — D43 viết lại (người dùng chọn): Dấu không xử lý riêng ô bỏ qua vùng thay chữ; gõ đúng bằng gạch chân người dùng tự bật; Ghostty mang nhãn "Đề xuất" (D13), VS Code, Cursor, app Claude không gắn nhãn vì terminal — phiên chính, imk-dev. Bỏ `RangeIgnoreDetector`, `WebHost`, cách gửi ký tự xoá trong phím và sau phím, log `range-ignored`, `web-host`, năm file test và mô hình (`RangeIgnoreTests`, `WebHostTests`, `XtermPageTests`, `FakeXtermPage`, `SharedViewTests`), phần báo D43 của `typing/run.sh` và `terminal-underline/run.sh`; 26 file, khoảng 3 000 dòng bớt đi. Bản D43 cũ nguyên văn ở `docs/history/DecisionsLog.md`. Kiểm: bộ gõ 202 test đạt (9 known issue; trước 262, chênh đúng số test đã xoá), engine 127, build Release đạt, `zsh -n` hai script. Còn mở: Ghostty chưa vào `CompatibilityList.json` vì dòng phụ "Có thể sai chữ khi gõ rất nhanh" không đúng cho nó (chờ duyệt câu chữ); chưa đo Ghostty có gạch chân với bản mới.
 - 12/11/2026 — Ghostty mang nhãn "Đề xuất" (người dùng duyệt câu chữ) — phiên chính. Dòng phụ của mục "Đề xuất" đổi thành "Có thể sai chữ nếu không gạch chân" / "Text may come out wrong without underline", chú thích của mục theo cùng ý (câu cũ "khi gõ rất nhanh" không đúng cho Ghostty). Canvas sửa bốn artboard Ứng dụng (bản 166), bản chụp `docs/canvas/` dựng lại; `CompatibilityList.json` bản 6 thêm Ghostty. Kiểm: DauShared 39, app chủ 182 test đạt, String Catalog khớp.
 - 12/11/2026 — Ghostty có gạch chân trong shell thật, bản mới (người dùng cho chạy, 22:28–22:29, `scripts/research/terminal-underline/real-shell.sh`, cửa sổ Ghostty mới với zsh, oh-my-zsh, powerlevel10k, zsh-autosuggestions; Dấu Debug 9590ff3, gạch chân ép bằng `DauDebugForceUnderline`; 120 ms; một lượt; cài lại `--ref stable` 89543e5 ngay sau) — phiên chính. Dấu đúng cả ba dòng từ từ đầu; Telex của Apple như lượt 22:05 (đối chứng hợp lệ). Log từng phím không đọc được ở lượt này; chữ ra có D4 ("windows") và D32 ("hò"), khác Telex của Apple, nên là chữ của Dấu. Dọn: nguồn về Dấu, cửa sổ thử đã đóng, khoá `DauDebugForceUnderline` đã xoá, clipboard đã khôi phục.
+- 12/11/2026 — tag `stable` chuyển từ 89543e5 sang 949b266 (người dùng đồng ý; tag cục bộ, không push), cài bằng `install-app.sh --ref stable`: bộ gõ và Dấu.app 949b266 Release. Ghostty từ bản này gõ sai tới khi người dùng bật gạch chân cho nó (Cài đặt › Ứng dụng › Đề xuất).
