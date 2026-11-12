@@ -9,15 +9,13 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 Chờ người dùng: không có việc nào.
 
 Việc tiếp theo, theo thứ tự:
-1. Chẩn đoán lỗi chữ dồn ở ô kiểu xterm.js (D43 (Ô bỏ qua vùng thay chữ); `docs/research/TerminalAndUnderline.md`), rồi bật D43 cho ô đó. Giả thuyết: một `insertText` có vùng thay trước lúc nhận ra ô để lại trạng thái trong textarea của xterm.js. Thử tay trong terminal của app Claude sau khi sửa.
-2. M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (chiếm màn hình, hỏi giờ).
-3. Sửa bước đóng Sublime Text của `scripts/selftest/typing/run.sh` (để sót hộp thoại lưu).
-4. Test engine cho `wen␣` ở Telex đơn giản bật gõ tắt phụ âm (`docs/research/OpenKeyNotes.md` mục 5: ca duy nhất chưa có test).
+1. M6 bước 2: `scripts/selftest/load/heavy.sh` chạy trọn một lượt (chiếm màn hình, hỏi giờ). Script từ chối chạy khi tải trung bình 1 phút bằng hoặc vượt số nhân; 12/11 máy M1 bận liên tục (tải 7,3–9,6 trên 8 nhân, phần lớn Spotlight và WindowServer), nên chọn lúc máy thật rảnh.
+2. Thử tay D43 trong terminal của app Claude (xterm.js trong Electron; trang thử đã đạt 12/11).
 
 Việc mở:
 - Trình soạn thảo Cursor: sai ở 5 ms và ở ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa đều phải đổi N3 (Ít lời gọi vào ứng dụng đích) hoặc D11 (Kiểm tra ngữ cảnh). Đã chốt 10/11: dừng sửa, Cursor giữ nhãn "Đề xuất".
 - VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
-- Đối chứng Telex của Apple: các ô đo trước khi sửa cách chuyển nguồn (VS Code, Chrome và Firefox phím dồn; số của Apple trong `docs/research/CompetitorComparison.md` mục 1) phải đo lại.
+- Đối chứng Telex của Apple ở các ô phím dồn đo trước khi sửa cách chuyển nguồn (VS Code, Chrome, Firefox) chưa đo lại. Số của Apple ở `docs/research/CompetitorComparison.md` mục 1 đã kiểm mẫu 12/11 (nhật ký), không cần đo lại toàn bộ.
 - "vieetj" giữ nguyên trong thanh địa chỉ tab mới của Chrome, chưa tái hiện; thử lại khi chạy ma trận Chrome.
 - Bộ đệm nguồn nhập liệu của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/InputMethodInstall.md` mục 10.7).
 - Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
@@ -379,3 +377,8 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
 - 12/11/2026 — đo trên máy (macOS 27.2, Dấu Release 4ae3646), `scripts/selftest/typing/run.sh`:
   - Trình soạn thảo TipTap/ProseMirror trong Chrome (`tiptap`, câu mẫu, 41 phím, `--delay` 5/10/20 ms, `--jitter` bằng nửa delay, 3 lượt mỗi mức): Dấu đúng 9/9 lượt. Đối chứng Telex của Apple cùng điều kiện ra cùng một chữ ở cả 9 lượt ("ưindows car tôi yêu tiếng Việt, Sủnise"), khác Dấu chỉ ở từ tiếng Anh (Apple không khôi phục, D4), nên phép đo hợp lệ. Không tái hiện được lỗi mất dấu khi gõ nhanh; chưa đo ô nhập của app Claude, câu dài hay cách gõ khác thứ tự chuẩn.
   - Tự sửa chính tả của macOS với từ Dấu trả về chuỗi phím (`--keys`, 30 ms, một lượt mỗi câu): Mail sửa cả ba thành từ đúng ("ddep" → "đẹp", "vieet" → "việt", "ddungsg" → "đúng"); Notes sửa "vieet" → "việt", "ddungsg" → "đúng", nhưng "ddep" → "đé". Ở app bật tự sửa, nhóm lỗi K1 (`docs/research/EditingTypedText.md`) phần lớn không tới tay người gõ; ở app không có tự sửa (Chrome, trình soạn thảo mã) vẫn còn.
+- 12/11/2026 — lượt đo trên máy M1 (macOS 27.2), `scripts/selftest/typing/run.sh`:
+  - Kiểm mẫu Telex của Apple (Release f226cc4 không liên quan; Chrome, 30 ms, `--source`): 9 từ tiếng Anh ở `docs/research/CompetitorComparison.md` mục 1.1 ra đúng từng chữ như lượt 09/11 ("ưindows gôd bôk gôgle sờtare ửok púh ưebsite déign").
+  - D43 với ô kiểu xterm.js (bộ gõ Debug f226cc4, 120 ms, một lượt): trang thử xterm, dòng sau Return đúng "tối việt đi học nhà người hò windows ưa ước", mỗi phím một khúc dữ liệu; dòng trước Return sai như dự đoán. Cùng chuỗi phím (không Return): Ghostty "toôis việt đi học nhà người hò windows" (như trước, D43 after-key), Chrome ô thường đúng cả dòng, không có sự kiện D43. Chưa thấy dòng log `range-ignore-erasing` trong log đã lưu.
+  - Sublime Text (câu mẫu): đúng chữ; tab của lượt thử đóng không để lại hộp thoại lưu.
+  - `scripts/selftest/load/heavy.sh` không chạy: tải trung bình 1 phút 7,3–9,6 trên 8 nhân suốt 4 phút chờ (Spotlight, WindowServer, Chrome).

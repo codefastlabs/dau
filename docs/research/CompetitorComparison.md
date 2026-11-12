@@ -2,15 +2,14 @@
 
 Nghiên cứu cho M10 (Học cách gõ), trang "Dấu khác các bộ gõ khác thế nào". Không thuộc M6 (Hiệu năng dưới tải) và không chặn phát hành.
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (12/11/2026)
 
-- **Trong ứng dụng thật, so với Telex của macOS (mục 1): đo xong 09/11/2026; số của Apple phải đo lại trước khi dùng.**
+- **Trong ứng dụng thật, so với Telex của macOS (mục 1): đo xong 09/11/2026; số của Apple đã kiểm mẫu lại 12/11/2026.**
   - Tiếng Việt: hai bộ gõ ngang nhau. Từ tiếng Anh và câu trộn Việt–Anh: Dấu giữ nguyên nhiều từ hơn, vì chỉ Dấu khôi phục từ không phải tiếng Việt (D4 (Từ nước ngoài)). Số đo ở mục 1.1.
   - Số của Dấu đứng được: chữ trong hai app trùng từng byte với engine chạy offline.
-  - Số của Apple chưa chắc là của bộ gõ Apple (mục 1.2). Đo lại bằng `scripts/selftest/typing/run.sh` hiện hành trước khi đưa lên trang M10 (N5 (Chỉ hứa điều đã kiểm chứng)).
+  - Số của Apple: lượt kiểm mẫu bằng `scripts/selftest/typing/run.sh` hiện hành (12/11/2026, Chrome, 9 từ tiếng Anh ở mục 1.1) ra đúng từng chữ như lượt đo 09/11, nên chữ của lượt đó là của bộ gõ Apple (mục 1.2).
 - **Ở mức engine, so với 10 bộ gõ khác (mục 2): xong, dùng số đã có.**
 - **Nhịp gõ thật, hai phím cách nhau dưới 10 ms (mục 3): dừng.** Dữ liệu công khai không đủ độ chính xác. Câu hỏi gốc của D13 (Gạch chân là đường lui cuối cùng) được đo ở M6 bằng bài test tải nặng (mục 3).
-- **Việc tiếp theo:** đo lại phần Apple của mục 1.
 
 ## 1. Trong ứng dụng thật: Dấu và Telex của macOS
 
@@ -36,7 +35,7 @@ Một lượt `scripts/research/compare-ims/run.sh`, 22 phút 29 giây, khoảng
 
 ### 1.2 Giới hạn
 
-- **Số của Apple (53/105, 169/188, 677/678):** lượt đo chọn nguồn của Apple bằng API từ tiến trình của script (`--source`), không bằng phím tắt hệ thống kèm bước xác nhận trong ô gõ. Ngày 10/11/2026 đã xác định cách chọn đó có thể để ô gõ không dùng bộ gõ của Apple (các ô "ra nguyên chuỗi phím" là đo hỏng, `docs/Progress.md` nhật ký 10/11). Chữ Apple ra ở lượt này là chữ kiểu Telex chứ không phải nguyên chuỗi phím; việc bộ gõ của Apple thật sự xử lý phím ở mọi ô là suy luận, chưa kiểm chứng.
+- **Số của Apple (53/105, 169/188, 677/678):** lượt đo chọn nguồn của Apple bằng API từ tiến trình của script (`--source`), không bằng phím tắt hệ thống kèm bước xác nhận trong ô gõ. Ngày 10/11/2026 đã xác định cách chọn đó có thể để ô gõ không dùng bộ gõ của Apple (các ô "ra nguyên chuỗi phím" là đo hỏng, `docs/Progress.md` nhật ký 10/11). Chữ Apple ra ở lượt này là chữ kiểu Telex chứ không phải nguyên chuỗi phím. Lượt kiểm mẫu 12/11/2026 bằng script hiện hành (chuyển nguồn đã sửa) ra đúng các chữ đó ở 9 từ tiếng Anh; các ô khác chưa kiểm lại từng ô, nhưng hành vi này không phụ thuộc trình duyệt hay nhịp gõ khi app rảnh.
 - **Focus:** script tự gõ lúc đó chưa kiểm focus (sửa 09/11/2026, `docs/Compatibility.md` mục Hiện trạng), nên chưa loại được việc một số lượt gõ vào thanh địa chỉ thay vì ô của trang. Chữ của Dấu vẫn trùng engine nên kết quả về chữ đứng được; chỉ chưa chắc là ô nào.
 - Một máy, một lượt, chỉ 30 ms giữa hai phím, chỉ Telex thứ tự chuẩn.
 - Dữ liệu do Dấu tự viết. Danh sách từ tiếng Anh cố ý chọn từ có phím dấu hoặc phím biến đổi của Telex (từ không có các phím đó thì bộ gõ nào cũng để nguyên), nên 88/105 và 53/105 không phải tỉ lệ trên tiếng Anh nói chung.
