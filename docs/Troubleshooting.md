@@ -12,9 +12,9 @@ Các sự cố đã gặp khi dùng và khi phát triển Dấu, nguyên nhân �
 
 ### "Cài đặt Dấu…" trong menu bộ gõ không mở gì
 
-Bộ gõ chỉ mở một bản Dấu.app đạt kiểm chữ ký. Ngoài bản đang chạy và bản chứa chính bộ gõ, nó chỉ chọn bản có cùng phiên bản với bộ gõ đang chạy (`HostApp`). Nhật ký: `log show --last 5m --predicate 'subsystem == "com.codefastlabs.dau.inputmethod.Dau"' | grep host-app`.
+Bộ gõ chỉ mở một bản Dấu.app đạt kiểm chữ ký. Thứ tự chọn (`HostApp.choose`): bản đang chạy, bản chứa chính bộ gõ, bản có cùng phiên bản với bộ gõ (ưu tiên thư mục Applications; nếu LaunchServices chưa biết thì tìm thẳng trong `/Applications`), bản trong `~/Applications` khi `/Applications` không có bản nào đạt, cuối cùng bản duy nhất LaunchServices biết. Mỗi bản phải qua kiểm chữ ký. Nhật ký: `log show --last 5m --predicate 'subsystem == "com.codefastlabs.dau.inputmethod.Dau"' | grep host-app`.
 
-- **Không có bản cùng phiên bản** (nhật ký có `host-app-not-found`): bộ gõ đã cài khác phiên bản với Dấu.app trong `/Applications`. Thường gặp khi Dấu.app được chép vào `/Applications` mà chưa mở lần nào, hoặc bước thay bộ gõ của `scripts/dev/install-app.sh` báo lỗi. Bản trong thư mục build hay DerivedData không bao giờ được chọn: sandbox của bộ gõ không đọc được chúng.
+- **Không có bản cùng phiên bản** (nhật ký có `host-app-not-found`): bộ gõ đã cài khác phiên bản với Dấu.app trong `/Applications`. Thường gặp khi Dấu.app được chép vào `/Applications` mà chưa mở lần nào, hoặc bước thay bộ gõ của `scripts/dev/install-app.sh` báo lỗi. Bản trong thư mục build hay DerivedData chỉ được chọn khi đang chạy (bước đầu); không thì bị bỏ, vì sandbox của bộ gõ không đọc được chúng.
 - **Xử lý:** mở Dấu.app trong `/Applications` một lần; app thay bộ gõ đã cài bằng bản nằm trong nó (D37 (Cài đặt bộ gõ)). Hoặc chạy lại `scripts/dev/install-app.sh`. `scripts/dev/dau-version.sh` cho biết hai bản đã khớp chưa.
 - **Bản tìm được không đạt kiểm chữ ký** (nhật ký có `host-app-signature-invalid`): chữ ký hỏng, không do Apple cấp, khác Team ID với bộ gõ, hoặc khác bundle ID của app chủ. Bộ gõ bỏ qua bản đó.
 - **Xử lý:** dựng và cài lại Dấu.app bằng `scripts/dev/install-app.sh`, với cùng Team đã ký bộ gõ.

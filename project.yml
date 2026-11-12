@@ -77,7 +77,7 @@ settings:
   configs:
     # Local Swift packages ignore the app's ONLY_ACTIVE_ARCH and build only the active arch
     # when xcodebuild targets "My Mac". Debug therefore builds the active arch by default;
-    # pass -destination 'generic/platform=macOS' to get a universal Debug build (README).
+    # pass -destination 'generic/platform=macOS' to get a universal Debug build (docs/Architecture.md, "Build").
     Debug:
       ONLY_ACTIVE_ARCH: YES
     Release:

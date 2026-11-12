@@ -128,7 +128,7 @@ Tuỳ chọn và tác dụng phụ của từng script ghi ở đầu script.
 - `scripts/dev/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
 - `scripts/dev/install-app.sh` — script cài duy nhất: build Dấu.app và đặt vào `/Applications`; Dấu.app đó thay bộ gõ đã cài (D37 (Cài đặt bộ gõ)). `--ref stable` cài bản dùng hằng ngày.
 - `scripts/dev/clean-dau.sh` — liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` do người dùng tự chạy.
-- `swift test --package-path Packages/DauEngine` — test engine. Các bộ test khác: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
+- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine` — test engine. Các bộ test khác: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings` — test của app chủ.
 - `scripts/check-l10n/check.sh` — kiểm String Catalog (D41).
 - `scripts/selftest/typing/run.sh` — gõ thử trong app thật, chiếm màn hình.

@@ -255,10 +255,10 @@ final class InputMethodActions {
         }
     }
 
-    /// Without the alerts (tests): `prepareUninstall` (another keyboard, Keyboard
-    /// settings), the sheet while it waits until Dấu is gone from the stored input
-    /// sources, then `finishUninstall` (stop, Trash, data). `cancelUninstall()` ends the
-    /// wait and removes nothing.
+    /// Without the alerts (tests): `prepareUninstall` (only opens the list of input
+    /// sources, the keyboard is not changed, D16), the sheet while it waits until Dấu is
+    /// gone from the stored input sources, then `finishUninstall` (stop, Trash, data).
+    /// `cancelUninstall()` ends the wait and removes nothing.
     func performUninstall(deleteSettings: Bool) async -> UninstallOutcome {
         guard !isUninstalling else { return .cancelled }
         isUninstalling = true

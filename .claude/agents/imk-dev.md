@@ -19,7 +19,7 @@ Luật làm việc:
 
 ## Quy tắc
 - Số lần gọi vào ứng dụng đích và cách lấy vị trí thay chữ: N3 (Ít lời gọi vào ứng dụng đích), D11 (Kiểm tra ngữ cảnh).
-- Cấu trúc bộ gõ, trạng thái của controller và client: `docs/Architecture.md`, mục DauInputMethod.
+- Cấu trúc bộ gõ, trạng thái của controller và client: `docs/Architecture.md`, mục "Bộ gõ (DauInputMethod)".
 - Phòng thủ với đầu vào từ IMK: D18 (Phòng thủ với IMK).
 - Quyền của tiến trình bộ gõ (sandbox, App Group, mạng): N2 (Bộ gõ không có quyền mạng).
 - Bạn không thao tác được giao diện macOS. Việc cần thử trong app thật (bật nguồn, gõ thử): ghi ở mục 4 kèm lệnh và chuỗi phím cần chạy; phiên chính tự chạy sau khi người dùng chọn giờ (`CLAUDE.md`, "Người dùng chỉ làm việc thật sự cần họ").

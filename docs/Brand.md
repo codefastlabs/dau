@@ -73,7 +73,7 @@ App dùng màu và phông của hệ thống (D9); bảng màu này dành cho bi
 |---|---|---|
 | Biểu tượng app (Icon Composer + `.icns`) | 16–1024 pt | Finder, Dock, Launchpad, Spotlight, onboarding, hộp thoại |
 | Biểu tượng bản phát triển (Icon Composer + `.icns`) | 16–1024 pt | như trên, ở mọi bản không phải bản chính thức (D25) |
-| Ảnh template thanh menu V | 22×16 pt @1x/@2x (TIFF; PDF vector khi có bản chính thức) | menu Nguồn nhập liệu |
+| Ảnh template thanh menu V | 22×16 pt @1x/@2x (TIFF; PDF vector khi có bản chính thức) | menu nguồn đầu vào |
 | `favicon.ico` + `favicon.svg` | 16, 32 | tab trình duyệt, kết quả tìm kiếm |
 | `apple-touch-icon.png` | 180×180 | ghim trang trên iPhone/iPad |
 | `og-image.png` | 1200×630 | `og:image`, `twitter:image` — link chia sẻ Zalo, Messenger, Slack, iMessage, X |

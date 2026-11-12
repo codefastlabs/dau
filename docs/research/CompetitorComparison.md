@@ -9,7 +9,7 @@ Nghiên cứu cho M10 (Học cách gõ), trang "Dấu khác các bộ gõ khác 
   - Số của Dấu đứng được: chữ trong hai app trùng từng byte với engine chạy offline.
   - Số của Apple: khớp ở 9 từ đã kiểm mẫu (Chrome, 12/11/2026, `scripts/selftest/typing/run.sh` hiện hành); các ô khác (Safari, các số 677/678, 169/188) chưa kiểm lại (mục 1.2).
 - **Ở mức engine, so với 10 bộ gõ khác (mục 2): xong, dùng số đã có.**
-- **Nhịp gõ thật, hai phím cách nhau dưới 10 ms (mục 3): dừng.** Dữ liệu công khai không đủ độ chính xác. Câu hỏi gốc của D13 (Gạch chân là đường lui cuối cùng) được đo ở M6 bằng bài test tải nặng (mục 3).
+- **Nhịp gõ thật, hai phím cách nhau dưới 10 ms (mục 3): dừng.** Dữ liệu công khai không đủ độ chính xác. Câu hỏi gốc của D13 (Gạch chân là đường lui cuối cùng) được trả lời ở M6 bằng các lượt Chrome khi trang bận (09–10/11/2026, mục 3), không phải bằng bài test tải nặng `heavy.sh`.
 
 ## 1. Trong ứng dụng thật: Dấu và Telex của macOS
 

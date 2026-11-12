@@ -6,11 +6,14 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026.
 
-Chờ người dùng: chọn gạch chân tự động hay tuỳ chọn cho ô kiểu xterm.js (sau khi đo gạch chân trong terminal VS Code).
+Chờ người dùng:
+- (a) Thử tay D43 trong terminal của app Claude (không tự động: app Claude là nơi chạy phiên điều phối).
+- (b) Sau phép đo (2) ở dưới: giữ D13 (người dùng tự bật gạch chân theo app), hay gạch chân tự động cho ô kiểu xterm.js (phải sửa D13 và D43).
+- (c) Các mục sửa `Decisions.md` sau kiểm toán 12/11 (phiên chính sẽ hỏi).
 
 Việc tiếp theo, theo thứ tự:
-1. M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6); `heavy.sh` chạy trọn, đạt D42 trên máy đang bận (nhật ký 12/11).
-2. Thử tay D43 trong terminal của app Claude (không tự động: app Claude là nơi chạy phiên chính; VS Code cùng cơ chế đã đo 12/11).
+1. Giữ M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6).
+2. Đo gạch chân trong terminal tích hợp của VS Code (chiếm màn hình, xin giờ).
 
 Việc mở:
 - Ứng dụng chưa đo và các phép đo lại còn mở (VS Code, Terminal, Cursor…): `docs/Compatibility.md` mục 7.
@@ -19,6 +22,7 @@ Việc mở:
 - Bộ đệm nguồn nhập liệu của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/InputMethodInstall.md` mục 10.7).
 - Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
 - Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ. `scripts/selftest/app-group.sh --install` chưa chạy lại kể từ khi gộp script cài 10/11. Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
+- Sheet thêm quy tắc: ba nút cuối không có nhãn trợ năng (/dogfood 11/11; chưa kiểm bằng VoiceOver).
 - Việc của M7 (Phát hành): `docs/Roadmap.md` mục M7 và mục "Tồn đọng chưa gắn mốc".
 
 ## Mốc

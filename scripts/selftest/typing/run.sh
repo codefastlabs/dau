@@ -85,9 +85,10 @@
 #                     phase, to read next to the perf log's activations) and, for
 #                     vscodeswitch, <app>.editor.txt (the editor's text); with --shot:
 #                     <app>.png. <app>.perf.log also holds the input method's
-#                     `event=range-ignored` / `event=range-ignore-refuted` lines (D43; the
-#                     log's settings category, only those) and, in a Debug build, its
-#                     `name=activate` lines. There is no deactivation line: the input
+#                     `event=range-ignored` lines (D43; the log's settings category) and, in a
+#                     Debug build, its `event=web-host` lines (settings category), its
+#                     `name=range-ignore-refuted` lines (perf category) and `name=activate`
+#                     lines. There is no deactivation line: the input
 #                     method does not log deactivateServer.
 #   --underline       force underline mode (D13: marked text, committed at the word end)
 #                     for each app tested, without touching the user's Dấu settings.
@@ -1815,10 +1816,10 @@ for app in "${APPS[@]}"; do
     log_warn "vscodeswitch: không đọc được chữ của trình soạn thảo (phần soạn thảo không chạy tới)"
     FAILED=1
   fi
-  # The settings category carries only the D43 range-ignore lines wanted here (the rest of
+  # The settings category carries only the D43 lines wanted here (range-ignored, and in Debug web-host; the rest of
   # it, underline-on, is read below); perf and diag whole.
   "$LOG" show --start "$start" --style compact \
-    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\" OR (category == \"settings\" AND eventMessage CONTAINS \"event=range-ignore\"))" > "$WORK/perf.log" 2>/dev/null
+    --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\" OR (category == \"settings\" AND (eventMessage CONTAINS \"event=range-ignore\" OR eventMessage CONTAINS \"event=web-host\")))" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
   # VS Code terminal cells: the time of each phase and the activations (a Debug build logs
   # `name=activate` for each; deactivateServer logs nothing), to see whether the switch to
@@ -1863,9 +1864,10 @@ for app in "${APPS[@]}"; do
   # Debug builds add the app's bundle ID, D8, so a line without one counts for the app
   # this window of the log belongs to).
   if (( DAU_RUN )); then
-    ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( app=$(bundle_id "$app"))?\$" | grep -o "event=range-ignored mode=[a-z-]*" | head -1)"
+    ignored="$(print -r -- "$settings_log" | grep -E "event=range-ignored mode=[a-z-]*( blocked=[a-z]+)?( app=$(bundle_id "$app"))?\$" | grep -oE "event=range-ignored mode=[a-z-]*( blocked=[a-z]+)?" | head -1)"
     if [[ -n "$ignored" ]]; then
-      log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}"
+      blocked=""; [[ "$ignored" == *" blocked="* ]] && blocked=", blocked=${ignored##*blocked=}"
+      log_detail "D43: nhận ra ô bỏ qua vùng thay chữ, ${${ignored#*mode=}%% *}$blocked"
     elif [[ -s "$WORK/perf.log" ]] && grep -q "name=range-ignore-refuted" "$WORK/perf.log"; then
       # Debug only (PerfLog): the position looked like such a field, but the app gave back
       # the text Dấu typed (D43, "Bằng chứng dương").

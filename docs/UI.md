@@ -91,7 +91,7 @@ Artboard: [OnboardingEnable](canvas/OnboardingEnable.png), [có nguồn tiếng 
 
 Artboard: [OnboardingEnableTampered](canvas/OnboardingEnableTampered.png).
 
-- "Bộ gõ đã bị thay": chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ, không do Apple cấp, không cùng Team ID với app hoặc sai định danh bộ gõ (D37). Cửa sổ Cài đặt có banner cùng tên (mục "Banner").
+- Tiêu đề "Bộ gõ Dấu trên máy đã bị thay đổi": chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ, không do Apple cấp, không cùng Team ID với app hoặc sai định danh bộ gõ (D37). Cửa sổ Cài đặt có banner cùng tên (mục "Banner").
 - Màn này thay cho "Trước khi bấm" khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và bộ gõ đã bị thay.
 - Cùng tiêu đề, câu dẫn và nút "Cài lại" với banner; không có thẻ.
 - "Cài lại" chỉ cài bản nhúng của app, không bật: cài xong và chữ ký đúng thì hiện "Trước khi bấm"; lỗi thì hiện "Lỗi cài".

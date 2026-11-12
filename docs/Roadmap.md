@@ -36,7 +36,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
   - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
 - Phần còn lại của ma trận tương thích [`docs/Compatibility.md`](Compatibility.md):
   - app: Zalo, Discord, Messages, Pages, Numbers, Zed, Xcode, WebStorm; Ghostty đã đo, xem Compatibility 5.6;
-  - kiểm lại Terminal không gửi ⌫ cho bộ gõ;
+  - kiểm lại Terminal không gửi ⌫ cho bộ gõ: đã kiểm 12/11/2026 ([`docs/Compatibility.md`](Compatibility.md) mục 6.5);
   - hai bài kiểm cho phần lớn app: click chuột rồi gõ tiếp (gõ `tooi`, click chỗ khác, gõ `s`: chỉ thêm "s" ở chỗ mới) và mũi tên rồi gõ tiếp (gõ `tooi`, nhấn ←, gõ `s`: ra "tối", vì ← chỉ xoá bộ đệm còn D20 (Thêm dấu cho từ đã gõ) vẫn đặt dấu vào chữ trước con trỏ);
   - ghi app nào có tự sửa chính tả của macOS (giới hạn đã biết của D4 (Từ nước ngoài)).
 - Xong khi:
@@ -106,6 +106,6 @@ Mục đích: người dùng biết và học được cách gõ, và biết kh�
 ## Tồn đọng chưa gắn mốc
 
 - D39 (Ủng hộ dự án): có đặt liên kết ủng hộ trong app hay không; vẽ trên canvas trước.
-- Xem lại gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 khi làm báo lỗi.
+- Xem lại gợi ý "Gửi mô tả lỗi để chúng tôi kiểm tra" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 khi làm báo lỗi.
 - `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
 - Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.

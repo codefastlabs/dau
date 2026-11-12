@@ -255,10 +255,10 @@ enum HostApp {
 /// The sandbox: the input method can read bundles in /Applications (measured 02/11/2026
 /// for Info.plist) but not in a home folder. The check needs the bundle's files, so a
 /// copy whose Info.plist cannot be read is `HostApp.Trust.unknown`, not untrusted; what
-/// that allows is decided by `HostApp.accepts`. The Security calls themselves have not
-/// been run inside the input method's sandbox yet: if they fail there, a readable copy
-/// counts as untrusted and the menu item opens only a running, enclosing or
-/// ~/Applications copy.
+/// that allows is decided by `HostApp.accepts`. The Security calls themselves run inside
+/// the input method's sandbox (measured 11/11/2026: "Dấu Settings…" opened the copy
+/// with no `host-app-signature-invalid`; `docs/Progress.md`, `docs/Architecture.md`,
+/// "Khởi chạy bộ gõ").
 enum HostAppSignature {
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "DauInputMethod",
                                        category: "settings")

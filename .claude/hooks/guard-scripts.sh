@@ -20,10 +20,10 @@ cmd=$(jq -r '.tool_input.command // empty')
 
 root=${CLAUDE_PROJECT_DIR:-${0:A:h:h:h}}
 # script -> when blocked: "always", "with --flag" (only when the flag is given),
-# "unless --flag" (unless the flag is given).
+# "unless --flag" (unless the flag is given); several flags: "unless --a|--b" (any of them).
 typeset -A guarded=(
   [scripts/selftest/typing/run.sh]="always"
-  [scripts/selftest/load/run.sh]="unless --dry-run"
+  [scripts/selftest/load/run.sh]="unless --dry-run|--print"
   [scripts/selftest/load/heavy.sh]="unless --dry-run"
   [scripts/selftest/settings-window/run.sh]="always"
   [scripts/selftest/app-group.sh]="always"
@@ -55,7 +55,7 @@ for seg in ${(f)${cmd//(\&\&|\|\||[;|\&()])/$'\n'}}; do
   args=(${words[2,-1]})
   kind=${rule%% *}; flag=${rule#* }
   present=0
-  [[ $kind != always ]] && (( ${args[(I)$flag]} )) && present=1
+  if [[ $kind != always ]]; then for f in ${(s:|:)flag}; do (( ${args[(I)$f]} )) && present=1; done; fi
   [[ $kind == unless && $present == 1 ]] && continue
   [[ $kind == with && $present == 0 ]] && continue
   blocked+=("$rel (${rule})")

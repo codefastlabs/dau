@@ -16,6 +16,8 @@ Cảm ơn bạn muốn góp sức. Dấu là phần mềm tự do theo giấy ph
 
 ## Chạy test
 
+Các lệnh `swift test` dưới đây cần Xcode được chọn (`xcode-select` hay `DEVELOPER_DIR`, xem "Chuẩn bị máy"): với Command Line Tools, build hỏng.
+
 | Phần | Cần Apple ID? | Lệnh |
 |---|---|---|
 | Engine: quy tắc gõ, đặt dấu, chính tả, khôi phục từ (`Packages/DauEngine`) | Không | `swift test --package-path Packages/DauEngine` |
@@ -23,7 +25,7 @@ Cảm ơn bạn muốn góp sức. Dấu là phần mềm tự do theo giấy ph
 | Bộ gõ (`Apps/DauInputMethod`): logic thuần, không cần cài | Chưa thử khi không có Team | `xcodegen generate`, rồi `xcodebuild test -project Dau.xcodeproj -scheme DauInputMethod -destination 'platform=macOS'` |
 | App chủ (`Apps/Dau`), kiểm bằng snapshot | Không | `swift test --package-path scripts/snapshot-settings` |
 
-Khẳng định về hiệu năng của engine cần số đo: `swift test -c release --package-path Packages/DauEngine` chạy cả test hiệu năng.
+Khẳng định về hiệu năng của engine cần số đo. Test hiệu năng chạy trong mọi `swift test` (ngưỡng lỏng); số đo lấy từ bản Release: `swift test -c release --package-path Packages/DauEngine --filter Performance` (`docs/Architecture.md`).
 
 ## Build và cài bằng Team của bạn
 

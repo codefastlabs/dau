@@ -7,7 +7,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 - **Đã đọc:** OpenKey https://github.com/tuyenvm/OpenKey, commit `89c2fd3` (15/06/2026), clone ra ngoài repo; `Sources/OpenKey/engine/` (`Engine.cpp`, `Engine.h`, `Vietnamese.cpp`, `DataType.h`, `Macro.cpp`, `SmartSwitchKey.cpp`, `ConvertTool.cpp`, `platforms/mac.h`) và `macOS/ModernKey/OpenKey.mm` để biết engine được gọi thế nào.
 - **Không chạy.** Mọi hành vi dưới đây có từ lần theo mã; chỗ chưa chắc ghi "(suy luận)". D10 cấm dùng OpenKey làm đáp án, nên không chạy để kiểm chứng. Test của XKey (engine chuyển từ OpenKey) cho một phần đối chiếu (mục 4).
 - **Kiến trúc khác hẳn:** OpenKey chặn phím bằng event tap, gửi Backspace giả, giữ một bộ đệm toàn cục theo mã phím vật lý. Dấu là bộ gõ InputMethodKit, mỗi ô nhập một engine, nhận ký tự (mục 1).
-- **Dấu làm phần lớn tính năng gõ của OpenKey**, theo D15 (Cài đặt mặc định) và các quyết định ở mục 2. Không làm: macro, viết hoa đầu câu, bảng mã cũ, chuyển mã, smart switch, phím chuyển và tạm tắt riêng, Quick Telex, `[ ]` thành ơ ư (`docs/Decisions.md` mục "Đã biết nhưng không làm").
+- **Dấu làm phần lớn tính năng gõ của OpenKey**, theo D15 (Cài đặt mặc định) và các quyết định ở mục 2. Không làm: macro, viết hoa đầu câu, bảng mã cũ, chuyển mã, smart switch, phím chuyển và tạm tắt riêng, Quick Telex, `[ ]` thành ơ ư (D27 (Không có phím gõ nhanh ơ, ư)).
 - **Chỗ Dấu cố ý khác OpenKey ở cùng một tính năng:**
 
 | Điểm | OpenKey | Dấu |
@@ -16,7 +16,6 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | Điều kiện khôi phục | chỉ khi có nguyên âm mang dấu/mũ/móc (B7) | mọi chữ không phải âm tiết hợp lệ khi kết thúc từ (D4, D31 (Âm tiết tiếng Việt hợp lệ)) |
 | Âm tiết hợp lệ | không xét c/k/q, g/gh, ng/ngh, p cuối với huyền/hỏi/ngã (B5, B6) | bảng vần tự lập, có các luật đó (D31) |
 | Gõ tắt phụ âm | mở rộng rồi giữ, kể cả ra chữ không hợp lệ ("big" → "bing", B9) | mở rộng rồi kiểm lại, không hợp lệ thì khôi phục (D21) |
-
 | "uơ"/"ươ" | luôn "ươ", trừ sau "th", "q"; phân biệt hoa thường (B4) | theo vị trí cặp trong từ (D35 ("uơ" và "ươ")) |
 | Telex đơn giản | Simple Telex 1 có w → qu | không có w → qu (D29 (Telex đơn giản), D23 (w → qu chỉ ở VNI)) |
 | "Bỏ dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu", và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu ở đâu cũng được, dấu tự dời (D28 (Bỏ dấu tự do)) |

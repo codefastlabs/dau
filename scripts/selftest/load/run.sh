@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Types one text into real apps, idle and under load, to see whether in-place replacement goes wrong when the app is busy (M6).
-# Side effects: builds, takes the screen, changes input source, changes user settings
+# Side effects: unless --dry-run or --print: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/selftest/load/run.sh [--reps N] [--apps "A…"] [--loads "L…"] [--text std|edit]
 #        [--dry-run | --print keys|expect]
