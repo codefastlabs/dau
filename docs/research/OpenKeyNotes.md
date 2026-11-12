@@ -285,7 +285,7 @@ Kết quả mong đợi theo chính tả và `docs/Decisions.md` (D10), cấu h�
 | `ghus` | `ghus` | `ghú` (suy luận) | D31; B6 | `SpellingTests.initialDistribution` |
 
 | `u[` (Telex đơn giản), `[ ]` ở Telex | ngoặc là dấu câu | `[` → ơ ở Telex | D27 | `TransformTests.simpleTelexW`, `EnglishVietnameseTests.bracketsArePunctuation` |
-| `wen␣` (Telex đơn giản, gõ tắt phụ âm bật) | `wen␣` | `quen␣` (Simple Telex 1) | D29, D23 | chưa có test |
+| `wen␣` (Telex đơn giản, gõ tắt phụ âm bật) | `wen␣` | `quen␣` (Simple Telex 1) | D29, D23 | `ShortcutTests.simpleTelexWithConsonantShortcutsHasNoWToQu` |
 | chữ có sẵn `hoc` + `j` | `học` | `hocj` | D20 | `SeedTests.seeded` |
 
 ## Nguồn

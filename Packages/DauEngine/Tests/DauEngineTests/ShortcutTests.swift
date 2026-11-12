@@ -38,4 +38,11 @@ struct ShortcutTests {
         let options = EngineOptions(inputMethod: .simpleTelex, advanced: .allowZFWJ)
         expectTyped("was ", "wá ", options)
     }
+
+    /// Simple Telex keeps w a plain letter without a, o, u and has no w -> qu (D29, D23);
+    /// OpenKey's Simple Telex 1 expands "wen " to "quen " (OpenKeyNotes section 5).
+    @Test func simpleTelexWithConsonantShortcutsHasNoWToQu() {
+        let options = EngineOptions(inputMethod: .simpleTelex, advanced: .consonantShortcuts)
+        expectTyped("wen ", "wen ", options)
+    }
 }
