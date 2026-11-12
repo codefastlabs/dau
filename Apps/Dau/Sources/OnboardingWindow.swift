@@ -615,9 +615,11 @@ struct EnableStep: View {
                 .accessibilityElement(children: .combine)
             }
         } buttons: {
+            // Every cause: copy the embedded input method again, enable nothing
+            // (`OnboardingFlow.reinstall`).
             Button("Reinstall") {
                 Task {
-                    await flow.enable()
+                    await flow.reinstall()
                     // The Settings window's banner reads the same bundle: it follows now,
                     // not at the next activation.
                     actions?.checkInstalled()

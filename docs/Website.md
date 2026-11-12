@@ -34,11 +34,11 @@ Thứ tự mục:
 8. **Tải về:**
    - phiên bản, ngày, dung lượng, yêu cầu hệ thống;
    - nút "Tải về (.dmg)", "Lịch sử phiên bản";
-   - lệnh Homebrew (tên cask chưa chốt, D24 (Tên và định danh));
+   - lệnh Homebrew khi có cask (sau bản thử đầu, D6; tên cask chưa chốt, D24 (Tên và định danh));
    - SHA-256;
    - không phải Mac thì nút chính thành "Sao chép liên kết" kèm câu "Dấu chỉ chạy trên Mac" (trang tĩnh, không gửi email).
 9. **Góp sức:**
-   - góp công (báo lỗi, dùng thử Beta, góp mã nguồn, giới thiệu);
+   - góp công (báo lỗi, dùng thử bản mới khi có kênh Beta, góp mã nguồn, giới thiệu);
    - ủng hộ qua VietQR và GitHub Sponsors (D39 (Ủng hộ dự án));
    - mục Cảm ơn (chỉ nêu tên khi người đó đồng ý).
 10. **Hỏi đáp:** chín câu dạng `<details>`.

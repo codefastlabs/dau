@@ -189,7 +189,7 @@ enum DebugCapture {
                         installer?.failure = .invalidSignature
                         await flow.enable()
                     }),
-                    // "Thử lại", and this time the user allows it.
+                    // Enabled from there (the capture skips "Cài lại"), and this time the user allows it.
                     ("2-done", {
                         installer?.failure = nil
                         installer?.enableOutcome = .enabled

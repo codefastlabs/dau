@@ -291,7 +291,8 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 - **Bước 1** chỉ hiện khi có xung đột (mục "Danh sách tương thích, bộ gõ cũ").
 - Không bước nào có nút "Quay lại": các bước chỉ đi tới.
 - **Bước 2:** nguồn tiếng Việt kiểu IMK khác đang bật hiện ở `OtherSourcesNote`, không chặn. `OnboardingFlow.installedTampered` đổi màn "Bật Dấu" thành màn lỗi cài "Chưa cài được Dấu" (`OnboardingFlow.EnableScreen.error`, view `EnableStep.installError`; "Chi tiết" là lỗi chữ ký): đúng khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và `InputMethodInstaller.installedIsGenuine` sai; phát hiện lúc đang chờ Allow thì huỷ lần chờ.
-  - Nút "Cài lại" của màn lỗi gọi `OnboardingFlow.enable`: bản đã cài sai chữ ký thì `enable` chuyển sang `OnboardingFlow.reinstall`, chỉ gọi `install()`, không gọi `enable()` của bộ cài; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu", còn sai hay lỗi thì ở lại màn lỗi. Lỗi cài khác (chưa chép được) thì `enable` cài rồi bật như lần đầu.
+  - Màn lỗi cài cũng hiện khi chép, kiểm chữ ký bản tạm hay đăng ký lỗi (`problem == .failed`). Nút "Cài lại" gọi `OnboardingFlow.reinstall`, cùng một luật cho mọi nguyên nhân: bản chủ chép lại bản nhúng (`install()`, trong đó có đăng ký), không gọi `enable()` của bộ cài; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu" ("Trước khi bấm"), chỉ cú bấm đó mới bật; còn sai hay lỗi thì ở lại màn lỗi với "Chi tiết" mới.
+  - Khi bộ gõ đã cài sai chữ ký, `OnboardingFlow.enable` không làm gì: không thay, không bật (D37); chỉ "Cài lại" thay.
   - `OnboardingFlow.enable` nhận `EnableOutcome.needsReinstall` (bộ gõ bị thay sau lần đọc cuối) thì cũng sang màn này.
 
 ### Cài, bật, thay, gỡ bộ gõ
@@ -305,7 +306,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 - `ApplicationsOwnerCopy` nhận bundle ID app chủ, danh sách thư mục theo thứ tự (`standardDirectories`) và hai hàm đọc mã băm làm tham số. Nó tìm bundle theo `CFBundleIdentifier` trong `Info.plist` của các mục `.app` nằm trực tiếp trong thư mục, không theo tên file; liên kết tượng trưng không tính. Thư mục đầu tiên có bundle như vậy quyết định.
 - Mã băm đọc bằng `CodeSignature.codeHashes`, chỉ dùng API công khai của Security: `MachOSlices` đọc danh sách kiến trúc thẳng từ đĩa; mỗi kiến trúc một `SecStaticCodeCreateWithPathAndAttributes`, rồi lấy `kSecCodeInfoUnique` từ `SecCodeCopySigningInformation`. Một kiến trúc không đọc được thì cả bundle là "không biết": không trùng với gì. `CodeSignature.sameCode`: cùng tập kiến trúc và cùng mã băm ở từng kiến trúc.
 - Mã băm của bản đang chạy đọc từ bundle của chính nó trên đĩa, để có mọi kiến trúc; bundle đó nằm ở đâu không tham gia kết luận. `InputMethodInstaller.isOwnerCopy` đọc lại mỗi lần hỏi, không lưu.
-- Bản không phải bản chủ: `install()` ném `InputMethodInstallerError.notOwnerCopy` trước khi đụng tới file; `OnboardingFlow.enable` chỉ bật bộ gõ đã cài; `enable()` và `InputMethodActions.checkInstalled` không kiểm chữ ký; `reinstallInputMethod` không làm gì. Bật, cài đặt và gỡ đi các đường như bản chủ.
+- Bản không phải bản chủ: `install()` ném `InputMethodInstallerError.notOwnerCopy` trước khi đụng tới file; `OnboardingFlow.enable` chỉ bật bộ gõ đã cài, và "Cài lại" của màn lỗi (`OnboardingFlow.reinstall`) không chép gì, chỉ đăng ký và bật lại bộ gõ đã cài; `enable()` và `InputMethodActions.checkInstalled` không kiểm chữ ký; `reinstallInputMethod` không làm gì. Bật, cài đặt và gỡ đi các đường như bản chủ.
 
 **Cài và thay** (chỉ bản chủ; onboarding bước 2, nút "Cài lại", và `reconcile`):
 

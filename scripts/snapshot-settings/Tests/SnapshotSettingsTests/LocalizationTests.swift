@@ -19,7 +19,7 @@ struct LocalizationTests {
     func sectionWords() {
         for section in SettingsSection.allCases {
             for resource in [section.titleResource] + section.keywordResources
-            where !["Telex", "VNI", "Beta"].contains(resource.key) {
+            where !["Telex", "VNI"].contains(resource.key) {
                 #expect(SnapshotLocalization.text(resource.key, "vi") != resource.key, "\(resource.key)")
             }
         }

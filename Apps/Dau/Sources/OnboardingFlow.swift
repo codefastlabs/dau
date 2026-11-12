@@ -83,7 +83,7 @@ final class OnboardingFlow {
         case notEnabled
         /// "Chưa cài được Dấu" (artboard OnboardingEnableError): an install error (copy,
         /// signature, registration), or the installed input method's signature is wrong
-        /// (D37). Its "Cài lại" is `enable()`, which reinstalls in the second case.
+        /// (D37). Its "Cài lại" is `reinstall()` for every cause.
         case error
     }
 
@@ -177,20 +177,17 @@ final class OnboardingFlow {
         step = .typing
     }
 
-    /// Step 2, "Bật Dấu", "Thử lại" and the install error's "Cài lại": installs first
-    /// when needed, then waits for macOS to store Dấu as enabled. A run still waiting is
-    /// cancelled first (the new one makes macOS ask again). A copy that is not the owner
-    /// copy never installs (D37): with nothing installed it shows "Chuyển Dấu vào
-    /// Applications" and this does nothing; with the input method installed it only
-    /// enables. While the installed input method's signature is wrong nothing is enabled
-    /// (D37): this reinstalls instead, and an `enable()` that finds it only now shows the
-    /// install error.
+    /// Step 2, "Bật Dấu" and "Thử lại": installs first when nothing is installed, then
+    /// waits for macOS to store Dấu as enabled. A run still waiting is cancelled first
+    /// (the new one makes macOS ask again). A copy that is not the owner copy never
+    /// installs (D37): with nothing installed it shows "Chuyển Dấu vào Applications" and
+    /// this does nothing; with the input method installed it only enables. While the
+    /// installed input method's signature is wrong nothing is enabled and nothing is
+    /// replaced (D37): the install error shows, and only its "Cài lại" replaces it. An
+    /// `enable()` that finds the wrong signature only now shows that screen too.
     func enable() async {
-        guard step == .enable, !status.isEnabled, !needsMoveToApplications, !isReinstalling else { return }
-        if installedTampered {
-            await reinstall()
-            return
-        }
+        guard step == .enable, !status.isEnabled, !needsMoveToApplications, !isReinstalling,
+              !installedTampered else { return }
         enableTask?.cancel()
         attempt += 1
         let mine = attempt
@@ -223,12 +220,22 @@ final class OnboardingFlow {
         if status.isEnabled { problem = nil }
     }
 
-    /// Step 2, "Cài lại" while the installed input method's signature is wrong (artboard
-    /// OnboardingEnableError; D37): installs the owner copy's own input method over it,
-    /// and enables nothing. Once the installed copy is genuine the step shows "Bật Dấu" as
-    /// usual; otherwise the install error stays, with the new detail.
+    /// Step 2, "Cài lại" on the install error (artboard OnboardingEnableError; D37), the
+    /// same for every cause: the copy failed, the registration failed, or the installed
+    /// input method's signature is wrong. The owner copy copies its embedded input method
+    /// again (which registers it) and enables nothing: once the installed copy is there
+    /// and genuine, the step shows "Bật Dấu" ("Trước khi bấm"), and only that click
+    /// enables. Otherwise the install error stays, with the new detail.
+    /// A copy that is not the owner copy copies nothing (D37); the only error it can
+    /// reach is an installed input method that failed to register or enable, so it
+    /// registers and enables that one again (`enable()`).
     func reinstall() async {
-        guard step == .enable, installedTampered, !isReinstalling, !status.isEnabled else { return }
+        guard step == .enable, !isReinstalling, !status.isEnabled, !needsMoveToApplications,
+              installedTampered || problem == .failed else { return }
+        guard installer.isOwnerCopy else {
+            await enable()
+            return
+        }
         cancelEnable()
         isReinstalling = true
         problem = nil

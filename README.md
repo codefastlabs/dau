@@ -49,7 +49,7 @@ Việc macOS đã làm tốt, Dấu không làm lại: gõ tắt văn bản đã
 
 ## Sắp ra mắt
 
-Dấu chưa có bản tải về. Yêu cầu: macOS 14 trở lên (D1 (Nền tảng)); tới nay mới thử trên macOS 27.2.[^8] Các mốc tới khi phát hành: [`docs/Roadmap.md`](docs/Roadmap.md). Những ứng dụng đã thử và giới hạn còn lại: [`docs/Compatibility.md`](docs/Compatibility.md).
+Dấu chưa có bản tải về. Dấu dựng cho macOS 14 trở lên (D1 (Nền tảng)), nhưng tới nay mới thử trên macOS 27.2 và Apple silicon; bản thử đầu chỉ hứa những gì đã thử.[^8] Các mốc tới khi phát hành: [`docs/Roadmap.md`](docs/Roadmap.md). Những ứng dụng đã thử và giới hạn còn lại: [`docs/Compatibility.md`](docs/Compatibility.md).
 
 ## Dành cho nhà phát triển
 

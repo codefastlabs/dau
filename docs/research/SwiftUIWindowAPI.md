@@ -1,13 +1,13 @@
 # Cửa sổ Cài đặt: API Apple cho sidebar, thanh công cụ, tiêu đề
 
-Cửa sổ Cài đặt của app chủ dựng theo System Settings (D9 (Giao diện)). File này ghi API Apple nào làm việc gì cho sidebar, thanh công cụ, tiêu đề và Lùi/Tiến, có nguồn, và vì sao Dấu dựng cửa sổ như hiện nay. Mã: `SettingsWindow` (`Apps/Dau/Sources/SettingsWindow.swift`), `SettingsHistoryButtons` và `SettingsHistoryCommands` (`Apps/Dau/Sources/SettingsHistory.swift`). Số đo giao diện ở [`docs/research/SystemSettingsReference.md`](SystemSettingsReference.md).
+Cửa sổ Cài đặt của app chủ dựng theo System Settings (D9 (Giao diện)). File này ghi API Apple nào làm việc gì cho sidebar, thanh công cụ, tiêu đề và Lùi/Tiến (cụm này đã bỏ 13/11/2026), có nguồn, và vì sao Dấu dựng cửa sổ như hiện nay. Mã: `SettingsWindow` (`Apps/Dau/Sources/SettingsWindow.swift`). Số đo giao diện ở [`docs/research/SystemSettingsReference.md`](SystemSettingsReference.md).
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (13/11/2026)
 
 - **Sidebar cố định bằng split view của chính app** (mục 1): scene SwiftUI chứa `NSSplitViewController` do app tạo (`SettingsSplitViewController`), mục sidebar không thu được, độ dày tối thiểu bằng tối đa. Sidebar và trang vẫn là view SwiftUI trong `NSHostingController`. Không với vào view nào SwiftUI dựng.
 - **SwiftUI không có API khoá sidebar của `NavigationSplitView`** (mục 2). Độ rộng chỉ là "ưu tiên", `columnVisibility` chỉ là "điều khiển bằng mã"; tra chỉ mục tài liệu SwiftUI và `SwiftUI.swiftinterface` không thấy API nào khác.
 - **Lùi/Tiến là `ControlGroup` kiểu `.navigation` ở `ToolbarItemPlacement.navigation`**, lịch sử do app tự giữ (SwiftUI không có), kèm lệnh trong menu View (mục 3, 5). Dấu đã bỏ cụm này ngày 13/11/2026 (D9: bốn trang không cần); kết quả nghiên cứu giữ để tham khảo.
-- **Tiêu đề trang là `navigationTitle` của hệ thống**, nằm ngay sau cụm Lùi/Tiến như System Settings; macOS không có placement nào để thay tiêu đề bằng view tự vẽ (mục 3).
+- **Tiêu đề trang là `navigationTitle` của hệ thống**, ở mép trái thanh công cụ, như System Settings (trước 13/11/2026 nằm sau cụm Lùi/Tiến); macOS không có placement nào để thay tiêu đề bằng view tự vẽ (mục 3).
 - **Ô tìm sidebar là `NSSearchField` cỡ lớn**, vì `searchable(placement: .sidebar)` cần sidebar của `NavigationSplitView` (mục 4).
 - Phiên bản macOS ghi trong file là phiên bản Apple ghi trên trang tài liệu. D1 (Nền tảng) đặt tối thiểu macOS 14, nên API cần macOS 15 trở lên phải có `if #available`.
 

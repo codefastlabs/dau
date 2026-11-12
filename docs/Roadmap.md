@@ -100,6 +100,6 @@ Mục đích: người dùng biết và học được cách gõ, và biết kh�
 ## Tồn đọng chưa gắn mốc
 
 - D39 (Ủng hộ dự án): có đặt liên kết ủng hộ trong app hay không; vẽ trên canvas trước.
-- Xem lại gợi ý "Gửi mô tả lỗi để chúng tôi kiểm tra" (hàng "Gặp ứng dụng gõ bị lỗi?", `UpdatesSupportView`) theo N5 khi làm báo lỗi.
+- Khi làm báo lỗi (M7), câu gợi ý của hàng báo lỗi trong `UpdatesSupportView` theo N5 (hàng cũ "Gặp ứng dụng gõ bị lỗi?" đã bỏ 13/11/2026).
 - `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
 - Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.
