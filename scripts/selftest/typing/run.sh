@@ -27,8 +27,8 @@
 #                     120 is close to normal typing.
 #   --keys "…"        keys to type (default: the sample sentence below). Two marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
-#                     key; ↩ the Return key (ghostty only: the line editor there ends at
-#                     Return, nothing runs; any other app is an error); ⇄ switches the
+#                     key; ↩ the Return key (ghostty and the xterm page only: Return ends
+#                     the line, nothing runs; any other app is an error); ⇄ switches the
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
@@ -204,7 +204,7 @@ if [[ "$KEYS" == *$'\n'*|| "$KEYS" == *$'\r'* ]]; then
 fi
 if [[ "$KEYS" == *↩* ]]; then
   for app in "${APPS[@]}"; do
-    [[ $app == ghostty ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty, không với $app"
+    [[ $app == ghostty || $app == xterm ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty và xterm, không với $app"
   done
 fi
 
@@ -1117,6 +1117,7 @@ term.onData(function (d) {
   chunks.push(show(d));
   for (var c of d) {
     if (c === "\x7f") { if (line.length) { line.pop(); term.write("\b \b"); } }
+    else if (c === "\r") { line.push("↩"); term.write("\r\n"); }
     else if (c >= " ") { line.push(c); term.write(c); }
   }
 });
