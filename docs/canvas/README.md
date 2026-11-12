@@ -9,12 +9,10 @@
 ## Thiết lập Dấu
 
 - [Thiết lập Dấu – bước 1: tắt bộ gõ cũ](OnboardingConflict.png) · [nguồn](src/OnboardingConflict.dc.html)
-- [Thiết lập Dấu – bước 1: đã tắt bộ gõ cũ (sau khi bấm Quay lại ở bước 2)](OnboardingConflictDone.png) · [nguồn](src/OnboardingConflictDone.dc.html)
 - [Thiết lập Dấu – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)](OnboardingMoveToApplications.png) · [nguồn](src/OnboardingMoveToApplications.dc.html)
 - [Thiết lập Dấu – bước 2: bật Dấu](OnboardingEnable.png) · [nguồn](src/OnboardingEnable.dc.html)
 - [Thiết lập Dấu – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác](OnboardingEnableNotes.png) · [nguồn](src/OnboardingEnableNotes.dc.html)
 - [Thiết lập Dấu – bước 2: chưa cài được](OnboardingEnableError.png) · [nguồn](src/OnboardingEnableError.dc.html)
-- [Thiết lập Dấu – bước 2: bộ gõ trên máy đã bị thay đổi (cài lại trước khi bật)](OnboardingEnableTampered.png) · [nguồn](src/OnboardingEnableTampered.dc.html)
 - [Thiết lập Dấu – bước 2: chờ bấm Allow](OnboardingEnableWaiting.png) · [nguồn](src/OnboardingEnableWaiting.dc.html)
 - [Thiết lập Dấu – bước 2: chưa bật được](OnboardingEnableFailed.png) · [nguồn](src/OnboardingEnableFailed.dc.html)
 - [Thiết lập Dấu – bước 2: đã bật](OnboardingEnableDone.png) · [nguồn](src/OnboardingEnableDone.dc.html)
@@ -30,9 +28,6 @@
 - [Cài đặt – Ứng dụng](SettingsApps.png) · [nguồn](src/SettingsApps.dc.html)
 - [Cài đặt – Cập nhật & hỗ trợ](SettingsAbout.png) · [nguồn](src/SettingsAbout.dc.html)
 - [Cài đặt – Cập nhật & hỗ trợ (bản phát triển)](SettingsAboutDev.png) · [nguồn](src/SettingsAboutDev.dc.html)
-- [Cài đặt – hàng Ngôn ngữ (theo macOS)](SettingsLanguage.png) · [nguồn](src/SettingsLanguage.dc.html)
-- [Cài đặt – hàng Ngôn ngữ (Dấu đặt riêng English, macOS tiếng Việt)](SettingsLanguageEn.png) · [nguồn](src/SettingsLanguageEn.dc.html)
-- [Cài đặt – hàng Ngôn ngữ (đã đổi sang English, chưa mở lại Dấu)](SettingsLanguagePending.png) · [nguồn](src/SettingsLanguagePending.dc.html)
 
 ## Trạng thái
 

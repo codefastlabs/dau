@@ -40,7 +40,6 @@ struct OnboardingFlowTests {
         #expect(clear.step == .enable)
         #expect(clear.conflicts.isEmpty)
         #expect(clear.state(of: .oldInputMethods) == .done)
-        #expect(!clear.canGoBack)
     }
 
     @Test("rechecking moves on once the other input method has quit")
@@ -55,7 +54,7 @@ struct OnboardingFlowTests {
         #expect(flow.state(of: .oldInputMethods) == .done)
     }
 
-    @Test("skipping keeps step 1 not done and allows going back")
+    @Test("skipping keeps step 1 not done")
     func skip() {
         let (flow, _, _) = flow([openKey])
         flow.start()
@@ -63,9 +62,6 @@ struct OnboardingFlowTests {
         #expect(flow.step == .enable)
         #expect(flow.state(of: .oldInputMethods) == .pending)
         #expect(flow.state(of: .enable) == .current)
-        #expect(flow.canGoBack)
-        flow.back()
-        #expect(flow.step == .oldInputMethods)
     }
 
     /// Lets the main actor run until `condition` holds (the fake installer waits on a timer).
@@ -92,8 +88,6 @@ struct OnboardingFlowTests {
         #expect(flow.step == .typing)
         #expect(flow.state(of: .enable) == .done)
         #expect(flow.state(of: .typing) == .current)
-        flow.back()
-        #expect(flow.step == .enable)
     }
 
     @Test("clicking waits for the user's Allow: waiting, then done")
@@ -172,174 +166,14 @@ struct OnboardingFlowTests {
         #expect(!flow.isWorking)
     }
 
-    @Test("Quay lại while waiting cancels the wait")
-    func backCancels() async {
-        let (flow, _, installer) = flow([openKey], status: .installed(version: nil))
-        installer.enableWaits = true
+    @Test("an input method started after step 1 was passed does not bring step 1 back")
+    func noStepOneLater() {
+        let (flow, detector, _) = flow(status: .installed(version: nil))
         flow.start()
-        flow.skip()
-        let run = Task { await flow.enable() }
-        await settle { installer.enableWaiting }
-        #expect(flow.enableScreen == .waiting)
-        #expect(flow.canGoBack)
-        flow.back()
-        await run.value
-        #expect(flow.step == .oldInputMethods)
-        #expect(!flow.isWorking)
-        #expect(flow.problem == nil)
-        await settle { !installer.enableWaiting }
-        #expect(!installer.enableWaiting)
-        // The cancelled run left no state behind: back on step 2, the screen is "ready".
-        flow.skip()
-        #expect(flow.enableScreen == .ready)
-        #expect(installer.calls == ["enable"])
-    }
-
-    /// Where step 2 is when "Quay lại" is looked at.
-    enum BackState: Sendable { case ready, waiting, notEnabled, error, done, typing }
-    struct BackCase: Sendable, CustomTestStringConvertible {
-        var cameThroughStepOne: Bool
-        var state: BackState
-        var visible: Bool
-        var testDescription: String { "step 1 \(cameThroughStepOne ? "shown" : "never shown"), \(state)" }
-    }
-
-    @Test("Quay lại on step 2 by state: shown on ready, waiting and error once step 1 was part of the onboarding; not on done or failed; never when step 1 never showed",
-          arguments: [
-              BackCase(cameThroughStepOne: true, state: .ready, visible: true),
-              BackCase(cameThroughStepOne: true, state: .waiting, visible: true),
-              BackCase(cameThroughStepOne: true, state: .notEnabled, visible: false),   // "Chưa bật được" keeps its own buttons
-              BackCase(cameThroughStepOne: true, state: .error, visible: true),
-              BackCase(cameThroughStepOne: true, state: .done, visible: false),         // after Dấu is on: no going back
-              BackCase(cameThroughStepOne: true, state: .typing, visible: true),        // step 3 → step 2
-              BackCase(cameThroughStepOne: false, state: .ready, visible: false),
-              BackCase(cameThroughStepOne: false, state: .waiting, visible: false),
-              BackCase(cameThroughStepOne: false, state: .notEnabled, visible: false),
-              BackCase(cameThroughStepOne: false, state: .error, visible: false),
-              BackCase(cameThroughStepOne: false, state: .done, visible: false),
-          ])
-    func backVisibility(_ c: BackCase) async {
-        let (flow, detector, installer) = flow(c.cameThroughStepOne ? [openKey] : [], status: .installed(version: nil))
-        flow.start()
-        #expect(flow.cameThroughOldInputMethods == c.cameThroughStepOne)
-        if c.cameThroughStepOne {
-            #expect(!flow.canGoBack)   // step 1 itself
-            detector.found = []   // quit the other input method: step 1 is done
-            flow.refresh()
-        }
-        #expect(flow.step == .enable)
-        switch c.state {
-        case .ready: #expect(flow.enableScreen == .ready)
-        case .waiting:
-            installer.enableWaits = true
-            let run = Task { await flow.enable() }
-            await settle { installer.enableWaiting }
-            #expect(flow.enableScreen == .waiting)
-            #expect(flow.canGoBack == c.visible)
-            installer.release = .notEnabled
-            await run.value
-            return
-        case .notEnabled:
-            installer.enableOutcome = .notEnabled
-            await flow.enable()
-            #expect(flow.enableScreen == .notEnabled)
-        case .error:
-            installer.failure = .invalidSignature
-            await flow.enable()
-            #expect(flow.enableScreen == .error)
-        case .done, .typing:
-            await flow.enable()
-            #expect(flow.enableScreen == .done)
-            if c.state == .typing { flow.next(); #expect(flow.step == .typing) }
-        }
-        #expect(flow.canGoBack == c.visible)
-    }
-
-    @Test("Quay lại is ignored when step 1 never showed; an input method started later does not bring step 1 into this onboarding")
-    func noBackWithoutStepOne() {
-        let (flow, _, _) = flow(status: .installed(version: nil))
-        flow.start()
-        flow.back()   // ignored
-        #expect(flow.step == .enable)
-        let (later, detector, _) = self.flow(status: .installed(version: nil))
-        later.start()
         detector.found = [openKey]
-        later.refresh()
-        #expect(later.step == .enable)
-        #expect(!later.canGoBack)
-    }
-
-    @Test("Quay lại goes to step 1 and rechecks: still running shows the conflict screen")
-    func backWhileRunning() {
-        let (flow, _, _) = flow([openKey], status: .installed(version: nil))
-        flow.start()
-        flow.skip()
-        flow.back()
-        #expect(flow.step == .oldInputMethods)
-        #expect(flow.oldInputMethodsScreen == .conflict)
-        #expect(flow.conflicts.map(\.name) == ["OpenKey"])
-        flow.next()   // "Tiếp tục" is not on the conflict screen
-        #expect(flow.step == .oldInputMethods)
-    }
-
-    @Test("Quay lại with the old input method quit: \"Đã tắt bộ gõ cũ\", which stays on activation; Tiếp tục goes to step 2")
-    func backToDone() async {
-        let (flow, detector, installer) = flow([openKey], status: .installed(version: nil))
-        flow.start()
-        detector.found = []
         flow.refresh()
         #expect(flow.step == .enable)
-        installer.failure = .invalidSignature
-        await flow.enable()
-        #expect(flow.enableScreen == .error)
-        flow.back()
-        #expect(flow.step == .oldInputMethods)
-        #expect(flow.oldInputMethodsScreen == .done)
-        #expect(flow.foundOldInputMethods.map(\.name) == ["OpenKey"])
-        // Step 1 is still the current one in the sidebar (artboard OnboardingConflictDone).
-        #expect(flow.state(of: .oldInputMethods) == .current)
-        #expect(flow.state(of: .enable) == .pending)
-        #expect(!flow.canGoBack)
-        // The window becoming active again does not move on by itself.
-        flow.refresh()
-        #expect(flow.step == .oldInputMethods)
-        #expect(flow.oldInputMethodsScreen == .done)
-        flow.next()   // "Tiếp tục"
-        #expect(flow.step == .enable)
-        // The error was dropped on the way back: the screen is "ready" again.
-        #expect(flow.enableScreen == .ready)
-        #expect(flow.errorDetail == nil)
-        #expect(flow.canGoBack)
     }
-
-    @Test("on \"Đã tắt bộ gõ cũ\", an old input method running again brings back the conflict screen")
-    func conflictReturns() {
-        let (flow, detector, _) = flow([openKey], status: .installed(version: nil))
-        flow.start()
-        detector.found = []
-        flow.refresh()
-        flow.back()
-        #expect(flow.oldInputMethodsScreen == .done)
-        let evKey = FakeInputMethodDetector.running("EVKey", bundleID: "com.lamquangminh.evkey")
-        detector.found = [openKey, evKey]
-        flow.refresh()   // the window became active
-        #expect(flow.step == .oldInputMethods)
-        #expect(flow.oldInputMethodsScreen == .conflict)
-        #expect(flow.conflicts.map(\.name) == ["OpenKey", "EVKey"])
-        // Quit again: "Đã tắt bộ gõ cũ" lists every one found in this onboarding.
-        detector.found = []
-        flow.refresh()
-        #expect(flow.step == .oldInputMethods)
-        #expect(flow.oldInputMethodsScreen == .done)
-        #expect(flow.foundOldInputMethods.map(\.name) == ["OpenKey", "EVKey"])
-        // A new start that finds nothing running forgets step 1 and skips it.
-        flow.start()
-        #expect(flow.step == .enable)
-        #expect(flow.foundOldInputMethods.isEmpty)
-        #expect(!flow.cameThroughOldInputMethods)
-        #expect(!flow.canGoBack)
-    }
-
 
     @Test("Thử lại after an error asks again and clears the detail; a failed step shows each kind of error")
     func retryAfterError() async {
@@ -445,10 +279,9 @@ struct OnboardingFlowTests {
         #expect(flow.needsMoveToApplications)
         // Before step 1, even with another input method running: this copy will be quit.
         for step in OnboardingFlow.Step.allCases { #expect(flow.state(of: step) == .pending) }
-        #expect(!flow.canGoBack)
         // None of the steps' actions does anything from this screen.
         let step = flow.step
-        flow.skip(); flow.next(); flow.back()
+        flow.skip(); flow.next()
         await flow.enable()
         #expect(flow.step == step)
         #expect(installer.calls.isEmpty)
@@ -529,9 +362,9 @@ struct OnboardingFlowTests {
         #expect(waitingInstaller.calls == ["enable"])
     }
 
-    // MARK: Installed with a wrong signature (D37 × D14; artboard OnboardingEnableTampered)
+    // MARK: Installed with a wrong signature (D37 × D14; artboard OnboardingEnableError)
 
-    @Test("installed, not on, wrong signature, owner copy: step 2 shows Cài lại instead of Bật Dấu; Cài lại installs and enables nothing, then Bật Dấu shows and enables")
+    @Test("installed, not on, wrong signature, owner copy: step 2 shows the install error with the signature detail; Cài lại installs and enables nothing, then Bật Dấu shows and enables")
     func tamperedAsksToReinstall() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.genuine = false
@@ -539,10 +372,11 @@ struct OnboardingFlowTests {
         #expect(LaunchRouter.opensOnboarding(installer.status()))
         #expect(flow.step == .enable)
         #expect(flow.installedTampered)
-        #expect(flow.enableScreen == .tampered)
-        #expect(!flow.canGoBack)   // step 1 never showed
-        await flow.reinstall()
+        #expect(flow.enableScreen == .error)
+        #expect(flow.errorDetail == InputMethodInstallerError.invalidSignature.detail)
+        await flow.enable()   // "Cài lại"
         #expect(installer.calls == ["install"])
+        #expect(flow.errorDetail == nil)
         #expect(!flow.installedTampered && !flow.isReinstalling)
         #expect(flow.enableScreen == .ready)
         #expect(flow.status == .installed(version: nil))
@@ -551,22 +385,16 @@ struct OnboardingFlowTests {
         #expect(flow.enableScreen == .done)
     }
 
-    @Test("the Cài lại screen follows the system on activation, and has Quay lại by the rule of step 2")
+    @Test("the install error for a wrong signature follows the system on activation")
     func tamperedFollowsSystem() async {
-        let (flow, detector, installer) = flow([openKey], status: .installed(version: nil))
+        let (flow, _, installer) = flow([openKey], status: .installed(version: nil))
         flow.start()
         flow.skip()
         #expect(flow.enableScreen == .ready)
         // Replaced while the window was in the back.
         installer.genuine = false
         flow.refresh()
-        #expect(flow.enableScreen == .tampered)
-        #expect(flow.canGoBack)
-        flow.back()
-        #expect(flow.step == .oldInputMethods)
-        detector.found = []
-        flow.next()
-        #expect(flow.enableScreen == .tampered)
+        #expect(flow.enableScreen == .error)
         // Put right outside Dấu: the usual screen is back.
         installer.genuine = true
         flow.refresh()
@@ -574,7 +402,7 @@ struct OnboardingFlowTests {
         #expect(installer.calls.isEmpty)
     }
 
-    @Test("Bật Dấu never enables a copy with a wrong signature: one replaced after the last check, or while waiting for Allow, leads to Cài lại")
+    @Test("Bật Dấu never enables a copy with a wrong signature: one replaced after the last check, or while waiting for Allow, leads to the install error")
     func tamperedNeverEnabled() async {
         // Replaced after the screen was read: the installer refuses, the screen follows.
         let (flow, _, installer) = flow(status: .installed(version: nil))
@@ -584,7 +412,7 @@ struct OnboardingFlowTests {
         await flow.enable()
         #expect(installer.calls == ["enable"])
         #expect(installer.status() == .installed(version: nil))
-        #expect(flow.enableScreen == .tampered)
+        #expect(flow.enableScreen == .error)
         #expect(flow.problem == nil)
 
         // Found on activation while a wait for Allow runs: the wait is cancelled.
@@ -596,13 +424,13 @@ struct OnboardingFlowTests {
         #expect(waiting.enableScreen == .waiting)
         waitingInstaller.genuine = false
         waiting.refresh()
-        #expect(waiting.enableScreen == .tampered)
+        #expect(waiting.enableScreen == .error)
         await task.value
         #expect(!waiting.isWorking)
         #expect(waitingInstaller.status() == .installed(version: nil))
     }
 
-    @Test("a failed Cài lại shows the install error with its detail; Thử lại reinstalls, never enables")
+    @Test("a failed Cài lại keeps the install error with the failure's detail; Cài lại again reinstalls, never enables")
     func tamperedReinstallFails() async {
         let (flow, _, installer) = flow(status: .installed(version: nil), failure: .invalidSignature)
         installer.genuine = false
@@ -615,13 +443,13 @@ struct OnboardingFlowTests {
         flow.refresh()
         #expect(flow.enableScreen == .error)
         installer.failure = nil
-        await flow.enable()   // "Thử lại"
+        await flow.enable()   // "Cài lại"
         #expect(installer.calls == ["install", "install"])
         #expect(flow.enableScreen == .ready)
         #expect(flow.errorDetail == nil)
     }
 
-    @Test("a copy that is not the owner copy does not check the signature: Bật Dấu as before; an enabled Dấu never shows Cài lại in onboarding (D37)")
+    @Test("a copy that is not the owner copy does not check the signature: Bật Dấu as before; an enabled Dấu never shows the signature error in onboarding (D37)")
     func tamperedNotOwnerOrEnabled() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.genuine = false

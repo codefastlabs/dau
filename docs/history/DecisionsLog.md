@@ -11,6 +11,19 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 12/11/2026 (người dùng duyệt, sau ba lượt kiểm toán tài liệu so với mã): sửa câu cho khớp mã, không đổi hành vi, ở N3 (khi nào hỏi vị trí; "Vì sao" không còn đọc thành trái D11), D20 (chỉ ô đang nhận ký tự xoá; app không trả chữ thì không đọc lại tới lần kích hoạt sau), D21 (VNI thêm w), D30 (công tắc cũng điều khiển khôi phục giữa từ, D33), D37 (tìm bản chủ theo bundle ID), D42 (lời gọi chẩn đoán nằm ngoài thời gian đo), D43 (Ghostty sai một, hai từ đầu; D20 chỉ tắt ở ô đang nhận ký tự xoá; thêm cặp D13 × D43: gạch chân thắng); thêm hàng `[ ]` thành ơ ư (D27) vào "Đã biết nhưng không làm". Bản trước của từng câu: lịch sử git của `docs/Decisions.md` (commit này). D8 giữ nguyên; mã đổi theo D8.
 
+- 13/11/2026 (người dùng chọn: năm việc của danh sách cắt giảm, nhánh `slim/cut-list`): thu phạm vi trước bản thử đầu. Bản trước, nguyên văn:
+  - N2: "Mọi kết nối nằm ở app chủ (cập nhật, danh sách tương thích)."
+  - D1: chưa có ý "Đã kiểm chỉ trên macOS 27 và Apple silicon…".
+  - D5: "…trang Ứng dụng chỉ dẫn tới tuỳ chọn đó." (hàng "Nhớ nguồn đầu vào theo từng cửa sổ" đã bỏ khỏi Cài đặt).
+  - D6: "GPLv3. DMG ký Developer ID + notarize trên GitHub Releases, Homebrew cask (khai báo `auto_updates true`). Không có Mac App Store."
+  - D7: "Sparkle 2 nằm trong app chủ, appcast ký EdDSA, kênh Ổn định/Beta, có phát hành theo đợt."; "Danh sách ứng dụng tương thích là file JSON có chữ ký, cập nhật riêng (N2 (Bộ gõ không có quyền mạng))."; "Kênh: Ổn định hoặc Beta, chỉ có ở bản chính thức."; "Phát hành theo đợt và quay về bản trước (D19 (Quay về bản trước)) dùng lại bản ổn định."
+  - D9: "thanh công cụ có cụm Lùi/Tiến như System Settings (lịch sử các mục đã xem)".
+  - D16: "App có "Quay về bản trước" và "Gỡ cài đặt" (…)".
+  - D19: chưa có ý "Chưa làm ở bản thử đầu".
+  - D37: "Cách chặn là cài bộ gõ vào thư mục chỉ quản trị viên ghi được (câu hỏi mở "Cài cho riêng mình hay cho cả máy")."; "Trong onboarding (D14 (Onboarding)), bước 2 hiện thông báo đó và nút "Cài lại" thay cho "Bật Dấu"" (màn riêng "bộ gõ đã bị thay" gộp vào màn lỗi cài).
+  - D41: "Cài đặt có một hàng "Ngôn ngữ" chỉ đọc: hiện ngôn ngữ Dấu đang dùng và nút "Đổi…" mở trang Language & Region, cùng kiểu hàng "Nhớ nguồn đầu vào theo từng cửa sổ" (tên mục của macOS theo D38)."; "Đổi ngôn ngữ mà chưa mở lại Dấu thì hàng ghi ngôn ngữ của lần mở sau và có nút "Mở lại Dấu" (Dấu tự thoát rồi mở lại, không ghi cài đặt)."; ở "Vì sao": "…nên cần nút "Mở lại Dấu"."
+  - Câu hỏi mở "Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng" bỏ câu cuối: "Không được thì hàng "Ngôn ngữ" trong Cài đặt nói rõ menu bộ gõ theo ngôn ngữ hệ thống, nếu cần." Câu hỏi "Loại bản dựng" bỏ ý: "artboard "Cập nhật & hỗ trợ (bản phát triển)" hiện vẫn vẽ phần Cập nhật như bản chính thức".
+
 ## Nguyên tắc
 
 ### N3. Ít lời gọi vào ứng dụng đích
@@ -380,6 +393,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 12/11/2026 (người dùng giao phiên chính): bỏ "Ngưỡng bộ nhớ" (nay là luật ở D42); thêm "Từ tiếng Anh gõ nhầm rồi ⌫ trong từ" (D32, D4), từ K3 của `docs/research/EditingTypedText.md`.
 
 ## Câu hỏi đã trả lời
+
+### Cài cho riêng mình hay cho cả máy
+
+- 13/11/2026 (người dùng chọn, danh sách cắt giảm): chỉ cài cho từng tài khoản (`~/Library/Input Methods`); cài cho cả máy để sau khi có người dùng cần. Câu hỏi mở cũ, nguyên văn: "**Cài cho riêng mình hay cho cả máy** (D37, ý "Kiểm chữ ký"; cách duy nhất chặn việc thay bundle bộ gõ): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` hoặc `/Library/Input Methods` để mọi tài khoản dùng được. Chưa thiết kế; khi làm phải sửa D16, D37, có thể cả D6 (`.pkg` hay app chủ xin quyền quản trị) và D7 (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không (`docs/history/ResearchLog.md` mục 1, kế hoạch vòng thử 8.2 cũ)."
 
 ### Vị trí thay chữ (câu hỏi A/B)
 

@@ -36,7 +36,6 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 | Try Again | Thử lại | |
 | Reinstall | Cài lại | |
 | Uninstall… | Gỡ cài đặt… | bỏ khỏi nguồn đầu vào = remove from input sources |
-| Release channel, Stable, Beta | Kênh phát hành, Ổn định, Beta | Beta giữ nguyên chữ ở cả hai ngôn ngữ |
 
 ## Cách viết câu tiếng Anh
 

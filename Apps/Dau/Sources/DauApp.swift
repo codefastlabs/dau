@@ -111,9 +111,8 @@ struct DauApp: App {
         .windowResizability(.contentSize)
         .commands {
             SettingsCommands()
-            // View › Back (⌘[) and Forward (⌘]). No `SidebarCommands`: the sidebar is
-            // fixed, so the View menu has no Show/Hide Sidebar (D9).
-            SettingsHistoryCommands()
+            // No `SidebarCommands`: the sidebar is fixed, so the View menu has no
+            // Show/Hide Sidebar (D9).
             // Edit › Find › Find… (⌘F) for the sidebar search (D9;
             // `SettingsSplitViewController.performFindPanelAction(_:)`). The system's
             // built-in group "for searching, editing, and transforming selections of

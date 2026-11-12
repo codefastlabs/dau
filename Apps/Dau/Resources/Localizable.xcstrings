@@ -290,74 +290,6 @@
         }
       }
     },
-    "Automatically check for updates" : {
-      "comment" : "Updates toggle (disabled until M7).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatically check for updates"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tự động kiểm tra bản mới"
-          }
-        }
-      }
-    },
-    "Automatically download and install" : {
-      "comment" : "Updates toggle (disabled until M7).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Automatically download and install"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tự động tải và cài"
-          }
-        }
-      }
-    },
-    "Back" : {
-      "comment" : "Settings toolbar button and View menu item: previous page (⌘[).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Back"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Lùi"
-          }
-        }
-      }
-    },
-    "Beta" : {
-      "comment" : "Release channel option.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beta"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Beta"
-          }
-        }
-      }
-    },
     "Cancel" : {
       "comment" : "Cancel button.",
       "localizations" : {
@@ -392,23 +324,6 @@
         }
       }
     },
-    "Change the option that remembers the input source for each window" : {
-      "comment" : "VoiceOver label of the Change… button on the Apps page.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Change the option that remembers the input source for each window"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đổi tuỳ chọn nhớ nguồn đầu vào theo từng cửa sổ"
-          }
-        }
-      }
-    },
     "Change…" : {
       "comment" : "Button that opens System Settings to change a macOS option.",
       "localizations" : {
@@ -439,23 +354,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kiểm tra lại"
-          }
-        }
-      }
-    },
-    "Check Now" : {
-      "comment" : "Updates: check for a new version (disabled until M7).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Check Now"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kiểm tra ngay"
           }
         }
       }
@@ -698,6 +596,23 @@
         }
       }
     },
+    "Click **Reinstall**." : {
+      "comment" : "Install error step (onboarding step 2). “Reinstall” = the button.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Click **Reinstall**."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bấm **Cài lại**."
+          }
+        }
+      }
+    },
     "Click **Try Again**, then click **%@** when %@ asks." : {
       "comment" : "First %@ = Allow, second %@ = System Settings (D38).",
       "localizations" : {
@@ -711,23 +626,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bấm **Thử lại**, rồi bấm **%@** khi %@ hỏi."
-          }
-        }
-      }
-    },
-    "Click **Try Again**." : {
-      "comment" : "Install error step. “Try Again” = the button.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Click **Try Again**."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bấm **Thử lại**."
           }
         }
       }
@@ -1072,23 +970,6 @@
         }
       }
     },
-    "Dấu couldn’t copy its input method to this Mac, so it can’t be turned on yet." : {
-      "comment" : "Onboarding step 2 subtitle after an install error.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dấu couldn’t copy its input method to this Mac, so it can’t be turned on yet."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dấu không chép được bộ gõ vào máy, nên chưa bật được."
-          }
-        }
-      }
-    },
     "Dấu doesn’t need permission to control your Mac." : {
       "comment" : "Onboarding sidebar note.",
       "localizations" : {
@@ -1174,19 +1055,19 @@
         }
       }
     },
-    "Dấu never sends what you type off your Mac. The input method has no network access; only the updater connects, to download new versions and the app compatibility list. Open source under the GPLv3 license." : {
+    "Dấu never sends what you type off your Mac. The input method has no network access; only the updater connects, to download new versions. Open source under the GPLv3 license." : {
       "comment" : "Privacy note at the bottom of the page. Wording fixed by docs/UI.md (D8, N2): translate without adding or removing promises.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu never sends what you type off your Mac. The input method has no network access; only the updater connects, to download new versions and the app compatibility list. Open source under the GPLv3 license."
+            "value" : "Dấu never sends what you type off your Mac. The input method has no network access; only the updater connects, to download new versions. Open source under the GPLv3 license."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Dấu không gửi chữ bạn gõ ra khỏi máy. Bộ gõ không có quyền truy cập mạng; chỉ phần cập nhật kết nối để tải bản mới và danh sách ứng dụng tương thích. Mã nguồn mở theo giấy phép GPLv3."
+            "value" : "Dấu không gửi chữ bạn gõ ra khỏi máy. Bộ gõ không có quyền truy cập mạng; chỉ phần cập nhật kết nối để tải bản mới. Mã nguồn mở theo giấy phép GPLv3."
           }
         }
       }
@@ -1204,6 +1085,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dấu sẽ được thêm vào nguồn đầu vào của macOS, cạnh bàn phím bạn đang dùng."
+          }
+        }
+      }
+    },
+    "Dấu’s input method on this Mac can’t be used yet: it couldn’t be copied to this Mac, or it was replaced after it was installed." : {
+      "comment" : "Onboarding step 2 subtitle on the install error: the copy failed, or the installed input method's signature is wrong (D37).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu’s input method on this Mac can’t be used yet: it couldn’t be copied to this Mac, or it was replaced after it was installed."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ gõ Dấu trên máy chưa dùng được: chưa chép được vào máy, hoặc đã bị thay sau khi cài."
           }
         }
       }
@@ -1276,40 +1174,6 @@
         }
       }
     },
-    "Follows macOS. Dấu switches to %@ when it reopens; until then it stays in %@." : {
-      "comment" : "Subtitle of the Language row when Dấu follows the macOS language list, which changed while Dấu was open (macOS asks to relaunch and never does it by itself). First %@ = the language Dấu uses after reopening, second %@ = the language it shows now; each named in its own language (“English”, “Tiếng Việt”), as the row's value.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Follows macOS. Dấu switches to %1$@ when it reopens; until then it stays in %2$@."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Theo macOS. Dấu dùng %1$@ sau khi mở lại; đến lúc đó vẫn hiện %2$@."
-          }
-        }
-      }
-    },
-    "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu." : {
-      "comment" : "Subtitle of the Language row when macOS picks Dấu's language from the system's list. %@ = macOS's own name of the Applications section of Language & Region, in the system language (D38). “Change…” is the row's button.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Follows macOS. To set a language for Dấu only, click Change…, then under %@ click + and choose Dấu."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Theo macOS. Muốn đặt riêng cho Dấu: bấm Đổi…, rồi ở mục %@ bấm + và chọn Dấu."
-          }
-        }
-      }
-    },
     "For loanwords and names. Turning this on turns off Consonant shortcuts." : {
       "comment" : "Subtitle of Allow consonants z, f, w, j (VNI, Simple Telex).",
       "localizations" : {
@@ -1361,23 +1225,6 @@
         }
       }
     },
-    "Forward" : {
-      "comment" : "Settings toolbar button and View menu item: next page (⌘]).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Forward"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tiến"
-          }
-        }
-      }
-    },
     "Free mark placement" : {
       "comment" : "Typing page toggle: the mark keys can be typed anywhere after the vowel.",
       "localizations" : {
@@ -1391,40 +1238,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bỏ dấu tự do"
-          }
-        }
-      }
-    },
-    "Go Back" : {
-      "comment" : "Onboarding button: previous step.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go Back"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quay lại"
-          }
-        }
-      }
-    },
-    "Go back to the previous version" : {
-      "comment" : "Support row label (disabled until M7).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Go back to the previous version"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quay về bản trước"
           }
         }
       }
@@ -1616,23 +1429,6 @@
         }
       }
     },
-    "Input source per window" : {
-      "comment" : "Apps page section header.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Input source per window"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nguồn đầu vào theo cửa sổ"
-          }
-        }
-      }
-    },
     "Input source shortcut" : {
       "comment" : "Typing page row label: macOS's shortcut to switch input sources.",
       "localizations" : {
@@ -1663,23 +1459,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bộ gõ đã cài: %@"
-          }
-        }
-      }
-    },
-    "Language" : {
-      "comment" : "Updates & Support row label: the language Dấu's interface shows (D41), read only.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Language"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ngôn ngữ"
           }
         }
       }
@@ -1731,23 +1510,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chuyển Dấu vào %@"
-          }
-        }
-      }
-    },
-    "Navigation" : {
-      "comment" : "VoiceOver name of the Back/Forward button group in the Settings toolbar.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Navigation"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Điều hướng"
           }
         }
       }
@@ -1820,23 +1582,6 @@
         }
       }
     },
-    "No other Vietnamese input method is running, so marks won’t be typed twice." : {
-      "comment" : "Onboarding step 1 subtitle after Go Back, when no other input method is running any more.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "No other Vietnamese input method is running, so marks won’t be typed twice."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Không còn bộ gõ tiếng Việt nào khác đang chạy, nên dấu không bị gõ hai lần."
-          }
-        }
-      }
-    },
     "Not started" : {
       "comment" : "VoiceOver value of a later onboarding step.",
       "localizations" : {
@@ -1867,40 +1612,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "OK"
-          }
-        }
-      }
-    },
-    "Off" : {
-      "comment" : "Value of a macOS option that is off.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Off"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang tắt"
-          }
-        }
-      }
-    },
-    "On" : {
-      "comment" : "Value of a macOS option that is on.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "On"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đang bật"
           }
         }
       }
@@ -2024,23 +1735,6 @@
         }
       }
     },
-    "Other Input Methods Turned Off" : {
-      "comment" : "Onboarding step 1 title after Go Back, when no other input method is running any more.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Other Input Methods Turned Off"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đã tắt bộ gõ cũ"
-          }
-        }
-      }
-    },
     "Other Vietnamese input sources are on: %@. You can remove some in %@ to keep the list short." : {
       "comment" : "First %@ = quoted input source names, second %@ = System Settings › Keyboard › Input Sources (D38).",
       "localizations" : {
@@ -2088,23 +1782,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quyền riêng tư"
-          }
-        }
-      }
-    },
-    "Problems typing in an app?" : {
-      "comment" : "Support row label.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Problems typing in an app?"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gặp ứng dụng gõ bị lỗi?"
           }
         }
       }
@@ -2195,7 +1872,7 @@
       }
     },
     "Reinstall" : {
-      "comment" : "Banner button: installs the app's own copy of the input method.",
+      "comment" : "Button on the banner and on the onboarding install error: installs the app's own copy of the input method.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -2207,40 +1884,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cài lại"
-          }
-        }
-      }
-    },
-    "Release channel" : {
-      "comment" : "Updates: Stable or Beta.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Release channel"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Kênh phát hành"
-          }
-        }
-      }
-    },
-    "Remember the input source for each window" : {
-      "comment" : "Apps page row label: a macOS option shown read-only.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Remember the input source for each window"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Nhớ nguồn đầu vào theo từng cửa sổ"
           }
         }
       }
@@ -2296,40 +1939,6 @@
         }
       }
     },
-    "Reopen Dấu" : {
-      "comment" : "Language row button, shown while a language change waits for Dấu to reopen: Dấu quits and opens again. Changes no setting.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Reopen Dấu"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Mở lại Dấu"
-          }
-        }
-      }
-    },
-    "Report a Problem…" : {
-      "comment" : "Support button (disabled until M7).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Report a Problem…"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Báo lỗi…"
-          }
-        }
-      }
-    },
     "Restore non-Vietnamese words" : {
       "comment" : "Smart Typing toggle: words that are not Vietnamese go back to the keys typed (D4).",
       "localizations" : {
@@ -2343,23 +1952,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tự khôi phục từ không phải tiếng Việt"
-          }
-        }
-      }
-    },
-    "Roll Back…" : {
-      "comment" : "Support button (disabled until M7).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Roll Back…"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Quay về…"
           }
         }
       }
@@ -2466,23 +2058,6 @@
         }
       }
     },
-    "Send us a description so we can look into it" : {
-      "comment" : "Subtitle of that row.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Send us a description so we can look into it"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Gửi mô tả lỗi để chúng tôi kiểm tra"
-          }
-        }
-      }
-    },
     "Set Up Dấu" : {
       "comment" : "Onboarding window title (not drawn; Window menu and VoiceOver).",
       "localizations" : {
@@ -2513,40 +2088,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đặt phím tắt trong %@"
-          }
-        }
-      }
-    },
-    "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the %@ list." : {
-      "comment" : "Subtitle of the Language row when a language is set for Dấu in Language & Region › Applications. %@ = macOS's own name of that Applications section, in the system language (D38). “Change…” is the row's button.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set for Dấu only. Click Change… to pick another language, or remove Dấu from the %@ list."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đặt riêng cho Dấu. Bấm Đổi… để chọn ngôn ngữ khác, hoặc bỏ Dấu khỏi danh sách %@."
-          }
-        }
-      }
-    },
-    "Set for Dấu only. Dấu switches to %@ when it reopens; until then it stays in %@." : {
-      "comment" : "Subtitle of the Language row when a language is set for Dấu in Language & Region › Applications but Dấu has not reopened yet (macOS asks to relaunch and never does it by itself). First %@ = the language Dấu uses after reopening, second %@ = the language it shows now; each named in its own language (“English”, “Tiếng Việt”), as the row's value.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Set for Dấu only. Dấu switches to %1$@ when it reopens; until then it stays in %2$@."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đặt riêng cho Dấu. Dấu dùng %1$@ sau khi mở lại; đến lúc đó vẫn hiện %2$@."
           }
         }
       }
@@ -2700,23 +2241,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Có lỗi khi chép hoặc đăng ký bộ gõ."
-          }
-        }
-      }
-    },
-    "Stable" : {
-      "comment" : "Release channel option.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Stable"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ổn định"
           }
         }
       }
@@ -3248,23 +2772,6 @@
         }
       }
     },
-    "Turned Off" : {
-      "comment" : "Chip on another input method that the user has quit (onboarding step 1).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Turned Off"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Đã tắt"
-          }
-        }
-      }
-    },
     "Type here" : {
       "comment" : "Placeholder of the test field.",
       "localizations" : {
@@ -3418,23 +2925,6 @@
         }
       }
     },
-    "Updates" : {
-      "comment" : "Updates & Support page section header.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Updates"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Cập nhật"
-          }
-        }
-      }
-    },
     "Updates & Support" : {
       "comment" : "Settings sidebar section and page title.",
       "localizations" : {
@@ -3448,23 +2938,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cập nhật & hỗ trợ"
-          }
-        }
-      }
-    },
-    "Use this when a new version causes problems" : {
-      "comment" : "Subtitle of that row.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Use this when a new version causes problems"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Dùng khi bản mới gây lỗi"
           }
         }
       }
@@ -3690,23 +3163,6 @@
         }
       }
     },
-    "[How updates install — to be verified in M7]" : {
-      "comment" : "Placeholder until measured (N5).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[How updates install — to be verified in M7]"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[Cách cài bản mới — kiểm chứng ở M7]"
-          }
-        }
-      }
-    },
     "[System shortcut]" : {
       "comment" : "Placeholder shown when the system shortcut cannot be read (N5).",
       "localizations" : {
@@ -3720,23 +3176,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "[Phím tắt hệ thống]"
-          }
-        }
-      }
-    },
-    "[Update check status]" : {
-      "comment" : "Placeholder until updates exist (M7, N5).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[Update check status]"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "[Trạng thái kiểm tra cập nhật]"
           }
         }
       }
@@ -3771,23 +3210,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "macOS chưa thêm Dấu vào nguồn đầu vào. Có thể hộp thoại không hiện, hoặc yêu cầu đã bị từ chối."
-          }
-        }
-      }
-    },
-    "macOS option “%@”" : {
-      "comment" : "Subtitle of that row. %@ = the macOS option's own name, in the system language (D38).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "macOS option “%@”"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Tuỳ chọn “%@” của macOS"
           }
         }
       }

@@ -19,8 +19,8 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D3](#d3-không-macro-chỉ-unicode-dựng-sẵn) | Không macro, chỉ Unicode dựng sẵn | Không macro, bảng mã cũ, chuyển mã; chỉ xuất NFC. |
 | [D4](#d4-từ-nước-ngoài) | Từ nước ngoài | Từ không phải âm tiết hợp lệ được khôi phục khi kết thúc từ; không từ điển. |
 | [D5](#d5-quy-tắc-theo-ứng-dụng) | Quy tắc theo ứng dụng | Quy tắc riêng của app chỉ là có/không gạch chân. |
-| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize, Homebrew cask; không App Store. |
-| [D7](#d7-cập-nhật-và-loại-bản-dựng) | Cập nhật và loại bản dựng | Sparkle 2; bản chính thức và bản phát triển; kênh Ổn định/Beta. |
+| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask sau bản thử đầu; không App Store. |
+| [D7](#d7-cập-nhật-và-loại-bản-dựng) | Cập nhật và loại bản dựng | Sparkle 2, một kênh; bản chính thức và bản phát triển. |
 | [D8](#d8-không-telemetry) | Không telemetry | Không gửi gì; bản phát hành không ghi gì theo từng phím. |
 | [D9](#d9-giao-diện) | Giao diện | Control hệ thống, theo System Settings; chỉ màu hệ thống. |
 | [D10](#d10-engine-tự-viết) | Engine tự viết | Swift thuần; OpenKey chỉ để tham khảo. |
@@ -68,7 +68,7 @@ Hệ thống đã có thì Dấu không tự làm lại. Ngoại lệ phải có
 
 ### N2. Bộ gõ không có quyền mạng
 
-Tiến trình bộ gõ không có quyền mạng. Mọi kết nối nằm ở app chủ (cập nhật, danh sách tương thích).
+Tiến trình bộ gõ không có quyền mạng. Mọi kết nối nằm ở app chủ (cập nhật).
 
 ### N3. Ít lời gọi vào ứng dụng đích
 
@@ -101,6 +101,8 @@ Chữ hiển thị cho người dùng phải là lời hứa đã kiểm chứng
 ### D1. Nền tảng
 
 Chỉ macOS, tối thiểu macOS 14, binary universal (Apple silicon + Intel). Swift, Xcode. Không làm Windows/Linux/web.
+
+- Đã kiểm chỉ trên macOS 27 và Apple silicon. Bản thử đầu nói rõ điều đó; không hứa macOS 14–26 hay máy Intel tới khi kiểm (N5 (Chỉ hứa điều đã kiểm chứng)).
 
 ### D2. Chuyển Việt/Anh
 
@@ -137,33 +139,33 @@ Một quy tắc duy nhất:
 
 - Quy tắc riêng của một app chỉ có một nội dung: có/không gạch chân khi gõ trong app đó (D13 (Gạch chân là đường lui cuối cùng)), luôn áp dụng.
 - Dấu **không** tự đổi Việt/Anh theo app và không có "Nhớ chế độ theo từng ứng dụng".
-- Nhớ nguồn nhập liệu theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt Bàn phím › Nguồn đầu vào, N1); trang Ứng dụng chỉ dẫn tới tuỳ chọn đó.
+- Nhớ nguồn nhập liệu theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt Bàn phím › Nguồn đầu vào, N1); Cài đặt của Dấu không hiện tuỳ chọn đó.
 
 **Vì sao:** Dấu chỉ có một input mode (D2 (Chuyển Việt/Anh)), nên đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ. Đo được: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng.
 
 ### D6. Phát hành
 
-GPLv3. DMG ký Developer ID + notarize trên GitHub Releases, Homebrew cask (khai báo `auto_updates true`). Không có Mac App Store.
+GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (khai báo `auto_updates true`) sau bản thử đầu. Không có Mac App Store.
 
 **Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store.
 
 ### D7. Cập nhật và loại bản dựng
 
-- Sparkle 2 nằm trong app chủ, appcast ký EdDSA, kênh Ổn định/Beta, có phát hành theo đợt.
-- Danh sách ứng dụng tương thích là file JSON có chữ ký, cập nhật riêng (N2 (Bộ gõ không có quyền mạng)).
+- Sparkle 2 nằm trong app chủ, appcast ký EdDSA, một kênh. Kênh Beta và phát hành theo đợt để sau bản thử đầu.
+- Danh sách ứng dụng tương thích đi kèm app và đổi theo bản cập nhật app; không tải riêng.
 - Cài bản mới lúc người dùng không gõ, sau đó dừng tiến trình bộ gõ cũ để hệ thống nạp bản mới; cách thay bộ gõ đã cài ở D37, ý "Thay bộ gõ đã cài".
 - **Loại bản dựng:** ba trục độc lập, không có loại thứ tư.
   - Cấu hình build: Debug hoặc Release (D8 (Không telemetry) nói khác nhau ở đâu).
   - Người ký: **bản chính thức** là bản ký Developer ID của codefastlabs, đã notarize, và chỉ dựng bằng quy trình phát hành trên CI; mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**.
-  - Kênh: Ổn định hoặc Beta, chỉ có ở bản chính thức.
-- Phát hành theo đợt và quay về bản trước (D19 (Quay về bản trước)) dùng lại bản ổn định.
+  - Kênh: một kênh; Ổn định/Beta khi có kênh Beta, chỉ ở bản chính thức.
+- Quay về bản trước (D19 (Quay về bản trước)) để sau bản thử đầu.
 - **Số phiên bản:** `CFBundleVersion` là số build tăng dần, Sparkle so sánh bằng số này; số hiển thị dạng "1.3.0 beta 2", tag git dạng `v1.3.0-beta.2`; bản ổn định dựng lại từ cùng commit với bản beta cuối, số hiển thị không có chữ beta.
 - Bản dựng theo từng commit (Nightly), nếu làm, là bản phát triển: CI dựng, chỉ phát qua GitHub, không qua Sparkle.
 - Tính năng mới có thể nằm sau công tắc "Thử nghiệm" ngay trong bản ổn định (cài đặt cục bộ), kiểm chéo với các tính năng cùng tác động lên một đầu vào như mọi tính năng khác.
 - Không phát hành dần theo số liệu và không có cờ tính năng điều khiển từ xa. Không dùng TestFlight.
 - Nhận diện từng loại bản: D25 (Nhận diện).
 
-**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)).
+**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)).
 
 ### D8. Không telemetry
 
@@ -185,7 +187,7 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases, Homebrew cask (kha
 - Mọi thay đổi giao diện sửa artboard trên canvas trước, người dùng duyệt, rồi mới sửa mã; mã xong thì đối chiếu lại với artboard.
 - **Màu:** chỉ dùng màu hệ thống, không mã hex, không ngoại lệ. Ô icon sidebar dùng `systemBlue/systemPurple/systemOrange/systemGreen` (glyph nét theo mockup), nhãn "Mới" nền `accentColor`, banner "Dấu chưa được bật" dùng cam hệ thống như mockup.
 - Nút mở/thu "Nâng cao" ghép từ nút hệ thống + chevron được chấp nhận.
-- **Vỏ cửa sổ Cài đặt:** thanh công cụ có cụm Lùi/Tiến như System Settings (lịch sử các mục đã xem); tiêu đề trang là `navigationTitle` của hệ thống; không tự vẽ tiêu đề, không ẩn tiêu đề cửa sổ bằng cách với vào `NSWindow`.
+- **Vỏ cửa sổ Cài đặt:** không có cụm Lùi/Tiến (bốn trang, sidebar luôn hiện); tiêu đề trang là `navigationTitle` của hệ thống; không tự vẽ tiêu đề, không ẩn tiêu đề cửa sổ bằng cách với vào `NSWindow`.
 - **Sidebar cố định như System Settings:** độ rộng cố định, không kéo rộng hẹp, không thu gọn, con trỏ ở đường chia là mũi tên thường, không có lệnh "Show/Hide Sidebar" (⌃⌘S). Dựng bằng `NSSplitViewController` của chính app, chỉ dùng thuộc tính có tài liệu Apple; không với vào cấu trúc bên trong của SwiftUI.
 
 **Hệ quả đã chấp nhận:** ô tìm sidebar dùng lề chuẩn của sidebar nên ô tìm và hàng đầu lệch System Settings 1–2 pt; không chỉnh lề cho khớp pixel.
@@ -274,7 +276,7 @@ Telex, đặt dấu kiểu mới (hoà, thuý), bỏ dấu tự do bật, tự k
 
 ### D16. Bảo trì và gỡ cài đặt
 
-- App có "Quay về bản trước" và "Gỡ cài đặt" (bộ gõ nằm trong `~/Library/Input Methods`, không gỡ được bằng cách kéo vào Thùng rác).
+- App có "Gỡ cài đặt" (bộ gõ nằm trong `~/Library/Input Methods`, không gỡ được bằng cách kéo vào Thùng rác). "Quay về bản trước" (D19) để sau bản thử đầu (D7).
 - **Gỡ cài đặt cần người dùng bấm "–":**
   - Sau khi xác nhận, app mở thẳng danh sách Input Sources của System Settings và hướng dẫn bỏ "Dấu – Tiếng Việt" bằng "–".
   - App không tự chuyển bàn phím. Nếu Dấu đang được chọn, sheet nhắc chọn bàn phím khác khi nút "–" bị mờ, phòng bản macOS khác chưa đo.
@@ -316,6 +318,8 @@ Coi mọi tham số từ IMK là có thể nil hoặc bất thường (ví dụ 
 ### D19. Quay về bản trước
 
 Quay về bản trước tạm tắt tự động cập nhật cho tới khi có bản mới hơn bản lỗi. Cài đặt và quy tắc ứng dụng được giữ nguyên.
+
+- Chưa làm ở bản thử đầu (D7 (Cập nhật và loại bản dựng)).
 
 - Bản cũ được đặt vào chỗ bản chủ, nên bộ gõ lùi theo ở lần mở kế tiếp (D37 (Cài đặt bộ gõ)).
 
@@ -576,8 +580,8 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
   - Lúc thay: khi bản chủ vừa mở, nên người dùng không gõ ở app khác (D7 (Cập nhật và loại bản dựng)).
 - **Kiểm chữ ký:** mỗi lần mở app và mỗi lần app được đưa lên trước, app kiểm chữ ký của bộ gõ đã cài theo một yêu cầu mã (code requirement): chữ ký hợp lệ ở mọi kiến trúc, chứng chỉ do Apple cấp, chứng chỉ lá thuộc Team ID của app chủ, định danh là bundle ID của bộ gõ; app chủ không có Team ID thì không bản nào đạt. Không đạt thì hiện banner "Cài lại". Bản tạm lúc cài và thay cũng kiểm theo yêu cầu đó.
   - Mục "Cài đặt Dấu…" của bộ gõ cũng kiểm app chủ trước khi mở (bundle ID app chủ, cùng Team ID với bộ gõ); bản nào đọc được mà không đạt thì không mở.
-  - **Giới hạn:** kiểm chữ ký chỉ phát hiện, không chặn. Mọi tiến trình của người dùng ghi được `~/Library/Input Methods`; bản thay thế giữ trạng thái đã bật của Dấu nên macOS không hỏi lại, và nhận phím tới lúc người dùng mở app chủ. Cách chặn là cài bộ gõ vào thư mục chỉ quản trị viên ghi được (câu hỏi mở "Cài cho riêng mình hay cho cả máy").
-- **Chữ ký sai thì không tự thay:** bộ gõ đã cài có chữ ký sai hoặc khác Team ID thì app không tự thay, kể cả khi nó khác bản nhúng; banner "Cài lại" hiện và người dùng bấm. Trong onboarding (D14 (Onboarding)), bước 2 hiện thông báo đó và nút "Cài lại" thay cho "Bật Dấu": cài lại xong mới bật. Bản chủ không bật một bộ gõ có chữ ký sai (bản không phải bản chủ không kiểm chữ ký).
+  - **Giới hạn:** kiểm chữ ký chỉ phát hiện, không chặn. Mọi tiến trình của người dùng ghi được `~/Library/Input Methods`; bản thay thế giữ trạng thái đã bật của Dấu nên macOS không hỏi lại, và nhận phím tới lúc người dùng mở app chủ. Cách chặn là cài bộ gõ vào thư mục chỉ quản trị viên ghi được; Dấu chỉ cài cho từng tài khoản (`~/Library/Input Methods`) nên chấp nhận giới hạn này, cài cho cả máy để sau khi có người dùng cần.
+- **Chữ ký sai thì không tự thay:** bộ gõ đã cài có chữ ký sai hoặc khác Team ID thì app không tự thay, kể cả khi nó khác bản nhúng; banner "Cài lại" hiện và người dùng bấm. Trong onboarding (D14 (Onboarding)), bước 2 hiện màn lỗi cài với nút "Cài lại" thay cho "Bật Dấu": cài lại xong mới bật. Bản chủ không bật một bộ gõ có chữ ký sai (bản không phải bản chủ không kiểm chữ ký).
 
 **Hệ quả đã chấp nhận:** nếu một bản đổi biểu tượng, macOS còn hiện biểu tượng cũ tới khi đăng xuất, vì Dấu không dừng tiến trình hệ thống giữ ảnh đó (đã đo, `docs/research/InputMethodInstall.md` mục 6); tên nguồn chưa đo (câu hỏi mở "Loại bản dựng"). Nên giữ cả hai không đổi.
 
@@ -632,16 +636,14 @@ App chủ và bộ gõ có tiếng Việt và tiếng Anh.
 - **Tên nguồn đầu vào:** "Dấu – Tiếng Việt" trên macOS tiếng Việt, "Dấu – Vietnamese" trên macOS tiếng Anh (như "Vietnamese Telex" của Apple); macOS chọn tên theo ngôn ngữ của hệ thống, Dấu không đổi được; ID input mode không đổi (D24 (Tên và định danh), D37 (Cài đặt bộ gõ)).
   - Câu chữ của Dấu nhắc tên nguồn thì dùng đúng tên macOS đang hiện, theo ngôn ngữ của hệ thống chứ không theo ngôn ngữ của app, như tên giao diện ở D38 (Chữ trên giao diện).
   - "Dấu" giữ nguyên ở mọi ngôn ngữ (D24).
-- **Đặt ngôn ngữ riêng cho Dấu:** dùng mục ngôn ngữ riêng từng ứng dụng của macOS (System Settings › General › Language & Region › Applications), Dấu không làm ô chọn riêng (N1 (Không làm lại việc hệ thống đã có)).
-  - Cài đặt có một hàng "Ngôn ngữ" chỉ đọc: hiện ngôn ngữ Dấu đang dùng và nút "Đổi…" mở trang Language & Region, cùng kiểu hàng "Nhớ nguồn đầu vào theo từng cửa sổ" (tên mục của macOS theo D38).
-  - Đổi ngôn ngữ mà chưa mở lại Dấu thì hàng ghi ngôn ngữ của lần mở sau và có nút "Mở lại Dấu" (Dấu tự thoát rồi mở lại, không ghi cài đặt).
+- **Đặt ngôn ngữ riêng cho Dấu:** dùng mục ngôn ngữ riêng từng ứng dụng của macOS (System Settings › General › Language & Region › Applications), Dấu không làm ô chọn riêng và Cài đặt không có hàng "Ngôn ngữ" (N1 (Không làm lại việc hệ thống đã có)).
   - Menu bộ gõ theo ngôn ngữ hệ thống (câu hỏi mở "Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng").
 
 **Vì sao:**
 
 - Hai ngôn ngữ: người Việt dùng rộng rãi và người nước ngoài học tiếng Việt.
 - Khoá tiếng Anh: macOS tự lùi về ngôn ngữ gốc nên không cần cấu hình riêng; sửa câu tiếng Việt không đổi khoá; người dịch ngôn ngữ khác dịch từ tiếng Anh. Đã loại: khoá là câu tiếng Việt (phải đặt vùng phát triển khác ngôn ngữ gốc để lùi về tiếng Anh); khoá theo ngữ nghĩa (`onboarding.title`; Xcode không tự lấy chuỗi từ `Text("…")`, đọc mã không thấy chữ hiện ra).
-- Mục ngôn ngữ của macOS thay cho ô chọn riêng: đã loại ô chọn ngôn ngữ trong Cài đặt ghi khoá `AppleLanguages` ("Theo hệ thống", Tiếng Việt, English), vì làm lại việc macOS đã có; điều người dùng thiếu chỉ là biết chỗ đổi. Đo trên Dấu thật (macOS 27.2): danh sách "+" của mục đó có Dấu.app; chọn tiếng Việt thì Dấu hiện tiếng Việt trên máy tiếng Anh (macOS ghi `AppleLanguages` vào miền cài đặt `com.codefastlabs.dau`); đổi xong, macOS hỏi có mở lại app ngay không và không tự mở lại, nên cần nút "Mở lại Dấu".
+- Mục ngôn ngữ của macOS thay cho ô chọn riêng: đã loại ô chọn ngôn ngữ trong Cài đặt ghi khoá `AppleLanguages` ("Theo hệ thống", Tiếng Việt, English), vì làm lại việc macOS đã có; điều người dùng thiếu chỉ là biết chỗ đổi. Đo trên Dấu thật (macOS 27.2): danh sách "+" của mục đó có Dấu.app; chọn tiếng Việt thì Dấu hiện tiếng Việt trên máy tiếng Anh (macOS ghi `AppleLanguages` vào miền cài đặt `com.codefastlabs.dau`); đổi xong, macOS hỏi có mở lại app ngay không. Hàng "Ngôn ngữ" chỉ đọc và nút "Mở lại Dấu" đã bỏ: chúng chỉ nhắc lại việc macOS đã làm.
 
 ### D42. Ngưỡng hiệu năng
 
@@ -711,13 +713,12 @@ Cách làm (không phải tính năng; tính năng ở mục trên): Rust/WASM v
 Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào quyết định liên quan, diễn biến vào [`docs/history/DecisionsLog.md`](history/DecisionsLog.md).
 
 - **Hộp thoại và đăng xuất khi bật bộ gõ** (D37): trên macOS 27.2 có hộp thoại xin phép và không cần đăng xuất. Chưa biết trên macOS 14–26, với bản ký Developer ID (kể cả bản mang quarantine) và trên tài khoản macOS mới. Nguồn trái nhau: Apple DTS nói cần đăng xuất, một dự án khác nói không (`docs/research/InputMethodInstall.md` mục Hiện trạng, 1, 2, 10.4).
-- **Cài cho riêng mình hay cho cả máy** (D37, ý "Kiểm chữ ký"; cách duy nhất chặn việc thay bundle bộ gõ): cho người dùng chọn cài bộ gõ vào `~/Library/Input Methods` hoặc `/Library/Input Methods` để mọi tài khoản dùng được. Chưa thiết kế; khi làm phải sửa D16, D37, có thể cả D6 (`.pkg` hay app chủ xin quyền quản trị) và D7 (nâng cấp bản cả máy cần quyền quản trị). Cần trả lời: mỗi tài khoản vẫn phải tự bật bằng "+" không; bản ở hai thư mục cùng bundle ID thì macOS chạy bản nào; gỡ bản cả máy khi tài khoản khác còn bật; tài khoản đăng nhập sau khi cài có thấy nguồn ngay không (`docs/history/ResearchLog.md` mục 1, kế hoạch vòng thử 8.2 cũ).
 - **Bản chủ trong `~/Applications`** (D37): sandbox của bộ gõ không đọc được bản trong thư mục nhà, nên mục "Cài đặt Dấu…" không kiểm được chữ ký của nó và chỉ mở nó khi `/Applications` không có bản nào đạt. Mở được thật từ sandbox hay không thì chưa đo (bản chủ trong `/Applications`: mở được, kiểm chữ ký chạy trong sandbox).
 - **Hộp thoại App Group với bản ký Developer ID** (D24): bản có Team ID Personal Team không có hộp thoại; bản Developer ID chưa kiểm.
-- **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không. Không được thì hàng "Ngôn ngữ" trong Cài đặt nói rõ menu bộ gõ theo ngôn ngữ hệ thống, nếu cần.
+- **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không.
 - **VoiceOver đọc tên nguồn** (D17): VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn không.
 - **Độ ổn định của "Thêm dấu cho từ đã gõ"** (D20) trên các web editor (Google Docs, Notion…).
 - **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã đi thẳng (phương án c): [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
-- **Loại bản dựng** (D7, D25): kênh Beta có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID; artboard "Cập nhật & hỗ trợ (bản phát triển)" hiện vẫn vẽ phần Cập nhật như bản chính thức). Tên nguồn "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37).
+- **Loại bản dựng** (D7, D25): khi có kênh Beta, kênh đó có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID). Tên nguồn "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37).
 - **Liên kết ủng hộ trong app** (D39): có đặt liên kết "Ủng hộ dự án" trong app hay không (canvas trước).
 - **Tên "Dấu"** (D24): tra nhãn hiệu (Cục Sở hữu trí tuệ VN), tên miền (cân nhắc tên miền tiếng Việt có dấu "dấu.vn" bên cạnh một bản không dấu), tên cask Homebrew và tên tổ chức GitHub.

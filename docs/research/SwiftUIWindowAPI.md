@@ -6,7 +6,7 @@ Cửa sổ Cài đặt của app chủ dựng theo System Settings (D9 (Giao di�
 
 - **Sidebar cố định bằng split view của chính app** (mục 1): scene SwiftUI chứa `NSSplitViewController` do app tạo (`SettingsSplitViewController`), mục sidebar không thu được, độ dày tối thiểu bằng tối đa. Sidebar và trang vẫn là view SwiftUI trong `NSHostingController`. Không với vào view nào SwiftUI dựng.
 - **SwiftUI không có API khoá sidebar của `NavigationSplitView`** (mục 2). Độ rộng chỉ là "ưu tiên", `columnVisibility` chỉ là "điều khiển bằng mã"; tra chỉ mục tài liệu SwiftUI và `SwiftUI.swiftinterface` không thấy API nào khác.
-- **Lùi/Tiến là `ControlGroup` kiểu `.navigation` ở `ToolbarItemPlacement.navigation`**, lịch sử do app tự giữ (SwiftUI không có), kèm lệnh trong menu View (mục 3, 5).
+- **Lùi/Tiến là `ControlGroup` kiểu `.navigation` ở `ToolbarItemPlacement.navigation`**, lịch sử do app tự giữ (SwiftUI không có), kèm lệnh trong menu View (mục 3, 5). Dấu đã bỏ cụm này ngày 13/11/2026 (D9: bốn trang không cần); kết quả nghiên cứu giữ để tham khảo.
 - **Tiêu đề trang là `navigationTitle` của hệ thống**, nằm ngay sau cụm Lùi/Tiến như System Settings; macOS không có placement nào để thay tiêu đề bằng view tự vẽ (mục 3).
 - **Ô tìm sidebar là `NSSearchField` cỡ lớn**, vì `searchable(placement: .sidebar)` cần sidebar của `NavigationSplitView` (mục 4).
 - Phiên bản macOS ghi trong file là phiên bản Apple ghi trên trang tài liệu. D1 (Nền tảng) đặt tối thiểu macOS 14, nên API cần macOS 15 trở lên phải có `if #available`.
@@ -64,7 +64,7 @@ Chỗ đặt nút:
 
 Lùi/Tiến:
 - [SDK] SwiftUI không có API lịch sử Lùi/Tiến cho split view; `NavigationStack` chỉ có Lùi, xoá khỏi ngăn xếp là mất. https://developer.apple.com/documentation/swiftui/navigationstack
-- Apple không ghi System Settings làm Lùi/Tiến thế nào. Dấu tự giữ lịch sử (`SectionHistory`).
+- Apple không ghi System Settings làm Lùi/Tiến thế nào. Dấu từng tự giữ lịch sử (`SectionHistory`, đã bỏ cùng cụm Lùi/Tiến 13/11/2026).
 
 Chiều cao thanh công cụ:
 - Không có trang tài liệu, mục HIG hay phiên WWDC nào tả chiều cao thanh khi không còn mục nào.
@@ -91,7 +91,7 @@ Kiểu thanh công cụ và cửa sổ (tham khảo):
 - [Tài liệu] `SidebarCommands`: "These commands are optional and can be explicitly requested". https://developer.apple.com/documentation/swiftui/sidebarcommands
 - [Tài liệu] `CommandGroup(replacing:)` thay toàn bộ nhóm, nên thay nhóm `.sidebar` sẽ bỏ cả mục toàn màn hình. https://developer.apple.com/documentation/swiftui/commandgroup/init(replacing:addition:)
 - [HIG] Menu View: "Show/Hide Sidebar — In a window that includes a sidebar, toggles the sidebar's visibility." https://developer.apple.com/design/human-interface-guidelines/the-menu-bar
-- Dấu: `SettingsHistoryCommands` thêm Lùi ⌘[ và Tiến ⌘] **trước** nhóm `.sidebar` (`CommandGroup(before:)`), không dùng `SidebarCommands`. Menu View còn mục toàn màn hình, không có Show/Hide Sidebar; `SettingsSplitViewController` giữ `toggleSidebar(_:)` luôn tắt. Kiểm bằng `swift test` ("Settings window shell", [`docs/UIChecks.md`](../UIChecks.md)); chưa đọc riêng menu View trên cửa sổ thật.
+- Dấu (tới 13/11/2026, khi cụm Lùi/Tiến còn): `SettingsHistoryCommands` thêm Lùi ⌘[ và Tiến ⌘] **trước** nhóm `.sidebar` (`CommandGroup(before:)`), không dùng `SidebarCommands`. Menu View còn mục toàn màn hình, không có Show/Hide Sidebar; `SettingsSplitViewController` giữ `toggleSidebar(_:)` luôn tắt. Kiểm bằng `swift test` ("Settings window shell", [`docs/UIChecks.md`](../UIChecks.md)); chưa đọc riêng menu View trên cửa sổ thật.
 
 ## Nguồn Apple đã tra
 

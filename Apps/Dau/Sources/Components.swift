@@ -93,7 +93,7 @@ struct HardTopScrollEdge: ViewModifier {
 }
 
 /// The page's toolbar search field and "+" (Apps), on the trailing side of the
-/// toolbar, after the Back/Forward cluster and the title. The system puts the search
+/// toolbar, after the title. The system puts the search
 /// field of `searchable` last, after the "+" (macOS 27.2: a
 /// `DefaultToolbarItem(kind: .search)` placed before the "+" does not move it), the
 /// order of the "SettingsApps" artboard.

@@ -29,9 +29,9 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 ### 2. Nhảy bố cục khi đổi mục
 
 - **Lỗi:** toolbar đổi cao, tiêu đề đổi chỗ.
-- **Cách kiểm:** "toolbar height", "close button", "back button", "forward button", "title text", "title x", "title center y", "first item y", "first card" (mỗi mục, so cùng một số nên giống nhau giữa các mục); (a) trong `always*.txt`.
+- **Cách kiểm:** "toolbar height", "close button", "title text", "title x", "title center y", "first item y", "first card" (mỗi mục, so cùng một số nên giống nhau giữa các mục); (a) trong `always*.txt`.
 - **Đạt khi:**
-  - thanh công cụ, nút đóng, cụm Lùi/Tiến, tiêu đề, mục đầu và thẻ đầu ở cùng chỗ ở mọi mục, trên mọi màn hình;
+  - thanh công cụ, nút đóng, tiêu đề, mục đầu và thẻ đầu ở cùng chỗ ở mọi mục, trên mọi màn hình;
   - tiêu đề là tiêu đề hệ thống (`navigationTitle`, một chữ tĩnh trên thanh công cụ mang tên cửa sổ), không phải view tự vẽ;
   - độ rộng chỉ được hụt đúng bằng thanh cuộn Always của hệ thống, và chỉ ở mục đang hiện thanh cuộn.
 
@@ -148,21 +148,17 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
   - mỗi chữ nhìn thấy trong mục tìm ra mục đó, không phân biệt hoa thường, dấu, "đ"/"d" (`swift test`);
   - ảnh `real/sidebar-search-empty-<2x|1x>.png` (hệ số của màn hình chính).
 
-### 16. Thanh công cụ co, tiêu đề vẽ tay, thiếu Lùi/Tiến
+### 16. Thanh công cụ co, tiêu đề vẽ tay
 
-- **Lỗi:** thanh công cụ co còn thanh tiêu đề nhỏ, tiêu đề vẽ tay lệch tiêu đề hệ thống; không có Lùi/Tiến như System Settings (D9).
+- **Lỗi:** thanh công cụ co còn thanh tiêu đề nhỏ, tiêu đề vẽ tay lệch tiêu đề hệ thống (D9).
 - **Cách kiểm:**
-  - trang `launch`: "page at launch", "Lùi at launch", "Tiến at launch";
-  - trang `history`: "page after selecting smart", "Lùi after selecting another section", "Tiến after selecting another section", "page after Lùi", "Tiến after Lùi", "page after Tiến", "Lùi after Tiến", "Tiến after Tiến", "page after ⌘[", "page after ⌘]";
-  - trang `history-under-sheet`: "page before the sheet", "page under the sheet after ⌘[", "sheet after ⌘[", "page under the sheet after ⌘]", "sheet after ⌘]", "menu item \"Lùi\" under the sheet", "menu item \"Tiến\" under the sheet", "page after the sheet closed";
+  - trang `launch`: "page at launch";
   - mục 2;
-  - `swift test` "Settings history", "Settings window shell" ("AppKit's Show/Hide Sidebar action stays off").
+  - `swift test` "Settings window shell" ("AppKit's Show/Hide Sidebar action stays off").
 - **Đạt khi:**
-  - lúc mở cửa sổ cả Lùi và Tiến tắt; chọn mục khác thì Lùi bật, Tiến tắt;
-  - Lùi, Tiến (nút và ⌘[ ⌘]) đi đúng giữa các mục đã xem;
+  - cửa sổ mở ở mục Gõ phím; thanh công cụ cao như System Settings ở mọi mục (mục 2), kể cả mục không có nút nào trên thanh công cụ;
   - hành động ẩn/hiện sidebar của AppKit luôn tắt (D9; `swift test`);
-  - khi sheet đang mở (thêm quy tắc), ⌘[ ⌘] không đổi trang phía sau, sheet vẫn mở, mục Lùi/Tiến trong menu View tắt; đóng sheet thì bật lại;
-  - lịch sử (gồm bước nhảy của ô tìm sidebar) đúng như test.
+  - bước nhảy của ô tìm sidebar đúng như test (`swift test` "Sidebar search").
 
 ### 17. Sidebar kéo thu lại được
 

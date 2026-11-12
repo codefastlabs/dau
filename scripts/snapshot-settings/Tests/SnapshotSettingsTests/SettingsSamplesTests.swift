@@ -76,20 +76,6 @@ struct InputSourceShortcutTests {
     }
 }
 
-@Suite("Document input source option (D5, N5)")
-struct DocumentInputSourceTests {
-    @Test("on, off, and no value when missing or malformed")
-    func values() {
-        let key = "TextInputGlobalPropertyPerContextInput"
-        #expect(DocumentInputSource.isOn(properties: [key: 1]) == true)
-        #expect(DocumentInputSource.isOn(properties: [key: true]) == true)
-        #expect(DocumentInputSource.isOn(properties: [key: 0]) == false)
-        #expect(DocumentInputSource.isOn(properties: [String: Any]()) == nil)
-        #expect(DocumentInputSource.isOn(properties: [key: "1"]) == nil)
-        #expect(DocumentInputSource.isOn(properties: nil) == nil)
-    }
-}
-
 @Suite("Sidebar search")
 struct SidebarSearchTests {
     /// The words as the Vietnamese window shows them, from the app's catalog.
@@ -99,7 +85,7 @@ struct SidebarSearchTests {
     func search() {
         #expect(SettingsSection.typing.matches("typing"))
         #expect(SettingsSection.smart.matches("RESTORE"))
-        #expect(SettingsSection.apps.matches("input source"))
+        #expect(SettingsSection.apps.matches("app rules"))
         #expect(!SettingsSection.apps.matches("english"))
         #expect(!SettingsSection.updates.matches("telex"))
         #expect(SettingsSection.allCases.allSatisfy { $0.matches("") })
@@ -110,7 +96,7 @@ struct SidebarSearchTests {
         #expect(SettingsSection.typing.matches("go phim", localize: vi))
         #expect(SettingsSection.smart.matches("khôi phục", localize: vi))
         #expect(SettingsSection.apps.matches("GẠCH CHÂN", localize: vi))
-        #expect(SettingsSection.apps.matches("nguon dau vao", localize: vi))
+        #expect(SettingsSection.apps.matches("DE XUAT", localize: vi))
         #expect(!SettingsSection.apps.matches("tiếng anh", localize: vi))
         #expect(!SettingsSection.updates.matches("telex", localize: vi))
         // The English words are not shown in Vietnamese, so they do not match there.
@@ -122,31 +108,38 @@ struct SidebarSearchTests {
         for query in ["Suggested", "Turn On Underline", "Add App", "underline", "no underline"] {
             #expect(SettingsSection.apps.matches(query), "\(query)")
         }
-        for query in ["Stable", "Problems typing", "Remove Dấu from this Mac"] {
+        for query in ["Uninstall", "Remove Dấu from this Mac"] {
             #expect(SettingsSection.updates.matches(query), "\(query)")
         }
         for query in ["Đề xuất", "Bật gạch chân", "Thêm ứng dụng", "gạch chân", "de xuat", "co gach chan"] {
             #expect(SettingsSection.apps.matches(query, localize: vi), "\(query)")
         }
-        for query in ["Ổn định", "Gặp ứng dụng gõ bị lỗi", "Gỡ Dấu khỏi máy"] {
+        for query in ["Gỡ cài đặt", "Gỡ Dấu khỏi máy"] {
             #expect(SettingsSection.updates.matches(query, localize: vi), "\(query)")
         }
-    }
-
-    @Test("the Language row of Updates & Support is found in both languages, and only there")
-    func languageRow() {
-        for query in ["language", "Language", "LANGUAGE"] {
-            #expect(SettingsSection.updates.matches(query), "\(query)")
-        }
-        for query in ["ngôn ngữ", "Ngôn ngữ", "ngon ngu"] {
-            #expect(SettingsSection.updates.matches(query, localize: vi), "\(query)")
-        }
-        #expect(SettingsSection.allCases.filter { $0.matches("language") } == [.updates])
-        #expect(SettingsSection.allCases.filter { $0.matches("ngôn ngữ", localize: vi) } == [.updates])
     }
 
     @Test("a query no section matches leaves the sidebar empty (system empty state shown)")
     func noMatch() {
         #expect(SettingsSection.allCases.filter { $0.matches("xyzzy") }.isEmpty)
+    }
+
+    @Test("the search jumps to its first match when the page shown no longer matches")
+    @MainActor func searchJump() {
+        let state = SettingsWindowState(.typing)
+        state.query = "underline"
+        #expect(state.visibleSections == [.apps])
+        state.showFirstMatch()
+        #expect(state.section == .apps)
+    }
+
+    @Test("no jump while the page shown still matches, nor when nothing matches")
+    @MainActor func searchNoJump() {
+        let state = SettingsWindowState(.updates)
+        state.showFirstMatch()
+        #expect(state.section == .updates)
+        state.query = "xyzzy"
+        state.showFirstMatch()
+        #expect(state.section == .updates)
     }
 }

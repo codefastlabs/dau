@@ -2,16 +2,14 @@ import AppKit
 import SwiftUI
 import DauShared
 
-/// "Ứng dụng" (mockup "SettingsApps"): the macOS option that remembers the input source
-/// per window, shown read-only with "Đổi…" (D5, N4); "Quy tắc riêng", the stored rules
-/// (D5, D13); and "Đề xuất", the installed apps of the compatibility list without a
-/// rule, each with "Bật gạch chân" (D13: nothing is turned on until the user clicks it).
+/// "Ứng dụng" (mockup "SettingsApps"): "Quy tắc riêng", the stored rules (D5, D13); and
+/// "Đề xuất", the installed apps of the compatibility list without a rule, each with
+/// "Bật gạch chân" (D13: nothing is turned on until the user clicks it).
 /// Search field and + sit in the toolbar, as in the mockup header.
 struct AppRulesView: View {
     @Environment(SettingsModel.self) private var model
     @State private var query = ""
     @State private var isAdding = false
-    @State private var perWindow = DocumentInputSource.isOn()
     @State private var installedSuggestions = AppDirectory.installedSuggestions(in: .empty)
     @FocusState private var focusedRule: String?
 
@@ -35,38 +33,18 @@ struct AppRulesView: View {
         let visibleSuggestions = matching(suggestions)
         SettingsPage(search: $query, searchPrompt: Text("Search apps"),
                      add: HeaderAdd(label: String(localized: "Add App"), action: { isAdding = true })) {
-            Section(header: Text("Input source per window")) {
-                LabeledContent {
-                    HStack(spacing: 8) {
-                        // Not readable: no value rather than a guess (N5).
-                        if let perWindow {
-                            (perWindow ? Text("On") : Text("Off"))
-                                .foregroundStyle(.secondary)
-                                .fixedSize()
-                        }
-                        Button("Change…") { SystemSettings.openKeyboard() }
-                            .accessibilityLabel(Text("Change the option that remembers the input source for each window"))
-                            .accessibilityHint(Text("Open \(SystemUINames.system().systemSettings)"))
-                    }
-                } label: {
-                    Text("Remember the input source for each window")
-                    Text("macOS option “\(SystemUINames.system().automaticallySwitchOption)”")
-                }
-                .layoutProbe("firstRow")
-            }
-            .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
-                perWindow = DocumentInputSource.isOn()
-                installedSuggestions = AppDirectory.installedSuggestions(in: model.compatibility)
-            }
-
+            // The page's first row reports as `firstRow`, as on the other pages.
             Section(header: Text("App rules")) {
                 if rules.isEmpty {
                     Text("No app rules yet. Click + to add one.")
+                        .layoutProbe("firstRow")
                 } else if visibleRules.isEmpty {
                     Text("No matching apps.")
+                        .layoutProbe("firstRow")
                 } else {
                     ForEach(visibleRules) { rule in
                         AppRuleRow(rule: rule)
+                            .layoutProbe(rule.id == visibleRules.first?.id ? "firstRow" : "ruleRow-\(rule.bundleID)")
                             .focusable()
                             .focused($focusedRule, equals: rule.bundleID)
                             .onTapGesture { focusedRule = rule.bundleID }
@@ -106,11 +84,12 @@ struct AppRulesView: View {
         .onAppear {
             installedSuggestions = AppDirectory.installedSuggestions(in: model.compatibility)
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            installedSuggestions = AppDirectory.installedSuggestions(in: model.compatibility)
+        }
         .sheet(isPresented: $isAdding) {
             AddAppRuleSheet()
         }
-        // The window's Back/Forward stay off under the sheet (`SettingsWindow`).
-        .sheetShown(isAdding)
     }
 
     private func remove(_ rule: AppRule) {

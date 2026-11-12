@@ -96,54 +96,11 @@ struct SystemUINamesTests {
         #expect(vi.systemSettings == "Cài đặt hệ thống")
         if tables[.finderNames]?["vi"] != nil { #expect(vi.trash == "Thùng rác") }
         #expect(en.trash == "Trash")
-        if tables[.localizationSettingsInfo]?["vi"] != nil {
-            #expect(vi.languageAndRegion == "Ngôn ngữ & Vùng")
-            #expect(en.languageAndRegion == "Language & Region")
-        }
-        if tables[.localizationSettings]?["vi"] != nil {
-            #expect(vi.languageRegionApplications == "Ứng dụng")
-            #expect(en.languageRegionApplications == "Applications")
-        }
     }
 
-    // Language & Region (Localization.appex): InfoPlist.loctable with an English column
-    // and a fixed key; Localizable.loctable, where "Applications" and "Application" both
-    // read "Ứng dụng" in Vietnamese.
-    let localizationInfo: SystemUINames.Table = [
-        "en": ["CFBundleDisplayName": "Language & Region", "CFBundleName": "Localization"],
-        "vi": ["CFBundleDisplayName": "Ngôn ngữ & Vùng", "CFBundleName": "Bản địa hóa"],
-    ]
-    let localization: SystemUINames.Table = [
-        "en": ["Application": "Application", "Applications": "Applications"],
-        "vi": ["Application": "Ứng dụng (một)", "Applications": "Ứng dụng"],
-    ]
-
-    func languageNames(_ languages: [String], folders: SystemUINames.Table? = nil) -> SystemUINames {
-        var tables: [SystemUITable: SystemUINames.Table] = [.localizationSettingsInfo: localizationInfo,
-                                                           .localizationSettings: localization]
-        if let folders { tables[.folderNames] = folders }
-        return SystemUINames(languages: languages, tables: tables) { _, _ in nil }
-    }
-
-    @Test("Language & Region and its Applications section in the system's language (D38, D41)")
-    func languageAndRegion() {
-        let en = languageNames(["en-VN", "vi-VN"])
-        #expect(en.languageAndRegion == "Language & Region")
-        #expect(en.languageRegionApplications == "Applications")
-        let vi = languageNames(["vi-VN", "en-VN"])
-        #expect(vi.languageAndRegion == "Ngôn ngữ & Vùng")
-        #expect(vi.languageRegionApplications == "Ứng dụng")
-        // Unreadable tables or an unknown language: English.
-        let none = SystemUINames(languages: ["vi"], tables: [:]) { _, _ in nil }
-        #expect(none.languageAndRegion == "Language & Region")
-        #expect(none.languageRegionApplications == "Applications")
-        #expect(languageNames(["xx"]).languageAndRegion == "Language & Region")
-    }
-
-    @Test("the Applications section and Finder's Applications folder come from their own tables")
-    func applicationsKeptApart() {
-        let n = languageNames(["vi"], folders: ["vi": ["Applications": "Thư mục Ứng dụng"]])
-        #expect(n.languageRegionApplications == "Ứng dụng")
+    @Test("Finder's Applications folder comes from its own table")
+    func applicationsFolder() {
+        let n = SystemUINames(languages: ["vi"], tables: [.folderNames: ["vi": ["Applications": "Thư mục Ứng dụng"]]]) { _, _ in nil }
         #expect(n.applications == "Thư mục Ứng dụng")
     }
 

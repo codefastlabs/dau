@@ -164,7 +164,7 @@ Cửa sổ Cài đặt của Dấu dùng số của System Settings ở mọi ch
 
 Chỗ Dấu khớp mà dễ hỏi:
 - Cửa sổ mặc định 740 × 560, rộng cố định 740, cao đổi được (`SettingsScene`). Sidebar 232 cố định (`SettingsSplitViewController`).
-- Cụm Lùi/Tiến đo trên Dấu (05/11/2026): Lùi x 239,5, Tiến x 275,5, y 8, 36 × 36 và 37 × 36; khung tiêu đề từ x 316,5 (nét chữ của app thử từ x ≈ 326, `Reference.swift`).
+- Cụm Lùi/Tiến đo trên Dấu (05/11/2026; cụm đã bỏ 13/11/2026, D9): Lùi x 239,5, Tiến x 275,5, y 8, 36 × 36 và 37 × 36; khung tiêu đề từ x 316,5 (nét chữ của app thử từ x ≈ 326, `Reference.swift`).
 - Hàng chỉ có nút căn nút phải như hệ thống.
 - Icon ứng dụng: khung 24 cho hàng một dòng kèm control ("Quy tắc riêng", danh sách của sheet thêm quy tắc), như Trợ năng; 32 cho hàng có dòng phụ ("Đề xuất") và thẻ đầu "Cập nhật & hỗ trợ", như Hoạt động nền. Trên cửa sổ thật (màn Retina), nét vẽ icon ở hai chỗ 32 là 26 × 26 từ x 265, trùng System Settings.
 

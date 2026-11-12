@@ -201,11 +201,7 @@ struct OnboardingStepView: View {
                 MoveToApplicationsStep()
             } else {
                 switch flow.step {
-                case .oldInputMethods:
-                    switch flow.oldInputMethodsScreen {
-                    case .conflict: ConflictStep()
-                    case .done: ConflictDoneStep()
-                    }
+                case .oldInputMethods: ConflictStep()
                 case .enable: EnableStep()
                 case .typing: TypingStep()
                 }
@@ -356,36 +352,6 @@ struct ConflictStep: View {
     }
 }
 
-/// Step 1 after "Quay lại" when no old input method runs any more (artboard
-/// OnboardingConflictDone): the ones found in this onboarding, each marked "Đã tắt", and
-/// "Tiếp tục" to step 2. One that starts again brings back the conflict screen.
-struct ConflictDoneStep: View {
-    @Environment(OnboardingFlow.self) private var flow
-
-    var body: some View {
-        StepLayout(step: .oldInputMethods, screen: ".done", title: Text("Other Input Methods Turned Off"),
-                   subtitle: Text("No other Vietnamese input method is running, so marks won’t be typed twice.")) {
-            OnboardingCard {
-                ForEach(flow.foundOldInputMethods) { app in
-                    HStack(spacing: 12) {
-                        OtherAppIcon(bundleID: app.bundleID, name: app.name)
-                        Text(verbatim: app.name)
-                            .font(.system(size: 13, weight: .semibold))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        StatusChip(text: Text("Turned Off"), tint: .green)
-                    }
-                    .accessibilityElement(children: .combine)
-                }
-            }
-            .layoutProbe("onbCard-1.done")
-        } buttons: {
-            Button("Continue") { flow.next() }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
-        }
-    }
-}
-
 struct ConflictCard: View {
     let app: DetectedInputMethod
 
@@ -428,7 +394,7 @@ struct RunningChip: View {
     }
 }
 
-/// A status capsule on a system color's light tint ("Đang chạy" orange, "Đã tắt" green).
+/// A status capsule on a system color's light tint ("Đang chạy" orange).
 struct StatusChip: View {
     let text: Text
     let tint: Color
@@ -468,13 +434,12 @@ struct OtherAppIcon: View {
 
 // MARK: Step 2
 
-/// Step 2 has six screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
+/// Step 2 has five screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
 /// "Bật Dấu" (`OnboardingEnable`, `OnboardingEnableNotes`), waiting for the user to click
 /// Allow (`OnboardingEnableWaiting`), done (`OnboardingEnableDone`,
-/// `OnboardingEnableDoneNoShortcut`), "Chưa bật được" (`OnboardingEnableFailed`), an
-/// install error (`OnboardingEnableError`) and "Cài lại" in place of "Bật Dấu" while the
-/// installed input method's signature is wrong (`OnboardingEnableTampered`). The first
-/// card of each is the `onbCard-2` probe; the last one has no card.
+/// `OnboardingEnableDoneNoShortcut`), "Chưa bật được" (`OnboardingEnableFailed`), and an
+/// install error or an installed input method whose signature is wrong
+/// (`OnboardingEnableError`). The first card of each is the `onbCard-2` probe.
 struct EnableStep: View {
     @Environment(OnboardingFlow.self) private var flow
     @Environment(\.inputMethodActions) private var actions
@@ -488,7 +453,6 @@ struct EnableStep: View {
         case .done: done
         case .notEnabled: notEnabled
         case .error: installError
-        case .tampered: tampered
         }
     }
 
@@ -533,9 +497,6 @@ struct EnableStep: View {
                 OtherSourcesNote(names: flow.otherSources)
             }
         } buttons: {
-            if flow.canGoBack {
-                Button("Go Back") { flow.back() }
-            }
             Button("Turn On Dấu") { Task { await flow.enable() } }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)
@@ -569,9 +530,6 @@ struct EnableStep: View {
             .layoutProbe("onbCard-2.waiting")
             Hint(Text("Don’t see the dialog, or chose \(ui.dontAllow)? Click Try Again."))
         } buttons: {
-            if flow.canGoBack {
-                Button("Go Back") { flow.back() }
-            }
             Button("Try Again") { Task { await flow.enable() } }
         }
         .onAppear {
@@ -634,12 +592,14 @@ struct EnableStep: View {
         }
     }
 
-    // An error while copying, checking the signature or registering.
+    // An error while copying, checking the signature or registering; or the installed
+    // input method's signature is wrong (D37: Dấu does not turn that one on, and replaces
+    // it only on this click).
     private var installError: some View {
         StepLayout(step: .enable, screen: ".error", title: Text("Couldn’t Install Dấu"),
-                   subtitle: Text("Dấu couldn’t copy its input method to this Mac, so it can’t be turned on yet.")) {
+                   subtitle: Text("Dấu’s input method on this Mac can’t be used yet: it couldn’t be copied to this Mac, or it was replaced after it was installed.")) {
             OnboardingCard(spacing: 10) {
-                NumberedLine(number: 1, text: Text("Click **Try Again**."))
+                NumberedLine(number: 1, text: Text("Click **Reinstall**."))
                 NumberedLine(number: 2, text: Text("If it still fails, download Dấu again, drag it to the **\(ui.applications)** folder, then open it again."))
             }
             .layoutProbe("onbCard-2.error")
@@ -655,34 +615,9 @@ struct EnableStep: View {
                 .accessibilityElement(children: .combine)
             }
         } buttons: {
-            if flow.canGoBack {
-                Button("Go Back") { flow.back() }
-            }
-            Button("Try Again") { Task { await flow.enable() } }
-                .buttonStyle(.borderedProminent)
-                .keyboardShortcut(.defaultAction)
-        }
-    }
-}
-
-extension EnableStep {
-    /// The owner copy found the installed input method's signature invalid or by another
-    /// team (artboard OnboardingEnableTampered; D37): Dấu does not turn that one on. The
-    /// title, the sentence and the button are the Settings banner's (`TamperedBanner`).
-    /// "Cài lại" installs the app's own copy; then the step shows "Bật Dấu" as usual.
-    var tampered: some View {
-        StepLayout(step: .enable, screen: ".tampered",
-                   title: Text("Dấu’s input method on this Mac has been changed"),
-                   subtitle: Text("The input method was replaced or modified after it was installed. Reinstall to type with Dấu’s own copy.")) {
-            EmptyView()
-        } buttons: {
-            if flow.canGoBack {
-                Button("Go Back") { flow.back() }
-                    .disabled(flow.isReinstalling)
-            }
             Button("Reinstall") {
                 Task {
-                    await flow.reinstall()
+                    await flow.enable()
                     // The Settings window's banner reads the same bundle: it follows now,
                     // not at the next activation.
                     actions?.checkInstalled()
@@ -1125,7 +1060,6 @@ struct TypingStep: View {
             }
             .layoutProbe("onbCard-3")
         } buttons: {
-            Button("Go Back") { flow.back() }
             Button("Start Typing") { dismiss() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(.defaultAction)

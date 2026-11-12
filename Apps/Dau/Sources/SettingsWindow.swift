@@ -4,9 +4,9 @@ import SwiftUI
 /// The Settings window, built like System Settings (D9: native components with their
 /// default metrics; numbers in docs/research/SystemSettingsReference.md): a fixed
 /// sidebar, 232 pt wide, with a search field and the four sections, and a grouped `Form`
-/// per section. The toolbar holds the Back/Forward cluster (`SettingsHistoryButtons`)
-/// and the system's own page title (`navigationTitle`, set by `SettingsDetail`). The
-/// mockup only sets the content (sections, rows, copy, order, icons).
+/// per section. The toolbar holds the system's own page title (`navigationTitle`, set by
+/// `SettingsDetail`). The mockup only sets the content (sections, rows, copy, order,
+/// icons).
 ///
 /// The sidebar cannot be resized or collapsed, as in System Settings (D9, "Sidebar cố
 /// định như System Settings"). SwiftUI has no API to lock the sidebar of a
@@ -22,7 +22,6 @@ struct SettingsWindow: View {
     @Environment(\.inputMethodActions) private var actions
     @Environment(\.layoutProbe) private var layoutProbe
     @Environment(\.smartAdvancedExpanded) private var smartAdvancedExpanded
-    @Environment(\.languageRowStatus) private var languageRowStatus
     @Environment(\.openWindow) private var openWindow
 
     init(initialSection: SettingsSection = .typing) {
@@ -32,8 +31,7 @@ struct SettingsWindow: View {
     var body: some View {
         SettingsSplitView(state: state, environment: SettingsEnvironment(
             model: model, inputSource: inputSource, actions: actions, layoutProbe: layoutProbe,
-            smartAdvancedExpanded: smartAdvancedExpanded, openWindow: openWindow,
-            languageRowStatus: languageRowStatus))
+            smartAdvancedExpanded: smartAdvancedExpanded, openWindow: openWindow))
             // The split view reaches the window's top edge, under the toolbar, so the
             // sidebar runs the full height as in System Settings
             // (https://developer.apple.com/documentation/swiftui/view/ignoressafearea(_:edges:)).
@@ -52,26 +50,32 @@ struct SettingsWindow: View {
     }
 }
 
-/// What the sidebar and the page share: the history of sections shown, the sidebar's
-/// query, and whether a page's sheet is up. One per window (`SettingsWindow`'s `@State`),
-/// observed by both hosting controllers
+/// What the sidebar and the page share: the section shown and the sidebar's query. One
+/// per window (`SettingsWindow`'s `@State`), observed by both hosting controllers
 /// (https://developer.apple.com/documentation/observation/observable()).
 @MainActor @Observable
 final class SettingsWindowState {
-    var history: SectionHistory
+    var section: SettingsSection
     var query = ""
-    /// A page's sheet is shown (`sheetShown(_:)`): the add-rule sheet.
-    var pageSheetShown = false
     /// The sidebar's search field, handed over by `SidebarSearchField` when it makes it,
     /// for Edit › Find (`SettingsSplitViewController.performFindPanelAction(_:)`).
     @ObservationIgnored weak var searchField: NSSearchField?
 
     init(_ section: SettingsSection) {
-        history = SectionHistory(section)
+        self.section = section
     }
 
     var visibleSections: [SettingsSection] {
         SettingsSection.allCases.filter { $0.matches(query) }
+    }
+
+    /// The sidebar search's jump: when the page shown no longer matches, show the first
+    /// section that does, so the result is visible right away. Nothing matches: the page
+    /// stays (the sidebar shows the system's empty state).
+    func showFirstMatch() {
+        let visible = visibleSections
+        guard let first = visible.first, !visible.contains(section) else { return }
+        section = first
     }
 }
 
@@ -88,8 +92,6 @@ struct SettingsEnvironment: ViewModifier {
     /// The scene's `openWindow` (read-only in `EnvironmentValues`), under a key of its own.
     /// Nil only in tests, which have no scene.
     let openWindow: OpenWindowAction?
-    /// Nil in the app (`LanguageRow` reads the preferences); set by the snapshot tool.
-    var languageRowStatus: AppLanguage.Status? = nil
 
     func body(content: Content) -> some View {
         content
@@ -99,7 +101,6 @@ struct SettingsEnvironment: ViewModifier {
             .environment(\.layoutProbe, layoutProbe)
             .environment(\.smartAdvancedExpanded, smartAdvancedExpanded)
             .environment(\.settingsOpenWindow, openWindow)
-            .environment(\.languageRowStatus, languageRowStatus)
     }
 }
 
@@ -146,8 +147,8 @@ final class SettingsSplitViewController: NSSplitViewController {
         // toolbar(content:) modifier", `.title` "title and subtitle populated with the
         // values provided to the navigationTitle(_:) and navigationSubtitle(_:)
         // modifiers". The default is `.all` only for a window's `contentViewController`,
-        // `[]` otherwise. The page host brings the whole toolbar: Back/Forward, the page
-        // title and the Apps page's "+" and search field. The sidebar host brings
+        // `[]` otherwise. The page host brings the whole toolbar: the page title and the
+        // Apps page's "+" and search field. The sidebar host brings
         // nothing: two hosts filling one toolbar has no documented outcome.
         sidebarHost.sceneBridgingOptions = []
         detailHost.sceneBridgingOptions = [.toolbars, .title]
@@ -266,10 +267,9 @@ struct SettingsSidebar: View {
 
     var body: some View {
         let visible = state.visibleSections
-        // Choosing a row is a step in the history; the list never clears the page shown
-        // (a nil selection is ignored).
-        List(visible, selection: Binding(get: { state.history.current },
-                                         set: { if let section = $0 { state.history.select(section) } })) { section in
+        // The list never clears the page shown (a nil selection is ignored).
+        List(visible, selection: Binding(get: { state.section },
+                                         set: { if let section = $0 { state.section = section } })) { section in
             Label {
                 Text(section.title)
             } icon: {
@@ -290,8 +290,8 @@ struct SettingsSidebar: View {
             }
         }
         .onChange(of: state.query) {
-            // Jump to the first match (a step in the history, `showFirstMatch`).
-            state.history.showFirstMatch(of: state.visibleSections)
+            // Jump to the first match (`showFirstMatch`).
+            state.showFirstMatch()
         }
         .safeAreaInset(edge: .bottom, alignment: .leading) {
             // Mockup content: the app name and version under the sections.
@@ -368,46 +368,19 @@ struct SidebarSearchField: NSViewRepresentable {
 
 // MARK: - Page
 
-/// The page host's root: the shown section with the window's toolbar, title and View
-/// menu commands, in the scene's environment.
+/// The page host's root: the shown section with the window's toolbar and title, in the
+/// scene's environment.
 struct SettingsDetailRoot: View {
     let state: SettingsWindowState
     let environment: SettingsEnvironment
 
     var body: some View {
-        SettingsDetailChrome(state: state).modifier(environment)
-    }
-}
-
-private struct SettingsDetailChrome: View {
-    @Bindable var state: SettingsWindowState
-    @Environment(\.inputMethodActions) private var actions
-
-    /// Any sheet on the window: a page's, or the uninstall sheet.
-    private var sheetShown: Bool { state.pageSheetShown || actions?.isShowingUninstallSheet == true }
-
-    var body: some View {
-        SettingsDetail(section: state.history.current)
-            // Around the page, not on it: a page change swaps the page's view tree, and a
-            // toolbar item declared there is rebuilt with it, so AXPress on Back changed
-            // the page but returned kAXErrorAttributeUnsupported (-25205) to the caller
-            // (measured on macOS 27.2, 05/11/2026; System Settings returns 0).
-            .toolbar {
-                ToolbarItem(placement: .navigation) {
-                    SettingsHistoryButtons(history: $state.history, sheetShown: sheetShown)
-                }
-            }
-            // View › Back / Forward act on this window's history while it has focus.
-            .focusedSceneValue(\.settingsNavigation, SettingsNavigation(
-                canGoBack: state.history.canGoBack(sheetShown: sheetShown),
-                canGoForward: state.history.canGoForward(sheetShown: sheetShown),
-                goBack: { state.history.goBack() }, goForward: { state.history.goForward() }))
-            .onPreferenceChange(SheetShownKey.self) { state.pageSheetShown = $0 }
+        SettingsDetail(section: state.section).modifier(environment)
     }
 }
 
 /// One section page. Its title is the system's navigation title: on macOS the inline
-/// title of the unified toolbar, right after the Back/Forward cluster, and the window's
+/// title of the unified toolbar, and the window's
 /// title in the Window menu, Mission Control and VoiceOver
 /// (https://developer.apple.com/documentation/swiftui/view/navigationtitle(_:)); the HIG
 /// asks a settings window to title itself after the visible pane

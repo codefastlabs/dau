@@ -69,25 +69,13 @@ enum Reference {
     /// the toolbar color at the top of the button's frame.
     static let addButtonInkThreshold = 8
 
-    // MARK: Back/Forward (System Settings; labels: Mockup)
+    // MARK: Title (Mockup)
 
-    /// Mockup: the buttons' accessibility labels (artboards "Settings…", aria-label), in the
-    /// String Catalog.
-    static let backLabel = "Lùi"
-    static let forwardLabel = "Tiến"
-    /// System Settings' pair is one cluster, 73 × 36 at x 240, y 8. Probe (a test app
-    /// with the same `ControlGroup`, matched System Settings pixel for pixel):
-    /// Back 36 wide at 240, Forward 37 wide at 276, the separator at 276.
-    static let backButtonFrame = CGRect(x: 240, y: 8, width: 36, height: 36)
-    static let forwardButtonFrame = CGRect(x: 276, y: 8, width: 37, height: 36)
-
-    // MARK: Title (System Settings, after the Back/Forward cluster)
-
-    /// The system's page title (an AXStaticText in the toolbar) starts here. Probe
-    /// (the same toolbar in a test app): text frame at x ≈ 317, glyphs from
-    /// ≈ 326; System Settings' glyphs start at ≈ 324 (SystemSettingsReference.md). Not
-    /// yet measured on Dấu: the first run.sh of the new shell confirms or replaces it.
-    static let titleX: CGFloat = 317
+    /// The system's page title (an AXStaticText in the toolbar) starts here. Mockup: the
+    /// artboards' title at 20 pt into the detail column (232 + 20), with no Back/Forward
+    /// cluster before it. Not yet measured on Dấu without the cluster: the next run.sh
+    /// confirms or replaces it.
+    static let titleX: CGFloat = 252
     /// ... and is centered in the toolbar.
     static let titleCenterY: CGFloat = toolbarHeight / 2
 
@@ -102,9 +90,6 @@ enum Reference {
         "/System/Library/Frameworks/SwiftUI.framework/Versions/A/Resources/Localizable.loctable",
         "/System/Library/Frameworks/AppKit.framework/Resources/MenuCommands.loctable",
     ]
-    /// Key (the English text) of the View menu: its Back and Forward items are read while
-    /// the add-rule sheet is up.
-    static let viewMenuKey = "View"
     /// Edit › Find › Find… (the Find submenu of `TextEditingCommands`, added by `DauApp`):
     /// present, ⌘F, enabled while the sidebar list has the focus; ⌘F puts the focus in the
     /// sidebar search field (D9).

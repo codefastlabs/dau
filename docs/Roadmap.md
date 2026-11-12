@@ -34,40 +34,34 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 - Đối chứng là bộ gõ Telex có sẵn của macOS trong cùng điều kiện: chữ của nó dưới tải so với chữ của chính nó lúc rảnh.
   - Không so với bàn phím U.S.: nó ra nguyên chuỗi phím và không có log từng phím, nên không cho số nào để so.
   - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
-- Phần còn lại của ma trận tương thích [`docs/Compatibility.md`](Compatibility.md):
-  - app: Zalo, Discord, Messages, Pages, Numbers, Zed, Xcode, WebStorm; Ghostty đã đo, xem Compatibility 5.6;
-  - kiểm lại Terminal không gửi ⌫ cho bộ gõ: đã kiểm 12/11/2026 ([`docs/Compatibility.md`](Compatibility.md) mục 6.5);
-  - hai bài kiểm cho phần lớn app: click chuột rồi gõ tiếp (gõ `tooi`, click chỗ khác, gõ `s`: chỉ thêm "s" ở chỗ mới) và mũi tên rồi gõ tiếp (gõ `tooi`, nhấn ←, gõ `s`: ra "tối", vì ← chỉ xoá bộ đệm còn D20 (Thêm dấu cho từ đã gõ) vẫn đặt dấu vào chữ trước con trỏ);
-  - ghi app nào có tự sửa chính tả của macOS (giới hạn đã biết của D4 (Từ nước ngoài)).
+- Phần còn lại của ma trận tương thích (app chưa đo, bài click và mũi tên rồi gõ tiếp, tự sửa chính tả của macOS) chuyển sang sau bản thử đầu: người thử báo lỗi thay cho đo trước (người dùng chọn 13/11/2026). Danh sách app chưa đo: [`docs/Compatibility.md`](Compatibility.md) mục 7.
 - Xong khi:
   - `heavy.sh` chạy trọn một lượt, đạt ngưỡng D42 ở mọi ô, đối chứng hợp lệ: đạt 12/11/2026 (máy đang bận, một lượt; nhật ký [`docs/Progress.md`](Progress.md) 12/11);
-  - ma trận tương thích có đủ các app ở trên;
   - kiểm toán ĐẠT.
 
 ## M7 — Phát hành
 
 - Trước khi phát hành: chạy bài đo của D42.
 - Ký Developer ID, notarize, DMG.
-- Sparkle 2: EdDSA, 2 kênh, phát hành theo đợt. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
-- JSON tương thích có chữ ký: app chủ tải bản có chữ ký vào container App Group, kiểm chữ ký, dùng bản hợp lệ có `version` cao hơn bản nhúng; mã chỉ đổi ở chỗ gọi `CompatibilityList.bundled()`.
+- Sparkle 2: EdDSA, một kênh (D7). Kênh Beta và phát hành theo đợt sau bản thử đầu. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
 - Rà entitlement của bộ gõ trước khi notarize: thử bỏ `temporary-exception.mach-register.global-name` (xem [`docs/Architecture.md`](Architecture.md)).
-- GitHub Actions build từ tag, kèm artifact attestation; chạy cả test hiệu năng của engine (`PerformanceTests`) và phép đếm cấp phát (`malloc_logger`).
-- Homebrew cask với `auto_updates true`; tên cask chọn sau khi tra (D24 (Tên và định danh)).
-- Báo lỗi (URL issue điền sẵn), Quay về bản trước, Gỡ cài đặt.
+- GitHub Actions build từ tag, chạy cả test hiệu năng của engine (`PerformanceTests`). Artifact attestation và phép đếm cấp phát (`malloc_logger`) sau bản thử đầu.
+- Homebrew cask với `auto_updates true` sau bản thử đầu (D6); tên cask chọn sau khi tra (D24 (Tên và định danh)).
+- Báo lỗi (URL issue điền sẵn). Quay về bản trước sau bản thử đầu (D19).
 - Loại bản dựng (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
   - số build tăng dần, số hiển thị có chữ beta;
 - Biểu tượng thật dựng bằng Icon Composer, thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
-- Xuất bộ file nhận diện theo [`docs/Brand.md`](Brand.md) và gắn thẻ meta cho website. Bộ file gồm: biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, favicon, ảnh Open Graph, ảnh xem trước GitHub, nền DMG.
-- Các câu hỏi mở của [`docs/Decisions.md`](Decisions.md) gắn với M7: "Cài cho riêng mình hay cho cả máy" (D37 (Cài đặt bộ gõ); trả lời trước khi phát hành), loại bản dựng, hộp thoại App Group với bản ký Developer ID.
+- Xuất các file nhận diện bản thử đầu cần theo [`docs/Brand.md`](Brand.md): biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, ảnh xem trước GitHub, nền DMG. Favicon, ảnh Open Graph và thẻ meta đi cùng website (M8).
+- Các câu hỏi mở của [`docs/Decisions.md`](Decisions.md) gắn với M7: loại bản dựng, hộp thoại App Group với bản ký Developer ID.
 - Kiểm tra trước phát hành (cần người):
-  - VoiceOver và Tab ("Điều hướng bàn phím") qua cửa sổ Cài đặt, cả hàng "Ngôn ngữ";
+  - VoiceOver và Tab ("Điều hướng bàn phím") qua cửa sổ Cài đặt;
   - VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn (D17 (Trợ năng): hệ thống có đọc, tên chưa xác nhận);
   - biểu tượng "V" trên thanh menu đơn sắc, đổi màu theo nền sáng/tối;
   - máy để tiếng Anh hẳn (menu app, tên "Dấu" trong Finder);
   - các sheet ở chế độ tối;
   - danh sách "+" của System Settings có Dấu (nhìn bằng mắt);
-  - cài, bật và gõ thử trên macOS 14–26 và trên máy Intel: D1 (Nền tảng) hứa macOS 14 trở lên và binary universal, mọi lượt đo tới nay trên macOS 27.2 và Apple silicon; câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trong `docs/Decisions.md` cần cùng lượt này.
+- Sau bản thử đầu: cài, bật và gõ thử trên macOS 14–26 và trên máy Intel (D1 (Nền tảng): tới lúc đó chỉ nói đã kiểm trên macOS 27 và Apple silicon); câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trong `docs/Decisions.md` cần cùng lượt này.
 
 ## M8 — Website
 

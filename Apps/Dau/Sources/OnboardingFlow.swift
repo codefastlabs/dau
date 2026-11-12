@@ -12,17 +12,18 @@ import Observation
 ///
 /// Steps:
 /// 1. "Tắt bộ gõ cũ trước đã": only while another Vietnamese input method is running.
-///    Rechecked when the window becomes active; skipping is allowed. "Quay lại" from
-///    step 2 shows it again: "Đã tắt bộ gõ cũ" when none runs any more, the conflict
-///    screen when one runs again.
+///    Rechecked when the window becomes active; it moves on by itself once none runs,
+///    and skipping is allowed.
 /// 2. "Bật Dấu": install if needed (the owner copy only, D37), then enable: macOS asks the user to allow it, so the
 ///    step waits ("Đang chờ"), then shows the result read back from Text Input Sources
 ///    (N4, N5): enabled → "Đã bật"; still off or not listed → "Chưa bật được" with the
 ///    ways around it (retry, add it by hand, one logout, D37). No undo: Dấu cannot
 ///    switch itself off, only the user can. While the owner copy finds the installed
-///    input method's signature wrong, the step shows "Cài lại" instead of "Bật Dấu"
-///    (artboard OnboardingEnableTampered; D37): reinstall first, then enable.
+///    input method's signature wrong, the step shows the install error, whose "Cài lại"
+///    reinstalls (artboard OnboardingEnableError; D37): reinstall first, then enable.
 /// 3. "Chọn kiểu gõ và gõ thử".
+///
+/// No step has a "Quay lại" button: each one moves forward only.
 @MainActor
 @Observable
 final class OnboardingFlow {
@@ -51,33 +52,14 @@ final class OnboardingFlow {
     /// `enable()` is running: installing, or waiting for the user to click Allow.
     private(set) var isWorking = false
     /// This copy is the owner copy and the installed input method's signature is invalid
-    /// or by another team (D37): step 2 asks to reinstall before Dấu can be turned on.
+    /// or by another team (D37): step 2 shows the install error, whose "Cài lại"
+    /// reinstalls before Dấu can be turned on.
     /// Read again with everything else; a copy that is not the owner copy never checks.
     private(set) var installedTampered = false
     /// "Cài lại" is running.
     private(set) var isReinstalling = false
     /// What went wrong with the last action, shown on step 2.
     private(set) var problem: Problem?
-    /// Step 1 was part of this onboarding: another input method was running when it
-    /// started. Step 2 offers "Quay lại" only then, so the button never leads to a step
-    /// that was never shown.
-    private(set) var cameThroughOldInputMethods = false
-    /// Every old input method found running during this onboarding, in the order found
-    /// ("Đã tắt bộ gõ cũ" lists them).
-    private(set) var foundOldInputMethods: [DetectedInputMethod] = []
-    /// The user came back to step 1 with "Quay lại": it stays there, showing
-    /// "Đã tắt bộ gõ cũ" while nothing runs, instead of moving on by itself.
-    private(set) var cameBackToOldInputMethods = false
-
-    /// What step 1 shows.
-    enum OldInputMethodsScreen: Equatable, Sendable {
-        /// Another input method is running (artboard OnboardingConflict).
-        case conflict
-        /// None runs any more (artboard OnboardingConflictDone).
-        case done
-    }
-
-    var oldInputMethodsScreen: OldInputMethodsScreen { conflicts.isEmpty ? .done : .conflict }
 
     enum Problem: Equatable, Sendable {
         /// An error: the copy, the signature, the registration…
@@ -99,17 +81,15 @@ final class OnboardingFlow {
         case done
         /// `notEnabled` or `notListed`: retry, add by hand, log out.
         case notEnabled
-        /// An install error (copy, signature, registration): "Chưa cài được Dấu".
+        /// "Chưa cài được Dấu" (artboard OnboardingEnableError): an install error (copy,
+        /// signature, registration), or the installed input method's signature is wrong
+        /// (D37). Its "Cài lại" is `enable()`, which reinstalls in the second case.
         case error
-        /// The installed input method's signature is wrong: "Cài lại" instead of "Bật
-        /// Dấu" (artboard OnboardingEnableTampered; D37).
-        case tampered
     }
 
     var enableScreen: EnableScreen {
         if status.isEnabled { return .done }
-        // A reinstall that failed shows the install error, whose "Thử lại" reinstalls.
-        if isReinstalling || (installedTampered && problem != .failed) { return .tampered }
+        if isReinstalling || installedTampered { return .error }
         if isWorking { return .waiting }
         switch problem {
         case .notEnabled?, .notListed?: return .notEnabled
@@ -119,9 +99,13 @@ final class OnboardingFlow {
     }
 
     var failed: Bool { problem != nil }
-    /// The error's own description, shown as "Chi tiết" on the error screen (no
-    /// placeholder, N5). Set with `problem == .failed`.
-    private(set) var errorDetail: String?
+    /// "Chi tiết" on the error screen (no placeholder, N5): the last error's own
+    /// description, else the signature check's while the installed copy is not Dấu's own.
+    var errorDetail: String? {
+        failureDetail ?? (installedTampered ? InputMethodInstallerError.invalidSignature.detail : nil)
+    }
+    /// The last error's description. Set with `problem == .failed`.
+    private var failureDetail: String?
     /// Text of the try-it field (step 3).
     var tryText = ""
     /// Step to open at instead of the usual first step, once (debug flag `--onboarding`).
@@ -134,8 +118,8 @@ final class OnboardingFlow {
     @ObservationIgnored private let openKeyboardSettings: () -> Void
     @ObservationIgnored private let applicationsFolderOpener: @MainActor () -> Void
     @ObservationIgnored private let quitter: @MainActor () -> Void
-    /// The running `enable()` and which call it belongs to: "Thử lại" and "Quay lại"
-    /// cancel it, and a call that was replaced leaves the state alone.
+    /// The running `enable()` and which call it belongs to: "Thử lại" cancels it, and a
+    /// call that was replaced leaves the state alone.
     @ObservationIgnored private var enableTask: Task<EnableOutcome, Error>?
     @ObservationIgnored private var attempt = 0
 
@@ -158,12 +142,9 @@ final class OnboardingFlow {
     func start() {
         cancelEnable()
         problem = nil
-        errorDetail = nil
-        foundOldInputMethods = []
-        cameBackToOldInputMethods = false
+        failureDetail = nil
         readSystem()
         step = conflicts.isEmpty ? .enable : .oldInputMethods
-        cameThroughOldInputMethods = step == .oldInputMethods
         if let forced = forcedStartStep {
             step = forced
             forcedStartStep = nil
@@ -171,11 +152,10 @@ final class OnboardingFlow {
     }
 
     /// Reads everything again (window became active, input sources changed). On step
-    /// 1, moves on by itself once nothing clashes any more, unless the user came back to
-    /// it ("Đã tắt bộ gõ cũ" then shows, or the conflict screen if one runs again).
+    /// 1, moves on by itself once nothing clashes any more.
     func refresh() {
         readSystem()
-        if step == .oldInputMethods && conflicts.isEmpty && !cameBackToOldInputMethods { step = .enable }
+        if step == .oldInputMethods && conflicts.isEmpty { step = .enable }
         // macOS turned Dấu on (the user allowed it, or added it by hand): the failure no
         // longer holds.
         if status.isEnabled { problem = nil }
@@ -187,70 +167,24 @@ final class OnboardingFlow {
     /// Step 1, "Bỏ qua": go on with the other input method still running.
     func skip() {
         guard step == .oldInputMethods, !needsMoveToApplications else { return }
-        cameBackToOldInputMethods = false
         step = .enable
     }
 
-    /// "Quay lại" (HIG: an assistant's previous pane). Step 2 offers it before Dấu is on
-    /// (before "Bật Dấu", before "Cài lại", while waiting for Allow, after an install
-    /// error; artboards OnboardingEnable, OnboardingEnableNotes, OnboardingEnableTampered,
-    /// OnboardingEnableWaiting, OnboardingEnableError) and only when step 1 was part of
-    /// this onboarding. Once Dấu
-    /// is on, and on "Chưa bật được", the screen keeps its own buttons as drawn.
-    var canGoBack: Bool {
-        // "Chuyển Dấu vào Applications" has no previous pane.
-        guard !needsMoveToApplications else { return false }
-        return switch step {
-        case .oldInputMethods: false
-        case .enable:
-            switch enableScreen {
-            case .ready, .waiting, .error, .tampered: cameThroughOldInputMethods
-            case .done, .notEnabled: false
-            }
-        case .typing: true
-        }
-    }
-
-    /// Back one step. From step 2 it cancels a wait still running (as "Thử lại" does, so
-    /// no wait outlives the screen) and drops the last error; step 1 then checks the old
-    /// input methods again: "Đã tắt bộ gõ cũ" (artboard OnboardingConflictDone) when none
-    /// runs, the conflict screen when one does, never an empty list.
-    func back() {
-        // A reinstall is a short file operation that cannot be cancelled: it ends first.
-        guard canGoBack, !isReinstalling, let previous = Step(rawValue: step.rawValue - 1) else { return }
-        cancelEnable()
-        problem = nil
-        errorDetail = nil
-        if previous == .oldInputMethods { cameBackToOldInputMethods = true }
-        step = previous
-        if previous == .oldInputMethods { refresh() }
-    }
-
-    /// "Tiếp tục": step 1 → 2 once no old input method runs ("Đã tắt bộ gõ cũ"); step
-    /// 2 → 3 once Dấu is enabled.
+    /// "Tiếp tục": step 2 → 3 once Dấu is enabled.
     func next() {
-        guard !needsMoveToApplications else { return }
-        switch step {
-        case .oldInputMethods:
-            guard conflicts.isEmpty else { return }
-            cameBackToOldInputMethods = false
-            step = .enable
-        case .enable:
-            guard status.isEnabled else { return }
-            problem = nil
-            step = .typing
-        case .typing:
-            return
-        }
+        guard !needsMoveToApplications, step == .enable, status.isEnabled else { return }
+        problem = nil
+        step = .typing
     }
 
-    /// Step 2, "Bật Dấu" and "Thử lại": installs first when needed, then waits for macOS
-    /// to store Dấu as enabled. A run still waiting is cancelled first (the new one makes
-    /// macOS ask again). A copy that is not the owner copy never installs (D37): with
-    /// nothing installed it shows "Chuyển Dấu vào Applications" and this does nothing;
-    /// with the input method installed it only enables. While the installed input method's
-    /// signature is wrong nothing is enabled (D37): "Thử lại" after a failed reinstall
-    /// reinstalls, and an `enable()` that finds it only now shows "Cài lại".
+    /// Step 2, "Bật Dấu", "Thử lại" and the install error's "Cài lại": installs first
+    /// when needed, then waits for macOS to store Dấu as enabled. A run still waiting is
+    /// cancelled first (the new one makes macOS ask again). A copy that is not the owner
+    /// copy never installs (D37): with nothing installed it shows "Chuyển Dấu vào
+    /// Applications" and this does nothing; with the input method installed it only
+    /// enables. While the installed input method's signature is wrong nothing is enabled
+    /// (D37): this reinstalls instead, and an `enable()` that finds it only now shows the
+    /// install error.
     func enable() async {
         guard step == .enable, !status.isEnabled, !needsMoveToApplications, !isReinstalling else { return }
         if installedTampered {
@@ -262,7 +196,7 @@ final class OnboardingFlow {
         let mine = attempt
         isWorking = true
         problem = nil
-        errorDetail = nil
+        failureDetail = nil
         let installer = self.installer
         let install = status == .notInstalled && installer.isOwnerCopy
         let task = Task { @MainActor () throws -> EnableOutcome in
@@ -271,7 +205,7 @@ final class OnboardingFlow {
         }
         enableTask = task
         let result = await task.result
-        // Replaced by a newer run, or cancelled by "Quay lại": not this call's state.
+        // Replaced by a newer run, or cancelled: not this call's state.
         guard mine == attempt else { return }
         enableTask = nil
         isWorking = false
@@ -282,28 +216,28 @@ final class OnboardingFlow {
         case .success(.needsReinstall): installedTampered = true
         case .failure(let error):
             problem = .failed
-            errorDetail = Self.describe(error)
+            failureDetail = Self.describe(error)
             installLogger.error("event=enable-failed error=\(String(describing: error), privacy: .public)")
         }
         status = installer.status()
         if status.isEnabled { problem = nil }
     }
 
-    /// Step 2, "Cài lại" (artboard OnboardingEnableTampered; D37): installs the owner
-    /// copy's own input method over the one whose signature is wrong, and enables nothing.
-    /// Once the installed copy is genuine the step shows "Bật Dấu" as usual; an error
-    /// shows the install error screen.
+    /// Step 2, "Cài lại" while the installed input method's signature is wrong (artboard
+    /// OnboardingEnableError; D37): installs the owner copy's own input method over it,
+    /// and enables nothing. Once the installed copy is genuine the step shows "Bật Dấu" as
+    /// usual; otherwise the install error stays, with the new detail.
     func reinstall() async {
         guard step == .enable, installedTampered, !isReinstalling, !status.isEnabled else { return }
         cancelEnable()
         isReinstalling = true
         problem = nil
-        errorDetail = nil
+        failureDetail = nil
         do {
             try await installer.install()
         } catch {
             problem = .failed
-            errorDetail = Self.describe(error)
+            failureDetail = Self.describe(error)
             installLogger.error("event=onboarding-reinstall-failed error=\(String(describing: error), privacy: .public)")
         }
         isReinstalling = false
@@ -312,7 +246,7 @@ final class OnboardingFlow {
         if installedTampered, problem == nil {
             // Installed without an error, and still not Dấu's own: say so, never "Bật Dấu".
             problem = .failed
-            errorDetail = InputMethodInstallerError.invalidSignature.detail
+            failureDetail = InputMethodInstallerError.invalidSignature.detail
         }
         if status.isEnabled { problem = nil }
     }
@@ -360,7 +294,6 @@ final class OnboardingFlow {
     /// Debug captures: show a step as is.
     func show(_ step: Step) {
         self.step = step
-        if step == .oldInputMethods { cameThroughOldInputMethods = true }
     }
 
     /// D37: only the owner copy checks, only an installed input method that is not on
@@ -372,9 +305,6 @@ final class OnboardingFlow {
 
     private func readSystem() {
         conflicts = detector.detect().filter(\.isRunning)
-        for app in conflicts where !foundOldInputMethods.contains(where: { $0.bundleID == app.bundleID }) {
-            foundOldInputMethods.append(app)
-        }
         otherSources = detector.otherVietnameseSources()
         status = installer.status()
         let needsMove = status == .notInstalled && !installer.isOwnerCopy

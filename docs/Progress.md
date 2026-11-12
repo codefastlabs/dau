@@ -6,7 +6,8 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026.
 
-Chờ người dùng: không có.
+Chờ người dùng:
+- Nhánh `slim/cut-list` (danh sách cắt giảm): chạy `scripts/selftest/settings-window/run.sh` (chiếm màn hình) trước khi merge. Bỏ cụm Lùi/Tiến có thể làm thanh công cụ co lại ở các trang không còn mục nào trên thanh (số đo cũ ở `docs/research/SwiftUIWindowAPI.md` mục 3); `Reference.titleX` 252 lấy theo artboard, chưa đo.
 
 Việc tiếp theo:
 - M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6).
@@ -393,3 +394,8 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
 - 12/11/2026 — Ghostty có gạch chân trong shell thật, bản mới (người dùng cho chạy, 22:28–22:29, `scripts/research/terminal-underline/real-shell.sh`, cửa sổ Ghostty mới với zsh, oh-my-zsh, powerlevel10k, zsh-autosuggestions; Dấu Debug 9590ff3, gạch chân ép bằng `DauDebugForceUnderline`; 120 ms; một lượt; cài lại `--ref stable` 89543e5 ngay sau) — phiên chính. Dấu đúng cả ba dòng từ từ đầu; Telex của Apple như lượt 22:05 (đối chứng hợp lệ). Log từng phím không đọc được ở lượt này; chữ ra có D4 ("windows") và D32 ("hò"), khác Telex của Apple, nên là chữ của Dấu. Dọn: nguồn về Dấu, cửa sổ thử đã đóng, khoá `DauDebugForceUnderline` đã xoá, clipboard đã khôi phục.
 - 12/11/2026 — tag `stable` chuyển từ 89543e5 sang 949b266 (người dùng đồng ý; tag cục bộ, không push), cài bằng `install-app.sh --ref stable`: bộ gõ và Dấu.app 949b266 Release. Ghostty từ bản này gõ sai tới khi người dùng bật gạch chân cho nó (Cài đặt › Ứng dụng › Đề xuất).
 - 12/11/2026 — D26 gõ trong app thật lần đầu (người dùng cho chạy, 22:33–22:35, `scripts/selftest/typing/run.sh --delay 120 --keys "carr⌫r nhaf vui ve ⌫r "`, Dấu Release 949b266 (stable), máy M1, một lượt mỗi ô) — phiên chính. Dấu: Safari và Chrome đều "cả nhà vui vẻ" (đạt). Telex của Apple cùng ô: "car nhà vui ver" ở cả hai app (vẫn kẹt sau gõ đúp, không thêm dấu cho từ đã gõ). Lượt đối chứng đầu ở Safari không hợp lệ: script báo nguồn lúc gõ vẫn là Dấu (sau dòng "ô nhập chưa có focus, bấm vào ô"); chạy lại riêng Safari thì hợp lệ; nguyên nhân chưa rõ. Dọn: tab thử đã đóng, nguồn về Dấu.
+- 13/11/2026 — danh sách cắt giảm, năm việc (người dùng chọn; nhánh `slim/cut-list`; danh sách và bản duyệt độc lập ở `build/CutList.md`, `build/CutListReview.md`, không commit) — phiên chính, app-ui-dev, một agent duyệt.
+  - Việc 1: `typing/run.sh` dừng, không kết luận (mã 4) khi nguồn nhập liệu sau khi gõ không phải nguồn cần đo (f957a66).
+  - Việc 2–4: canvas bản 168 (bỏ 5 artboard: ba hàng Ngôn ngữ, ConflictDone, EnableTampered; bỏ cụm Lùi/Tiến ở mọi trang Cài đặt, hàng "Nhớ nguồn đầu vào theo từng cửa sổ", phần cập nhật, báo lỗi và quay về ở trang Cập nhật & hỗ trợ, nút "Quay lại" của onboarding; màn lỗi cài gộp trường hợp bộ gõ bị thay). Mã theo artboard: bớt khoảng 2 200 dòng (`AppLanguage`, `SettingsHistory`, `DocumentInputSource`, `UpdatesSupportView` thu gọn, onboarding bỏ `back()`, `ConflictDoneStep`, `EnableScreen.tampered`), 37 khoá catalog bỏ, 3 thêm.
+  - Việc 5: D1 (chỉ nói đã kiểm trên macOS 27, Apple silicon), D6 (cask sau bản thử), D7 (một kênh, danh sách đi kèm app), D16, D19 (quay về bản trước sau bản thử), D37 (chỉ cài cho từng tài khoản; câu hỏi mở chuyển sang đã trả lời), N2; Roadmap M6 (ma trận còn lại sau bản thử), M7 thu phạm vi.
+  - Kiểm: app chủ 155 test (trước 182; chênh là test của phần đã bỏ), DauShared 39, build Release sạch, String Catalog khớp. Chưa chạy: `settings-window/run.sh` (chiếm màn hình).

@@ -23,7 +23,7 @@
 #   3. --capture-uninstall                     uninstall/ (alerts laid out, nothing removed)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
 # ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
-# Settings window only. Launch 4 also sends ⌘[ ⌘] key events and a mouse wheel over the
+# Settings window only. Launch 4 also sends Tab and ⌘F key events and a mouse wheel over the
 # add-rule sheet's list (the pointer moves):
 #   4. When scrolling scroll bars              real/                  ax-check --geometry
 #   5. Always scroll bars                      always/                ax-check --pixels
@@ -31,13 +31,12 @@
 # The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (scripts/snapshot-settings).
 # Then check.swift checks the screenshots' pixels and the in-app captures.
 # What each real-window launch covers (the rows each item of docs/UIChecks.md reads):
-#   4. the focus at launch (launch-focus), the page and Lùi/Tiến at launch; on every
-#      display (one pass per pixel scale, labelled 2x/1x) every section against
-#      Reference.swift; on the primary display only: a sidebar search with no match, the
-#      add-rule sheet (AXPress "+", list, search field, selection, then "Huỷ"; no rule is
-#      added), the window's size limits (resized through Accessibility), and the window
-#      shell (Lùi/Tiến by AXPress and by ⌘[ ⌘], also under the sheet; the sidebar width at
-#      the widest and narrowest window).
+#   4. the focus at launch (launch-focus), the page at launch; on every display (one
+#      pass per pixel scale, labelled 2x/1x) every section against Reference.swift; on
+#      the primary display only: a sidebar search with no match, the add-rule sheet
+#      (AXPress "+", list, search field, selection, then "Huỷ"; no rule is added), the
+#      window's size limits (resized through Accessibility), and the window shell (the
+#      sidebar width at the widest and narrowest window).
 #   5. primary display: (a) and a screenshot of every section; the section that overflows
 #      (Reference.scrollingSection) scrolled through its scroll bar's value: (d).
 #   6. the focus at launch, Tab and ⌘F into the search field, the sidebar search, then as

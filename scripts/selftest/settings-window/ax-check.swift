@@ -5,18 +5,16 @@
 //
 // Usage: ax-check <pid> <output-dir> <light|dark> <mode>…
 //   <light|dark>   the appearance the app draws in (run.sh knows it); written to frames.json.
-//   --geometry     (When scrolling scroll bars) The page and Back/Forward at launch. Then on
-//                  every display, one pass per backing scale (rows labelled "2x" / "1x"):
-//                  each section, selected through the sidebar's accessibility, against
-//                  System Settings (toolbar, Back/Forward cluster, system title, sidebar,
-//                  Form). On the primary display only: the sidebar search with a query
+//   --geometry     (When scrolling scroll bars) The page at launch. Then on every
+//                  display, one pass per backing scale (rows labelled "2x" / "1x"): each
+//                  section, selected through the sidebar's accessibility, against System
+//                  Settings (toolbar, system title, sidebar, Form). On the primary display only: the sidebar search with a query
 //                  nothing matches; the add-rule sheet ("+" on Ứng dụng): the app list
 //                  (settles, overflows, scroll bar, wheel, always-installed apps, end of
 //                  list), search and selection wiring, Huỷ. Then the window's size limits
 //                  (by resizing it; the width is fixed, only the height changes).
-//                  Last, the shell: Back/Forward through the buttons and ⌘[ ⌘] (key
-//                  events), also under the sheet, and the sidebar's width at the widest
-//                  and narrowest window. What a test can hold without a real window (the
+//                  Last, the shell: the sidebar's width at the widest and narrowest
+//                  window. What a test can hold without a real window (the
 //                  View menu's sidebar item, the divider's mouse area) is `swift test`
 //                  "Settings window shell"; the not-enabled banner is `swift test`
 //                  "Not-enabled banner".
@@ -33,7 +31,6 @@
 //                  screenshots for (b)–(d).
 //   --sheet-shots  Primary display: screenshots of the add-rule sheet, empty and with a
 //                  row selected (no rows: --geometry checks the sheet).
-//   --shell        Only the Back/Forward rows (a quick pass on a running app).
 // Screenshots are `screencapture -l` of the Settings window only (an attached sheet is
 // in it), named <name>-<scale>x.png; <output-dir>/frames.json holds the frames of every
 // screenshot (window points, origin at the window's top-left) for check.swift and
@@ -57,8 +54,8 @@ import AppKit
 
 // MARK: - Arguments
 
-let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --focus | --pixels | --sheet-shots | --shell …"
-let modeFlags: Set = ["--geometry", "--focus", "--pixels", "--sheet-shots", "--shell"]
+let usage = "usage: ax-check <pid> <output-dir> <light|dark> --geometry | --focus | --pixels | --sheet-shots …"
+let modeFlags: Set = ["--geometry", "--focus", "--pixels", "--sheet-shots"]
 let arguments = Array(CommandLine.arguments.dropFirst())
 guard arguments.count >= 4, let pid = pid_t(arguments[0]), ["light", "dark"].contains(arguments[2]),
       Set(arguments.dropFirst(3)).isSubset(of: modeFlags) else {
@@ -356,10 +353,6 @@ func toolbarTexts() -> String {
     windowElements { role($0) == "AXStaticText" && rel($0).midY < Reference.toolbarHeight }
         .map { "\"\(label($0))\" \(fmt(rel($0)))" }.joined(separator: "; ").nonEmpty ?? "none"
 }
-/// A Back/Forward button, by its label, in the toolbar band.
-func historyButton(_ name: String) -> AXUIElement? {
-    windowElements { role($0) == "AXButton" && label($0) == name && rel($0).midY < Reference.toolbarHeight }.first
-}
 /// The toolbar "+" of Ứng dụng, by its label.
 func toolbarAddButton() -> AXUIElement? {
     windowElements { role($0) == "AXToolbar" }.flatMap { children($0) }
@@ -504,14 +497,7 @@ func measureSection(_ d: String, _ tag: String, _ index: Int) {
         shot["close"] = rel(close)
         check(d, page, "close button", rel(close), Reference.closeFrame)
     }
-    // Back/Forward cluster, then the system title right of it (System Settings).
-    for (name, expected, key) in [(Reference.backLabel, Reference.backButtonFrame, "back"),
-                                  (Reference.forwardLabel, Reference.forwardButtonFrame, "forward")] {
-        if let button = require(d, page, "toolbar button \"\(name)\"", find: { historyButton(name) }) {
-            shot[key] = rel(button)
-            check(d, page, "\(key) button", rel(button), expected)
-        }
-    }
+    // The system title.
     let title = require(d, page, "page title (system title in the toolbar)",
                         diagnose: { "no static text \"\(windowTitle())\" in the toolbar; texts there: \(toolbarTexts())" },
                         find: pageTitle).map(rel)
@@ -1003,22 +989,7 @@ func measureLimits() {
     _ = drive(d, p, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize)))
 }
 
-// MARK: - Shell: Back/Forward, fixed sidebar (--geometry)
-
-/// Back and Forward as the buttons show them now: enabled or not.
-func checkHistoryButtons(_ d: String, _ p: String, _ when: String, back: Bool?, forward: Bool?) {
-    // The buttons follow the page; read them once their states stay the same on 3 reads.
-    _ = waitSettled(timeout: 2, interval: 0.1, reads: 3) {
-        [Reference.backLabel, Reference.forwardLabel].map { historyButton($0).map(enabled) }
-    }
-    for (name, want) in [(Reference.backLabel, back), (Reference.forwardLabel, forward)] {
-        guard let want else { continue }
-        if let button = require(d, p, "toolbar button \"\(name)\"", find: { historyButton(name) }) {
-            record(d, p, "\(name) \(when)", expected: want ? "enabled" : "disabled",
-                   got: enabled(button) ? "enabled" : "disabled", ok: enabled(button) == want)
-        }
-    }
-}
+// MARK: - Shell: fixed sidebar (--geometry)
 
 /// The page shown, by the window's title, within 3 s (the callers used to wait 1 s before
 /// a 2 s poll).
@@ -1217,84 +1188,11 @@ func measureKeyboardToSearch() {
     _ = focusList()
 }
 
-/// At launch, before anything is selected: the window opens on Gõ phím with nothing
-/// visited, so Back and Forward are both off (artboard "SettingsTyping").
+/// At launch, before anything is selected: the window opens on Gõ phím (artboard
+/// "SettingsTyping").
 func measureLaunchState() {
     let d = "-", p = "launch"
     checkShown(d, p, "at launch", 0)
-    checkHistoryButtons(d, p, "at launch", back: false, forward: false)
-}
-
-/// Back/Forward wiring (what the history does is `swift test` "Settings history"):
-/// visiting another section turns Back on; Back and Forward, through the buttons and
-/// through ⌘[ ⌘] (View menu), move between the two pages.
-func measureHistory() {
-    let d = "-", p = "history"
-    guard showSection(d, 0), showSection(d, 1) else { return }
-    checkShown(d, p, "after selecting \(sections[1])", 1)
-    checkHistoryButtons(d, p, "after selecting another section", back: true, forward: false)
-    guard let back = require(d, p, "toolbar button \"\(Reference.backLabel)\"", find: { historyButton(Reference.backLabel) }),
-          drive(d, p, "press \(Reference.backLabel)", press(back)) else { return }
-    checkShown(d, p, "after \(Reference.backLabel)", 0)
-    checkHistoryButtons(d, p, "after \(Reference.backLabel)", back: nil, forward: true)
-    guard let forward = require(d, p, "toolbar button \"\(Reference.forwardLabel)\"", find: { historyButton(Reference.forwardLabel) }),
-          drive(d, p, "press \(Reference.forwardLabel)", press(forward)) else { return }
-    checkShown(d, p, "after \(Reference.forwardLabel)", 1)
-    checkHistoryButtons(d, p, "after \(Reference.forwardLabel)", back: true, forward: false)
-    // kVK_ANSI_LeftBracket / RightBracket: "[" and "]" on the ANSI layout.
-    postKey(d, p, 33, .maskCommand)
-    checkShown(d, p, "after ⌘[", 0)
-    postKey(d, p, 30, .maskCommand)
-    checkShown(d, p, "after ⌘]", 1)
-}
-
-/// A sheet on the window (the add-rule sheet): ⌘[ ⌘] and View › Back / Forward must leave
-/// the page behind it alone, and the two items must be off while the sheet is up (as in a
-/// modal state; a page changing behind a sheet is not seen by the user). Back and Forward
-/// both have somewhere to go when the sheet opens: the pages visited are 0, apps, last,
-/// and Back returned to apps.
-func measureHistoryUnderSheet() {
-    let d = "-", p = "history-under-sheet"
-    let last = sections.count - 1
-    guard last > appsIndex, showSection(d, 0), showSection(d, appsIndex), showSection(d, last),
-          let back = require(d, p, "toolbar button \"\(Reference.backLabel)\"", find: { historyButton(Reference.backLabel) }),
-          drive(d, p, "press \(Reference.backLabel)", press(back)) else { return }
-    checkShown(d, p, "before the sheet", appsIndex)
-    checkHistoryButtons(d, p, "before the sheet", back: true, forward: true)
-    guard let add = require(d, p, "toolbar + (\"Thêm ứng dụng\")", find: toolbarAddButton),
-          drive(d, p, "press +", press(add)),
-          requireShown(d, p, "sheet opened by +", within: 5, find: attachedSheet) != nil else {
-        if attachedSheet() != nil { closeSheet(d) }
-        return
-    }
-    // kVK_ANSI_LeftBracket / RightBracket. Under the sheet nothing may change, and no
-    // state shows that a key was ignored: each key gets a fixed 1 s before the rows.
-    postKey(d, p, 33, .maskCommand)
-    wait(1.0)
-    checkShown(d, p, "under the sheet after ⌘[", appsIndex)
-    record(d, p, "sheet after ⌘[", expected: "shown", got: attachedSheet() == nil ? "closed" : "shown", ok: attachedSheet() != nil)
-    postKey(d, p, 30, .maskCommand)
-    wait(1.0)
-    checkShown(d, p, "under the sheet after ⌘]", appsIndex)
-    record(d, p, "sheet after ⌘]", expected: "shown", got: attachedSheet() == nil ? "closed" : "shown", ok: attachedSheet() != nil)
-    // The View menu's items while the sheet is up.
-    let viewTitles = systemTitles([Reference.viewMenuKey])
-    if let bar = require(d, p, "menu bar", find: { attr(app, kAXMenuBarAttribute).map { $0 as! AXUIElement } }),
-       let viewItem = require(d, p, "View menu", find: { children(bar).first { viewTitles.contains(label($0)) } }),
-       drive(d, p, "open the View menu", press(viewItem)) {
-        waitForMenu(viewItem)
-        let items = children(viewItem).first { role($0) == "AXMenu" }.map { children($0).filter { role($0) == "AXMenuItem" } } ?? []
-        for title in [Reference.backLabel, Reference.forwardLabel] {
-            let item = items.first { label($0) == title }
-            record(d, p, "menu item \"\(title)\" under the sheet", expected: "disabled",
-                   got: item.map { enabled($0) ? "enabled" : "disabled" } ?? "missing", ok: item.map { !enabled($0) } ?? false)
-        }
-        if let menu = children(viewItem).first(where: { role($0) == "AXMenu" }) { _ = AXUIElementPerformAction(menu, kAXCancelAction as CFString) }
-        closeMenu(viewItem)
-    }
-    closeSheet(d)
-    checkShown(d, p, "after the sheet closed", appsIndex)
-    checkHistoryButtons(d, p, "after the sheet closed", back: true, forward: true)
 }
 
 /// Values of `keys` in the system's string tables, in the app's languages.
@@ -1309,25 +1207,6 @@ func systemTitles(_ keys: [String]) -> Set<String> {
         }
     }
     return titles
-}
-
-/// After pressing a menu bar item: until it is selected (open; 2 s at most, then read
-/// anyway), then until its items' titles and enabled states stay the same on 3 reads
-/// (AppKit validates them as the menu opens).
-func waitForMenu(_ item: AXUIElement) {
-    waitUntil(timeout: 2) { (attr(item, kAXSelectedAttribute) as? Bool) == true }
-    _ = waitSettled(timeout: 2, interval: 0.1, reads: 3) {
-        (children(item).first { role($0) == "AXMenu" }.map { children($0).filter { role($0) == "AXMenuItem" } } ?? [])
-            .map { "\(label($0)) \(enabled($0))" }
-    }
-}
-/// After cancelling a menu: until its menu bar item is no longer selected; if it still is
-/// after 2 s, Escape, and the same wait again.
-func closeMenu(_ item: AXUIElement) {
-    func open() -> Bool { (attr(item, kAXSelectedAttribute) as? Bool) == true }
-    if waitUntil(timeout: 2, { !open() }) { return }
-    for down in [true, false] { CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap) }
-    waitUntil(timeout: 2) { !open() }
 }
 
 /// The split group that holds the sidebar: the widest one in the window.
@@ -1481,15 +1360,8 @@ if modes.contains("--geometry") {
     }
     measureLimits()
     measureKeyboardToSearch()
-    measureHistory()
-    measureHistoryUnderSheet()
     // Last: it resizes the window.
     measureFixedSidebar()
-}
-// `--shell` alone: only the Back/Forward rows (a quick pass on a running app).
-if modes.contains("--shell") && !modes.contains("--geometry") {
-    measureHistory()
-    measureHistoryUnderSheet()
 }
 if modes.contains("--pixels") || modes.contains("--sheet-shots"), moveWindow(to: primary, tag(primary)) {
     if modes.contains("--pixels") { measurePixels(tag(primary), tag(primary)) }

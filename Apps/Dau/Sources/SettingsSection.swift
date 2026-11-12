@@ -45,19 +45,10 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
              "Add marks to typed words", "Advanced", "Consonant shortcuts",
              "Allow consonants z, f, w, j"]
         case .apps:
-            ["Input source per window", "Remember the input source for each window",
-             "App rules", "Add App", "Underline", "No Underline", "Suggested", "Turn On Underline"]
+            ["App rules", "Add App", "Underline", "No Underline", "Suggested", "Turn On Underline"]
         case .updates:
-            ["Version", "Check Now", "Language", "Automatically check for updates",
-             "Automatically download and install", "Release channel", "Stable", "Beta",
-             "Problems typing in an app?", "Report a Problem…", "Go back to the previous version",
-             "Remove Dấu from this Mac", "Uninstall…", "Privacy"]
+            ["Version", "Remove Dấu from this Mac", "Uninstall…", "Privacy"]
         }
-    }
-
-    /// Words of the section that are macOS's own (D38), in the system's language.
-    var systemKeywords: [String] {
-        self == .apps ? [SystemUINames.system().automaticallySwitchOption] : []
     }
 
     /// Case- and diacritic-insensitive match on the words as shown ("go phim" finds
@@ -71,7 +62,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
     func matches(_ query: String, localize: (LocalizedStringResource) -> String) -> Bool {
         let query = query.trimmingCharacters(in: .whitespaces)
         guard !query.isEmpty else { return true }
-        let words = ([titleResource] + keywordResources).map(localize) + systemKeywords
+        let words = ([titleResource] + keywordResources).map(localize)
         return words.contains { $0.searchContains(query) }
     }
 }

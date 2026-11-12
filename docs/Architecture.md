@@ -267,7 +267,7 @@ Dùng khi thay bộ gõ (D37) và khi gỡ (D16 (Bảo trì và gỡ cài đặt
 
 ## App chủ (Dau)
 
-Entitlement của app chủ chỉ có App Group, hardened runtime bật, không sandbox (D37). App chỉ **đọc** tuỳ chọn hệ thống (`com.apple.symbolichotkeys`, `com.apple.HIToolbox`: phím tắt nguồn nhập liệu và tuỳ chọn "Tự động chuyển…", N4 (Không tự đổi cài đặt hệ thống)). Kiểm App Group bằng `scripts/selftest/app-group.sh`. Điểm vào là `main.swift`.
+Entitlement của app chủ chỉ có App Group, hardened runtime bật, không sandbox (D37). App chỉ **đọc** tuỳ chọn hệ thống (`com.apple.symbolichotkeys`, `com.apple.HIToolbox`: phím tắt chuyển nguồn nhập liệu và phím 🌐, N4 (Không tự đổi cài đặt hệ thống)). Kiểm App Group bằng `scripts/selftest/app-group.sh`. Điểm vào là `main.swift`.
 
 ### Cửa sổ Cài đặt
 
@@ -275,10 +275,10 @@ Entitlement của app chủ chỉ có App Group, hardened runtime bật, không 
 - Ngôn ngữ giao diện theo danh sách ngôn ngữ của macOS (D41 (Ngôn ngữ giao diện)); tham số `-AppleLanguages` vẫn chọn được ngôn ngữ khi chạy kiểm.
 - **Bố cục** (D9 (Giao diện), sidebar cố định):
   - nội dung của scene là `SettingsSplitViewController` (`NSSplitViewController` do app tạo, bọc bằng `NSViewControllerRepresentable`); mục sidebar có `canCollapse` và `canCollapseFromWindowResize` tắt, độ dày tối thiểu bằng tối đa, đường chia không có vùng kéo chuột;
-  - trạng thái chung của hai cột (`SettingsWindowState`: lịch sử, chuỗi tìm, sheet đang mở) là một đối tượng `@Observable`;
+  - trạng thái chung của hai cột (`SettingsWindowState`: mục đang hiện, chuỗi tìm) là một đối tượng `@Observable`;
   - sidebar và trang là view SwiftUI trong hai `NSHostingController`; môi trường của scene chuyển vào hai cột bằng `SettingsEnvironment` (kể cả `openWindow`).
 - **Sidebar:** `List` kiểu `.sidebar` với 4 mục `Label`; ô tìm `NSSearchField` cỡ lớn ở đầu cột, lề chuẩn của sidebar (`searchable` của sidebar chỉ có trong `NavigationSplitView`); danh sách nhận tiêu điểm khi mở cửa sổ (`FocusState` đặt khi danh sách hiện; `defaultFocus` không có tác dụng trong hosting controller này); Edit › Find › Find… (⌘F, từ `TextEditingCommands` trong `DauApp`) đưa tiêu điểm vào ô tìm: split view controller xử lý `performFindPanelAction`; ô icon vẽ theo SVG của mockup, màu hệ thống.
-- **Thanh công cụ và tiêu đề:** cụm Lùi/Tiến là `ControlGroup` kiểu `.navigation` ở `ToolbarItemPlacement.navigation`, gắn quanh trang để bấm được qua trợ năng; tiêu đề là `navigationTitle`. Cả hai đến từ `NSHostingController` của cột trang, đưa lên cửa sổ bằng `sceneBridgingOptions`; cột sidebar không đưa gì. Lịch sử mục đã xem: `SectionHistory`; Lùi ⌘[ / Tiến ⌘] ở menu View (`focusedSceneValue`). Không có lệnh ẩn/hiện sidebar: không dùng `SidebarCommands`, hành động `toggleSidebar` của AppKit bị tắt. Mục Ứng dụng có nút "+" rồi ô tìm (`.searchable(placement: .toolbar)`), ngăn bằng `ToolbarSpacer(.flexible)`.
+- **Thanh công cụ và tiêu đề:** không có cụm Lùi/Tiến (D9); tiêu đề là `navigationTitle`. Tiêu đề và các nút của trang đến từ `NSHostingController` của cột trang, đưa lên cửa sổ bằng `sceneBridgingOptions`; cột sidebar không đưa gì. Ô tìm của sidebar nhảy tới mục khớp đầu tiên khi mục đang hiện không còn khớp (`SettingsWindowState.showFirstMatch`). Không có lệnh ẩn/hiện sidebar: không dùng `SidebarCommands`, hành động `toggleSidebar` của AppKit bị tắt. Mục Ứng dụng có nút "+" rồi ô tìm (`.searchable(placement: .toolbar)`), ngăn bằng `ToolbarSpacer(.flexible)`.
 - **Trang:** `SettingsPage` = `Form(.grouped)` với `Section`, control hệ thống và thông số mặc định; mảnh nội dung riêng của mockup (thẻ xem trước, chip, nhãn "Mới", phím, ô banner) nằm trong các section. Form tự cuộn và lấp cột chi tiết; trên macOS 26+, nội dung cuộn dưới header được che bằng `scrollEdgeEffectStyle(.hard, for: .top)`. Thanh cuộn theo cài đặt hệ thống (`docs/UIChecks.md`).
 - **Control bọc:** `SegmentedPicker` bọc `NSSegmentedControl`, chỉ còn ở cửa sổ onboarding (`Picker(.segmented)` trên macOS 14–15 giữ độ rộng nội tại, không trải theo khung). Cửa sổ Cài đặt dùng `Picker(.segmented)` (macOS 26+: `buttonSizing(.flexible)`).
 - **Sheet thêm quy tắc** (`AddAppRuleSheet`), theo sheet của System Settings: hàng đầu gồm tiêu đề và ô tìm `NSSearchField`; danh sách ứng dụng là `List(selection:)` cao cố định trong `GroupBox` ngoài Form (`List` lồng trong `Form(.grouped)` không cuộn được), để "Khi đang gõ" (thẻ của một `Form(.grouped)`) luôn trong tầm nhìn; nút trên `toolbar` (`cancellationAction`, `confirmationAction`; "Chọn ứng dụng khác…" là `.automatic`).
@@ -289,8 +289,9 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 
 - **Chuyển vào Applications:** `OnboardingFlow.needsMoveToApplications` thay cả ba bước bằng `MoveToApplicationsStep` khi bản đang chạy không phải bản chủ và bộ gõ chưa cài (D37). Hai nút đi qua `OwnerCopyGuide`: mở thư mục Applications trong Finder, thoát app.
 - **Bước 1** chỉ hiện khi có xung đột (mục "Danh sách tương thích, bộ gõ cũ").
-- **Bước 2:** nguồn tiếng Việt kiểu IMK khác đang bật hiện ở `OtherSourcesNote`, không chặn. `OnboardingFlow.installedTampered` đổi màn "Bật Dấu" thành màn "Cài lại" (`OnboardingFlow.EnableScreen.tampered`, view `EnableStep.tampered`): đúng khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và `InputMethodInstaller.installedIsGenuine` sai; phát hiện lúc đang chờ Allow thì huỷ lần chờ.
-  - `OnboardingFlow.reinstall` gọi `install()`, không gọi `enable()`; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu", lỗi thì hiện màn lỗi cài, nơi "Thử lại" (`OnboardingFlow.enable`) cài lại khi bản đã cài còn sai chữ ký, và bật khi nó đã đúng.
+- Không bước nào có nút "Quay lại": các bước chỉ đi tới.
+- **Bước 2:** nguồn tiếng Việt kiểu IMK khác đang bật hiện ở `OtherSourcesNote`, không chặn. `OnboardingFlow.installedTampered` đổi màn "Bật Dấu" thành màn lỗi cài "Chưa cài được Dấu" (`OnboardingFlow.EnableScreen.error`, view `EnableStep.installError`; "Chi tiết" là lỗi chữ ký): đúng khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và `InputMethodInstaller.installedIsGenuine` sai; phát hiện lúc đang chờ Allow thì huỷ lần chờ.
+  - Nút "Cài lại" của màn lỗi gọi `OnboardingFlow.enable`: bản đã cài sai chữ ký thì `enable` chuyển sang `OnboardingFlow.reinstall`, chỉ gọi `install()`, không gọi `enable()` của bộ cài; xong thì đọc lại chữ ký: đúng thì về màn "Bật Dấu", còn sai hay lỗi thì ở lại màn lỗi. Lỗi cài khác (chưa chép được) thì `enable` cài rồi bật như lần đầu.
   - `OnboardingFlow.enable` nhận `EnableOutcome.needsReinstall` (bộ gõ bị thay sau lần đọc cuối) thì cũng sang màn này.
 
 ### Cài, bật, thay, gỡ bộ gõ
@@ -315,14 +316,14 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 
 **Bật** (chỉ khi người dùng bấm "Bật Dấu" hoặc "Bật lại"; `docs/research/InputMethodInstall.md` mục 1 và 3):
 
-1. Bản chủ kiểm `InputMethodFiles.installedIsGenuine` trước mọi việc: sai thì trả `EnableOutcome.needsReinstall`, không làm gì thêm. `OnboardingFlow` hiện màn "Cài lại", `InputMethodActions.enableFromBanner` hiện `TamperedBanner`.
+1. Bản chủ kiểm `InputMethodFiles.installedIsGenuine` trước mọi việc: sai thì trả `EnableOutcome.needsReinstall`, không làm gì thêm. `OnboardingFlow` hiện màn lỗi cài với nút "Cài lại", `InputMethodActions.enableFromBanner` hiện `TamperedBanner`.
 2. Ngay trước `TISRegisterInputSource`, `InputSourceCaches.clearAll` xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con trực tiếp của `DARWIN_USER_CACHE_DIR` (mỗi app có sandbox giữ bộ đệm riêng ở đó, extension Bàn phím của System Settings là một). File ở gốc thư mục là bộ đệm chung, tự làm mới, không đụng. Thư mục không liệt kê được hay file không xoá được thì bỏ qua, đếm là lỗi, ghi nhật ký; không bao giờ làm `enable()` thất bại.
 3. Luôn `TISRegisterInputSource`: app đang chạy dựng lại bộ đệm ở lần đăng ký này. TIS không liệt kê Dấu sau đó thì `notListed`.
 4. Mode `.vi` đã nằm trong mục lưu thì `enabled` ngay. Không thì yêu cầu System Settings thoát (`terminate()`, không ép; không thoát được thì đi tiếp), rồi `TISEnableInputSource` cho mục cha.
 5. **Đọc lại** mục lưu theo chu kỳ tới khi có mode `.vi` (tối đa `SystemInputMethodInstaller.enableTimeout`, để người dùng đọc và bấm Allow): có thì `enabled`; hết hạn thì `notEnabled` (giao diện hiện "Chưa bật được"; macOS ghi mục sau đó thì cửa sổ nhận ra).
 6. Mỗi lần ra `enabled` có đúng một lượt `InputSourceCaches.removeCaches(notMentioning:)`: thư mục con nào có `com.apple.IntlDataCache.le.kbdx` đọc được mà không chứa chuỗi UTF-8 `Input Methods/DauInputMethod.app` thì xoá bộ đệm đó; có ít nhất một thì `TISRegisterInputSource` thêm một lần. Đây là phỏng đoán trên định dạng không có tài liệu; lượt này không ném lỗi và không đổi kết quả.
 
-Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()`, "Thử lại"/"Quay lại" huỷ nó. Mã trả về của TIS không bao giờ là bằng chứng. App không tắt được Dấu (`TISDisableInputSource` từ app bị macOS chặn, `docs/research/InputMethodInstall.md` mục 5.2); trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
+Vòng chờ kiểm huỷ task mỗi lượt: `OnboardingFlow` giữ task của `enable()`, "Thử lại" huỷ nó. Mã trả về của TIS không bao giờ là bằng chứng. App không tắt được Dấu (`TISDisableInputSource` từ app bị macOS chặn, `docs/research/InputMethodInstall.md` mục 5.2); trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
 
 **Kiểm bộ gõ đã cài:** mỗi lần mở app và mỗi lần app được đưa lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`, yêu cầu mã ở D37); chỉ bản chủ hỏi. Không đạt thì `TamperedBanner` hiện banner "Cài lại", bấm thì cài lại bản nhúng. Cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật, và lượt `reconcile` lúc mở app không chạy.
 
@@ -370,7 +371,7 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 
 `SystemUINames` (D38 (Chữ trên giao diện)).
 
-- Danh sách đủ là các case của enum `SystemUIName` (nơi duy nhất giữ danh sách; `docs/Glossary.md` dẫn sang đây), mỗi case có một dòng trong `SystemUINames.location(of:)`: các tên của System Settings, thư mục Applications (`applications`), Trash của Finder (`trash`), Language & Region và mục Applications của nó (`languageAndRegion`, `languageRegionApplications`), tên tuỳ chọn "Automatically switch to a document’s input source", tên ngôn ngữ "Vietnamese", hộp thoại "Allow … to enable …?" (`allowDialogTitle`, `allowDialogBody`), và tên nguồn của chính Dấu (`dauInputSource`: đọc `InfoPlist.strings` của bộ gõ đã cài, chưa cài thì bản trong app, khoá là ID input mode).
+- Danh sách đủ là các case của enum `SystemUIName` (nơi duy nhất giữ danh sách; `docs/Glossary.md` dẫn sang đây), mỗi case có một dòng trong `SystemUINames.location(of:)`: các tên của System Settings, thư mục Applications (`applications`), Trash của Finder (`trash`), tên ngôn ngữ "Vietnamese", hộp thoại "Allow … to enable …?" (`allowDialogTitle`, `allowDialogBody`), và tên nguồn của chính Dấu (`dauInputSource`: đọc `InfoPlist.strings` của bộ gõ đã cài, chưa cài thì bản trong app, khoá là ID input mode).
 - Ngôn ngữ lấy như `LayoutNames`. Chữ lấy từ bảng của chính hệ thống (`SystemUITable`; đường dẫn ở `SystemUINames.tableURLs` và `loadTables`; "Applications" từ `SystemFolderLocalizations` qua `folderNames`, "Trash" từ `Localizable.strings` của Finder qua `finderNames`; tên ngôn ngữ từ `Locale`), tìm khoá bằng cách khớp giá trị tiếng Anh; ngôn ngữ đầu là tiếng Anh, hoặc không khớp ở mọi ngôn ngữ ưu tiên, thì tiếng Anh.
 - Câu chữ của Dấu dùng `%@` cho các tên này; khái niệm chung dùng thuật ngữ Apple của từng ngôn ngữ (`docs/Glossary.md`). Bộ gõ không dùng hai file này.
 

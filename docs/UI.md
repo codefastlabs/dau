@@ -54,15 +54,7 @@ Artboard: [OnboardingConflict](canvas/OnboardingConflict.png).
 - Chỉ hiện khi phát hiện bộ gõ chặn phím đang chạy (bundle ID trong [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 8). Lúc mở không có bộ gõ nào chạy thì bỏ qua bước này.
 - Hướng dẫn tắt chỉ ghi tên menu đã kiểm chứng. App chưa kiểm thì ghi chung "Thoát `<tên>`" và đường dẫn Mục đăng nhập (N5).
 - Tự kiểm tra lại khi cửa sổ được kích hoạt. Cho phép bỏ qua.
-
-#### Đã tắt bộ gõ cũ
-
-Artboard: [OnboardingConflictDone](canvas/OnboardingConflictDone.png).
-
-- Màn bước 1 khi người dùng bấm "Quay lại" ở bước 2 mà không còn bộ gõ cũ nào chạy.
-- Thẻ liệt kê các bộ gõ cũ đã phát hiện trong lượt onboarding này, mỗi bộ gõ có nhãn xanh "Đã tắt".
-- Nút duy nhất "Tiếp tục" sang bước 2; thanh bước vẫn ở bước 1.
-- Có bộ gõ cũ chạy lại thì hiện lại màn tắt bộ gõ cũ.
+- Onboarding không có nút "Quay lại": các bước chỉ đi tới.
 
 ### Bước 2: bật Dấu
 
@@ -70,13 +62,6 @@ Artboard: [OnboardingConflictDone](canvas/OnboardingConflictDone.png).
 - macOS hỏi người dùng có cho Dấu bật không (hộp thoại Allow), nên bước có nhiều màn, mỗi màn một mục dưới đây.
 - Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5).
 - Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
-
-#### Nút "Quay lại"
-
-- Nút phụ kiểu hệ thống bên trái nút chính (D9).
-- Có trên các màn trước khi Dấu được bật: trước khi bấm, bộ gõ đã bị thay, đang chờ, lỗi cài. Màn "đã bật" và "chưa bật được" giữ nút riêng như artboard.
-- Chỉ có khi bước 1 đã hiện trong lượt onboarding này, để nút không dẫn tới một màn trống.
-- Bấm thì huỷ lần chờ đang chạy (cùng cách "Thử lại" huỷ), bỏ lỗi vừa gặp, về bước 1; bước 1 kiểm tra lại bộ gõ cũ: còn chạy thì hiện màn tắt, không còn thì hiện "Đã tắt bộ gõ cũ".
 
 #### Trước khi bấm
 
@@ -87,23 +72,12 @@ Artboard: [OnboardingEnable](canvas/OnboardingEnable.png), [có nguồn tiếng 
 - Phím tắt không đọc được thì hàng phím tắt là một dòng nói vậy kèm nút mở System Settings, không có keycap rỗng.
 - Nhắc nhẹ (biểu tượng thông tin) khi có nguồn tiếng Việt kiểu IMK khác đang bật (D14), không chặn.
 
-#### Bộ gõ đã bị thay
-
-Artboard: [OnboardingEnableTampered](canvas/OnboardingEnableTampered.png).
-
-- Tiêu đề "Bộ gõ Dấu trên máy đã bị thay đổi": chữ ký của bộ gõ trong `~/Library/Input Methods` không hợp lệ, không do Apple cấp, không cùng Team ID với app hoặc sai định danh bộ gõ (D37). Cửa sổ Cài đặt có banner cùng tên (mục "Banner").
-- Màn này thay cho "Trước khi bấm" khi bản đang chạy là bản chủ, bộ gõ đã cài nhưng chưa bật, và bộ gõ đã bị thay.
-- Cùng tiêu đề, câu dẫn và nút "Cài lại" với banner; không có thẻ.
-- "Cài lại" chỉ cài bản nhúng của app, không bật: cài xong và chữ ký đúng thì hiện "Trước khi bấm"; lỗi thì hiện "Lỗi cài".
-- Kiểm lại khi cửa sổ được kích hoạt; đang chờ Allow mà phát hiện thì huỷ lần chờ.
-- Bản không phải bản chủ không kiểm chữ ký nên không có màn này. Dấu đã bật thì bước 2 vẫn là "Đã bật", banner của cửa sổ Cài đặt lo.
-
 #### Đang chờ
 
 Artboard: [OnboardingEnableWaiting](canvas/OnboardingEnableWaiting.png).
 
 - Trong lúc `enable()` chờ mục lưu của Dấu: thẻ trạng thái có vòng xoay.
-- "Thử lại" huỷ lần chờ đang chạy rồi bật lại (macOS hỏi lại). "Quay lại" cũng huỷ, không để lần chờ nào chạy tiếp.
+- "Thử lại" huỷ lần chờ đang chạy rồi bật lại (macOS hỏi lại).
 - Màn tự chuyển sang "Đã bật" khi macOS ghi mục.
 
 #### Đã bật
@@ -127,9 +101,10 @@ Artboard: [OnboardingEnableFailed](canvas/OnboardingEnableFailed.png).
 
 Artboard: [OnboardingEnableError](canvas/OnboardingEnableError.png).
 
-- Lỗi chép, kiểm chữ ký, đăng ký: màn riêng "Chưa cài được Dấu", hai cách xử lý.
+- Một màn "Chưa cài được Dấu" cho hai trường hợp: lỗi chép, kiểm chữ ký hay đăng ký; và bộ gõ đã cài bị thay (chữ ký không hợp lệ, không do Apple cấp, khác Team ID với app hoặc sai định danh bộ gõ, D37). Hai cách xử lý.
+- Trường hợp bộ gõ bị thay: màn này thay cho "Trước khi bấm" khi bản đang chạy là bản chủ và bộ gõ đã cài nhưng chưa bật. Bản không phải bản chủ không kiểm chữ ký. Dấu đã bật thì bước 2 vẫn là "Đã bật", banner của cửa sổ Cài đặt lo. Kiểm lại khi cửa sổ được kích hoạt; đang chờ Allow mà phát hiện thì huỷ lần chờ.
 - Dòng "Chi tiết" là mô tả thật của lỗi (chọn được để chép).
-- "Thử lại" bật lại từ đầu. Lỗi đến từ "Cài lại" (màn "Bộ gõ đã bị thay" hay banner) thì "Thử lại" cài lại khi bộ gõ trên máy còn sai chữ ký, còn đã đúng thì bật.
+- "Cài lại" cài bản nhúng của app, không bật: cài xong và chữ ký đúng thì hiện "Trước khi bấm"; còn lỗi thì vẫn màn này.
 
 ### Bước 3: chọn kiểu gõ và gõ thử
 
@@ -144,7 +119,7 @@ Artboard: [Onboarding](canvas/Onboarding.png), [Dấu chưa là nguồn đang d�
 
 Artboard: [tìm không khớp](canvas/SettingsSearchEmpty.png).
 
-- Vỏ cửa sổ và sidebar theo D9: cụm Lùi/Tiến trước tiêu đề trang (có lịch sử các mục đã xem; mở cửa sổ thì cả hai tắt), tiêu đề hệ thống, sidebar cố định, menu View không có mục ẩn/hiện sidebar.
+- Vỏ cửa sổ và sidebar theo D9: không có cụm Lùi/Tiến, tiêu đề hệ thống, sidebar cố định, menu View không có mục ẩn/hiện sidebar.
 - Edit › Find › Find… (⌘F) đưa con trỏ vào ô tìm của sidebar, như System Settings.
 - Ô tìm của sidebar khớp tên mục và mọi chữ nhìn thấy trong mục (tiêu đề hàng, tiêu đề nhóm, lựa chọn, nút), không phân biệt hoa thường, dấu, "đ"/"d". Không mục nào khớp thì sidebar hiện trạng thái trống của hệ thống, trang đang mở giữ nguyên.
 - Mô tả của một nhóm nằm dưới tiêu đề nhóm, trên thẻ (như System Settings).
@@ -171,7 +146,6 @@ Artboard: [Thông minh](canvas/SettingsSmart.png), [mở "Nâng cao"](canvas/Set
 
 Artboard: [Ứng dụng](canvas/SettingsApps.png), [chưa có quy tắc riêng](canvas/SettingsAppsEmpty.png).
 
-- "Nhớ nguồn đầu vào theo từng cửa sổ" là tuỳ chọn của macOS: Dấu chỉ đọc, không ghi; không đọc được thì không hiện chữ (N5); nút "Đổi…" mở Cài đặt Bàn phím (D5 (Quy tắc theo ứng dụng), N4).
 - "Quy tắc riêng": chỉ các quy tắc đã lưu. Đặt về "Không gạch chân" vẫn giữ quy tắc. Xoá quy tắc (menu chuột phải hoặc Delete) thì ứng dụng đó trở lại mục "Đề xuất".
 - "Đề xuất": chỉ hiện khi có ứng dụng trong danh sách tương thích (cờ `suggestUnderline`) đã cài mà chưa có quy tắc.
   - Bấm "Bật gạch chân" mới lưu quy tắc (nguồn đề xuất, giữ nhãn "Đề xuất"); trước đó không lưu gì (D13 (Gạch chân là đường lui cuối cùng)).
@@ -190,22 +164,9 @@ Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/S
 
 Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 
-- Trạng thái kiểm tra cập nhật và cách cài bản mới để ô trống cho tới M7 (Phát hành) (N5).
+- Tới khi có Sparkle (M7), trang chỉ có thẻ phiên bản, mục "Hỗ trợ" với nút gỡ cài đặt và chú thích quyền riêng tư; không vẽ nút chưa chạy. Phần cập nhật (mục "Chưa có mã") và báo lỗi thêm lại khi chúng chạy được.
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9); luồng gỡ ở mục "Gỡ cài đặt".
 - Chú thích quyền riêng tư giữ đúng nội dung D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
-
-#### Hàng "Ngôn ngữ"
-
-Artboard: [theo macOS](canvas/SettingsLanguage.png), [Dấu đặt riêng English, macOS tiếng Việt](canvas/SettingsLanguageEn.png), [đã đổi sang English, chưa mở lại Dấu](canvas/SettingsLanguagePending.png).
-
-- Theo D41: thẻ riêng ngay dưới thẻ phiên bản; Dấu chỉ đọc, không ghi; "Đổi…" mở trang Language & Region.
-- Giá trị là ngôn ngữ Dấu đang hiện, viết bằng chính ngôn ngữ đó.
-- Câu phụ có hai dạng: theo macOS (miền cài đặt của app không có khoá `AppleLanguages`): hướng dẫn bấm "Đổi…" rồi "+" ở mục Applications; đặt riêng: nói là đặt riêng cho Dấu và cách đổi hoặc bỏ.
-- Chờ mở lại: khi ngôn ngữ của lần mở sau (tính từ khoá của app, không có thì từ danh sách của macOS) khác ngôn ngữ đang hiện.
-  - Giá trị là ngôn ngữ của lần mở sau.
-  - Câu phụ giữ phần đầu ("Đặt riêng cho Dấu." hoặc "Theo macOS.") rồi nói Dấu dùng ngôn ngữ đó sau khi mở lại.
-  - Có thêm nút "Mở lại Dấu" trước "Đổi…".
-- Không nhắc menu bộ gõ khi chưa đo (câu hỏi mở về bộ gõ, N5).
 
 #### Bản phát triển
 
@@ -235,7 +196,7 @@ Artboard: [SettingsNotEnabled](canvas/SettingsNotEnabled.png), [SettingsBannerSt
 
 Artboard: [SettingsTampered](canvas/SettingsTampered.png).
 
-- Điều kiện như màn "Bộ gõ đã bị thay" của onboarding; kiểm lúc mở app và mỗi lần app được đưa lên trước.
+- Điều kiện như trường hợp bộ gõ bị thay ở màn "Lỗi cài" của onboarding; kiểm lúc mở app và mỗi lần app được đưa lên trước.
 - Banner đỏ, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên.
 - Cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
 
@@ -259,7 +220,7 @@ Luồng theo D16 (Bảo trì và gỡ cài đặt): macOS chỉ cho người dù
 - Bộ gõ không bao giờ bị xoá khi mục lưu còn: bundle mất trước thì mục còn lại không gỡ được.
 - App không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác.
 
-Quay về bản trước: D19 (Quay về bản trước).
+Quay về bản trước: D19 (Quay về bản trước), chưa có ở bản thử đầu.
 
 ## Khi gõ trong ứng dụng
 

@@ -295,47 +295,12 @@
       "x": 1960,
       "y": 8020
     },
-    "OnboardingConflictDone.dc.html": {
-      "h": 580,
-      "w": 820,
-      "x": 0,
-      "y": 700,
-      "title": "Thiết lập Dấu – bước 1: đã tắt bộ gõ cũ (sau khi bấm Quay lại ở bước 2)"
-    },
-    "OnboardingEnableTampered.dc.html": {
-      "h": 580,
-      "w": 820,
-      "x": 1800,
-      "y": 1400,
-      "title": "Thiết lập Dấu – bước 2: bộ gõ trên máy đã bị thay đổi (cài lại trước khi bật)"
-    },
     "OnboardingMoveToApplications.dc.html": {
       "h": 580,
       "w": 820,
       "x": 0,
       "y": 1400,
       "title": "Thiết lập Dấu – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)"
-    },
-    "SettingsLanguage.dc.html": {
-      "x": 3920,
-      "y": 6320,
-      "w": 900,
-      "h": 760,
-      "title": "Cài đặt – hàng Ngôn ngữ (theo macOS)"
-    },
-    "SettingsLanguageEn.dc.html": {
-      "x": 4900,
-      "y": 6320,
-      "w": 900,
-      "h": 760,
-      "title": "Cài đặt – hàng Ngôn ngữ (Dấu đặt riêng English, macOS tiếng Việt)"
-    },
-    "SettingsLanguagePending.dc.html": {
-      "x": 5880,
-      "y": 6320,
-      "w": 900,
-      "h": 760,
-      "title": "Cài đặt – hàng Ngôn ngữ (đã đổi sang English, chưa mở lại Dấu)"
     }
   },
   "createdOnFiles": {
@@ -385,12 +350,10 @@
   },
   "order": [
     "OnboardingConflict.dc.html",
-    "OnboardingConflictDone.dc.html",
     "OnboardingMoveToApplications.dc.html",
     "OnboardingEnable.dc.html",
     "OnboardingEnableNotes.dc.html",
     "OnboardingEnableError.dc.html",
-    "OnboardingEnableTampered.dc.html",
     "OnboardingEnableWaiting.dc.html",
     "OnboardingEnableFailed.dc.html",
     "OnboardingEnableDone.dc.html",
@@ -427,10 +390,7 @@
     "MenuBarIcons.dc.html",
     "AppIconDev.dc.html",
     "Landing.dc.html",
-    "LandingMobile.dc.html",
-    "SettingsLanguage.dc.html",
-    "SettingsLanguageEn.dc.html",
-    "SettingsLanguagePending.dc.html"
+    "LandingMobile.dc.html"
   ],
   "pages": [
     {

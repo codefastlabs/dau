@@ -31,7 +31,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 ## 1. Danh sách tương thích
 
 - Danh sách có sẵn trong bản build: `Apps/Dau/Resources/CompatibilityList.json`, model `CompatibilityList` trong DauShared. Mỗi mục: bundle ID, cờ `suggestUnderline`, ghi chú cho người bảo trì.
-- Về sau danh sách được cập nhật riêng bằng file JSON có chữ ký do app chủ tải (D7 (Cập nhật và loại bản dựng)); tiến trình bộ gõ không tải gì (N2 (Bộ gõ không có quyền mạng)).
+- Danh sách đi kèm app và đổi theo bản cập nhật app, không tải riêng (D7 (Cập nhật và loại bản dựng)); tiến trình bộ gõ không tải gì (N2 (Bộ gõ không có quyền mạng)).
 - Ứng dụng có `suggestUnderline` hiện ở mục "Đề xuất" của trang Ứng dụng (D5 (Quy tắc theo ứng dụng); hành vi: [`docs/UI.md`](UI.md) mục "Ứng dụng"). Mặc định mọi ứng dụng không gạch chân; người dùng tự bật.
 - Ai có nhãn: D13. Bundle ID lấy từ mục 3.
 
