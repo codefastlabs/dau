@@ -30,7 +30,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
   - Không gõ vào Telegram: script sẽ gõ vào một cuộc trò chuyện thật.
   - Không dùng TextEdit: nó tự lưu tài liệu thử lên iCloud Drive ([`docs/Troubleshooting.md`](Troubleshooting.md)).
   - Chrome và VS Code là hai app áp phím bất đồng bộ (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm").
-- Chỉ số và ngưỡng: D42 (Ngưỡng hiệu năng). Ngưỡng bộ nhớ chưa chốt.
+- Chỉ số và ngưỡng: D42 (Ngưỡng hiệu năng).
 - Đối chứng là bộ gõ Telex có sẵn của macOS trong cùng điều kiện: chữ của nó dưới tải so với chữ của chính nó lúc rảnh.
   - Không so với bàn phím U.S.: nó ra nguyên chuỗi phím và không có log từng phím, nên không cho số nào để so.
   - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
@@ -40,7 +40,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
   - hai bài kiểm cho phần lớn app: click chuột rồi gõ tiếp (gõ `tooi`, click chỗ khác, gõ `s`: chỉ thêm "s" ở chỗ mới) và mũi tên rồi gõ tiếp (gõ `tooi`, nhấn ←, gõ `s`: ra "tối", vì ← chỉ xoá bộ đệm còn D20 (Thêm dấu cho từ đã gõ) vẫn đặt dấu vào chữ trước con trỏ);
   - ghi app nào có tự sửa chính tả của macOS (giới hạn đã biết của D4 (Từ nước ngoài)).
 - Xong khi:
-  - `heavy.sh` chạy trọn một lượt, đạt ngưỡng D42 ở mọi ô, đối chứng hợp lệ;
+  - `heavy.sh` chạy trọn một lượt, đạt ngưỡng D42 ở mọi ô, đối chứng hợp lệ: đạt 12/11/2026 (máy đang bận, một lượt; nhật ký [`docs/Progress.md`](Progress.md) 12/11);
   - ma trận tương thích có đủ các app ở trên;
   - kiểm toán ĐẠT.
 
@@ -56,9 +56,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 - Báo lỗi (URL issue điền sẵn), Quay về bản trước, Gỡ cài đặt.
 - Loại bản dựng (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
-  - mặc định là biểu tượng bản phát triển;
   - số build tăng dần, số hiển thị có chữ beta;
-  - trang Cập nhật & hỗ trợ của bản phát triển ghi "Bản phát triển" và commit, bản Debug thêm "Debug" (D25).
 - Biểu tượng thật dựng bằng Icon Composer, thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
 - Xuất bộ file nhận diện theo [`docs/Brand.md`](Brand.md) và gắn thẻ meta cho website. Bộ file gồm: biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, favicon, ảnh Open Graph, ảnh xem trước GitHub, nền DMG.
 - Các câu hỏi mở của [`docs/Decisions.md`](Decisions.md) gắn với M7: "Cài cho riêng mình hay cho cả máy" (D37 (Cài đặt bộ gõ); trả lời trước khi phát hành), loại bản dựng, hộp thoại App Group với bản ký Developer ID.
