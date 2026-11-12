@@ -4,7 +4,7 @@ Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.j
 
 ## Hiện trạng (12/11/2026)
 
-- **Ghostty: D43 chạy** (chỉ ở app không chứa nhân web, đọc từ gói app; Ghostty không chứa). Ghostty bỏ qua `replacementRange` và báo vị trí con trỏ luôn `{0,0}`. Dấu nhận ra ô này sau vài phím có thay chữ (một, hai từ đầu sai), rồi gửi ký tự xoá sau khi Ghostty xử lý xong phím. Lượt 11/11/2026 đúng từ từ thứ hai, ở zsh và vim; lượt 12/11/2026 ở bộ gõ chạy sandbox đúng từ từ thứ ba. Từ đầu còn sai vì lúc đó chưa nhận ra (mục 1).
+- **Ghostty: D43 chỉ đúng từ từ thứ hai, thứ ba sau mỗi lần chuyển vào Ghostty; dùng thường ngày gần như luôn sai** (chỉ ở app không chứa nhân web, đọc từ gói app; Ghostty không chứa). Ghostty bỏ qua `replacementRange` và báo vị trí con trỏ luôn `{0,0}`. Dấu nhận ra ô này sau vài phím có thay chữ (một, hai từ đầu sai), rồi gửi ký tự xoá sau khi Ghostty xử lý xong phím. Lượt 11/11/2026 đúng từ từ thứ hai, ở zsh và vim; lượt 12/11/2026 ở bộ gõ chạy sandbox đúng từ từ thứ ba. Từ đầu còn sai vì lúc đó chưa nhận ra. Trong shell thật của người dùng (12/11/2026, bản dùng hằng ngày) cũng vậy; mỗi lần chuyển vào Ghostty lại bắt đầu từ chưa nhận ra, nên lệnh ngắn gần như luôn sai (mục 1).
 - **xterm.js: Dấu không gửi ký tự xoá, gõ sai như trước D43** (lý do ở ý kế tiếp). Cách gửi trong phím đã được chẩn đoán và đo trước khi tắt (mục 2):
   - Chữ dồn: lần thay có vùng thay trước lúc nhận ra để lại chữ sau con trỏ trong textarea ẩn của xterm.js. Từ đó, mỗi lần gửi ký tự xoá trong phím, xterm.js gửi lại cả textarea.
   - Cách chữa: chỉ gửi trong phím khi không có lần thay có vùng thay nào từ phím Return gần nhất, tức từ dòng sau Return.
@@ -39,6 +39,17 @@ Kết quả (zsh, 120 ms giữa hai phím, một lượt mỗi ô; Telex của A
 - Thời gian xử lý mỗi phím của D43 ngang thay tại chỗ thường; số ở nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11.
 - Gạch chân trong Ghostty: chữ đúng, nhưng `toois vieetj↩` không gửi Return (byte gửi không có `<0d>`), với cả Dấu và Telex của Apple.
 - Gạch chân không thuộc tính gạch không giúp: Ghostty tự vẽ gạch chân cho chữ đang soạn.
+
+Trong shell thật (12/11/2026, `scripts/research/terminal-underline/real-shell.sh`; cửa sổ Ghostty có sẵn, zsh với oh-my-zsh, powerlevel10k, zsh-autosuggestions; Dấu Release 89543e5, bản dùng hằng ngày; 120 ms; một lượt; đưa Ghostty ra trước là một lần kích hoạt, như khi người dùng chuyển sang nó; ba dòng liền nhau trong cùng lần kích hoạt):
+
+| Dòng | Dấu | Telex của Apple |
+|---|---|---|
+| `tooi dungf windows ddeer hoaf⌫ hats vowis banj ` | "toôi dungf windows để hò hát với bạn ": hai từ đầu sai | "tôi dùng ưindows để hoà hát với bạn " |
+| `dduwowngf ddepj vui ver ` | "đường đẹp vui vẻ " | "đường đẹp vui vẻ " |
+| `hoom nay tooi ddi hocj ` | "hôm nay tôi đi học " | "hôm nay tôi đi học" |
+
+- Cấu hình thật ra như ô thử: sai đến lúc nhận ra ô, sau đó đúng, cả qua Return. Không thấy dấu hiệu plugin hay theme làm khác.
+- Mỗi lần chuyển vào Ghostty là bắt đầu lại từ chưa nhận ra. Lệnh ngắn gõ ngay sau khi chuyển vào thì gần như luôn rơi vào một, hai từ đầu, nên trong cách dùng thường ngày gõ tiếng Việt ở Ghostty gần như luôn sai.
 
 ## 2. Terminal dựng bằng xterm.js (trang thử và app Claude)
 

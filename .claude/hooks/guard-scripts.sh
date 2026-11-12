@@ -29,6 +29,7 @@ typeset -A guarded=(
   [scripts/selftest/app-group.sh]="always"
   [scripts/research/compare-ims/run.sh]="always"
   [scripts/research/terminal-underline/run.sh]="always"
+  [scripts/research/terminal-underline/real-shell.sh]="always"
   [scripts/dev/install-app.sh]="unless --build-only"
   [scripts/dev/clean-dau.sh]="with --yes"
 )
