@@ -111,7 +111,13 @@ Cách đã xét để vẫn gửi trong phím (không chọn, D43: còn lọt k�
 
 - Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4, và ở ⌫).
 - Chuyển ô: terminal `tooi vieetj ddi hocj ↩`, click sang tài liệu trống cùng cửa sổ, gõ `hoom nay tooi ddi hocj vui ver `: trình soạn thảo ra đúng "hôm nay tôi đi học vui vẻ ", 0 ký tự xoá; không có `activate` giữa lúc click và lúc gõ xong.
-- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Ca đó nay cũng không gửi ký tự xoá: kiểu Ghostty chỉ dùng ở app không chứa nhân web (D43; `WebHost`, chưa kiểm trong bộ gõ sandbox thật).
+- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Ca đó nay cũng không gửi ký tự xoá: kiểu Ghostty chỉ dùng ở app không chứa nhân web (D43; `WebHost`).
+
+Lượt xác nhận `WebHost` (12/11/2026, bộ gõ Debug 2bea19c chạy sandbox, 120 ms, một lượt mỗi ô; câu `tooi dungf windows ddeer hoaf⌫ hats vowis banj `, dòng hai `dduwowngf ddepj vui ver `):
+
+- Kết quả đọc gói (`event=web-host`): Terminal và Ghostty không chứa nhân web, VS Code có (Chromium); 0,4–17 ms từ lúc hỏi tới lúc có kết quả, một lần 51 ms (lần đọc đầu sau khi cài), đều ngoài đường phím.
+- Ghostty: nhận ra ô (`after-key`, không bị chặn), gửi ký tự xoá; "toôi dungf windows để hò hát với bạn ": hai từ đầu sai (trước khi nhận ra), từ thứ ba trở đi đúng.
+- VS Code: lượt này không nhận ra ô; terminal sai như cách cũ, trình soạn thảo sau khi chuyển ô đúng "hôm nay đường đẹp vui vẻ ", 0 ký tự xoá. Terminal.app: đúng trừ ⌫ ("ho"). Telex của Apple trong terminal VS Code: "tôi dùng ưindows để ho hát với bạn ↩đường đẹp vui vẻ " (phép đo hợp lệ).
 - Cửa sổ mở trên một file trong thư mục chưa được tin cậy thì VS Code hỏi tin cậy trước khi tạo terminal; ô `vscodeterm` mở cửa sổ trống (VS Code mặc định tin cửa sổ trống).
 
 Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượt mỗi ô; Telex của Apple ra đúng):

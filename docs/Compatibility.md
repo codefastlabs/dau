@@ -15,7 +15,7 @@ Tiêu chí nhãn "Đề xuất" ở D13 (Gạch chân là đường lui cuối c
 | VS Code | đúng ở 5–20 ms (một lượt sai không do vị trí thay chữ) | đúng ở 0 ms | không |
 | Cursor | trình soạn thảo sai ở 5 ms và một ca phím dồn ở 20 ms, đúng ở 100 ms; ô nhập Agents đúng | đúng ở 5 ms | **có** |
 | Terminal | đúng từ 5 ms, sai ở 0 ms; ⌫ không tới bộ gõ (mục 6.5) | sai ở 0 ms | không |
-| Ghostty | theo D43: sai ở từ đầu mỗi lần kích hoạt, đúng từ từ thứ hai ở 120 ms; phím dồn sai (mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | không |
+| Ghostty | theo D43: sai ở một, hai từ đầu mỗi lần kích hoạt (tới khi nhận ra ô), đúng từ đó ở 120 ms; phím dồn sai (mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | không |
 | xterm.js (trang thử trong Chrome) | sai: D43 không gửi ký tự xoá ở kiểu xterm.js (mục 6.8) | đúng | không |
 | Terminal tích hợp của VS Code (xterm.js) | sai như trước D43 (D43 nhận ra, không gửi ký tự xoá); trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8) | chưa đo | không |
 | Sublime Text | đúng, cả thêm dấu cho từ đã gõ sau ⌫ và ← | không thêm dấu được cho từ đã chốt | không |
