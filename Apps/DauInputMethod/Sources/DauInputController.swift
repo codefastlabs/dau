@@ -120,6 +120,8 @@ final class DauInputController: IMKInputController {
             result = processMarked(route, client: timed)
         } else {
             let wasKnown = inPlace.detector.send != nil
+            // Before `handle`: a deactivation nested in one of its client calls must drop the fix.
+            let keyEpoch = epoch.value
             #if DEBUG
             let wasRefuted = inPlace.detector.refuted
             #endif
@@ -133,13 +135,19 @@ final class DauInputController: IMKInputController {
             if !wasKnown, let send = inPlace.detector.send {
                 // D43: once per activation, never text (D8). Which app is typed in is typing
                 // metadata (D8): Release logs the mode only, Debug adds the app. "in-key"
-                // (xterm.js) is logged but replaced in place (`InPlaceComposer.eraseMode(for:)`).
-                logRangeIgnore("range-ignored", mode: send == .afterKey ? "after-key" : "in-key")
+                // (xterm.js) is logged but replaced in place (`InPlaceComposer.eraseMode(for:)`);
+                // so is "after-key" in an app that may host web pages (`blocked=`, `WebHost`).
+                let blocked = send == .afterKey ? webHost.blockedWord : nil
+                logRangeIgnore("range-ignored", mode: send == .afterKey ? "after-key" : "in-key", blocked: blocked)
             }
             if let text = outcome.deferredText {
-                // D43, after the key: once the app has handled the key.
+                // D43, after the key: once the app has handled the key, and only if the
+                // client session is still the one the key was for (`ClientEpoch`): a
+                // client change, deactivation or close since drops the fix.
                 nonisolated(unsafe) let target = client
+                let owner = MainThreadRef(self)
                 DispatchQueue.main.async {
+                    guard let controller = owner.object, controller.epoch.isCurrent(keyEpoch) else { return }
                     target.insertText(text, replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
                 }
             }
@@ -255,6 +263,9 @@ final class DauInputController: IMKInputController {
             }
             clientID = id
             inPlace.activate() // a new client may give text (D20) even if the last did not
+            epoch.advance()
+            // D43: the new client may belong to another app; read after this key.
+            classifyHost(sender: sender, bundleID: nil)
         }
     }
 
@@ -277,6 +288,8 @@ final class DauInputController: IMKInputController {
         // D18: a nil sender must not keep the previous app's ID (and its underline rule).
         clientID = sender.map { ObjectIdentifier($0 as AnyObject) }
         clientApp = clientBundleID(sender)
+        epoch.advance()
+        classifyHost(sender: sender, bundleID: clientApp)
         // Catch up on anything missed while no observer was registered (or if the
         // registration failed). One small JSON decode per activation, not per key.
         // After `clientApp` is known, so the app's underline rule applies (D13).
@@ -293,12 +306,79 @@ final class DauInputController: IMKInputController {
     }
 
     /// D43 events: the mode only; which app is typed in is typing metadata (D8), Debug only.
-    private func logRangeIgnore(_ event: String, mode: String) {
+    private func logRangeIgnore(_ event: String, mode: String, blocked: String? = nil) {
+        let extra = blocked.map { " blocked=\($0)" } ?? ""
         #if DEBUG
-        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
+        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public)\(extra, privacy: .public) app=\(self.clientApp, privacy: .public)")
         #else
-        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public)")
+        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public)\(extra, privacy: .public)")
         #endif
+    }
+
+    /// D43: whether the client app may host web pages (`WebHost`), read from its bundle at
+    /// activation and on a client change; until the verdict for the current client is
+    /// back, no DEL after the key. Nothing of it runs while a key is handled: the bundle
+    /// ID (`bundleIdentifier()`, a call into the app) and the running app's URL are looked
+    /// up on a later turn of the main queue, the bundle is read on `WebHost`'s queue.
+    private var hostGate = WebHostGate()
+    private var webHost: WebHost.Verdict { hostGate.verdict }
+    /// The client session queued work belongs to (`ClientEpoch`).
+    private var epoch = ClientEpoch()
+
+    /// `bundleID` nil: looked up from `sender` later (a client change seen during a key).
+    private func classifyHost(sender: Any?, bundleID: String?) {
+        let generation = hostGate.request()
+        inPlace.afterKeyAllowed = false
+        nonisolated(unsafe) let target = sender
+        let owner = MainThreadRef(self)
+        DispatchQueue.main.async {
+            guard let controller = owner.object else { return }
+            controller.outsideKey { controller.lookUpHost(sender: target, bundleID: bundleID, generation: generation) }
+        }
+    }
+
+    private func lookUpHost(sender: Any?, bundleID: String?, generation: Int) {
+        guard hostGate.generation == generation else { return }  // another client since
+        let bundleID = bundleID ?? clientBundleID(sender)
+        let bundle: URL?
+        switch Self.hostBundle(bundleID: bundleID) {
+        case .success(let url): bundle = url
+        case .failure(let why):
+            deliverHost(.unknown(why: why.word), for: generation, ns: 0, bundleID: bundleID)
+            return
+        }
+        let owner = MainThreadRef(self)
+        WebHost.read(bundle: bundle) { verdict, ns in
+            // On the main queue (`WebHost.read`), where this controller lives.
+            guard let controller = owner.object else { return }
+            controller.outsideKey { controller.deliverHost(verdict, for: generation, ns: ns, bundleID: bundleID) }
+        }
+    }
+
+    /// Applies a verdict only if it is for the client asked about last (`WebHostGate`).
+    private func deliverHost(_ verdict: WebHost.Verdict, for generation: Int, ns: UInt64, bundleID: String) {
+        guard hostGate.deliver(verdict, for: generation) else { return }
+        inPlace.afterKeyAllowed = hostGate.allowsAfterKey
+        #if DEBUG
+        // Which app is typed in is typing metadata (D8): Debug only.
+        settingsLogger.notice("event=web-host verdict=\(String(describing: verdict), privacy: .public) ns=\(ns, privacy: .public) app=\(bundleID, privacy: .public)")
+        #endif
+    }
+
+    struct HostBundleError: Error {
+        let word: String
+    }
+
+    /// The bundle of the running app with `bundleID` (`NSRunningApplication`, not a path
+    /// guessed from the ID); none, or several copies at different paths: an error.
+    private static func hostBundle(bundleID: String) -> Result<URL, HostBundleError> {
+        guard bundleID != "?" else { return .failure(HostBundleError(word: "bundle-id")) }
+        let urls = Set(NSRunningApplication.runningApplications(withBundleIdentifier: bundleID)
+            .compactMap { $0.bundleURL?.standardizedFileURL })
+        guard urls.count == 1, let url = urls.first else {
+            return .failure(HostBundleError(word: urls.isEmpty ? "not-running" : "several"))
+        }
+        return .success(url)
     }
 
     /// The client app's bundle ID, read once at activation. Chrome sometimes activates
@@ -314,6 +394,7 @@ final class DauInputController: IMKInputController {
     }
 
     override func deactivateServer(_ sender: Any!) {
+        epoch.advance()  // D43: a fix still queued for this session is dropped
         outsideKey { [self] in _ = resetComposition(client: sender) }
         super.deactivateServer(sender)
     }
@@ -327,6 +408,7 @@ final class DauInputController: IMKInputController {
     }
 
     override func inputControllerWillClose() {
+        epoch.advance()
         outsideKey { [self] in _ = resetComposition() }
         settingsObserver = nil
         sourceObserver = nil
@@ -634,4 +716,11 @@ extension Notification.Name {
     /// Posted on the main thread when IMK activates any controller
     /// (`InputMethodAppDelegate`: a user launch quits only if none was activated).
     static let dauClientActivated = Notification.Name("DauClientActivated")
+}
+
+/// A weak reference handed to a `@Sendable` callback that runs on the main queue, where
+/// the object lives (IMK calls the controller on the main thread). Read only there.
+final class MainThreadRef<Object: AnyObject>: @unchecked Sendable {
+    weak var object: Object?
+    init(_ object: Object) { self.object = object }
 }

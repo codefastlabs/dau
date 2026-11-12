@@ -249,7 +249,8 @@ struct RangeIgnoreTests {
     /// Keys `interval` apart, as a person types them (above `settleInterval`).
     private struct Run {
         var engine = VietEngine()
-        var composer = InPlaceComposer()
+        /// An app read as native (`WebHost`): Ghostty; DEL after the key allowed.
+        var composer = { var c = InPlaceComposer(); c.afterKeyAllowed = true; return c }()
         var now: TimeInterval = 0
         var interval: TimeInterval = 0.15
         /// Index of the key at which the field was taken for one that ignores the range.
@@ -341,6 +342,7 @@ struct RangeIgnoreTests {
     func ghosttyReturn() {
         var engine = VietEngine()
         var composer = InPlaceComposer()
+        composer.afterKeyAllowed = true  // Ghostty is read as native (WebHost)
         let terminal = FakeGhostty()
         var now: TimeInterval = 0
         for scalar in (Self.t4Line + "↩" + Self.t4Line).unicodeScalars {

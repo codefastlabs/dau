@@ -81,13 +81,24 @@ struct InPlaceComposer {
     /// The erase mode for a client `detector` found, or nil to keep replacing in place.
     /// D43: a field told apart as xterm.js (`.inKey`) is replaced in place like any field,
     /// never with DEL: no DEL may reach an editor sharing its IMK client (see
-    /// `EraseMode.inKey`).
+    /// `EraseMode.inKey`). After the key (Ghostty) only for an app known not to host web
+    /// pages (`afterKeyAllowed`, `WebHost`): an xterm.js page can answer like Ghostty.
     func eraseMode(for send: RangeIgnoreDetector.Send) -> EraseMode? {
         switch send {
-        case .afterKey: return .afterKey
+        case .afterKey: return afterKeyAllowed ? .afterKey : nil
         case .inKey: return nil
         }
     }
+    /// D43: the client app is surely not a web host (`WebHost.Verdict.allowsAfterKey`), so
+    /// DEL may be sent after the key. Off until the controller says so (not sure: no DEL);
+    /// set at each activation and client change, kept by `activate`. The verdict is read
+    /// off the main thread, so it can come after the field was told apart as Ghostty:
+    /// then `.afterKey` starts at the next word (`handle`), never inside a word.
+    var afterKeyAllowed = false {
+        didSet { afterKeyPending = afterKeyAllowed && eraseMode == .off && detector.send == .afterKey }
+    }
+    /// A native verdict came after a Ghostty-like verdict: start `.afterKey` at the next word.
+    private(set) var afterKeyPending = false
     /// Tells a client that ignores `replacementRange` from the `selectedRange` answers
     /// (D43); sets `eraseMode`.
     private(set) var detector = RangeIgnoreDetector()
@@ -239,6 +250,7 @@ struct InPlaceComposer {
         lastEventTime = nil
         detector.reset()
         eraseMode = .off
+        afterKeyPending = false
         produced = nil
     }
 
@@ -248,7 +260,12 @@ struct InPlaceComposer {
     /// D20 does not wait for anything).
     mutating func handle(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
                          client: some InPlaceClient) -> Outcome {
-        handleKeyAndTrace(route, time: time, engine: &engine, client: client)
+        if afterKeyPending, !engine.isComposing {
+            // D43: a native verdict that came late; from this word on, DEL after the key.
+            afterKeyPending = false
+            if afterKeyAllowed, eraseMode == .off, detector.send == .afterKey { eraseMode = .afterKey }
+        }
+        return handleKeyAndTrace(route, time: time, engine: &engine, client: client)
     }
 
     private mutating func handleKeyAndTrace(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,

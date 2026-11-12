@@ -56,7 +56,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D40](#d40-chữ-dựng-sẵn-và-phím-z) | Chữ dựng sẵn và phím z | Chữ dựng sẵn là chữ cái của từ; z không bỏ mũ/móc. |
 | [D41](#d41-ngôn-ngữ-giao-diện) | Ngôn ngữ giao diện | Tiếng Việt và tiếng Anh, theo ngôn ngữ ưu tiên của macOS. |
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Chạy bài tải nặng trước mỗi bản phát hành; vượt ngưỡng thì không phát hành. |
-| [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Ô kiểu Ghostty nhận ký tự xoá rồi chữ mới; ô kiểu xterm.js thì không. |
+| [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Ô kiểu Ghostty ở app không chứa nhân web nhận ký tự xoá rồi chữ mới; ô kiểu xterm.js thì không. |
 
 Cuối sổ: [Đã biết nhưng không làm](#đã-biết-nhưng-không-làm), [Đã cân nhắc và loại bỏ](#đã-cân-nhắc-và-loại-bỏ), [Câu hỏi mở](#câu-hỏi-mở).
 
@@ -664,6 +664,7 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - **Bằng chứng dương:** ở phím mà vị trí vừa đủ để nhận ra ô, Dấu đọc chữ trước con trỏ một lần. Ô loại này không cho đọc chữ đã gõ: app không trả chữ, hoặc trả chữ không chứa chữ Dấu vừa gõ ở đó. App trả về đúng chữ Dấu vừa gõ thì ô đó gõ được bình thường, chỉ báo vị trí sai: không nhận ra, thay tại chỗ như cũ trong lần kích hoạt đó. Vị trí nhỏ một mình không đủ, vì ô tự vẽ báo vị trí hằng số và app đứng hình ở đầu văn bản trống cũng trả vị trí 0.
 - **Yêu cầu với ngưỡng nhận ra** (ngưỡng nằm ở mã và test): không nhận nhầm ô gõ thường nào trong các lượt đo đã có, kể cả Chrome khi trang bận và đầu văn bản (vị trí 0 là vị trí thật); nhận ra Ghostty càng sớm càng tốt trong từ đầu tiên.
 - **Lúc gửi:** ô nhận ra theo kiểu Ghostty (vị trí luôn 0): để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm.
+- **Chỉ app không chứa nhân web nhận ký tự xoá:** Dấu đọc gói của app đang gõ (ngoài đường phím, mỗi phiên bản app một lần trong mỗi tiến trình bộ gõ; chỉ đọc cấu trúc gói, không đọc chữ hay dữ liệu của người dùng). App có nhân web thì ô kiểu Ghostty cũng thay tại chỗ như ô thường. Nhân web là: Chromium hay Electron (helper "Renderer", framework Electron hay CEF), Gecko, hoặc WebKit (file thực thi, hay framework và dylib ở tầng đầu của `Frameworks` và `SharedFrameworks` trong gói, liên kết WebKit hay Safari; Sparkle không tính vì nó hiện web trong cửa sổ riêng). Không đọc được gói, hay chưa đọc xong, thì không gửi ký tự xoá; kết quả về sau khi ô đã được nhận ra thì cách gửi ký tự xoá bắt đầu từ từ kế tiếp.
 - **Ô kiểu xterm.js (vị trí dao động 0–2) không nhận ký tự xoá:** Dấu nhận ra ô (ghi nhật ký) nhưng vẫn thay tại chỗ như ô thường, nên chữ trong ô này sai như trước D43. Chỉ bật lại khi có cách bảo đảm không ký tự xoá nào tới ô soạn thảo nằm cùng view với terminal, đã đo trên app thật.
 - **Khi đã gửi ký tự xoá:** không hỏi vị trí con trỏ, không đọc chữ; mỗi phím vẫn tối đa một lần `insertText`.
 - **Khác "event tap + Backspace giả" đã loại:** không event tap, không giả lập phím, không xin quyền Trợ năng (N4 (Không tự đổi cài đặt hệ thống)). Ký tự xoá là chữ gửi qua API của InputMethodKit, chỉ tới ô đã nhận ra là bỏ qua vùng thay.
@@ -673,7 +674,8 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 
 - D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
 - Terminal dựng bằng xterm.js (terminal tích hợp của VS Code, Cursor, terminal trong app Claude) gõ sai như trước D43: trên trang thử, `toois vieetj dd ` ra "toôoiís vieêetj dđd "; trong terminal của VS Code cũng sai (đã đo); Cursor và app Claude chưa đo.
-- Trang xterm.js mà mọi câu trả lời vị trí đều 0 bị xếp vào kiểu Ghostty và nhận ký tự xoá. Ký tự xoá khi đó có thể lọt sang trình soạn thảo cùng view. Theo mô hình, việc này xảy ra khi view đó từng có chữ gạch chân (Telex của Apple, phím chết ⌥); chưa đo.
+- Nhân web mà cách đọc gói không thấy (nạp lúc chạy, nằm trong XPC service, plug-in hay framework lồng sâu hơn tầng đầu của `Frameworks` và `SharedFrameworks`) thì app bị coi là không chứa nhân web; nếu app đó có ô kiểu Ghostty cùng view với ô soạn thảo, ký tự xoá vẫn có thể lọt. Chưa gặp app nào như vậy.
+- Terminal không chứa nhân web nhưng đặt ngoài `/Applications` (ví dụ `~/Applications`, bộ gõ chạy sandbox không đọc được gói) gõ sai như trước D43.
 - Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
 - Trước khi nhận ra, các phím đầu ra như ô thường (ở Ghostty: từ đầu tiên sai).
@@ -687,6 +689,7 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 - Bản thử ký tự xoá ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim), thời gian xử lý mỗi phím ngang thay tại chỗ thường.
 - Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. xterm.js phải gửi trong phím: theo mã, chữ tới sau phím (trước khi nhả phím) bị bỏ.
 - Không gửi ký tự xoá ở kiểu xterm.js: chữ đúng trong terminal không đáng đổi lấy rủi ro làm hỏng chữ ở nơi người dùng soạn thảo. Ở app Electron, terminal xterm.js và trình soạn thảo là hai phần tử của cùng một trang, tức cùng một client IMK, và click giữa chúng không tới bộ gõ (mã Chromium; đo trên VS Code: click từ terminal sang trình soạn thảo không kích hoạt lại bộ gõ), nên kết luận "terminal" giữ khi người dùng chuyển sang trình soạn thảo. Trên mô hình, ký tự xoá khi đó lọt vào trình soạn thảo ở mọi phím thay chữ. Cách bỏ kết luận khi vị trí lại tăng vẫn để lọt ký tự xoá ở từ đầu của ô rỗng. Gửi trong phím chỉ đúng từ dòng sau Return (đo trên trang thử, một lượt), dòng đầu vẫn sai.
+- Chỉ app không chứa nhân web: trang xterm.js mà mọi câu trả lời vị trí đều 0 bị xếp vào kiểu Ghostty (mô hình: khi view đó từng có chữ gạch chân), và nhận theo hành vi thì không phân biệt được với Ghostty. Nhận theo cấu trúc gói thì không gãy khi app cập nhật thêm loại ô mới, như danh sách bundle ID sẽ gãy. Đọc thử trên các app cài trên một máy: Ghostty, Terminal, Zed, Sublime Text không chứa nhân web; VS Code, Cursor, app Claude, Chrome, Edge, Firefox, Safari, Telegram, Pages, Xcode có.
 - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 - Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
 

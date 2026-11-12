@@ -182,6 +182,7 @@ targets:
       - path: Apps/DauInputMethod/Sources/EngineSettings.swift
       - path: Apps/DauInputMethod/Sources/HostApp.swift
       - path: Apps/DauInputMethod/Sources/LaunchOrigin.swift
+      - path: Apps/DauInputMethod/Sources/WebHost.swift
     dependencies:
       - package: DauEngine
       - package: DauShared

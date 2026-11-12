@@ -168,11 +168,15 @@ struct XtermPageTests {
         #expect(run.mostInserts <= 1)
     }
 
-    @Test("the erase mode: after the key for Ghostty, never for xterm.js; Return changes nothing")
+    @Test("the erase mode: after the key only in an app read as native, never for xterm.js; Return changes nothing")
     func eraseModePolicy() {
         var composer = InPlaceComposer()
         #expect(composer.eraseMode(for: .inKey) == nil)
+        #expect(composer.eraseMode(for: .afterKey) == nil)  // not known to be native (WebHost)
+        composer.afterKeyAllowed = true
         #expect(composer.eraseMode(for: .afterKey) == .afterKey)
+        composer.activate()
+        #expect(composer.afterKeyAllowed)  // the controller sets it, activation keeps it
         var engine = VietEngine()
         let field = CountingField()
         for (i, (route, _)) in Self.routes("↩dd↩").enumerated() {

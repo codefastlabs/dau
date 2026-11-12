@@ -11,7 +11,9 @@ import Testing
 /// replaced in place and never sent DEL (`InPlaceComposer.eraseMode(for:)`): with the
 /// earlier policy (DEL in the key from the first Return), the editor after a click got
 /// every fix as DEL and new text ("ho␡ôm nay to␡ôi…"), and a Return typed in the editor
-/// before the terminal's first one started that mode there.
+/// before the terminal's first one started that mode there. DEL after the key (Ghostty)
+/// is sent only in an app `WebHost` reads as native (`InPlaceComposer.afterKeyAllowed`,
+/// false in `Run`): an xterm.js page can answer like Ghostty (ca e).
 ///
 /// A click from one element to the other, from Chromium's code (main of 12/11/2026,
 /// content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm):
@@ -242,19 +244,38 @@ struct SharedViewTests {
         #expect(run.most.inserts <= 1)
     }
 
-    @Test("c (hypothetical, no such app known): a Ghostty-like field, then the editor: DEL after every replacing key")
-    func ghosttyLikeThenField() {
+    @Test("c: a Ghostty-like field in a web host's view, then the editor: in place, no DEL (WebHost blocks after the key)")
+    func ghosttyLikeThenFieldInWebHost() {
+        let view = FakeSharedView(terminal: .ghostty(FakeGhostty()))
+        var run = Run()  // `afterKeyAllowed` false: the app is a web host, or not known
+        Self.type(RangeIgnoreTests.t4Line, on: view, run: &run)
+        #expect(run.composer.detector.send == .afterKey)
+        #expect(run.composer.eraseMode == .off)
+        let mark = Self.click(to: .field, on: view, run: &run)
+        Self.type(Self.fieldKeys, on: view, run: &run)
+        Self.report("c, web host", view, run, since: mark)
+        #expect(view.field.text == Self.fieldAnswer)
+        #expect(view.fieldDeletes == 0)
+        #expect(run.erasingAt == nil)
+        // The terminal is replaced in place, which it ignores: wrong as before D43.
+        #expect(view.line.hasPrefix("toôis vieetj ddi"))
+        #expect(run.most.inserts <= 1)
+    }
+
+    @Test("c, hypothetical: the same in an app wrongly read as native: DEL after every replacing key")
+    func ghosttyLikeThenFieldReadAsNative() {
         let view = FakeSharedView(terminal: .ghostty(FakeGhostty()))
         var run = Run()
+        run.composer.afterKeyAllowed = true
         Self.type(RangeIgnoreTests.t4Line, on: view, run: &run)
         #expect(run.composer.eraseMode == .afterKey)
         let mark = Self.click(to: .field, on: view, run: &run)
-        withKnownIssue("D43 keeps the verdict for the activation (Ghostty is an app of its own, another client)") {
+        withKnownIssue("only a native verdict lets DEL out, and D43 keeps it for the activation") {
             Self.type(Self.fieldKeys, on: view, run: &run)
             #expect(view.field.text == Self.fieldAnswer)
             #expect(view.fieldDeletes == 0)
         }
-        Self.report("c", view, run, since: mark)
+        Self.report("c, read as native", view, run, since: mark)
         // The key goes in, then the fix: DEL for the word shown and the key, then the word.
         #expect(view.field.text == "hoo\u{7F}\u{7F}ôm nay too\u{7F}\u{7F}ôi dd\u{7F}\u{7F}đi hocj\u{7F}\u{7F}\u{7F}ọc "
                 + "vui ver\u{7F}\u{7F}ẻ \ncamr\u{7F}\u{7F}\u{7F}ảm ow\u{7F}\u{7F}ơn banj\u{7F}\u{7F}\u{7F}ạn ")
@@ -262,6 +283,48 @@ struct SharedViewTests {
         #expect(view.selections == mark.selections)
         #expect(view.reads == mark.reads)
         #expect(run.most.inserts <= 1)  // the deferred text counted as the key's one call
+    }
+
+    /// An xterm.js page whose answers are all 0: Chromium's cache once `_markedRange` is
+    /// NSNotFound (an input method ended marked text in that view; `FakeXtermPage`). Told
+    /// apart like Ghostty (after the key).
+    static func zeroXterm() -> FakeSharedView {
+        FakeSharedView(terminal: .xterm(FakeXtermPage(markedLocation: NSNotFound)))
+    }
+
+    @Test("e: xterm.js answering 0 every time (taken for Ghostty), in a web host: no DEL, in the terminal or the editor")
+    func zeroXtermThenField() {
+        let view = Self.zeroXterm()
+        var run = Run()  // Electron: `WebHost` reads it as web
+        Self.type(RangeIgnoreTests.t4Line + "↩", on: view, run: &run)
+        #expect(run.composer.detector.send == .afterKey)
+        #expect(run.composer.eraseMode == .off)
+        let mark = Self.click(to: .field, on: view, run: &run)
+        Self.type(Self.fieldKeys, on: view, run: &run)
+        Self.report("e, web host", view, run, since: mark)
+        #expect(view.field.text == Self.fieldAnswer)
+        #expect(view.fieldDeletes == 0)
+        #expect(run.erasingAt == nil)
+        #expect(run.most.inserts <= 1)
+    }
+
+    @Test("e, why: the same page in an app wrongly read as native sends DEL, and the editor gets it")
+    func zeroXtermThenFieldReadAsNative() {
+        let view = Self.zeroXterm()
+        var run = Run()
+        run.composer.afterKeyAllowed = true
+        Self.type(RangeIgnoreTests.t4Line + "↩", on: view, run: &run)
+        #expect(run.composer.eraseMode == .afterKey)
+        // In the terminal the fixes come out right (the page sends text that arrives
+        // after the key as is).
+        #expect(view.line.hasSuffix(" việt đi học nhà người hò windows "))
+        let mark = Self.click(to: .field, on: view, run: &run)
+        withKnownIssue("only a native verdict lets DEL out") {
+            Self.type(Self.fieldKeys, on: view, run: &run)
+            #expect(view.fieldDeletes == 0)
+        }
+        Self.report("e, read as native", view, run, since: mark)
+        #expect(view.fieldDeletes > 0)
     }
 
     // MARK: The field, then the terminal

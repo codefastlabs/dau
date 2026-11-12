@@ -4,7 +4,7 @@ Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.j
 
 ## Hiện trạng (12/11/2026)
 
-- **Ghostty: D43 chạy.** Ghostty bỏ qua `replacementRange` và báo vị trí con trỏ luôn `{0,0}`. Dấu nhận ra ô này sau vài phím có thay chữ (ở lượt đo: trong từ thứ hai), rồi gửi ký tự xoá sau khi Ghostty xử lý xong phím. Từ thứ hai trở đi đúng, ở zsh và vim; từ đầu tiên còn sai vì lúc đó chưa nhận ra (mục 1).
+- **Ghostty: D43 chạy** (chỉ ở app không chứa nhân web, đọc từ gói app; Ghostty không chứa). Ghostty bỏ qua `replacementRange` và báo vị trí con trỏ luôn `{0,0}`. Dấu nhận ra ô này sau vài phím có thay chữ (ở lượt đo: trong từ thứ hai), rồi gửi ký tự xoá sau khi Ghostty xử lý xong phím. Từ thứ hai trở đi đúng, ở zsh và vim; từ đầu tiên còn sai vì lúc đó chưa nhận ra (mục 1).
 - **xterm.js: Dấu không gửi ký tự xoá, gõ sai như trước D43** (lý do ở ý kế tiếp). Cách gửi trong phím đã được chẩn đoán và đo trước khi tắt (mục 2):
   - Chữ dồn: lần thay có vùng thay trước lúc nhận ra để lại chữ sau con trỏ trong textarea ẩn của xterm.js. Từ đó, mỗi lần gửi ký tự xoá trong phím, xterm.js gửi lại cả textarea.
   - Cách chữa: chỉ gửi trong phím khi không có lần thay có vùng thay nào từ phím Return gần nhất, tức từ dòng sau Return.
@@ -111,7 +111,7 @@ Cách đã xét để vẫn gửi trong phím (không chọn, D43: còn lọt k�
 
 - Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4, và ở ⌫).
 - Chuyển ô: terminal `tooi vieetj ddi hocj ↩`, click sang tài liệu trống cùng cửa sổ, gõ `hoom nay tooi ddi hocj vui ver `: trình soạn thảo ra đúng "hôm nay tôi đi học vui vẻ ", 0 ký tự xoá; không có `activate` giữa lúc click và lúc gõ xong.
-- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty (D43 mục "Hệ quả đã chấp nhận").
+- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Ca đó nay cũng không gửi ký tự xoá: kiểu Ghostty chỉ dùng ở app không chứa nhân web (D43; `WebHost`, chưa kiểm trong bộ gõ sandbox thật).
 - Cửa sổ mở trên một file trong thư mục chưa được tin cậy thì VS Code hỏi tin cậy trước khi tạo terminal; ô `vscodeterm` mở cửa sổ trống (VS Code mặc định tin cửa sổ trống).
 
 Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượt mỗi ô; Telex của Apple ra đúng):
