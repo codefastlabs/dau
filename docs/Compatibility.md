@@ -163,7 +163,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 ### 5.4 Cursor
 
 - 3.29.15, đo 10/11/2026 sau các lần sửa ở M6, `typing/run.sh` (`cursor`: trình soạn thảo; `cursoragents`: ô nhập của cửa sổ Agents; đối chứng `vscodefile`: VS Code mở cùng kiểu).
-- Trình soạn thảo: đúng ở 20 ms với chuỗi chuẩn và ở 100 ms; sai ở 5 ms và ở ca "anh ddi" ở 20 ms. Cursor trả vị trí con trỏ tính từ đầu từ đang gõ; VS Code mở cùng kiểu thì đúng; Telex của Apple cùng chỗ đúng ở 5 và 20 ms.
+- Trình soạn thảo: đúng ở 20 ms với chuỗi chuẩn và ở 100 ms; sai ở 5 ms và ở ca "anh ddi" ở 20 ms (phím dồn từ đầu tài liệu mới). Cursor trả vị trí con trỏ tính từ đầu từ đang gõ; VS Code mở cùng kiểu thì đúng; Telex của Apple cùng chỗ đúng ở 5 và 20 ms.
 - Ô nhập Agents: đúng ở 5, 20, 100 ms. Gạch chân trong trình soạn thảo: đúng ở 5 ms.
 - Đã dừng sửa trình soạn thảo Cursor (10/11/2026): hai hướng sửa cần đổi N3 hoặc D11 (mục 7).
 
