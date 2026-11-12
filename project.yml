@@ -7,7 +7,7 @@
 # DEVELOPMENT_TEAM lives in Config/Signing.xcconfig: the maintainer's free Personal Team
 # (M58DANM3ZP) unless Config/Local.xcconfig (git-ignored) sets another one (CONTRIBUTING.md).
 # Builds are signed "Apple Development" with automatic signing: the App Group needs a real
-# Team ID, macOS rejects it for ad-hoc signed builds (see Decisions.md). No provisioning
+# Team ID, macOS rejects it for ad-hoc signed builds (D24, Tên và định danh). No provisioning
 # profile is needed: a Team-ID-prefixed App Group is allowed on macOS without one.
 # Developer ID signing + notarization are set up in M7 (CI overrides via xcodebuild settings).
 

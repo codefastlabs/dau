@@ -398,7 +398,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.text == "hocf ")
     }
 
-    @Test("D20: K7 in the compatibility matrix — hoc, Space, ⌫, j → học")
+    @Test("D20: hoc, Space, ⌫, j → học")
     func k7() {
         var s = Session()
         s.type("hoc ⌫j")
@@ -451,10 +451,10 @@ struct InPlaceComposerTests {
         #expect(InPlaceComposer().addMarksEnabled)
     }
 
-    @Test("E8: a plain letter reads too and joins a valid prefix; no read inside a word")
+    @Test("D20: a plain letter reads too and joins a valid prefix; no read inside a word")
     func letterReadsOnce() {
         var s = Session("ho")
-        s.type("c")      // not a mark key: reads "ho", "hoc" is a valid prefix (E8)
+        s.type("c")      // not a mark key: reads "ho", "hoc" is a valid prefix (D20, plain letter)
         #expect(s.reads == 1)
         #expect(s.kinds == [.seedPass])
         s.type("j")      // inside the word "hoc" (engine tracks it): normal key
@@ -738,11 +738,11 @@ struct InPlaceComposerTests {
     }
 }
 
-/// E8 (D20, "Chữ cái gõ sát chữ có sẵn", 05/11/2026): the first plain letter after a
+/// D20, "Chữ cái gõ sát chữ có sẵn" (05/11/2026): the first plain letter after a
 /// reset also reads the word before the cursor, and joins it only while the word with
 /// that letter is still a valid prefix (D30); otherwise the letter starts a new word.
 /// `⟦x⟧` in the names is the text before the cursor after a click.
-@Suite("InPlaceComposer: plain letter next to existing text (D20, E8)")
+@Suite("InPlaceComposer: plain letter next to existing text (D20)")
 struct InPlaceComposerLetterTests {
     private static func telex(_ text: String) -> Session { Session(text) }
 

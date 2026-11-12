@@ -4,7 +4,7 @@ import InputMethodKit
 import os
 
 /// Debug only: positions involved in one in-place replacement, logged in category
-/// "diag" to find why some apps end up with wrong text (method A, open question A/B).
+/// "diag" to find why some apps end up with wrong text (D11, `selectedRange` on every replacing key).
 ///
 /// D8: numbers only (UTF-16 offsets and lengths) plus the client's bundle ID. Never the
 /// text typed, inserted or read from the client.

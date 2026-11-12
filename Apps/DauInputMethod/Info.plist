@@ -97,7 +97,8 @@
 				<!-- Undocumented: Apple's TamilIM declares a text label per mode this way
 				     (macOS 27). The system does not read it for third-party sources: indicator
 				     and menu bar labels ("A", "VI") come from a table built into
-				     KeyboardLayouts.framework, keyed by Apple's input source IDs (6.7). Harmless. -->
+				     KeyboardLayouts.framework, keyed by Apple's input source IDs (docs/history/CompatibilityFixed.md,
+				     "Chỉ báo ⌃Space dưới con trỏ trống"). Harmless. -->
 				<key>TISIconLabels</key>
 				<dict>
 					<key>Primary</key>

@@ -92,10 +92,10 @@ struct AppRulesView: View {
                     }
                 } header: {
                     // The section's description goes under its title, above the card,
-                    // as in System Settings. N5: only what M3 measured (D13): in-place
-                    // typing went wrong only when keys came less than 10 ms apart;
-                    // underlining fixed Chrome and VS Code but not Terminal, so the text
-                    // says when to choose it, not that it always helps. Wording approved
+                    // as in System Settings. N5, D13: the label goes only to apps whose
+                    // measurements show in-place replacement still failing (today Cursor),
+                    // where underlining is the right choice; the text says when to choose
+                    // it, not that it always helps. Wording approved
                     // by the user (30/10/2026).
                     SectionHeader(
                         title: Text("Suggested"),

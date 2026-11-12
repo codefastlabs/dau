@@ -3,7 +3,8 @@
 
 /// A short run of Unicode scalars stored inline in a `SIMD32<UInt32>`.
 ///
-/// Why SIMD storage: the hot path must not allocate per key (CLAUDE.md, D33).
+/// Why SIMD storage: the hot path must not allocate per key
+/// (docs/Architecture.md, section "DauEngine"; D33).
 /// `Array` would allocate (or copy-on-write when an `Action` still references the
 /// engine's array), `InlineArray` needs macOS 26 while Dấu targets macOS 14 (D1),
 /// and tuple storage needs `withUnsafe…` closures for indexed access. A SIMD vector

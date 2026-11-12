@@ -189,7 +189,7 @@ struct MarkedComposerTests {
         #expect(s.passedWithMarked == 0)
     }
 
-    @Test("D20 (E8 too) not in underline mode: text already in the app is never read, the letter starts a word")
+    @Test("D20 (plain letter next to existing text too) not in underline mode: text already in the app is never read, the letter starts a word")
     func noD20() {
         var s = Session()
         s.app.document = "q"   // ⟦q⟧uer: in-place mode would join it into "quẻ"

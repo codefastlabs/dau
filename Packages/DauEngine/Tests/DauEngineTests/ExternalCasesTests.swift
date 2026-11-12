@@ -154,7 +154,7 @@ struct ExternalCasesTests {
     }
 
     /// D20 as `InPlaceComposer.addMarks`/`seedWord` do it: a mark key or a plain ASCII
-    /// letter (E8) with no word in the engine and an unknown text before the cursor reads
+    /// letter (D20 plain letter) with no word in the engine and an unknown text before the cursor reads
     /// the word before the cursor (16 UTF-16 units), seeds the engine with it and lets the
     /// engine decide, with the three exceptions of D20:
     /// - (b) a word that is not Vietnamese takes the key unchanged, any case: one the
@@ -163,7 +163,7 @@ struct ExternalCasesTests {
     ///   the key stays seeded;
     /// - (a) on a Vietnamese word, an upper-case key after a lower-case letter is not
     ///   seeded ("#Hà" + N), unless a mark key changes the word ("hoc" + J → "học");
-    /// - E8: a plain letter on a Vietnamese word joins only if the result is still a
+    /// - D20 plain letter: a plain letter on a Vietnamese word joins only if the result is still a
     ///   valid prefix (D30: not locked by spelling, not past D33's length);
     /// - (c) a mark key on a Vietnamese word that passes through and leaves it locked or
     ///   past 7 letters is not seeded ("anh" + e, "tôi" + d); a D26 double key applies.
@@ -202,7 +202,7 @@ struct ExternalCasesTests {
         let validPrefix = !f.engine.isSpellingLocked && !f.engine.overflow
         if !lockedBefore, !validPrefix {
             if letter {
-                // E8: "tôi" + l starts a new word "l" (`InPlaceComposer.isValidPrefix`).
+                // D20 plain letter: "tôi" + l starts a new word "l" (`InPlaceComposer.isValidPrefix`).
                 f.engine.reset()
                 return nil
             }
@@ -254,7 +254,7 @@ struct ExternalCasesTests {
                 after = Array(inner[(bar + 1)...])
             }
             // Text already in the field: the engine does not know it; the first mark key
-            // or letter reads it (D20, E8), and only the last word before the cursor.
+            // or letter reads it (D20 plain letter), and only the last word before the cursor.
             f.text.append(contentsOf: before)
         }
 
@@ -401,10 +401,10 @@ struct ExternalCasesTests {
         #expect(run("du⏎j").output == "du⏎j" && run("du⏎j").d20Reads == 2)
         #expect(run("⟦ngả nghieng⟧e").output == "ngả␣nghiêng")
         #expect(run("viet␣⌫j").output == "vietj")
-        // Only the first key of the field reads (E8: a letter too); a mark key after a
+        // Only the first key of the field reads (D20 plain letter: a letter too); a mark key after a
         // word end typed here does not.
         #expect(run("hoc,a").d20Reads == 1)
-        // E8: a plain letter reads too, and joins only a valid prefix.
+        // D20 plain letter: a plain letter reads too, and joins only a valid prefix.
         #expect(run("⟦q⟧uer␣").output == "quẻ␣" && run("⟦q⟧uer␣").d20Seeded == 1)
         #expect(run("ba␣⌫nj␣").output == "bạn␣")
         #expect(run("⟦tôi⟧laf␣").output == "tôilà␣" && run("⟦tôi⟧laf␣").d20Seeded == 0)

@@ -25,8 +25,8 @@ protocol InPlaceClient {
 ///   where this composer followed the cursor to, one `text(in:)` too, the D11 read on a
 ///   mismatch (N3), which also tells an app that answers late (`replace`);
 /// - D20 "Thêm dấu cho từ đã gõ" (see `addMarks`): on a tone or transform key, or a
-///   plain letter (E8), typed with no word in the engine and an unknown text before the
-///   cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
+///   plain letter (D20, "Chữ cái gõ sát chữ có sẵn"), typed with no word in the
+///   engine and an unknown text before the cursor, one `selectedRange` and one `text(in:)` (attributedSubstring), then at most
 ///   one `insertText` (none when the system already changed the word that way, D20 "Từ
 ///   hệ thống vừa sửa", `isSystemFix`);
 /// - D43: at the one key where the positions are enough to take the client for one that
@@ -162,9 +162,10 @@ struct InPlaceComposer {
     /// Apps that apply keys asynchronously (Chromium, Electron, terminals) answer
     /// `selectedRange`/`attributedSubstring` from a snapshot that can still miss the
     /// previous keys; a word read from such a snapshot could be replaced at the wrong
-    /// place. M2 measured method A wrong below 10–20 ms between keys in Chrome, VS Code
-    /// and Terminal. Trial 30/10/2026 with no wait (Architecture.md): no damage in five
-    /// apps even at 0 ms, VS Code at 0 ms read a stale snapshot (no word found). 50 ms
+    /// place. M2 measured this read wrong below 10–20 ms between keys in Chrome, VS Code
+    /// and Terminal. Trial 30/10/2026 with no wait (`docs/history/LogM0ToM4.md`, table
+    /// "Số đo (M1–M3)", row "D20 không chờ"): no damage in five apps
+    /// even at 0 ms, VS Code at 0 ms read a stale snapshot (no word found). 50 ms
     /// keeps a margin over the 20 ms seen in M2; a person going back to a word is slower.
     static let settleInterval: TimeInterval = 0.05
 
@@ -202,7 +203,7 @@ struct InPlaceComposer {
     #if DEBUG
     /// What a D20 read did (Debug perf log only).
     struct D20Trace: Equatable {
-        /// What triggered the read: a tone/transform key, or a plain letter (E8).
+        /// What triggered the read: a tone/transform key, or a plain letter (D20, "Chữ cái gõ sát chữ có sẵn").
         enum Trigger: String { case mark, letter }
         var trigger: Trigger
         /// The engine was seeded with the word read and kept it (a plain letter that does
@@ -431,7 +432,7 @@ struct InPlaceComposer {
                 if Self.isMarkKey(scalar, method: method) {
                     return addMarks(scalar, letter: false, engine: &engine, client: client)
                 }
-                // E8 (D20, "Chữ cái gõ sát chữ có sẵn"): a plain letter reads too, and
+                // D20, "Chữ cái gõ sát chữ có sẵn": a plain letter reads too, and
                 // joins the word read only if the result is still a valid prefix.
                 if Self.isLetter(scalar) {
                     return addMarks(scalar, letter: true, engine: &engine, client: client)
@@ -465,7 +466,7 @@ struct InPlaceComposer {
         }
     }
 
-    /// ASCII letters, any case: the plain letters that also make a D20 read (E8) when
+    /// ASCII letters, any case: the plain letters that also make a D20 read when
     /// they are not mark keys of the typing method.
     static func isLetter(_ scalar: Unicode.Scalar) -> Bool {
         let v = scalar.value
@@ -694,7 +695,7 @@ struct InPlaceComposer {
     /// than `readLength` UTF-16 units; any odd answer from the client means no seed and
     /// the key is handled as the first key of a new word (D18).
     ///
-    /// `letter`: the key is a plain letter, not a mark key (E8). Whether the key joins the
+    /// `letter`: the key is a plain letter, not a mark key (D20 plain letter). Whether the key joins the
     /// word read follows D20 and its three exceptions (`SeedRule`), decided from the text
     /// already read before anything is sent to the client, so a key that does not join
     /// makes the same calls as an unseeded key after the read.
@@ -761,7 +762,7 @@ struct InPlaceComposer {
         case resync
         /// D20, a tone or transform key typed first after a reset.
         case mark
-        /// D20, a plain letter typed first after a reset (E8).
+        /// D20, a plain letter typed first after a reset ("Chữ cái gõ sát chữ có sẵn").
         case letter
     }
 
@@ -783,7 +784,7 @@ struct InPlaceComposer {
     ///   letter starts a new word ("#Hà" + N → "#HàN…", "Hà" + O), unless it is a mark
     ///   key that places a tone or transform on the word (a replacement: "hoc" + J →
     ///   "học"). "VI" + E, "V" + i still join.
-    /// - A letter on a Vietnamese word joins only if the word stays a valid prefix (E8):
+    /// - A letter on a Vietnamese word joins only if the word stays a valid prefix (D20 plain letter):
     ///   "q" + u → "qu", "tôi" + l starts a new word "l".
     /// - Exception (c): a mark key that is not applied to a Vietnamese word (the key
     ///   passes through and leaves the word locked or past 7 letters) starts a new word:
@@ -859,7 +860,7 @@ struct InPlaceComposer {
         case .resync:
             break
         case .letter:
-            // E8: "tôi" + l, "sắc" + m: the letter starts a new word. D20 (b): a word
+            // D20 plain letter: "tôi" + l, "sắc" + m: the letter starts a new word. D20 (b): a word
             // locked before the key is not Vietnamese, the letter belongs to it.
             if !lockedBefore, !Self.isValidPrefix(engine) {
                 engine.reset()
@@ -964,7 +965,7 @@ struct InPlaceComposer {
         ClientRange.sanitized(client.selectedRange())
     }
 
-    /// Applies `.replace` with exactly one `insertText` call (N3). Method A: ask the
+    /// Applies `.replace` with exactly one `insertText` call (N3). D11: ask the
     /// client for `selectedRange` when text before the cursor must be replaced, unless
     /// this key already asked (`selection`).
     /// `appending`: one more scalar after `insert` (Backspace, see `handle`).

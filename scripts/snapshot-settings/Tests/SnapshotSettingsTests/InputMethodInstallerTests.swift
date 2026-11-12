@@ -24,10 +24,10 @@ final class FakeTextInputSources: TextInputSources {
     /// `enable` returns this status and changes nothing when false (the macOS 27.0
     /// report: noErr, mode still off).
     var enableTakesEffect = true
-    /// Enabling the parent also stores the mode (macOS does; docs/research/InputMethodInstall.md section 1.4).
+    /// Enabling the parent also stores the mode, as on real Dấu (docs/research/InputMethodInstall.md section 1.1, step 3).
     var enableCascadesToMode = true
     var enableStatus: OSStatus = noErr
-    /// What `register` makes appear (nothing: the source is not listed until logout).
+    /// What `register` makes appear (nothing here; real Dấu shows up after `enable`, with no logout: docs/research/InputMethodInstall.md section 1.1).
     var registerAdds: [Source] = []
     /// Stored-list reads, after `enable` is called, before macOS stores Dấu as enabled by itself (the user
     /// clicked Allow a bit later). nil: never.

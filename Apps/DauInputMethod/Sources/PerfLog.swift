@@ -1,7 +1,7 @@
 import Foundation
 import os
 
-/// Timing of one key, for the open question A/B (cost of `selectedRange` per app), and
+/// Timing of one key, for D11 (cost of `selectedRange` per app), and
 /// when it arrived (`t_ns`, `ev_ns`), for the gaps between keys under load (M6).
 ///
 /// D8: only numbers, a fixed event kind and the client's bundle ID are logged. Never the
@@ -49,7 +49,7 @@ struct PerfLog {
         case seedPass = "seed_pass"
         /// D20: selectedRange (and attributedSubstring if there was text before the
         /// cursor) found no word to seed, or a plain letter did not join the word read
-        /// (E8); the key was handled as the first of a word.
+        /// (D20, "Chữ cái gõ sát chữ có sẵn"); the key was handled as the first of a word.
         case seedNone = "seed_none"
         /// D20 "Từ hệ thống vừa sửa": a word was read and seeded, and it already is what
         /// the key makes of the word the input method produced last (macOS autocorrect

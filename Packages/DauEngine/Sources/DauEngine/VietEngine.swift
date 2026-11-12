@@ -1,6 +1,6 @@
 // Dấu's Vietnamese input engine (Telex, Telex đơn giản). Pure Swift, no Foundation.
 //
-// Hot path rules (CLAUDE.md): no `String`, no `any`, no closures, no heap allocation
+// Hot path rules (docs/Architecture.md, section "DauEngine"): no `String`, no `any`, no closures, no heap allocation
 // per key. State is a handful of SIMD vectors and integers; output is a `TextBuffer`.
 //
 // Model: the engine keeps three things for the word being typed:
@@ -388,7 +388,7 @@ public struct VietEngine: Sendable {
 
     /// VNI 6: circumflex on a, e or o of the cluster, trying the last one first
     /// ("toi6" → "tôi", "uo6" → "uô", "tua6n" → "tuân"). Again undoes it and locks
-    /// (D26 "a66" → "a6"). VNI needs no "ooo" exception: "xoong" has no 6 in it.
+    /// (D26: a66 gives a6, as "a11" → "a1"). VNI needs no "ooo" exception: "xoong" has no 6 in it.
     func hatAnyKey(_ w: inout Word, mode: SpellMode) -> Outcome {
         let (s, e) = w.nucleus()
         var i = e - 1

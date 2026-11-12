@@ -34,9 +34,6 @@ import Security
 /// `HostAppSignature`): signed by this input method's team, with the host's bundle ID.
 /// Any app can claim the bundle ID. Steps 1, 2 and 5 also open a copy the sandbox does
 /// not let the input method check.
-///
-/// TODO(M5): the installer can record the host app's path in the shared settings; use it
-/// first once it exists.
 enum HostApp {
     /// Info.plist key of the input method holding the host app's bundle ID
     /// (`$(BUNDLE_ID_PREFIX)` in project.yml), so the ID is never written in code.

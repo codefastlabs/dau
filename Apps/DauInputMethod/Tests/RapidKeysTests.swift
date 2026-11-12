@@ -92,8 +92,8 @@ struct RapidSession {
         if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         reads += doc.reads
         kinds.append(outcome.kind)
-        // Costs of the calls, medians measured in M2/M3 (Debug; Compatibility.md section 5,
-        // Decisions.md D20): selectedRange 0.3 ms, attributedSubstring 0.8 ms (Chrome,
+        // Costs of the calls, medians measured in M2/M3 (Debug; docs/history/DecisionsLog.md,
+        // section D20): selectedRange 0.3 ms, attributedSubstring 0.8 ms (Chrome,
         // VS Code), insertText 0.6 ms; the rest of a key 0.3 ms.
         let end = start + 0.0003 + Double(doc.selections) * 0.0003 + Double(doc.reads) * 0.0008
             + Double(doc.inserts) * 0.0006
