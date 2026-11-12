@@ -658,22 +658,22 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 
 ### D43. Ô bỏ qua vùng thay chữ
 
-Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ (đã đo: Ghostty, và terminal dựng bằng xterm.js). Ở ô kiểu Ghostty, Dấu vẫn thay chữ tại chỗ bằng cách gửi ký tự xoá (DEL, U+007F) cho từng chữ cần xoá rồi tới chữ mới, trong một lần `insertText` tại con trỏ; chương trình trong terminal xoá rồi in lại.
+Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ (đã đo: Ghostty, và terminal dựng bằng xterm.js). Ở các ô này, Dấu vẫn thay chữ tại chỗ bằng cách gửi ký tự xoá (DEL, U+007F) cho từng chữ cần xoá rồi tới chữ mới, trong một lần `insertText` tại con trỏ; chương trình trong terminal xoá rồi in lại.
 
 - **Nhận ra ô:** dựa vào vị trí con trỏ app báo ở các phím có thay chữ (Dấu vốn đã hỏi ở các phím này, N3 (Ít lời gọi vào ứng dụng đích)), cộng một bằng chứng dương. Kết quả giữ tới hết lần kích hoạt; chỉ xét lại khi IMK kích hoạt lại bộ gõ hoặc đổi client, còn click hay đổi ô trong cùng app mà IMK không báo thì giữ.
 - **Bằng chứng dương:** ở phím mà vị trí vừa đủ để nhận ra ô, Dấu đọc chữ trước con trỏ một lần. Ô loại này không cho đọc chữ đã gõ: app không trả chữ, hoặc trả chữ không chứa chữ Dấu vừa gõ ở đó. App trả về đúng chữ Dấu vừa gõ thì ô đó gõ được bình thường, chỉ báo vị trí sai: không nhận ra, thay tại chỗ như cũ trong lần kích hoạt đó. Vị trí nhỏ một mình không đủ, vì ô tự vẽ báo vị trí hằng số và app đứng hình ở đầu văn bản trống cũng trả vị trí 0.
 - **Yêu cầu với ngưỡng nhận ra** (ngưỡng nằm ở mã và test): không nhận nhầm ô gõ thường nào trong các lượt đo đã có, kể cả Chrome khi trang bận và đầu văn bản (vị trí 0 là vị trí thật); nhận ra Ghostty càng sớm càng tốt trong từ đầu tiên.
-- **Lúc gửi:** chỉ ô nhận ra theo kiểu Ghostty (vị trí luôn 0) gửi ký tự xoá: để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm. Ô nhận ra theo kiểu xterm.js (vị trí dao động 0–2) vẫn thay tại chỗ như ô thường, chỉ ghi log.
-- **Sau khi nhận ra:** không hỏi vị trí con trỏ, không đọc chữ; mỗi phím vẫn tối đa một lần `insertText`.
+- **Lúc gửi:** ô nhận ra theo kiểu Ghostty (vị trí luôn 0): để phím tới app như thường, rồi gửi phần sửa ngay sau khi app xử lý xong phím, xoá luôn cả việc phím vừa làm. Ô nhận ra theo kiểu xterm.js (vị trí dao động 0–2): gửi phần sửa trong lúc app xử lý phím, thay cho phím; chỉ bắt đầu khi từ phím Return gần nhất (hay từ lúc kích hoạt, nếu chưa có Return) Dấu chưa gửi lần thay có vùng thay nào, tức thường là từ phím Return đầu tiên sau khi nhận ra. Trước đó ô vẫn được thay tại chỗ như ô thường.
+- **Khi đã gửi ký tự xoá:** không hỏi vị trí con trỏ, không đọc chữ; mỗi phím vẫn tối đa một lần `insertText`.
 - **Khác "event tap + Backspace giả" đã loại:** không event tap, không giả lập phím, không xin quyền Trợ năng (N4 (Không tự đổi cài đặt hệ thống)). Ký tự xoá là chữ gửi qua API của InputMethodKit, chỉ tới ô đã nhận ra là bỏ qua vùng thay.
 - **Gạch chân không phải cách sửa** cho những ô này: D13 (Gạch chân là đường lui cuối cùng) giữ nguyên, gạch chân vẫn chỉ do người dùng tự bật.
 
 **Hệ quả đã chấp nhận:**
 
 - D20 (Thêm dấu cho từ đã gõ) và lần dựng lại của D11 (Kiểm tra ngữ cảnh) không chạy, vì không đọc được chữ.
-- Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty: Return chạy dòng lệnh trước khi phần sửa tới, nên từ giữ như đang hiện.
+- Return hay Tab kết thúc một từ cần khôi phục (D4 (Từ nước ngoài)) ở Ghostty và ô kiểu xterm.js: app chạy phím trước khi phần sửa tới, nên từ giữ như đang hiện.
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường.
-- Trước khi nhận ra, các phím đầu ra như ô thường (ở xterm.js có thể sai ở từ đầu tiên).
+- Trước khi nhận ra, các phím đầu ra như ô thường (ở xterm.js có thể sai ở từ đầu tiên). Ở ô kiểu xterm.js, dòng đang gõ lúc nhận ra thường vẫn sai như vậy tới phím Return.
 - Chữ có thể chớp một khung hình ở cách gửi sau phím: chưa đo.
 - Ô vừa báo vị trí hằng số 0 vừa không cho đọc chữ mà không phải terminal (nếu có) vẫn bị nhận ra và nhận ký tự xoá như chữ thường; chưa gặp app nào như vậy.
 - Lần đọc chỉ bác được khi app trả chữ Dấu vừa gõ ở chỗ Dấu tự theo dõi (tính từ lúc kích hoạt). Ô báo vị trí hằng số 0 mà lúc kích hoạt đã có chữ trước con trỏ, hoặc đã click trong cùng lần kích hoạt, và app đứng hình tới mức chưa có chữ nào của Dấu trong vùng đọc, vẫn bị nhận ra như khi không có bằng chứng dương. Mới thấy trên client giả, chưa gặp trên app thật.
@@ -682,7 +682,8 @@ Có những ô nhập nhận chữ của `insertText(_:replacementRange:)` nhưn
 
 - Thay tại chỗ thường hỏng ở các ô này: Ghostty `dd` ra "dđ", `vieetj` ra "vieetj"; xterm.js `toois vieetj dd ` ra "toôoiís vieêetj dđd ". Telex của Apple ra đúng ở cả hai.
 - Bản thử ký tự xoá ra đúng ở xterm.js (gửi trong phím) và ở Ghostty (gửi sau phím; zsh, vim), thời gian xử lý mỗi phím ngang thay tại chỗ thường.
-- Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. Kiểu xterm.js chưa gửi ký tự xoá vì gửi trong phím từng làm chữ dồn khi gõ thử, chưa rõ nguyên nhân.
+- Ghostty phải gửi sau phím: Ghostty bỏ chữ bộ gõ bắt đầu bằng ký tự điều khiển trong lúc xử lý phím. xterm.js phải gửi trong phím: theo mã, chữ tới sau phím (trước khi nhả phím) bị bỏ.
+- Kiểu xterm.js chờ Return: lần thay có vùng thay để chữ lại sau con trỏ trong ô nhập ẩn của xterm.js, và từ đó mỗi lần gửi ký tự xoá xterm.js gửi lại cả ô (chữ dồn ở lượt gõ thử khi bật ngay lúc nhận ra). Return làm rỗng ô đó. Mới kiểm bằng mô hình dựng từ mã, chưa đo trên trang thật.
 - Độ dài văn bản app báo (`length()`) là 0 ở mọi app đã thử, nên không dùng để nhận ra ô.
 - Bằng chứng dương: trên client giả luôn báo `{0,0}` (ô gõ thường), cách nhận ra chỉ theo vị trí đã gửi ký tự xoá từ từ thứ hai và để chúng lại trong chữ. Theo mã nguồn, Ghostty trả chữ đang bôi đen hoặc không trả gì khi được hỏi chữ, nên lần đọc thêm không làm mất việc nhận ra Ghostty.
 

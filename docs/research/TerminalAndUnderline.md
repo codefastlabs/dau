@@ -2,10 +2,10 @@
 
 Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.js, và vì sao chế độ gạch chân không sửa được dấu cho từ đã gõ. Cơ chế đọc từ mã nguồn, kết quả đo bằng lượt gõ thử có đối chứng Telex của Apple. Quyết định rút ra là D43 (Ô bỏ qua vùng thay chữ); file này không chép lại nó.
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (12/11/2026)
 
 - **Ghostty: D43 chạy.** Ghostty bỏ qua `replacementRange` và báo vị trí con trỏ luôn `{0,0}`. Dấu nhận ra ô này sau vài phím có thay chữ (ở lượt đo: trong từ thứ hai), rồi gửi ký tự xoá sau khi Ghostty xử lý xong phím. Từ thứ hai trở đi đúng, ở zsh và vim; từ đầu tiên còn sai vì lúc đó chưa nhận ra (mục 1).
-- **xterm.js: chờ chẩn đoán.** Gửi ký tự xoá trong lúc xử lý phím đúng khi bật từ đầu, nhưng sai nặng hơn cách cũ khi bật giữa chừng (chữ dồn lại mỗi lần sửa). D43 vì vậy giữ cách thay tại chỗ cũ ở ô kiểu xterm.js, vẫn sai như trước, tới khi chẩn đoán xong (mục 2).
+- **xterm.js: đã rõ nguyên nhân chữ dồn, đã sửa trong mã, chưa đo trên trang thật.** Lần thay có vùng thay trước lúc nhận ra để lại chữ sau con trỏ trong textarea ẩn của xterm.js; từ đó mỗi lần gửi ký tự xoá trong phím, xterm.js gửi lại cả textarea (mục 2). D43 nay chỉ bắt đầu gửi trong phím khi textarea chắc chắn sạch: không có lần thay có vùng thay nào từ phím Return gần nhất. Thường là từ dòng sau phím Return đầu tiên sau khi nhận ra; dòng đang gõ lúc nhận ra vẫn sai như trước D43. Kết quả trên mô hình mã (`FakeXtermPage`); lượt chạy thật còn chờ.
 - **Terminal trong app Claude chưa đo** (không tự động hoá được). Theo mã, nó dùng xterm.js trong Electron nên cùng cơ chế với trang thử.
 - **Gạch chân không sửa được dấu cho từ đã chốt** (⌫ về từ cũ, ← vào giữa từ), giống Telex của Apple. Trong Sublime Text, thay tại chỗ sửa được cả ba ca, nên tắt gạch chân cho Sublime là đủ; không quyết định nào phải đổi (mục 3).
 - **Ghostty nuốt Return ngay sau từ gạch chân**, cả với Telex của Apple: lỗi của Ghostty (mục 1).
@@ -37,10 +37,46 @@ Kết quả (zsh, 120 ms giữa hai phím, một lượt mỗi ô; Telex của A
 
 ## 2. Terminal dựng bằng xterm.js (trang thử và app Claude)
 
-Cơ chế (mã Chromium và xterm.js):
-- Chromium gửi `insertText` có vùng thay thành `ImeCommitText(text, range)`; Blink chọn vùng đó trong textarea ẩn của xterm rồi chèn, sự kiện `input` chỉ mang chữ mới, không có lệnh xoá.
-- Textarea gần như luôn rỗng vì xterm gửi phím thường ngay ở `keydown` rồi chặn mặc định (`_keyDown`), nên vị trí con trỏ thường là 0, đôi khi 1–2. Đo được: dao động 0–2 dù đã gõ nhiều chữ hơn.
-- Phím chữ hoa A–Z đi đường `keypress` (`_keyPress`).
+Cơ chế (mã Chromium nhánh main ngày 12/11/2026 và xterm.js 5.5.0, bản trang thử nạp):
+
+- **Chromium** (`RenderWidgetHostViewCocoa`):
+  - `insertText` có vùng thay gửi ngay `ImeCommitText(text, range)` cho trang. `insertText` không vùng thay trong lúc xử lý phím chỉ được gom lại (`_textToBeInserted`).
+  - Sau `interpretKeyEvents`, gom được hơn một đơn vị thì trang nhận keydown mã 229 (`VKEY_PROCESSKEY`) rồi `ImeCommitText` của phần đã gom. Gom được một đơn vị hoặc không gì: trang nhận keydown thật của phím, rồi keypress mang đơn vị đó. Phím bộ gõ để đi (Delete, Return) còn sinh lệnh soạn thảo: sau phần chữ, trang nhận thêm keydown thật của phím.
+  - `selectedRange` và `attributedSubstring` trả từ bộ đệm (`_textSelectionRange`, `_availableText`), trang chỉ cập nhật khi chữ hay vùng chọn của nó đổi. Sau mỗi `insertText` không vùng thay, Chromium tự đặt con trỏ trong bộ đệm ở `_markedRange.location` cộng độ dài chữ (cắt về `int`), và chèn chữ vào bộ đệm ở `_markedRange.location`. `_markedRange` chỉ đổi khi có marked text, nên câu trả lời phụ thuộc lịch sử của view. Đây là một nguồn của dao động 0–2 đo được ở trang thử; con số từng lần chưa dựng lại được (bên dưới).
+- **Blink:**
+  - Chữ có vùng thay đi `ReplaceTextAndKeepSelection`: chọn vùng, chèn, rồi đặt lại con trỏ cũ. Con trỏ cũ đứng trước cuối vùng thì giữ nguyên chỗ, nên chữ vừa thay nằm **sau** con trỏ. Vùng bắt đầu sau hết chữ thì bỏ (textarea rỗng có một `<br>` giữ chỗ).
+  - Chữ không vùng thay đi `InsertTextAndMoveCaret`: chèn ở con trỏ, con trỏ ra sau.
+  - Mỗi lần chèn phát sự kiện `input` (`composed` luôn đúng). Keydown bị chặn mặc định thì keypress của nó bị bỏ; keypress không bị chặn thì chữ của nó vào textarea ở con trỏ.
+- **xterm.js:**
+  - `_keyDown` gửi ngay chữ thường, số, dấu câu (mã phím từ 48, một ký tự) rồi chặn mặc định, nên textarea gần như rỗng. Chữ hoa A–Z và phím cách không có `result.key` ở đây, đi tiếp sang `_keyPress`; `_keyPress` gửi chữ mà không chặn mặc định (`cancelEvents` mặc định tắt), nên chữ đó cũng vào textarea.
+  - `_inputEvent` chỉ gửi chữ tới giữa keyup và keydown kế (`!ev.composed || !this._keyDownSeen`): chữ có vùng thay tới trước keydown của chính phím đó, nên tới shell, rồi keydown thật gửi thêm phím gốc. Đây là "phím gốc và chữ thay đều tới shell" của cách cũ.
+  - Keydown 229 khi không soạn chữ đi `CompositionHelper._handleAnyTextareaChanges`: nhớ giá trị textarea, sau `setTimeout(0)` gửi `newValue.replace(oldValue, '')`. Phép trừ này chỉ đúng khi chữ mới chèn ở cuối (hoặc đầu) giá trị cũ. Chèn ở giữa thì giá trị cũ không còn là một đoạn liền của giá trị mới, và xterm.js gửi **cả textarea**.
+  - Textarea chỉ được làm rỗng khi Return, ⌃C, hay mất focus.
+
+Vì sao chữ dồn ở lượt thứ tư:
+
+1. Trước khi nhận ra ô, các lần thay có vùng thay để chữ thay lại sau con trỏ của textarea. Trạng thái mà các khúc dữ liệu đo được buộc phải có ở phím j: textarea " ê", con trỏ ở 1. Tức là lần thay ở chữ e thứ hai của "vieetj" đổi chữ "í" (của lần thay "tối" trước đó) thành "ê" với con trỏ đứng trước; phím cách (đi qua keypress) nằm trước con trỏ.
+2. Từ phím j, ký tự xoá gửi trong phím đi qua keydown 229 và chèn ở con trỏ: " ⌫⌫ệtê". Giá trị cũ " ê" không còn liền, nên xterm.js gửi cả chuỗi. Mỗi lần sửa sau cũng chèn ở giữa, nên gửi lại mọi lần sửa trước cộng "ê" ở cuối. Nhật ký 11/11 chép các khúc không có dấu cách đầu ("⌫⌫ệtê"); dòng chữ đo được ("vieêeệtê") chỉ ra được khi khúc bắt đầu bằng một ký tự mà ⌫ đầu tiên xoá đi.
+3. Lượt thứ hai đúng vì bật từ phím đầu: không có lần thay có vùng thay nào, con trỏ luôn ở cuối textarea.
+
+Giả thuyết đã xét, dự đoán cho từng quan sát (O1: cách cũ ra "toôoiís vieêetj dđd "; O2: gửi trong phím từ phím đầu ra "tối việt đ "; O3: lượt thứ tư, mỗi lần gửi lặp lại các lần sửa trước cộng "ê"):
+
+| Giả thuyết | O1 | O2 | O3 | Kết luận |
+|---|---|---|---|---|
+| H1. Chữ còn lại sau con trỏ của textarea, phép trừ của `_handleAnyTextareaChanges` hỏng | khớp | khớp (con trỏ luôn ở cuối) | khớp từng ký tự: " ⌫⌫ệtê", " ⌫⌫ệt ⌫đê", dòng "toôoiís vieêeệtê ệtđêi hoệtọcê" | nguyên nhân |
+| H2. Lần thay có vùng thay mở một phiên soạn chữ, `compositionend` gửi phần đuôi textarea | không: `ImeCommitText` không có phiên soạn chữ thì không phát sự kiện `composition*` | khớp | không: phần đuôi tính từ lúc `compositionstart` không gồm chữ đứng trước | loại |
+| H3. Mỗi lần sửa gửi hai lần (`_inputEvent` và `_handleAnyTextareaChanges`) | — | không: sẽ ra mỗi lần sửa hai lần | không: lặp cả các lần sửa trước, không phải lần sửa hiện tại | loại |
+| H4. Textarea chỉ đầy dần (không bao giờ làm rỗng), con trỏ vẫn ở cuối | — | khớp | không: khi con trỏ ở cuối, phép trừ ra đúng phần mới (test đối chứng) | không đủ |
+
+Mô hình: `FakeXtermPage` (test của bộ gõ) dựng ba lớp trên theo mã, dẫn từng hàm trong comment. Với view mới (`_markedRange` {0,0}), nó cho lại đúng O1 và O2. O3 cho lại đúng từng ký tự khi bắt đầu từ trạng thái textarea mà các khúc dữ liệu đo được buộc phải có (" ê", con trỏ ở 1); cùng phím đó với con trỏ ở cuối thì không dồn (H4). Mô hình chưa cho lại câu trả lời `selectedRange` 2 ở chữ e thứ hai: con số đó phụ thuộc `_markedRange` của view, không đọc được từ dữ liệu đã lưu (chưa rõ).
+
+Cách sửa trong mã (`InPlaceComposer.EraseMode.inKey`, `InPlaceComposer.eraseMode(for:)`):
+
+- Chỉ gửi trong phím khi không có `insertText` có vùng thay nào từ lần Return (hay Enter bàn phím số) gần nhất mà bộ gõ để đi tới app. Return làm xterm.js xoá textarea. Lúc kích hoạt coi như chưa biết. Thường là bắt đầu ở phím Return đầu tiên sau khi nhận ra.
+- Delete có sửa dấu (D32 (Backspace)) bị giữ lại và gửi phần sửa không kèm chữ mà Delete sẽ xoá: để Delete đi tiếp thì trang nhận keydown thật sau phần chữ, thứ tự giữa phần sửa và DEL của phím do trang quyết.
+- Return và Tab không gửi phần sửa: keydown thật của chúng tới trước khi xterm.js gửi phần sửa. Từ cần khôi phục giữ như đang hiện, như ở Ghostty.
+- Một đơn vị chữ khác phím vừa gõ (`w` ra "ư" ở đầu từ) gửi thành chữ, DEL, chữ: một đơn vị đi đường keydown thật, trên đường đó xterm.js gửi phím gốc chứ không gửi chữ.
+- Mỗi phím vẫn tối đa một `insertText`, không hỏi vị trí, không đọc chữ; Ghostty và ô thường không đổi (test `XtermPageTests`, `RangeIgnoreTests`).
 
 Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượt mỗi ô; Telex của Apple ra đúng):
 
@@ -48,11 +84,8 @@ Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượ
 |---|---|
 | Thay tại chỗ, trước D43 | "toôoiís vieêetj dđd ": phím gốc và chữ thay đều tới shell |
 | Ký tự xoá gửi trong phím, bật từ đầu (bản thử) | "tối việt đ " |
-| D43 gửi trong phím, sau khi nhận ra (lượt thứ tư) | sai nặng hơn: mỗi lần sửa gửi lại các lần sửa trước cộng một chữ "ê" thừa |
-| D43 hiện nay | như trước D43 (ghi log `range-ignored`, không gửi ký tự xoá) |
-
-- Giả thuyết cho lượt thứ tư: lần thay có vùng thay ngay trước lúc nhận ra (`sel=2,0`) để lại chữ và trạng thái soạn chữ trong textarea, nên các lần chèn sau đó xterm.js gửi cả textarea. Chưa kiểm: chưa đọc `CompositionHelper` cho ca này.
-- Việc tiếp theo: chẩn đoán giả thuyết trên, rồi bật lại cách gửi trong phím; thử tay trong app Claude sau khi sửa.
+| D43 gửi trong phím ngay từ phím nhận ra (lượt thứ tư) | sai nặng hơn: mỗi lần gửi lặp lại các lần sửa trước cộng một chữ "ê" thừa (H1) |
+| D43 hiện nay | chưa đo; mô hình: dòng đang gõ lúc nhận ra như trước D43, từ dòng sau Return đúng |
 
 ## 3. Gạch chân khi sửa chữ
 
@@ -91,6 +124,7 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 - App Claude chưa đo; bản xterm.js trong app cũ hơn trang thử.
 - Chưa đo: Ghostty khi còn vùng bôi đen bằng chuột (Ghostty mặc định bỏ bôi đen khi gõ, `selection-clear-on-typing`, nên theo mã chỉ ảnh hưởng phím đầu); Claude Code chạy trong terminal (chỉ đo ở dấu nhắc zsh và vim).
 - Chương trình không coi DEL là lệnh xoá (vim ở chế độ lệnh, less) nhận ký tự đó như phím thường (theo mã, chưa đo; giới hạn đã ghi ở D43).
+- Cách sửa cho xterm.js mới kiểm trên mô hình mã (`FakeXtermPage`). Mô hình giả định `setTimeout(0)` của xterm.js chạy sau mọi sự kiện Chromium gửi cho cùng phím (Blink ưu tiên sự kiện nhập), và keyup tới trước phím kế; chưa đọc mã lịch chạy của Blink. Gửi sau phím (cách của Ghostty) ở xterm.js theo mã sẽ mất phần sửa (`_inputEvent` bỏ chữ tới trước keyup), chưa đo.
 
 ## Phương pháp và bản mã đã đọc
 
@@ -99,8 +133,8 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 - Bản đã đọc (bản sao tạm ngoài repo, không chép mã nào vào Dấu, D10 (Engine tự viết)):
   - Ghostty: nhánh main, commit de70b9f476c39ce3f5b293ecba813b674f037a80 (10/11/2026), đã so với tag v1.4.0: SurfaceView_AppKit.swift (vùng IME) và src/input/key_encode.zig giống hệt. https://github.com/ghostty-org/ghostty
   - Claude.app 4.23118.1 (`com.anthropic.claudefordesktop`): chỉ grep và cắt byte trong `ion-dist.asar` của bundle, không giải nén.
-  - Chromium: nhánh main, tải ngày 10/11/2026: content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm, third_party/blink/renderer/core/editing/ime/input_method_controller.cc, third_party/blink/renderer/core/exported/web_input_method_controller_impl.cc, third_party/blink/renderer/core/editing/commands/typing_command.cc, third_party/blink/renderer/core/editing/editing_utilities.cc. https://chromium.googlesource.com/chromium/src/
-  - xterm.js: master, bản 6.0.0 (src/browser/input/CompositionHelper.ts, src/browser/CoreBrowserTerminal.ts). https://github.com/xtermjs/xterm.js
+  - Chromium: nhánh main, tải ngày 10/11/2026: content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm, third_party/blink/renderer/core/editing/ime/input_method_controller.cc, third_party/blink/renderer/core/exported/web_input_method_controller_impl.cc, third_party/blink/renderer/core/editing/commands/typing_command.cc, third_party/blink/renderer/core/editing/editing_utilities.cc. Tải thêm ngày 12/11/2026 (chẩn đoán chữ dồn): third_party/blink/renderer/core/editing/plain_text_range.cc, third_party/blink/renderer/core/html/forms/text_control_element.cc, third_party/blink/renderer/core/events/input_event.cc, third_party/blink/renderer/core/editing/editor.cc, content/renderer/render_frame_impl.cc, content/browser/renderer_host/render_widget_host_view_mac.mm. https://chromium.googlesource.com/chromium/src/
+  - xterm.js: master, bản 6.0.0 (src/browser/input/CompositionHelper.ts, src/browser/CoreBrowserTerminal.ts); tag 5.5.0, commit 9ba6c00a195c95fcf8292a2b9084d91450e5daae, bản trang thử nạp (src/browser/Terminal.ts, src/browser/input/CompositionHelper.ts, src/common/input/Keyboard.ts). https://github.com/xtermjs/xterm.js
 - Tài liệu Apple:
   - `insertText(_:replacementRange:)`: https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
   - `selectedRange()`: "The range of selected text or {NSNotFound, 0} if there is no selection." https://developer.apple.com/documentation/appkit/nstextinputclient/selectedrange()
@@ -114,8 +148,8 @@ Ghostty và xterm.js theo mã nguồn (kết quả đo ở mục 1, 2); Terminal
 
 | Khả năng | Ghostty 1.4.0 | xterm.js trong Chromium | Terminal của Apple |
 |---|---|---|---|
-| Thay theo `replacementRange` | không | không (vùng thay rơi ngoài textarea rỗng) | có, khi phím cách nhau từ 20 ms |
-| Vị trí con trỏ | luôn `{0,0}` khi không bôi đen | của textarea ẩn: 0–2 | có, là ảnh chụp cũ khi phím dồn |
+| Thay theo `replacementRange` | không | không: Blink thay trong textarea ẩn, xterm.js gửi shell chữ mới rồi thêm phím gốc | có, khi phím cách nhau từ 20 ms |
+| Vị trí con trỏ | luôn `{0,0}` khi không bôi đen | từ bộ đệm của Chromium (textarea ẩn, và phần Chromium tự đặt sau mỗi `insertText`): 0–2 | có, là ảnh chụp cũ khi phím dồn |
 | Đọc chữ trước con trỏ | chỉ chữ đang bôi đen | chữ trong textarea, thường rỗng | có (D20 chạy, trừ sau ⌫) |
 | ⌫ tới bộ gõ | có (`keyDown` luôn gọi `interpretKeyEvents`) | có | không |
 | Phím không tới bộ gõ | phím tắt menu của Ghostty; bấm chuột (`mouseDown` không gọi `handleEvent`, kết luận về Dấu: suy luận, cần kiểm chứng) | phím có ⌘ | ⌫ |

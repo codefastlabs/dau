@@ -229,7 +229,7 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 - Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
 - Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu nhận ra ô này và gửi ký tự xoá sau phím (D43); giới hạn còn lại (từ đầu mỗi lần kích hoạt, phím dồn, Return sau từ cần khôi phục, chương trình không coi DEL là lệnh xoá): D43 mục "Hệ quả đã chấp nhận"; số đo: mục 5.6.
-- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Cách gửi ký tự xoá trong phím của D43 làm chữ dồn lại mỗi lần sửa (chưa rõ nguyên nhân), nên tạm tắt cho kiểu ô này: Dấu thay tại chỗ như trước D43. Chính app Claude chưa đo.
+- Terminal dựng bằng xterm.js (terminal trong app Claude): trang thử xterm.js trong Chrome sai như cách cũ, gạch chân đúng. Gửi ký tự xoá trong phím ngay lúc nhận ra làm chữ dồn lại mỗi lần sửa (đã rõ nguyên nhân, [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) mục 2); D43 nay chỉ gửi trong phím từ phím Return đầu tiên sau khi nhận ra, dòng đang gõ lúc đó vẫn sai như cách cũ. Cách mới chưa đo trên trang thật; chính app Claude chưa đo.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13) không có D20: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"); Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
 
@@ -240,5 +240,5 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo Cursor: nhóm lỗi ở 5 ms và ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa cần đổi N3 hoặc D11.
 - VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
-- xterm.js: chẩn đoán chữ dồn khi gửi ký tự xoá trong phím (D43), rồi bật lại.
+- xterm.js: đo cách gửi trong phím sau Return của D43 trên trang thử, rồi trong terminal của app Claude.
 - Pages có hai bundle ID trên cùng máy; Numbers, Keynote bản mới đổi ID. Nếu các ứng dụng này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

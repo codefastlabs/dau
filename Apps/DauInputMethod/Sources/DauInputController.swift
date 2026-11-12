@@ -120,10 +120,12 @@ final class DauInputController: IMKInputController {
             result = processMarked(route, client: timed)
         } else {
             let wasKnown = inPlace.detector.send != nil
+            let wasErasing = inPlace.eraseByDelete
             #if DEBUG
             let wasRefuted = inPlace.detector.refuted
             #endif
-            let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
+            let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed,
+                                         endsLine: KeyRouter.endsLine(keyCode: event.keyCode))
             #if DEBUG
             // D43: the positions said "ignores the range" and the evidence read gave back
             // Dấu's own text (a field that reports a wrong position). Debug perf log only,
@@ -131,15 +133,14 @@ final class DauInputController: IMKInputController {
             if !wasRefuted, inPlace.detector.refuted { perf.note("range-ignore-refuted", app: clientApp) }
             #endif
             if !wasKnown, let send = inPlace.detector.send {
-                // D43: once per activation, never text (D8). In the key is logged but not
-                // applied (`InPlaceComposer.eraseMode(for:)`). Which app is typed in is
-                // typing metadata (D8): Release logs the mode only, Debug adds the app.
-                let mode = send == .afterKey ? "after-key" : "in-key"
-                #if DEBUG
-                settingsLogger.notice("event=range-ignored mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
-                #else
-                settingsLogger.notice("event=range-ignored mode=\(mode, privacy: .public)")
-                #endif
+                // D43: once per activation, never text (D8). Which app is typed in is typing
+                // metadata (D8): Release logs the mode only, Debug adds the app.
+                logRangeIgnore("range-ignored", mode: send == .afterKey ? "after-key" : "in-key")
+            }
+            if !wasErasing, inPlace.eraseMode == .inKey {
+                // D43 in the key starts at the detection key or at a later Return
+                // (`InPlaceComposer.eraseMode(for:)`): once per activation.
+                logRangeIgnore("range-ignore-erasing", mode: "in-key")
             }
             if let text = outcome.deferredText {
                 // D43, after the key: once the app has handled the key.
@@ -295,6 +296,15 @@ final class DauInputController: IMKInputController {
             settingsLogger.notice("event=underline-on")
             #endif
         }
+    }
+
+    /// D43 events: the mode only; which app is typed in is typing metadata (D8), Debug only.
+    private func logRangeIgnore(_ event: String, mode: String) {
+        #if DEBUG
+        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public) app=\(self.clientApp, privacy: .public)")
+        #else
+        settingsLogger.notice("event=\(event, privacy: .public) mode=\(mode, privacy: .public)")
+        #endif
     }
 
     /// The client app's bundle ID, read once at activation. Chrome sometimes activates
