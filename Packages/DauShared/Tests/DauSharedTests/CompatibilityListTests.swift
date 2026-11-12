@@ -66,7 +66,7 @@ struct CompatibilityListTests {
         #expect(CompatibilityList.decode(data) == list)
     }
 
-    @Test("D13: shipped list suggests only Cursor")
+    @Test("D13, D43: shipped list suggests only Cursor and Ghostty")
     func shippedList() throws {
         let data = try Data(contentsOf: Self.shippedURL)
         // Strict decode too, so a typo cannot silently drop an entry.
@@ -76,8 +76,9 @@ struct CompatibilityListTests {
         #expect(list.version >= 1)
         #expect(list.apps.count == rawApps.count)
         let ids = list.suggestedBundleIDs
-        #expect(ids == ["com.todesktop.230313mzl4w4u92"])
+        #expect(ids == ["com.todesktop.230313mzl4w4u92", "com.mitchellh.ghostty"])
         #expect(list.suggestion(for: "com.todesktop.230313mzl4w4u92")?.name == "Cursor")
+        #expect(list.suggestion(for: "com.mitchellh.ghostty")?.name == "Ghostty")
         for id in ["com.brave.Browser", "company.thebrowser.Browser", "com.vng.zalo",
                    "com.hnc.Discord", "com.tinyspeck.slackmacgap", "notion.id", "md.obsidian",
                    "com.figma.Desktop", "com.google.Chrome", "com.microsoft.edgemac",

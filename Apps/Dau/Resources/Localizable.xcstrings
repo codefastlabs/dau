@@ -2840,36 +2840,36 @@
         }
       }
     },
-    "Text may come out wrong in apps labeled “Suggested” when you type very fast. Choose “Underline” only if an app garbles text as you type." : {
+    "Text may come out wrong in apps labeled “Suggested” unless underline is on. Choose “Underline” only if an app garbles text as you type." : {
       "comment" : "Description of the Suggested section. “Suggested” and “Underline” = the chip and the rule option of those names.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Text may come out wrong in apps labeled “Suggested” when you type very fast. Choose “Underline” only if an app garbles text as you type."
+            "value" : "Text may come out wrong in apps labeled “Suggested” unless underline is on. Choose “Underline” only if an app garbles text as you type."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Ứng dụng có nhãn “Đề xuất” có thể gõ sai khi bạn gõ rất nhanh. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ."
+            "value" : "Ứng dụng có nhãn “Đề xuất” có thể gõ sai chữ nếu không bật gạch chân. Chỉ chọn “Có gạch chân” khi một ứng dụng bị lỗi chữ lúc gõ."
           }
         }
       }
     },
-    "Text may come out wrong when you type very fast" : {
+    "Text may come out wrong without underline" : {
       "comment" : "Subtitle of a suggested app.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Text may come out wrong when you type very fast"
+            "value" : "Text may come out wrong without underline"
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Có thể sai chữ khi gõ rất nhanh"
+            "value" : "Có thể sai chữ nếu không gạch chân"
           }
         }
       }

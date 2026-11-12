@@ -1,7 +1,7 @@
 {
-  "version": 5,
+  "version": 6,
   "updated": "2026-11-12",
-  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong: Cursor. Every app types without underline until the user turns it on. Brave, Arc, Zalo, Discord, Slack, Notion, Obsidian and Figma were labeled by technology class without measurement and lost the label; Chrome, Edge, Firefox and VS Code lost it on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/Compatibility.md section 3.",
+  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong: Cursor, Ghostty. Every app types without underline until the user turns it on. Apps where a terminal is one field among many (VS Code, Cursor, Claude) are not labeled for their terminal (D43). Brave, Arc, Zalo, Discord, Slack, Notion, Obsidian and Figma were labeled by technology class without measurement and lost the label; Chrome, Edge, Firefox and VS Code lost it on 10/11/2026 after in-place replacement measured right. Terminal is not suggested. Bundle IDs from docs/Compatibility.md section 3.",
   "apps": [
     {
       "name": "Visual Studio Code",
@@ -50,6 +50,14 @@
       ],
       "suggestUnderline": true,
       "note": "Electron (built from VS Code 1.128). Measured 10/11/2026 (3.29.15, docs/Compatibility.md 5.4): the agents prompt is right at 5, 20 and 100 ms. In the editor in-place is right at 20 ms with the standard string and at 100 ms, wrong at 5 ms and in the \"anh ddi\" case at 20 ms (keys in a burst from the start of a new document); underline is right at 5 ms. The editor counts positions from the start of the word."
+    },
+    {
+      "name": "Ghostty",
+      "bundleIDs": [
+        "com.mitchellh.ghostty"
+      ],
+      "suggestUnderline": true,
+      "note": "Terminal drawn by the app (AppKit, Metal). Ignores replacementRange and reports the cursor at {0,0}; Dấu has no special handling for it (D43). Measured 11–12/11/2026 (1.4.0, docs/Compatibility.md 5.6): in-place wrong at 120 ms; underline right, but Return right after an underlined word is swallowed (Ghostty's own bug, Apple's Telex too)."
     },
     {
       "name": "Zalo",
