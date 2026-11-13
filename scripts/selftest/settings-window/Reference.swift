@@ -193,11 +193,11 @@ enum Reference {
 
     // MARK: Scroll and background checks, (a)–(d) (System for the scroller; the rest deliberate, content or probe)
 
-    /// Content: a section taller than the default window, so check (d) has a scroll bar to
-    /// drive. Every section measured taller than the default window on the in-app
-    /// captures (since removed); this is the one the earlier check (d) scrolled, and
-    /// `scrolledProbeStartX` starts right of its title.
-    static let scrollingSection = "updates"
+    /// Content: the section check (d) scrolls. Since the cut list (13/11/2026) no section
+    /// overflows the default window; Gõ phím, the longest with Thông minh (content ends
+    /// near y 510 of 560), scrolls 58 pt at the smallest height (run.sh 13/11/2026), where (d) runs;
+    /// its content does not depend on a disclosure. `scrolledProbeStartX` starts right of its title.
+    static let scrollingSection = "typing"
     /// Probe: how far check (d) scrolls the page (through the scroll bar's value), and the
     /// least that counts: past the Form's top margin, content is under the toolbar.
     static let scrollProbeOffset: CGFloat = 60
@@ -235,7 +235,7 @@ enum Reference {
     static let straySampleTop: CGFloat = 64
     static let straySampleStep: CGFloat = 16
     /// Probe: header region compared when scrolled; x from just right of the page title
-    /// ("Cập nhật & hỗ trợ", 127 wide at 15 pt bold, from `titleX` + 9: ends near 372) to
+    /// ("Gõ phím": ends near 311 in the 13/11/2026 screenshots; the longest title, "Cập nhật & hỗ trợ", near 372) to
     /// 24 from the edge every 6; y 6...46 every 4.
     static let scrolledProbeStartX: CGFloat = 470
     static let scrolledProbeRightInset: CGFloat = 24

@@ -1294,9 +1294,18 @@ func measurePixels(_ d: String, _ tag: String) {
         guard page == Reference.scrollingSection else { continue }
         // (d) Item 10: the page that overflows shows a scroll bar; scrolled through it, the
         // header keeps covering the content (check.swift) and the bar stays in its lane.
+        // No page overflows the default window, so the window goes to its smallest height
+        // first (the width is fixed) and back to the default size after.
+        guard drive(d, page, "shrink the window", set(window, kAXSizeAttribute, axSize(Reference.probeSmallSize))) else { continue }
+        awaitSettled(d, page, "window frame after shrinking") { fmt(frame(window)) }
+        defer {
+            if drive(d, page, "restore the default window size", set(window, kAXSizeAttribute, axSize(Reference.windowSize))) {
+                awaitSettled(d, page, "window frame after restoring") { fmt(frame(window)) }
+            }
+        }
         guard let scrollBar = requireShown(d, page, "(d) scroll bar of the page that overflows",
-                                      diagnose: { "missing (Always bars show on overflowing pages; the scrolled checks did not run)" },
-                                      find: { bar }) else { continue }
+                                      diagnose: { "missing at the smallest window height (Always bars show on overflowing pages; the scrolled checks did not run)" },
+                                      find: { pageScrollBar() }) else { continue }
         // How far the page moved: the item nearest the column's middle, which stays in view.
         let column = rel(area)
         guard let anchor = require(d, page, "(d) item in the middle of the page", find: {

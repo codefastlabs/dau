@@ -87,7 +87,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 ### 10. Thiếu thanh cuộn (nằm ngoài cửa sổ)
 
 - **Lỗi:** mục tràn không có thanh cuộn, hoặc thanh nằm ngoài cửa sổ.
-- **Cách kiểm:** (d) "scroll bar of the page that overflows", "scroll bar lane" trong `always*.txt`; (b) "scroll bar ends at the window edge" trong `check.txt`.
+- **Cách kiểm:** (d) "scroll bar of the page that overflows", "scroll bar lane" trong `always*.txt` (trang Gõ phím, cửa sổ thu về chiều cao nhỏ nhất vì ở cỡ mặc định không trang nào tràn); (b) "scroll bar ends at the window edge" trong `check.txt`.
 - **Đạt khi:** mục tràn có thanh cuộn, nằm trong lề phải của Form, trong cửa sổ, dưới thanh công cụ.
 
 ### 11. Dải hở ở mép phải
