@@ -7,7 +7,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026.
 
 Chờ người dùng:
-- Nhánh `slim/cut-list`: bỏ cụm Lùi/Tiến làm thanh công cụ co lại ở Gõ phím, Thông minh, Cập nhật & hỗ trợ (đo 13/11). Chọn: trả lại cụm Lùi/Tiến (đề xuất), hay cách khác giữ thanh, rồi kiểm toán lại.
+- Nhánh `slim/cut-list`: bỏ cụm Lùi/Tiến làm thanh công cụ co lại ở Gõ phím, Thông minh, Cập nhật & hỗ trợ (đo 13/11). Người dùng chọn tìm cách khác (không trả lại Lùi/Tiến): các phương án và thứ tự chọn ở `docs/research/SwiftUIWindowAPI.md` mục 3, "Chiều cao thanh công cụ"; chờ một lượt đo gộp (chiếm màn hình, xin giờ).
 
 Việc tiếp theo:
 - M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6).

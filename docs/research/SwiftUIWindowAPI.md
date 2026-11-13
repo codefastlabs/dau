@@ -8,10 +8,11 @@ Cửa sổ Cài đặt của app chủ dựng theo System Settings (D9 (Giao di�
 - **SwiftUI không có API khoá sidebar của `NavigationSplitView`** (mục 2). Độ rộng chỉ là "ưu tiên", `columnVisibility` chỉ là "điều khiển bằng mã"; tra chỉ mục tài liệu SwiftUI và `SwiftUI.swiftinterface` không thấy API nào khác.
 - **Lùi/Tiến là `ControlGroup` kiểu `.navigation` ở `ToolbarItemPlacement.navigation`**, lịch sử do app tự giữ (SwiftUI không có), kèm lệnh trong menu View (mục 3, 5). Dấu đã bỏ cụm này ngày 13/11/2026 (D9: bốn trang không cần); kết quả nghiên cứu giữ để tham khảo.
 - **Tiêu đề trang là `navigationTitle` của hệ thống**, ở mép trái thanh công cụ, như System Settings (trước 13/11/2026 nằm sau cụm Lùi/Tiến); macOS không có placement nào để thay tiêu đề bằng view tự vẽ (mục 3).
+- **Trang không có mục nào trên thanh thì cửa sổ mất thanh công cụ** (đo 13/11/2026: Gõ phím, Thông minh, Cập nhật & hỗ trợ). Apple không có API đặt chiều cao thanh hay giữ thanh khi không còn mục; thanh cao 52 với tiêu đề cùng hàng chỉ có khi cửa sổ có thanh công cụ (mục 3, "Chiều cao thanh công cụ"). Ứng viên đáng đo, chưa đo: `toolbar(.visible, for: .windowToolbar)` (API có thiết kế, chỉ là gợi ý), rồi `ToolbarSpacer` ở trang không có mục (cách vá, macOS 26+). Không có mục thật, hữu ích nào cho mọi trang.
 - **Ô tìm sidebar là `NSSearchField` cỡ lớn**, vì `searchable(placement: .sidebar)` cần sidebar của `NavigationSplitView` (mục 4).
 - Phiên bản macOS ghi trong file là phiên bản Apple ghi trên trang tài liệu. D1 (Nền tảng) đặt tối thiểu macOS 14, nên API cần macOS 15 trở lên phải có `if #available`.
 
-Nhãn nguồn: **[Tài liệu]** trang tài liệu API của Apple; **[HIG]** Human Interface Guidelines; **[WWDC]** bản ghi lời phiên WWDC; **[SDK]** đọc từ `SwiftUI.swiftinterface` (macOS SDK 27.2), chỉ chứng minh API có hay không; **[Đo trên app thử]** app thử ném đi (`build/probe-fixed-sidebar/`, ID riêng), không phải Dấu; **[Đo của Dấu]** đo trên Dấu; **[Suy luận, cần kiểm chứng]** Apple không viết thẳng.
+Nhãn nguồn: **[Tài liệu]** trang tài liệu API của Apple; **[HIG]** Human Interface Guidelines; **[WWDC]** bản ghi lời phiên WWDC; **[SDK]** đọc từ `SwiftUI.swiftinterface` và header AppKit (macOS SDK 27.2), chỉ chứng minh API có hay không và comment trong header; **[Đo trên app thử]** app thử ném đi (`build/probe-fixed-sidebar/`, ID riêng), không phải Dấu; **[Đo của Dấu]** đo trên Dấu; **[Suy luận, cần kiểm chứng]** Apple không viết thẳng.
 
 ## 1. Sidebar cố định: `NSSplitViewController` của app
 
@@ -49,6 +50,52 @@ API AppKit dùng:
 
 ## 3. Thanh công cụ, tiêu đề, Lùi/Tiến
 
+### Chiều cao thanh công cụ
+
+Câu hỏi: không có cụm Lùi/Tiến (D9), làm sao để trang không có mục nào trên thanh (Gõ phím, Thông minh, Cập nhật & hỗ trợ) vẫn giữ thanh 52 với tiêu đề lớn ở mép trái, như trang Ứng dụng và System Settings (số ở `SystemSettingsReference.md`).
+
+Hiện trạng đo:
+- [Đo của Dấu] 13/11/2026, macOS 27.2, máy M1: ba trang đó không còn thanh công cụ (ax-check "toolbar: missing"), nút đóng ở 8,8 thay vì 18,18, tiêu đề thành chữ tiêu đề cửa sổ nhỏ (tâm y 15,3 thay vì 26); trang Ứng dụng ("+" và ô tìm) giữ thanh đầy đủ, nên đổi trang làm khung cửa sổ đổi chiều cao. Số đo cũ trên app thử `NavigationSplitView` cùng kết quả (`SystemSettingsReference.md`, mục "Hành vi SwiftUI khác hệ thống", ý "Nút sidebar").
+
+Kết luận từ tài liệu (13/11/2026):
+- **Thanh cao với tiêu đề cùng hàng là của cửa sổ có thanh công cụ.** Apple tả hai loại cửa sổ: có thanh công cụ và chỉ có thanh tiêu đề.
+  - [SDK] `NSWindow.h`, `toolbarStyle`: "Specifies how the titlebar area of the window should appear **when the window displays an NSToolbar**"; `NSWindowToolbarStyleUnified`: "The window title will appear inline with the toolbar when visible". https://developer.apple.com/documentation/appkit/nswindow/toolbarstyle-swift.property
+  - [WWDC] WWDC25 "Build an AppKit app with the new design": "Windows with toolbars now use a larger radius … Titlebar-only windows retain a smaller corner radius, wrapping compactly around the window controls." https://developer.apple.com/videos/play/wwdc2025/310/
+- **Không có API đặt chiều cao thanh, hay giữ thanh khi không còn mục.** Tra `SwiftUI.swiftinterface`, header AppKit, tài liệu, HIG và các phiên WWDC dẫn trong mục này: không có. SwiftUI dựng thanh từ các mục: `toolbar(content:)` "Populates the toolbar or navigation bar with the specified items"; Apple không ghi SwiftUI làm gì khi không còn mục nào. https://developer.apple.com/documentation/swiftui/view/toolbar(content:)
+- **API duy nhất nói về sự có mặt của cả thanh là `toolbar(_:for:)` với `.windowToolbar`**, và giá trị `.visible` chỉ là gợi ý (ứng viên 1 dưới đây).
+- **Không có mục thật, hữu ích nào cho mọi trang** (mục "Mục thật cho mọi trang" dưới đây). Mục thật duy nhất System Settings dùng là cụm Lùi/Tiến, D9 đã bỏ.
+- [Suy luận, cần kiểm chứng] Theo câu WWDC25 ở trên, trên macOS 26 trở lên, đổi giữa trang Ứng dụng và trang không có mục còn làm đổi bán kính góc cửa sổ, ngoài chiều cao khung. Chưa đọc trên ảnh chụp.
+
+Ứng viên, xếp theo thứ tự nên thử. "Dự đoán" là suy luận, chưa đo; "đạt" nghĩa là ba trang ra như trang Ứng dụng hiện nay: có thanh, nút đóng 18,18, tâm y tiêu đề 26, đổi trang không đổi khung.
+
+| # | Ứng viên | Tài liệu nói | Có từ | Loại | Dự đoán (chưa đo) | Đo? |
+|---|---|---|---|---|---|---|
+| 1 | `.toolbar(.visible, for: .windowToolbar)` trên trang (`SettingsDetail`, trong host có `.toolbars`) và trên gốc scene (`SettingsWindow`) | "Specifies the visibility of a bar managed by SwiftUI"; `.windowToolbar`: "The placement for the containing window's toolbar"; "Depending on the specified bars, the requested visibility may not be able to be fulfilled"; `Visibility.visible`: "The element may be visible … a hint or preference, rather than a mandatory assertion". Ví dụ của Apple chỉ có `.hidden`. https://developer.apple.com/documentation/swiftui/view/toolbar(_:for:), https://developer.apple.com/documentation/swiftui/toolbarplacement/windowtoolbar, https://developer.apple.com/documentation/swiftui/visibility/visible | macOS 13; macOS 15 đổi tên thành `toolbarVisibility(_:for:)`, tên cũ chỉ đánh dấu đổi tên, không hạn bỏ ([SDK]); không cần `if #available` | API có thiết kế | Khả năng cao không đổi gì: `.visible` là gợi ý và tài liệu chỉ tả việc ẩn. Nếu SwiftUI giữ một `NSToolbar` không có mục thì có thể đạt, nhưng thanh không có mục có cao 52 không thì AppKit cũng không ghi | có |
+| 1b | Như 1, thêm `.windowToolbarStyle(.unified(showsTitle: true))` cho scene `Window` | "A window toolbar style which displays its toolbar and title bar inline". https://developer.apple.com/documentation/swiftui/unifiedwindowtoolbarstyle | macOS 11 | API có thiết kế | Riêng nó không đổi gì: kiểu thanh chỉ áp khi cửa sổ có `NSToolbar` (header ở trên), và trang Ứng dụng cho thấy `.automatic` đã ra kiểu unified có tiêu đề cùng hàng | gộp với 1, không đo riêng |
+| 2 | `ToolbarSpacer(.flexible)` ở trang không có mục (nhánh không có ô tìm của `PageSearch`), trong `if #available(macOS 26, *)` | "A standard space item in toolbars. A space item creates visual breaks in the toolbar between items." https://developer.apple.com/documentation/swiftui/toolbarspacer | macOS 26 | Cách vá: mục giữ chỗ, dù là mục chuẩn của hệ thống (không control, không nền kính); trang Ứng dụng đã dùng nó để đẩy "+" và ô tìm sang phải | Đạt: cửa sổ có thanh với một mục khoảng trống, như trang Ứng dụng. macOS 14–25 không có `ToolbarSpacer`, thanh vẫn co ở đó (Dấu mới thử trên macOS 27.2) | có |
+| 3 | Mục tự làm rỗng, ví dụ `ToolbarItem { Color.clear.frame(width: 1, height: 1) }` | Không có tài liệu cho mục rỗng. macOS 26 đặt nền kính chung sau mục, bỏ bằng `sharedBackgroundVisibility(.hidden)`. https://developer.apple.com/documentation/swiftui/toolbarcontent/sharedbackgroundvisibility(_:) | macOS 11 (bỏ nền: macOS 26) | Cách vá, kém hơn 2: view tự làm, có thể hiện với trợ năng như một mục trống | có thể đạt cả trên macOS 14–25 | không, trừ khi cần cho macOS 14–25 |
+| 4 | `NSToolbar` của AppKit gắn vào cửa sổ (`view.window` của `SettingsSplitViewController`), trang chỉ bắc cầu `.title`; "+" và ô tìm của trang Ứng dụng viết lại bằng `NSToolbarItem`, `NSSearchToolbarItem` | `NSHostingSceneBridgingOptions.toolbars`: "Toolbars populated in this manner **overwrite any toolbar set on the window using AppKit**." https://developer.apple.com/documentation/swiftui/nshostingscenebridgingoptions/toolbars. Host gốc mà scene `Window` tạo có bắc cầu thanh không thì Apple không ghi | macOS 11 | API có thiết kế nhưng hai bên cùng đặt thanh, không có kết quả trong tài liệu; viết lại trang Ứng dụng; cửa sổ AppKit có `NSToolbar` đã cho Lùi/Tiến lệch trên app thử (mục 1) | Không đoán được: SwiftUI có thể ghi đè thanh của app | không, chỉ xét khi 1 và 2 đều không đạt |
+| 5 | `.unifiedCompact` | "similar to unified, but with a more compact vertical sizing". https://developer.apple.com/documentation/swiftui/unifiedcompactwindowtoolbarstyle | macOS 11 | API có thiết kế, sai việc | Trang Ứng dụng cũng thấp đi, lệch 52 của System Settings; trang không có mục vẫn không có thanh | loại |
+| 6 | `.expanded` | "displays its title bar area above the toolbar". https://developer.apple.com/documentation/swiftui/expandedwindowtoolbarstyle | macOS 11 | sai việc | Tiêu đề lên hàng riêng, khác System Settings | loại |
+| 7 | `toolbarBackground(.visible, for: .windowToolbar)` (macOS 13), `toolbarBackgroundVisibility` (macOS 15) | "Specifies the preferred visibility of backgrounds on a bar managed by SwiftUI". https://developer.apple.com/documentation/swiftui/view/toolbarbackgroundvisibility(_:for:) | macOS 13 / 15 | sai việc: nền của một thanh đã có | không đổi | loại |
+| 8 | `toolbar(removing:)`, `ToolbarDefaultItemKind` | "Remove a toolbar item present by default"; chỉ có `.sidebarToggle` (macOS 14), `.title` (macOS 15), `.search` (macOS 26). Không có API thêm mục mặc định. https://developer.apple.com/documentation/swiftui/view/toolbar(removing:), https://developer.apple.com/documentation/swiftui/toolbardefaultitemkind | macOS 14 | sai việc | không đổi | loại |
+| 9 | `navigationSubtitle` (`NSWindow.subtitle`) | "A secondary line of text that appears in the title bar of the window". https://developer.apple.com/documentation/appkit/nswindow/subtitle | macOS 11 | thêm nội dung, không phải mục thanh | Không có tài liệu nói phụ đề làm thanh cao lên; System Settings không có phụ đề; cần artboard | loại |
+| 10 | `NSTitlebarAccessoryViewController` | "manages a custom view … in the title bar–toolbar area of a window". https://developer.apple.com/documentation/appkit/nstitlebaraccessoryviewcontroller | macOS 10.10 | cách vá, cần với vào `NSWindow` | Thêm một dải dưới thanh tiêu đề; tiêu đề vẫn nhỏ, nút đóng vẫn 8,8 | loại |
+| 11 | `titlebarSeparatorStyle`, `NSToolbar.displayMode`, `windowToolbarFullScreenVisibility`, `windowToolbarLabelStyle` | Vạch ngăn dưới thanh; cách hiện nhãn mục; thanh khi toàn màn hình; kiểu nhãn mục. https://developer.apple.com/documentation/appkit/nswindow/titlebarseparatorstyle, https://developer.apple.com/documentation/appkit/nstoolbar/displaymode-swift.property, https://developer.apple.com/documentation/swiftui/windowtoolbarfullscreenvisibility | macOS 11 / 15 | sai việc | không đổi | loại |
+| 12 | Tiêu đề tự vẽ (`PageTitle`, `.principal`) | `ToolbarItemPlacement.title`, `.largeTitle` không có trên macOS (ý "Tiêu đề" dưới đây) | — | D9 cấm tự vẽ tiêu đề | — | loại |
+
+Mục thật cho mọi trang (lựa chọn sản phẩm, không phải mục giữ chỗ):
+- System Settings: mọi pane đã đo chỉ có cụm Lùi/Tiến và tiêu đề trên thanh (`SystemSettingsReference.md`). Nó giữ thanh nhờ Lùi/Tiến.
+- Nút trợ giúp: [HIG] Buttons, "Use a help button within a view, not in the window frame. For example, avoid placing a help button in a toolbar". Dấu cũng không có sách trợ giúp (menu Help chỉ có "Setup Guide…"). Loại. https://developer.apple.com/design/human-interface-guidelines/buttons
+- Ô tìm trên thanh ở mọi trang: trùng ô tìm sidebar, và trang Ứng dụng có ô tìm riêng của nó. Loại.
+- Mục trạng thái: [Tài liệu] `ToolbarItemPlacement.status` (macOS 11), "Status items are informational in nature … In macOS …, the system places status items in the center of the toolbar". https://developer.apple.com/documentation/swiftui/toolbaritemplacement/status. Nội dung có thể có là Dấu đang bật hay không, nhưng banner "Dấu chưa được bật" trong trang đã làm việc này (D9), và System Settings không có mục như vậy. Đổi nội dung nên cần artboard và người dùng chọn; không đề xuất.
+- Ba trang chỉ có toggle, picker và nút gắn với một hàng ("Change…", "Uninstall…"), không có hành động cấp trang nào để đưa lên thanh.
+- [HIG] Settings: "use a noncustomizable toolbar that remains visible" (viết cho cửa sổ cài đặt có thanh nút chuyển pane): ủng hộ thanh ổn định giữa các trang, không nói cách làm. https://developer.apple.com/design/human-interface-guidelines/settings
+
+Đo gì: một lượt `scripts/selftest/settings-window/run.sh`, mỗi ứng viên một cờ Debug của Dấu (ví dụ `--toolbar-variant visible | visible-unified | spacer`), mỗi biến thể một lần mở cửa sổ. Mỗi lần đọc trên bốn trang: có thanh không (AX), khung nút đóng, tâm y và x của tiêu đề, khung cửa sổ trước và sau khi đổi trang, ảnh chụp (cả góc cửa sổ); với `spacer` thêm: thanh không có phần tử nào bấm được hay đọc được ngoài tiêu đề. Chọn theo thứ tự: 1 đạt thì dùng 1 (API có thiết kế); không thì 2, ghi lý do "tài liệu không có API giữ thanh khi không có mục" cạnh mã; 2 cũng không đạt thì người dùng chọn giữa chấp nhận thanh co (ghi vào "Hệ quả đã chấp nhận" của D9, vì lệch chuẩn System Settings) và ứng viên 4.
+
+### Tiêu đề và chỗ đặt nút
+
 Tiêu đề:
 - [Tài liệu] `navigationTitle`: "on macOS, the primary destination's title is used as the window title in the titlebar, Windows menu and Mission Control." https://developer.apple.com/documentation/swiftui/view/navigationtitle(_:)
 - [WWDC] WWDC20 "Adopt the new look of macOS": kiểu unified "supports the new inline title, which is placed at the leading edge of the toolbar, next to the sidebar". https://developer.apple.com/videos/play/wwdc2020/10104/
@@ -65,14 +112,9 @@ Chỗ đặt nút:
 Lùi/Tiến:
 - [SDK] SwiftUI không có API lịch sử Lùi/Tiến cho split view; `NavigationStack` chỉ có Lùi, xoá khỏi ngăn xếp là mất. https://developer.apple.com/documentation/swiftui/navigationstack
 - Apple không ghi System Settings làm Lùi/Tiến thế nào. Dấu từng tự giữ lịch sử (`SectionHistory`, đã bỏ cùng cụm Lùi/Tiến 13/11/2026).
+- [Đo của Dấu] Khi cụm còn: có cụm ở `.navigation` thì thanh và tiêu đề đúng chuẩn System Settings. Gắn `.toolbar` của cụm lên trang trong cột chi tiết thì đổi trang làm mục dựng lại, và AXPress trên Lùi/Tiến trả lỗi -25205 dù vẫn chạy (System Settings trả 0); Dấu khi đó gắn cụm quanh trang, không đổi theo trang. Mục gắn theo trang (như ứng viên 2 ở "Chiều cao thanh công cụ") cũng dựng lại khi đổi trang.
 
-Chiều cao thanh công cụ:
-- Không có trang tài liệu, mục HIG hay phiên WWDC nào tả chiều cao thanh khi không còn mục nào.
-- [Đo của Dấu] Không còn mục nào thì thanh co lại và tiêu đề thành chữ tiêu đề cửa sổ nhỏ; có cụm Lùi/Tiến ở `.navigation` thì thanh và tiêu đề đúng chuẩn System Settings (số ở `SystemSettingsReference.md`).
-- [Đo của Dấu] Gắn `.toolbar` của cụm lên trang trong cột chi tiết thì đổi trang làm mục dựng lại, và AXPress trên Lùi/Tiến trả lỗi -25205 dù vẫn chạy. Dấu gắn cụm quanh trang, ở `SettingsDetailChrome`, không đổi theo trang; System Settings trả 0.
-
-Kiểu thanh công cụ và cửa sổ (tham khảo):
-- [Tài liệu] `windowToolbarStyle(_:)`: `.unified`, `.unified(showsTitle:)`, `.unifiedCompact`, `.expanded`. https://developer.apple.com/documentation/swiftui/windowtoolbarstyle
+Kiểu cửa sổ (tham khảo):
 - [Tài liệu] `ToolbarDefaultItemKind.title` (macOS 15+) với `toolbar(removing:)` ẩn tiêu đề mà cửa sổ vẫn giữ tên ("it will be used by accessibility", WWDC24 "Tailor macOS windows with SwiftUI"). Không cần khi dùng tiêu đề hệ thống. https://developer.apple.com/documentation/swiftui/toolbardefaultitemkind/title, https://developer.apple.com/videos/play/wwdc2024/10148/
 - [Tài liệu] `WindowResizability.automatic`: "`Settings` windows use the `contentSize` strategy, while all others use `contentMinSize`." Dấu dùng scene `Window` với `.windowResizability(.contentSize)`. https://developer.apple.com/documentation/swiftui/windowresizability
 - [HIG] Settings khuyên "Restore the most recently viewed pane". Cửa sổ Cài đặt chỉ có bốn mục và mở ở mục Gõ phím mỗi lần; không làm.
@@ -95,7 +137,7 @@ Kiểu thanh công cụ và cửa sổ (tham khảo):
 
 ## Nguồn Apple đã tra
 
-Chỉ nguồn chính thức: tài liệu developer.apple.com (đọc qua dạng JSON `https://developer.apple.com/tutorials/data/documentation/…json`), HIG, bản ghi lời phiên WWDC, và `SwiftUI.swiftinterface` của macOS SDK 27.2 trong Xcode. Link nằm cạnh từng câu ở các mục trên. Thêm:
+Chỉ nguồn chính thức: tài liệu developer.apple.com (đọc qua dạng JSON `https://developer.apple.com/tutorials/data/documentation/…json`), HIG, bản ghi lời phiên WWDC, và `SwiftUI.swiftinterface` cùng header AppKit (`NSWindow.h`, `NSToolbar.h`) của macOS SDK 27.2 trong Xcode. Link nằm cạnh từng câu ở các mục trên. Thêm:
 - [WWDC] Platforms State of the Union (WWDC22): System Settings "was built using [SwiftUI]". https://developer.apple.com/videos/play/wwdc2022/102/
 - [WWDC] "The SwiftUI cookbook for navigation" (WWDC22): "NavigationStack represents a push-pop interface like you see in … the new System Settings app". https://developer.apple.com/videos/play/wwdc2022/10054/
 - [Tài liệu] `NSTrackingSeparatorToolbarItem` (macOS 11+): vạch ngăn thanh công cụ đi theo đường chia split view. https://developer.apple.com/documentation/appkit/nstrackingseparatortoolbaritem
