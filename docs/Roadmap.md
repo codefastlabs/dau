@@ -41,7 +41,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 
 ## M7 — Phát hành
 
-- Trước khi phát hành: chạy bài đo của D42.
+- Trước khi phát hành: chạy bài đo của D42, và ghi bộ nhớ (RSS) tiến trình bộ gõ của bản Release cạnh số của bản Debug trong cùng lượt (D42 ghi chênh lệch này là chưa đo).
 - Ký Developer ID, notarize, DMG.
 - Sparkle 2: EdDSA, một kênh (D7). Kênh Beta và phát hành theo đợt sau bản thử đầu. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
 - Rà entitlement của bộ gõ trước khi notarize: thử bỏ `temporary-exception.mach-register.global-name` (xem [`docs/Architecture.md`](Architecture.md)).
@@ -50,6 +50,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 - Báo lỗi (URL issue điền sẵn). Quay về bản trước sau bản thử đầu (D19).
 - Loại bản dựng (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
+  - cũng bước kiểm đó: binary của Dấu.app và bộ gõ đã lược ký hiệu cục bộ (`nm`; archive lược, `xcodebuild build` thì không), và dSYM của mỗi bản phát hành được lưu lại để đọc được báo lỗi crash;
   - số build tăng dần, số hiển thị có chữ beta;
 - Biểu tượng thật dựng bằng Icon Composer, thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
 - Xuất các file nhận diện bản thử đầu cần theo [`docs/Brand.md`](Brand.md): biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, ảnh xem trước GitHub, nền DMG. Favicon, ảnh Open Graph và thẻ meta đi cùng website (M8).
