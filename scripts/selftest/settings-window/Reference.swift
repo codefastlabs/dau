@@ -69,13 +69,14 @@ enum Reference {
     /// the toolbar color at the top of the button's frame.
     static let addButtonInkThreshold = 8
 
-    // MARK: Title (Mockup)
+    // MARK: Title (Measured on Dấu)
 
-    /// The system's page title (an AXStaticText in the toolbar) starts here. Mockup: the
-    /// artboards' title at 20 pt into the detail column (232 + 20), with no Back/Forward
-    /// cluster before it. Not yet measured on Dấu without the cluster: the next run.sh
-    /// confirms or replaces it.
-    static let titleX: CGFloat = 252
+    /// The system's page title (an AXStaticText in the toolbar) starts here, with no
+    /// Back/Forward cluster before it (D9). Measured on Dấu's Ứng dụng page, the one page
+    /// that kept its toolbar (run.sh 13/11/2026, macOS 27.2: 235.5 at 2x, 236 at 1x).
+    /// The system draws it; System Settings has no pane without the cluster to read it
+    /// from (SystemSettingsReference.md).
+    static let titleX: CGFloat = 235.5
     /// ... and is centered in the toolbar.
     static let titleCenterY: CGFloat = toolbarHeight / 2
 
@@ -234,7 +235,7 @@ enum Reference {
     static let straySampleTop: CGFloat = 64
     static let straySampleStep: CGFloat = 16
     /// Probe: header region compared when scrolled; x from just right of the page title
-    /// ("Cập nhật & hỗ trợ", 127 wide at 15 pt bold, from `titleX` + 9: ends near 453) to
+    /// ("Cập nhật & hỗ trợ", 127 wide at 15 pt bold, from `titleX` + 9: ends near 372) to
     /// 24 from the edge every 6; y 6...46 every 4.
     static let scrolledProbeStartX: CGFloat = 470
     static let scrolledProbeRightInset: CGFloat = 24

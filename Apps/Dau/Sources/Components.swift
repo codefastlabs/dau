@@ -123,6 +123,15 @@ private struct PageSearch: ViewModifier {
                     }
                     .searchable(text: text, placement: .toolbar, prompt: prompt)
             }
+        } else if #available(macOS 26, *) {
+            // A page with no toolbar item of its own still keeps the 52 pt toolbar and the
+            // large title, as on Ứng dụng (D9). Without an item SwiftUI drops the toolbar;
+            // no API keeps an empty one (`toolbar(.visible, for: .windowToolbar)` and
+            // `.unified(showsTitle: true)` measured without effect), so the system space
+            // item holds it. It is not exposed to Accessibility. Measured on macOS 27.2:
+            // docs/research/SwiftUIWindowAPI.md, "Chiều cao thanh công cụ". macOS 14–25
+            // have no `ToolbarSpacer`: the toolbar presumably collapses on these pages there (not tested, D1).
+            content.toolbar { ToolbarSpacer(.flexible) }
         } else {
             content
         }

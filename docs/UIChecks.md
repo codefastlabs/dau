@@ -29,7 +29,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 ### 2. Nhảy bố cục khi đổi mục
 
 - **Lỗi:** toolbar đổi cao, tiêu đề đổi chỗ.
-- **Cách kiểm:** "toolbar height", "close button", "title text", "title x", "title center y", "first item y", "first card" (mỗi mục, so cùng một số nên giống nhau giữa các mục); (a) trong `always*.txt`.
+- **Cách kiểm:** "toolbar height" (trang không có nút: "toolbar height (close button y)", vì thanh chỉ có khoảng trống không hiện với Trợ năng), "close button", "title text", "title x", "title center y", "first item y", "first card" (mỗi mục, so cùng một số nên giống nhau giữa các mục); (a) trong `always*.txt`.
 - **Đạt khi:**
   - thanh công cụ, nút đóng, tiêu đề, mục đầu và thẻ đầu ở cùng chỗ ở mọi mục, trên mọi màn hình;
   - tiêu đề là tiêu đề hệ thống (`navigationTitle`, một chữ tĩnh trên thanh công cụ mang tên cửa sổ), không phải view tự vẽ;
@@ -141,7 +141,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 ### 15. Tìm ở sidebar không khớp mục nào
 
 - **Lỗi:** sidebar trống, trang cũ vẫn hiện như chưa tìm.
-- **Cách kiểm:** trang `sidebar-search` (màn hình chính): "rows without a match", "empty state", "toolbar height", "rows after clearing"; `swift test` "Sidebar search".
+- **Cách kiểm:** trang `sidebar-search` (màn hình chính): "rows without a match", "empty state", "toolbar height" (hoặc "toolbar height (close button y)"), "rows after clearing"; `swift test` "Sidebar search".
 - **Đạt khi:**
   - ô tìm nhận tiêu điểm rồi đặt chuỗi không khớp (không có tiêu điểm thì SwiftUI không đọc giá trị) thì sidebar không còn hàng và có trạng thái trống hệ thống nêu chuỗi tìm (`ContentUnavailableView.search`), thanh công cụ không đổi;
   - xoá ô tìm thì đủ lại mọi mục (`Reference.sections`);

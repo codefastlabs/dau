@@ -338,6 +338,19 @@ func toolbar() -> AXUIElement? {
 }
 /// The close button: one per window, the subrole is the identity.
 func closeButton() -> AXUIElement? { windowElements { subrole($0) == "AXCloseButton" }.first }
+/// The toolbar's height. A page with toolbar items of its own (Ứng dụng: "+" and the
+/// search field) shows the toolbar to Accessibility. A page whose toolbar holds only the
+/// `ToolbarSpacer` that keeps it (`PageSearch`) does not (macOS 27.2, 13/11/2026), so
+/// there the close button stands in: it sits at y 18 in the 52 pt toolbar and moves to
+/// y 8 when the toolbar collapses.
+func checkToolbarHeight(_ d: String, _ page: String, into shot: inout [String: CGRect]) {
+    if let bar = toolbar() {
+        shot["toolbar"] = rel(bar)
+        check(d, page, "toolbar height", rel(bar).height, Reference.toolbarHeight)
+    } else if let close = require(d, page, "close button (toolbar height)", find: closeButton) {
+        check(d, page, "toolbar height (close button y)", rel(close).minY, Reference.closeFrame.minY)
+    }
+}
 /// The window's title: the shown page's navigation title.
 func windowTitle() -> String { string(window, kAXTitleAttribute) ?? "" }
 /// The page title: the system's inline title, a static text in the toolbar band carrying
@@ -489,10 +502,7 @@ func measureSection(_ d: String, _ tag: String, _ index: Int) {
     let w = frame(window)
     var shot: [String: CGRect] = [:]
 
-    if let bar = require(d, page, "toolbar", find: toolbar) {
-        shot["toolbar"] = rel(bar)
-        check(d, page, "toolbar height", rel(bar).height, Reference.toolbarHeight)
-    }
+    checkToolbarHeight(d, page, into: &shot)
     if let close = require(d, page, "close button", find: closeButton) {
         shot["close"] = rel(close)
         check(d, page, "close button", rel(close), Reference.closeFrame)
@@ -658,9 +668,8 @@ func measureSidebarSearch(_ d: String, _ tag: String) {
     check(d, p, "rows without a match", CGFloat(rowCount(outline)), 0, tolerance: Reference.exact)
     let texts = emptyStateTexts()
     record(d, p, "empty state", expected: "text naming the query in the sidebar", got: texts.first.map(label) ?? "none", ok: !texts.isEmpty)
-    if let bar = require(d, p, "toolbar", find: toolbar) {
-        check(d, p, "toolbar height", rel(bar).height, Reference.toolbarHeight)
-    }
+    var unused: [String: CGRect] = [:]
+    checkToolbarHeight(d, p, into: &unused)
     _ = screenshot(d, p, "sidebar-search-empty-\(tag)")
     guard drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) else { return }
     // The check below reports a timeout.

@@ -187,10 +187,13 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (kha
 - Mọi thay đổi giao diện sửa artboard trên canvas trước, người dùng duyệt, rồi mới sửa mã; mã xong thì đối chiếu lại với artboard.
 - **Màu:** chỉ dùng màu hệ thống, không mã hex, không ngoại lệ. Ô icon sidebar dùng `systemBlue/systemPurple/systemOrange/systemGreen` (glyph nét theo mockup), nhãn "Mới" nền `accentColor`, banner "Dấu chưa được bật" dùng cam hệ thống như mockup.
 - Nút mở/thu "Nâng cao" ghép từ nút hệ thống + chevron được chấp nhận.
-- **Vỏ cửa sổ Cài đặt:** không có cụm Lùi/Tiến (bốn trang, sidebar luôn hiện); tiêu đề trang là `navigationTitle` của hệ thống; không tự vẽ tiêu đề, không ẩn tiêu đề cửa sổ bằng cách với vào `NSWindow`.
+- **Vỏ cửa sổ Cài đặt:** không có cụm Lùi/Tiến (bốn trang, sidebar luôn hiện); thanh công cụ cao như nhau trên mọi trang, kể cả trang không có nút, để cửa sổ không đổi dáng khi chuyển trang; tiêu đề trang là `navigationTitle` của hệ thống; không tự vẽ tiêu đề, không ẩn tiêu đề cửa sổ bằng cách với vào `NSWindow`.
 - **Sidebar cố định như System Settings:** độ rộng cố định, không kéo rộng hẹp, không thu gọn, con trỏ ở đường chia là mũi tên thường, không có lệnh "Show/Hide Sidebar" (⌃⌘S). Dựng bằng `NSSplitViewController` của chính app, chỉ dùng thuộc tính có tài liệu Apple; không với vào cấu trúc bên trong của SwiftUI.
 
-**Hệ quả đã chấp nhận:** ô tìm sidebar dùng lề chuẩn của sidebar nên ô tìm và hàng đầu lệch System Settings 1–2 pt; không chỉnh lề cho khớp pixel.
+**Hệ quả đã chấp nhận:**
+
+- Ô tìm sidebar dùng lề chuẩn của sidebar nên ô tìm và hàng đầu lệch System Settings 1–2 pt; không chỉnh lề cho khớp pixel.
+- Trang không có nút giữ thanh bằng mục khoảng trống của hệ thống, chỉ có từ macOS 26; trên macOS 14–25 thanh co lại ở các trang đó (chưa kiểm, D1). Không thêm view giả để che các bản đó.
 
 **Vì sao:**
 
