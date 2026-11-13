@@ -7,7 +7,7 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 Đang làm M6 (Hiệu năng dưới tải), từ 09/11/2026.
 
 Chờ người dùng:
-- Nhánh `slim/cut-list` đã xong năm việc và qua kiểm toán lại: người dùng quyết có gộp vào `main` và push không.
+- Không có.
 
 Việc tiếp theo:
 - M6: phần còn lại của ma trận tương thích (`docs/Roadmap.md` mục M6).
@@ -406,3 +406,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
 - 13/11/2026 — `scripts/selftest/settings-window/run.sh` đầy đủ sau `ToolbarSpacer` (người dùng cho chạy, 09:19–09:21, bản Debug e4e82d5, máy M1, macOS 27.2; `build/settings-window/20261113-091924/`, không commit) — phiên chính. Cửa sổ thật 134 ô đạt: cả bốn trang và lúc tìm sidebar không ra kết quả đều giữ thanh (nút đóng y 18; trang Ứng dụng: thanh cao 52). Ba hàng "(a) first item y" hỏng ở lượt 06:51 nay đạt. Còn một ô không đạt, cũng có ở lượt 06:51: "(d) scroll bar of the page that overflows" ở trang Cập nhật & hỗ trợ (hai lượt Always). Trang này ngắn đi sau danh sách cắt giảm, và ở cỡ mặc định không trang nào tràn nữa, nên bài (d) không có gì để cuộn; hai hàng HARNESS ở `check.txt` là hệ quả của ô này. Đã sửa công cụ kiểm: (d) chạy trên trang Gõ phím, cửa sổ thu về chiều cao nhỏ nhất rồi trả lại cỡ mặc định. Chưa chạy lại.
 - 13/11/2026 — `scripts/selftest/settings-window/run.sh` đầy đủ, lần chạy lại sau khi chuyển bài (d) (người dùng cho chạy, 09:25–09:27, bản Debug 5354ae4, máy M1, macOS 27.2; `build/settings-window/20261113-092549/`, không commit) — phiên chính. Đạt toàn bộ: cửa sổ thật 134 + 15 + 28 ô, ảnh và điểm ảnh 284 ô. Bài (d) trên trang Gõ phím ở chiều cao nhỏ nhất: có thanh cuộn, trang cuộn 58 pt, thanh nằm trong lề phải; phần đầu cửa sổ khi cuộn chênh trung bình 0,9 (sáng) và 2,7 (tối) so với lúc chưa cuộn, ngưỡng 19.
 - 13/11/2026 — canvas: người dùng thay "menu Apple ›" bằng biểu tượng táo () trong dòng đăng xuất của "Thiết lập Dấu – bước 2: chưa bật được", và thêm biểu tượng còn thiếu vào "Báo ứng dụng gõ lỗi" (trước là "( › Log Out)"). Mã đã vẽ biểu tượng này bằng SF Symbol `applelogo` (`EnableStep.logOutHint`, bước 3 của màn chưa bật được), nên không cần sửa mã; sheet Báo lỗi chưa có trong mã. Bản chụp `docs/canvas/` cập nhật hai artboard. Trình sửa canvas đã thu khung "Trang tải về – điện thoại" còn 8.000, ngắn hơn nội dung; người dùng chọn trả về 10.640 (canvas phiên bản 171, chỉ đổi `canvas.json`); bản chụp giữ khung đó — phiên chính.
+- 13/11/2026 — nhánh `slim/cut-list` gộp vào `main` (fast-forward, 190a593..c1165fa) và push, người dùng đồng ý — phiên chính.
