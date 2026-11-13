@@ -109,6 +109,62 @@
       "x": 900,
       "y": 0
     },
+    "OnboardingEnableDone.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 2: đã bật",
+      "w": 820,
+      "x": 900,
+      "y": 3500
+    },
+    "OnboardingEnableDoneNoShortcut.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 2: đã bật, chưa có phím tắt",
+      "w": 820,
+      "x": 900,
+      "y": 4200
+    },
+    "OnboardingEnableError.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 2: chưa cài được",
+      "w": 820,
+      "x": 900,
+      "y": 1400
+    },
+    "OnboardingEnableFailed.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 2: chưa bật được",
+      "w": 820,
+      "x": 900,
+      "y": 2800
+    },
+    "OnboardingEnableNotes.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác",
+      "w": 820,
+      "x": 900,
+      "y": 700
+    },
+    "OnboardingEnableWaiting.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 2: chờ bấm Allow",
+      "w": 820,
+      "x": 900,
+      "y": 2100
+    },
+    "OnboardingMoveToApplications.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)",
+      "w": 820,
+      "x": 0,
+      "y": 1400
+    },
+    "OnboardingNotSelected.dc.html": {
+      "h": 580,
+      "title": "Thiết lập Dấu – bước 3: Dấu chưa là nguồn đang dùng",
+      "w": 820,
+      "x": 1800,
+      "y": 700
+    },
     "Report.dc.html": {
       "h": 660,
       "title": "Báo ứng dụng gõ lỗi",
@@ -146,6 +202,27 @@
       "x": 1960,
       "y": 6300
     },
+    "SettingsAppsAddEmpty.dc.html": {
+      "h": 740,
+      "title": "Ứng dụng – thêm quy tắc, chưa chọn",
+      "w": 900,
+      "x": 1960,
+      "y": 8020
+    },
+    "SettingsAppsEmpty.dc.html": {
+      "h": 740,
+      "title": "Ứng dụng – chưa có quy tắc riêng",
+      "w": 900,
+      "x": 1960,
+      "y": 7160
+    },
+    "SettingsBannerStates.dc.html": {
+      "h": 560,
+      "title": "Banner “Dấu chưa được bật” – sau khi bấm Bật lại",
+      "w": 760,
+      "x": 0,
+      "y": 7040
+    },
     "SettingsDark.dc.html": {
       "h": 680,
       "title": "Trạng thái – chế độ tối",
@@ -159,6 +236,13 @@
       "w": 900,
       "x": 0,
       "y": 6240
+    },
+    "SettingsSearchEmpty.dc.html": {
+      "h": 680,
+      "title": "Cài đặt – tìm không có kết quả",
+      "w": 900,
+      "x": 980,
+      "y": 7160
     },
     "SettingsSmart.dc.html": {
       "h": 680,
@@ -175,6 +259,13 @@
       "x": 980,
       "y": 6240
     },
+    "SettingsTampered.dc.html": {
+      "h": 680,
+      "title": "Trạng thái – bộ gõ trên máy đã bị thay",
+      "w": 900,
+      "x": 0,
+      "y": 7720
+    },
     "SettingsTyping.dc.html": {
       "h": 680,
       "is_interactive": true,
@@ -190,6 +281,13 @@
       "x": 840,
       "y": 10660
     },
+    "UninstallRemoveSource.dc.html": {
+      "h": 560,
+      "title": "Gỡ cài đặt – bỏ Dấu khỏi nguồn đầu vào",
+      "w": 900,
+      "x": 2940,
+      "y": 8660
+    },
     "Update.dc.html": {
       "h": 600,
       "title": "Thông báo cập nhật",
@@ -203,104 +301,6 @@
       "w": 760,
       "x": 2940,
       "y": 6320
-    },
-    "SettingsTampered.dc.html": {
-      "h": 680,
-      "title": "Trạng thái – bộ gõ trên máy đã bị thay",
-      "w": 900,
-      "x": 0,
-      "y": 7720
-    },
-    "OnboardingEnableWaiting.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 2: chờ bấm Allow",
-      "w": 820,
-      "x": 900,
-      "y": 2100
-    },
-    "OnboardingEnableFailed.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 2: chưa bật được",
-      "w": 820,
-      "x": 900,
-      "y": 2800
-    },
-    "OnboardingEnableDone.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 2: đã bật",
-      "w": 820,
-      "x": 900,
-      "y": 3500
-    },
-    "OnboardingEnableNotes.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác",
-      "w": 820,
-      "x": 900,
-      "y": 700
-    },
-    "OnboardingEnableError.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 2: chưa cài được",
-      "w": 820,
-      "x": 900,
-      "y": 1400
-    },
-    "OnboardingEnableDoneNoShortcut.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 2: đã bật, chưa có phím tắt",
-      "w": 820,
-      "x": 900,
-      "y": 4200
-    },
-    "SettingsBannerStates.dc.html": {
-      "h": 560,
-      "title": "Banner “Dấu chưa được bật” – sau khi bấm Bật lại",
-      "w": 760,
-      "x": 0,
-      "y": 7040
-    },
-    "UninstallRemoveSource.dc.html": {
-      "h": 560,
-      "title": "Gỡ cài đặt – bỏ Dấu khỏi nguồn đầu vào",
-      "w": 900,
-      "x": 2940,
-      "y": 8660
-    },
-    "OnboardingNotSelected.dc.html": {
-      "h": 580,
-      "title": "Thiết lập Dấu – bước 3: Dấu chưa là nguồn đang dùng",
-      "w": 820,
-      "x": 1800,
-      "y": 700
-    },
-    "SettingsSearchEmpty.dc.html": {
-      "h": 680,
-      "title": "Cài đặt – tìm không có kết quả",
-      "w": 900,
-      "x": 980,
-      "y": 7160
-    },
-    "SettingsAppsEmpty.dc.html": {
-      "h": 740,
-      "title": "Ứng dụng – chưa có quy tắc riêng",
-      "w": 900,
-      "x": 1960,
-      "y": 7160
-    },
-    "SettingsAppsAddEmpty.dc.html": {
-      "h": 740,
-      "title": "Ứng dụng – thêm quy tắc, chưa chọn",
-      "w": 900,
-      "x": 1960,
-      "y": 8020
-    },
-    "OnboardingMoveToApplications.dc.html": {
-      "h": 580,
-      "w": 820,
-      "x": 0,
-      "y": 1400,
-      "title": "Thiết lập Dấu – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)"
     }
   },
   "createdOnFiles": {
@@ -313,39 +313,44 @@
   },
   "notes": {
     "row1": {
-      "x": 0,
-      "y": -260,
-      "text": "Thiết lập Dấu (onboarding)",
       "kind": "title1",
-      "maxW": 2620
+      "maxW": 2620,
+      "text": "Thiết lập Dấu (onboarding)",
+      "w": 240,
+      "x": 0,
+      "y": -260
     },
     "row2": {
-      "x": 0,
-      "y": 5180,
-      "text": "Cửa sổ Cài đặt",
       "kind": "title1",
-      "maxW": 4820
+      "maxW": 4820,
+      "text": "Cửa sổ Cài đặt",
+      "w": 240,
+      "x": 0,
+      "y": 5180
     },
     "row3": {
-      "x": 0,
-      "y": 10400,
-      "text": "Khi gõ",
       "kind": "title1",
-      "maxW": 1740
+      "maxW": 1740,
+      "text": "Khi gõ",
+      "w": 240,
+      "x": 0,
+      "y": 10400
     },
     "row4": {
-      "x": 0,
-      "y": 11700,
-      "text": "Nhận diện",
       "kind": "title1",
-      "maxW": 3840
+      "maxW": 3840,
+      "text": "Nhận diện",
+      "w": 240,
+      "x": 0,
+      "y": 11700
     },
     "row5": {
-      "x": 0,
-      "y": 14640,
-      "text": "Trang tải về",
       "kind": "title1",
-      "maxW": 1750
+      "maxW": 1750,
+      "text": "Trang tải về",
+      "w": 240,
+      "x": 0,
+      "y": 14640
     }
   },
   "order": [
