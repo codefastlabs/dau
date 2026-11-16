@@ -50,6 +50,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 04/11/2026: nút "Bật Dấu"/"Bật lại" được xoá bộ đệm danh sách nguồn nhập liệu và thoát System Settings ("người dùng chốt 04/11/2026; thêm bộ đệm của từng app cùng ngày").
 
 - 11/11/2026 (sổ viết lại): hai ý về "Bật Dấu" và "Gỡ cài đặt" gộp thành một ý dẫn D37, D16; thêm "Dấu không xin quyền Trợ năng", chuyển từ câu hỏi đã trả lời "Chrome/Terminal có cần quyền Accessibility không".
+- 16/11/2026 (người dùng duyệt, sau kiểm toán M6): "đã bỏ Dấu bằng "–"" viết đủ "đã bỏ Dấu khỏi nguồn đầu vào bằng "–"" (`docs/Glossary.md` mục "Từ dễ hiểu hai nghĩa"). Luật không đổi.
 
 ## Quyết định
 
@@ -112,6 +113,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 10/11/2026 (rà soát tài liệu, người dùng duyệt): bỏ dòng "Chỉ đọc chữ từ ứng dụng (`attributedSubstring`) cho tính năng \"Thêm dấu cho từ đã gõ\" (D20)", trái với ba chỗ đọc chữ khác của chính D11. "Vì sao": "Telex của Apple cùng điều kiện ra chữ 2/3 lượt" thành 2 ô đo hợp lệ, ô thứ ba là đo hỏng do cách script chuyển nguồn; số đo phím dồn chỉ còn ghi ở D13.
 
 - 11/11/2026 (sổ viết lại): ý "App trả lời chậm" rút còn luật và bất biến; giới hạn chậm (`lateLimit` 2 thao tác cộng loạt phím dồn dưới 50 ms) và điều kiện so chữ khi chậm quá giới hạn chỉ còn ở `docs/Architecture.md` mục "App trả lời chậm". Số đo chuyển khỏi sổ, nguyên văn từ "Vì sao": "Thay theo vị trí đó sai 3/3 lượt, thay theo vị trí Dấu tự theo dõi đúng 3/3; Telex của Apple cùng điều kiện ra chữ ở cả 2 ô đo hợp lệ, ô thứ ba là đo hỏng do cách script chuyển nguồn (M6, 09–10/11/2026)"; "sau khi sửa, ca đó đúng mọi lần nó xảy ra (10/11/2026)" (ca đầu văn bản trong VS Code).
+- 16/11/2026 (người dùng duyệt, sau kiểm toán M6): ý "App trả lời chậm" thêm câu: cùng phép chứng minh dùng cho lần đọc chữ của D20 và của ý "Từ đã hết hợp lệ" (mã đã làm vậy trong M6, trước chỉ ghi ở `docs/Architecture.md`). "Vì sao": câu cũ "Telex của Apple cùng điều kiện ra đúng" nói mạnh hơn số đo (Apple ra chữ của chính nó, có "Hocj", "mêting"), nay là "ra cùng chữ như khi trang rảnh (2 ô đo hợp lệ)".
 
 ### D12. Ưu tiên tiến trình
 
@@ -127,7 +129,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 30/10/2026: Firefox vào danh sách đề xuất ban đầu ("thêm theo số đo: thay tại chỗ sai ở 0 và 5 ms, gạch chân đúng ở 0 ms; người dùng duyệt 30/10/2026").
 - 09/11/2026: câu "từ 10 ms đều đúng" trong lý do viết lại cho khớp số đo: VS Code ở 10 ms sai một lần ở lượt M2 với câu mẫu cũ; luật không đổi.
 - 10/11/2026: đổi tên thành "Gạch chân là đường lui cuối cùng", người dùng duyệt. Thay tại chỗ là cách gõ của Dấu, gõ sai ở một app là lỗi phải sửa; nhãn "Đề xuất" chỉ giữ cho app mà thay tại chỗ còn sai ở tốc độ gõ thật. Bản trước: "Gạch chân (marked text) là đường lui, bật theo quy tắc riêng của từng app"; "Danh sách đề xuất ban đầu: VS Code, các app Electron/Chromium và Firefox". Do M6 bước 1: Chrome trang bận sai 3/3 khi thay theo vị trí của app, đúng 3/3 khi thay theo vị trí Dấu tự theo dõi.
-- 10/11/2026: Chrome, Firefox và VS Code bỏ nhãn "Đề xuất", người dùng duyệt: đo ở nhịp 5, 10, 20 ms sau các lần sửa ở M6 (`docs/Progress.md`, nhật ký 10/11). Bản trước: "Hiện còn nhãn: VS Code, các app Electron/Chromium và Firefox (sai khi phím dồn, M3)".
+- 10/11/2026: Chrome, Firefox và VS Code bỏ nhãn "Đề xuất", người dùng duyệt: đo ở nhịp 5, 10, 20 ms sau các lần sửa ở M6 (`docs/history/LogM6.md`, nhật ký 10/11). Bản trước: "Hiện còn nhãn: VS Code, các app Electron/Chromium và Firefox (sai khi phím dồn, M3)".
 - 10/11/2026 (rà soát tài liệu, người dùng duyệt): danh sách còn nhãn ghi số đo lại của Edge và thêm Cursor; bản trước: "Edge, Brave, Arc và các app Electron khác (sai khi phím dồn ở M3 hoặc xếp theo công nghệ giao diện; chưa đo lại sau lần sửa ở M6)". "Vì sao (nhãn đã bỏ)" ghi nhịp 5, 10, 20 ms là nhịp danh nghĩa và số lượt mỗi app.
 - 10/11/2026: Edge bỏ nhãn "Đề xuất" (người dùng duyệt), theo số đo lại cùng ngày; hàng mẫu Edge trên các artboard SettingsApps* đổi thành Cursor (canvas phiên bản 148). Bản trước: "Hiện còn nhãn: Edge (đo lại 10/11/2026 …; bỏ nhãn sau khi đổi hàng mẫu trên artboard), Cursor…".
 
@@ -149,6 +151,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 05/11/2026: "Dấu đã cài nhưng không có trong nguồn đầu vào (người dùng chốt 05/11/2026, từ kiểm toán M5) … (trước đây sheet nháy lên rồi gỡ ngay)."
 
 - 11/11/2026 (sổ viết lại): ba ý "Quy tắc kèm theo khi gỡ" (huỷ hay lỗi không xoá gì; không đụng container riêng của bộ gõ; app không tự xoá chính nó) chuyển từ `docs/Architecture.md` vào sổ; luật không đổi.
+- 16/11/2026 (người dùng duyệt, sau kiểm toán M6): dòng mục lục "Gỡ chỉ chạy sau khi người dùng bỏ Dấu bằng "–"." viết đủ "bỏ Dấu khỏi nguồn đầu vào". Luật không đổi.
 
 ### D17. Trợ năng
 

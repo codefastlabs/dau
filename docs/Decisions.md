@@ -29,7 +29,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D13](#d13-gạch-chân-là-đường-lui-cuối-cùng) | Gạch chân là đường lui cuối cùng | Thay tại chỗ; gạch chân chỉ do người dùng bật; nhãn "Đề xuất" theo số đo. |
 | [D14](#d14-onboarding) | Onboarding | Ba bước; bước 1 chỉ khi bộ gõ chặn phím đang chạy. |
 | [D15](#d15-cài-đặt-mặc-định) | Cài đặt mặc định | Telex, kiểu mới, đặt dấu tự do, tự khôi phục, thêm dấu cho từ đã gõ. |
-| [D16](#d16-bảo-trì-và-gỡ-cài-đặt) | Bảo trì và gỡ cài đặt | Gỡ chỉ chạy sau khi người dùng bỏ Dấu bằng "–". |
+| [D16](#d16-bảo-trì-và-gỡ-cài-đặt) | Bảo trì và gỡ cài đặt | Gỡ chỉ chạy sau khi người dùng bỏ Dấu khỏi nguồn đầu vào bằng "–". |
 | [D17](#d17-trợ-năng) | Trợ năng | VoiceOver đọc tên nguồn do hệ thống; Dấu không thông báo thêm. |
 | [D18](#d18-phòng-thủ-với-imk) | Phòng thủ với IMK | Mọi đầu vào có thể bất thường; không crash. |
 | [D19](#d19-quay-về-bản-trước) | Quay về bản trước | Tạm tắt tự cập nhật tới khi có bản mới hơn bản lỗi. |
@@ -89,7 +89,7 @@ Không tự ý đổi cài đặt hệ thống của người dùng.
 - Dấu chỉ đổi cài đặt hệ thống khi người dùng bấm đúng nút làm việc đó ("Bật Dấu", "Gỡ cài đặt"), luôn có Hoàn tác hoặc xác nhận, và không bao giờ tự làm. Việc bật vẫn do người dùng xác nhận trong hộp thoại của macOS.
 - Mọi thứ khác chỉ hướng dẫn hoặc mở đúng màn hình Cài đặt.
 - Sau khi bật phải đọc lại trạng thái thật trước khi báo thành công (N5 (Chỉ hứa điều đã kiểm chứng)).
-- Việc đi kèm hai nút đó do quyết định nêu: "Bật Dấu"/"Bật lại" xoá bộ đệm danh sách nguồn và thoát System Settings (D37 (Cài bộ gõ)); "Gỡ cài đặt" xoá bộ đệm của System Settings sau khi người dùng đã bỏ Dấu bằng "–" (D16 (Bảo trì và gỡ cài đặt)).
+- Việc đi kèm hai nút đó do quyết định nêu: "Bật Dấu"/"Bật lại" xoá bộ đệm danh sách nguồn và thoát System Settings (D37 (Cài bộ gõ)); "Gỡ cài đặt" xoá bộ đệm của System Settings sau khi người dùng đã bỏ Dấu khỏi nguồn đầu vào bằng "–" (D16 (Bảo trì và gỡ cài đặt)).
 - Dấu không xin quyền Trợ năng (Accessibility): thay tại chỗ không cần quyền đó, kể cả ở Chrome, VS Code, Terminal.
 
 ### N5. Chỉ hứa điều đã kiểm chứng
@@ -216,7 +216,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ, trừ các trường hợp dưới.
 - **Gợi ý tự hoàn thành:** vùng bôi đen bắt đầu đúng chỗ con trỏ khi Dấu đang giữ một từ là gợi ý tự hoàn thành của app (thanh địa chỉ trình duyệt, Spotlight): thay cả từ lẫn phần gợi ý, như phím thường gõ đè vùng chọn.
 - **Dựng lại khi lệch:** khi lệch, nếu phím trước cách ít nhất 50 ms (như D20 (Thêm dấu cho từ đã gõ)) và app cho đọc chữ, Dấu đọc từ ngay trước con trỏ, dựng lại bộ đệm từ chữ thật rồi xử lý phím đó; không đọc được hoặc không có từ thì reset.
-- **App trả lời chậm:** Dấu tự theo dõi vị trí con trỏ qua các từ, cùng các thao tác và các chữ chính nó vừa gõ. Ở phím có thay chữ mà `selectedRange` khác vị trí đó, ở mọi tốc độ gõ, Dấu đọc chữ trước con trỏ một lần. Chữ đọc được chứng minh app chỉ chưa áp vài thao tác vừa gõ (số thao tác được chậm có giới hạn) thì thay ở vị trí Dấu theo dõi. Bất biến:
+- **App trả lời chậm:** Dấu tự theo dõi vị trí con trỏ qua các từ, cùng các thao tác và các chữ chính nó vừa gõ. Ở phím có thay chữ mà `selectedRange` khác vị trí đó, ở mọi tốc độ gõ, Dấu đọc chữ trước con trỏ một lần. Chữ đọc được chứng minh app chỉ chưa áp vài thao tác vừa gõ (số thao tác được chậm có giới hạn) thì thay ở vị trí Dấu theo dõi. Cùng phép chứng minh dùng cho lần đọc chữ của D20 (Thêm dấu cho từ đã gõ) và của ý "Từ đã hết hợp lệ" bên dưới: chứng minh được app chậm thì dùng vị trí Dấu theo dõi, thay vì tin chữ cũ app trả (Chrome trang bận, "Hoc␣⌫j" ra "Học", không ra "Hocj"). Bất biến:
   - Vùng thay luôn kết thúc ở vị trí Dấu theo dõi.
   - Vị trí app trả mà có thể là vị trí cũ thì không ghi đè vị trí Dấu theo dõi.
   - Không chứng minh được, ở giữa từ: như "Dựng lại khi lệch". Ở lần thay đầu của một từ, khi app chậm trong giới hạn và trước vị trí app trả không có đủ cả từ: vẫn thay ở vị trí Dấu theo dõi.
@@ -229,7 +229,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Gợi ý tự hoàn thành: mọi cách người dùng tự chọn chữ (chuột, ⇧ + mũi tên, ⌘A) đều đã reset bộ đệm trước đó, nên vùng bôi đen như vậy chỉ có thể là gợi ý của app.
 - Dựng lại khi lệch: bấm chuột vào thanh địa chỉ Chrome không được báo cho bộ gõ, nên "tieemf" từng ra "tieemf".
 - Từ đã hết hợp lệ: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ; "tốt", ⌘A, "toots" từng ra "toots" và hỏng tới dấu cách.
-- App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó thì sai, thay theo vị trí Dấu tự theo dõi thì đúng; Telex của Apple cùng điều kiện ra đúng.
+- App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó thì sai, thay theo vị trí Dấu tự theo dõi thì đúng; Telex của Apple khi trang bận ra cùng chữ như khi trang rảnh (2 ô đo hợp lệ).
 - Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ.
 - Đầu văn bản: ở từ đầu tiên của tài liệu mới trong VS Code, "Chieeuf" từng ra "êhieuf" khi VS Code chưa báo phím nào của loạt phím dồn.
 
