@@ -52,9 +52,21 @@ struct InPlaceComposer {
 
     private(set) var tracker = CursorTracker()
     private(set) var before = Before.unknown
-    /// The client gave no text (or no position) for a D20 read: do not ask again until
-    /// the next activation (`activate`), N3.
-    private(set) var readUnavailable = false
+    /// Reads in a row that got no position or no text (D20, "Phạm vi"). One only costs
+    /// that key its read: an app may fail once and give text again (the Claude app,
+    /// 17/11/2026: one odd answer had stopped D20 until the app was switched).
+    private var failedReads = 0
+    /// Reads that fail in a row before no read is made again until the next activation
+    /// (`activate`), N3.
+    static let failedReadLimit = 2
+    /// No read until the next activation: `failedReadLimit` reads in a row got nothing.
+    var readUnavailable: Bool { failedReads >= Self.failedReadLimit }
+
+    /// One read (or the `selectedRange` before it) got nothing.
+    private mutating func readFailed() { failedReads += 1 }
+
+    /// The client gave text: start the count of failed reads over.
+    private mutating func readGaveText() { failedReads = 0 }
     /// The current word was already checked against the app's text (D11, once per word).
     private var checkedLockedWord = false
     /// Time of the previous key or click on this client (`NSEvent.timestamp`, seconds).
@@ -168,7 +180,7 @@ struct InPlaceComposer {
 
     /// New activation (or another client): the client may give text again.
     mutating func activate() {
-        readUnavailable = false
+        failedReads = 0
         lastEventTime = nil
         produced = nil
     }
@@ -399,7 +411,7 @@ struct InPlaceComposer {
                 // (the read `replace` already made to rule out a late answer, if any).
                 let earlier = lateRead?.location == seen.location ? lateRead : nil
                 reset(engine: &engine)
-                // A read that gave nothing usable is not made again (N3).
+                // A read that gave nothing usable is not made again for this key (N3).
                 if earlier == nil || earlier?.text != nil,
                    let synced = seedWord(scalar, selection: seen, engine: &engine, client: client,
                                          alreadyRead: earlier?.text),
@@ -536,11 +548,12 @@ struct InPlaceComposer {
         if count == 0 {
             real = []
         } else {
-            guard let text = client.text(in: NSRange(location: selection.location - count, length: count)),
-                  text.utf16.count == count else {
-                readUnavailable = true
+            guard let text = client.text(in: NSRange(location: selection.location - count, length: count)) else {
+                readFailed()
                 return nil
             }
+            readGaveText()
+            guard text.utf16.count == count else { return nil }
             read = text
             real = Self.trailingWord(text.precomposedStringWithCanonicalMapping)
         }
@@ -617,7 +630,7 @@ struct InPlaceComposer {
         if selection.length == 0, selection.location != NSNotFound, selection.location >= 0 {
             tracker.anchor(at: selection.location)
         }
-        // A read that gave nothing usable is not made again (N3): no seed, as `seedWord`
+        // A read that gave nothing usable is not made again for this key (N3): no seed, as `seedWord`
         // does for such a read.
         var outcome = didRead && read == nil ? nil
             : seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read,
@@ -678,7 +691,7 @@ struct InPlaceComposer {
                                    client: some InPlaceClient, alreadyRead: String? = nil,
                                    allowSelection: Bool = false, rule: SeedRule = .resync) -> Outcome? {
         if selection.location == NSNotFound || selection.length == NSNotFound {
-            readUnavailable = true  // no document access: replacing could not work either
+            readFailed()  // no position: no read, the key starts a word
             return nil
         }
         guard selection.location >= 0, selection.length == 0 || allowSelection else { return nil }
@@ -692,9 +705,16 @@ struct InPlaceComposer {
         let count = alreadyRead.map { min($0.utf16.count, location) } ?? min(location, Self.readLength)
         let range = NSRange(location: location - count, length: count)
         if alreadyRead == nil && readUnavailable { return nil }
-        guard let text = alreadyRead ?? client.text(in: range) else {
-            readUnavailable = true
-            return nil
+        let text: String
+        if let alreadyRead {
+            text = alreadyRead
+        } else {
+            guard let answer = client.text(in: range) else {
+                readFailed()
+                return nil
+            }
+            readGaveText()
+            text = answer
         }
         // A different length means the range split a surrogate pair or the client
         // answered for another range (IMKInputSession.h): do not guess.
@@ -944,15 +964,15 @@ struct InPlaceComposer {
     }
 
     /// One read of up to `readLength` UTF-16 units before `location` (D11, D20). nil: the
-    /// client gave no text (then no read again until activation, N3) or text of another
-    /// length (D18).
+    /// client gave no text (counted, `failedReadLimit`) or text of another length (D18).
     private mutating func readBefore(_ location: Int, client: some InPlaceClient) -> String? {
         let count = min(location, Self.readLength)
         guard count > 0 else { return "" }
         guard let text = client.text(in: NSRange(location: location - count, length: count)) else {
-            readUnavailable = true
+            readFailed()
             return nil
         }
+        readGaveText()
         return text.utf16.count == count ? text : nil
     }
 

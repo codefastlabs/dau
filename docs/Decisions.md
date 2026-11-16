@@ -341,7 +341,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 - **Khi nào đọc:** ở phím chữ cái hoặc dấu thanh/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng đi thẳng: một `selectedRange` và một lần đọc chữ trước con trỏ (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
 - **Phạm vi:**
   - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
-  - Ở mọi ô, app không trả chữ cho một lần đọc thì Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)).
+  - App không trả vị trí hay chữ cho một lần đọc thì phím đó đi như phím đầu của từ mới. Hai lần đọc liền nhau đều không nhận được gì thì Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)); một lần đọc được ở giữa thì đếm lại từ đầu.
   - Chỉ đọc lại chữ khi phím trước đó trên cùng ô nhập cách ít nhất 50 ms (biên an toàn khi gõ dồn).
   - Chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").
 - **Chữ cái gõ sát chữ có sẵn:** phím đầu tiên là chữ cái thường cũng đọc từ ngay trước con trỏ. Chữ đó nối vào từ chỉ khi từ ghép vẫn là tiền tố hợp lệ theo D30, ngược lại chữ đó bắt đầu từ mới ("q" có sẵn + "uer" → "quẻ", "g" + "ias" → "giá", "tiê" + "ngs" → "tiếng"; "tôi" + "laf" → "tôilà", "sắc" + "mauf" → "sắcmàu").
@@ -363,6 +363,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 
 **Vì sao:**
 
+- Hai lần đọc hỏng liền nhau, không phải một: ở app Claude, "cao␣⌫s" từng ra "caos", gõ lại ⌫⌫s vẫn ra "cas". Trên đồ giả, chỉ việc thôi đọc sau một lần đọc hỏng trước đó ra được đủ chuỗi đó; lần đọc hỏng ấy chưa bắt được ngoài đời. Với ngưỡng hai lần, app không bao giờ cho đọc chỉ tốn thêm một lần đọc mỗi lần kích hoạt.
 - Ngưỡng 50 ms: app áp phím bất đồng bộ trả vị trí và chữ từ ảnh chụp cũ khi phím dồn, và chữ đọc từ ảnh chụp cũ có thể bị thay sai chỗ. Ở các app đã thử, không chờ cũng chưa hỏng chữ (`docs/history/LogM0ToM4.md`, bảng "Số đo (M1–M3)", dòng "D20 không chờ"); vẫn giữ biên vì người quay lại sửa từ không gõ nhanh như vậy.
 - Chữ cái gõ sát chữ có sẵn: chọn bằng mô phỏng engine trên 10.303 ca ngoài và các tình huống sửa chữ, so với chỉ đọc ở phím dấu và với luôn nối (luôn nối làm hỏng 34 ca gõ từ mới sát từ cũ).
 - Ba ngoại lệ: trên cùng 10.303 ca, (a) không đổi ca nào, (b) đổi 2, (c) đổi 24, không bất biến nào hỏng.

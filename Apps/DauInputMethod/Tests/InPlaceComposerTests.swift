@@ -516,7 +516,7 @@ struct InPlaceComposerTests {
 
     // MARK: D18, odd clients
 
-    @Test("D18: no document access → no read, and no read again until activation")
+    @Test("D18, D20: no document access → no read; after two such keys in a row, no read again until activation")
     func noAccess() {
         var s = Session("hoc")
         s.doc.noAccess = true
@@ -524,20 +524,40 @@ struct InPlaceComposerTests {
         #expect(s.doc.text == "hocj")
         #expect(s.doc.calls == [.selectedRange])
         s.type("←s")
-        #expect(s.doc.calls == [.selectedRange])
-        s.composer.activate()
+        #expect(s.doc.calls == [.selectedRange, .selectedRange])
         s.type("←s")
         #expect(s.doc.calls.count == 2)
+        s.composer.activate()
+        s.type("←s")
+        #expect(s.doc.calls.count == 3)
     }
 
-    @Test("D18: nil text → no seed, key passes; no read again until activation")
+    @Test("D18, D20: nil text → no seed, key passes; after two in a row, no read again until activation")
     func nilText() {
         var s = Session("hoc")
         s.doc.noText = true
         s.type("j")
         #expect(s.doc.text == "hocj")
         s.type("←s")
-        #expect(s.reads == 1)
+        #expect(s.reads == 2)
+        s.type("←s")
+        #expect(s.reads == 2)
+    }
+
+    @Test("D20: a read that gives text starts the count over — fail, text, fail still reads")
+    func failedReadsStartOver() {
+        var s = Session("hoc")
+        s.doc.noText = true
+        s.type("j")  // fails (1)
+        s.doc.noText = false
+        s.type("⌫←f")  // the read gives text: the count starts over
+        #expect(s.doc.text == "hòc")
+        s.doc.noText = true
+        s.type("←z")  // fails (1 again): "hòcz"
+        s.doc.noText = false
+        s.type("⌫←z")  // still reads
+        #expect(s.doc.text == "hoc")
+        #expect(s.reads == 4)
     }
 
     @Test("D18: text of the wrong length, or not letters, is not seeded")
@@ -914,13 +934,13 @@ struct InPlaceComposerLetterTests {
         #expect(s.kinds == [.seedNone])
     }
 
-    @Test("D18: no document access → no read, and no read again until activation")
+    @Test("D18, D20: no document access → no read; two keys in a row without it, then no read until activation")
     func noAccess() {
         var s = Session("q")
         s.doc.noAccess = true
-        s.type("u←e")
+        s.type("u←e←a")
         #expect(s.reads == 0)
-        #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 1)
+        #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 2)
     }
 
     @Test("a word that fills the read is not Vietnamese: the letters belong to it (D20 b)")
@@ -1374,5 +1394,74 @@ struct ProducedWordTests {
     func undidMark(_ before: String, _ after: String, _ key: String, _ expected: Bool) {
         #expect(InPlaceComposer.undidMark(before: Array(before.unicodeScalars), after: Array(after.unicodeScalars),
                                           key: key.unicodeScalars.first!) == expected)
+    }
+}
+
+/// Reported 17/11/2026, intermittent: a word typed without its tone, Space, ⌫ back over
+/// the Space, then the mark key, and the mark did not reach the word (it was typed after
+/// it: "hocj"). Mechanisms that give that result; the way to tell them apart is what the
+/// same keys do right after (retyping the key slowly). An answer more than `lateLimit`
+/// edits late is in `LateBackspaceMarkTests`.
+@Suite("InPlaceComposer: ⌫ over Space, then a mark key")
+struct BackspaceThenMarkTests {
+    @Test("1: ⌫ then the mark key under 50 ms (D20 settleInterval): typed after the word; the same key slowly applies")
+    func fastMarkAfterBackspace() {
+        var s = Session("Tôi ")
+        s.type("hoc ⌫")
+        s.interval = 0.03
+        s.type("j")
+        #expect(s.doc.text == "Tôi hocj")
+        #expect(s.kinds.last == .pass)
+        s.interval = 0.2
+        s.type("⌫j")
+        #expect(s.doc.text == "Tôi học")
+        #expect(s.overCalls == 0)
+    }
+
+    /// One odd answer to a read (no position: NSTextInputClient allows `{NSNotFound, 0}`
+    /// when there is no selection; or no text) used to stop every later D20 read until the
+    /// next activation. Now it costs that key only (D20, "Phạm vi").
+    @Test("2: one read that got no position or no text costs only that key (D18, D20)", arguments: [false, true])
+    func oneOddAnswer(_ nilText: Bool) {
+        var s = Session("Xin chao ")
+        if nilText { s.doc.noText = true } else { s.doc.noAccess = true }
+        s.type("b")  // the first key of the session reads (D20) and gets nothing
+        #expect(!s.composer.readUnavailable)
+        s.doc.noText = false
+        s.doc.noAccess = false
+        s.type("an hoc ⌫j")
+        #expect(s.doc.text == "Xin chao ban học")
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("2: two reads in a row that got nothing stop D20 until activation (N3)")
+    func twoOddAnswers() {
+        var s = Session("Xin chao ")
+        s.doc.noText = true
+        s.type("b⌫b")
+        #expect(s.composer.readUnavailable)
+        s.doc.noText = false
+        s.type("an hoc ⌫j")
+        #expect(s.doc.text == "Xin chao ban hocj")
+        s.composer.activate()
+        s.type("⌫j")
+        #expect(s.doc.text == "Xin chao ban học")
+    }
+
+    /// The report itself (Claude app, 17/11/2026): "khuyến" right, then "cao␣⌫s" gave
+    /// "caos", ⌫⌫ gave "ca", s gave "cas". Of the mechanisms here, only an earlier read
+    /// that got nothing gave all of it at 150 ms between keys: an answer 3 edits late
+    /// (Chrome's cache model) gives "caos" but then "cá"; 4 late also breaks "khuyến";
+    /// the 50 ms gap would have to happen twice in a row.
+    @Test("2: the reported keys — khuyeens cao␣⌫s after one earlier read that got nothing")
+    func reportedKeys() {
+        var s = Session("Hello ")
+        s.doc.noText = true
+        s.type("x⌫")  // some earlier key whose read got no text
+        s.doc.noText = false
+        s.interval = 0.15
+        s.type("khuyeens cao ⌫s")
+        #expect(s.doc.text == "Hello khuyến cáo")
+        #expect(s.overCalls == 0)
     }
 }

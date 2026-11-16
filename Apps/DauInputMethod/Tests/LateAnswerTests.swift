@@ -254,3 +254,35 @@ struct LateAnswerTests {
     }
 }
 
+
+/// Reported 17/11/2026 (see `BackspaceThenMarkTests`): the D20 read after ⌫ in Chrome's
+/// cache model three or more edits late. The proof (`CursorTracker.rebuild`) takes at
+/// most `lateLimit` late edits; past it the text read ends with the Space, no word is
+/// found and the key is typed after the word. One key only: the next word is fine.
+@Suite("In-place mode: D20 after ⌫ with an answer past lateLimit")
+struct LateBackspaceMarkTests {
+    @Test("Hoc ⌫ j, Chrome's cache, answer 3 or 4 edits late", arguments: [3, 4])
+    func pastLateLimit(_ lag: Int) {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        s.type("Toi hoc ⌫")
+        s.type("j", lag: lag)
+        #expect(s.doc.text == "Toi hocj")
+        withKnownIssue("an answer more than lateLimit edits late is not proved (D11, not fixed)") {
+            #expect(s.doc.text == "Toi học")
+        }
+        s.type(" ban ⌫s")
+        #expect(s.doc.text == "Toi hocj bán")
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("same keys, answer 1 or 2 edits late: proved, the mark applies", arguments: [1, 2])
+    func withinLateLimit(_ lag: Int) {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        s.type("Toi hoc ⌫")
+        s.type("j", lag: lag)
+        #expect(s.doc.text == "Toi học")
+        #expect(s.overCalls == 0)
+    }
+}

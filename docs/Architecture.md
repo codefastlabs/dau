@@ -108,7 +108,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 
 ### Vị trí thay chữ
 
-Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọi lần đọc chữ là một `attributedSubstring` trước con trỏ; client trả `NSNotFound` hay `nil` thì thôi đọc tới lần `activateServer` sau (D18).
+Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọi lần đọc chữ là một `attributedSubstring` trước con trỏ; client trả `NSNotFound` hay `nil` thì phím đó xử lý như phím đầu của từ mới; hai lần đọc liền nhau đều như vậy thì thôi đọc tới lần `activateServer` sau, một lần đọc được ở giữa thì đếm lại (`InPlaceComposer.failedReadLimit`; D18, D20).
 
 | Phím | Hỏi `selectedRange` | Đọc chữ trước con trỏ | Quyết định |
 |---|---|---|---|
