@@ -20,7 +20,7 @@ Cơ chế (mã Ghostty 1.4.0):
 - Chữ bộ gõ đưa **trong lúc** Ghostty xử lý phím mà bắt đầu bằng ký tự điều khiển bị bỏ (`String.keyEventText`). Chữ đưa **sau** đó đi đường khác (`committedTextAction`) và giữ nguyên DEL.
 - Sau khi chốt chữ gạch chân, Ghostty chỉ gửi lại ↑ ↓ → (và ← có phím bổ trợ); Return, Tab, Esc, ← thường, ⌃C bị nuốt (`shouldReplayCommittedPreeditKey`). PR #15048 và #14272 tả đúng lỗi này với IME tiếng Hàn, đã đóng, chưa merge.
 
-Trước khi nhận ra ô, Dấu thấy vị trí 0 khác vị trí nó tự theo dõi (`CursorTracker`): vài chữ đầu thì coi app là chậm (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm", nhánh `lateGuess`) và thay có vùng thay, nên phần thay bị nối thêm; dài hơn thì `plan` báo `.mismatch`, phím đi thẳng như chữ gốc.
+Dấu không nhận ra riêng ô này (D43), nên thấy vị trí 0 khác vị trí nó tự theo dõi (`CursorTracker`): vài chữ đầu thì coi app là chậm (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm", nhánh `lateGuess`) và thay có vùng thay, nên phần thay bị nối thêm; dài hơn thì `plan` báo `.mismatch`, phím đi thẳng như chữ gốc.
 
 Kết quả (zsh, 120 ms giữa hai phím, một lượt mỗi ô; Telex của Apple ra đúng ở mọi ô):
 

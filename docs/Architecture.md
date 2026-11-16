@@ -402,7 +402,7 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 - `os_signpost` quanh `engine.handle` và quanh lệnh gọi client; xem bằng Instruments.
 - Nhật ký từng phím (category `perf`, `diag`) và signpost chỉ có ở bản Debug, bị loại khỏi bản Release lúc build (D8). Ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain.
   - `scripts/selftest/typing/run.sh` tự bật lúc chạy và khi xong trả khoá về như cũ; đo tay thì bật, đo, rồi xoá (`scripts/perf/perf-report.sh`).
-  - Mỗi dòng phím có `t_ns` (lúc `handle` bắt đầu, `CLOCK_UPTIME_RAW`) và `ev_ns` (thời điểm của chính sự kiện phím); `perf-report.sh` dựng từ đó khoảng cách giữa các phím và độ trễ từ lúc tạo phím tới bộ gõ, cho bài test tải nặng (`scripts/selftest/load/run.sh`, D42 (Ngưỡng hiệu năng)).
+  - Mỗi dòng phím có `t_ns` (lúc `handle` bắt đầu, `CLOCK_UPTIME_RAW`) và `ev_ns` (thời điểm của chính sự kiện phím); `perf-report.sh` dựng từ đó khoảng cách giữa các phím và độ trễ từ lúc tạo phím tới bộ gõ, cho bài test tải nặng (`scripts/selftest/load/heavy.sh`, D42 (Ngưỡng hiệu năng)) và bài một app bận (`scripts/selftest/load/run.sh`).
 - Bộ gõ bản Debug đọc thêm khoá `DauDebugForceUnderline` (mảng bundle ID, miền global) để ép gạch chân khi thử mà không đụng cài đặt người dùng; bản Release không đọc.
 - **Cờ chạy của app chủ bản Debug** (trong `#if DEBUG`; danh sách đủ ở nơi định nghĩa):
   - chạy không mở cửa sổ, in một giá trị rồi thoát: các cờ `--print-…` ở đầu `main.swift`, và `--set-typing-method` ở `DebugSettingsCommand` (`--reconcile-input-method` có ở cả bản Release, mục "Cài, bật, thay, gỡ bộ gõ");

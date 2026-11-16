@@ -26,6 +26,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 13/11/2026 (người dùng duyệt, nhánh `slim/cut-list`): D9 thêm ý thanh công cụ cao như nhau trên mọi trang, và hệ quả đã chấp nhận trên macOS 14–25. Lý do: bỏ cụm Lùi/Tiến làm thanh co lại ở ba trang không có nút (đo trên macOS 27.2: nút đóng từ 18,18 xuống 8,8, tiêu đề nhỏ), cửa sổ đổi dáng khi chuyển trang. Bốn cách đã đo cùng một lượt, kèm một lần không cách nào để đối chứng: `toolbar(.visible, for: .windowToolbar)` và `.unified(showsTitle: true)` không có tác dụng; `ToolbarSpacer` (macOS 26+) và một mục trong suốt tự làm giữ được thanh; chọn `ToolbarSpacer` vì là mục của hệ thống, không phải view giả. Bản trước, nguyên văn: "**Vỏ cửa sổ Cài đặt:** không có cụm Lùi/Tiến (bốn trang, sidebar luôn hiện); tiêu đề trang là `navigationTitle` của hệ thống; không tự vẽ tiêu đề, không ẩn tiêu đề cửa sổ bằng cách với vào `NSWindow`."; "**Hệ quả đã chấp nhận:** ô tìm sidebar dùng lề chuẩn của sidebar nên ô tìm và hàng đầu lệch System Settings 1–2 pt; không chỉnh lề cho khớp pixel."
 
+- 16/11/2026 (người dùng chốt, thống nhất thuật ngữ; luật ở `docs/Glossary.md` mục "Từ dễ hiểu hai nghĩa"): đổi tên D28 và D37 (ghi dưới từng mục), "bỏ dấu" nghĩa xoá thành "xoá dấu", "cài đặt" làm động từ thành "cài", "phím dấu" nghĩa hẹp thành "phím dấu thanh", "nguồn nhập liệu" thành "nguồn đầu vào". Luật không đổi. Bản trước của từng câu: lịch sử git của `docs/Decisions.md` (0ea31f3).
+
 ## Nguyên tắc
 
 ### N3. Ít lời gọi vào ứng dụng đích
@@ -210,10 +212,11 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 29/10/2026: quyết định ghi ngày 29/10/2026.
 
-### D28. Bỏ dấu tự do
+### D28. Đặt dấu tự do
 
 - 29/10/2026: luật khi bật và khi tắt ("(29/10/2026)").
 - 05/11/2026: "Phím biến đổi khác loại (người dùng chốt 05/11/2026, từ so sánh với ca thử của bộ gõ khác, `docs/research/EXTERNAL-TEST-INPUTS.md` mục 9)".
+- 16/11/2026: tên cũ "Bỏ dấu tự do".
 
 ### D29. Telex đơn giản
 
@@ -255,7 +258,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 29/10/2026: quyết định ghi ngày 29/10/2026.
 
-### D37. Cài đặt bộ gõ
+### D37. Cài bộ gõ
 
 - Tên cũ: "Cài đặt bộ gõ (M5, 30/10/2026)".
 - 30/10/2026: app chủ không chạy sandbox; định danh không đổi giữa các bản; bản trước về đăng xuất: "Lần cài đầu có thể phải đăng xuất một lần để nguồn nhập liệu xuất hiện: onboarding phát hiện và hướng dẫn."
@@ -271,6 +274,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026: thêm ý "Thay bộ gõ đã cài" (chép tạm rồi đổi chỗ cả khối, dừng bằng thông báo Darwin, không đụng tiến trình hệ thống, không đổi trạng thái bật) và hệ quả biểu tượng cũ tới khi đăng xuất: ghi điều mã đã làm mà sổ chưa nói (`docs/research/InputMethodInstall.md` mục 3 và 6.2), phiên chính chốt.
 - 11/11/2026 (sổ viết lại): "Bật lần đầu không cần đăng xuất" đổi từ nhãn thành câu có điều kiện (macOS 27.2, tài khoản đã từng cài Dấu); các bước xoá bộ đệm (`com.apple.IntlDataCache.le*` trong mọi thư mục con của `DARWIN_USER_CACHE_DIR`) chỉ còn ở `docs/Architecture.md`. Bỏ ngày khỏi "Vì sao" ("rà soát 11/11/2026", "`codesign -R`, 11/11/2026", "Apple DTS 6/2026"). Chuyển khỏi sổ, nguyên văn: "Đo 10/11/2026 (bản Debug, một máy, một lượt): bản do bộ cài chép trùng mã băm chữ ký với bản nhúng ở cả arm64 và x86_64, cả lần cài đầu lẫn lần thay. Chưa đo: bản ký Developer ID mang quarantine (M7 (Phát hành))."
+- 16/11/2026: tên cũ "Cài đặt bộ gõ".
 
 ### D38. Chữ trên giao diện
 

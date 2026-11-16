@@ -131,7 +131,7 @@ if (( ! DO )); then
   log_detail "Chạy lại với --yes để xoá những gì xoá được trong danh sách trên."
   if (( ${prefs[(I)com.apple.inputsources *]} )); then
     log_warn "Các mục trong com.apple.inputsources không xoá được bằng script (macOS từ chối ghi)"
-    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\") TRƯỚC khi chạy --yes."
+    log_hint "Trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\"), bỏ Dấu khỏi nguồn đầu vào bằng \"–\" TRƯỚC khi chạy --yes."
   fi
   exit 0
 fi
@@ -224,7 +224,7 @@ for spec in $prefs; do
     # changes nothing): do not try, report what remains.
     left=$(inputsource_entries "$domain" "$key")
     notremoved "KHÔNG xoá được ($left mục của Dấu còn trong $domain › $key): macOS chỉ cho dịch vụ nguồn đầu vào ghi domain này."
-    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\")."
+    log_hint "Trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\"), bỏ Dấu khỏi nguồn đầu vào bằng \"–\"."
     continue
   fi
   if ! backup_domain "$domain"; then

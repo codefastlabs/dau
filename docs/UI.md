@@ -61,7 +61,7 @@ Artboard: [OnboardingConflict](canvas/OnboardingConflict.png).
 - Chép bộ gõ vào `~/Library/Input Methods` và đăng ký; chỉ bật nguồn đầu vào khi người dùng bấm "Bật Dấu" (N4 (Không tự đổi cài đặt hệ thống), D37).
 - macOS hỏi người dùng có cho Dấu bật không (hộp thoại Allow), nên bước có nhiều màn, mỗi màn một mục dưới đây.
 - Kết quả đọc lại từ hệ thống, không báo thành công khi chưa thấy bật (N5).
-- Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu trong System Settings.
+- Không có Hoàn tác: app không tự tắt được Dấu (macOS chặn), chỉ người dùng bỏ Dấu khỏi nguồn đầu vào trong System Settings.
 
 #### Trước khi bấm
 
@@ -209,7 +209,7 @@ Luồng theo D16 (Bảo trì và gỡ cài đặt): macOS chỉ cho người dù
 - Alert xác nhận (hệ thống):
   - có tuỳ chọn xoá cả cài đặt và quy tắc;
   - nút xác nhận là "Tiếp tục gỡ", chưa xoá gì;
-  - nội dung chỉ nói người dùng bỏ Dấu trong System Settings rồi Dấu được chuyển vào Thùng rác.
+  - nội dung chỉ nói người dùng bỏ Dấu khỏi nguồn đầu vào trong System Settings rồi Dấu được chuyển vào Thùng rác.
 - Sheet "Bỏ Dấu khỏi nguồn đầu vào" trên cửa sổ Cài đặt:
   - app mở thẳng danh sách Input Sources của System Settings (đã mở sẵn sheet Edit…), không chuyển nguồn đầu vào nào;
   - sheet nêu một bước (chọn Dấu, bấm "–", Done) và chờ mục lưu của Dấu biến mất, không hết hạn;

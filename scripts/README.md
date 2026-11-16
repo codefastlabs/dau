@@ -37,7 +37,7 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | `installs app` | chép Dấu.app vào `/Applications` và đăng ký với LaunchServices |
 | `kills processes` | dừng tiến trình đang chạy (bộ gõ, Dấu.app, app do script tự mở) |
 | `takes the screen` | mở app, gõ phím hoặc bấm chuột tự động: người dùng không dùng máy được trong lúc chạy |
-| `changes input source` | chọn lại nguồn đầu vào, hoặc bỏ Dấu khỏi danh sách nguồn |
+| `changes input source` | chọn lại nguồn đầu vào, hoặc bỏ Dấu khỏi nguồn đầu vào |
 | `changes user settings` | ghi `defaults` hoặc cài đặt App Group của người dùng (script tự trả lại khi xong, trừ khi ghi khác) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 

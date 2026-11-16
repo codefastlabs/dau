@@ -26,7 +26,7 @@ final class InputSourceStatus {
             object: nil, queue: .main, using: refresh))
     }
 
-    /// For previews and snapshots.
+    /// For previews and tests.
     init(fixed: Bool?) {
         isEnabled = fixed
     }

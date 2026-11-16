@@ -405,7 +405,7 @@ struct NotEnabledBanner: View {
 
     private func enable() {
         guard let actions else {
-            // Snapshots and previews: no installer, only guide (N4).
+            // Previews and tests: no installer, only guide (N4).
             SystemSettings.openKeyboard()
             return
         }

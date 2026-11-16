@@ -250,5 +250,7 @@ Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi 
 - VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
 - Đối chứng Telex của Apple ở các ô phím dồn của VS Code và Firefox: đo trước khi sửa cách chuyển nguồn của script nên ra nguyên chuỗi phím, chưa đo lại.
 - Chrome: "vieetj" giữ nguyên trong thanh địa chỉ tab mới, chưa tái hiện.
+- Chrome, Edge, Firefox: phím dồn khi trang bận (mục 5.2).
+- Tự sửa chính tả của macOS (mục 6.1): những ứng dụng nào bật nó, và từ nào bị sửa.
 - Terminal trong app Claude (xterm.js trong Electron): chưa đo; VS Code dùng cùng cơ chế và đã đo (mục 6.8).
 - Pages có hai bundle ID trên cùng máy; Numbers, Keynote bản mới đổi ID. Nếu các ứng dụng này cần quy tắc, danh sách tương thích phải ghi đủ các ID.

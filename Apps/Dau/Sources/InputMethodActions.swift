@@ -5,7 +5,7 @@ import SwiftUI
 /// banner (N4; there is no undo, Dấu cannot switch itself off) and "Gỡ cài đặt…" (D16):
 /// confirmation, a sheet that waits for the user to remove Dấu from the input sources
 /// in System Settings, then the removal. Views
-/// get it from the environment; nil there (snapshots) leaves the old behavior: "Bật lại"
+/// get it from the environment; nil there (previews, tests) leaves the old behavior: "Bật lại"
 /// opens Keyboard settings and "Gỡ cài đặt…" is disabled.
 @MainActor
 @Observable
