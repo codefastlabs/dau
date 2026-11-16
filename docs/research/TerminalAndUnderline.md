@@ -32,7 +32,7 @@ Kết quả (zsh, 120 ms giữa hai phím, một lượt mỗi ô; Telex của A
 | D43 cũ (đã bỏ) | — | — | — | "toôis việt đi học nhà người hò windows ": từ đầu sai, còn lại đúng; zsh và vim |
 
 - D43 cũ ở 30 ms giữa hai phím: không nhận ra (phím dồn không được xét), dòng ra như trước D43 cũ.
-- Thời gian xử lý mỗi phím của D43 cũ ngang thay tại chỗ thường; số ở nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11.
+- Thời gian xử lý mỗi phím của D43 cũ ngang thay tại chỗ thường; số ở nhật ký [`docs/history/LogM6.md`](../history/LogM6.md) ngày 11/11.
 - Gạch chân trong Ghostty: chữ đúng, nhưng `toois vieetj↩` không gửi Return (byte gửi không có `<0d>`), với cả Dấu và Telex của Apple.
 - Gạch chân không thuộc tính gạch không giúp: Ghostty tự vẽ gạch chân cho chữ đang soạn.
 
@@ -185,7 +185,7 @@ Sublime Text tự vẽ chữ nhưng trả đúng vị trí con trỏ và chữ t
 
 ## Phương pháp và bản mã đã đọc
 
-- Chuỗi phím và đáp án: [`scripts/research/terminal-underline/run.sh`](../../scripts/research/terminal-underline/run.sh) (gọi `scripts/selftest/typing/run.sh` cho từng ô; đáp án là chữ đúng theo luật Telex, không phải chữ dự đoán). Số đo từng lượt: nhật ký [`docs/Progress.md`](../Progress.md) ngày 11/11 và 12/11/2026 (lượt 12/11 dùng `scripts/selftest/typing/run.sh xterm` với phím Return trong chuỗi).
+- Chuỗi phím và đáp án: [`scripts/research/terminal-underline/run.sh`](../../scripts/research/terminal-underline/run.sh) (gọi `scripts/selftest/typing/run.sh` cho từng ô; đáp án là chữ đúng theo luật Telex, không phải chữ dự đoán). Số đo từng lượt: nhật ký [`docs/history/LogM6.md`](../history/LogM6.md) ngày 11/11 và 12/11/2026 (lượt 12/11 dùng `scripts/selftest/typing/run.sh xterm` với phím Return trong chuỗi).
 - Đối chứng: Telex của Apple trong cùng ô. Byte gửi cho shell đọc ở Ghostty, dữ liệu xterm.js gửi đọc ở trang thử.
 - Bản đã đọc (bản sao tạm ngoài repo, không chép mã nào vào Dấu, D10 (Engine tự viết)):
   - Ghostty: nhánh main, commit de70b9f476c39ce3f5b293ecba813b674f037a80 (10/11/2026), đã so với tag v1.4.0: SurfaceView_AppKit.swift (vùng IME) và src/input/key_encode.zig giống hệt. https://github.com/ghostty-org/ghostty

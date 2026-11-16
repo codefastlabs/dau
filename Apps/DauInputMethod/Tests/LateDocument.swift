@@ -52,7 +52,7 @@ final class LateDocument: InPlaceClient {
         /// The start of the document.
         case document
         /// The start of the word being typed (Cursor's editor, runs of 10/11/2026 in
-        /// `docs/Progress.md`: at 100 ms between keys `selectedRange` was the number of
+        /// `docs/history/LogM6.md`: at 100 ms between keys `selectedRange` was the number of
         /// letters of the word at every replacement, 0-based again after each space,
         /// also after a replacement whose text ends with a space; VS Code and Cursor's
         /// Agents input count from the start of the document).

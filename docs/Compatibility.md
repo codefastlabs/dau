@@ -6,7 +6,7 @@ Dấu gõ đúng hay sai trong từng ứng dụng, ở nhịp nào và vì sao;
 
 Tiêu chí nhãn "Đề xuất" ở D13 (Gạch chân là đường lui cuối cùng). Nhịp là khoảng cách giữa hai phím khi tự gõ; gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí. Chi tiết và điều kiện đo: mục 5.
 
-Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượt, máy M1 đang bận): chữ đúng ở mọi ô của Dấu, thời gian thay chữ đạt ngưỡng D42 (Ngưỡng hiệu năng); số chi tiết ở nhật ký `docs/Progress.md`.
+Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượt, máy M1 đang bận): chữ đúng ở mọi ô của Dấu, thời gian thay chữ đạt ngưỡng D42 (Ngưỡng hiệu năng); số chi tiết ở nhật ký `docs/history/LogM6.md`.
 
 | Ứng dụng | Thay tại chỗ | Gạch chân | Nhãn "Đề xuất" |
 |---|---|---|---|
@@ -137,7 +137,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 
 ## 5. Số đo theo ứng dụng
 
-Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) và nhật ký 30/10 cùng file; lượt chạy ma trận 30/10/2026 ở [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md); số M6 trở đi ở nhật ký [`docs/Progress.md`](Progress.md) theo ngày. Số µs là `selectedRange` p50 / p99 ở 30 ms, phím có thay chữ, bản Debug. Phím dồn M6: nhịp danh nghĩa 5, 10, 20 ms, khoảng cách phím thật phần lớn 10–20 ms. Trang bận M6: trang thử chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms.
+Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) và nhật ký 30/10 cùng file; lượt chạy ma trận 30/10/2026 ở [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md); số M6 ở [`docs/history/LogM6.md`](history/LogM6.md), sau M6 ở nhật ký [`docs/Progress.md`](Progress.md), theo ngày. Số µs là `selectedRange` p50 / p99 ở 30 ms, phím có thay chữ, bản Debug. Phím dồn M6: nhịp danh nghĩa 5, 10, 20 ms, khoảng cách phím thật phần lớn 10–20 ms. Trang bận M6: trang thử chặn luồng chính 300 ms mỗi giây, phím cách 100 ± 30 ms.
 
 ### 5.1 Safari, TextEdit
 
@@ -241,7 +241,7 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 ## 7. Còn mở
 
-Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục M6).
+Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
 
 - Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
 - Đo lại sau M6: Terminal ở nhịp dồn hơn 30 ms; VS Code khi app bận.

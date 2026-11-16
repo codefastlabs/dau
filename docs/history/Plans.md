@@ -1,6 +1,6 @@
 # Kế hoạch của các mốc đã đóng
 
-Chép nguyên từ `docs/Progress.md` khi sắp xếp lại tài liệu (03/11/2026). Kết quả từng việc nằm ở nhật ký `Progress.md`.
+Chép nguyên từ `docs/Progress.md` khi sắp xếp lại tài liệu (03/11/2026). Kết quả từng việc nằm ở nhật ký của mốc đó trong `docs/history/`.
 
 ## M0 + M1
 | Việc | Agent | Song song |
@@ -31,6 +31,23 @@ Chép nguyên từ `docs/Progress.md` khi sắp xếp lại tài liệu (03/11/2
 | T3 | Dịch vụ cài đặt thật: chép bộ gõ nhúng sẵn, đăng ký, bật (người dùng bấm, N4) có Hoàn tác, nâng cấp bản mới (dừng tiến trình cũ), gỡ cài đặt (D16, sheet xác nhận) | imk-dev (+ app-ui-dev nối giao diện) | sau T1 |
 | T4 | ~~Thử trên máy: gỡ bản Debug hiện tại rồi chạy onboarding từ đầu~~ — bỏ (người dùng chốt 04/11/2026). Phần gỡ qua app rồi chạy onboarding từ đầu đã làm 04/11 với bản Release (nhật ký 04/11); không thử trên tài khoản macOS mới | — | — |
 | T5 | Kiểm toán M5 | auditor | cuối |
+
+## M6 (09/11/2026)
+
+Chép từ `docs/Roadmap.md` khi đóng M6 (16/11/2026).
+
+- Tự gửi phím 20 phím/giây vào trang thử trong Safari, Chrome và VS Code trong khi CPU đầy và `memory_pressure` đang chạy (`scripts/selftest/load/heavy.sh`).
+  - Không gõ vào Telegram: script sẽ gõ vào một cuộc trò chuyện thật.
+  - Không dùng TextEdit: nó tự lưu tài liệu thử lên iCloud Drive ([`docs/Troubleshooting.md`](../Troubleshooting.md)).
+  - Chrome và VS Code là hai app áp phím bất đồng bộ (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm").
+- Chỉ số và ngưỡng: D42 (Ngưỡng hiệu năng).
+- Đối chứng là bộ gõ Telex có sẵn của macOS trong cùng điều kiện: chữ của nó dưới tải so với chữ của chính nó lúc rảnh.
+  - Không so với bàn phím U.S.: nó ra nguyên chuỗi phím và không có log từng phím, nên không cho số nào để so.
+  - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
+- Phần còn lại của ma trận tương thích (app chưa đo, bài click và mũi tên rồi gõ tiếp, tự sửa chính tả của macOS) chuyển sang sau bản thử đầu: người thử báo lỗi thay cho đo trước (người dùng chọn 13/11/2026). Danh sách app chưa đo: [`docs/Compatibility.md`](../Compatibility.md) mục 7.
+- Xong khi:
+  - `heavy.sh` chạy trọn một lượt, đạt ngưỡng D42 ở mọi ô, đối chứng hợp lệ: đạt 12/11/2026 (máy đang bận, một lượt; nhật ký [`docs/history/LogM6.md`](LogM6.md) 12/11);
+  - kiểm toán ĐẠT: 16/11/2026.
 
 ## Lần thử cài Dấu thật trên máy sạch (kế hoạch 03/11/2026, bỏ 04/11/2026)
 

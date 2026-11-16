@@ -152,7 +152,7 @@ X5: theo mã, D20 không gieo khi có vùng chọn và phím đầu bắt đầu
 - **Gạch chân (D13):**
   - Cột "Gạch chân" ở các bảng trên. Trong từ (nhóm A), kết quả trùng thay tại chỗ, vì `MarkedComposer` áp cùng `Action` của engine.
   - Sau khi từ đã chốt: mọi ca thay tại chỗ sửa được ở nhóm B, C đều hỏng (K7).
-  - Telex của Apple cũng hỏng ở đây. Đã đo `tooisf ba ⌫j tooi←s`: Dấu thay tại chỗ ra "tồi bạ tối", Dấu gạch chân và Telex của Apple ra "tồi baj tôsi"; Notes `tieeng←→s` ra "tiêngs" ([`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) mục 3, nhật ký [`docs/Progress.md`](../Progress.md) 11/11).
+  - Telex của Apple cũng hỏng ở đây. Đã đo `tooisf ba ⌫j tooi←s`: Dấu thay tại chỗ ra "tồi bạ tối", Dấu gạch chân và Telex của Apple ra "tồi baj tôsi"; Notes `tieeng←→s` ra "tiêngs" ([`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) mục 3, nhật ký [`docs/history/LogM6.md`](../history/LogM6.md) 11/11).
 - **Ô bỏ qua vùng thay chữ (D43 (Ô bỏ qua vùng thay chữ)):**
   - Dấu không xử lý riêng các ô này: thay tại chỗ như mọi ô, mà ô bỏ qua vùng thay, nên mọi phím có thay chữ ra sai, kể cả nhóm A.
   - Người dùng bật gạch chân cho app (D13) thì kết quả như cột "Gạch chân": nhóm A đúng, nhóm B, C hỏng (K7).

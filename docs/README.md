@@ -55,6 +55,7 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) | nhật ký M0–M4; bảng "Số đo (M1–M3)" là nguồn của các số đo M1–M3 mà tài liệu khác dẫn |
 | [`docs/history/LogM5.md`](history/LogM5.md) | nhật ký M5 |
 | [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md) | nhật ký giữa M5 và M6 |
+| [`docs/history/LogM6.md`](history/LogM6.md) | nhật ký M6 (kèm danh sách cắt giảm 13/11 và thống nhất thuật ngữ 16/11) |
 | [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) | lịch sử từng nguyên tắc và quyết định: ngày, ai chốt, bản trước, cách nói cũ |
 | [`docs/history/ResearchLog.md`](history/ResearchLog.md) | phần lịch sử tách khỏi các tài liệu nghiên cứu: kế hoạch, vòng thử theo giờ, bảng đổi số mục |
 | [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md) | lỗi tương thích đã sửa kèm chẩn đoán; lượt chạy ma trận 30/10/2026 |

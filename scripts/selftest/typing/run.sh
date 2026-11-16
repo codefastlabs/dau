@@ -490,7 +490,7 @@ guard_reason() { # error-text process title where
 guarded() {
   local out start=$SECONDS waited where
   # 15 s: on a Mac under heavy load the test page has been seen not to report the focus
-  # within 3 s (docs/Progress.md, 10/11/2026). A longer wait that passes is reported, and
+  # within 3 s (docs/history/LogM6.md, 10/11/2026). A longer wait that passes is reported, and
   # a failure says where the keyboard focus is, to tell a slow page from a focus elsewhere.
   wait_until -i 0.4 15 front_ok "$1" "$2"
   waited=$(( SECONDS - start ))
@@ -510,7 +510,7 @@ stopped() { [[ -e "$STOP_FILE" ]]; }
 # macOS reports the wanted source. The system then switches the source for the focused
 # field itself; a source selected from this script's process (TISSelectInputSource) is
 # reported as current, and shown in the menu bar, while the field keeps the old input
-# method (docs/Progress.md, 10/11/2026). Only called when the wanted source is not the
+# method (docs/history/LogM6.md, 10/11/2026). Only called when the wanted source is not the
 # current one. Shortcut off or unreadable: falls back to the API, and says so.
 cycle_to_source() { # source-id
   local json key mods using="" n
@@ -678,14 +678,14 @@ open_test_page_of() { # page file, browser app name, process
   wait_until -i 0.3 5 front_ok "$2" "$PAGE_TITLE" && return 0
   # `open -a` on a running Safari has been seen to load the page without bringing Safari
   # to the front (another browser stayed frontmost for 15 s, 11/11/2026); `activate`
-  # then did (docs/Progress.md, 11/11/2026). Only the app being tested is activated.
+  # then did (docs/history/LogM6.md, 11/11/2026). Only the app being tested is activated.
   osascript -e "tell application \"$1\" to activate" >/dev/null 2>&1
   wait_until -i 0.3 10 front_ok "$2" "$PAGE_TITLE"
 }
 
 # Puts the keyboard focus in the test page's text field of browser process $1 when the
 # page does not report it (title without "[focus]"): Safari has been seen to open the
-# page with the focus in its address field (docs/Progress.md, 10/11/2026), and the
+# page with the focus in its address field (docs/history/LogM6.md, 10/11/2026), and the
 # page's autofocus does not take it back. When the focus is in Safari's address field
 # (confirmed through Accessibility), sends Tab to reach the page's first field; otherwise
 # clicks the middle of the browser's focused window. Tries up to three times. Acts only while the browser is frontmost with the test page in that window: the

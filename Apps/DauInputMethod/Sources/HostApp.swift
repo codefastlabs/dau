@@ -257,7 +257,7 @@ enum HostApp {
 /// copy whose Info.plist cannot be read is `HostApp.Trust.unknown`, not untrusted; what
 /// that allows is decided by `HostApp.accepts`. The Security calls themselves run inside
 /// the input method's sandbox (measured 11/11/2026: "Dấu Settings…" opened the copy
-/// with no `host-app-signature-invalid`; `docs/Progress.md`, `docs/Architecture.md`,
+/// with no `host-app-signature-invalid`; `docs/history/LogM6.md`, `docs/Architecture.md`,
 /// "Khởi chạy bộ gõ").
 enum HostAppSignature {
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "DauInputMethod",

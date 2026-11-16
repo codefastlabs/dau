@@ -21,23 +21,9 @@ Mỗi mốc đóng khi:
 | M3 Độ tin cậy | reset khi lệch ngữ cảnh, phòng thủ IMK, gạch chân theo danh sách tương thích, quy tắc theo ứng dụng, ma trận tương thích | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
 | M4 App Cài đặt | cửa sổ Cài đặt theo `docs/UI.md`, cài đặt chung qua App Group | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
 | M5 Onboarding, cài, gỡ | onboarding, phát hiện bộ gõ cũ, cài và gỡ bộ gõ | [`docs/history/LogM5.md`](history/LogM5.md) |
+| M6 Hiệu năng dưới tải | gõ đúng khi app bận và khi cả máy dưới tải (`scripts/selftest/load/heavy.sh`, ngưỡng D42), đối chứng Telex của Apple | [`docs/history/LogM6.md`](history/LogM6.md) |
 
 Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md). Phần nền của M9 (Đa ngôn ngữ) làm xong giữa M5 và M6: [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md).
-
-## M6 — Hiệu năng dưới tải
-
-- Tự gửi phím 20 phím/giây vào trang thử trong Safari, Chrome và VS Code trong khi CPU đầy và `memory_pressure` đang chạy (`scripts/selftest/load/heavy.sh`).
-  - Không gõ vào Telegram: script sẽ gõ vào một cuộc trò chuyện thật.
-  - Không dùng TextEdit: nó tự lưu tài liệu thử lên iCloud Drive ([`docs/Troubleshooting.md`](Troubleshooting.md)).
-  - Chrome và VS Code là hai app áp phím bất đồng bộ (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm").
-- Chỉ số và ngưỡng: D42 (Ngưỡng hiệu năng).
-- Đối chứng là bộ gõ Telex có sẵn của macOS trong cùng điều kiện: chữ của nó dưới tải so với chữ của chính nó lúc rảnh.
-  - Không so với bàn phím U.S.: nó ra nguyên chuỗi phím và không có log từng phím, nên không cho số nào để so.
-  - Không so với OpenKey ở mốc này: phải cài phần mềm ngoài và người dùng phải cấp quyền Accessibility.
-- Phần còn lại của ma trận tương thích (app chưa đo, bài click và mũi tên rồi gõ tiếp, tự sửa chính tả của macOS) chuyển sang sau bản thử đầu: người thử báo lỗi thay cho đo trước (người dùng chọn 13/11/2026). Danh sách app chưa đo: [`docs/Compatibility.md`](Compatibility.md) mục 7.
-- Xong khi:
-  - `heavy.sh` chạy trọn một lượt, đạt ngưỡng D42 ở mọi ô, đối chứng hợp lệ: đạt 12/11/2026 (máy đang bận, một lượt; nhật ký [`docs/Progress.md`](Progress.md) 12/11);
-  - kiểm toán ĐẠT.
 
 ## M7 — Phát hành
 
@@ -104,3 +90,4 @@ Mục đích: người dùng biết và học được cách gõ, và biết kh�
 - Khi làm báo lỗi (M7), câu gợi ý của hàng báo lỗi trong `UpdatesSupportView` theo N5 (hàng cũ "Gặp ứng dụng gõ bị lỗi?" đã bỏ 13/11/2026).
 - `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
 - Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.
+- Ma trận tương thích còn lại ([`docs/Compatibility.md`](Compatibility.md) mục 7: app chưa đo, bài click và mũi tên rồi gõ tiếp, tự sửa chính tả của macOS) làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (người dùng chọn 13/11/2026).

@@ -38,7 +38,7 @@ DELAY=120
 # the underline cell ends with Return.
 # Second and third rounds (11/11/2026, t2- and t3- cells): Debug trials of erasing with
 # DEL (in the key, after the key, a document length probe); they ran builds 13d4df7 and
-# 237e68f, results in the log of docs/Progress.md. Their cells went with the trials.
+# 237e68f, results in the log of docs/history/LogM6.md. Their cells went with the trials.
 # Fourth round (t4-): measured the D43 code of the time, which told terminals apart and
 # erased with DEL; that code is gone (D43 now: no special handling, the old way in
 # docs/history/DecisionsLog.md section D43). The cells stay: the terminals (Ghostty with
