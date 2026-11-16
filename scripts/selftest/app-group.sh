@@ -85,7 +85,7 @@ restore_source() {
   local now
   now="$("$HELPER" current 2>/dev/null || true)"
   if [[ "$now" != "$ORIGINAL_SOURCE" ]]; then
-    "$HELPER" select "$ORIGINAL_SOURCE" && log_detail "đã trả lại nguồn nhập liệu $ORIGINAL_SOURCE"
+    "$HELPER" select "$ORIGINAL_SOURCE" && log_detail "đã trả lại nguồn đầu vào $ORIGINAL_SOURCE"
   fi
   ORIGINAL_SOURCE=""
 }
@@ -140,9 +140,9 @@ fi
 IM_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$IM_APP/Contents/Info.plist")"
 SUBSYSTEM="$IM_ID"
 
-log_step "Helper chọn nguồn nhập liệu"
+log_step "Helper chọn nguồn đầu vào"
 HELPER="$(dau_swift_tool input-source "$HELPER_SRC")" || fail "biên dịch helper"
-ORIGINAL_SOURCE="$("$HELPER" current)" || fail "không đọc được nguồn nhập liệu hiện tại"
+ORIGINAL_SOURCE="$("$HELPER" current)" || fail "không đọc được nguồn đầu vào hiện tại"
 log_detail "nguồn hiện tại: $ORIGINAL_SOURCE"
 
 im_running() { pgrep -f "$IM_APP/Contents/MacOS/" >/dev/null; }
@@ -155,7 +155,7 @@ if ! wait_until 2 im_running; then
   DAU_SOURCE="$(print -r -- "$enabled_ids" | grep '\.vi$' | head -1)"
   [[ -n "$DAU_SOURCE" ]] || DAU_SOURCE="$(print -r -- "$enabled_ids" | head -1)"
   if [[ -z "$DAU_SOURCE" ]]; then
-    fail "nguồn nhập liệu Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Mở Dấu trong /Applications, bấm \"Bật Dấu\", rồi chạy lại."
+    fail "nguồn đầu vào Dấu chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên). Mở Dấu trong /Applications, bấm \"Bật Dấu\", rồi chạy lại."
   fi
   # Measured (macOS 27.0.1): reselecting the already selected Dấu source launched the
   # input method once and did nothing the next time (TIS treats it as no change). The

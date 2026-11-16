@@ -1,6 +1,6 @@
 # Bảng thuật ngữ Anh–Việt
 
-Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (Ngôn ngữ giao diện)), để câu tiếng Anh và tiếng Việt gọi một thứ bằng cùng một từ ở mọi màn. Câu tiếng Anh theo thuật ngữ Apple tiếng Anh, câu tiếng Việt theo thuật ngữ Apple tiếng Việt (D38 (Chữ trên giao diện)). Thêm từ mới vào đây trước khi viết câu dùng nó. Kiểm mọi khoá có đủ bản `en` và `vi`: `scripts/check-l10n/check.sh`.
+Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (Ngôn ngữ giao diện)), để câu tiếng Anh và tiếng Việt gọi một thứ bằng cùng một từ ở mọi màn. Câu tiếng Anh theo thuật ngữ Apple tiếng Anh, câu tiếng Việt theo thuật ngữ Apple tiếng Việt (D38 (Chữ trên giao diện)). Thêm từ mới vào đây trước khi viết câu dùng nó. Mục "Từ dễ hiểu hai nghĩa" áp dụng cả cho tài liệu. Kiểm mọi khoá có đủ bản `en` và `vi`: `scripts/check-l10n/check.sh`.
 
 ## Không dịch
 
@@ -21,8 +21,8 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 | typing method | kiểu gõ | Telex, VNI, Simple Telex |
 | Simple Telex | Telex đơn giản | D29 (Telex đơn giản) |
 | tone mark placement | vị trí dấu thanh | Modern / Classic = kiểu mới / kiểu cũ |
-| mark key | phím dấu | |
-| free mark placement | bỏ dấu tự do | |
+| mark key | phím dấu | nghĩa rộng, gồm cả phím biến đổi (mục "Từ dễ hiểu hai nghĩa") |
+| free mark placement | đặt dấu tự do | D28 (Đặt dấu tự do) |
 | restore non-Vietnamese words | tự khôi phục từ không phải tiếng Việt | D4 (Từ nước ngoài) |
 | add marks to typed words | thêm dấu cho từ đã gõ | D20 (Thêm dấu cho từ đã gõ) |
 | consonant shortcuts | gõ tắt phụ âm | D21 (Gõ tắt phụ âm) |
@@ -36,6 +36,18 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 | Try Again | Thử lại | |
 | Reinstall | Cài lại | |
 | Uninstall… | Gỡ cài đặt… | bỏ khỏi nguồn đầu vào = remove from input sources |
+
+## Từ dễ hiểu hai nghĩa
+
+Áp dụng cho chuỗi giao diện, tài liệu, comment và script.
+
+- **"dấu", "phím dấu"** luôn theo nghĩa rộng: dấu thanh, mũ, móc, trăng và đ, cùng mọi phím tạo ra chúng. Khi cần nghĩa hẹp:
+  - "dấu thanh", "phím dấu thanh" cho sắc, huyền, hỏi, ngã, nặng (Telex s f r x j; VNI 1–5);
+  - "phím biến đổi" cho mũ, móc, trăng, đ (Telex aa ee oo w dd; VNI 6–9).
+- **Động từ đi với dấu:** "đặt dấu" (thêm dấu vào chữ), "đổi dấu", "xoá dấu", "viết không dấu". Không dùng "bỏ dấu": từ này vừa được hiểu là đặt dấu, vừa được hiểu là xoá dấu.
+- **"cài đặt"** là danh từ, chỉ phần Cài đặt (Settings). Động từ install viết "cài" ("cài lại", "chưa cài được"). "Gỡ cài đặt" là cụm cố định cho Uninstall.
+- **"nguồn đầu vào"**, không viết "nguồn nhập liệu" (D38).
+- **Tên Dấu và chữ "dấu":** câu nói về dấu không mở đầu bằng chữ "dấu" trần, vì đầu câu viết hoa sẽ đọc thành tên app; viết "dấu thanh…" hoặc đảo câu. Bỏ app khỏi danh sách nguồn luôn viết đủ "bỏ Dấu khỏi nguồn đầu vào".
 
 ## Cách viết câu tiếng Anh
 

@@ -1,6 +1,6 @@
 # Cài, bật, nâng cấp, gỡ bộ gõ; phát hiện bộ gõ cũ
 
-Nghiên cứu cho M5 (Onboarding, cài đặt, gỡ cài đặt) và D37 (Cài đặt bộ gõ): macOS làm gì khi một app cài, bật, thay và gỡ một bộ gõ InputMethodKit bên thứ ba. Mã làm theo kết luận ở đây: `SystemInputMethodInstaller` (`Apps/Dau/Sources/InputMethodInstaller.swift`), `InputMethodLifecycle` (`Packages/DauShared`). Các vòng thử theo giờ, kế hoạch đã bỏ và bản trước của file này: `docs/history/ResearchLog.md` mục 1.
+Nghiên cứu cho M5 (Onboarding, cài, gỡ) và D37 (Cài bộ gõ): macOS làm gì khi một app cài, bật, thay và gỡ một bộ gõ InputMethodKit bên thứ ba. Mã làm theo kết luận ở đây: `SystemInputMethodInstaller` (`Apps/Dau/Sources/InputMethodInstaller.swift`), `InputMethodLifecycle` (`Packages/DauShared`). Các vòng thử theo giờ, kế hoạch đã bỏ và bản trước của file này: `docs/history/ResearchLog.md` mục 1.
 
 ## Hiện trạng (11/11/2026, macOS 27.2)
 
@@ -206,7 +206,7 @@ Các hướng đã xét (04/11/2026, chỉ đọc):
 | Sửa thẳng file plist | nhiều khả năng bị chặn | cfprefsd có thể ghi đè; hỏng file là mất cả danh sách nguồn |
 | Nhờ System Settings (Apple event, URL, AppleScript, App Intents) | không có | chỉ có đường xin **bật** |
 | Dịch vụ XPC `com.apple.hiservices-xpcservice` | không thử | API riêng không tài liệu, vượt một lớp bảo vệ |
-| Hồ sơ cấu hình | không | phải cài trong System Settings, nhiều bước hơn "–"; không có khoá nguồn nhập liệu |
+| Hồ sơ cấu hình | không | phải cài trong System Settings, nhiều bước hơn "–"; không có khoá nguồn đầu vào |
 | Tự động bấm "–" bằng trợ năng | làm được | cần quyền Accessibility (Dấu không xin, N4), vỡ theo bản macOS |
 | Full Disk Access | chưa biết | quá tay cho việc dọn một mục (mục 10.6) |
 | **Người dùng bấm "–"** rồi app mới xoá bundle | **có** | đường hiện hành (D16) |
@@ -260,7 +260,7 @@ Cho bước 1 của D14 (Onboarding). Bundle ID lấy từ `Info.plist` của b�
 | PHTV | `com.phamhungtien.phtv` | `PHTV` | 3.7.1 | có chuỗi "Quit PHTV" | tuỳ chọn "Khởi động cùng macOS" (`SMAppService`) |
 | Gõ Nhanh | `org.gonhanh.GoNhanh` | `GoNhanh` | 1.0.165 | chưa rõ nhãn | có "Launch at login" |
 | GoKey (goxkey) | `com.goxkey.app` (theo `Cargo.toml`, chưa kiểm bản build) | — | 0.3.1 | — | — |
-| Bộ gõ tiếng Việt của Apple | `com.apple.inputmethod.VietnameseIM`; mode `….VietnameseTelex`, `….VietnameseSimpleTelex`, `….VietnameseVNI`, `….VietnameseVIQR`; bàn phím `com.apple.keylayout.Vietnamese` | nguồn nhập liệu, không chạy nền | — | — | — |
+| Bộ gõ tiếng Việt của Apple | `com.apple.inputmethod.VietnameseIM`; mode `….VietnameseTelex`, `….VietnameseSimpleTelex`, `….VietnameseVNI`, `….VietnameseVIQR`; bàn phím `com.apple.keylayout.Vietnamese` | nguồn đầu vào, không chạy nền | — | — | — |
 
 - UniKey không có app macOS (engine của nó nằm trong bộ gõ tiếng Việt của macOS, unikey.org). VietKey không có bản macOS; Laban Key chỉ có Android, iOS, ChromeOS. Cask `openkey` và `evkey` đã disabled trên Homebrew nhưng người dùng cũ còn cài.
 - Bộ gõ chặn phím bằng event tap (mọi bộ gõ trong bảng trừ của Apple) biến đổi phím bất kể nguồn nào đang chọn, nên gõ chồng với Dấu: tìm bằng `NSWorkspace.shared.runningApplications`, so `bundleIdentifier` (không so tên tiến trình), chỉ tiến trình của người dùng hiện tại.
@@ -329,7 +329,7 @@ Mã nguồn tham khảo đọc ngoài repo (không chép mã nào vào Dấu); c
 - Ghi chú phát hành macOS: https://developer.apple.com/documentation/macos-release-notes/macos-27-release-notes ; `…/macos-27_2-release-notes` ; `…/macos-26-release-notes` ; `…/macos-26_1-release-notes` đến `…/macos-26_6-release-notes` (bản `.json` dưới `https://developer.apple.com/tutorials/data/documentation/macos-release-notes/`)
 - Apple, trang InputMethodKit: https://developer.apple.com/documentation/inputmethodkit
 - Apple, QA1810: https://developer.apple.com/library/archive/qa/qa1810/_index.html
-- Apple, hướng dẫn macOS 26 về nguồn nhập liệu (chỉ qua tóm tắt tìm kiếm): https://support.apple.com/en-kz/guide/mac-help/mchl84525d76/26/mac/26
+- Apple, hướng dẫn macOS 26 về nguồn đầu vào (chỉ qua tóm tắt tìm kiếm): https://support.apple.com/en-kz/guide/mac-help/mchl84525d76/26/mac/26
 - Apple Developer Forums, entitlement riêng của Apple (Quinn, DTS, 06/2024): https://developer.apple.com/forums/thread/756747 ; TN3125: https://developer.apple.com/documentation/technotes/tn3125-inside-code-signing-provisioning-profiles
 - Apple, Apple Events Entitlement: https://developer.apple.com/documentation/bundleresources/entitlements/com.apple.security.automation.apple-events ; `NSAppleEventsUsageDescription`: https://developer.apple.com/documentation/bundleresources/information-property-list/nsappleeventsusagedescription ; `AXIsProcessTrustedWithOptions(_:)`: https://developer.apple.com/documentation/applicationservices/1459186-axisprocesstrustedwithoptions
 - Apple Support, Accessibility: https://support.apple.com/guide/mac-help/allow-accessibility-apps-to-access-your-mac-mh43185/mac ; hồ sơ cấu hình: https://support.apple.com/guide/mac-help/mh35561/mac ; `man profiles` (macOS 27.2)

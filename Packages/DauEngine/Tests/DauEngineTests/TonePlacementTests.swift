@@ -15,7 +15,7 @@ struct PlacementCase: Sendable, CustomTestStringConvertible {
 }
 
 /// Group 3 — tone placement (modern/classic) and free marking (D15, D28).
-@Suite("3. Đặt dấu, bỏ dấu tự do")
+@Suite("3. Vị trí dấu thanh, đặt dấu tự do")
 struct TonePlacementTests {
     @Test(arguments: [
         PlacementCase("hoaf", "hoà", "hòa"),

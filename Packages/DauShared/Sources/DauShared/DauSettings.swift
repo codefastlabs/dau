@@ -36,7 +36,7 @@ public struct DauSettings: Sendable, Codable, Equatable {
 
     public var typingMethod: TypingMethod
     public var tonePlacement: TonePlacement
-    /// "Bỏ dấu tự do" (D28).
+    /// "Đặt dấu tự do" (D28).
     public var freeMarking: Bool
     /// "Tự khôi phục từ không phải tiếng Việt" (D4, D30, D33).
     public var autoRestore: Bool

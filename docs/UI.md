@@ -43,7 +43,7 @@ Ba bước theo D14 (Onboarding).
 
 Artboard: [OnboardingMoveToApplications](canvas/OnboardingMoveToApplications.png).
 
-- Chỉ hiện khi bản Dấu đang chạy không phải bản chủ và bộ gõ chưa cài (D37 (Cài đặt bộ gõ)). Bộ gõ đã cài thì bản không phải bản chủ mở như thường.
+- Chỉ hiện khi bản Dấu đang chạy không phải bản chủ và bộ gõ chưa cài (D37 (Cài bộ gõ)). Bộ gõ đã cài thì bản không phải bản chủ mở như thường.
 - Thanh bước chưa có bước nào bắt đầu: bản này sẽ được thoát, nên không yêu cầu tắt bộ gõ cũ ở đây.
 - Chỉ hướng dẫn, Dấu không tự chuyển mình: một nút mở thư mục Applications trong Finder, một nút thoát Dấu.
 

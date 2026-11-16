@@ -18,11 +18,11 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | Gõ tắt phụ âm | mở rộng rồi giữ, kể cả ra chữ không hợp lệ ("big" → "bing", B9) | mở rộng rồi kiểm lại, không hợp lệ thì khôi phục (D21) |
 | "uơ"/"ươ" | luôn "ươ", trừ sau "th", "q"; phân biệt hoa thường (B4) | theo vị trí cặp trong từ (D35 ("uơ" và "ươ")) |
 | Telex đơn giản | Simple Telex 1 có w → qu | không có w → qu (D29 (Telex đơn giản), D23 (w → qu chỉ ở VNI)) |
-| "Bỏ dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu", và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu ở đâu cũng được, dấu tự dời (D28 (Bỏ dấu tự do)) |
+| "Đặt dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu", và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu thanh ở đâu cũng được, dấu tự dời (D28 (Đặt dấu tự do)) |
 | Kiểm tra chính tả | có công tắc | luôn chạy (D30 (Kiểm tra chính tả)) |
 | Từ dài | bộ đệm 32 phần tử, dịch trái (B15) | quá 7 chữ cái thì khôi phục ngay, phím sau đi thẳng (D33 (Độ dài từ)) |
 | Backspace | bỏ một chữ hiển thị và một phím gốc, hai bộ đệm có thể lệch; có lịch sử từ qua dấu cách (B12) | bỏ chữ cuối, mốc khôi phục là chữ đang hiển thị (D32 (Backspace)); không có lịch sử từ |
-| Thêm dấu cho từ đã gõ | không có | có, cho cả phím dấu và phím biến đổi (D20 (Thêm dấu cho từ đã gõ)) |
+| Thêm dấu cho từ đã gõ | không có | có, cho cả phím dấu thanh và phím biến đổi (D20 (Thêm dấu cho từ đã gõ)) |
 | VNI | 7 sau "a", 8 sau "o"/"u" làm bộ đệm lệch màn hình (B13) | chữ số không áp được thì đi thẳng; chữ số sau âm tiết hợp lệ thành dấu (D36 (VNI: chữ số thành dấu)) |
 | Chữ hoa | một số luật so cả cờ hoa nên chữ hoa ra khác chữ thường (B4, B14) | phím biến đổi không đổi kiểu hoa (D34 (Chữ hoa với phím biến đổi)) |
 
@@ -47,7 +47,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | 2 | VNI | có (mục 2.4) |
 | 3 | Simple Telex 1 và 2 | một kiểu "Telex đơn giản" (D29; mục 2.5) |
 | 4 | Đặt dấu kiểu mới/cũ (`vUseModernOrthography`) | D15, mặc định kiểu mới |
-| 5 | Bỏ dấu tự do (`vFreeMark`) | D28, nghĩa khác (mục 2.7) |
+| 5 | Đặt dấu tự do (`vFreeMark`) | D28, nghĩa khác (mục 2.7) |
 | 6 | Kiểm tra chính tả (`vCheckSpelling`) | D30, D31 |
 | 7 | Khôi phục khi sai chính tả (`vRestoreIfWrongSpelling`) | D4 |
 | 8 | Gõ đúp phím dấu để giữ chữ gốc | D26 |
@@ -58,7 +58,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | 13–16 | Macro, viết hoa đầu câu, bảng mã cũ, công cụ chuyển mã | không làm (D3 (Không macro, chỉ Unicode dựng sẵn)) |
 | 17–18 | Smart switch, nhớ bảng mã theo ứng dụng | không làm (D5 (Quy tắc theo ứng dụng), D2 (Chuyển Việt/Anh), D3) |
 | 19–21 | Phím chuyển Việt/Anh riêng, tạm tắt chính tả bằng ⌃, tạm tắt bộ gõ bằng ⌘ | không làm (D2, D30) |
-| 22 | Tắt tiếng Việt khi bàn phím hệ thống không phải tiếng Anh (`vOtherLanguage`) | không cần: Dấu tự là một nguồn nhập liệu (suy luận) |
+| 22 | Tắt tiếng Việt khi bàn phím hệ thống không phải tiếng Anh (`vOtherLanguage`) | không cần: Dấu tự là một nguồn đầu vào (suy luận) |
 | 23 | Sửa gợi ý tự hoàn thành của trình duyệt, gửi từng phím | không làm mẹo của event tap; gợi ý bôi đen sau con trỏ được thay cùng từ trong một `insertText` (D11 (Kiểm tra ngữ cảnh)) |
 | 24 | `[` → ơ, `]` → ư | không làm (D27 (Không có phím gõ nhanh ơ, ư)) |
 | 25 | Lịch sử từ qua Backspace | không làm; D20 phủ ca này |
@@ -82,7 +82,7 @@ Dấu: D23, D26, D27, D28, D35; khác OpenKey ở "uơ"/"ươ" (B4, D35) và `[ 
 
 ### 2.2 Phím dấu thanh s f r x j và z
 
-- Phím dấu chỉ có tác dụng khi đuôi từ khớp mẫu vần `_vowelForMark`, không thì là chữ ("b" + `s` → "bs"). Gõ phím dấu khác thì đổi dấu. Gõ được sau phụ âm cuối ("vieetj" → "việt").
+- Phím dấu thanh chỉ có tác dụng khi đuôi từ khớp mẫu vần `_vowelForMark`, không thì là chữ ("b" + `s` → "bs"). Gõ phím dấu thanh khác thì đổi dấu. Gõ được sau phụ âm cuối ("vieetj" → "việt").
 - `checkCorrectVowel` chặn f, r, x khi vần kết thúc bằng c hoặc t, nhưng không chặn với p ("cap" + `f` → "càp", B5).
 - **z xoá dấu thanh** (`removeMark`), không xoá mũ hay móc; không có dấu thì z là chữ.
 
@@ -91,7 +91,7 @@ Dấu: D31 (vần tắc chỉ sắc/nặng), D40 (Chữ dựng sẵn và phím z
 ### 2.3 Gõ đúp để giữ chữ gốc
 
 **OpenKey:**
-- Gõ lại cùng phím dấu, phím mũ, w hoặc d thì bỏ biến đổi và thêm phím đó như chữ: "as" + `s` → "as", "â" + `a` → "aa", "đ" + `d` → "dd", "ư" (w đứng riêng) + `w` → "w".
+- Gõ lại cùng phím dấu thanh, phím mũ, w hoặc d thì bỏ biến đổi và thêm phím đó như chữ: "as" + `s` → "as", "â" + `a` → "aa", "đ" + `d` → "dd", "ư" (w đứng riêng) + `w` → "w".
 - Sau gõ đúp, cờ tạm tắt bật (cũng là cờ "từ sai chính tả"): phím biến đổi gõ sau đều là chữ ("tess" + `t` → "test").
 - Khi bật kiểm tra chính tả, mỗi lần thêm chữ hay Backspace engine kiểm lại phần chữ đang có và đặt cờ theo kết quả. Chữ còn lại sau gõ đúp thường không hợp lệ nên khoá thường giữ tới hết từ; nhưng Backspace về lại chữ hợp lệ thì khoá mở ("nhâmf" ⌫ → "nhâm", rồi `f` đặt dấu). Đọc mã, chưa chạy.
 - Ngoại lệ "oo": "ô" + `o` → "oo" không bật cờ (để gõ "thoòng"), nên "xooongf" → "xoòng".
@@ -110,7 +110,7 @@ Dấu: D36, D23; khác OpenKey ở B13.
 
 ### 2.5 Simple Telex
 
-OpenKey có hai biến thể; phím dấu, aa/ee/oo, aw/ow/uw, dd và z giống Telex. Khác ở:
+OpenKey có hai biến thể; phím dấu thanh, aa/ee/oo, aw/ow/uw, dd và z giống Telex. Khác ở:
 
 | | Telex | Simple Telex 1 | Simple Telex 2 |
 |---|---|---|---|
@@ -136,12 +136,12 @@ Kiểu cũ: mặc định nguyên âm đầu; cụm ba nguyên âm hoặc cụm 
 
 Điểm lạ trong mã: B2, B3, B4. Dấu: D15.
 
-### 2.7 Bỏ dấu tự do
+### 2.7 Đặt dấu tự do
 
 - Sau mỗi phím, nếu từ có dấu thanh, engine gỡ ra và đặt lại theo cụm nguyên âm hiện tại (`checkGrammar`): "ho" + `f` → "hò", thêm `a` → "hoà".
 - Biến `vFreeMark` nghĩa ngược với tên: bật thì **không** đặt lại dấu. Bản macOS luôn gán 0 khi khởi động (`OpenKey.mm`), nên trên thực tế dấu luôn được đặt lại và nút "FreeMark" chỉ có tác dụng tới lần mở app sau (B18).
 
-Dấu: D28, nghĩa khác `vFreeMark` (phím dấu gõ ở đâu cũng được; tắt thì phải gõ sát nguyên âm).
+Dấu: D28, nghĩa khác `vFreeMark` (phím dấu thanh gõ ở đâu cũng được; tắt thì phải gõ sát nguyên âm).
 
 ### 2.8 Kiểm tra chính tả âm tiết
 
@@ -150,7 +150,7 @@ Dấu: D28, nghĩa khác `vFreeMark` (phím dấu gõ ở đâu cũng được; 
 - Nguyên âm tối đa 3 chữ; ở chế độ ép cụm phải nằm trong `_vowelCombine`, mỗi mục có cờ "được có phụ âm cuối".
 - Phụ âm cuối: c, ch, m, n, ng, nh, p, t; thêm g, h, k khi bật gõ tắt phụ âm cuối.
 - Vần kết thúc t hoặc ch không mang huyền, hỏi, ngã.
-- **Không** kiểm: phân bố c/k/q, g/gh, ng/ngh; p cuối với huyền/hỏi/ngã, c cuối khi phím dấu gõ trước phụ âm cuối (B5); ă/â đứng cuối âm tiết; âm tiết tắc không dấu (B6).
+- **Không** kiểm: phân bố c/k/q, g/gh, ng/ngh; p cuối với huyền/hỏi/ngã, c cuối khi phím dấu thanh gõ trước phụ âm cuối (B5); ă/â đứng cuối âm tiết; âm tiết tắc không dấu (B6).
 
 Dấu: D30, D31 (có "p" đầu từ, có các luật phân bố, bảng vần tự lập, vần tắc chỉ sắc/nặng và không dấu là sai, ă/â không đứng cuối trừ chữ đứng một mình).
 
@@ -238,7 +238,7 @@ Từ đọc mã; "(suy luận)" là chưa chạy để xác nhận. Đây là da
 - **B2.** `handleModernMark`, nhánh iê/yê: dùng AND bit thay cho so bằng, nên khớp cả chữ có mã trùng bit với e; hậu quả bị các luật sau che (suy luận).
 - **B3.** `handleModernMark`: hai nhóm điều kiện luôn sai vì so cùng một vị trí với hai chữ khác nhau ("ch/nh/ng sau iê", nhóm "ia/ya/ua"); mã chết.
 - **B4.** `insertW`: kiểm "th" và "q" trước "uo" bằng giá trị kèm cờ hoa, nên "thuowr" → "thuở" nhưng "THUOWR" → "THƯỞ"; và chỉ "th" được ngoại lệ, nên "huow" → "hươ" thay vì "huơ". Dấu theo D35.
-- **B5.** Ràng buộc dấu với âm cuối tắc không nhất quán: lúc gõ phím dấu chặn f/r/x với c, t, ch nhưng không với p ("capf" → "càp"); phím dấu gõ trước phụ âm cuối thì chỉ `checkSpelling` kiểm, mà hàm này chỉ chặn t và ch ("carc" → "cảc", suy luận). Chính tả đúng: vần p, t, c, ch chỉ mang sắc hoặc nặng.
+- **B5.** Ràng buộc dấu với âm cuối tắc không nhất quán: lúc gõ phím dấu thanh chặn f/r/x với c, t, ch nhưng không với p ("capf" → "càp"); phím dấu thanh gõ trước phụ âm cuối thì chỉ `checkSpelling` kiểm, mà hàm này chỉ chặn t và ch ("carc" → "cảc", suy luận). Chính tả đúng: vần p, t, c, ch chỉ mang sắc hoặc nặng.
 - **B6.** Không kiểm phân bố c/k/q, g/gh, ng/ngh, và ă/â đứng cuối (mục 2.8).
 - **B7.** Chỉ khôi phục khi có nguyên âm mang dấu/mũ/móc: "pdd␣" → "pđ␣" (suy luận), "connect␣" → "congect␣".
 - **B8.** Khi bật gõ tắt phụ âm, nhánh dấu câu gọi gõ tắt thay vì kiểm chính tả chế độ ép: từ có tổ hợp nguyên âm sai theo sau là dấu phẩy không được khôi phục, theo sau là Space thì có (suy luận).

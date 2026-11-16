@@ -49,19 +49,19 @@ Ca khác, theo lớp:
 
 | Quyết định | Ca | Điểm khác |
 |---|---|---|
-| D26 (Gõ đúp phím dấu) | 213 | gõ đúp phím dấu hay phím biến đổi bỏ biến đổi và khoá tới hết từ, hoặc tới khi ⌫ xoá chữ của phím gõ đúp; mốc khôi phục là chữ đang hiển thị (D4 (Từ nước ngoài)). Trong đó 84 ca của fcitx5-unikey: UniKey dùng w thứ hai để thêm móc cho u ("uow" rồi w ra "ươ"), Dấu coi đó là gõ đúp, còn uơ/ươ do D35 ("uơ" và "ươ") quyết. 4 ca dấu thanh của vần oo ở o thứ hai ("xoòng"). 1 ca "ww" trên "ưa" bỏ móc ("chuawrwz" → "chủawz") |
+| D26 (Gõ đúp phím dấu) | 213 | gõ đúp phím dấu thanh hay phím biến đổi bỏ biến đổi và khoá tới hết từ, hoặc tới khi ⌫ xoá chữ của phím gõ đúp; mốc khôi phục là chữ đang hiển thị (D4 (Từ nước ngoài)). Trong đó 84 ca của fcitx5-unikey: UniKey dùng w thứ hai để thêm móc cho u ("uow" rồi w ra "ươ"), Dấu coi đó là gõ đúp, còn uơ/ươ do D35 ("uơ" và "ươ") quyết. 4 ca dấu thanh của vần oo ở o thứ hai ("xoòng"). 1 ca "ww" trên "ưa" bỏ móc ("chuawrwz" → "chủawz") |
 | D30 (Kiểm tra chính tả), dấu thanh trên vần tắc | 36 | huyền, hỏi, ngã trên vần có âm cuối p, t, c, ch được nhận giữa từ ("catr" hiện "cảt"); kết thúc từ D4 khôi phục; tắt tự khôi phục thì chữ đó ở lại |
 | D31, nới cho địa danh | 33 | k đứng trước mọi nguyên âm ("kò", "ká", "Kẩ", "kô" hợp lệ); âm cuối k chỉ sau ă và phải có sắc/nặng, nên "Busk", "Ddawk" được khôi phục |
 | D4, tiếng Việt thắng | 21 | từ vừa là tiếng Anh vừa là âm tiết hợp lệ ra chữ Việt (sims → sím, per → pẻ, wrong → ưởng) |
 | D32 (Backspace) | 20 | ⌫ xoá chữ cuối đang hiển thị và đặt lại dấu ("tiế" ⌫ → "tí"; "thật" ⌫⌫ → "th"); nguồn khác xoá theo phím ("thật" ⌫⌫ → "thạ") |
 | D30 | 19 | từ đã sai chính tả thì phím sau đi thẳng như chữ cái, không biến đổi và không bị nuốt |
 | D30, D20, không tự thêm dấu phụ | 15 | không tự thêm mũ hay móc người gõ chưa gõ ("thuocs" giữa từ hiện "thuóc", kết thúc từ khôi phục; uvie-rs ra "thuốc") |
-| D26, giới hạn đã biết | 13 | từ tiếng Anh có chữ lặp trùng phím dấu hay phím biến đổi mất cả dấu lẫn chữ ("worry" → "ưory", "express" → "êps", "versus" → "veus") |
+| D26, giới hạn đã biết | 13 | từ tiếng Anh có chữ lặp trùng phím dấu thanh hay phím biến đổi mất cả dấu lẫn chữ ("worry" → "ưory", "express" → "êps", "versus" → "veus") |
 | D4, chỉ khôi phục khi kết thúc từ | 10 | giữa từ Dấu còn hiện chữ đã biến đổi; uvie-rs bỏ biến đổi ngay khi vần sai; kết thúc từ hai bên ra cùng chữ |
 | D35 | 10 | "uow", "uwo", "nuo7" ở cuối từ ra uơ ("uwo␣" → "uơ␣", "nguwo" → "nguơ", "huwo" → "huơ") |
 | D4, D31, khôi phục khi kết thúc từ | 8 | chữ không phải âm tiết hợp lệ (đs, đm, đz, "saax", "tiesz") trả về đúng phím đã gõ |
 | D31, b, m, p, v với âm đệm | 5 | "more", "bore", "pore" ra "moẻ", "boẻ", "poẻ" (hợp lệ, tiếng Việt thắng theo D4) |
-| D28 (Bỏ dấu tự do) | 3 | bỏ dấu tự do tắt; d sau nguyên âm biến d đầu từ thành đ |
+| D28 (Đặt dấu tự do) | 3 | đặt dấu tự do tắt; d sau nguyên âm biến d đầu từ thành đ |
 | D28, phím biến đổi khác loại | 3 | "aaw" → "ă", "ooww" → "ow" (đổi dấu, rồi "ww" bỏ móc theo D26) |
 | D15 (Cài đặt mặc định) | 2 | kiểu cũ ra "hòa"; đáp án của uvie-rs là kiểu mới dù test chạy kiểu cũ |
 | D20, D26 | 2 | sau ⌫ qua dấu cách, phím biến đổi đọc lại từ trước và gõ đúp bỏ mũ ("tuân" + a → "tuana", "tiêng" + e → "tienge"); gonhanh coi a, e là chữ |
@@ -135,7 +135,7 @@ Chín câu hỏi lớp E của lần xét đầu (mã E1–E9) và hai câu củ
 
 Chuẩn hoá theo `their_note` trước khi so:
 - bỏ phím commit cuối (⏎, ß…) và phần chữ sau con trỏ khi họ chỉ kiểm phần chữ được commit;
-- bỏ một ␣ cuối (và ⏎/⇥ ngay trước nó) cho bộ corpus của ibus-telex (khung test của họ gõ thêm Space rồi bỏ dấu cách cuối);
+- bỏ một ␣ cuối (và ⏎/⇥ ngay trước nó) cho bộ corpus của ibus-telex (khung test của họ gõ thêm Space rồi xoá dấu cách cuối);
 - "current word only", "getCurrentWord()", "preedit": chỉ so từ cuối; "covers only the last N keys", "committed part only": chỉ so phần cuối.
 
 Chạy lại: `swift test --package-path Packages/DauEngine` (ghi đầu ra của Dấu), rồi `scripts/research/external-tests/compare.sh`. Để xem từng ca, người so chạy engine qua API công khai bằng chương trình tạm ngoài repo.
@@ -156,10 +156,10 @@ Script không tự xếp lớp. Ca khác giữ lớp cũ nếu phím, đầu ra 
 
 ### 3.4 Mô phỏng D20 trong khung test
 
-Khung test chạy việc đọc chữ trước con trỏ của D20 như lớp IMK (`ExternalCasesTests.d20Seed`, mô hình theo `InPlaceComposer`; mô phỏng, chưa chạy trên Dấu thật): đọc ở phím dấu/biến đổi và ở chữ cái đầu tiên khi bộ đệm trống, chữ cái chỉ nối khi từ ghép còn là tiền tố hợp lệ, cùng ba ngoại lệ: (a) chữ hoa sau chữ thường bắt đầu từ mới, (b) từ có sẵn không phải tiếng Việt nhận chữ gõ tiếp nguyên văn tới hết từ, (c) phím dấu/biến đổi đầu tiên không áp được lên từ tiếng Việt có sẵn thì bắt đầu từ mới. Từ dài hơn 7 chữ vào trạng thái đi thẳng của D33 bằng `VietEngine.seedOverflow`.
+Khung test chạy việc đọc chữ trước con trỏ của D20 như lớp IMK (`ExternalCasesTests.d20Seed`, mô hình theo `InPlaceComposer`; mô phỏng, chưa chạy trên Dấu thật): đọc ở phím dấu thanh/biến đổi và ở chữ cái đầu tiên khi bộ đệm trống, chữ cái chỉ nối khi từ ghép còn là tiền tố hợp lệ, cùng ba ngoại lệ: (a) chữ hoa sau chữ thường bắt đầu từ mới, (b) từ có sẵn không phải tiếng Việt nhận chữ gõ tiếp nguyên văn tới hết từ, (c) phím dấu thanh/biến đổi đầu tiên không áp được lên từ tiếng Việt có sẵn thì bắt đầu từ mới. Từ dài hơn 7 chữ vào trạng thái đi thẳng của D33 bằng `VietEngine.seedOverflow`.
 
 Cách chọn (mô phỏng trên 10.303 ca và các tình huống sửa chữ, 05/11/2026):
-- so với chỉ đọc ở phím dấu/biến đổi, **luôn nối** chữ cái vào từ đọc được ra khác ở 38 ca và làm hỏng 34, vì dính từ mới vào từ trước con trỏ ("ddi␣⌫hocj" ra "đihocj" thay vì "đihọc");
+- so với chỉ đọc ở phím dấu thanh/biến đổi, **luôn nối** chữ cái vào từ đọc được ra khác ở 38 ca và làm hỏng 34, vì dính từ mới vào từ trước con trỏ ("ddi␣⌫hocj" ra "đihocj" thay vì "đihọc");
 - **nối có điều kiện** (tiền tố hợp lệ) ra khác ở 4 ca, cả 4 khớp với họ;
 - ba ngoại lệ đổi đầu ra: (a) 0 ca, (b) 2, (c) 24, không bất biến nào hỏng.
 D20 chọn nối có điều kiện cùng ba ngoại lệ. Lớp IMK làm ở `InPlaceComposer` (test `InPlaceComposerLetterTests`, `InPlaceComposerExceptionTests`).
@@ -192,12 +192,12 @@ Một số ca dùng chung một engine qua nhiều lời gọi trong cùng test 
 
 ### 4.2 Cột `options`
 
-Các mục cách nhau bằng `;`. Rỗng là mặc định của Dấu (D15: Telex, đặt dấu kiểu mới, bỏ dấu tự do bật, tự khôi phục bật, Nâng cao tắt). Cột `method` ghi kiểu gõ: `telex`, `vni`, `simple-telex` (D29).
+Các mục cách nhau bằng `;`. Rỗng là mặc định của Dấu (D15: Telex, đặt dấu kiểu mới, đặt dấu tự do bật, tự khôi phục bật, Nâng cao tắt). Cột `method` ghi kiểu gõ: `telex`, `vni`, `simple-telex` (D29).
 
 | Mục | Cài đặt của Dấu |
 |---|---|
 | `tone=classic` | đặt dấu kiểu cũ (hòa, thúy), `EngineOptions.tonePlacement = .classic` |
-| `freeMarking=off` | tắt bỏ dấu tự do (D28) |
+| `freeMarking=off` | tắt đặt dấu tự do (D28) |
 | `autoRestore=off` | tắt "Tự khôi phục từ không phải tiếng Việt" (D4, D30) |
 | `advanced=consonantShortcuts` | gõ tắt phụ âm (D21) |
 | `advanced=allowZFWJ` | cho phép z, f, w, j (D22 (Gõ tắt loại trừ z, f, w, j)) |
@@ -248,7 +248,7 @@ Số "ca" là số hàng trong TSV. "Bỏ" ghi đơn vị: ca (một chuỗi ph�
 - https://github.com/BambooEngine/bamboo-core, commit `b2e49a2b48c7d3772a3673142a7747eccd9d5f79` (16/09/2024). MIT, © 2018 Luong Thanh Lam.
 - File: `bamboo_test.go` (`rules_parser_test.go`, `utils_test.go` là test hàm nội bộ).
 - 67 ca: Telex 66, VNI 1; 60 ca có đáp án chữ, 7 ca họ chỉ kiểm cờ hợp lệ.
-- Cấu hình: kiểu "Telex 2" (có `[ ]` và w đứng riêng thành ư) → `telex`; cờ `EstdFlags` = bỏ dấu tự do + `EstdToneStyle`, mà `findToneTarget` cho thấy là kiểu cũ → `tone=classic`; một test bỏ cờ đó → mặc định Dấu; họ kiểm chữ của từ đang gõ, không có ranh giới từ.
+- Cấu hình: kiểu "Telex 2" (có `[ ]` và w đứng riêng thành ư) → `telex`; cờ `EstdFlags` = đặt dấu tự do + `EstdToneStyle`, mà `findToneTarget` cho thấy là kiểu cũ → `tone=classic`; một test bỏ cờ đó → mặc định Dấu; họ kiểm chữ của từ đang gõ, không có ranh giới từ.
 - Ba ca đưa chữ dựng sẵn ("tôi", "tối", "chuyển") vào engine rồi gõ tiếp: ghi thành `⟦…⟧`.
 - Bỏ: 7 ca D27 (Không có phím gõ nhanh ơ, ư); 4 ca "EnglishMode" (D2 (Chuyển Việt/Anh)); 2 test "khôi phục từ vừa gõ"; 3 ca bố cục "Microsoft layout"; 1 ca trùng; benchmark; 6 test hàm nội bộ.
 
@@ -301,7 +301,7 @@ Số "ca" là số hàng trong TSV. "Bỏ" ghi đơn vị: ca (một chuỗi ph�
 - https://github.com/manhavn/ibus-telex, commit `fb522b4804c2ef8496ec8746f7b1e4043b3716c2` (05/10/2026). GPL-3.0-or-later (khai trong `Cargo.toml`), tác giả commit Bùi Văn Mạnh.
 - File: `tests/parity_corpus.tsv` (chuỗi phím và kết quả họ ghi là chụp từ ibus-unikey 0.7.0), `tests/typing.rs`.
 - 323 ca: Telex 311, VNI 10, Telex đơn giản 2; tất cả có đáp án.
-- Quy đổi: mặc định của họ (kiểu cũ) → `tone=classic`; `standalone_w: false` → `simple-telex`; `free_marking: false` → `freeMarking=off`; `spell_check: false` → `src:spellcheck=off`; khung `parity.rs` gõ thêm một Space rồi bỏ dấu cách cuối, nên ca corpus kết thúc bằng `␣`, `their_note` ghi rõ.
+- Quy đổi: mặc định của họ (kiểu cũ) → `tone=classic`; `standalone_w: false` → `simple-telex`; `free_marking: false` → `freeMarking=off`; `spell_check: false` → `src:spellcheck=off`; khung `parity.rs` gõ thêm một Space rồi xoá dấu cách cuối, nên ca corpus kết thúc bằng `␣`, `their_note` ghi rõ.
 - Bỏ: 9 ca D27; 2 test chỉ gọi API; `keys.rs`, `protocol.rs`.
 
 ### 5.9 gonhanh.org — Gõ Nhanh (Rust, macOS)

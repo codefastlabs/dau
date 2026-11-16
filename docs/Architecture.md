@@ -16,7 +16,7 @@ dau/
 │  └─ DauShared/               # model cài đặt chung, App Group + Darwin notification, xem trước bằng engine thật, danh sách tương thích
 ├─ Apps/
 │  ├─ DauInputMethod/          # bộ gõ (IMK), sandbox, không quyền mạng (N2 (Bộ gõ không có quyền mạng))
-│  └─ Dau/                     # app chủ SwiftUI, không sandbox (D37 (Cài đặt bộ gõ)): Cài đặt, onboarding, cài/thay/gỡ bộ gõ
+│  └─ Dau/                     # app chủ SwiftUI, không sandbox (D37 (Cài bộ gõ)): Cài đặt, onboarding, cài/thay/gỡ bộ gõ
 └─ docs/                       # mục lục: docs/README.md
 ```
 
@@ -72,7 +72,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 - `Action` là `.passThrough` (IMK trả `false`) hoặc `.replace(deleteCount:insert: TextBuffer)`.
   - `.replace` xoá `deleteCount` **scalar** trước con trỏ và chèn `insert` trong một lần `insertText` (N3 (Ít lời gọi vào ứng dụng đích)).
   - Chữ Việt dựng sẵn đều nằm trong BMP nên số scalar bằng độ dài UTF-16. Ngoại lệ: từ được seed từ NFD, khi đó IMK tự đo chuỗi đã seed.
-- `EngineOptions`: kiểu gõ (`telex`, `simpleTelex`, `vni`); vị trí dấu (`modern`/`classic`); bỏ dấu tự do (D28 (Bỏ dấu tự do)); tự khôi phục (D4, D30 (Kiểm tra chính tả), D33); `advanced: .off | .consonantShortcuts | .allowZFWJ`, một enum nên hai mục loại trừ nhau (D22 (Gõ tắt loại trừ z, f, w, j)).
+- `EngineOptions`: kiểu gõ (`telex`, `simpleTelex`, `vni`); vị trí dấu (`modern`/`classic`); đặt dấu tự do (D28 (Đặt dấu tự do)); tự khôi phục (D4, D30 (Kiểm tra chính tả), D33); `advanced: .off | .consonantShortcuts | .allowZFWJ`, một enum nên hai mục loại trừ nhau (D22 (Gõ tắt loại trừ z, f, w, j)).
 - Đường nóng không dùng `String`, `any Protocol`, closure, không import Foundation. Engine dựng thẳng ký tự NFC từ bảng (D3 (Không macro, chỉ Unicode dựng sẵn)), không chuẩn hoá lúc chạy.
 - Test: `FuzzTests` (D18) và `PerformanceTests` chạy trong mọi `swift test --package-path Packages/DauEngine`; ngưỡng của test hiệu năng lỏng để bản Debug cũng đạt, số của bản Release đo bằng `swift test -c release --filter Performance`.
 
@@ -104,7 +104,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 - Lớp con `IMKInputController`, mỗi client một instance và một `VietEngine` riêng. Không có trạng thái toàn cục (khác OpenKey).
 - `handle(_:client:)` đưa phím vào engine qua `InPlaceComposer` (thay tại chỗ) hoặc `MarkedComposer` (gạch chân). Cả hai là kiểu giá trị thuần, test bằng client giả.
 - Thay tại chỗ: nếu engine trả `replace`, hỏi `selectedRange` một lần để có vị trí tuyệt đối rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Bản Debug có thêm một lần hỏi sau khi thay để chẩn đoán (`ReplaceDiag.swift`); số đo trên bản Debug có lời gọi thừa này.
-- Engine reset khi: click chuột; `activateServer`/`deactivateServer`, `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); nguồn nhập liệu đổi mà IMK không báo (mục "Đổi nguồn nhập liệu không qua `activateServer`").
+- Engine reset khi: click chuột; `activateServer`/`deactivateServer`, `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); nguồn đầu vào đổi mà IMK không báo (mục "Đổi nguồn đầu vào không qua `activateServer`").
 
 ### Vị trí thay chữ
 
@@ -116,7 +116,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 | Có thay chữ, vị trí trùng vị trí Dấu theo dõi | một lần | không | N3, D11 |
 | Có thay chữ, vị trí khác vị trí Dấu theo dõi | một lần | một lần: chứng minh app chậm; dựng lại từ chữ đó chỉ khi phím trước cách đủ `settleInterval` | D11 |
 | Dấu/biến đổi đầu tiên trong từ đã hết hợp lệ, phím trước cách đủ `settleInterval` | một lần | tối đa một lần mỗi từ | D11 |
-| Chữ cái hoặc dấu/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, phím trước cách đủ `settleInterval` | một lần, kể cả khi phím đi thẳng | một lần | D20 |
+| Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, phím trước cách đủ `settleInterval` | một lần, kể cả khi phím đi thẳng | một lần | D20 |
 | Mọi phím ở chế độ gạch chân | không | không | D13 |
 
 Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js) không được xử lý riêng: thay tại chỗ như mọi ô (D43 (Ô bỏ qua vùng thay chữ)).
@@ -161,19 +161,19 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 
 #### Thêm dấu cho từ đã gõ
 
-`InPlaceComposer.addMarks` (D20). Điều kiện đọc ở bảng trên; thêm: công tắc `addMarksToTypedWords` bật (đọc lúc `activateServer` và khi cài đặt đổi, không theo phím); phím là phím dấu/biến đổi của kiểu gõ (`isMarkKey`: Telex `s f r x j z a e o w d` hoa hay thường, VNI chữ số) hoặc chữ cái ASCII khác (`isLetter`). "Chưa biết chữ trước con trỏ" là đầu phiên, sau reset, click, ⌫ hay Return/Tab; sau một ký tự kết thúc từ gõ ở đây thì đã biết, không đọc.
+`InPlaceComposer.addMarks` (D20). Điều kiện đọc ở bảng trên; thêm: công tắc `addMarksToTypedWords` bật (đọc lúc `activateServer` và khi cài đặt đổi, không theo phím); phím là phím dấu thanh/biến đổi của kiểu gõ (`isMarkKey`: Telex `s f r x j z a e o w d` hoa hay thường, VNI chữ số) hoặc chữ cái ASCII khác (`isLetter`). "Chưa biết chữ trước con trỏ" là đầu phiên, sau reset, click, ⌫ hay Return/Tab; sau một ký tự kết thúc từ gõ ở đây thì đã biết, không đọc.
 
 - **Đọc:** một `selectedRange` (phải là con trỏ, không vùng chọn); một `attributedSubstring` tối đa `InPlaceComposer.readLength` đơn vị UTF-16 ngay trước con trỏ, lấy dãy chữ cái/dấu kết hợp/chữ số cuối cùng; `seed(displayed:)`; rồi đưa phím vào engine.
 - **Sau đó:** `replace` thì một `insertText` thay đúng vùng chữ đã đọc (đếm UTF-16; mọi ký tự engine nhận thuộc BMP, kể cả NFD); `passThrough` thì phím đi thẳng và engine giữ từ để gõ tiếp (mốc khôi phục D4 là chữ đã đọc).
 - **Nối hay không** (`seedWord`), quyết định chỉ từ chữ đã đọc và trạng thái engine, trước khi gửi gì, nên phím không nối chỉ tốn đúng lần đọc:
   - Từ không phải tiếng Việt: phím được nhận nguyên văn tới hết từ. Từ đã khoá chính tả D30 thì giữ seed; từ toàn chữ cái mà `seed` không nhận thì `continueForeignWord` gọi `seedOverflow`.
-  - Trên từ tiếng Việt, chữ hoa sau chữ thường (`startsNewWord`) bắt đầu từ mới, trừ phím dấu/biến đổi có thay chữ trong từ.
-  - Từ tiếng Việt mà sau phím không còn là tiền tố hợp lệ (`isValidPrefix`): với chữ cái thường, và với phím dấu/biến đổi không áp dụng được (gõ đúp D26 (Gõ đúp phím dấu) là áp dụng), bỏ từ đã đọc, reset engine và xử lý phím như phím đầu của từ mới.
+  - Trên từ tiếng Việt, chữ hoa sau chữ thường (`startsNewWord`) bắt đầu từ mới, trừ phím dấu thanh/biến đổi có thay chữ trong từ.
+  - Từ tiếng Việt mà sau phím không còn là tiền tố hợp lệ (`isValidPrefix`): với chữ cái thường, và với phím dấu thanh/biến đổi không áp dụng được (gõ đúp D26 (Gõ đúp phím dấu) là áp dụng), bỏ từ đã đọc, reset engine và xử lý phím như phím đầu của từ mới.
   - Từ seed đã khoá chính tả là chữ thật của app nên không kiểm lại theo D11 (`checkedLockedWord`). Lần đọc để đồng bộ của D11 dùng cùng `seedWord` nhưng không áp các luật này (`SeedRule.resync`).
 - **Từ hệ thống vừa sửa** (`seedWord`, trước khi đưa phím vào engine):
-  - Composer nhớ từ nó vừa trả (`InPlaceComposer.produced`), đặt khi một ký tự kết thúc từ gõ ở đây kết thúc từ; không đặt cho từ D4 đã khôi phục (`producedWord`; khác với mở rộng của D21 (Gõ tắt phụ âm), nhận ra bằng bản sao engine tắt gõ tắt) hay từ kết thúc khi còn hiện chữ của phím gõ đúp bỏ dấu (`undidMark`; ⌫ xoá chữ đó thì từ lại được nhớ như mọi từ).
+  - Composer nhớ từ nó vừa trả (`InPlaceComposer.produced`), đặt khi một ký tự kết thúc từ gõ ở đây kết thúc từ; không đặt cho từ D4 đã khôi phục (`producedWord`; khác với mở rộng của D21 (Gõ tắt phụ âm), nhận ra bằng bản sao engine tắt gõ tắt) hay từ kết thúc khi còn hiện chữ của phím gõ đúp xoá dấu (`undidMark`; ⌫ xoá chữ đó thì từ lại được nhớ như mọi từ).
   - Từ nhớ sống qua đúng một phím, cộng một ⌫ ở giữa; phím khác, ⌫ thứ hai, `reset` và `activate` xoá nó.
-  - Phím dấu/biến đổi ngay sau ⌫ đó: nếu từ đọc được khác từ nhớ mà engine thử (`isSystemFix`) ra đúng từ đọc được, không phân biệt hoa thường, thì engine giữ từ đọc được, không gửi gì, phím bị nuốt (kind `seed_kept`). Không thêm lời gọi nào ngoài lần đọc của D20.
+  - Phím dấu thanh/biến đổi ngay sau ⌫ đó: nếu từ đọc được khác từ nhớ mà engine thử (`isSystemFix`) ra đúng từ đọc được, không phân biệt hoa thường, thì engine giữ từ đọc được, không gửi gì, phím bị nuốt (kind `seed_kept`). Không thêm lời gọi nào ngoài lần đọc của D20.
 - **Lỗi đọc** (D18): chuỗi sai độ dài, không có chữ, từ có chữ số mà `seed` không nhận, có vùng chọn thì không seed, phím xử lý như phím đầu của từ mới.
 - **Log perf:** kind `seed` (đã thay), `seed_pass` (đọc, seed, phím đi thẳng), `seed_kept`, `seed_none` (đọc, không có từ, hoặc chữ cái không nối được), trường `read_ns`; bản Debug thêm `d20=mark|letter|none`, `seeded=0|1`, `diff=0|1|-`. `scripts/perf/perf-report.sh` đếm các trường này.
 - Gõ liền qua dấu cách không đọc thêm lần nào; tối đa một lần ở phím đầu của phiên (test `sample`, `InPlaceComposerLetterTests.sentence`).
@@ -213,9 +213,9 @@ D18. Mọi điểm vào và cách xử lý giá trị lạ:
   - `attributedSubstring` nil, sai độ dài, ký tự ngoài BMP: không seed.
 - `activateServer`/`deactivateServer`/`commitComposition` với client nil: reset (gạch chân: chốt vào client đã nhận marked text nếu còn, không thì bỏ); `activateServer(nil)` không giữ bundle ID của app trước.
 - `setValue(_:forTag:client:)`: giá trị nil không chuyển cho `super`; giá trị lạ chỉ reset.
-- `inputControllerWillClose`: reset, bỏ hai bộ nghe (cài đặt, nguồn nhập liệu).
+- `inputControllerWillClose`: reset, bỏ hai bộ nghe (cài đặt, nguồn đầu vào).
 - `menu()` và hành động menu: không chạy ngoài main thread (`onMain` trả nil thay vì dừng chương trình); tham số của hành động không được dùng.
-- Thông báo cài đặt và nguồn nhập liệu: chỉ chạy trên main thread, tham chiếu yếu tới controller.
+- Thông báo cài đặt và nguồn đầu vào: chỉ chạy trên main thread, tham chiếu yếu tới controller.
 - Gọi ngược trong lúc xử lý (client gọi `commitComposition`, `deactivateServer`… ngay trong `insertText`, `selectedRange` hay `setMarkedText`): phím, reset và nạp lại cài đặt chạy lần lượt, không lồng (`KeyReentry`: `handle` qua `KeyReentry.key`, điểm vào khác qua `outsideKey`). Lời gọi đến lúc đang bận được giữ lại và chạy ngay sau, vì engine và composer đang bị mượn (`inout`). Phím đến lúc đang bận thì đi thẳng tới app và từ đang gõ reset sau đó. IMK có gọi ngược như vậy hay không: chưa đo.
 
 ### Input mode, quy tắc theo app, cài đặt
@@ -226,7 +226,7 @@ D18. Mọi điểm vào và cách xử lý giá trị lạ:
 - Quy tắc theo app: lựa chọn gạch chân đọc lúc `activateServer` và khi cài đặt đổi, không theo phím; đổi chế độ giữa chừng một từ thì chốt từ trước. Bundle ID lấy từ client lúc `activateServer`; Chrome đôi khi đưa client có `bundleIdentifier()` nil, khi đó dùng app đang ở trước (`NSWorkspace.frontmostApplication`).
 - Cài đặt đọc từ App Group, nghe thay đổi để áp dụng ngay. Không đọc danh sách tương thích (D13).
 
-### Đổi nguồn nhập liệu không qua `activateServer`
+### Đổi nguồn đầu vào không qua `activateServer`
 
 - Hiện tượng: chọn U.S. rồi chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì IMK không gọi `deactivateServer`/`activateServer`, từ đang gõ dở bị gõ tiếp.
 - Mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được). Khi nhận thì đọc nguồn đang chọn; chỉ reset từ đang gõ (gạch chân: chốt chữ đang hiện) khi nguồn đó không phải Dấu, không đọc được, hoặc khác nguồn đã thấy lần trước (`InputSourceChange`). Ai cũng phát được thông báo này, nên thông báo giả khi nguồn không đổi không cắt từ.
@@ -260,14 +260,14 @@ Dùng khi thay bộ gõ (D37) và khi gỡ (D16 (Bảo trì và gỡ cài đặt
 ### Bundle: biểu tượng, ký, entitlements
 
 - Biểu tượng của bundle (Finder) dùng chung `Apps/Dau/Resources/Assets.xcassets` với app chủ (AppIcon, AppIconDev, chọn theo cờ `DAU_OFFICIAL`, D25 (Nhận diện)), ra `CFBundleIconName`/`Assets.car` giống Dấu.app; tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
-- Biểu tượng nguồn nhập liệu (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/history/CompatibilityFixed.md`); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
+- Biểu tượng nguồn đầu vào (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/history/CompatibilityFixed.md`); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
 - Bản Release không có `get-task-allow` (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO`), nên không tiến trình nào gắn debugger vào bộ gõ để đọc từ đang gõ. Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-app.sh --debug`). `dau_check_input_method` (`scripts/lib/build.sh`) kiểm điều này, cùng universal và không có quyền mạng, trên bộ gõ nhúng trước khi cài.
 - Entitlements: App Sandbox, App Group, `temporary-exception.mach-register.global-name` cho tên kết nối IMK (theo mẫu IMK có sandbox; chưa thử bỏ). **Không** `com.apple.security.network.client`.
 - Khoá Info.plist: `InputMethodConnectionName`, `InputMethodServerControllerClass`, `LSBackgroundOnly`, `TISInputSourceID`, `TISIntendedLanguage`; `ComponentInputModeDict` (một mode `.vi`, icon template V), `tsInputMethodIconFileKey`, `TISIconIsTemplate`; `CFBundleIconName` do actool thêm; `DauHostAppBundleIdentifier`, `DauAppGroupIdentifier` của riêng Dấu.
 
 ## App chủ (Dau)
 
-Entitlement của app chủ chỉ có App Group, hardened runtime bật, không sandbox (D37). App chỉ **đọc** tuỳ chọn hệ thống (`com.apple.symbolichotkeys`, `com.apple.HIToolbox`: phím tắt chuyển nguồn nhập liệu và phím 🌐, N4 (Không tự đổi cài đặt hệ thống)). Kiểm App Group bằng `scripts/selftest/app-group.sh`. Điểm vào là `main.swift`.
+Entitlement của app chủ chỉ có App Group, hardened runtime bật, không sandbox (D37). App chỉ **đọc** tuỳ chọn hệ thống (`com.apple.symbolichotkeys`, `com.apple.HIToolbox`: phím tắt chuyển nguồn đầu vào và phím 🌐, N4 (Không tự đổi cài đặt hệ thống)). Kiểm App Group bằng `scripts/selftest/app-group.sh`. Điểm vào là `main.swift`.
 
 ### Cửa sổ Cài đặt
 

@@ -93,7 +93,7 @@ Mục đích: người dùng biết và học được cách gõ, và biết kh�
   - không lưu gì về chữ đã gõ (D8 (Không telemetry)).
 - Trên trang web: trang "Dấu khác các bộ gõ khác thế nào".
   - Chỉ ghi khác biệt đã đo được (N5).
-  - Nguồn: [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md), [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) và bộ dữ liệu kiểm thử (đặt dấu kiểu mới/cũ, bỏ dấu tự do, khôi phục từ nước ngoài, uơ/ươ…).
+  - Nguồn: [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md), [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) và bộ dữ liệu kiểm thử (đặt dấu kiểu mới/cũ, đặt dấu tự do, khôi phục từ nước ngoài, uơ/ươ…).
   - Dẫn mục "Đã biết nhưng không làm" của `docs/Decisions.md`.
 - Nội dung có bản tiếng Việt và tiếng Anh nếu M9 đã xong.
 - Xong khi: người dùng duyệt nội dung trên canvas; mọi ví dụ trong phần học có test engine tương ứng; kiểm toán ĐẠT.

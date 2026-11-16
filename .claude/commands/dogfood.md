@@ -23,7 +23,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 - phím tắt khi còn gạch chân: ⌘Z, ⌘A, ⌘C/⌘V, ⌘S, ⌘F, Esc, Tab;
 - Return, dấu câu ngay sau từ (`.` `,` `?` `)`), số, chữ hoa giữa từ;
 - gợi ý tự động hay sửa chính tả của app hiện ra khi còn gạch chân;
-- chuyển app, chuyển cửa sổ, chuyển nguồn nhập liệu khi còn gạch chân, rồi quay lại.
+- chuyển app, chuyển cửa sổ, chuyển nguồn đầu vào khi còn gạch chân, rồi quay lại.
 
 Ở chế độ thay tại chỗ, các thao tác này cũng phải gõ, vì đó là chỗ thay tại chỗ dựa vào vị trí con trỏ do app báo. Hàng nào hai chế độ cho kết quả khác nhau là hàng đáng ghi.
 
@@ -57,7 +57,7 @@ Mỗi câu có nghĩa và mang ý tích cực, kể cả câu dựng riêng cho 
 
 Gõ như người, không như máy:
 - nhịp như người: trong một từ 50–110 ms một phím, nghỉ sau mỗi từ (như `typing/run.sh --delay 80 --jitter 30 --word-pause 250`), nghỉ 0,5–3 giây giữa câu; nhịp đều từng phím không phải cách người gõ;
-- bỏ dấu tự do: dấu ở cuối từ (`tieengs`), giữa từ (`tiesng`), đổi dấu (`as` rồi `f`), xoá dấu (`z`), gõ nhầm rồi ⌫ vài phím, ⌫ cả từ rồi gõ lại;
+- đặt dấu tự do: dấu ở cuối từ (`tieengs`), giữa từ (`tiesng`), đổi dấu (`as` rồi `f`), xoá dấu (`z`), gõ nhầm rồi ⌫ vài phím, ⌫ cả từ rồi gõ lại;
 - quay lại sửa: ← về giữa từ đã gõ thêm hay đổi dấu, nhấp đúp chọn một từ rồi gõ đè, ⌥⌫ xoá một từ, ⌘Z rồi gõ tiếp;
 - lẫn thao tác khác: dán một đoạn rồi gõ tiếp ngay sau, Return xuống dòng giữa đoạn, Tab nhận gợi ý tự động (VS Code), chuyển sang app khác rồi quay lại gõ tiếp giữa câu, sang U.S. bằng phím tắt chuyển nguồn của hệ thống để gõ một từ tiếng Anh rồi chuyển lại, như D2 (Chuyển Việt/Anh) hướng dẫn.
 
@@ -75,7 +75,7 @@ Biết giới hạn của cách làm: phím từ System Events không hẳn là 
 
 ## Dọn
 
-Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn nhập liệu, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ, và cài lại bản ổn định (`scripts/dev/install-app.sh --ref stable`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
+Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ, và cài lại bản ổn định (`scripts/dev/install-app.sh --ref stable`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
 
 ## Sau lượt gõ
 

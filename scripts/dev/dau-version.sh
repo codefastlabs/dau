@@ -96,6 +96,6 @@ elif [[ -d $im ]]; then
   else
     print -r -- "Tiến trình bộ gõ:  pid $pid, đang chạy bản CŨ"
     log_warn "Tiến trình bộ gõ đang chạy bản CŨ (khởi động trước lúc bản đã cài được ghi)"
-    log_hint "chuyển nguồn nhập liệu ra rồi vào lại Dấu"
+    log_hint "chuyển nguồn đầu vào ra rồi vào lại Dấu"
   fi
 fi

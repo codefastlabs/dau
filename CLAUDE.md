@@ -29,7 +29,7 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
 - Giao song song các việc độc lập (ví dụ engine song song với khung dự án; giao diện app chủ song song với bộ gõ khi model cài đặt chung đã xong).
 - Mỗi việc xong → kiểm chứng lại bằng lệnh thật (đổi chuỗi giao diện thì thêm `scripts/check-l10n/check.sh`) → tự soát tài liệu (mục "Viết tài liệu") → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test đỏ.
-- **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ (chuẩn bị sẵn rồi mới hỏi); bật nguồn nhập liệu, đăng xuất, cấp quyền, thao tác khác trong System Settings, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `Decisions.md`, trừ khi người dùng đã giao quyết định đó cho phiên chính trong chat; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/selftest/settings-window/run.sh`, mở app thật, gõ thử tự động; tác dụng phụ của từng script: `scripts/README.md`): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Hook `.claude/hooks/guard-scripts.sh` chặn các script này; người dùng đồng ý trong chat rồi mới chạy lại với tiền tố `DAU_USER_APPROVED=1`. Trong lúc chờ, tiếp tục các việc không bị chặn.
+- **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ (chuẩn bị sẵn rồi mới hỏi); bật nguồn đầu vào, đăng xuất, cấp quyền, thao tác khác trong System Settings, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `Decisions.md`, trừ khi người dùng đã giao quyết định đó cho phiên chính trong chat; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/selftest/settings-window/run.sh`, mở app thật, gõ thử tự động; tác dụng phụ của từng script: `scripts/README.md`): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Hook `.claude/hooks/guard-scripts.sh` chặn các script này; người dùng đồng ý trong chat rồi mới chạy lại với tiền tố `DAU_USER_APPROVED=1`. Trong lúc chờ, tiếp tục các việc không bị chặn.
 - **Ai chạy script:** đọc dòng `# Side effects:` ở đầu script (chú giải ở `scripts/README.md`). Subagent chỉ chạy script có tác dụng phụ `none`, `builds`, `writes repo files`. Còn lại phiên chính chạy, sau khi người dùng chọn giờ (điểm dừng ở trên). Riêng `scripts/dev/clean-dau.sh --yes` (gỡ Dấu khỏi máy) do người dùng tự chạy.
 
 ## Nguồn chuẩn
@@ -102,7 +102,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
   - Đối chứng là bộ gõ tiếng Việt khác trong cùng điều kiện (Telex của Apple), không phải bàn phím U.S.
   - Câu thử là câu tiếng Việt có nghĩa, mang ý tích cực, mà vẫn chứa đúng ca cần đo; không dùng từ vô nghĩa hay chuỗi ghép cho đủ ca.
   - Đáp án là chữ người gõ muốn ra, khớp từng phím đã gõ (soát chuỗi phím trước khi chạy).
-  - Chuỗi thử gõ như người dùng thật: bỏ dấu tự do, đổi và xoá dấu, ⌫ giữa từ, thêm dấu cho từ đã gõ, từ tiếng Anh; không chỉ Telex thứ tự chuẩn.
+  - Chuỗi thử gõ như người dùng thật: đặt dấu tự do, đổi và xoá dấu, ⌫ giữa từ, thêm dấu cho từ đã gõ, từ tiếng Anh; không chỉ Telex thứ tự chuẩn.
   - Biết chắc phím vào ô nào, và bộ gõ nào đang xử lý phím trong ô đó, trước khi tin "đạt". Nguồn do macOS báo hay biểu tượng trên thanh menu chưa đủ. Bộ gõ đối chứng chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô gõ đã có focus, không bằng API từ tiến trình của script (cách làm ở đầu `scripts/selftest/typing/run.sh`). Ô đối chứng ra nguyên chuỗi phím là đo hỏng, không phải kết quả.
   - Bước kiểm tự nó cũng là phép đo: phím gửi dồn, chữ gạch chân chưa chốt, hay một từ thử không phải tiếng Việt đều cho kết quả sai về bộ gõ.
   - Chạy thẳng ô phân biệt được các giả thuyết, kèm đối chứng, thay vì cả ma trận.
@@ -127,7 +127,7 @@ Tuỳ chọn và tác dụng phụ của từng script ghi ở đầu script.
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
 - `scripts/dev/doctor.sh` — máy thiếu gì để build, test, chạy Dấu, kèm lệnh sửa; không đổi gì trên hệ thống.
 - `scripts/dev/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
-- `scripts/dev/install-app.sh` — script cài duy nhất: build Dấu.app và đặt vào `/Applications`; Dấu.app đó thay bộ gõ đã cài (D37 (Cài đặt bộ gõ)). `--ref stable` cài bản dùng hằng ngày.
+- `scripts/dev/install-app.sh` — script cài duy nhất: build Dấu.app và đặt vào `/Applications`; Dấu.app đó thay bộ gõ đã cài (D37 (Cài bộ gõ)). `--ref stable` cài bản dùng hằng ngày.
 - `scripts/dev/clean-dau.sh` — liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` do người dùng tự chạy.
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine` — test engine. Các bộ test khác: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Apps/Dau/Tests` — test của app chủ.

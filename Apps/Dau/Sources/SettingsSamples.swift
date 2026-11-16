@@ -5,7 +5,7 @@ import DauShared
 /// window can only show what Dấu really types (N5). Pinned by
 /// `SettingsSamplesTests` (Apps/Dau/Tests).
 enum SettingsSamples {
-    /// "Xem trước" on "Gõ phím", typed with the user's settings. With "Bỏ dấu tự do"
+    /// "Xem trước" on "Gõ phím", typed with the user's settings. With "Đặt dấu tự do"
     /// off the tone keys follow the vowel directly, since that is how the user types
     /// then (D28).
     static func preview(_ settings: DauSettings) -> TypingExample {

@@ -28,7 +28,7 @@ Một lượt `scripts/research/compare-ims/run.sh`, 22 phút 29 giây, khoảng
 - Safari và Chrome cho đúng cùng một chữ, với cả hai bộ gõ. Chữ của Dấu trong hai app trùng từng byte với engine chạy offline.
 - **Tiếng Việt:** từ sai duy nhất của cả hai là "taxi" ra "tãi" (âm tiết hợp lệ, tiếng Việt thắng theo D4).
 - **Từ Dấu không giữ nguyên (17), Apple cũng ra y như vậy:**
-  - 7 từ sai thật, có chữ cái đôi trùng phím dấu nên mất một chữ: password, coffee, office, assert, offset, session, error (D26 (Gõ đúp phím dấu); hệ quả đã chấp nhận).
+  - 7 từ sai thật, có chữ cái đôi trùng phím dấu thanh nên mất một chữ: password, coffee, office, assert, offset, session, error (D26 (Gõ đúp phím dấu); hệ quả đã chấp nhận).
   - 10 từ trùng Anh–Việt, không chấm đúng sai (tiếng Việt thắng theo D4) nhưng bảng điểm vẫn tính là không giữ nguyên: seems → sếm, see → sê, door → dổ, moon → môn, soon → sôn, horse → hoé, mix → mĩ, box → bõ, max → mã, major → mảo.
   - Trong câu trộn thêm reset → rết, test → tét.
 - **Từ chỉ Apple sai (35 từ đơn, 15 từ trong câu trộn):** từ không phải âm tiết tiếng Việt vẫn bị biến đổi, vì Apple không khôi phục: windows → ưindows, good → gôd, book → bôk, google → gôgle, software → sờtare, work → ửok, push → púh, website → ưebsite, design → déign…
@@ -38,9 +38,9 @@ Một lượt `scripts/research/compare-ims/run.sh`, 22 phút 29 giây, khoảng
 - **Số của Apple (53/105, 169/188, 677/678):** lượt đo chọn nguồn của Apple bằng API từ tiến trình của script (`--source`), không bằng phím tắt hệ thống kèm bước xác nhận trong ô gõ. Ngày 10/11/2026 đã xác định cách chọn đó có thể để ô gõ không dùng bộ gõ của Apple (các ô "ra nguyên chuỗi phím" là đo hỏng, `docs/Progress.md` nhật ký 10/11). Chữ Apple ra ở lượt này là chữ kiểu Telex chứ không phải nguyên chuỗi phím. Lượt kiểm mẫu bằng script hiện hành (chuyển nguồn đã sửa) khớp ở 9 từ đã kiểm mẫu (Chrome, 12/11/2026); các ô khác (Safari, các số 677/678, 169/188) chưa kiểm lại.
 - **Focus:** script tự gõ lúc đó chưa kiểm focus (sửa 09/11/2026, `docs/Compatibility.md` mục Hiện trạng), nên chưa loại được việc một số lượt gõ vào thanh địa chỉ thay vì ô của trang. Chữ của Dấu vẫn trùng engine nên kết quả về chữ đứng được; chỉ chưa chắc là ô nào.
 - Một máy, một lượt, chỉ 30 ms giữa hai phím, chỉ Telex thứ tự chuẩn.
-- Dữ liệu do Dấu tự viết. Danh sách từ tiếng Anh cố ý chọn từ có phím dấu hoặc phím biến đổi của Telex (từ không có các phím đó thì bộ gõ nào cũng để nguyên), nên 88/105 và 53/105 không phải tỉ lệ trên tiếng Anh nói chung.
+- Dữ liệu do Dấu tự viết. Danh sách từ tiếng Anh cố ý chọn từ có phím dấu thanh hoặc phím biến đổi của Telex (từ không có các phím đó thì bộ gõ nào cũng để nguyên), nên 88/105 và 53/105 không phải tỉ lệ trên tiếng Anh nói chung.
 - Cách chấm bỏ qua vị trí dấu thanh (hoà/hòa coi như nhau), nên không bắt được dấu đặt sai nguyên âm.
-- Không đo bỏ dấu tự do, kiểu đặt dấu, Backspace, D20 (Thêm dấu cho từ đã gõ): chỉ phần cả hai bộ gõ cùng hỗ trợ.
+- Không đo đặt dấu tự do, kiểu đặt dấu, Backspace, D20 (Thêm dấu cho từ đã gõ): chỉ phần cả hai bộ gõ cùng hỗ trợ.
 - Đưa lên website (M10) chỉ kèm các giới hạn ở mục này (N5).
 
 ### 1.3 Cách đo
@@ -48,10 +48,10 @@ Một lượt `scripts/research/compare-ims/run.sh`, 22 phút 29 giây, khoảng
 Bộ gõ của Apple chỉ đo được bằng cách gõ thật, vì không có engine để chạy riêng. Trên máy đo, nguồn Telex của Apple đã bật sẵn (đọc bằng TIS 09/11/2026), nên không phải đổi cài đặt hệ thống.
 
 - **Bộ gõ:** Dấu (bản Release đã cài, mặc định theo D15) và Telex của Apple.
-- **Dữ liệu** (chỉ phần cả hai cùng hỗ trợ: Telex thứ tự chuẩn, không bỏ dấu tự do, không gõ tắt), trong `scripts/research/compare-ims/`:
+- **Dữ liệu** (chỉ phần cả hai cùng hỗ trợ: Telex thứ tự chuẩn, không đặt dấu tự do, không gõ tắt), trong `scripts/research/compare-ims/`:
   - 60 câu văn xuôi hiện đại tự viết (`vi-sentences.txt`);
   - 20 câu trộn Việt–Anh (`mixed-sentences.txt`);
-  - khoảng 100 từ tiếng Anh và từ trong mã, hầu hết có phím dấu hoặc phím biến đổi của Telex (`en-words.txt`);
+  - khoảng 100 từ tiếng Anh và từ trong mã, hầu hết có phím dấu thanh hoặc phím biến đổi của Telex (`en-words.txt`);
   - `cases.swift` chuyển sang phím Telex thứ tự chuẩn, tổng khoảng 5.700 phím. Kiểm offline bằng engine của Dấu trước khi gõ thật (09/11/2026): 677/678 từ tiếng Việt đúng, từ còn lại là "taxi", nên bộ chuyển phím đúng.
 - **Cách chấm:**
   - Tiếng Việt đúng khi ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa).
@@ -78,7 +78,7 @@ Câu hỏi: gõ tay thật có tạo ra hai phím cách nhau dưới 10 ms khôn
   - Bài báo không công bố tỉ lệ cặp phím dưới 10 ms; chỉ số "rollover" trong bài (phím trước còn đang giữ khi nhấn phím sau) là chỉ số khác.
   - Giấy phép ghi "nghiên cứu, phi thương mại, ghi nguồn", chưa rõ có cho công bố số phái sinh không.
   - Bộ Buffalo phải xin qua email; KeyRecs chỉ có độ trễ theo cặp chữ, gõ câu cố định.
-  - Kể cả có dữ liệu thì người trong đó gõ tiếng Anh; Telex có cặp phím riêng ("ee", "ow", phím dấu ở cuối từ), nên chỉ ước lượng được.
+  - Kể cả có dữ liệu thì người trong đó gõ tiếng Anh; Telex có cặp phím riêng ("ee", "ow", phím dấu thanh ở cuối từ), nên chỉ ước lượng được.
 - **Câu hỏi đặt sai chỗ (đo ở M6, 09/11/2026, `docs/Progress.md` nhật ký): app bận không dồn phím; lỗi khi Chrome bận là vị trí con trỏ cũ, ở nhịp gõ bình thường.** Giả thuyết ban đầu là phím dồn dưới 10 ms không do người gõ nhanh mà do app đích bận (Chrome đang tải trang, VS Code đang lập chỉ mục) rồi chuyển một loạt phím đã xếp hàng cùng lúc; nếu vậy thì bài test tải nặng của M6 mới là chỗ trả lời câu hỏi của D13.
 
 ## Để sau

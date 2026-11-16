@@ -10,7 +10,7 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/dev/` | cài, dọn, xem bản bộ gõ trên máy |
 | `scripts/perf/` | đọc số đo từ nhật ký |
 | `scripts/assets/` | sinh biểu tượng tạm (chuẩn và bản phát triển) |
-| `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận (`load/`), cửa sổ Cài đặt, App Group |
+| `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn đầu vào): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận (`load/`), cửa sổ Cài đặt, App Group |
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`, `terminal-underline/`) |
@@ -33,11 +33,11 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | `none` | chỉ đọc; không ghi gì ngoài file tạm |
 | `builds` | chạy xcodegen, xcodebuild hoặc swiftc; ghi vào `build/` hoặc thư mục tạm, không đổi file được theo dõi bởi git |
 | `writes repo files` | ghi đè file được theo dõi bởi git trong repo (xem bằng `git diff`) |
-| `installs input method` | thay bộ gõ trong `~/Library/Input Methods` (script không tự chép: Dấu.app vừa cài thay nó, D37 (Cài đặt bộ gõ)) |
+| `installs input method` | thay bộ gõ trong `~/Library/Input Methods` (script không tự chép: Dấu.app vừa cài thay nó, D37 (Cài bộ gõ)) |
 | `installs app` | chép Dấu.app vào `/Applications` và đăng ký với LaunchServices |
 | `kills processes` | dừng tiến trình đang chạy (bộ gõ, Dấu.app, app do script tự mở) |
 | `takes the screen` | mở app, gõ phím hoặc bấm chuột tự động: người dùng không dùng máy được trong lúc chạy |
-| `changes input source` | chọn lại nguồn nhập liệu, hoặc bỏ Dấu khỏi danh sách nguồn |
+| `changes input source` | chọn lại nguồn đầu vào, hoặc bỏ Dấu khỏi danh sách nguồn |
 | `changes user settings` | ghi `defaults` hoặc cài đặt App Group của người dùng (script tự trả lại khi xong, trừ khi ghi khác) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 
@@ -48,7 +48,7 @@ Hook `.claude/hooks/guard-scripts.sh` chặn agent chạy các script có tác d
 Dấu viết bằng Swift, nên script chỉ dùng thứ có sẵn khi đã cài Xcode:
 
 - **zsh** cho phần điều phối: gọi lệnh, đọc tham số, in kết quả.
-- **Swift** cho phần cần API của Apple (Accessibility, nguồn nhập liệu, pasteboard, vẽ ảnh) hoặc có logic đáng kể (đọc JSON, plist, so văn bản tiếng Việt). Script gọi bản đã biên dịch qua `dau_swift_tool` (`scripts/lib/swift-tool.sh`), không chạy `swift file.swift`: chạy kiểu thông dịch thì mỗi lần mất khoảng một giây để biên dịch lại.
+- **Swift** cho phần cần API của Apple (Accessibility, nguồn đầu vào, pasteboard, vẽ ảnh) hoặc có logic đáng kể (đọc JSON, plist, so văn bản tiếng Việt). Script gọi bản đã biên dịch qua `dau_swift_tool` (`scripts/lib/swift-tool.sh`), không chạy `swift file.swift`: chạy kiểu thông dịch thì mỗi lần mất khoảng một giây để biên dịch lại.
 - **Công cụ có sẵn của macOS**: `defaults`, `plutil`, `PlistBuddy`, `awk`, `sed`, `osascript` (AppleScript là cách duy nhất để điều khiển app khác).
 
 Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command Line Tools, cũ và không được hứa giữ lâu dài, còn người đóng góp cho một dự án Swift không cần đọc thêm ngôn ngữ khác. Ngoại lệ duy nhất là `scripts/research/external-tests/`: công cụ đọc file test của dự án khác cho tài liệu nghiên cứu, không chạm vào máy hay sản phẩm, giữ nguyên bằng Python.

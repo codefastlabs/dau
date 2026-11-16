@@ -1,5 +1,5 @@
 // Typist simulator: simulated people (beginner, ordinary, skilled, very fast) type the
-// sentences of `SimCorpus` in Telex and VNI with their own key orders (D28 (Bỏ dấu tự
+// sentences of `SimCorpus` in Telex and VNI with their own key orders (D28 (Đặt dấu tự
 // do)), make mistakes and correct them. Measurement only: nothing here asserts a rate.
 //
 // Small fixed run: part of every `swift test`. Large run, with tables on stdout:

@@ -38,7 +38,7 @@
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
 #                     which IMK does not report to the input method as a deactivation
-#                     (docs/Architecture.md, "Đổi nguồn nhập liệu không qua
+#                     (docs/Architecture.md, "Đổi nguồn đầu vào không qua
 #                     `activateServer`"). Example (D20): --keys "hoc ⌫j " --expect "học "
 #   --expect "…"      expected text (default: what the sample sentence must give). With --keys
 #                     and no --expect there is no answer: the text read back is printed, with no
@@ -290,7 +290,7 @@ DAU_SOURCE="$("$INPUT_SOURCE" enabled "$IM_ID" | grep '\.vi$' | head -1)"
 # The helper cross-checks TIS with com.apple.inputsources and says on stderr when they
 # disagree (TIS alone has been wrong on macOS 27.2).
 [[ -n "$DAU_SOURCE" ]] || {
-  log_error "Nguồn nhập liệu Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)."
+  log_error "Nguồn đầu vào Dấu – Tiếng Việt chưa được bật (hoặc TIS và com.apple.inputsources không khớp, xem dòng trên)."
   log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (không bật được: docs/Compatibility.md mục 4.1)."
   exit 1
 }
@@ -421,9 +421,9 @@ select_dau() {
     return 0
   fi
   local now="$("$INPUT_SOURCE" current 2>/dev/null)"
-  log_error "Dừng: sau khi chọn $DAU_SOURCE, nguồn nhập liệu hiện tại là \"${now:-không đọc được}\". nguồn đó chưa được chọn nên không gõ gì."
+  log_error "Dừng: sau khi chọn $DAU_SOURCE, nguồn đầu vào hiện tại là \"${now:-không đọc được}\". nguồn đó chưa được chọn nên không gõ gì."
   log_hint "Kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"."
-  stop_run source "nguồn nhập liệu hiện tại là \"${now:-không đọc được}\", không phải $DAU_SOURCE (sau khi chọn, đợi 3 giây)"
+  stop_run source "nguồn đầu vào hiện tại là \"${now:-không đọc được}\", không phải $DAU_SOURCE (sau khi chọn, đợi 3 giây)"
   return 1
 }
 
@@ -595,8 +595,8 @@ end run
 OSA
   then
     if [[ "$(cat "$STOP_FILE" 2>/dev/null)" == source ]]; then
-      log_error "Dừng: sau ⇄, nguồn nhập liệu không thành nguồn vừa chọn trong 3 giây; không gõ tiếp."
-      stop_run source "sau ⇄, nguồn nhập liệu không thành nguồn vừa chọn trong 3 giây"
+      log_error "Dừng: sau ⇄, nguồn đầu vào không thành nguồn vừa chọn trong 3 giây; không gõ tiếp."
+      stop_run source "sau ⇄, nguồn đầu vào không thành nguồn vừa chọn trong 3 giây"
     else
       local oerr; oerr="$(<"$WORK/osa.err")"
       if [[ "$oerr" == *"frontmost changed"* ]]; then
@@ -620,8 +620,8 @@ OSA
   # 12/11/2026). No verdict for this app: status 4.
   local after="$("$INPUT_SOURCE" current 2>/dev/null)"
   if [[ "$after" != "$DAU_SOURCE" ]]; then
-    log_error "Dừng: nguồn nhập liệu ngay sau khi gõ là \"$after\", không phải $DAU_SOURCE; chữ đọc lại không phải của nguồn cần đo."
-    stop_run source "nguồn nhập liệu sau khi gõ là \"$after\", không phải nguồn cần đo"
+    log_error "Dừng: nguồn đầu vào ngay sau khi gõ là \"$after\", không phải $DAU_SOURCE; chữ đọc lại không phải của nguồn cần đo."
+    stop_run source "nguồn đầu vào sau khi gõ là \"$after\", không phải nguồn cần đo"
     return 1
   fi
   sleep 0.8
@@ -1874,7 +1874,7 @@ if stopped; then
   # Not overwritten by an earlier failure: the run did not finish.
   stop_why="$(cat "$STOP_REASON_FILE" 2>/dev/null)"
   if [[ "$(cat "$STOP_FILE")" == source ]]; then
-    log_error "Đã dừng: ${stop_why:-nguồn nhập liệu không được chọn, hoặc không có tác dụng trong ô gõ} (mã thoát 4)."; FAILED=4
+    log_error "Đã dừng: ${stop_why:-nguồn đầu vào không được chọn, hoặc không có tác dụng trong ô gõ} (mã thoát 4)."; FAILED=4
   else
     log_error "Đã dừng: ${stop_why:-kiểm tra trước khi gõ không đạt (không có lý do ghi lại)} (mã thoát 3)."; FAILED=3
   fi

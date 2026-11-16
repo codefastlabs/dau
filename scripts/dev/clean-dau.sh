@@ -98,7 +98,7 @@ INPUT_SOURCE=$(dau_swift_tool input-source "${0:A:h:h}/lib/input-source.swift") 
 inputsource_entries() { # domain key
   defaults export "$1" - 2>/dev/null | "$INPUT_SOURCE" count "$2" "$ID_PATTERN"
 }
-log_step "Nguồn nhập liệu"
+log_step "Nguồn đầu vào"
 prefs=()
 for spec in "com.apple.inputsources AppleEnabledThirdPartyInputSources" \
             "com.apple.HIToolbox AppleEnabledInputSources" \
@@ -109,7 +109,7 @@ done
 selected=0
 n=$(inputsource_entries com.apple.HIToolbox AppleSelectedInputSources)
 [[ -n $n && $n != 0 ]] && selected=1
-(( selected )) && note "Dấu đang là nguồn được chọn: chuyển sang bàn phím khác trước (menu nguồn nhập liệu)."
+(( selected )) && note "Dấu đang là nguồn được chọn: chuyển sang bàn phím khác trước (menu nguồn đầu vào)."
 
 log_step "Đăng ký LaunchServices"
 registered=(${(f)"$("$LSREGISTER" -dump 2>/dev/null | grep -E '^path: .*/(Dau|DauInputMethod)\.app \(0x' | sed -E 's/^path: +//; s/ \(0x[0-9a-f]+\)$//')"})
@@ -131,7 +131,7 @@ if (( ! DO )); then
   log_detail "Chạy lại với --yes để xoá những gì xoá được trong danh sách trên."
   if (( ${prefs[(I)com.apple.inputsources *]} )); then
     log_warn "Các mục trong com.apple.inputsources không xoá được bằng script (macOS từ chối ghi)"
-    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\") TRƯỚC khi chạy --yes."
+    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\") TRƯỚC khi chạy --yes."
   fi
   exit 0
 fi
@@ -145,9 +145,9 @@ fi
 # (D16). Stop before touching anything while those entries exist and the
 # bundle is still installed.
 if (( ${prefs[(I)com.apple.inputsources *]} )) && (( ${#bundles} )); then
-  log_error "Dấu còn trong danh sách nguồn nhập liệu đang bật. Chưa xoá gì."
+  log_error "Dấu còn trong danh sách nguồn đầu vào đang bật. Chưa xoá gì."
   log_hint "Bỏ nó trước, rồi chạy lại:" \
-    "System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\"): chọn dòng của Dấu, bấm \"–\", bấm Done." \
+    "System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\"): chọn dòng của Dấu, bấm \"–\", bấm Done." \
     "Xoá bộ gõ trước thì System Settings không còn hiện Dấu để bỏ."
   exit 1
 fi
@@ -223,8 +223,8 @@ for spec in $prefs; do
     # macOS refuses third-party writes to this domain (`defaults import` exits 0 and
     # changes nothing): do not try, report what remains.
     left=$(inputsource_entries "$domain" "$key")
-    notremoved "KHÔNG xoá được ($left mục của Dấu còn trong $domain › $key): macOS chỉ cho dịch vụ nguồn nhập liệu ghi domain này."
-    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\")."
+    notremoved "KHÔNG xoá được ($left mục của Dấu còn trong $domain › $key): macOS chỉ cho dịch vụ nguồn đầu vào ghi domain này."
+    log_hint "Bỏ Dấu bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\")."
     continue
   fi
   if ! backup_domain "$domain"; then
@@ -240,7 +240,7 @@ for spec in $prefs; do
     log_detail "đã bỏ các mục của Dấu: $domain › $key"
   else
     notremoved "KHÔNG bỏ được ($left mục còn lại): $domain › $key. Bản sao lưu: $backup_dir/$domain.plist"
-    log_hint "Gỡ bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn nhập liệu, \"All Input Sources\") nếu Dấu còn trong danh sách;" \
+    log_hint "Gỡ bằng \"–\" trong System Settings › Keyboard › (danh sách nguồn đầu vào, \"All Input Sources\") nếu Dấu còn trong danh sách;" \
       "muốn thử cài lần đầu thật sạch thì dùng một tài khoản macOS mới."
   fi
 done
@@ -251,9 +251,9 @@ done
 if (( unremoved )); then
   log_error "Chưa xoá hết: còn $unremoved mục (các dòng KHÔNG … ở trên)."
   log_hint "Xử lý tay theo hướng dẫn rồi chạy lại để kiểm." \
-    "Sau khi xử lý xong, đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
+    "Sau khi xử lý xong, đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn đầu vào ở lần đăng nhập sau."
   exit 1
 fi
 (( ${#trashed_names} )) && log_detail "Dọn Thùng rác nếu muốn (vừa chuyển vào: ${(j:, :)trashed_names})."
-log_detail "Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn nhập liệu ở lần đăng nhập sau."
+log_detail "Đăng xuất rồi đăng nhập lại: macOS chỉ quên Dấu trong danh sách nguồn đầu vào ở lần đăng nhập sau."
 log_done "Đã xoá dấu vết của Dấu"

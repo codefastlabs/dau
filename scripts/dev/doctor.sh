@@ -137,11 +137,11 @@ elif [[ -d $im ]]; then
 fi
 
 # --- Input source ----------------------------------------------------------------------
-log_step "Nguồn nhập liệu Dấu (chỉ đọc)"
+log_step "Nguồn đầu vào Dấu (chỉ đọc)"
 if [[ ! -f $im/Contents/Info.plist ]]; then
   log_detail "Bỏ qua: bộ gõ chưa cài."
 elif [[ -z $dev_dir ]]; then
-  log_detail "Bỏ qua: cần Xcode để biên dịch công cụ đọc nguồn nhập liệu."
+  log_detail "Bỏ qua: cần Xcode để biên dịch công cụ đọc nguồn đầu vào."
 else
   source "$root/scripts/lib/swift-tool.sh"
   if ! helper=$(dau_swift_tool input-source "$root/scripts/lib/input-source.swift" 2>/dev/null); then
@@ -155,7 +155,7 @@ else
       log_warn "TIS và com.apple.inputsources không khớp: ${src_out%%$'\n'*}"
       log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (D14, D37); hoặc kiểm tra Dấu có trong System Settings › Keyboard › \"All Input Sources\"."
     else
-      log_warn "Nguồn nhập liệu Dấu chưa được bật."
+      log_warn "Nguồn đầu vào Dấu chưa được bật."
       log_hint "Mở Dấu trong /Applications rồi bấm \"Bật Dấu\" (D14, D37); nếu không được: System Settings › Keyboard › \"All Input Sources\" › \"+\" › Vietnamese › Dấu." \
         "(Script không tự bật: việc này do bạn làm.)"
     fi

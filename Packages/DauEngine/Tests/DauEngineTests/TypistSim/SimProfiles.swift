@@ -5,7 +5,7 @@
 // the value in the profile and its comment; nothing else in the simulator holds numbers
 // about people.
 
-/// The order in which a typist puts the keys of a Vietnamese word (D28 (Bỏ dấu tự do)).
+/// The order in which a typist puts the keys of a Vietnamese word (D28 (Đặt dấu tự do)).
 enum SimOrder: Int, CaseIterable, Sendable {
     /// Modifier right after its vowel, tone after the last vowel of the word, before the
     /// final consonants ("hoafng", "nguwowif", "tieesng").

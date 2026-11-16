@@ -45,7 +45,7 @@ Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ 
    scripts/dev/install-app.sh
    ```
 
-   Script sinh project, build bản Release của Dấu.app (bộ gõ nằm trong app), kiểm bản build rồi đặt app vào `/Applications`; bản Dấu.app cũ ở đó vào Thùng rác. Chỉ bản Dấu.app trong thư mục Applications cài và thay bộ gõ (D37 (Cài đặt bộ gõ)): bản mở từ thư mục build không cài được.
+   Script sinh project, build bản Release của Dấu.app (bộ gõ nằm trong app), kiểm bản build rồi đặt app vào `/Applications`; bản Dấu.app cũ ở đó vào Thùng rác. Chỉ bản Dấu.app trong thư mục Applications cài và thay bộ gõ (D37 (Cài bộ gõ)): bản mở từ thư mục build không cài được.
 4. Lần đầu trên máy: mở Dấu trong `/Applications`, bấm "Bật Dấu", rồi Allow trong hộp thoại của macOS. Không cần đăng xuất; không bật được thì làm theo màn "Chưa bật được Dấu" của app. Script không cài bộ gõ lần đầu và không bật gì (N4 (Không tự đổi cài đặt hệ thống)).
 5. Các lần sau: chạy lại `scripts/dev/install-app.sh`. Dấu.app vừa cài tự thay bộ gõ đã cài bằng bản nằm trong nó và không đổi danh sách nguồn đầu vào đã bật.
 
