@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 // The installer's state machine (D14, D16, D37; docs/research/InputMethodInstall.md sections
 // 1–6) on fake Text Input Sources, a fake process list and fake bundle files: the order

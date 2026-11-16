@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 /// macOS's interface names as the user's macOS shows them (D38, `SystemUINames`), on fake
 /// tables with the shapes of the real ones.

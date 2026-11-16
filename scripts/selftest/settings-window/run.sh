@@ -28,7 +28,7 @@
 #   4. When scrolling scroll bars              real/                  ax-check --geometry
 #   5. Always scroll bars                      always/                ax-check --pixels
 #   6. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
-# The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (scripts/snapshot-settings).
+# The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (Apps/Dau/Tests).
 # Then check.swift checks the screenshots' pixels and the in-app captures.
 # What each real-window launch covers (the rows each item of docs/UIChecks.md reads):
 #   4. the focus at launch (launch-focus), the page at launch; on every display (one

@@ -2,17 +2,17 @@ import AppKit
 import SwiftUI
 import Testing
 import DauShared
-@testable import SnapshotSettings
+@testable import Dau
 
 /// The Settings window's split view (D9, "Sidebar cố định như System Settings"): built
-/// off screen; the focus tests put it in a window that is never shown (not ordered in, no
+/// without a window; the focus tests put it in a window that is never shown (not ordered in, no
 /// screen). What only the real window shows (the selection's accent color at launch, the
 /// sidebar width as the window resizes) is measured by scripts/selftest/settings-window.
 @MainActor
 @Suite("Settings window shell")
 struct SettingsShellTests {
     func controller(_ state: SettingsWindowState = SettingsWindowState(.typing)) -> SettingsSplitViewController {
-        let suite = "dau.snapshot-settings.tests.shell"
+        let suite = "dau.tests.shell"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defaults.removePersistentDomain(forName: suite)
         let model = SettingsModel(store: SettingsStore(defaults: defaults, suiteName: suite))
@@ -25,7 +25,7 @@ struct SettingsShellTests {
     /// The controller as a window's content, in a window never ordered in; the run loop
     /// turns a few times so SwiftUI lays out and settles the focus.
     func hiddenWindow(_ controller: SettingsSplitViewController) -> NSWindow {
-        let window = NSWindow(contentRect: CGRect(x: -6000, y: -6000, width: 740, height: 560),
+        let window = NSWindow(contentRect: CGRect(x: 0, y: 0, width: 740, height: 560),
                               styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
                               backing: .buffered, defer: true)
         window.isReleasedWhenClosed = false

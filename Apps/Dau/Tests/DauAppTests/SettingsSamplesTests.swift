@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import DauShared
-@testable import SnapshotSettings
+@testable import Dau
 
 /// Pins every "keys → result" the Settings window shows (computed by the engine at run
 /// time) and the shortcut parsing, so the window says what its labels claim (N5).
@@ -79,7 +79,7 @@ struct InputSourceShortcutTests {
 @Suite("Sidebar search")
 struct SidebarSearchTests {
     /// The words as the Vietnamese window shows them, from the app's catalog.
-    func vi(_ resource: LocalizedStringResource) -> String { SnapshotLocalization.text(resource.key, "vi") }
+    func vi(_ resource: LocalizedStringResource) -> String { Catalog.text(resource.key, "vi") }
 
     @Test("case-insensitive, in the words the window shows (English: the catalog's keys)")
     func search() {

@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 // D25: a development build's Updates & Support card says so; "Debug" goes in the
 // version's parentheses, for the app and for the installed input method, and "Release"

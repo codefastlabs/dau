@@ -1,7 +1,7 @@
 import Foundation
 import Testing
 import DauShared
-@testable import SnapshotSettings
+@testable import Dau
 
 /// The onboarding window's state machine (D14, docs/UI.md "Onboarding") on fake
 /// services: which step shows, what the sidebar marks done, enabling (waiting for the
@@ -186,7 +186,7 @@ struct OnboardingFlowTests {
         #expect(OnboardingFlow.describe(InputMethodInstallerError.invalidSignature).isEmpty == false)
         let other = OnboardingFlow.describe(CocoaError(.fileWriteNoPermission))
         #expect(other == "Something went wrong while copying or registering the input method.")
-        #expect(SnapshotLocalization.text(other, "vi") == "Có lỗi khi chép hoặc đăng ký bộ gõ.")
+        #expect(Catalog.text(other, "vi") == "Có lỗi khi chép hoặc đăng ký bộ gõ.")
         #expect(InputMethodInstallerError.failed("swap errno 13").detail.contains("errno") == false)
     }
 
@@ -295,7 +295,7 @@ struct OnboardingFlowTests {
         let line = EnableStep.logOutHintPlain(logOut: names.logOut)
         #expect(line == "If an app can’t select Dấu yet, log out ( › Log Out) and log back in once.")
         let key = "If an app can’t select Dấu yet, log out (%@ › %@) and log back in once."
-        #expect(String(format: SnapshotLocalization.text(key, "vi"), "", "Đăng xuất")
+        #expect(String(format: Catalog.text(key, "vi"), "", "Đăng xuất")
                 == "Nếu một ứng dụng chưa chọn được Dấu, hãy đăng xuất ( › Đăng xuất) rồi đăng nhập lại một lần.")
     }
 
@@ -595,7 +595,7 @@ struct ShortcutReadingTests {
         #expect(InputSourceShortcut(keys: ["⌃", "Space"], globeKey: false).inlineText == "⌃Space")
         #expect(InputSourceShortcut(keys: [], globeKey: true).inlineText == "🌐")
         #expect(InputSourceShortcut(keys: ["⌃", "Space"], globeKey: true).inlineText == "⌃Space or 🌐")
-        #expect(String(format: SnapshotLocalization.text("%@ or 🌐", "vi"), "⌃Space") == "⌃Space hoặc 🌐")
+        #expect(String(format: Catalog.text("%@ or 🌐", "vi"), "⌃Space") == "⌃Space hoặc 🌐")
     }
 }
 
@@ -615,7 +615,7 @@ struct ShortcutSentenceTests {
         #expect(ShortcutSentence.spoken(english, shortcut: control)
                 == "Choose Dấu from the Input menu, or press ⌃Space to switch between Dấu and “U.S.”.")
         let key = "Choose Dấu from the Input menu, or press %@ to switch between Dấu and “%@”."
-        let vietnamese = String(format: SnapshotLocalization.text(key, "vi"), marker, "U.S.")
+        let vietnamese = String(format: Catalog.text(key, "vi"), marker, "U.S.")
         let vi = try #require(ShortcutSentence.parts(of: vietnamese))
         #expect(vi.before == "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn")
         #expect(vi.after == "để chuyển giữa Dấu và “U.S.”.")
@@ -634,7 +634,7 @@ struct ShortcutSentenceTests {
         #expect(parts.after == ", then try typing.")
         #expect(parts.spaceBefore && !parts.spaceAfter)
         let key = "Dấu isn’t the current input source: choose “%@” from the Input menu or press %@, then try typing."
-        let vietnamese = String(format: SnapshotLocalization.text(key, "vi"), "Dấu – Tiếng Việt", marker)
+        let vietnamese = String(format: Catalog.text(key, "vi"), "Dấu – Tiếng Việt", marker)
         let vi = try #require(ShortcutSentence.parts(of: vietnamese))
         #expect(vi.before == "Dấu chưa phải nguồn đầu vào đang dùng: chọn “Dấu – Tiếng Việt” trên menu nguồn đầu vào hoặc nhấn")
         #expect(vi.after == "rồi gõ thử.")

@@ -33,8 +33,8 @@
 //                  row selected (no rows: --geometry checks the sheet).
 // Screenshots are `screencapture -l` of the Settings window only (an attached sheet is
 // in it), named <name>-<scale>x.png; <output-dir>/frames.json holds the frames of every
-// screenshot (window points, origin at the window's top-left) for check.swift and
-// scripts/snapshot-settings, plus "meta": the primary display's scale and the appearance.
+// screenshot (window points, origin at the window's top-left) for check.swift, plus
+// "meta": the primary display's scale and the appearance.
 //
 // Results, one row each, `display | page | metric | expected | got | result`:
 // - HARNESS only when the checker cannot run: no Accessibility permission, no window for

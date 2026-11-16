@@ -80,6 +80,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 
 - **Người dùng chỉ làm việc thật sự cần họ:** quyết định, duyệt, chọn giờ cho lượt chạy chiếm màn hình. Mọi việc thử, bấm giao diện (script Accessibility, `screencapture`), cài và dọn do phiên chính làm. Trước khi đưa một bước nào cho người dùng, tìm cách khác (dữ liệu công khai, kết quả đã có, thứ đã bật sẵn trên máy) hoặc bỏ phần đó.
 - **Lượt chạy chiếm màn hình:** build xong mọi thứ trước, báo "sẵn sàng, khoảng N phút", chạy ngay khi người dùng đồng ý, ở tiền cảnh, báo lúc bắt đầu và lúc xong. Một lần đồng ý chỉ có hiệu lực cho lần chạy đó. Không giao lượt chạy chiếm màn hình cho subagent chạy nền. Máy bận hay điều kiện chưa lý tưởng thì vẫn chạy và ghi điều kiện cạnh số đo, không bỏ lượt.
+- **Không có cửa sổ ẩn:** script, công cụ hay test không mở cửa sổ ở toạ độ ngoài màn hình hay ở chỗ người dùng không thấy; người dùng phải thấy mọi thứ một lần chạy hiện ra. Cửa sổ nào được hiện thì hiện ở chỗ người dùng thấy, và lần chạy đó là lượt chiếm màn hình (điểm dừng ở mục "Điều phối"). Không hiện gì thì được: test dựng view trong cửa sổ không bao giờ hiện, Chrome headless. Công cụ không có dòng `# Side effects:` thì đọc mã xem nó có hiện cửa sổ không trước khi chạy.
 - **Dọn sau mỗi lần chạy, kể cả khi dừng giữa chừng:** tiến trình đã mở, tab và server localhost, clipboard, khoá `defaults` có chữ `Dau`, file trong `build/`, bản đã cài (lượt nào cài bản khác, Debug để đo hay bản build thử, thì cài lại bản ổn định ngay trong lượt đó: `scripts/dev/install-app.sh --ref stable`; `stable` là tag git cục bộ chỉ vào commit người dùng dùng hằng ngày, chỉ chuyển khi người dùng đồng ý, không push). Thoát app bình thường, không Force Quit. Báo đã dọn gì. Không dùng TextEdit để thử gõ (`docs/Troubleshooting.md`).
 - **Tính offline trước:** câu hỏi nào trả lời được bằng mô phỏng, test đơn vị hay số đã có thì không chạy app thật. Chạy app thật chỉ cho phần không mô phỏng được, ít ca, một lượt. Mỗi bài test phải đáng với cái giá của nó; hỏi điều này trước khi xây công cụ để làm một bài test qua.
   - Kiểm từ rẻ tới đắt: kiểm tĩnh (cú pháp, `zsh -n`), rồi test đơn vị và test với đồ giả, rồi một lượt chạy thật gộp mọi ô cần đo, xin người dùng một lần.
@@ -129,7 +130,7 @@ Tuỳ chọn và tác dụng phụ của từng script ghi ở đầu script.
 - `scripts/dev/install-app.sh` — script cài duy nhất: build Dấu.app và đặt vào `/Applications`; Dấu.app đó thay bộ gõ đã cài (D37 (Cài đặt bộ gõ)). `--ref stable` cài bản dùng hằng ngày.
 - `scripts/dev/clean-dau.sh` — liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` do người dùng tự chạy.
 - `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine` — test engine. Các bộ test khác: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
-- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings` — test của app chủ.
+- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Apps/Dau/Tests` — test của app chủ.
 - `scripts/check-l10n/check.sh` — kiểm String Catalog (D41).
 - `scripts/selftest/typing/run.sh` — gõ thử trong app thật, chiếm màn hình.
 - `scripts/design/render-canvas.sh <thư mục>` — chụp canvas thành bản trong `docs/canvas/`.

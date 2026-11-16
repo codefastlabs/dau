@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 // D37: the installed input method must meet a code requirement (Apple-issued certificate,
 // this app's team, the input method's identifier), not merely carry the same Team ID as

@@ -1,6 +1,6 @@
 import AppKit
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 /// The add-rule sheet's search and selection: "Thêm" (and Return) add only an app that
 /// is on screen, so a query that hides the selected app clears the selection.

@@ -3,7 +3,7 @@ import DauEngine
 @testable import DauShared
 
 /// TypingPreview drives the engine as the input method does. The Settings samples
-/// built on it are pinned in scripts/snapshot-settings.
+/// built on it are pinned in Apps/Dau/Tests.
 @Suite("TypingPreview")
 struct TypingPreviewTests {
     @Test("types a sentence and ends the last word")

@@ -13,7 +13,6 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn nhập liệu): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận (`load/`), cửa sổ Cài đặt, App Group |
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |
-| `scripts/snapshot-settings/` | test đơn vị app chủ và công cụ chụp Cài đặt |
 | `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`, `terminal-underline/`) |
 | `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/canvas/`) |
 
@@ -95,11 +94,3 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 - Tên kỹ thuật (đường dẫn, lệnh, cờ, khoá, bundle ID, số D/N) giữ nguyên trong câu tiếng Việt.
 - Không đi qua `log.sh`: dữ liệu cho máy đọc hay để so (TSV, JSON, bảng số, các dòng in theo cột); đầu ra của công cụ Swift mà script đọc lại; đầu ra của lệnh khác (`xcodebuild`, `git`, `codesign`).
 - Chỉ `log.sh` được viết mã màu ANSI và dấu `==>`.
-
-## `scripts/snapshot-settings`
-
-Gói Swift chứa bộ test đơn vị của app chủ và công cụ chụp cửa sổ Cài đặt (`SnapshotSettings`) để đối chiếu với artboard. Không phải script chạy một lệnh. Chạy test:
-
-```
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings
-```

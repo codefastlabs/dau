@@ -94,7 +94,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
   - `DauSettings.suggestions(from:isInstalled:)` dựng các hàng "Đề xuất": app đề xuất đã cài mà chưa có quy tắc đã lưu, theo thứ tự danh sách; **không lưu** gì. "Bật gạch chân" gọi `acceptSuggestion`, lưu quy tắc "Có gạch chân" nguồn `suggested` vào cuối "Quy tắc riêng".
   - "Quy tắc riêng" là đúng `appRules` đã lưu. `setUnderline(_:for:)` đổi popup mà giữ quy tắc và nguồn; đặt về "Không gạch chân" vẫn là quy tắc. Mọi quy tắc đã lưu đưa app ra khỏi "Đề xuất"; xoá quy tắc thì app trở lại.
   - Bộ gõ **không** đọc danh sách: gạch chân chỉ theo quy tắc đã lưu (D13).
-- `TypingPreview`/`TypingExample`: chạy engine thật như bộ gõ. App chủ dùng chúng cho mọi ví dụ "phím → kết quả" trên giao diện (`SettingsSamples`, test ở `scripts/snapshot-settings`), nên mọi ví dụ do engine tính (N5).
+- `TypingPreview`/`TypingExample`: chạy engine thật như bộ gõ. App chủ dùng chúng cho mọi ví dụ "phím → kết quả" trên giao diện (`SettingsSamples`, test ở `Apps/Dau/Tests`), nên mọi ví dụ do engine tính (N5).
 - `InputMethodLifecycle`: tên và cách phát, nghe yêu cầu thoát của bộ gõ (mục "Thoát theo yêu cầu của app chủ").
 
 ## Bộ gõ (DauInputMethod)
@@ -299,7 +299,7 @@ Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạ
 
 `InputMethodInstaller.swift`, theo `docs/research/InputMethodInstall.md` mục 1–6; luật ở D37 và D16.
 
-`SystemInputMethodInstaller` đi qua sáu giao diện hẹp để test bằng đồ giả (`scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift`): `InputMethodFiles` (bundle trong app và bản ở `~/Library/Input Methods`), `TextInputSources` (TIS), `InputMethodProcesses`, `SystemSettingsControl` (bộ đệm và tiến trình System Settings), `InputSourceCaches` (bộ đệm danh sách nguồn của từng app; bản thật `UserInputSourceCaches` nhận thư mục gốc làm tham số nên test chạy trên thư mục tạm), `OwnerCopyCheck` (bản chủ; bản thật `ApplicationsOwnerCopy`).
+`SystemInputMethodInstaller` đi qua sáu giao diện hẹp để test bằng đồ giả (`Apps/Dau/Tests/DauAppTests/InputMethodInstallerTests.swift`): `InputMethodFiles` (bundle trong app và bản ở `~/Library/Input Methods`), `TextInputSources` (TIS), `InputMethodProcesses`, `SystemSettingsControl` (bộ đệm và tiến trình System Settings), `InputSourceCaches` (bộ đệm danh sách nguồn của từng app; bản thật `UserInputSourceCaches` nhận thư mục gốc làm tham số nên test chạy trên thư mục tạm), `OwnerCopyCheck` (bản chủ; bản thật `ApplicationsOwnerCopy`).
 
 **Bản chủ:**
 

@@ -1,5 +1,5 @@
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 /// Keyboard layout names as the menu bar shows them (`LayoutNames`): the system's language
 /// picks the entry of the layout bundle's table, TIS's own name is the fallback.

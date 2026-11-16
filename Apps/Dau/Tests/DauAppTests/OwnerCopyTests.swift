@@ -1,6 +1,6 @@
 import Foundation
 import Testing
-@testable import SnapshotSettings
+@testable import Dau
 
 // The owner copy of the installed input method (D37): which bundle it is, when the running
 // copy is it, the code hash reader behind both, and `Dau --reconcile-input-method`. The

@@ -3,7 +3,7 @@ import DauShared
 /// Every "keys → result" shown in Settings, with key sequences taken from the mockup.
 /// Results always come from the engine (`TypingExample` runs `VietEngine`), so the
 /// window can only show what Dấu really types (N5). Pinned by
-/// `scripts/snapshot-settings` tests.
+/// `SettingsSamplesTests` (Apps/Dau/Tests).
 enum SettingsSamples {
     /// "Xem trước" on "Gõ phím", typed with the user's settings. With "Bỏ dấu tự do"
     /// off the tone keys follow the vowel directly, since that is how the user types

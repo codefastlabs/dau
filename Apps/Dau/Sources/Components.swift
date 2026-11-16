@@ -546,8 +546,7 @@ enum AppVersion {
 
 /// Reports a view's frame in window coordinates, and `.null` when the view disappears.
 /// Nil in the app; the onboarding captures (`DebugCapture`, check (f) of
-/// scripts/selftest/settings-window) and `scripts/snapshot-settings` (its mockup
-/// comparison table) set it.
+/// scripts/selftest/settings-window) and the banner tests (Apps/Dau/Tests) set it.
 struct LayoutProbeKey: EnvironmentKey {
     static let defaultValue: (@MainActor @Sendable (String, CGRect) -> Void)? = nil
 }
@@ -560,7 +559,7 @@ extension EnvironmentValues {
 }
 
 /// Always the same view structure, probe or not: a probe that changed the structure
-/// (an `if` around the modifier) once made the off-screen captures lay out a sidebar
+/// (an `if` around the modifier) once made the captures lay out a sidebar
 /// row 8 pt away from the real window. Put probes on a row's content or on a whole
 /// control, never outside list-row modifiers (`listRowInsets`, `listRowBackground`).
 struct LayoutProbeModifier: ViewModifier {

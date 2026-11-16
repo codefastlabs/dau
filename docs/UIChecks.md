@@ -50,7 +50,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 ### 5. Icon sidebar sai
 
 - **Lỗi:** glyph, màu, cỡ, sát chữ.
-- **Cách kiểm:** "sidebar search", "sidebar row 0…3", "sidebar icon x", "sidebar icon height", "sidebar text x" (mỗi mục); `sidebar-compare-*.png`.
+- **Cách kiểm:** "sidebar search", "sidebar row 0…3", "sidebar icon x", "sidebar icon height", "sidebar text x" (mỗi mục).
 - **Đạt khi:**
   - ô tìm, hàng, vệt chọn, ô icon và chữ như System Settings;
   - màu ô `systemBlue` / `systemPurple` / `systemOrange` / `systemGreen`;
@@ -67,7 +67,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 ### 7. Ô tìm và "+" dính nhau thành một khối glass
 
 - **Lỗi:** nút "+" và ô tìm của trang Ứng dụng gộp thành một khối, sát tiêu đề hoặc tràn mép phải.
-- **Cách kiểm:** "+ right of the title", "+ before the search field", "search field right inset", "search field height" (trang Ứng dụng); `apps-header-compare-*.png`.
+- **Cách kiểm:** "+ right of the title", "+ before the search field", "search field right inset", "search field height" (trang Ứng dụng).
 - **Đạt khi:** control hệ thống: nút "+" rồi ô tìm của `searchable` ở mép phải thanh công cụ (thứ tự do hệ thống đặt), tách khỏi tiêu đề, không tràn mép phải.
 
 ### 8. Nút "+" méo (bầu dục)
@@ -106,7 +106,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 - **Cách kiểm:** (f) trong `check.txt`.
 - **Đạt khi:** tên app, tiêu đề, thẻ, cụm nút ở cùng chỗ ở mọi bước, cả hai chế độ; không ảnh nào thiếu view.
 
-### 13. Ảnh chụp ngoài màn hình khác cửa sổ thật
+### 13. Đo trên ảnh dựng thay vì cửa sổ thật
 
 - **Lỗi:** lệch mà vẫn đạt.
 - **Cách kiểm:** cửa sổ Cài đặt chỉ được đo trên cửa sổ thật: mọi hàng của `real.txt` (các mục trên mọi màn hình); `swift test` "Not-enabled banner".
@@ -115,7 +115,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
   - hàng "Nâng cao" là nút trơn kèm chevron (D9), không so chiều cao;
   - banner "Dấu chưa được bật" là thẻ đầu của mọi trang khi Dấu chưa bật, ở từng trạng thái sau "Bật lại" (chờ Allow, chưa bật được, đã bật);
   - banner không hiện khi đã bật hay không đọc được (N5 (Chỉ hứa điều đã kiểm chứng); `swift test`, dựng split view thật trong cửa sổ không hiện).
-- `layoutProbe` (vật dò bố cục) chỉ còn cho ảnh chụp onboarding và bảng so mockup: luôn cùng một cấu trúc view dù có probe hay không, chỉ đặt trên nội dung hàng hoặc cả control, không bọc ngoài `listRowInsets`. Probe đặt ngoài `listRowInsets` từng làm ảnh chụp lệch cửa sổ thật mà các kiểm vẫn đạt.
+- `layoutProbe` (vật dò bố cục) chỉ còn cho ảnh chụp onboarding và test banner: luôn cùng một cấu trúc view dù có probe hay không, chỉ đặt trên nội dung hàng hoặc cả control, không bọc ngoài `listRowInsets`. Probe đặt ngoài `listRowInsets` từng làm ảnh chụp lệch cửa sổ thật mà các kiểm vẫn đạt.
 
 ### 14. Sheet thêm quy tắc
 
@@ -196,21 +196,12 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
    - Các lần mở app, mỗi lần kiểm gì, cách chờ và thử lại: chú thích đầu [`run.sh`](../scripts/selftest/settings-window/run.sh), [`ax-check.swift`](../scripts/selftest/settings-window/ax-check.swift), [`check.swift`](../scripts/selftest/settings-window/check.swift).
    - Lượt nhanh chỉ cho tiêu điểm và ô tìm sidebar (mục 15, 18): `run.sh --focus <thư-mục-ra>`, vẫn chiếm màn hình.
 
-3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`):
-
-   ```
-   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift run --package-path scripts/snapshot-settings SnapshotSettings <ra> <thư-mục-artboard> [<ra-run.sh>/real] [<ra-run.sh>/onboarding]
-   ```
-
-   - Ghi ảnh ghép mockup | app (`*-compare-*.png`, kèm ảnh phóng to sidebar, segmented, header trang Ứng dụng) và bảng khung phần tử.
-   - Có `<ra-run.sh>/real`: phía app ở giao diện lúc chạy `run.sh` dùng ảnh và khung của cửa sổ thật (`frames.json`); giao diện còn lại dùng cửa sổ dựng tay của công cụ.
-   - Sheet thêm quy tắc dựng bằng `.sheet` thật trên cửa sổ ngoài màn hình, vẽ lại bằng `cacheDisplay`: không có thanh nút, control có thể khác cửa sổ thật; chỉ để xem nội dung.
-   - Có thư mục chụp onboarding: thêm `onboarding-<bước>-compare-{light,dark}.png`, so với các artboard onboarding trong [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: mockup sáng cạnh app tối.
+3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`): đặt bản chụp artboard trong `docs/canvas/` cạnh ảnh cửa sổ thật mà lệnh 2 chụp (`real/`, `always-<light|dark>/`, `onboarding/`). Danh sách artboard: [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: so mockup sáng với app tối.
 
 4. Test:
 
    ```
-   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path scripts/snapshot-settings
+   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Apps/Dau/Tests
    ```
 
    Gồm: ví dụ do engine tính, phím tắt, ô tìm sidebar, ô tìm và chọn của sheet thêm quy tắc, vỏ cửa sổ, banner "Dấu chưa được bật".

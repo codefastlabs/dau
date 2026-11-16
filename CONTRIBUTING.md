@@ -23,7 +23,7 @@ Các lệnh `swift test` dưới đây cần Xcode được chọn (`xcode-selec
 | Engine: quy tắc gõ, đặt dấu, chính tả, khôi phục từ (`Packages/DauEngine`) | Không | `swift test --package-path Packages/DauEngine` |
 | Phần dùng chung (`Packages/DauShared`) | Không | `swift test --package-path Packages/DauShared` |
 | Bộ gõ (`Apps/DauInputMethod`): logic thuần, không cần cài | Chưa thử khi không có Team | `xcodegen generate`, rồi `xcodebuild test -project Dau.xcodeproj -scheme DauInputMethod -destination 'platform=macOS'` |
-| App chủ (`Apps/Dau`), kiểm bằng snapshot | Không | `swift test --package-path scripts/snapshot-settings` |
+| App chủ (`Apps/Dau`): cài bộ gõ, onboarding, cửa sổ Cài đặt dựng trong test (không hiện lên màn hình) | Không | `swift test --package-path Apps/Dau/Tests` |
 
 Khẳng định về hiệu năng của engine cần số đo. Test hiệu năng chạy trong mọi `swift test` (ngưỡng lỏng); số đo lấy từ bản Release: `swift test -c release --package-path Packages/DauEngine --filter Performance` (`docs/Architecture.md`).
 

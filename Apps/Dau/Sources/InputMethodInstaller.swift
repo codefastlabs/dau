@@ -7,7 +7,7 @@ import os
 // The real `InputMethodInstaller` (M5, D14, D16, D37; docs/research/InputMethodInstall.md
 // sections 1–6). It talks to the system through narrow interfaces, so the order of
 // operations and every failure path are tested with fakes
-// (scripts/snapshot-settings/Tests/…/InputMethodInstallerTests.swift):
+// (Apps/Dau/Tests/DauAppTests/InputMethodInstallerTests.swift):
 // - `InputMethodFiles`: the bundle inside the app and the copy in ~/Library/Input Methods;
 // - `TextInputSources`: register, enable, read back;
 // - `InputMethodProcesses`: is the input method running, ask it to quit;

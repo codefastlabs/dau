@@ -261,8 +261,8 @@ struct SettingsSidebar: View {
     /// https://developer.apple.com/documentation/swiftui/focusstate): it is set when the
     /// list appears. `defaultFocus(_:_:priority:)` alone did not take inside this hosting
     /// controller: the real window opened with no focus and a grey selection (run.sh
-    /// 06/11/2026); set on appear, the list became the window's first responder in an
-    /// off-screen window (`swift test` "Settings window shell").
+    /// 06/11/2026); set on appear, the list became the window's first responder in a
+    /// window that is never shown (`swift test` "Settings window shell").
     @FocusState private var listFocused: Bool
 
     var body: some View {

@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import Testing
 import DauShared
-@testable import SnapshotSettings
+@testable import Dau
 
 /// The "Dấu chưa được bật" banner (docs/UI.md "Cửa sổ Cài đặt › Banner", artboards
 /// "SettingsNotEnabled", "SettingsBannerStates"): first on every Settings page while Dấu is
@@ -19,7 +19,7 @@ struct NotEnabledBannerTests {
 
     /// Lays out `section` of the Settings window and returns the frames its probes report.
     func layout(_ section: SettingsSection, enabled: Bool?, actions: InputMethodActions? = nil) -> [String: CGRect] {
-        let suite = "dau.snapshot-settings.tests.banner"
+        let suite = "dau.tests.banner"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
         defaults.removePersistentDomain(forName: suite)
         let model = SettingsModel(store: SettingsStore(defaults: defaults, suiteName: suite))
@@ -31,7 +31,7 @@ struct NotEnabledBannerTests {
         let state = SettingsWindowState(section)
         let controller = SettingsSplitViewController(sidebar: SettingsSidebarRoot(state: state, environment: environment),
                                                      detail: SettingsDetailRoot(state: state, environment: environment))
-        let window = NSWindow(contentRect: CGRect(origin: CGPoint(x: -6000, y: -6000), size: SettingsScene.defaultSize),
+        let window = NSWindow(contentRect: CGRect(origin: .zero, size: SettingsScene.defaultSize),
                               styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
                               backing: .buffered, defer: true)
         window.isReleasedWhenClosed = false
