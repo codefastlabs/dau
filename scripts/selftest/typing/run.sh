@@ -28,6 +28,8 @@
 #           focus moves to an empty editor of the same VS Code window and --keys2 is typed there)
 #           | webstorm (the editor of WebStorm, on an empty file of this run) | webstormterm (the
 #           integrated terminal of WebStorm: a cell of the same kind as vscodeterm's runs in it)
+#           | telegram (the message box of the "Saved Messages" chat in the native Telegram app;
+#           nothing is sent, the box is emptied at the end)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
@@ -270,7 +272,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm|telegram) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -1697,6 +1699,146 @@ cursorchat_close() {
 }
 
 
+# Telegram (the native macOS app, process "Telegram", not Telegram Desktop): the message box of
+# the "Saved Messages" chat. Nothing is sent: Return goes to Telegram once, in its Quick Search
+# field (⌘K) to open the chat, and only after the focus has been seen to move to another element
+# than the one that had it; it never goes to a message box. The box is emptied at the end.
+# A Telegram that was running before the run is left running; one the run opened is quit.
+# Assumptions, none seen running yet (the app's code is not readable, and its menus say only
+# "Quick Search ⌘K" and "Global Search ⌘F"):
+#   - `open -a` on a running Telegram that has no window (menu bar only) brings the window back;
+#   - ⌘K opens a search field that takes the focus, and pasting "Saved Messages" into it then
+#     Return opens that chat, whose message box takes the focus (an AXTextArea);
+#   - the chat title is exposed as an AXStaticText "Saved Messages" in the right part of the
+#     window (the chat list is on the left, so a row of that name does not count), which needs
+#     the app in English; ⌘A ⌘C in the box puts its text on the clipboard.
+# When a check fails the run stops and prints the focused element and the static texts it saw
+# (to stderr: stdout of a cell is the text read back).
+TG_QUERY="Saved Messages"
+tg_running() { pgrep -x Telegram >/dev/null; }
+tg_gone() { ! tg_running; }
+tg_has_window() { [[ "$(osascript -e 'tell application "System Events" to count windows of process "Telegram"' 2>/dev/null)" == <1-> ]]; }
+# "role|position|size" of the focused element, "" when there is none.
+tg_focus_id() {
+  osascript -e 'tell application "System Events" to tell process "Telegram"
+    set f to value of attribute "AXFocusedUIElement"
+    return (role of f as text) & "|" & (position of f as text) & "|" & (size of f as text)
+  end tell' 2>/dev/null
+}
+tg_focus_changed() { local now; now="$(tg_focus_id)"; [[ -n "$now" && "$now" != "$1" ]]; }
+tg_focus_value() {
+  osascript -e 'tell application "System Events" to tell process "Telegram"
+    set f to value of attribute "AXFocusedUIElement"
+    try
+      return value of f as text
+    on error
+      return ""
+    end try
+  end tell' 2>/dev/null
+}
+tg_focus_in_box() { [[ "$(tg_focus_id)" == AXTextArea\|* ]]; }
+tg_pasted() { [[ "$(tg_focus_value)" == "$TG_QUERY" ]]; }
+# Lines "x|y|window width|text" of the static texts of the focused window, x and y relative
+# to the window. `entire contents` can take a few seconds on a long chat list.
+tg_texts() {
+  osascript <<'OSA' 2>/dev/null
+tell application "System Events" to tell process "Telegram"
+  try
+    set w to value of attribute "AXFocusedWindow"
+  on error
+    set w to window 1
+  end try
+  set wp to position of w
+  set ww to item 1 of (size of w)
+  set out to ""
+  repeat with e in (entire contents of w)
+    try
+      if role of e is "AXStaticText" then
+        set t to value of e as text
+        set p to position of e
+        set out to out & ((item 1 of p) - (item 1 of wp)) & "|" & ((item 2 of p) - (item 2 of wp)) & "|" & ww & "|" & t & linefeed
+      end if
+    end try
+  end repeat
+  return out
+end tell
+OSA
+}
+tg_quit() { # 1 when this run opened Telegram
+  (( ${1:-0} )) || return 0
+  osascript -e 'tell application id "ru.keepcoder.Telegram" to quit' >/dev/null 2>&1
+  wait_until 8 tg_gone || log_warn "Telegram chưa thoát (quyền Automation cho Telegram?), thoát tay giúp"
+}
+# Stops the run with reason $1, after saying where the focus was and what texts the window
+# showed (to adjust this cell on the first run), and quits Telegram if $2 is 1.
+tg_stop() { # reason launched
+  local l
+  log_error "Dừng: $1 — không gõ gì"
+  log_hint "phần tử focus (vai trò|vị trí|cỡ): $(tg_focus_id)"
+  tg_texts | head -40 | while IFS= read -r l; do log_hint "chữ tĩnh (x|y|rộng cửa sổ|chữ): $l"; done
+  stop_run front "$1"
+  tg_quit "$2"
+}
+tg_key() { # AppleScript statement for System Events; sent only if the guard passes
+  guarded Telegram "" "tell application \"System Events\" to $1" >/dev/null
+}
+run_telegram() {
+  local launched=1 before draft
+  tg_running && launched=0
+  open -a Telegram
+  if ! wait_until -i 0.3 15 tg_has_window || ! wait_until -i 0.3 15 front_ok Telegram; then
+    tg_stop "Telegram không có cửa sổ ở phía trước (đang chạy trên thanh menu mà không mở lại cửa sổ?)" $launched
+    return 0
+  fi
+  before="$(tg_focus_id)"
+  tg_key 'keystroke "k" using {command down}' || { tg_quit $launched; return 0; }
+  # Nothing is pasted until the focus has left the element it was in: if ⌘K did nothing the
+  # focus may be in a message box, where the paste and the Return would go to a chat.
+  if ! wait_until -i 0.2 5 tg_focus_changed "$before"; then
+    tg_stop "⌘K không chuyển focus sang ô tìm kiếm" $launched
+    return 0
+  fi
+  printf '%s' "$TG_QUERY" | pbcopy
+  tg_key 'keystroke "v" using {command down}' || { tg_quit $launched; return 0; }
+  if ! wait_until -i 0.2 3 tg_pasted; then
+    tg_stop "ô tìm kiếm không có chữ \"$TG_QUERY\" sau khi dán (xem phần tử focus ở dưới)" $launched
+    return 0
+  fi
+  # The results arrive asynchronously and nothing here tells when the list is complete.
+  sleep 1
+  tg_key 'key code 36' || { tg_quit $launched; return 0; }
+  if ! wait_until -i 0.3 10 tg_focus_in_box; then
+    tg_stop "sau Return, focus không nằm trong ô soạn tin (vai trò AXTextArea)" $launched
+    return 0
+  fi
+  # The chat's title is not checked: Telegram 13.1.0 exposes no text in the chat header to
+  # Accessibility (seen 17/11/2026: no element of the window holds "Saved Messages" as value
+  # or description, and nothing at all in the header area), while the window, after Quick
+  # Search's first result, showed Saved Messages. What keeps the user's chats safe is the
+  # rest: Return is never sent in the message box, a box holding a draft is left alone, and
+  # the box is emptied and checked empty at the end.
+  draft="$(copy_all Telegram)"
+  if [[ -n "$draft" ]]; then
+    tg_stop "ô soạn tin của \"$TG_QUERY\" đã có bản nháp (không đụng tới)" $launched
+    return 0
+  fi
+  select_dau
+  if ! tg_focus_in_box; then
+    tg_stop "sau khi chọn Dấu, focus không còn trong ô soạn tin" $launched
+    return 0
+  fi
+  type_keys Telegram
+  copy_all Telegram
+  # Empties the box (⌘A ⌫); never Return. The delay between the keys stays fixed: pacing.
+  guarded Telegram "" 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+  end tell' >/dev/null
+  [[ -z "$(tg_focus_value)" ]] || log_warn "Ô soạn tin của $TG_QUERY có thể chưa trống: kiểm tra và xoá tay (không gửi)"
+  tg_quit $launched
+}
+
 # Sets $win to Terminal's front window, if it has one.
 terminal_front_window() {
   win="$(osascript -e 'tell application "Terminal" to if (count of windows) > 0 then return id of front window' 2>/dev/null)"
@@ -2126,6 +2268,7 @@ bundle_id() {
     xterm|tiptap) echo com.google.Chrome ;;
     vscodeterm|vscodeswitch) echo com.microsoft.VSCode ;;
     webstorm|webstormterm) echo com.jetbrains.WebStorm ;;
+    telegram) echo ru.keepcoder.Telegram ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
