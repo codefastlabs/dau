@@ -63,7 +63,7 @@ Không chặn việc đóng M7; làm khi có người dùng Beta:
 
 ## M8 — Website
 
-- Chốt công nghệ và thư mục của trang web (người dùng chốt).
+- Chốt công nghệ của trang web (người dùng chốt). Thư mục đã chốt (17/11/2026): `site/`, thư mục gốc của project Vercel, nơi `appcast.xml` đã nằm ([`docs/Releasing.md`](Releasing.md)).
 - Dựng trang tải về theo [`docs/Website.md`](Website.md) (mục "Trang tải về (M8)") và [`docs/Brand.md`](Brand.md): trang tĩnh, responsive, thẻ meta và ảnh Open Graph, favicon.
 - Các ô số liệu và lời hứa chỉ điền từ kết quả đã đo (N5 (Chỉ hứa điều đã kiểm chứng)).
 - Xong khi: Lighthouse ≥ 95 ở cả bốn hạng mục trên điện thoại; kiểm toán ĐẠT.

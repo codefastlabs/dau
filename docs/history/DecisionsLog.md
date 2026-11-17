@@ -90,6 +90,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 17/11/2026 (người dùng chốt khi lập kế hoạch M7): thêm URL appcast `https://dau.codefastlabs.com/appcast.xml` (chọn thay cho GitHub Pages, buộc URL vào GitHub, và `releases/latest/download`, không tính bản prerelease); chỉ bản chính thức có URL appcast; kênh Beta bật trong app, không có cask riêng; bản thử đầu "0.1.0 beta 1". Ba ý về loại bản đến từ câu hỏi mở "Loại bản dựng".
 - 17/11/2026 (người dùng chọn khi duyệt artboard M7): cửa sổ chuẩn của Sparkle thay cho thẻ cập nhật sáu trạng thái và thông báo tự vẽ (artboard "Trạng thái thẻ cập nhật", "Thông báo cập nhật" bỏ khỏi canvas); chỉ kiểm tra lúc Dấu mở; không cài ngầm. Bản trước, nguyên văn: "Cài bản mới lúc người dùng không gõ, sau đó dừng tiến trình bộ gõ cũ để hệ thống nạp bản mới; cách thay bộ gõ đã cài ở D37, ý "Thay bộ gõ đã cài"." Phương án đã loại: giữ bản tự vẽ (cần user driver riêng); thêm kiểm tra khi Dấu không mở (tiến trình nền, để sau bản thử đầu).
+- 17/11/2026 (người dùng đồng ý đề xuất của phiên chính): thêm "Hệ quả đã chấp nhận" về ⌘Q giữa lúc cài (Sparkle cài lúc thoát mà không mở lại Dấu); app-ui-dev phát hiện khi đọc `SPUUserDriver.h` lúc nối Sparkle. Phương án đã loại: thêm mã ép mở lại Dấu sau khi cài.
 
 ### D8. Không telemetry
 

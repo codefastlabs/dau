@@ -172,6 +172,8 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
 - Không phát hành dần theo số liệu và không có cờ tính năng điều khiển từ xa. Không dùng TestFlight.
 - Nhận diện từng loại bản: D25 (Nhận diện).
 
+**Hệ quả đã chấp nhận:** người dùng đã chọn cài rồi thoát Dấu (⌘Q) trước khi cài xong thì Sparkle cài lúc thoát mà không mở lại Dấu (`SPUUserDriver.h`, Sparkle 2.10.1); bộ gõ cũ chạy tiếp tới lần mở Dấu sau, lúc đó bản chủ thay nó (D37). Không thêm mã cho trường hợp này.
+
 **Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. Cửa sổ của Sparkle thay cho thẻ trạng thái và thông báo tự vẽ: Sparkle đã có bản tiếng Việt và tự kiểm chữ ký trước khi cài, còn bản tự vẽ cần một user driver riêng và từng hứa điều chưa có (quay về bản trước, chữ ký "đã xác minh" trước khi tải, N5). Không cài ngầm: Sparkle cài ngầm lúc app thoát mà không mở lại app, nên bộ gõ cũ chạy tiếp tới lần mở Dấu sau. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)).
 
 ### D8. Không telemetry

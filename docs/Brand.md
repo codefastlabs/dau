@@ -29,7 +29,7 @@ Các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh x
 - Chữ "ấ" màu Giấy trên nền Mực; dấu mũ cùng màu chữ, **riêng dấu sắc màu Son** — biểu tượng tự kể tên sản phẩm.
 - Dựng bằng Icon Composer của Apple (một file nguồn, đủ các kiểu Mặc định / Tối / Trong suốt / Phủ màu trên macOS 26+); `.icns` cho macOS 14–15 do `actool` sinh từ cùng file (chỉ có 16, 32, 128, 256 pt; cỡ lớn hơn do hệ thống phóng).
 - Chữ "a" trong biểu tượng là đường nét (outline) trong file nguồn, không phụ thuộc phông khi render.
-- Nét dấu: file `.icon` chỉ có một bộ nét cho mọi cỡ, nên không có bản nét dày riêng cho 16–32 pt. Xem bằng mắt (`scripts/assets/preview-app-icon.sh`): ở 32 pt đọc ra "ấ"; ở 16 pt dấu mũ và dấu sắc còn lại vài điểm ảnh, chữ vẫn đọc là "a" có dấu.
+- Nét dấu: một bộ nét cho mọi cỡ (chốt 17/11/2026; file `.icon` không có bản nét dày riêng cho 16–32 pt, và làm dày nét chung thì đổi cả biểu tượng ở cỡ lớn). Xem bằng mắt (`scripts/assets/preview-app-icon.sh`): ở 32 pt đọc ra "ấ"; ở 16 pt dấu mũ và dấu sắc còn lại vài điểm ảnh, chữ vẫn đọc là "a" có dấu.
 - Viền: macOS tự vẽ viền mảnh quanh biểu tượng ở kiểu Tối, Trong suốt, Phủ màu; file không thêm viền riêng.
 
 ## Biểu tượng bản phát triển
