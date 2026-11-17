@@ -665,10 +665,10 @@ Trước mỗi bản phát hành, chạy `scripts/selftest/load/heavy.sh` với 
 
 ### D43. Ô bỏ qua vùng thay chữ
 
-Có những ô nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ. Đã đo: Ghostty, và terminal dựng bằng xterm.js (terminal tích hợp của VS Code; Cursor và terminal trong app Claude cùng cơ chế, chưa đo). **Dấu không xử lý riêng các ô này:** thay tại chỗ như mọi ô, nên chữ ở đó ra sai. Cách gõ đúng là gạch chân, người dùng tự bật theo app (D13 (Gạch chân là đường lui cuối cùng)).
+Có những ô nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ qua vùng thay: chữ mới được thêm vào sau thay vì thay chữ cũ. Đã đo: Ghostty, và terminal dựng bằng xterm.js (terminal tích hợp của VS Code; Cursor và terminal trong app Claude cùng cơ chế, chưa đo), terminal Reworked của WebStorm (đo 17/11/2026, [`docs/Compatibility.md`](Compatibility.md) mục 5.9). **Dấu không xử lý riêng các ô này:** thay tại chỗ như mọi ô, nên chữ ở đó ra sai. Cách gõ đúng là gạch chân, người dùng tự bật theo app (D13 (Gạch chân là đường lui cuối cùng)).
 
 - **Ghostty mang nhãn "Đề xuất"** (D13): cả app là terminal, nên bật gạch chân không làm hại ô nào khác.
-- **App mà terminal chỉ là một ô** (VS Code, Cursor, app Claude): không gắn nhãn vì terminal. Bật gạch chân cho cả app thì mọi ô của app đó mất D20 (Thêm dấu cho từ đã gõ), để chữa một ô.
+- **App mà terminal chỉ là một ô** (VS Code, Cursor, app Claude, WebStorm): không gắn nhãn vì terminal. Bật gạch chân cho cả app thì mọi ô của app đó mất D20 (Thêm dấu cho từ đã gõ), để chữa một ô.
 
 **Hệ quả đã chấp nhận:**
 

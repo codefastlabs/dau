@@ -119,7 +119,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 | Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, phím trước cách đủ `settleInterval` | một lần, kể cả khi phím đi thẳng | một lần | D20 |
 | Mọi phím ở chế độ gạch chân | không | không | D13 |
 
-Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js) không được xử lý riêng: thay tại chỗ như mọi ô (D43 (Ô bỏ qua vùng thay chữ)).
+Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js, terminal của WebStorm) không được xử lý riêng: thay tại chỗ như mọi ô (D43 (Ô bỏ qua vùng thay chữ)).
 
 `InPlaceComposer.settleInterval` là ngưỡng chung cho các lần đọc dùng chữ để dựng từ (D20 nói vì sao). Phép chứng minh app chậm không chờ: nó không dựng từ từ chữ đọc được, chỉ quyết định thay ở vị trí nào.
 
