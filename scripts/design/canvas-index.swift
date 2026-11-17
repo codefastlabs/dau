@@ -47,7 +47,7 @@ func readme(_ path: String) {
     }
     print("# Bản chụp canvas thiết kế\n")
     print("Ảnh chụp các artboard trên trang \"Thiết kế\" của canvas mockup, để xem thiết kế đã duyệt mà "
-        + "không cần mở canvas trên claude.ai. Canvas vẫn là nơi sửa thiết kế (CLAUDE.md, mục Điều phối); "
+        + "không cần mở canvas trên claude.ai. Canvas vẫn là nơi sửa thiết kế (CLAUDE.md, mục \"Cách làm việc đã rút ra\", ý \"Giao diện\"); "
         + "thư mục này chỉ là bản chụp, sinh bằng `scripts/design/render-canvas.sh`, không sửa tay.\n")
     print("- `*.png`: ảnh chụp từng artboard.")
     print("- `src/*.dc.html`: nguồn của artboard (nội dung, câu chữ chính xác); agent đọc file này thay cho canvas.")
