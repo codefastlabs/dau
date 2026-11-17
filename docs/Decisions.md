@@ -158,7 +158,9 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
 - Appcast ở `https://dau.codefastlabs.com/appcast.xml`. Chỉ bản chính thức có URL appcast và khoá công khai EdDSA, nên chỉ bản chính thức kiểm tra và cài bản mới; bản phát triển không bao giờ bị Sparkle thay bằng bản khác Team ID.
 - Khi có kênh Beta, người dùng bật kênh đó trong app; không có cask Homebrew riêng cho Beta (D6 (Phát hành)).
 - Danh sách ứng dụng tương thích đi kèm app và đổi theo bản cập nhật app; không tải riêng.
-- Cài bản mới lúc người dùng không gõ, sau đó dừng tiến trình bộ gõ cũ để hệ thống nạp bản mới; cách thay bộ gõ đã cài ở D37, ý "Thay bộ gõ đã cài".
+- **Cửa sổ của Sparkle:** thông báo, tải và cài bản mới dùng cửa sổ chuẩn của Sparkle (có tiếng Việt và tiếng Anh, D41 (Ngôn ngữ giao diện)). Trang Cập nhật & hỗ trợ chỉ có nút "Kiểm tra bản mới…", giờ kiểm tra lần cuối và công tắc "Tự động kiểm tra bản mới".
+- **Khi nào kiểm tra:** Dấu.app thoát khi đóng cửa sổ cuối, nên chỉ kiểm tra lúc Dấu đang mở: khi mở Dấu, tối đa mỗi ngày một lần. Kiểm tra cả khi Dấu không mở để sau bản thử đầu.
+- **Không cài ngầm:** luôn hỏi người dùng trước khi cài. Cài xong Sparkle mở lại Dấu, và bản chủ vừa mở thay bộ gõ đã cài, lúc người dùng đang ở Dấu chứ không gõ ở app khác (D37, ý "Thay bộ gõ đã cài").
 - **Loại bản dựng:** ba trục độc lập, không có loại thứ tư.
   - Cấu hình build: Debug hoặc Release (D8 (Không telemetry) nói khác nhau ở đâu).
   - Người ký: **bản chính thức** là bản ký Developer ID của codefastlabs, đã notarize, và chỉ dựng bằng quy trình phát hành trên CI; mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**.
@@ -170,11 +172,11 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
 - Không phát hành dần theo số liệu và không có cờ tính năng điều khiển từ xa. Không dùng TestFlight.
 - Nhận diện từng loại bản: D25 (Nhận diện).
 
-**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)).
+**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. Cửa sổ của Sparkle thay cho thẻ trạng thái và thông báo tự vẽ: Sparkle đã có bản tiếng Việt và tự kiểm chữ ký trước khi cài, còn bản tự vẽ cần một user driver riêng và từng hứa điều chưa có (quay về bản trước, chữ ký "đã xác minh" trước khi tải, N5). Không cài ngầm: Sparkle cài ngầm lúc app thoát mà không mở lại app, nên bộ gõ cũ chạy tiếp tới lần mở Dấu sau. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)).
 
 ### D8. Không telemetry
 
-- Không telemetry. Báo lỗi qua GitHub issue điền sẵn hoặc "Sao chép nội dung" để gửi email.
+- Không telemetry. Báo lỗi chỉ qua GitHub issue điền sẵn; người dùng xem lại trước khi gửi. Không có đường email: Dấu chưa có địa chỉ nhận báo lỗi.
 - Không bao giờ gửi nội dung người dùng đã gõ.
 - Log chẩn đoán dùng `os.Logger`, nằm trên máy.
 - Bản phát hành không ghi gì theo từng phím, kể cả không có chữ.

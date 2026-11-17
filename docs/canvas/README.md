@@ -51,14 +51,13 @@
 
 ## Khác
 
-- [Trạng thái thẻ cập nhật](UpdateStates.png) · [nguồn](src/UpdateStates.dc.html)
-- [Thông báo cập nhật](Update.png) · [nguồn](src/Update.dc.html)
 - [Xác nhận quay về / gỡ cài đặt](ConfirmDialogs.png) · [nguồn](src/ConfirmDialogs.dc.html)
 - [Báo ứng dụng gõ lỗi](Report.png) · [nguồn](src/Report.dc.html)
 - [Menu nguồn đầu vào (hệ thống vẽ)](Main.png) · [nguồn](src/Main.dc.html)
 - [Khi gõ trong ứng dụng](TypingStates.png) · [nguồn](src/TypingStates.dc.html)
 - [Ảnh chia sẻ Open Graph 1200×630](OgImage.png) · [nguồn](src/OgImage.dc.html)
 - [Ảnh xem trước GitHub 1280×640](GithubPreview.png) · [nguồn](src/GithubPreview.dc.html)
+- [Cửa sổ ảnh đĩa DMG (bản chính thức)](DmgWindow.png) · [nguồn](src/DmgWindow.dc.html)
 
 ## Gỡ cài đặt
 

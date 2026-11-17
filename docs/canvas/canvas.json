@@ -288,19 +288,12 @@
       "x": 2940,
       "y": 8660
     },
-    "Update.dc.html": {
-      "h": 600,
-      "title": "Thông báo cập nhật",
-      "w": 760,
-      "x": 2940,
-      "y": 7260
-    },
-    "UpdateStates.dc.html": {
-      "h": 820,
-      "title": "Trạng thái thẻ cập nhật",
-      "w": 760,
-      "x": 2940,
-      "y": 6320
+    "DmgWindow.dc.html": {
+      "x": 2640,
+      "y": 13634,
+      "w": 900,
+      "h": 620,
+      "title": "Cửa sổ ảnh đĩa DMG (bản chính thức)"
     }
   },
   "createdOnFiles": {
@@ -379,8 +372,6 @@
     "SettingsAppsAddEmpty.dc.html",
     "SettingsAbout.dc.html",
     "SettingsAboutDev.dc.html",
-    "UpdateStates.dc.html",
-    "Update.dc.html",
     "ConfirmDialogs.dc.html",
     "UninstallRemoveSource.dc.html",
     "Report.dc.html",
@@ -395,7 +386,8 @@
     "MenuBarIcons.dc.html",
     "AppIconDev.dc.html",
     "Landing.dc.html",
-    "LandingMobile.dc.html"
+    "LandingMobile.dc.html",
+    "DmgWindow.dc.html"
   ],
   "pages": [
     {

@@ -164,7 +164,7 @@ Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/S
 
 Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 
-- Tới khi có Sparkle (M7), trang chỉ có thẻ phiên bản, mục "Hỗ trợ" với nút gỡ cài đặt và chú thích quyền riêng tư; không vẽ nút chưa chạy. Phần cập nhật (mục "Chưa có mã") và báo lỗi thêm lại khi chúng chạy được.
+- Tới khi có Sparkle (M7), trang chỉ có thẻ phiên bản, mục "Hỗ trợ" với nút gỡ cài đặt và chú thích quyền riêng tư; không vẽ nút chưa chạy. Phần cập nhật và hàng báo lỗi (mục "Chưa có mã") thêm khi chúng chạy được.
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9); luồng gỡ ở mục "Gỡ cài đặt".
 - Chú thích quyền riêng tư giữ đúng nội dung D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
 
@@ -241,27 +241,17 @@ Cài đặt và onboarding đều có, bằng màu hệ thống (D9).
 
 Mô tả nội dung tới khi dựng. Mọi câu hứa ở đây phải kiểm chứng ở M7 (N5).
 
-### Thẻ cập nhật
+### Cập nhật trên trang Cập nhật & hỗ trợ
 
-Artboard: [Trạng thái thẻ cập nhật](canvas/UpdateStates.png).
+Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png), [bản phát triển](canvas/SettingsAboutDev.png).
 
-Sáu trạng thái:
+- Chỉ bản chính thức có phần cập nhật (D7 (Cập nhật và loại bản dựng)): thẻ phiên bản có dòng "Kiểm tra lần cuối" và nút "Kiểm tra bản mới…"; hàng "Tự động kiểm tra bản mới" có công tắc. Bản phát triển không có cả ba.
+- Thông báo, tải và cài bản mới là cửa sổ của Sparkle (D7); trang không vẽ trạng thái tải hay cài.
+- Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") kiểm ở lượt chạy Sparkle cập nhật của M7.
 
-- đã mới nhất;
-- đang kiểm tra;
-- đang tải (thanh tiến trình, "Bạn vẫn gõ bình thường", nút Huỷ);
-- chờ cài ("Sẽ cài khi bạn ngừng gõ", nút Cài ngay);
-- không có mạng (nút Thử lại, "Dấu vẫn gõ bình thường");
-- chữ ký không hợp lệ ("Đã huỷ bản cập nhật", nút Báo lỗi…).
+### Hàng báo lỗi
 
-### Thông báo cập nhật
-
-Artboard: [Thông báo cập nhật](canvas/Update.png).
-
-- Icon app, "Đã có Dấu x.y.z", mô tả, "Có gì mới".
-- Dòng "Đã xác minh chữ ký số của bản cập nhật".
-- Checkbox "Tự động cài các bản sau".
-- Nút: Cài đặt / Nhắc sau / Bỏ qua bản này.
+- Mục "Hỗ trợ" có hàng "Ứng dụng gõ sai chữ" với nút "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi", ở mọi loại bản.
 
 ### Báo ứng dụng gõ lỗi
 
@@ -269,6 +259,6 @@ Artboard: [Báo ứng dụng gõ lỗi](canvas/Report.png).
 
 - Đầu sheet có ô gợi ý "Ứng dụng không chọn được Dấu?": đăng xuất rồi đăng nhập lại một lần; thoát rồi mở lại ứng dụng thì chưa đủ; vẫn lỗi thì gửi báo lỗi (D37).
 - Các trường: Ứng dụng (tự điền), Trang web (không bắt buộc), Loại lỗi (Mất chữ, Lặp chữ, Sai dấu, Khác), Ví dụ đã gõ.
-- Mục "Gửi kèm" liệt kê phiên bản macOS, phiên bản Dấu, kiểu gõ, phiên bản của ứng dụng gõ lỗi, và câu "Không gửi nội dung bạn đã gõ."
+- Mục "Gửi kèm" liệt kê phiên bản macOS, phiên bản Dấu, kiểu gõ, phiên bản của ứng dụng gõ lỗi, và câu "Chỉ gửi những gì có trong bảng này." (ô "Ví dụ đã gõ" có gửi, nên không hứa "không gửi chữ đã gõ").
 - Ghi rõ issue GitHub là công khai.
-- Nút: Huỷ / Sao chép nội dung / Mở trên GitHub (issue điền sẵn, D8).
+- Nút: Huỷ / Mở trên GitHub (issue điền sẵn, D8 (Không telemetry); không có đường email).

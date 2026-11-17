@@ -89,12 +89,15 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 11/11/2026: thêm ý "Thay bộ gõ đã cài" ở D37 và dẫn sang từ ý "Cài bản mới lúc người dùng không gõ"; ghi điều mã đã làm mà sổ chưa nói (`docs/research/InputMethodInstall.md` mục 6.2), phiên chính chốt. Số hiển thị ví dụ đổi từ "1.3 beta 2" thành "1.3.0 beta 2" (tag `v1.3.0-beta.2`) cho khớp dạng ba số của D25 và mã; luật không đổi.
 
 - 17/11/2026 (người dùng chốt khi lập kế hoạch M7): thêm URL appcast `https://dau.codefastlabs.com/appcast.xml` (chọn thay cho GitHub Pages, buộc URL vào GitHub, và `releases/latest/download`, không tính bản prerelease); chỉ bản chính thức có URL appcast; kênh Beta bật trong app, không có cask riêng; bản thử đầu "0.1.0 beta 1". Ba ý về loại bản đến từ câu hỏi mở "Loại bản dựng".
+- 17/11/2026 (người dùng chọn khi duyệt artboard M7): cửa sổ chuẩn của Sparkle thay cho thẻ cập nhật sáu trạng thái và thông báo tự vẽ (artboard "Trạng thái thẻ cập nhật", "Thông báo cập nhật" bỏ khỏi canvas); chỉ kiểm tra lúc Dấu mở; không cài ngầm. Bản trước, nguyên văn: "Cài bản mới lúc người dùng không gõ, sau đó dừng tiến trình bộ gõ cũ để hệ thống nạp bản mới; cách thay bộ gõ đã cài ở D37, ý "Thay bộ gõ đã cài"." Phương án đã loại: giữ bản tự vẽ (cần user driver riêng); thêm kiểm tra khi Dấu không mở (tiến trình nền, để sau bản thử đầu).
 
 ### D8. Không telemetry
 
 - 02/11/2026: nhật ký từng phím chỉ ở bản Debug, bật bằng `DauPerfLog` ("người dùng chốt 02/11/2026").
 
 - 11/11/2026: thêm ý log bộ gõ ở bản phát hành không ghi app đích hay thời điểm theo từng lần kích hoạt (hai dòng log Release từng ghi bundle ID ở mức công khai; rà soát bảo mật, người dùng duyệt).
+
+- 17/11/2026 (người dùng chọn khi duyệt artboard M7): bỏ đường email, chỉ còn GitHub issue điền sẵn; nút "Sao chép nội dung" bỏ khỏi sheet báo lỗi. Bản trước, nguyên văn: "Không telemetry. Báo lỗi qua GitHub issue điền sẵn hoặc "Sao chép nội dung" để gửi email." Lý do: repo chưa có địa chỉ email nhận báo lỗi.
 
 ### D9. Giao diện
 

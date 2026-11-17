@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Cửa sổ DMG</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+body{margin:0}
+.tl{position:absolute;top:9px;width:12px;height:12px;border-radius:6px;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.15)}
+.item{position:absolute;top:116px;width:160px;display:flex;flex-direction:column;align-items:center;gap:6px}
+.lbl{font-size:13px;line-height:16px;color:#000;padding:1px 4px;border-radius:4px}
+</style>
+</helmet>
+<div style="width: 900px; height: 620px; position: relative; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif">
+<div aria-hidden="true" style="position: absolute; inset: 0; background: #1c2f4a; overflow: hidden">
+<div style="position: absolute; width: 620px; height: 620px; border-radius: 50%; background: #2d6cb5; left: -160px; top: -220px"></div>
+<div style="position: absolute; width: 520px; height: 520px; border-radius: 50%; background: #e08a3c; right: -140px; bottom: -200px"></div>
+<div style="position: absolute; width: 380px; height: 380px; border-radius: 50%; background: #6a4fa3; right: 120px; top: -120px"></div>
+<div style="position: absolute; width: 300px; height: 300px; border-radius: 50%; background: #2f8f7a; left: 180px; bottom: -150px"></div>
+</div>
+<div role="img" aria-label="Cửa sổ Finder của ảnh đĩa Dấu: biểu tượng Dấu bên trái, mũi tên, thư mục Applications bên phải" style="position: absolute; left: 130px; top: 96px; width: 640px; height: 428px; border-radius: 12px; overflow: hidden; background: #F6F1E7; box-shadow: 0 0 0 1px rgba(0,0,0,.18), 0 28px 70px rgba(0,0,0,.45)">
+<div style="position: relative; height: 28px; background: #ececec; box-shadow: inset 0 -1px 0 rgba(0,0,0,.1); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: rgba(0,0,0,.85)">
+<span class="tl" style="left: 10px; background: #ff5f57"></span><span class="tl" style="left: 30px; background: #febc2e"></span><span class="tl" style="left: 50px; background: #28c840"></span>Dấu</div>
+<div style="position: relative; height: 400px">
+<div class="item" style="left: 80px">
+<svg width="128" height="128" viewBox="0 0 100 100" aria-hidden="true"><rect x="0" y="0" width="100" height="100" rx="22.4" fill="#10285A"></rect><text x="48" y="80" text-anchor="middle" font-family="'Be Vietnam Pro', -apple-system, 'Helvetica Neue', sans-serif" font-weight="700" font-size="64" fill="#F6F1E7">a</text><path d="M34 35 L47 25 L60 35" fill="none" stroke="#F6F1E7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M63 24 L73 13" fill="none" stroke="#E0533D" stroke-width="7.5" stroke-linecap="round"></path></svg>
+<span class="lbl">Dấu</span></div>
+<svg width="120" height="40" viewBox="0 0 120 40" aria-hidden="true" style="position: absolute; left: 260px; top: 160px"><path d="M6 20 H108" fill="none" stroke="#10285A" stroke-opacity="0.45" stroke-width="4" stroke-linecap="round"></path><path d="M94 8 L110 20 L94 32" fill="none" stroke="#10285A" stroke-opacity="0.45" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+<div class="item" style="left: 400px">
+<svg width="128" height="128" viewBox="0 0 128 128" aria-hidden="true"><path d="M10 30 Q10 22 18 22 H50 Q55 22 58 27 L62 33 H110 Q118 33 118 41 V100 Q118 108 110 108 H18 Q10 108 10 100 Z" fill="#5CB3F7"></path><path d="M10 44 Q10 38 16 38 H112 Q118 38 118 44 V100 Q118 108 110 108 H18 Q10 108 10 100 Z" fill="#7CC4FA"></path><g fill="none" stroke="#3B8FD6" stroke-width="5" stroke-linecap="round"><path d="M54 92 L64 56 L74 92"></path><path d="M50 80 H78"></path></g></svg>
+<span class="lbl">Applications</span></div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":900,"height":620}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -35,7 +35,7 @@ Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bả
 - Rà entitlement của bộ gõ trước khi notarize: thử bỏ `temporary-exception.mach-register.global-name` (xem [`docs/Architecture.md`](Architecture.md)).
 - GitHub Actions: test ở mỗi lần đẩy mã, build phát hành từ tag, chạy cả test hiệu năng của engine (`PerformanceTests`).
 - Homebrew cask `dau` với `auto_updates true` trong tap riêng `codefastlabs/homebrew-tap` (D6 (Phát hành)).
-- Báo lỗi (URL issue điền sẵn, D8 (Không telemetry)); câu gợi ý của hàng báo lỗi trong `UpdatesSupportView` theo N5 (hàng cũ "Gặp ứng dụng gõ bị lỗi?" đã bỏ 13/11/2026).
+- Báo lỗi (URL issue điền sẵn, D8 (Không telemetry)); hàng "Ứng dụng gõ sai chữ" trong `UpdatesSupportView` theo artboard "Cập nhật & hỗ trợ".
 - Loại bản dựng (D7, D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
   - cũng bước kiểm đó: binary của Dấu.app và bộ gõ đã lược ký hiệu cục bộ (`nm`; archive lược, `xcodebuild build` thì không), và dSYM của mỗi bản phát hành được lưu lại để đọc được báo lỗi crash;
