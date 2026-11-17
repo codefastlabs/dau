@@ -15,7 +15,9 @@
 # Usage:
 #   scripts/selftest/typing/run.sh [options] <app>...
 #     app:  safari | chrome | vscode | terminal | edge | firefox | notes | mail | cursor
-#           | cursoragents (the prompt box of Cursor's agents window) | vscodefile (VS Code
+#           | cursoragents (the prompt box of Cursor's agents window) | cursorchat (the agent
+#           prompt box inside an IDE window of Cursor, opened with ⌘L; same app, other kind
+#           of window) | vscodefile (VS Code
 #           opened on a file, as cursor is) | sublime (Sublime Text) | ghostty (Ghostty)
 #           | ghosttyvim (vim in insert mode in a Ghostty window) | xterm (xterm.js in a
 #           Chrome page: the terminal of Electron apps such as the Claude desktop app)
@@ -267,7 +269,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -1593,7 +1595,9 @@ run_webstormterm() {
   return 0
 }
 
-# The prompt box of Cursor's "Cursor Agents" window. ⌘N starts a new agent with an empty
+# The prompt box of the "Cursor Agents" window of Cursor (one app, one process, two kinds of
+# window: this one and the IDE windows; the agent prompt box exists in both, run_cursorchat).
+# ⌘N starts a new agent with an empty
 # prompt; a prompt that is not empty (the user's draft) stops the run before anything is
 # typed. Return is never sent: nothing goes to an agent. The prompt is emptied at the end.
 run_cursoragents() {
@@ -1621,6 +1625,76 @@ run_cursoragents() {
     key code 51
   end tell' >/dev/null
 }
+
+# The same prompt box in the IDE window. Cursor is one app and one process with two kinds
+# of window: the "Cursor Agents" window (run_cursoragents) and IDE windows (run_cursor opens
+# one with `cursor --new-window <file>`). Observed on Cursor 3.30.14: ⌘L in an IDE window
+# opens a "New Agent" tab on the left of the window, with the same prompt box (placeholder
+# "Plan, Build, / for skills, @ for context") and the editor pushed to the right. That is
+# where IDE users write to the agent, and it is the cell this one measures.
+# Steps: the IDE window on an empty file of this run (raised, as Cursor may keep the agents
+# window focused); ⌘L through the guard, so the key only goes to that window; then the
+# focus must be in the prompt box before anything is typed (Accessibility: the focused
+# element is the prompt, role AXTextArea, description "Prompt"); a box that is not empty
+# (a draft) stops the run. Return is never sent: nothing goes to an agent. At the end the
+# box is emptied, the agent tab closed with ⌘W, and the window closed without saving (the
+# file is this run's own and empty).
+# Seen 17/11/2026 (Cursor 3.30.14): ⌘L moves the focus into the box by itself, and the
+# focused element is AXTextArea "Prompt"; the placeholder is not exposed through
+# AXPlaceholderValue, AXDescription, AXTitle or AXValue. Not checked yet: that ⌘A ⌘C in the
+# box puts its text on the clipboard; that the window title stays the file's name while the
+# agent tab is in front.
+# Status 0 when the focused element of Cursor is the agent prompt box.
+cursor_chat_focus() {
+  local out
+  # Electron builds its accessibility tree only when asked: without AXManualAccessibility
+  # the process has no focused element at all (seen 17/11/2026). Setting it lasts for this
+  # Cursor process only.
+  osascript -e 'tell application "System Events" to tell process "Cursor" to set value of attribute "AXManualAccessibility" to true' >/dev/null 2>&1
+  out="$(osascript -e 'tell application "System Events" to tell process "Cursor" to get {role, description} of (value of attribute "AXFocusedUIElement")' 2>/dev/null)"
+  [[ "$out" == "AXTextArea, Prompt" ]]
+}
+run_cursorchat() {
+  local file="$WORK/dau-selftest.txt" draft
+  open_editor_window Cursor /Applications/Cursor.app/Contents/Resources/app/bin/cursor "$file"
+  # The window takes a moment to load after it is in front: a ⌘L sent at once was lost
+  # three times out of three (17/11/2026), after 3 s it opened the agent tab.
+  osascript -e 'tell application "System Events" to tell process "Cursor" to set value of attribute "AXManualAccessibility" to true' >/dev/null 2>&1
+  sleep 3
+  guarded Cursor dau-selftest 'tell application "System Events" to keystroke "l" using {command down}' \
+    >/dev/null || { cursorchat_close; return 0; }
+  if ! wait_until -i 0.3 10 cursor_chat_focus; then
+    log_error "Dừng: focus của Cursor không nằm trong ô nhập của agent (phần tử focus không phải ô \"Prompt\") — không gõ gì"
+    stop_run front "focus không nằm trong ô nhập agent của cửa sổ IDE Cursor, hoặc ô không trống"
+    cursorchat_close
+    return 0
+  fi
+  draft="$(copy_all Cursor dau-selftest)"
+  if [[ -n "$draft" ]]; then
+    log_error "Dừng: ô nhập agent của Cursor không trống — không gõ gì"
+    stop_run front "ô nhập agent của cửa sổ IDE Cursor không trống"
+    cursorchat_close
+    return 0
+  fi
+  select_dau; type_keys Cursor dau-selftest
+  copy_all Cursor dau-selftest
+  cursorchat_close
+}
+# Empties the box, closes the agent tab, then the window without saving. The keys go
+# through the guard; if the guard refuses (the window is not the front one), nothing is
+# sent and the window is left for the user to close.
+cursorchat_close() {
+  guarded Cursor dau-selftest 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+    delay 0.2
+    keystroke "w" using {command down}
+    delay 0.5
+  end tell' >/dev/null
+  osascript -e 'tell application "System Events" to tell process "Cursor" to click (first button of (first window whose name contains "dau-selftest") whose subrole is "AXCloseButton")' >/dev/null 2>&1
+}
+
 
 # Sets $win to Terminal's front window, if it has one.
 terminal_front_window() {
@@ -2045,7 +2119,7 @@ bundle_id() {
     terminal) echo com.apple.Terminal ;;
     edge) echo com.microsoft.edgemac ;; firefox) echo org.mozilla.firefox ;;
     notes) echo com.apple.Notes ;; mail) echo com.apple.mail ;;
-    cursor|cursoragents) echo com.todesktop.230313mzl4w4u92 ;;
+    cursor|cursoragents|cursorchat) echo com.todesktop.230313mzl4w4u92 ;;
     vscodefile) echo com.microsoft.VSCode ;;
     sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
     xterm|tiptap) echo com.google.Chrome ;;
