@@ -32,6 +32,8 @@ typeset -A guarded=(
   [scripts/research/terminal-underline/real-shell.sh]="always"
   [scripts/dev/install-app.sh]="unless --build-only"
   [scripts/dev/clean-dau.sh]="with --yes"
+  [scripts/release/layout-dmg.sh]="always"
+  [scripts/release/build-release.sh]="with --layout"
 )
 runners=(zsh bash sh source . env time nohup exec command)
 

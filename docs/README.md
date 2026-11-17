@@ -24,6 +24,7 @@ Theo thứ tự trong [CLAUDE.md](../CLAUDE.md):
 | [`docs/Website.md`](Website.md) | nội dung và quy tắc của trang tải về và trang so sánh cách gõ |
 | [`docs/Compatibility.md`](Compatibility.md) | ma trận ứng dụng: cách thử, kết quả, giới hạn đã biết |
 | [`docs/Glossary.md`](Glossary.md) | thuật ngữ Anh–Việt của chuỗi giao diện và cách viết câu tiếng Anh |
+| [`docs/Releasing.md`](Releasing.md) | phát hành: việc của người dùng (tài khoản, khoá, secret), phát hành một tag, chế độ không ký |
 | [`docs/Troubleshooting.md`](Troubleshooting.md) | sự cố đã gặp khi dùng và khi phát triển, cách xử lý |
 | [`scripts/README.md`](../scripts/README.md) | thư mục script, tác dụng phụ, quy ước viết script |
 

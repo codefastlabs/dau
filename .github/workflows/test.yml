@@ -1,0 +1,51 @@
+# Tests on every push and pull request: engine (with PerformanceTests), shared package, host app,
+# input method. None of them needs the screen (CONTRIBUTING.md, "Chạy test").
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read-only: this workflow publishes nothing.
+permissions:
+  contents: read
+
+concurrency:
+  group: test-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Exact Xcode, not the image default (27.1): the one the project is developed with.
+  DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
+
+jobs:
+  test:
+    # macOS 27 arm64 image, a GitHub preview (actions/runner-images, xcode-27-arm64-Readme.md).
+    runs-on: xcode-27
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Engine tests (with PerformanceTests)
+        run: swift test --package-path Packages/DauEngine
+
+      - name: Shared package tests
+        run: swift test --package-path Packages/DauShared
+
+      - name: Host app tests
+        run: swift test --package-path Apps/Dau/Tests
+
+      - name: Input method tests
+        run: |
+          xcodegen generate
+          # Ad-hoc signed, no team: the logic tests need no App Group.
+          xcodebuild test -project Dau.xcodeproj -scheme DauInputMethod \
+            -destination 'platform=macOS' \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=

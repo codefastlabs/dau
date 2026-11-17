@@ -22,7 +22,7 @@ Các lệnh `swift test` dưới đây cần Xcode được chọn (`xcode-selec
 |---|---|---|
 | Engine: quy tắc gõ, đặt dấu, chính tả, khôi phục từ (`Packages/DauEngine`) | Không | `swift test --package-path Packages/DauEngine` |
 | Phần dùng chung (`Packages/DauShared`) | Không | `swift test --package-path Packages/DauShared` |
-| Bộ gõ (`Apps/DauInputMethod`): logic thuần, không cần cài | Chưa thử khi không có Team | `xcodegen generate`, rồi `xcodebuild test -project Dau.xcodeproj -scheme DauInputMethod -destination 'platform=macOS'` |
+| Bộ gõ (`Apps/DauInputMethod`): logic thuần, không cần cài | Không (ký tạm, không Team: đã chạy 17/11, như CI) | `xcodegen generate`, rồi `xcodebuild test -project Dau.xcodeproj -scheme DauInputMethod -destination 'platform=macOS' CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=` |
 | App chủ (`Apps/Dau`): cài bộ gõ, onboarding, cửa sổ Cài đặt dựng trong test (không hiện lên màn hình) | Không | `swift test --package-path Apps/Dau/Tests` |
 
 Khẳng định về hiệu năng của engine cần số đo. Test hiệu năng chạy trong mọi `swift test` (ngưỡng lỏng); số đo lấy từ bản Release: `swift test -c release --package-path Packages/DauEngine --filter Performance` (`docs/Architecture.md`).
@@ -69,6 +69,7 @@ Quy ước đầy đủ nằm trong [CLAUDE.md](CLAUDE.md), áp dụng cho cả 
 - Engine và OpenKey (không chép mã từ OpenKey hay UniKey; đáp án test theo chính tả và `Decisions.md`): mục "OpenKey là tài liệu tham khảo, không phải đáp án".
 - Viết tài liệu: mục "Viết tài liệu".
 - Script trong `scripts/`: [`scripts/README.md`](scripts/README.md).
+- Phát hành (tag, DMG, ký, appcast, secret của CI): [`docs/Releasing.md`](docs/Releasing.md).
 
 Thêm cho người đóng góp:
 

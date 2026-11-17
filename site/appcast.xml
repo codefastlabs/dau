@@ -1,0 +1,9 @@
+<?xml version="1.0" standalone="yes"?>
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
+    <channel>
+        <title>Dấu</title>
+        <link>https://dau.codefastlabs.com/appcast.xml</link>
+        <description>Bản cập nhật của Dấu, bộ gõ tiếng Việt cho macOS.</description>
+        <language>vi</language>
+    </channel>
+</rss>

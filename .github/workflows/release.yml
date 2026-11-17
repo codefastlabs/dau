@@ -1,0 +1,86 @@
+# Release: a tag vX.Y.Z or vX.Y.Z-beta.N builds Dấu with scripts/release/build-release.sh and
+# makes a DRAFT GitHub release with the DMG and the dSYMs. Nothing is published and the
+# appcast is not touched (docs/Releasing.md, "Phát hành một tag").
+# With the secrets below the build is signed with Developer ID, notarized and the appcast is
+# signed; without them it runs unsigned and still makes a draft (an unsigned DMG, no appcast).
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+# Needed to create the draft release; nothing else.
+permissions:
+  contents: write
+
+env:
+  DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
+  # Whether the certificate secret is set (a boolean, not the secret): `if:` cannot read secrets.
+  DAU_HAS_DEVELOPER_ID: ${{ secrets.DAU_DEVELOPER_ID_P12 != '' }}
+
+# Secrets live only in the env of the two steps that use them, never workflow-wide: other
+# steps run third-party code (Homebrew formulae, actions).
+jobs:
+  release:
+    runs-on: xcode-27
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # The build number comes from the commit count of HEAD: needs the whole history.
+          fetch-depth: 0
+
+      - name: Xcode version
+        run: xcodebuild -version
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Import the Developer ID certificate
+        if: env.DAU_HAS_DEVELOPER_ID == 'true'
+        env:
+          DAU_DEVELOPER_ID_P12: ${{ secrets.DAU_DEVELOPER_ID_P12 }}
+          DAU_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DAU_DEVELOPER_ID_P12_PASSWORD }}
+        run: |
+          keychain="$RUNNER_TEMP/dau-release.keychain-db"
+          password="$(uuidgen)"
+          security create-keychain -p "$password" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$password" "$keychain"
+          printf '%s' "$DAU_DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/dau-cert.p12"
+          security import "$RUNNER_TEMP/dau-cert.p12" -k "$keychain" -P "$DAU_DEVELOPER_ID_P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+          rm -f "$RUNNER_TEMP/dau-cert.p12"
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain" >/dev/null
+          security list-keychains -d user -s "$keychain" login.keychain-db
+          echo "DAU_KEYCHAIN=$keychain" >> "$GITHUB_ENV"
+
+      - name: Build the release
+        id: build
+        # Passed to the script by name (scripts/release/build-release.sh, "Mode").
+        env:
+          DAU_TEAM_ID: ${{ secrets.DAU_TEAM_ID }}
+          DAU_SPARKLE_PUBLIC_KEY: ${{ secrets.DAU_SPARKLE_PUBLIC_KEY }}
+          DAU_SPARKLE_PRIVATE_KEY: ${{ secrets.DAU_SPARKLE_PRIVATE_KEY }}
+          DAU_NOTARY_KEY: ${{ secrets.DAU_NOTARY_KEY }}
+          DAU_NOTARY_KEY_ID: ${{ secrets.DAU_NOTARY_KEY_ID }}
+          DAU_NOTARY_ISSUER_ID: ${{ secrets.DAU_NOTARY_ISSUER_ID }}
+        run: scripts/release/build-release.sh --tag "$GITHUB_REF_NAME" --layout
+
+      - name: Summary
+        run: cat build/release/summary.txt
+
+      - name: Draft GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=(--draft --title "Dấu ${{ steps.build.outputs.display }}" --generate-notes)
+          case "$GITHUB_REF_NAME" in *-beta.*) flags+=(--prerelease) ;; esac
+          files=("${{ steps.build.outputs.dmg }}" "${{ steps.build.outputs.dsyms }}")
+          # The updated appcast is a release asset, not published: docs/Releasing.md.
+          if [ -n "${{ steps.build.outputs.appcast }}" ]; then files+=("${{ steps.build.outputs.appcast }}"); fi
+          gh release create "$GITHUB_REF_NAME" "${flags[@]}" "${files[@]}"
+
+      - name: Remove the keychain
+        if: always() && env.DAU_KEYCHAIN != ''
+        run: security delete-keychain "$DAU_KEYCHAIN" || true
