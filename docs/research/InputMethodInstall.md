@@ -169,7 +169,7 @@ Thêm: một app gọi TIS lúc bất kỳ có thể dựng lại bộ đệm (v
   - sau khi System Settings gỡ Dấu bằng "–", TIS trong tiến trình mới vẫn báo `enabled=true` [Máy/Dấu, 02/11/2026];
   - mode Telex của Apple báo enabled=1 trong khi mục cha báo 0 [Máy/hệ thống, 30/10/2026];
   - McBopomofo, vChewing (từ macOS 12) và marinaMoji ghi cờ này có thể báo sai; msime thấy danh sách TIS không ổn định vài phút sau khi thay bundle. [Ngoài]
-- Vì vậy app tính "đã bật" bằng mục lưu trong `com.apple.inputsources` (D37), "đang chọn" bằng nguồn hiện hành của TIS. `scripts/lib/input-source.swift` của các script thử cũng đọc theo cách này.
+- Vì vậy app tính "đã bật" bằng mục lưu trong `com.apple.inputsources` (D37), "đang chọn" bằng nguồn hiện hành của TIS. `scripts/lib/InputSource.swift` của các script thử cũng đọc theo cách này.
 
 ## 5. Gỡ
 

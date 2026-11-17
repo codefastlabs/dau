@@ -46,7 +46,7 @@ import SwiftUI
 /// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào"
 /// sheet, laid out without running anything), `--capture-report` (the "Báo ứng dụng gõ
 /// lỗi" sheet on fixed sample content; nothing is opened or sent). The Settings window
-/// itself is measured from outside, in the real app (`--settings-window`, ax-check.swift).
+/// itself is measured from outside, in the real app (`--settings-window`, AXCheck.swift).
 @MainActor
 enum DebugCapture {
     /// Frames the onboarding window's layout probes report, while capturing; a view that

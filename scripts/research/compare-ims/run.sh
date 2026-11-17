@@ -32,7 +32,7 @@ done
 
 OUT="$ROOT/build/compare-ims/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
-CASES=$(dau_swift_tool compare-ims-cases "$HERE/cases.swift") || exit 1
+CASES=$(dau_swift_tool compare-ims-cases "$HERE/Cases.swift") || exit 1
 KEYS="$("$CASES" keys)"
 EXPECT="$("$CASES" expect)"
 

@@ -24,8 +24,8 @@ set -uo pipefail
 ROOT="${0:A:h:h:h:h}"
 source $ROOT/scripts/lib/log.sh
 source $ROOT/scripts/lib/swift-tool.sh
-CLIP="$(dau_swift_tool clipboard $ROOT/scripts/selftest/typing/clipboard.swift)" || exit 1
-SRC="$(dau_swift_tool input-source $ROOT/scripts/lib/input-source.swift)" || exit 1
+CLIP="$(dau_swift_tool clipboard $ROOT/scripts/selftest/typing/Clipboard.swift)" || exit 1
+SRC="$(dau_swift_tool input-source $ROOT/scripts/lib/InputSource.swift)" || exit 1
 
 OUT=$ROOT/build/terminal-underline/real-shell.txt; mkdir -p ${OUT:h}
 WANT=$1 LABEL=$2; shift 2

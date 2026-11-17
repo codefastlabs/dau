@@ -171,8 +171,8 @@ if defaults read -g "$FORCE_KEY" >/dev/null 2>&1; then
   exit 1
 fi
 
-INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/input-source.swift")" || exit 1
-CLIPBOARD="$(dau_swift_tool clipboard "$ROOT/scripts/selftest/typing/clipboard.swift")" || exit 1
+INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/InputSource.swift")" || exit 1
+CLIPBOARD="$(dau_swift_tool clipboard "$ROOT/scripts/selftest/typing/Clipboard.swift")" || exit 1
 
 OUT="$ROOT/build/load/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"

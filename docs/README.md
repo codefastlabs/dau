@@ -49,7 +49,7 @@ Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hi�
 
 ## Lưu trữ
 
-Ghi lại quá khứ, không sửa theo hiện trạng.
+Ghi lại quá khứ, không sửa theo hiện trạng. Riêng tên file và đường dẫn được sửa khi file đổi tên, để liên kết và tìm kiếm vẫn đúng.
 
 | File | Chứa gì |
 |---|---|

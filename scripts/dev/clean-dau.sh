@@ -22,7 +22,7 @@
 #       com.apple.HIToolbox › AppleEnabledInputSources / AppleInputSourceHistory:
 #         removed with `defaults import`, after the whole domain is exported to a backup
 #         file under the temp directory (its path is printed);
-#       the entries are counted and filtered by scripts/lib/input-source.swift (`count`,
+#       the entries are counted and filtered by scripts/lib/InputSource.swift (`count`,
 #       `drop`), built into build/tools/ on the first run;
 #       com.apple.inputsources › AppleEnabledThirdPartyInputSources (where macOS keeps
 #         third-party sources that are enabled): only reported. macOS lets only its input
@@ -94,7 +94,7 @@ for d in "$LIB"/Containers/com.{codefastlabs,example}.dau{,.*} \
 done
 
 # Input source preferences: count Dấu's entries per array, without changing anything.
-INPUT_SOURCE=$(dau_swift_tool input-source "${0:A:h:h}/lib/input-source.swift") || exit 1
+INPUT_SOURCE=$(dau_swift_tool input-source "${0:A:h:h}/lib/InputSource.swift") || exit 1
 inputsource_entries() { # domain key
   defaults export "$1" - 2>/dev/null | "$INPUT_SOURCE" count "$2" "$ID_PATTERN"
 }

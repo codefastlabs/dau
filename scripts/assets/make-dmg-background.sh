@@ -25,7 +25,7 @@ source "${0:A:h:h}/lib/log.sh"
 source "${0:A:h:h}/lib/xcode.sh"
 source "${0:A:h:h}/lib/swift-tool.sh"
 dau_developer_dir
-TOOL=$(dau_swift_tool make-dmg-background "$ROOT/scripts/assets/make-dmg-background.swift") || exit 1
+TOOL=$(dau_swift_tool make-dmg-background "$ROOT/scripts/assets/MakeDmgBackground.swift") || exit 1
 
 log_step "Dựng nền cửa sổ DMG"
 TMP="$(mktemp -d)"

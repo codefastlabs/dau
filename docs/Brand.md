@@ -43,7 +43,7 @@ Các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh x
 
 ## Biểu tượng thanh menu (input mode)
 - Một ảnh template đơn sắc: ô bo tròn tô đặc, chữ "V" khoét rỗng.
-  - Cùng kiểu và cùng cỡ với ô "A" của U.S.: ô 22 × 16 pt, góc bo 4 pt; chữ 9 × 8,5 pt căn giữa (đo trên thanh menu Retina 30/10/2026, `scripts/assets/make-mode-icons.swift`).
+  - Cùng kiểu và cùng cỡ với ô "A" của U.S.: ô 22 × 16 pt, góc bo 4 pt; chữ 9 × 8,5 pt căn giữa (đo trên thanh menu Retina 30/10/2026, `scripts/assets/MakeModeIcons.swift`).
   - Để macOS tự tô màu theo nền.
 - Cách khai ảnh template trong Info.plist: [`docs/Architecture.md`](Architecture.md), mục "Bundle: biểu tượng, ký, entitlements".
 - Ô chỉ báo vẽ chính ảnh này màu trắng.

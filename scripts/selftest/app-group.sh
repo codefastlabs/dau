@@ -31,7 +31,7 @@
 #      test fails or is interrupted.
 #
 # The "Dấu is enabled" check is cross-checked against com.apple.inputsources ›
-# AppleEnabledThirdPartyInputSources (input-source.swift): TIS alone has been wrong.
+# AppleEnabledThirdPartyInputSources (InputSource.swift): TIS alone has been wrong.
 #
 # `synchronize=failed` from the app is only reported, not a failure: on macOS 27 the
 # App Group suite's synchronize() returns false even when the write goes through (the
@@ -60,7 +60,7 @@ DERIVED="$DAU_DERIVED"
 PRODUCTS="$DERIVED/Build/Products/Debug"
 APP_BIN="$PRODUCTS/Dau.app/Contents/MacOS/Dau"
 IM_APP="$HOME/Library/Input Methods/DauInputMethod.app"
-HELPER_SRC="$ROOT/scripts/lib/input-source.swift"
+HELPER_SRC="$ROOT/scripts/lib/InputSource.swift"
 HELPER="$ROOT/build/tools/input-source"   # built by dau_swift_tool below
 # How long the input method gets to log the reload after the app saved a setting.
 RELOAD_TIMEOUT=10

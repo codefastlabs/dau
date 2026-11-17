@@ -27,13 +27,13 @@
 //   --pixels       (Always scroll bars) Primary display: per section the scroll room rule
 //                  (a) and a screenshot; on the section that overflows
 //                  (Reference.scrollingSection) a scroll through its scroll bar, the
-//                  scroll bar's lane (d) and a second screenshot. check.swift reads the
+//                  scroll bar's lane (d) and a second screenshot. Check.swift reads the
 //                  screenshots for (b)–(d).
 //   --sheet-shots  Primary display: screenshots of the add-rule sheet, empty and with a
 //                  row selected (no rows: --geometry checks the sheet).
 // Screenshots are `screencapture -l` of the Settings window only (an attached sheet is
 // in it), named <name>-<scale>x.png; <output-dir>/frames.json holds the frames of every
-// screenshot (window points, origin at the window's top-left) for check.swift, plus
+// screenshot (window points, origin at the window's top-left) for Check.swift, plus
 // "meta": the primary display's scale and the appearance.
 //
 // Results, one row each, `display | page | metric | expected | got | result`:
@@ -630,7 +630,7 @@ func measureSection(_ d: String, _ tag: String, _ index: Int) {
         }
     }
 
-    if let scroller = pageScrollBar() { shot["scroller"] = rel(scroller) }   // whenScrolling: for check.swift to leave out
+    if let scroller = pageScrollBar() { shot["scroller"] = rel(scroller) }   // whenScrolling: for Check.swift to leave out
 
     // Pixels: where the text of an unselected sidebar row begins.
     if let rep = screenshot(d, page, "\(page)-\(tag)", frames: shot) {
@@ -1259,9 +1259,9 @@ func measureFixedSidebar() {
 
 // MARK: - Always scroll bars (--pixels)
 
-/// Per section: the scroll room rule (a) and a screenshot for check.swift (b), (c). On
+/// Per section: the scroll room rule (a) and a screenshot for Check.swift (b), (c). On
 /// Reference.scrollingSection: scrolled through its scroll bar, the bar's lane (d) and a
-/// second screenshot (check.swift compares the header).
+/// second screenshot (Check.swift compares the header).
 func measurePixels(_ d: String, _ tag: String) {
     for index in sections.indices {
         let page = sections[index]
@@ -1293,7 +1293,7 @@ func measurePixels(_ d: String, _ tag: String) {
 
         guard page == Reference.scrollingSection else { continue }
         // (d) Item 10: the page that overflows shows a scroll bar; scrolled through it, the
-        // header keeps covering the content (check.swift) and the bar stays in its lane.
+        // header keeps covering the content (Check.swift) and the bar stays in its lane.
         // No page overflows the default window, so the window goes to its smallest height
         // first (the width is fixed) and back to the default size after.
         guard drive(d, page, "shrink the window", set(window, kAXSizeAttribute, axSize(Reference.probeSmallSize))) else { continue }

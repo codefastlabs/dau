@@ -1,5 +1,5 @@
 // Every pass value of the Settings window UI checks, in one place. Compiled together
-// with ax-check.swift (the real window, through the Accessibility API) and check.swift
+// with AXCheck.swift (the real window, through the Accessibility API) and Check.swift
 // (pixels of its screenshots, and the in-app onboarding and uninstall captures) by
 // run.sh; docs/UIChecks.md holds no numbers, it points here. Unit: pt, origin at the
 // window's (or sheet's) top-left, unless a name says otherwise.
@@ -63,7 +63,7 @@ enum Reference {
     static let appsSearchRightInset: ClosedRange<CGFloat> = 4...24
     /// Apps toolbar "+": the drawn button is as wide as tall within this (its
     /// accessibility frame is the toolbar item's, taller than wide, so the round shape
-    /// is read from pixels; check.swift (e)).
+    /// is read from pixels; Check.swift (e)).
     static let addButtonRoundTolerance: CGFloat = 2
     /// Probe: a pixel belongs to the "+" button when a channel is this far (of 255) from
     /// the toolbar color at the top of the button's frame.

@@ -210,7 +210,7 @@
 # After selecting the Dấu input source the script checks that Dấu is the current source
 # (TIS is trusted for the current source only); if not, it stops and exits with status 4.
 # The "Dấu is enabled" check is cross-checked against com.apple.inputsources ›
-# AppleEnabledThirdPartyInputSources (input-source.swift).
+# AppleEnabledThirdPartyInputSources (InputSource.swift).
 #
 # Exit status: 0 if every app gives the expected text (or, with --keys and no --expect,
 # the run finished: no verdict); 1 if an app gave other text; 3 the run stopped on a failed
@@ -321,8 +321,8 @@ elif (( KEYS2_GIVEN || EXPECT2_GIVEN )); then
 fi
 
 # --- helpers -------------------------------------------------------------------------
-INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/input-source.swift")" || exit 1
-CLIPBOARD="$(dau_swift_tool clipboard "$HERE/clipboard.swift")" || exit 1
+INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/InputSource.swift")" || exit 1
+CLIPBOARD="$(dau_swift_tool clipboard "$HERE/Clipboard.swift")" || exit 1
 
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
 [[ -f "$IM_PLIST" ]] || log_die "Chưa cài bộ gõ: chạy scripts/dev/install-app.sh, rồi mở Dấu trong /Applications và bấm \"Bật Dấu\"."

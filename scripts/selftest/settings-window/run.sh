@@ -24,14 +24,14 @@
 #   3. --capture-uninstall                     uninstall/ (alerts laid out, nothing removed)
 #   4. --capture-report                        report/ (sample content, nothing opened or sent)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
-# ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
+# AXCheck.swift through the Accessibility API; screenshots are `screencapture -l` of the
 # Settings window only. Launch 5 also sends Tab and ⌘F key events and a mouse wheel over the
 # add-rule sheet's list (the pointer moves):
 #   5. When scrolling scroll bars              real/                  ax-check --geometry
 #   6. Always scroll bars                      always/                ax-check --pixels
 #   7. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
 # The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (Apps/Dau/Tests).
-# Then check.swift checks the screenshots' pixels and the in-app captures.
+# Then Check.swift checks the screenshots' pixels and the in-app captures.
 # What each real-window launch covers (the rows each item of docs/UIChecks.md reads):
 #   5. the focus at launch (launch-focus), the page at launch; on every display (one
 #      pass per pixel scale, labelled 2x/1x) every section against Reference.swift; on
@@ -46,7 +46,7 @@
 # The screens of the onboarding captures and their fake services: DebugCapture.swift
 # (Apps/Dau/Sources). No launch uses `Automatic` scroll bars: the system turns it into
 # When scrolling or Always, both run. Waits, retries, FAIL and HARNESS rows: the header of
-# ax-check.swift; the letter checks (a)–(h): the headers of ax-check.swift and check.swift.
+# AXCheck.swift; the letter checks (a)–(h): the headers of AXCheck.swift and Check.swift.
 # Tables: <dir>.txt per launch, check.txt (rows ok / FAIL / HARNESS: data, docs/UIChecks.md).
 # Exit status 0 only if every row is ok. The script's own messages are Vietnamese, through
 # scripts/lib/log.sh; the rows shown under each step are the tail of those tables.
@@ -133,8 +133,8 @@ build() {   # <script> <output>
   cp "$here/$1" "$work/src-$2/main.swift"
   swiftc -swift-version 6 -O -o "$work/$2" "$here/Reference.swift" "$work/src-$2/main.swift"
 }
-build ax-check.swift ax-check
-build check.swift check
+build AXCheck.swift ax-check
+build Check.swift check
 
 # --- Launches 1–4: in-app captures ----------------------------------------------------
 

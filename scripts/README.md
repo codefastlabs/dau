@@ -25,7 +25,7 @@ Mỗi script tự mô tả ở phần đầu file; không có bảng liệt kê 
 - `# Usage:`: cách gọi và mọi tuỳ chọn.
 - `# Side effects:`: ngay sau dòng chú thích đầu, dùng đúng các từ trong bảng "Tác dụng phụ" dưới đây.
 
-File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch và chạy; nó hưởng tác dụng phụ của script gọi nó. Tìm script gọi một công cụ: `grep -rn <tên file> scripts`.
+File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch và chạy; nó hưởng tác dụng phụ của script gọi nó. Tìm script gọi một công cụ: `grep -rn <tên file> scripts`. Tên file `.swift` viết PascalCase như mọi mã Swift của repo (`InputSource.swift`); tên công cụ biên dịch ra là một lệnh nên viết chữ thường nối gạch như script (`dau_swift_tool input-source …` ra `build/tools/input-source`).
 
 ## Tác dụng phụ
 

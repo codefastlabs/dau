@@ -16,7 +16,7 @@ struct SimLetter: Equatable, Sendable {
 
 /// A word read as letters with modifiers and one tone. Two words are equal when their
 /// letters and tone are equal, wherever the tone sits ("hoà" == "hòa"), like the scorer
-/// of scripts/research/compare-ims/cases.swift.
+/// of scripts/research/compare-ims/Cases.swift.
 struct SimWord: Equatable, Sendable {
     var letters: [SimLetter] = []
     var tone: SimTone = .none

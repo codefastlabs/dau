@@ -110,7 +110,7 @@ else
   log_detail "tải trung bình 1 phút lúc bắt đầu: $LOAD_NOW trên $CORES nhân"
 fi
 
-INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/input-source.swift")" || exit 1
+INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/InputSource.swift")" || exit 1
 (( ${${(f)"$("$INPUT_SOURCE" enabled "$TELEX")"}[(Ie)$TELEX]} )) \
   || log_die "Nguồn $TELEX chưa được bật (script không tự bật, N4)."
 ORIGINAL_SOURCE="$("$INPUT_SOURCE" current)"

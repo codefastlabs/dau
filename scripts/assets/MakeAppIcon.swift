@@ -25,9 +25,9 @@
 // font file).
 //
 // Usage (normally via scripts/assets/make-app-icon.sh):
-//   make-app-icon.swift outline <BeVietnamPro-Bold.ttf> <glyphs.txt>
+//   MakeAppIcon.swift outline <BeVietnamPro-Bold.ttf> <glyphs.txt>
 //       Extract the contours and advance width of "a" in font units, y up.
-//   make-app-icon.swift render <glyphs.txt> <svg-dir> <icon-dir>
+//   MakeAppIcon.swift render <glyphs.txt> <svg-dir> <icon-dir>
 //       Write AppIcon.svg and AppIconDev.svg to <svg-dir>, and AppIcon.icon and AppIconDev.icon
 //       to <icon-dir>.
 
@@ -427,8 +427,8 @@ func loadGlyph(_ url: URL) throws -> Glyph {
 let args = CommandLine.arguments
 func usage() -> Never {
     FileHandle.standardError.write(Data("""
-    usage: make-app-icon.swift outline <font.ttf> <glyphs.txt>
-           make-app-icon.swift render <glyphs.txt> <svg-dir> <icon-dir>
+    usage: MakeAppIcon.swift outline <font.ttf> <glyphs.txt>
+           MakeAppIcon.swift render <glyphs.txt> <svg-dir> <icon-dir>
 
     """.utf8))
     exit(2)

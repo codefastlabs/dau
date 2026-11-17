@@ -11,7 +11,7 @@
 #           touching the repo). The folder must be missing, empty or an earlier snapshot.
 #
 # Renders every artboard on the canvas page "Thiết kế" with one
-# headless Chrome for the whole run (canvas-render.swift drives it over the DevTools pipe):
+# headless Chrome for the whole run (CanvasRender.swift drives it over the DevTools pipe):
 # no window is shown and the keyboard focus stays where it is. macOS lists that Chrome as a
 # foreground app for a few hundredths of a second while it starts, before Chrome declares
 # itself a background process, so its Dock icon can flash once at the start. Chrome runs on
@@ -73,8 +73,8 @@ rm -rf "$WORK"; mkdir -p "$WORK/project" "$PROFILE" "$WORK/out/src"
 cp "$SRC"/project/*.dc.html "$SRC/project/canvas.json" "$WORK/project/"
 cp "$SRC/artifact-type/dc-runtime.js" "$WORK/project/support.js"
 
-INDEX=$(dau_swift_tool canvas-index "${0:A:h}/canvas-index.swift") || exit 1
-RENDER=$(dau_swift_tool canvas-render "${0:A:h}/canvas-render.swift") || exit 1
+INDEX=$(dau_swift_tool canvas-index "${0:A:h}/CanvasIndex.swift") || exit 1
+RENDER=$(dau_swift_tool canvas-render "${0:A:h}/CanvasRender.swift") || exit 1
 
 # name<TAB>width<TAB>height for the boards on the "Thiết kế" page, in canvas order.
 "$INDEX" boards "$WORK/project/canvas.json" > "$WORK/boards.tsv"

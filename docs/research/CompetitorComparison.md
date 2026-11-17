@@ -52,7 +52,7 @@ Bộ gõ của Apple chỉ đo được bằng cách gõ thật, vì không có 
   - 60 câu văn xuôi hiện đại tự viết (`vi-sentences.txt`);
   - 20 câu trộn Việt–Anh (`mixed-sentences.txt`);
   - khoảng 100 từ tiếng Anh và từ trong mã, hầu hết có phím dấu thanh hoặc phím biến đổi của Telex (`en-words.txt`);
-  - `cases.swift` chuyển sang phím Telex thứ tự chuẩn, tổng khoảng 5.700 phím. Kiểm offline bằng engine của Dấu trước khi gõ thật (09/11/2026): 677/678 từ tiếng Việt đúng, từ còn lại là "taxi", nên bộ chuyển phím đúng.
+  - `Cases.swift` chuyển sang phím Telex thứ tự chuẩn, tổng khoảng 5.700 phím. Kiểm offline bằng engine của Dấu trước khi gõ thật (09/11/2026): 677/678 từ tiếng Việt đúng, từ còn lại là "taxi", nên bộ chuyển phím đúng.
 - **Cách chấm:**
   - Tiếng Việt đúng khi ra đúng chữ gốc sau chuẩn hoá NFC, chấp nhận cả hai kiểu đặt dấu (hoà/hòa).
   - Tiếng Anh đúng khi giữ nguyên chữ đã gõ. Từ vừa là tiếng Anh vừa là âm tiết tiếng Việt hợp lệ ("car", "as") tính riêng, không chấm đúng sai (D4); bảng điểm vẫn đếm chúng là từ không giữ nguyên, nên mục 1.1 tách số từ sai thật và số từ trùng.

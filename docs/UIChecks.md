@@ -193,7 +193,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 2. Kiểm trên cửa sổ thật: `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
    - **Chiếm màn hình:** hỏi người dùng giờ chạy trước (CLAUDE.md).
    - Cần quyền Trợ năng và Ghi màn hình cho Terminal. Không đổi cài đặt hệ thống nào.
-   - Các lần mở app, mỗi lần kiểm gì, cách chờ và thử lại: chú thích đầu [`run.sh`](../scripts/selftest/settings-window/run.sh), [`ax-check.swift`](../scripts/selftest/settings-window/ax-check.swift), [`check.swift`](../scripts/selftest/settings-window/check.swift).
+   - Các lần mở app, mỗi lần kiểm gì, cách chờ và thử lại: chú thích đầu [`run.sh`](../scripts/selftest/settings-window/run.sh), [`AXCheck.swift`](../scripts/selftest/settings-window/AXCheck.swift), [`Check.swift`](../scripts/selftest/settings-window/Check.swift).
    - Lượt nhanh chỉ cho tiêu điểm và ô tìm sidebar (mục 15, 18): `run.sh --focus <thư-mục-ra>`, vẫn chiếm màn hình.
 
 3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`): đặt bản chụp artboard trong `docs/canvas/` cạnh ảnh cửa sổ thật mà lệnh 2 chụp (`real/`, `always-<light|dark>/`, `onboarding/`, `report/` với artboard "Report"). Danh sách artboard: [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: so mockup sáng với app tối.

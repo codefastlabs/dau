@@ -144,8 +144,8 @@ elif [[ -z $dev_dir ]]; then
   log_detail "Bỏ qua: cần Xcode để biên dịch công cụ đọc nguồn đầu vào."
 else
   source "$root/scripts/lib/swift-tool.sh"
-  if ! helper=$(dau_swift_tool input-source "$root/scripts/lib/input-source.swift" 2>/dev/null); then
-    log_warn "Không biên dịch được scripts/lib/input-source.swift, bỏ qua kiểm tra này."
+  if ! helper=$(dau_swift_tool input-source "$root/scripts/lib/InputSource.swift" 2>/dev/null); then
+    log_warn "Không biên dịch được scripts/lib/InputSource.swift, bỏ qua kiểm tra này."
   else
     im_id=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$im/Contents/Info.plist" 2>/dev/null)
     src_out=$("$helper" enabled "$im_id" 2>&1); rc=$?
