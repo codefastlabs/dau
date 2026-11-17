@@ -6,20 +6,18 @@ Bộ test của bộ gõ (`Apps/DauInputMethod/Tests`) ghi 11 known issue, đề
 
 Kết luận, theo nhóm (mục 1):
 
-- **Nhóm 2, D20 sau ⌫ khi app chậm 3–4 thao tác (2 ca): sửa được mà không đổi quyết định nào** (hướng 2A). Trên mô hình, hướng này sửa cả hai ca. Mọi test khác của bộ gõ và mọi bảng mô phỏng giữ nguyên kết quả. Ca này chưa đo được ngoài đời (mục 2.1).
+- **Nhóm 2, D20 sau ⌫ khi app chậm 3–4 thao tác (2 ca): giới hạn chỉ có trên mô hình bộ đệm Chromium, giữ trong test.** Chrome thật, trang bận, nhịp người, chuỗi `edit`: đúng 3/3, và ở lần đọc của D20 sau ⌫ Chrome trả vị trí đúng giờ (mục 4). Hướng 2A sửa được hai ca trên mô hình mà không đổi quyết định nào; nó là phương án áp khi gặp ca thật (mục 2.2).
 - **Nhóm 1, 3, 4 (9 ca): giới hạn của loại app tính vị trí theo từ.** Mô hình `LateDocument.Origin.word` dựng từ log trình soạn thảo Cursor 3.29.15 (đo 10/11/2026); hiện chưa biết app nào hoạt động như vậy. Cursor 3.30.14 tính vị trí từ đầu văn bản, ở cả trình soạn thảo, khung agent (⌘L) và ô nhập Agents: `selectedRange` bằng vị trí Dấu theo dõi, hoặc chậm 1–4 thao tác như bộ đệm Chromium (`kind=late`, chữ vẫn đúng). Các ca giữ trong test (known issue) mô tả giới hạn đó. Hướng sửa 1B và 4A cần đổi N3 và D11; mục 3.2 nêu phương án và cái giá.
 - Cursor không có nhãn "Đề xuất" (D13 (Gạch chân là đường lui cuối cùng)); số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
-Không có quyết định nào chờ người dùng ở file này: 2A không đổi `Decisions.md`.
-
-Lượt gõ thật cần chạy: mục 4.
+Không có quyết định nào chờ người dùng ở file này.
 
 ## 1. Bốn nhóm
 
 | Nhóm | Test | Ca | App (mô hình) | Đo ngoài đời |
 |---|---|---|---|---|
 | 1 | `CursorEditorTests.staleAnswerAcrossWords` | 7 | app tính vị trí theo từ, phím dồn 5 ms | chưa biết app nào; mô hình từ log Cursor 3.29.15 |
-| 2 | `LateBackspaceMarkTests.pastLateLimit` | 2 | mô hình bộ đệm Chromium, D20 sau ⌫ | chưa (mục 2.1) |
+| 2 | `LateBackspaceMarkTests.pastLateLimit` | 2 | mô hình bộ đệm Chromium, D20 sau ⌫ | Chrome trang bận, nhịp người: không xảy ra, 3/3 đúng (mục 4) |
 | 3 | `CursorEditorTests.burstFromStartOfWord` | 1 | app tính vị trí theo từ, tài liệu mới, 20 ms | chưa biết app nào; mô hình từ log Cursor 3.29.15 |
 | 4 | `CursorEditorTests.wordStartingAsTheText` | 1 | app tính vị trí theo từ, 20 ms | chưa, chỉ trên mô hình |
 
@@ -48,7 +46,7 @@ Nhóm 2 là cơ chế chưa đo được ngoài đời. Lỗi người dùng bá
 
 ### 2.2 Hướng sửa
 
-**2A (đã thử, đề xuất).** Chỉ áp ở lần đọc của D20 sau ⌫ (`addMarks`), gồm hai phần:
+**2A (thử trên mô hình; áp khi gặp ca thật).** Chỉ áp ở lần đọc của D20 sau ⌫ (`addMarks`), gồm hai phần:
 
 1. Vị trí trả trùng `known` mà phần cuối chữ đọc được khác `tail` (chữ Dấu đã gõ ở đó): vẫn chạy `rebuild`, cho phép câu trả lời nằm ở `known`.
 2. Nới số thao tác được chậm thêm 4 (tức `lateLimit` + 4), nhưng phần nới chỉ nhận dạng (b) của rebuild. Dạng (b) là dạng của bộ đệm Chromium: chữ đọc được kết thúc bằng chữ chèn tại con trỏ mới nhất. Phần nới vẫn qua phép kiểm chặt như phím dồn: mọi thao tác xoá phải biết chữ nó xoá, và `typedHere` phải đạt.
@@ -57,15 +55,15 @@ Nhóm 2 là cơ chế chưa đo được ngoài đời. Lỗi người dùng bá
 
 - **Quyết định:** không trái N1–N5 hay D nào. D11 cho phép "số thao tác được chậm có giới hạn", và giới hạn vẫn còn. D11 cũng đã nói phép chứng minh dùng cho lần đọc của D20. Không thêm lời gọi nào: lần đọc ở phần 1 chính là lần đọc D20 vốn có, được chuyển cho `seedWord`. Phải sửa [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm" (số thao tác được chậm; trường hợp vị trí trùng `known`).
 - **Ràng buộc phải giữ:** test "carr → car, hệ thống sửa thành cả, ⌫r → car" (D20 "Từ hệ thống vừa sửa") phải vẫn đúng. Tự sửa chính tả biến "car" thành "cả", trùng đúng chữ trước 3 thao tác, nên nếu phần nới nhận cả dạng (a), phép dựng lại qua 3 thao tác khớp và Dấu tưởng app chậm. Vì vậy phần nới chỉ nhận dạng (b): chữ đọc được kết thúc bằng chính ký tự Dấu vừa chèn tại con trỏ, ở đây là dấu cách mà ⌫ vừa xoá. App đúng giờ chỉ trả như vậy khi trước con trỏ cũng là dấu cách; khi đó D20 không tìm thấy từ và phím đi thẳng.
-- **Rủi ro với app đang đúng:** Chrome, VS Code, Firefox, Safari không đổi trên mô hình (bảng `RapidKeysTests.burstTable`, `stalledStartTable`, `CursorEditorTests.table`, `LateAnswerTests.wholeStringLate`). Mô hình ảnh chụp kiểu Firefox chậm 3–4 ở lần đọc này trả dạng (a), mà phần nới bỏ dạng (a), nên theo cách làm thì ca đó không được sửa. Chưa chạy test cho ca này; Firefox cũng chưa có số đo nào như vậy.
-- **Test chứng minh:** đổi `LateBackspaceMarkTests.pastLateLimit` thành test đạt; giữ `doubleKeyWord` và cả bộ "Từ hệ thống vừa sửa"; thêm một ca ảnh chụp kiểu Firefox chậm 3 làm giới hạn đã biết.
+- **Rủi ro với app đang đúng:** Chrome, VS Code, Firefox, Safari không đổi trên mô hình (bảng `RapidKeysTests.burstTable`, `stalledStartTable`, `CursorEditorTests.table`, `LateAnswerTests.wholeStringLate`). Mô hình ảnh chụp kiểu Firefox (`LateDocument.Cache.snapshot`) trên "Toi hoc␣⌫j" chậm 3–4 thì đúng cả khi không có 2A: chữ đọc được là chữ Dấu đã gõ thiếu một, hai đơn vị cuối, và phép chứng minh hiện có nhận dạng đó. Ảnh chụp sai khi trong các thao tác chưa áp có một lần thay chữ ("Caau ddoo␣⌫s" chậm 3 ra "Câu đó", "Caau ddo␣⌫s" chậm 4 ra "Câu đos"), với cả mã hiện tại và 2A; Firefox chưa có số đo nào như vậy.
+- **Test chứng minh:** đổi `LateBackspaceMarkTests.pastLateLimit` thành test đạt; giữ `doubleKeyWord` (giữ ràng buộc "carr") và cả bộ "Từ hệ thống vừa sửa"; thêm ca ảnh chụp "Toi hoc␣⌫j" chậm 3–4 (đạt) và hai ca ảnh chụp có lần thay chữ chưa áp (giới hạn đã biết).
 - **Chỉ kiểm được bằng gõ thật:** không gây được chậm 3–4 theo ý muốn. Lượt gõ thật chỉ kiểm hồi quy (mục 4).
 
 **2B: tin `tail` thay cho chữ đọc được (không đề xuất).** Bỏ qua chữ app trả và dùng chữ Dấu đã gõ. Hướng này trái D20: D20 đọc chữ đang hiển thị, và ý "Từ hệ thống vừa sửa" cần chữ thật. Ví dụ "cat" bị tự sửa thành "cắt", rồi ⌫ s: theo D20 phải tính trên "cắt", nhưng tin `tail` thì tính trên "cat". Khi vị trí trùng `known`, chữ cũ của bộ đệm và chữ hệ thống vừa sửa không phân biệt được bằng vị trí.
 
 **2C: nâng `lateLimit` cho mọi lần đọc (không thử).** Ở phạm vi hẹp của 2A, nhận cả dạng (a) làm hỏng ca "carr" (ràng buộc ở 2A), nên nâng cho mọi lần đọc càng rủi ro hơn. Comment của `lateLimit` nêu thêm lý do: ⌘A rồi gõ lại đúng các chữ cũ ở cùng chỗ.
 
-**2D: giữ là giới hạn.** Có lý: chưa đo được ngoài đời, và lỗi người dùng báo do cơ chế khác (`failedReadLimit`). Nhưng 2A rẻ, không đổi quyết định và không hồi quy trên mô hình, nên đề xuất làm.
+**2D: giữ là giới hạn (đang áp dụng).** Ở Chrome thật, trang bận, nhịp người, lần đọc này không chậm (mục 4); lỗi người dùng báo về "Hocj" do cơ chế khác (`failedReadLimit`). 2A thêm nhánh vào phép chứng minh của D11 cho một ca chưa thấy ngoài đời, nên chỉ áp khi có ca thật.
 
 ## 3. Nhóm 1, 3, 4: app tính vị trí theo từ (giới hạn; chưa biết app nào)
 
@@ -86,14 +84,10 @@ Chưa làm vì chưa có app nào cần; dưới đây là phương án và cái
 - **4B, 4C:** giữ bằng chứng của 1B qua các lần kích hoạt, và chỉ áp ý "Ở đầu văn bản" cho từ đầu tiên (mô hình VS Code sai 5/40, Firefox 3/40): làm hỏng các mô hình khác nên không dùng.
 - **1A, 1C:** tin vị trí app trả (sai đúng ở các ca này) và tự bật gạch chân (trái D13): không làm.
 
-## 4. Lượt gõ thật
+## 4. Số đo ngoài đời
 
-Một lượt chiếm màn hình. Phiên chính xin giờ. Bản Debug.
-
-- **Sau 2A (khoảng 5 phút):** hồi quy.
-  - `scripts/selftest/load/run.sh --apps chrome --loads busy --text edit --reps 1`: chuỗi `edit` có "Hoc ⌫j".
-  - `scripts/selftest/typing/run.sh --delay 5 vscodefile`.
-  - Không gây được chậm 3–4 theo ý muốn.
+- Chrome, trang bận (`scripts/selftest/load/run.sh --apps chrome --loads busy --text edit --reps 3`), 100 ± 30 ms một phím, bản Debug của mã hiện tại (17/11/2026, máy M1): thay tại chỗ đúng 3/3. Ở "Hoc ⌫j", lần đọc của D20 có vị trí app trả bằng vị trí Dấu theo dõi ở cả 3 lượt (không chậm thao tác nào), và D20 ra "Học". Gạch chân ra "Hocj" 3/3: gạch chân không thêm dấu được cho từ đã chốt ([`docs/Compatibility.md`](../Compatibility.md) mục 6.8).
+- Khi áp 2A: chạy lại lệnh trên với `--reps 1` và `scripts/selftest/typing/run.sh --delay 5 vscodefile` để kiểm hồi quy. Không gây được chậm 3–4 theo ý muốn.
 
 ## 5. Cách dựng lại thí nghiệm
 

@@ -57,7 +57,7 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 - Lần đẩy mã đầu (cần người dùng đồng ý push): workflow Test chạy trên runner `xcode-27`.
 - Tag thử dựng hai bản chính thức số build khác nhau, công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai). Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
-### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 70 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút ở mục 4)
+### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 65 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút ở mục 4)
 
 1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug.
 2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
@@ -68,8 +68,7 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
    - VS Code ở 5 ms, xen kẽ ô Telex của Apple và ô Dấu, vài lượt. Cũng là đối chứng Apple còn thiếu ở VS Code và Firefox phím dồn (`docs/Compatibility.md` mục 7).
    - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
    - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
-7. Nếu hướng 2A của [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) đã vào mã: lượt hồi quy ở mục 4 của tài liệu đó (Chrome trang bận, VS Code 5 ms), khoảng 5 phút.
-8. Dọn: gỡ bản thử, cài lại `stable`.
+7. Dọn: gỡ bản thử, cài lại `stable`.
 
 ### Bước 4 — Phát hành và đóng mốc
 
@@ -111,3 +110,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - Canvas: chín artboard đặt `@import` phông sau luật CSS khác nên trình duyệt bỏ qua; chuyển lên đầu, chụp lại.
   — commit "feat(brand): build the app icons from Icon Composer documents", "feat(updates): add Sparkle 2 to the host app, official builds only", "docs(research): keep the input method's mach-register exception", "docs(canvas): load Be Vietnam Pro in the brand and landing artboards", "feat(brand): draw the DMG window background", "feat(app): check for updates and report typing problems", "build(release): add the release script, CI workflows and appcast folder", "test(settings-window): capture the bug-report sheet".
 - 17/11 — người dùng đồng ý ba đề xuất sau bước 1 — phiên chính — biểu tượng giữ một bộ nét cho mọi cỡ (`docs/Brand.md`, chữ chú thích của artboard "Nhận diện – biểu tượng ứng dụng" sửa theo, chụp lại); D7 thêm hệ quả đã chấp nhận: ⌘Q giữa lúc cài thì Sparkle cài lúc thoát mà không mở lại Dấu; thư mục trang web và gốc Vercel là `site/` (Roadmap M8) — commit "docs(decisions): accept the quit-during-install case; settle site/ and icon strokes".
+- 17/11 — nhóm 2 của `docs/research/LateAnswerFixes.md` (lần đọc của D20 sau ⌫ khi app chậm 3–4 thao tác) chỉ có trên mô hình: Chrome trang bận, nhịp người, chuỗi `edit`, bản Debug 5564963: thay tại chỗ đúng 3/3, lần đọc D20 không chậm. Hướng 2A đã viết và qua test (211 đạt) nhưng không áp; giữ nhóm 2 là giới hạn — phiên chính, imk-dev — dọn: cài lại `stable`, log xoá — commit "docs(research): the D20 read after ⌫ stays on time in busy Chrome".
