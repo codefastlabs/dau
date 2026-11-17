@@ -66,7 +66,7 @@ Cách gọi và tuỳ chọn của từng script nằm ở đầu script.
    | `v1.3.0` | 1.3.0 |
 
    Dạng khác bị từ chối.
-3. Workflow Release dựng, rồi tạo **bản nháp** trên GitHub Releases (đánh dấu pre-release nếu tag có `-beta.`) kèm DMG, dSYM và (khi đã ký) `appcast.xml` đã thêm bản mới. Chưa có gì được công bố: người dùng chưa thấy gì.
+3. Workflow Release dựng bản ký, rồi tạo **bản nháp** trên GitHub Releases (đánh dấu pre-release nếu tag có `-beta.`) kèm DMG, dSYM và `appcast.xml` đã thêm bản mới. Chưa có gì được công bố: người dùng chưa thấy gì. Thiếu secret thì workflow dựng bản không ký (dưới) và chỉ lưu DMG thành artifact của lần chạy (7 ngày), không tạo bản nháp.
 4. Kiểm bản nháp: log của workflow in từng bước đã làm hay bỏ qua, và `summary.txt`. Thử mở DMG đã tải về.
 5. **Công bố** (người dùng đồng ý một lần cho bản thử đầu, theo kế hoạch M7 bước 4): bấm Publish release trên GitHub; chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit, đẩy lên `main` để Vercel xuất bản. Làm theo thứ tự này: nếu appcast lên trước, Sparkle trỏ vào địa chỉ DMG chưa có. Rồi cập nhật cask Homebrew ở `codefastlabs/homebrew-tap`.
 
@@ -74,10 +74,11 @@ Cách gọi và tuỳ chọn của từng script nằm ở đầu script.
 
 ## Chế độ không ký
 
-Khi không có secret nào (hoặc `--unsigned`), script vẫn chạy trọn từ archive tới DMG và báo bước nào bị bỏ qua: xuất Developer ID, notarize, staple, ký DMG, ký bản cập nhật, appcast. Bản này **không phải bản chính thức**:
+Khi không có secret nào (hoặc `--unsigned`), script vẫn chạy trọn từ archive tới DMG và báo bước nào bị bỏ qua: xuất Developer ID, notarize, staple, ký DMG, ký bản cập nhật, appcast. Bản này dựng như bản phát triển (D7, D25), dùng để kiểm quy trình, không phát cho người dùng:
 
-- dựng với `DAU_OFFICIAL=YES` để đi đúng đường mã và qua đúng bước kiểm (biểu tượng chuẩn), nhưng khoá công khai là chuỗi giả và địa chỉ appcast nằm trên tên miền `.invalid`: một app như vậy không thể chạm hay cập nhật từ appcast thật;
-- app ký tạm (ad hoc), DMG tên `*-unsigned.dmg`, không có appcast.
+- `DAU_OFFICIAL=NO`: biểu tượng bản phát triển, không có `SUFeedURL` và `SUPublicEDKey`, nên Sparkle không khởi động;
+- app ký tạm (ad hoc), không có Team ID nên App Group bị từ chối (D24);
+- DMG tên `Dau-<phiên bản>-dev-unsigned.dmg` (không có tag: `Dau-dev-unsigned.dmg`), không có appcast.
 
 Chạy trên máy phát triển, không cần chứng chỉ (khoảng một phút, ghi vào `build/release/`):
 
@@ -93,7 +94,7 @@ Bố cục (kích thước cửa sổ, vị trí biểu tượng, nền) nằm t
 
 ## Kiểm bản build
 
-`scripts/release/check-build.sh` chạy trong script phát hành trên cả bản trong archive lẫn bản trong DMG đã mở. Nó kiểm `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon` (D25), cả hai binary universal và đã lược ký hiệu cục bộ (`nm`), dSYM của cả hai có trong archive, `SUFeedURL` và `SUPublicEDKey` có ở app chủ và không có ở bộ gõ, `SUEnableSystemProfiling` là false (D8), bộ gõ không link Sparkle và không có quyền mạng (N2). Bản ký còn được kiểm bằng `codesign`, `spctl` và `stapler validate`.
+`scripts/release/check-build.sh` chạy trong script phát hành trên cả bản trong archive lẫn bản trong DMG đã mở. Bản chính thức (`--signed`): `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon` (D25), `SUFeedURL` và `SUPublicEDKey` có ở app chủ. Bản không ký: `AppIconDev`, không có hai khoá đó. Ở cả hai: hai binary universal và đã lược ký hiệu cục bộ (`nm`), dSYM của cả hai có trong archive, bộ gõ không có khoá `SU…`, `SUEnableSystemProfiling` là false (D8), bộ gõ không link Sparkle và không có quyền mạng (N2). Bản ký còn được kiểm bằng `codesign`, `spctl` và `stapler validate`.
 
 ## Còn phải thấy chạy thật
 

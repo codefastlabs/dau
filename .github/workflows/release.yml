@@ -2,7 +2,9 @@
 # makes a DRAFT GitHub release with the DMG and the dSYMs. Nothing is published and the
 # appcast is not touched (docs/Releasing.md, "Phát hành một tag").
 # With the secrets below the build is signed with Developer ID, notarized and the appcast is
-# signed; without them it runs unsigned and still makes a draft (an unsigned DMG, no appcast).
+# signed; without them it builds a development build (D7), unsigned and not for users, and
+# makes NO release: the *-dev-unsigned.dmg is only an artifact of the run (7 days). Simpler and
+# safer than a draft: nothing unsigned ever sits in the Releases list, one click from public.
 name: Release
 
 on:
@@ -70,7 +72,16 @@ jobs:
       - name: Summary
         run: cat build/release/summary.txt
 
+      - name: Keep the unsigned development build as an artifact
+        if: steps.build.outputs.signed != '1'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dau-dev-unsigned-DO-NOT-DISTRIBUTE
+          path: ${{ steps.build.outputs.dmg }}
+          retention-days: 7
+
       - name: Draft GitHub release
+        if: steps.build.outputs.signed == '1'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

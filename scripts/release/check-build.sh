@@ -3,21 +3,25 @@
 # Side effects: none
 #
 # Usage:
-#   scripts/release/check-build.sh APP --feed URL [--archive XCARCHIVE] [--signed]
+#   scripts/release/check-build.sh APP [--feed URL] [--archive XCARCHIVE] [--signed]
 #     APP        the Dau.app to check (from an archive, an export or a mounted DMG).
-#     --feed     the SUFeedURL the build must carry (the official one, D7, or the
-#                unreachable one of an unsigned build, scripts/release/build-release.sh).
+#     --feed     the SUFeedURL the official build must carry (D7); required with --signed,
+#                not allowed without it (an unsigned build is a development build: no feed).
 #     --archive  also check that the archive holds the dSYMs of the app and the input method.
-#     --signed   also check the Developer ID signature, Gatekeeper (spctl) and the stapled
-#                notarization ticket (stapler validate).
-# Env: DAU_SPARKLE_PUBLIC_KEY, when set, must equal the SUPublicEDKey in the build.
+#     --signed   the build is the official one: check its icon and Sparkle keys, the Developer ID
+#                signature, Gatekeeper (spctl) and the stapled notarization ticket (stapler validate).
+#                Without it the build is a development build (build-release.sh --unsigned).
+# Env: DAU_SPARKLE_PUBLIC_KEY, when set, must equal the SUPublicEDKey in the build (--signed).
 # Exit status: 0 every check passed; 1 at least one failed; 2 bad usage.
 #
-# What is checked (Roadmap, M7): CFBundleIconName of the app and the input method is
-# AppIcon, not AppIconDev (D25); both binaries are universal (D1) and stripped (nm: no local
-# symbols; an archive strips, a plain build does not); SUFeedURL and SUPublicEDKey are in
-# the app, SUEnableSystemProfiling is false (D8), and neither is in the input method;
-# Sparkle is linked by the app only (N2); the input method passes dau_check_input_method.
+# What is checked (Roadmap, M7), both modes: both binaries are universal (D1) and stripped
+# (nm: no local symbols; an archive strips, a plain build does not); SUEnableSystemProfiling
+# is false (D8); no Sparkle keys in the input method, which does not link Sparkle (N2); the
+# input method passes dau_check_input_method.
+# Official (--signed): CFBundleIconName of the app and the input method is AppIcon (D25);
+# SUFeedURL and SUPublicEDKey are in the app (D7).
+# Development: CFBundleIconName is AppIconDev (D25); no SUFeedURL and no SUPublicEDKey in the
+# app, so Sparkle does not start (D7).
 
 set -uo pipefail
 source "${${(%):-%x}:A:h:h}/lib/build.sh"
@@ -33,7 +37,9 @@ while (( $# )); do
     *)         [[ -z $app ]] || log_die 2 "Chỉ một APP"; app=$1; shift ;;
   esac
 done
-[[ -d $app && -n $feed ]] || log_die 2 "Cần APP và --feed (xem --help)."
+[[ -d $app ]] || log_die 2 "Cần APP (xem --help)."
+if (( signed )); then [[ -n $feed ]] || log_die 2 "--signed cần --feed (xem --help)."
+else [[ -z $feed ]] || log_die 2 "--feed chỉ dùng với --signed: bản không ký là bản phát triển, không có feed."; fi
 
 fails=0
 fail() { log_error "$1"; fails=$(( fails + 1 )); }
@@ -45,10 +51,11 @@ im_bin="$im/Contents/MacOS/DauInputMethod"
 
 log_step "Kiểm bản build: $app"
 
+want_icon=AppIconDev; (( signed )) && want_icon=AppIcon
 for b in "$app" "$im"; do
   icon=$(plist "$b" CFBundleIconName)
-  if [[ $icon == AppIcon ]]; then log_ok "${b:t}: CFBundleIconName = AppIcon (D25)"
-  else fail "${b:t}: CFBundleIconName = '${icon}', cần AppIcon (D25)"; fi
+  if [[ $icon == $want_icon ]]; then log_ok "${b:t}: CFBundleIconName = $want_icon (D25)"
+  else fail "${b:t}: CFBundleIconName = '${icon}', cần $want_icon (D25)"; fi
 done
 
 for bin in "$app_bin" "$im_bin"; do
@@ -63,10 +70,15 @@ for bin in "$app_bin" "$im_bin"; do
 done
 
 got_feed=$(plist "$app" SUFeedURL) key=$(plist "$app" SUPublicEDKey)
-[[ $got_feed == $feed ]] && log_ok "SUFeedURL = $feed" || fail "SUFeedURL = '${got_feed}', cần $feed"
-if [[ -n $key ]]; then log_ok "SUPublicEDKey có mặt"; else fail "SUPublicEDKey trống hoặc thiếu"; fi
-if [[ -n ${DAU_SPARKLE_PUBLIC_KEY-} && $key != "$DAU_SPARKLE_PUBLIC_KEY" ]]; then
-  fail "SUPublicEDKey khác DAU_SPARKLE_PUBLIC_KEY"
+if (( signed )); then
+  [[ $got_feed == $feed ]] && log_ok "SUFeedURL = $feed" || fail "SUFeedURL = '${got_feed}', cần $feed"
+  if [[ -n $key ]]; then log_ok "SUPublicEDKey có mặt"; else fail "SUPublicEDKey trống hoặc thiếu"; fi
+  if [[ -n ${DAU_SPARKLE_PUBLIC_KEY-} && $key != "$DAU_SPARKLE_PUBLIC_KEY" ]]; then
+    fail "SUPublicEDKey khác DAU_SPARKLE_PUBLIC_KEY"
+  fi
+else
+  if [[ -z $got_feed && -z $key ]]; then log_ok "App không có SUFeedURL và SUPublicEDKey: Sparkle không khởi động (D7)"
+  else fail "Bản phát triển mang khoá Sparkle (SUFeedURL='${got_feed}', SUPublicEDKey='${key:+có}'; D7)"; fi
 fi
 [[ $(plist "$app" SUEnableSystemProfiling) == false ]] && log_ok "SUEnableSystemProfiling = false (D8)" \
   || fail "SUEnableSystemProfiling không phải false (D8)"

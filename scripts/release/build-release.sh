@@ -31,13 +31,15 @@
 # The notary key is written to a 0600 file in $TMPDIR for notarytool, which only takes a path,
 # and deleted when the script ends.
 #
-# Unsigned mode: the app is signed ad hoc, built with DAU_OFFICIAL=YES (the official icon and
-# the same code path as the real release, so the checks see what ships), a placeholder public
-# key and a feed URL on the reserved .invalid domain: such an app can never reach, or be
-# updated from, the real appcast. The DMG is named *-unsigned.dmg and no appcast is made.
+# Unsigned mode builds the app AS A DEVELOPMENT BUILD (D7, D25, D24): DAU_OFFICIAL=NO, so the
+# development icon, no SUFeedURL and no SUPublicEDKey (Sparkle does not start), and ad hoc
+# signing. It is for checking the pipeline, not for giving to users. With no Team ID the App
+# Group is refused, so the input method and the app cannot share settings: it does not run
+# like a real build. The DMG is named *-dev-unsigned.dmg and no appcast is made.
 # Skipped there: Developer ID signature, notarize, staple, DMG signature, appcast.
 #
-# Output in --out: Dau-<version>[-unsigned].dmg, Dau-<version>.dSYMs.zip, appcast/appcast.xml
+# Output in --out: Dau-<version>.dmg (signed) or Dau-<version>-dev-unsigned.dmg,
+# Dau-<version>.dSYMs.zip, appcast/appcast.xml
 # (signed only: the current site/appcast.xml with this release added; publishing it is a
 # separate act, docs/Releasing.md), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
 # appcast, display and signed.
@@ -51,8 +53,6 @@ source "${${(%):-%x}:A:h:h}/lib/build.sh"
 hdiutil() { command hdiutil "$@" 2> >(grep -v 'is deprecated' >&2); }
 
 official_feed="https://dau.codefastlabs.com/appcast.xml"
-unsigned_feed="https://appcast.invalid/unsigned.xml"
-unsigned_key="UNSIGNED-BUILD-PLACEHOLDER-NOT-A-REAL-KEY"
 download_base="https://github.com/codefastlabs/dau/releases/download"
 
 tag=${GITHUB_REF_NAME-} build_number="" force_unsigned=0 layout=0 out=$DAU_ROOT/build/release
@@ -110,7 +110,7 @@ fi
 skipped=()
 log_step "Phát hành Dấu ${display:-(phiên bản trong project.yml)}, số build $build_number"
 if (( signed )); then log_detail "chế độ: ký Developer ID (Team $DAU_TEAM_ID), notarize, appcast"
-else log_warn "Chế độ KHÔNG KÝ: bản này không phải bản chính thức và không được đưa lên appcast."; fi
+else log_warn "Chế độ KHÔNG KÝ: dựng như bản phát triển (D7), để kiểm quy trình; không phát cho người dùng, không lên appcast."; fi
 
 # --- archive -----------------------------------------------------------------
 rm -rf "$out"; mkdir -p "$out"
@@ -120,17 +120,20 @@ log_step "Sinh Dau.xcodeproj"
 (cd "$DAU_ROOT" && xcodegen generate --quiet)
 
 if (( signed )); then
-  feed=$official_feed key=$DAU_SPARKLE_PUBLIC_KEY
+  official=YES
   sign_args=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Developer ID Application" DEVELOPMENT_TEAM=$DAU_TEAM_ID OTHER_CODE_SIGN_FLAGS=--timestamp)
+  sparkle_args=(DAU_SPARKLE_PUBLIC_KEY=$DAU_SPARKLE_PUBLIC_KEY DAU_SPARKLE_FEED_URL=$official_feed)
 else
-  feed=$unsigned_feed key=$unsigned_key
+  # A development build (D7): no feed and no key, so project.yml leaves them out of Info.plist.
+  official=NO
   sign_args=(CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=)
+  sparkle_args=()
 fi
-log_step "Archive Release universal (DAU_OFFICIAL=YES)"
+log_step "Archive Release universal (DAU_OFFICIAL=$official)"
 xcodebuild archive \
   -project "$DAU_ROOT/Dau.xcodeproj" -scheme Dau -configuration Release \
   -destination 'generic/platform=macOS' -archivePath "$archive" -derivedDataPath "$derived" \
-  -quiet DAU_OFFICIAL=YES DAU_SPARKLE_PUBLIC_KEY=$key DAU_SPARKLE_FEED_URL=$feed \
+  -quiet DAU_OFFICIAL=$official $sparkle_args \
   $version_args $sign_args
 
 app=$archive/Products/Applications/Dau.app
@@ -187,12 +190,17 @@ else
 fi
 
 # --- check the app -----------------------------------------------------------
-check=("$DAU_ROOT/scripts/release/check-build.sh" "$app" --feed "$feed" --archive "$archive")
-(( signed )) && check+=(--signed)
-DAU_SPARKLE_PUBLIC_KEY=$key "${check[@]}" || log_die "Bản build không đạt kiểm tra."
+check=("$DAU_ROOT/scripts/release/check-build.sh" "$app" --archive "$archive")
+(( signed )) && check+=(--feed "$official_feed" --signed)
+DAU_SPARKLE_PUBLIC_KEY=${DAU_SPARKLE_PUBLIC_KEY-} "${check[@]}" || log_die "Bản build không đạt kiểm tra."
 
 # --- DMG ---------------------------------------------------------------------
-dmg_name=Dau-$file_version$([[ $signed == 1 ]] || print -r -- -unsigned).dmg
+dmg_suffix=""
+if (( ! signed )); then
+  # Without a tag file_version is already "dev": Dau-dev-unsigned, not Dau-dev-dev-unsigned.
+  [[ $file_version == dev ]] && dmg_suffix=-unsigned || dmg_suffix=-dev-unsigned
+fi
+dmg_name=Dau-$file_version$dmg_suffix.dmg
 dmg=$out/$dmg_name
 log_step "Dựng DMG: $dmg_name"
 staging=$out/dmg-root
@@ -251,9 +259,9 @@ log_ok "DMG có Dau.app, liên kết Applications, ổ tên Dấu"
 if [[ $laid_out == yes ]]; then
   [[ -f $mnt/.DS_Store ]] && log_ok "DMG có bố cục (.DS_Store)" || log_die "DMG thiếu .DS_Store dù đã sắp xếp."
 fi
-dmg_check=("$DAU_ROOT/scripts/release/check-build.sh" "$mnt/Dau.app" --feed "$feed")
-(( signed )) && dmg_check+=(--signed)
-DAU_SPARKLE_PUBLIC_KEY=$key "${dmg_check[@]}" || log_die "App trong DMG không đạt kiểm tra."
+dmg_check=("$DAU_ROOT/scripts/release/check-build.sh" "$mnt/Dau.app")
+(( signed )) && dmg_check+=(--feed "$official_feed" --signed)
+DAU_SPARKLE_PUBLIC_KEY=${DAU_SPARKLE_PUBLIC_KEY-} "${dmg_check[@]}" || log_die "App trong DMG không đạt kiểm tra."
 if (( signed )); then
   spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg" \
     || log_die "spctl từ chối DMG."
