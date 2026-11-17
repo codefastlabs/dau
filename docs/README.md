@@ -4,7 +4,7 @@ Mục lục mọi tài liệu trong `docs/`. Cách ghi (mỗi sự kiện ở m�
 
 ## Đọc khi bắt đầu một phiên
 
-Theo thứ tự trong [CLAUDE.md](../CLAUDE.md):
+Theo thứ tự trong [CLAUDE.md](../CLAUDE.md): `Progress.md`, rồi `Decisions.md` theo đoạn; bốn file còn lại đọc khi việc chạm tới.
 
 | File | Chứa gì |
 |---|---|

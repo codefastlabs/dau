@@ -2,12 +2,11 @@
 
 Dấu là input method tiếng Việt **chỉ dành cho macOS**, dựng trên InputMethodKit (IMK). Nó thay chữ tại chỗ bằng `insertText(_:replacementRange:)` thay vì giả lập phím Backspace như OpenKey. Tên chính thức: **Dấu** (đã chốt). Quy tắc dùng tên và định danh kỹ thuật: xem D24 (Tên và định danh).
 
-Phiên mới đọc `docs/Progress.md` trước (đang ở đâu, việc đang chờ, kế hoạch mốc đang làm, số đo, nhật ký theo ngày), rồi đọc theo thứ tự:
-1. `docs/Decisions.md` — sổ quyết định (nguồn chuẩn duy nhất).
-2. `docs/Architecture.md` — kiến trúc, target, luồng xử lý phím.
-3. `docs/Roadmap.md` — các mốc, tiêu chí hoàn thành.
-4. `docs/UI.md` — mô tả màn hình (mockup gốc nằm trên canvas, xem link trong file).
-5. `docs/Brand.md` — biểu tượng, màu, chữ, danh sách file nhận diện cần xuất.
+Phiên mới đọc `docs/Progress.md` trước (đang ở đâu, việc đang chờ, kế hoạch mốc đang làm, số đo, nhật ký theo ngày), rồi `docs/Decisions.md` — sổ quyết định (nguồn chuẩn duy nhất) — theo đoạn: mục lục ở đầu file (một dòng luật cho mỗi mục), các nguyên tắc N1–N5, rồi mọi quyết định liên quan tới việc đang làm. Các file sau đọc khi việc chạm tới, theo đoạn:
+1. `docs/Architecture.md` — kiến trúc, target, luồng xử lý phím.
+2. `docs/Roadmap.md` — các mốc, tiêu chí hoàn thành.
+3. `docs/UI.md` — mô tả màn hình (mockup gốc nằm trên canvas, xem link trong file).
+4. `docs/Brand.md` — biểu tượng, màu, chữ, danh sách file nhận diện cần xuất.
 
 Mục lục mọi tài liệu khác (tra cứu, nghiên cứu, lưu trữ): `docs/README.md`.
 
@@ -22,9 +21,9 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - Lệnh `/milestone M#` chạy trọn một mốc; `/audit` kiểm tra toàn repo; `/dogfood` phiên chính tự gõ như người dùng thật để tìm chỗ vấp (chiếm màn hình, hỏi giờ chạy trước).
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
-- Giao song song các việc độc lập (ví dụ engine song song với khung dự án; giao diện app chủ song song với bộ gõ khi model cài đặt chung đã xong).
+- Giao song song các việc độc lập (ví dụ ở M7: `release-eng` dựng script phát hành và CI song song với `app-ui-dev` làm trang Cập nhật & hỗ trợ).
 - Mỗi việc xong → kiểm chứng lại bằng lệnh thật (đổi chuỗi giao diện thì thêm `scripts/check-l10n/check.sh`) → tự soát tài liệu (mục "Viết tài liệu") → commit nhỏ (Conventional Commits, tiếng Anh). Không commit khi test đỏ.
-- **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ (chuẩn bị sẵn rồi mới hỏi); bật nguồn đầu vào, đăng xuất, cấp quyền, thao tác khác trong System Settings, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `Decisions.md`, trừ khi người dùng đã giao quyết định đó cho phiên chính trong chat; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/selftest/settings-window/run.sh`, mở app thật, gõ thử tự động; tác dụng phụ của từng script: `scripts/README.md`): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Hook `.claude/hooks/guard-scripts.sh` chặn các script này; người dùng đồng ý trong chat rồi mới chạy lại với tiền tố `DAU_USER_APPROVED=1`. Trong lúc chờ, tiếp tục các việc không bị chặn.
+- **Điểm dừng bắt buộc — hỏi người dùng:** Bundle ID / Team ID / tên cask / tên miền; mọi thao tác cần tài khoản Apple Developer hay chứng chỉ (chuẩn bị sẵn rồi mới hỏi); bật nguồn đầu vào, đăng xuất, cấp quyền, thao tác khác trong System Settings, gõ thử trong ứng dụng thật (không thao tác được giao diện macOS); mọi thay đổi `Decisions.md`, trừ khi người dùng đã giao quyết định đó cho phiên chính trong chat; **mọi lần chạy kiểm tra chiếm màn hình** (`scripts/selftest/settings-window/run.sh`, mở app thật, gõ thử tự động; tác dụng phụ của từng script: `scripts/README.md`): hỏi người dùng giờ chạy trước, vì họ đang dùng máy. Hook `.claude/hooks/guard-scripts.sh` chặn các script này; người dùng đồng ý trong chat rồi mới chạy với tiền tố `DAU_USER_APPROVED=1`. Trong lúc chờ, tiếp tục các việc không bị chặn.
 - **Ai chạy script:** đọc dòng `# Side effects:` ở đầu script (chú giải ở `scripts/README.md`). Subagent chỉ chạy script có tác dụng phụ `none`, `builds`, `writes repo files`. Còn lại phiên chính chạy, sau khi người dùng chọn giờ (điểm dừng ở trên). Riêng `scripts/dev/clean-dau.sh --yes` (gỡ Dấu khỏi máy) do người dùng tự chạy.
 
 ## Nguồn chuẩn
