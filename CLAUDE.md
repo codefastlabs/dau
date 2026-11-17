@@ -108,6 +108,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
   - Chạy thẳng ô phân biệt được các giả thuyết, kèm đối chứng, thay vì cả ma trận.
   - Mọi thứ cần để dựng lại một lượt đo (chuỗi phím, đáp án, lệnh) nằm trong repo, không trong thư mục tạm.
 - **Sửa lỗi trước, đường lui sau:** gặp lỗi của Dấu thì đề xuất cách sửa trước; đường lui (như gạch chân, D13 (Gạch chân là đường lui cuối cùng)) chỉ bàn khi sửa không đạt.
+- **Xong trọn rồi mới commit:** một việc chỉ commit khi đã kiểm chứng xong trong cùng lượt. Bước kiểm cần người dùng đồng ý (lượt chiếm màn hình, cài bộ gõ) thì xin ngay khi nhận việc, kèm thời lượng, để chạy trước khi commit; không commit trước rồi ghi "chưa thử". Commit message, `Progress.md` và báo cáo không để lại danh sách "chưa đo, chưa thử" như việc treo: mỗi mục hoặc làm ngay trong lượt, hoặc bỏ kèm lý do không đáng làm, hoặc là quyết định của người dùng thì hỏi một lần kèm đề xuất. Chỉ điều không thể kiểm trong một lượt (cần dùng hằng ngày nhiều ngày) mới ghi, kèm cách sẽ biết.
 - **Tự phản biện trước khi giao:** kế hoạch, bản giao việc, bản tóm tắt, commit đều tự soát trước khi đưa người dùng: chỉ tới thứ có thật trong repo, không tự mâu thuẫn, không nói quá số đo, không chép lại điều đã ghi ở nơi khác.
 - **Giao diện:**
   - Canvas trước, mã sau. Sửa artboard trên canvas, cho người dùng xem và duyệt, rồi mới giao sửa mã; mã xong thì đối chiếu lại với artboard. Không sửa giao diện mà artboard chưa có.
