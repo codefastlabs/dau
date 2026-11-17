@@ -2,8 +2,8 @@ import AppKit
 import SwiftUI
 import DauShared
 
-/// Host app: the Settings window (M4) and the onboarding window (M5). Updates (M7)
-/// come later. The entry point is main.swift.
+/// Host app: the Settings window (M4), the onboarding window (M5) and, on the official
+/// build only, Sparkle's updater (D7, `SparkleUpdater`). The entry point is main.swift.
 ///
 /// The Settings window is the app's main window, so opening Dấu from Finder shows it;
 /// the input menu's "Dấu Settings…" item is meant to open the app the same way. ⌘,
@@ -20,9 +20,15 @@ struct DauApp: App {
     @State private var inputSource = InputSourceStatus()
     @State private var onboarding: OnboardingFlow
     @State private var actions: InputMethodActions
+    /// Sparkle, started at launch on the official build only; nil on every other build,
+    /// which has no feed URL or key (D7). Sparkle checks on its own schedule from here.
+    @State private var updates: UpdatesModel?
     private let opensOnboarding: Bool
 
     init() {
+        // "Báo lỗi…" fills in the app used right before Dấu (ReportSheet).
+        PreviousAppTracker.shared.start()
+        _updates = State(initialValue: SparkleUpdater.startIfConfigured())
         let installer = SystemInputMethodInstaller.standard()
         let (flow, opens) = DauApp.makeOnboarding(installer)
         _onboarding = State(initialValue: flow)
@@ -96,6 +102,7 @@ struct DauApp: App {
                 .environment(model)
                 .environment(inputSource)
                 .environment(\.inputMethodActions, actions)
+                .environment(\.updates, updates)
                 #if DEBUG
                 .environment(\.layoutProbe, DebugCapture.probe)
                 #endif

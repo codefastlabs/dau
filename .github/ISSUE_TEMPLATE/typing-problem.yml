@@ -1,0 +1,55 @@
+# The issue Dấu's "Báo ứng dụng gõ lỗi" sheet opens, prefilled (D8: reports only go through
+# a GitHub issue the user reviews and sends). The app fills each field through a URL query
+# parameter named after the field's `id` (ProblemReport.issueURL in Apps/Dau/Sources), so an
+# `id` changes only together with ProblemReport.fields; the unit test IssueFormTests checks
+# both lists match. Fields mirror the sheet: Ứng dụng, Trang web, Lỗi gặp phải, Ví dụ đã gõ,
+# then the "Gửi kèm" items.
+name: Ứng dụng gõ lỗi / Typing problem in an app
+description: Dấu gõ sai chữ trong một ứng dụng / Dấu types the wrong text in an app
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Báo lỗi trên GitHub được đăng công khai. Đừng ghi thông tin riêng tư.
+        Reports on GitHub are public. Don't include private information.
+  - type: input
+    id: app
+    attributes:
+      label: Ứng dụng / App
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Phiên bản ứng dụng / App version
+  - type: input
+    id: website
+    attributes:
+      label: Trang web (không bắt buộc) / Website (optional)
+  - type: input
+    id: problem
+    attributes:
+      label: Lỗi gặp phải / Problem
+      description: Mất chữ, Lặp chữ, Sai dấu, Khác / Missing Text, Repeated Text, Wrong Marks, Other
+    validations:
+      required: true
+  - type: textarea
+    id: example
+    attributes:
+      label: Ví dụ đã gõ / What you typed
+      description: Các phím đã gõ, chữ hiện ra và chữ bạn muốn có. / The keys you typed, the text that came out, and the text you wanted.
+    validations:
+      required: true
+  - type: input
+    id: macos
+    attributes:
+      label: Phiên bản macOS / macOS version
+  - type: input
+    id: dau-version
+    attributes:
+      label: Phiên bản Dấu / Dấu version
+  - type: input
+    id: settings
+    attributes:
+      label: Kiểu gõ và gạch chân / Typing method and underline

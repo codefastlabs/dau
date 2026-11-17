@@ -23,6 +23,7 @@ struct SettingsWindow: View {
     @Environment(\.layoutProbe) private var layoutProbe
     @Environment(\.smartAdvancedExpanded) private var smartAdvancedExpanded
     @Environment(\.openWindow) private var openWindow
+    @Environment(\.updates) private var updates
 
     init(initialSection: SettingsSection = .typing) {
         _state = State(initialValue: SettingsWindowState(initialSection))
@@ -31,7 +32,7 @@ struct SettingsWindow: View {
     var body: some View {
         SettingsSplitView(state: state, environment: SettingsEnvironment(
             model: model, inputSource: inputSource, actions: actions, layoutProbe: layoutProbe,
-            smartAdvancedExpanded: smartAdvancedExpanded, openWindow: openWindow))
+            smartAdvancedExpanded: smartAdvancedExpanded, openWindow: openWindow, updates: updates))
             // The split view reaches the window's top edge, under the toolbar, so the
             // sidebar runs the full height as in System Settings
             // (https://developer.apple.com/documentation/swiftui/view/ignoressafearea(_:edges:)).
@@ -92,6 +93,8 @@ struct SettingsEnvironment: ViewModifier {
     /// The scene's `openWindow` (read-only in `EnvironmentValues`), under a key of its own.
     /// Nil only in tests, which have no scene.
     let openWindow: OpenWindowAction?
+    /// The official build's updater (D7); nil on every other build and in tests.
+    var updates: UpdatesModel? = nil
 
     func body(content: Content) -> some View {
         content
@@ -101,6 +104,7 @@ struct SettingsEnvironment: ViewModifier {
             .environment(\.layoutProbe, layoutProbe)
             .environment(\.smartAdvancedExpanded, smartAdvancedExpanded)
             .environment(\.settingsOpenWindow, openWindow)
+            .environment(\.updates, updates)
     }
 }
 

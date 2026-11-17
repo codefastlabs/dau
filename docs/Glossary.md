@@ -36,6 +36,9 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 | Try Again | Thử lại | |
 | Reinstall | Cài lại | |
 | Uninstall… | Gỡ cài đặt… | bỏ khỏi nguồn đầu vào = remove from input sources |
+| Check for Updates… | Kiểm tra bản mới… | trang Cập nhật & hỗ trợ (D7 (Cập nhật và loại bản dựng)) |
+| Report a Problem… | Báo lỗi… | mở sheet báo lỗi (D8 (Không telemetry)) |
+| Included | Gửi kèm | thông tin máy và Dấu trong sheet báo lỗi |
 
 ## Từ dễ hiểu hai nghĩa
 

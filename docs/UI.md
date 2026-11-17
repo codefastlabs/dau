@@ -10,7 +10,7 @@ Hành vi, trạng thái và quy tắc của giao diện app Dấu: những gì h
 - **Chữ:** String Catalog trong mã (`Localizable.xcstrings`), theo D41 (Ngôn ngữ giao diện). Canvas viết tiếng Việt; câu mới giao cho mã kèm câu tiếng Anh làm khoá.
   - Tên giao diện của macOS (System Settings, Keyboard, Input Sources, Allow, Log Out, Applications, Thùng rác, tên bàn phím…) theo D38 (Chữ trên giao diện): đúng như macOS của người dùng đang hiện (`SystemUINames`, `LayoutNames` trong [`docs/Architecture.md`](Architecture.md)).
   - Câu tiếng Việt không dùng chữ "app", nói "ứng dụng".
-- **File này** không liệt kê chữ hay bố cục của phần đã có mã; tên nút, nhãn được nêu chỉ để tả hành vi. Phần chưa có mã (cuối file) tạm mô tả nội dung tới khi dựng. Lịch sử duyệt: [`docs/history/DocsLog.md`](history/DocsLog.md).
+- **File này** không liệt kê chữ hay bố cục của phần đã có mã; tên nút, nhãn được nêu chỉ để tả hành vi. Phần chưa có mã, khi có, nằm ở cuối file và tạm mô tả nội dung tới khi dựng. Lịch sử duyệt: [`docs/history/DocsLog.md`](history/DocsLog.md).
 
 Khi các nguồn lệch nhau, `Decisions.md` quyết định; sửa bên sai cho khớp.
 
@@ -164,9 +164,26 @@ Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/S
 
 Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 
-- Tới khi có Sparkle (M7), trang chỉ có thẻ phiên bản, mục "Hỗ trợ" với nút gỡ cài đặt và chú thích quyền riêng tư; không vẽ nút chưa chạy. Phần cập nhật và hàng báo lỗi (mục "Chưa có mã") thêm khi chúng chạy được.
+- **Phần cập nhật chỉ có ở bản chính thức** (bản có URL appcast và khoá công khai, D7 (Cập nhật và loại bản dựng)): dòng kiểm tra lần cuối và nút kiểm tra trong thẻ phiên bản, hàng công tắc tự động kiểm tra. Bản phát triển không có cả ba.
+  - Thông báo, tải và cài bản mới là cửa sổ của Sparkle (D7); trang không vẽ trạng thái tải hay cài.
+  - Nút kiểm tra tắt trong lúc Sparkle đang kiểm tra hay đang có phiên cập nhật.
+  - Chưa kiểm lần nào thì dòng kiểm tra lần cuối nói vậy, không hiện giờ (N5).
+  - Công tắc đọc và ghi lựa chọn của chính Sparkle (`automaticallyChecksForUpdates`, mặc định bật theo Info.plist), không có khoá riêng của Dấu.
+  - Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") chưa kiểm trên bản chính thức; kiểm ở lượt chạy Sparkle cập nhật của M7 (N5).
+- "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi", ở mọi loại bản (mục con bên dưới).
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9); luồng gỡ ở mục "Gỡ cài đặt".
 - Chú thích quyền riêng tư giữ đúng nội dung D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
+
+#### Báo ứng dụng gõ lỗi
+
+Artboard: [Báo ứng dụng gõ lỗi](canvas/Report.png).
+
+- Báo lỗi chỉ qua GitHub issue điền sẵn (D8): "Mở trên GitHub" mở trang issue mới của repo trong trình duyệt, người dùng đọc lại rồi tự gửi ở đó. Dấu không tự gửi gì (N2); không có đường email.
+- URL chỉ mang những gì sheet hiện: bốn trường và các mục "Gửi kèm". Mẫu issue: `.github/ISSUE_TEMPLATE/typing-problem.yml`, mỗi trường điền theo `id` của nó.
+- "Ứng dụng" tự chọn ứng dụng người dùng vừa dùng ngay trước Dấu; danh sách là các ứng dụng đang chạy (cùng ứng dụng vừa dùng nếu nó đã thoát). Dấu chỉ giữ ứng dụng đó trong bộ nhớ cho sheet, không lưu, không ghi nhật ký (D8).
+- "Trang web" không bắt buộc: Dấu không đọc được trang đang mở trong trình duyệt mà không xin quyền (N4).
+- "Gửi kèm": phiên bản macOS, dòng phiên bản như ở thẻ đầu trang, kiểu gõ, quy tắc gạch chân của ứng dụng đã chọn (D5, D13), phiên bản của ứng dụng đó (không đọc được thì bỏ, N5). Ô "Ví dụ đã gõ" có gửi, nên sheet không hứa "không gửi chữ đã gõ".
+- Ô gợi ý đầu sheet là đường lui của D37 cho ứng dụng không chọn được Dấu: đăng xuất một lần; tên mục menu là tên của macOS (D38).
 
 #### Bản phát triển
 
@@ -236,29 +253,3 @@ Artboard: [TypingStates](canvas/TypingStates.png).
 Artboard: [SettingsDark](canvas/SettingsDark.png).
 
 Cài đặt và onboarding đều có, bằng màu hệ thống (D9).
-
-## Chưa có mã (M7)
-
-Mô tả nội dung tới khi dựng. Mọi câu hứa ở đây phải kiểm chứng ở M7 (N5).
-
-### Cập nhật trên trang Cập nhật & hỗ trợ
-
-Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png), [bản phát triển](canvas/SettingsAboutDev.png).
-
-- Chỉ bản chính thức có phần cập nhật (D7 (Cập nhật và loại bản dựng)): thẻ phiên bản có dòng "Kiểm tra lần cuối" và nút "Kiểm tra bản mới…"; hàng "Tự động kiểm tra bản mới" có công tắc. Bản phát triển không có cả ba.
-- Thông báo, tải và cài bản mới là cửa sổ của Sparkle (D7); trang không vẽ trạng thái tải hay cài.
-- Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") kiểm ở lượt chạy Sparkle cập nhật của M7.
-
-### Hàng báo lỗi
-
-- Mục "Hỗ trợ" có hàng "Ứng dụng gõ sai chữ" với nút "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi", ở mọi loại bản.
-
-### Báo ứng dụng gõ lỗi
-
-Artboard: [Báo ứng dụng gõ lỗi](canvas/Report.png).
-
-- Đầu sheet có ô gợi ý "Ứng dụng không chọn được Dấu?": đăng xuất rồi đăng nhập lại một lần; thoát rồi mở lại ứng dụng thì chưa đủ; vẫn lỗi thì gửi báo lỗi (D37).
-- Các trường: Ứng dụng (tự điền), Trang web (không bắt buộc), Loại lỗi (Mất chữ, Lặp chữ, Sai dấu, Khác), Ví dụ đã gõ.
-- Mục "Gửi kèm" liệt kê phiên bản macOS, phiên bản Dấu, kiểu gõ, phiên bản của ứng dụng gõ lỗi, và câu "Chỉ gửi những gì có trong bảng này." (ô "Ví dụ đã gõ" có gửi, nên không hứa "không gửi chữ đã gõ").
-- Ghi rõ issue GitHub là công khai.
-- Nút: Huỷ / Mở trên GitHub (issue điền sẵn, D8 (Không telemetry); không có đường email).

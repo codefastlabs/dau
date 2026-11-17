@@ -21,7 +21,9 @@ let package = Package(
             name: "Dau",
             dependencies: [.product(name: "DauShared", package: "DauShared")],
             path: "Dau",
-            exclude: ["App/main.swift", "App/DauApp.swift"],
+            // SparkleUpdater.swift imports Sparkle, which this package does not fetch; the
+            // update logic it backs is tested through `UpdaterBackend` (Updater.swift).
+            exclude: ["App/main.swift", "App/DauApp.swift", "App/SparkleUpdater.swift"],
             resources: [.process("Localizable.xcstrings")]
         ),
         .testTarget(

@@ -1,6 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%@ at %@" : {
+      "comment" : "Time of the last update check, inside “Last checked: %@”. First %@ = date, second %@ = time.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ at %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ lúc %@"
+          }
+        }
+      }
+    },
     "%@ becomes %@" : {
       "comment" : "VoiceOver label of a typing example. First %@ = keys typed, second %@ = resulting text.",
       "localizations" : {
@@ -48,6 +65,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "%@ sẽ đóng rồi mở lại và hỏi bạn có cho Dấu bật không. Bấm **%@**."
+          }
+        }
+      }
+    },
+    "%@. Only what’s shown here is sent." : {
+      "comment" : "Problem report sheet. %@ = what goes along, e.g. “macOS 27.2 · Dấu 1.0.0 (a1b2c3d) · Telex · No Underline · Google Chrome 131.0”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Only what’s shown here is sent."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@. Chỉ gửi những gì có trong bảng này."
           }
         }
       }
@@ -256,6 +290,23 @@
         }
       }
     },
+    "App" : {
+      "comment" : "Problem report sheet: the app that typed wrong (popup).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "App"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng"
+          }
+        }
+      }
+    },
     "App rules" : {
       "comment" : "Apps page section header: rules stored for single apps.",
       "localizations" : {
@@ -290,6 +341,23 @@
         }
       }
     },
+    "Automatically check for updates" : {
+      "comment" : "Updates & Support switch row (official build).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatically check for updates"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tự động kiểm tra bản mới"
+          }
+        }
+      }
+    },
     "Cancel" : {
       "comment" : "Cancel button.",
       "localizations" : {
@@ -320,6 +388,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Huỷ gỡ cài đặt"
+          }
+        }
+      }
+    },
+    "Can’t select Dấu in an app?" : {
+      "comment" : "Hint at the top of the problem report sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Can’t select Dấu in an app?"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng không chọn được Dấu?"
           }
         }
       }
@@ -371,6 +456,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Kiểm tra bộ gõ cũ"
+          }
+        }
+      }
+    },
+    "Check for Updates…" : {
+      "comment" : "Updates & Support button (official build): Sparkle checks now and shows its own window.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Check for Updates…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra bản mới…"
           }
         }
       }
@@ -1412,6 +1514,23 @@
         }
       }
     },
+    "Included" : {
+      "comment" : "Problem report sheet: heading of what goes along with the report.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Included"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Gửi kèm"
+          }
+        }
+      }
+    },
     "Input method not installed" : {
       "comment" : "Updates & Support header card on a development build (D25): no input method in ~/Library/Input Methods.",
       "localizations" : {
@@ -1459,6 +1578,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bộ gõ đã cài: %@"
+          }
+        }
+      }
+    },
+    "Last checked: %@" : {
+      "comment" : "Updates & Support, under the version (official build). %@ = when, e.g. “today at 9:41”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Last checked: %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kiểm tra lần cuối: %@"
+          }
+        }
+      }
+    },
+    "Missing Text" : {
+      "comment" : "Problem report sheet: kind of problem, letters were lost.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Missing Text"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mất chữ"
           }
         }
       }
@@ -1578,6 +1731,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Không có ứng dụng nào khớp."
+          }
+        }
+      }
+    },
+    "Not checked yet" : {
+      "comment" : "Updates & Support, under the version (official build): Sparkle has not checked for updates yet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked yet"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chưa kiểm tra lần nào"
           }
         }
       }
@@ -1718,6 +1888,57 @@
         }
       }
     },
+    "Open on GitHub" : {
+      "comment" : "Problem report sheet button: opens the prefilled GitHub issue in the browser.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Open on GitHub"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mở trên GitHub"
+          }
+        }
+      }
+    },
+    "Optional" : {
+      "comment" : "Placeholder of the “Website” field of the problem report sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Optional"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Không bắt buộc"
+          }
+        }
+      }
+    },
+    "Or a word Dấu typed came out wrong. You review the report before it’s sent." : {
+      "comment" : "Subtitle of the “Wrong text in an app” row.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Or a word Dấu typed came out wrong. You review the report before it’s sent."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hay một từ Dấu gõ ra không đúng. Bạn xem lại nội dung báo lỗi trước khi gửi."
+          }
+        }
+      }
+    },
     "Or add it yourself: %@ › **%@** › **+** › %@ › **Dấu**, then click **%@**." : {
       "comment" : "%@ in order: System Settings › Keyboard › Input Sources; Edit…; Vietnamese; Add — macOS's own names (D38).",
       "localizations" : {
@@ -1731,6 +1952,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hoặc tự thêm: %@ › **%@** › **+** › %@ › **Dấu**, rồi bấm **%@**."
+          }
+        }
+      }
+    },
+    "Other" : {
+      "comment" : "Kind of typing problem: none of the others.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khác"
           }
         }
       }
@@ -1782,6 +2020,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quyền riêng tư"
+          }
+        }
+      }
+    },
+    "Problem" : {
+      "comment" : "Problem report sheet: kind of problem (segmented control).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Problem"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lỗi gặp phải"
           }
         }
       }
@@ -1935,6 +2190,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Xoá quy tắc"
+          }
+        }
+      }
+    },
+    "Repeated Text" : {
+      "comment" : "Problem report sheet: kind of problem, letters were repeated.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Repeated Text"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Lặp chữ"
+          }
+        }
+      }
+    },
+    "Report a Problem…" : {
+      "comment" : "Updates & Support button: opens the “Report a Typing Problem” sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a Problem…"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Báo lỗi…"
+          }
+        }
+      }
+    },
+    "Report a Typing Problem" : {
+      "comment" : "Title of the problem report sheet.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Report a Typing Problem"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Báo ứng dụng gõ lỗi"
           }
         }
       }
@@ -2394,6 +2700,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Có thể sai chữ nếu không gạch chân"
+          }
+        }
+      }
+    },
+    "That app may still keep an old list of input sources. Log out (%@ › %@) and log back in once, then try again; quitting and reopening the app isn’t enough. If it still happens, send a report below." : {
+      "comment" : "Problem report sheet hint. First %@ = Apple menu symbol, second %@ = Log Out, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That app may still keep an old list of input sources. Log out (%@ › %@) and log back in once, then try again; quitting and reopening the app isn’t enough. If it still happens, send a report below."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng đó có thể còn giữ danh sách nguồn đầu vào cũ. Đăng xuất (%@ › %@) rồi đăng nhập lại một lần, sau đó thử lại; thoát rồi mở lại ứng dụng thì chưa đủ. Vẫn lỗi thì gửi báo lỗi bên dưới."
           }
         }
       }
@@ -3010,6 +3333,40 @@
         }
       }
     },
+    "Website" : {
+      "comment" : "Problem report sheet: the website where it happened.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Trang web"
+          }
+        }
+      }
+    },
+    "What you typed" : {
+      "comment" : "Problem report sheet: an example of what the user typed.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What you typed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ví dụ đã gõ"
+          }
+        }
+      }
+    },
     "When you click “Turn On Dấu”" : {
       "comment" : "Onboarding step 2 card heading. “Turn On Dấu” = the button.",
       "localizations" : {
@@ -3044,6 +3401,23 @@
         }
       }
     },
+    "When you open Dấu, at most once a day. Dấu asks you before installing." : {
+      "comment" : "Subtitle of “Automatically check for updates” (D7).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When you open Dấu, at most once a day. Dấu asks you before installing."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Khi bạn mở Dấu, tối đa mỗi ngày một lần. Dấu hỏi bạn trước khi cài."
+          }
+        }
+      }
+    },
     "While typing" : {
       "comment" : "Add-rule sheet: label of the underline choice.",
       "localizations" : {
@@ -3074,6 +3448,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Đầu từ: f → ph, j → gi (VNI thêm w → qu) · Cuối từ: g → ng, h → nh, k → ch. Áp dụng khi gõ xong từ, chỉ khi ra từ tiếng Việt hợp lệ. Bật mục này sẽ tắt Cho phép phụ âm z, f, w, j."
+          }
+        }
+      }
+    },
+    "Wrong Marks" : {
+      "comment" : "Problem report sheet: kind of problem, wrong tone or other marks.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wrong Marks"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sai dấu"
+          }
+        }
+      }
+    },
+    "Wrong text in an app" : {
+      "comment" : "Updates & Support › Support row, next to “Report a Problem…”.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Wrong text in an app"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng gõ sai chữ"
           }
         }
       }
@@ -3125,6 +3533,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Bạn vẫn chỉnh được cài đặt, nhưng chưa gõ được tiếng Việt."
+          }
+        }
+      }
+    },
+    "You review the report before it’s sent. Reports on GitHub are public." : {
+      "comment" : "Under the problem report sheet’s title.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You review the report before it’s sent. Reports on GitHub are public."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bạn xem lại trước khi gửi. Báo lỗi trên GitHub được đăng công khai."
           }
         }
       }
@@ -3261,6 +3686,40 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "hoặc"
+          }
+        }
+      }
+    },
+    "today at %@" : {
+      "comment" : "Time of the last update check, inside “Last checked: %@”. %@ = time, e.g. 9:41.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "today at %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hôm nay lúc %@"
+          }
+        }
+      }
+    },
+    "yesterday at %@" : {
+      "comment" : "Time of the last update check, inside “Last checked: %@”. %@ = time, e.g. 9:41.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "yesterday at %@"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "hôm qua lúc %@"
           }
         }
       }

@@ -16,7 +16,7 @@ dau/
 │  └─ DauShared/               # model cài đặt chung, App Group + Darwin notification, xem trước bằng engine thật, danh sách tương thích
 ├─ Apps/
 │  ├─ DauInputMethod/          # bộ gõ (IMK), sandbox, không quyền mạng (N2 (Bộ gõ không có quyền mạng))
-│  └─ Dau/                     # app chủ SwiftUI, không sandbox (D37 (Cài bộ gõ)): Cài đặt, onboarding, cài/thay/gỡ bộ gõ
+│  └─ Dau/                     # app chủ SwiftUI, không sandbox (D37 (Cài bộ gõ)): Cài đặt, onboarding, cài/thay/gỡ bộ gõ, cập nhật (Sparkle), báo lỗi
 └─ docs/                       # mục lục: docs/README.md
 ```
 
@@ -285,7 +285,7 @@ Entitlement của app chủ chỉ có App Group, hardened runtime bật, không 
 
 ### Onboarding
 
-Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạng thái (bộ gõ cũ, nguồn khác, trạng thái bộ gõ, bản chủ, chữ ký) đọc lại lúc mở và mỗi lần cửa sổ được đưa lên trước (`readSystem`). Sheet báo lỗi chưa có (`docs/UI.md`).
+Ba bước (`OnboardingFlow`, `OnboardingWindow`; D14 (Onboarding)). Mọi trạng thái (bộ gõ cũ, nguồn khác, trạng thái bộ gõ, bản chủ, chữ ký) đọc lại lúc mở và mỗi lần cửa sổ được đưa lên trước (`readSystem`).
 
 - **Chuyển vào Applications:** `OnboardingFlow.needsMoveToApplications` thay cả ba bước bằng `MoveToApplicationsStep` khi bản đang chạy không phải bản chủ và bộ gõ chưa cài (D37). Hai nút đi qua `OwnerCopyGuide`: mở thư mục Applications trong Finder, thoát app.
 - **Bước 1** chỉ hiện khi có xung đột (mục "Danh sách tương thích, bộ gõ cũ").
@@ -360,6 +360,16 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 2. `waitUntilRemovedFromInputSources`: thăm dò mục lưu của Dấu (`storedEnabledIDs`) tới khi rỗng, huỷ được; trong lúc đó `UninstallRemoveSheet` hiện trên cửa sổ Cài đặt.
 3. `finishUninstall`: chỉ chạy khi mục lưu rỗng (không thì `stillListed`); chuyển `~/Library/Input Methods/DauInputMethod.app` vào Thùng rác rồi dừng bộ gõ; nếu tick ô thì xoá suite App Group (`removePersistentDomain`) và phát thông báo đổi cài đặt; xoá bộ đệm của System Settings (`SystemSettingsControl.clearKeyboardCache`), không đụng bộ đệm của các app; đọc lại để báo kết quả.
 
+### Cập nhật và báo lỗi
+
+Trang Cập nhật & hỗ trợ (`UpdatesSupportView`); hành vi ở `docs/UI.md`.
+
+- **Có updater hay không:** `UpdaterConfiguration.isConfigured` đọc Info.plist của app; chỉ khi có cả `SUFeedURL` (https) lẫn `SUPublicEDKey` (chỉ bản chính thức, mục "Build") thì `DauApp` gọi `SparkleUpdater.startIfConfigured` lúc khởi động; mọi bản khác không tạo gì của Sparkle (D7).
+- **Sparkle:** `SparkleUpdaterBackend` giữ `SPUStandardUpdaterController` (cửa sổ chuẩn của Sparkle, không user driver riêng); lịch kiểm tra và việc hỏi trước khi cài lấy từ các khoá `SU…` trong Info.plist (mục "Build"). Chỉ file `SparkleUpdater.swift` import Sparkle, và gói test của app chủ bỏ file này ra.
+- **Trang:** `UpdatesModel` (`@Observable`, môi trường `\.updates`, chuyển vào hai cột qua `SettingsEnvironment`) theo dõi `canCheckForUpdates`, `lastUpdateCheckDate`, `automaticallyChecksForUpdates` của `SPUUpdater` bằng KVO, qua giao thức `UpdaterBackend` (test dùng bản giả). Công tắc ghi thẳng vào Sparkle.
+- **Sau khi cài bản mới:** Sparkle mở lại Dấu.app ở chỗ nó vừa cài; lần mở đó là bản chủ (mã băm chữ ký trùng bản trong Applications), nên `reconcileAtLaunch` → `SystemInputMethodInstaller.reconcile` thay bộ gõ đã cài bằng bản nhúng mới (D37, mục "Cài, bật, thay, gỡ bộ gõ"). Không có bước mở lại riêng.
+- **Báo lỗi:** `ReportSheet` dựng `ProblemReport` từ các trường và mục "Gửi kèm"; `ProblemReport.issueURL` tạo URL issue mới của `codefastlabs/dau` theo issue form `.github/ISSUE_TEMPLATE/typing-problem.yml` (tham số query theo `id` của từng trường; test `IssueFormTests` giữ hai danh sách khớp) và `NSWorkspace.open` mở nó trong trình duyệt (D8). `PreviousAppTracker` (bắt đầu trong `DauApp`) nhớ ứng dụng thường gần nhất trước Dấu qua `NSWorkspace.didActivateApplicationNotification`, chỉ trong bộ nhớ.
+
 ### Tên hệ thống và chuỗi
 
 #### Tên bàn phím (`LayoutNames`)
@@ -396,7 +406,7 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 - ID input mode viết cứng ở ba nơi: `Apps/DauInputMethod/Info.plist`, `Apps/DauInputMethod/Resources/InfoPlist.xcstrings` (Xcode không thay biến trong khoá plist) và `SystemUINames.location` (tên nguồn của Dấu). Đổi bundle ID phải sửa cả ba (D37: không đổi giữa các bản).
 - Kiến trúc: bản Release luôn universal. Bản Debug build bằng `xcodebuild` không kèm `-destination` chỉ ra kiến trúc của máy đang build (Xcode build package cục bộ theo kiến trúc máy); muốn Debug universal thì thêm `-destination 'generic/platform=macOS'`. `scripts/lib/build.sh` dùng destination này cho `dau_build`.
 - Mã commit của bản build: `scripts/build/stamp-build-commit.sh` ghi `build/generated/BuildCommit.txt` (thêm "+" khi còn thay đổi chưa commit), chạy lúc `xcodegen generate` (preGenCommand) và ở mỗi lần build bộ gõ. Dấu.app và bộ gõ chép file này vào Resources nên bản build được ký lại khi mã đổi. App hiện "Dấu x.y.z (mã)" ở đáy sidebar và thẻ đầu Cập nhật & hỗ trợ; `scripts/dev/dau-version.sh` so mã của bộ gõ đã cài, Dấu.app và repo.
-- Sparkle 2 (Swift Package, ghim bản chính xác trong `project.yml`) chỉ được target `Dau` link; bộ gõ không link (N2). `SUFeedURL` và `SUPublicEDKey` không nằm trong `Apps/Dau/Info.plist`: phase "Sparkle keys" của target `Dau` ghi chúng vào Info.plist đã build khi `DAU_OFFICIAL=YES` (khoá công khai lấy từ build setting `DAU_SPARKLE_PUBLIC_KEY`, thiếu thì build lỗi) và xoá chúng ở mọi bản khác (D7). `SUEnableSystemProfiling` là `false` (D8) và `SUEnableAutomaticChecks`, `SUScheduledCheckInterval` (86400), `SUAllowsAutomaticUpdates` (`false`) có trong `Apps/Dau/Info.plist` ở mọi bản (D7); bản phát triển không có `SUFeedURL` nên app không được khởi động Sparkle ở bản đó. Lúc chạy, app biết có cập nhật hay không qua cờ Swift `DAU_OFFICIAL` hoặc sự có mặt của `SUFeedURL` trong Info.plist.
+- Sparkle 2 (Swift Package, ghim bản chính xác trong `project.yml`) chỉ được target `Dau` link; bộ gõ không link (N2). `SUFeedURL` và `SUPublicEDKey` không nằm trong `Apps/Dau/Info.plist`: phase "Sparkle keys" của target `Dau` ghi chúng vào Info.plist đã build khi `DAU_OFFICIAL=YES` (khoá công khai lấy từ build setting `DAU_SPARKLE_PUBLIC_KEY`, thiếu thì build lỗi) và xoá chúng ở mọi bản khác (D7). `SUEnableSystemProfiling` là `false` (D8) và `SUEnableAutomaticChecks`, `SUScheduledCheckInterval` (86400), `SUAllowsAutomaticUpdates` (`false`) có trong `Apps/Dau/Info.plist` ở mọi bản (D7); bản phát triển không có `SUFeedURL` nên app không được khởi động Sparkle ở bản đó. Lúc chạy, app chỉ khởi động Sparkle khi Info.plist có cả hai khoá (`UpdaterConfiguration`, mục "Cập nhật và báo lỗi").
 
 ## Log, signpost, cờ Debug
 
