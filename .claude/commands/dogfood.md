@@ -38,7 +38,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 Ưu tiên app người dùng gõ hằng ngày và ô gõ đa dạng, mỗi lượt 2–3 ô (mỗi ô gõ hai chế độ), không cả ma trận:
 - ô gõ AppKit dài: Notes (ghi chú mới, xoá khi xong), Mail (thư mới, không điền người nhận, không bao giờ gửi);
 - trình duyệt: ô văn bản và ô contenteditable của trang thử cục bộ (như `typing/run.sh`), thanh địa chỉ Chrome (gõ rồi Esc, không Return);
-- trình soạn thảo mã: VS Code tài liệu chưa lưu (comment, chuỗi, commit message), có gợi ý tự động bật;
+- trình soạn thảo mã: VS Code tài liệu chưa lưu (comment, chuỗi, commit message), có gợi ý tự động bật. Mở file có sẵn thì đọc `workbench.editorAssociations` trong cài đặt của người dùng trước: loại file gắn với trình xem (như `.md` mở bằng Markdown preview) không có ô gõ, phải mở lại bằng Command Palette › "Reopen Editor With…" › "Text Editor"; chụp ảnh xác nhận ô soạn thảo trước chùm phím đầu;
 - terminal: Ghostty, dòng lệnh không bao giờ Return;
 - ô ngắn: ô tìm kiếm Finder hoặc ô tìm (⌘F) trong app.
 
