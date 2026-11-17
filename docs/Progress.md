@@ -59,14 +59,16 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 - Workflow Test: xong 17/11, chạy trên runner `xcode-27` ở mỗi lần push lên `main`, đạt.
 - Tag thử dựng hai bản chính thức số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; bản thử đầu thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
-### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 65 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút ở mục 4)
+### Bước 3 — Một lượt chạy chiếm màn hình (xin giờ một lần; người dùng ngồi cùng ở mục 4)
+
+Thời lượng: mục 1, 5, 6, 7, 8 khoảng 20–25 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh --ref` trong `docs/history/LogM6.md`). Mục 2, 3, 4 chưa có số đo.
 
 1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug.
 2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
 3. Sparkle cập nhật lên bản thử thứ hai: kiểm câu dưới công tắc "Tự động kiểm tra bản mới" (kiểm tra khi mở Dấu, hỏi trước khi cài, D7); cài xong Sparkle mở lại Dấu và bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`).
 4. Kiểm cần người: VoiceOver và Tab qua cửa sổ Cài đặt, VoiceOver đọc tên nguồn, máy để tiếng Anh hẳn (người dùng đổi ngôn ngữ hệ thống). Phiên chính chụp và xem: biểu tượng thanh menu trên nền sáng và tối, các sheet ở chế độ tối, danh sách "+" của System Settings, nhãn biểu tượng trong cửa sổ DMG ở chế độ tối (theo báo cáo trên diễn đàn, Finder vẽ nhãn kiểu sáng khi thư mục có ảnh nền; chưa đo) và vị trí biểu tượng so với mũi tên nền.
 5. Báo lỗi và trang Cập nhật & hỗ trợ (bản Debug, ma trận `scripts/selftest/settings-window/run.sh` và `docs/UIChecks.md`): hàng báo lỗi, sheet báo lỗi (độ rộng control bốn lựa chọn, Tab, Esc/Return, VoiceOver đọc ô gợi ý, chế độ tối); mở Dấu bằng "Cài đặt Dấu…" khi đang ở Chrome thì ô "Ứng dụng" chọn Chrome; "Mở trên GitHub" ra form điền sẵn (cần mẫu issue đã lên nhánh mặc định).
-6. Phần còn lại của việc đo lại các ô đã đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), theo kiểm toán ngày 17/11; Edge, Firefox, VS Code, Safari, Terminal đã đo lại 17/11 (`docs/history/LogM7.md`). Khoảng 8 phút, bản Debug, chuyển nguồn bằng phím tắt và xác nhận trong ô gõ:
+6. Phần còn lại của việc đo lại các ô đã đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), theo kiểm toán ngày 17/11; Edge, Firefox, VS Code, Safari, Terminal đã đo lại 17/11 (`docs/history/LogM7.md`). Khoảng 3–4 phút (7–10 giây mỗi ô `typing/run.sh`), bản Debug, chuyển nguồn bằng phím tắt và xác nhận trong ô gõ:
    - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
    - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
 7. "Thêm dấu cho từ đã gõ" (D20) trên Google Docs và Notion trong Chrome: câu tiếng Việt có ⌫ giữa từ và thêm dấu cho từ đã gõ, mỗi trang vài lượt ở nhịp người, kèm đối chứng Telex của Apple. Hai trang cần tài khoản của người dùng đã đăng nhập sẵn trong Chrome. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
