@@ -53,7 +53,7 @@ Cách gọi và tuỳ chọn của từng script nằm ở đầu script.
 ## Phát hành một tag
 
 1. Chắc chắn `main` xanh (workflow Test) và đã commit mọi thứ của bản này.
-2. Tag và đẩy tag: số hiển thị lấy từ tag (D7).
+2. Tag và đẩy tag: số hiển thị lấy từ tag (D7). Với hai bản thử của kế hoạch M7 bước 2, việc này công bố chúng lên appcast, nên cần người dùng đồng ý trước khi đẩy tag.
 
    ```sh
    git tag v0.1.0-beta.1
@@ -68,7 +68,7 @@ Cách gọi và tuỳ chọn của từng script nằm ở đầu script.
    Dạng khác bị từ chối.
 3. Workflow Release dựng, rồi tạo **bản nháp** trên GitHub Releases (đánh dấu pre-release nếu tag có `-beta.`) kèm DMG, dSYM và (khi đã ký) `appcast.xml` đã thêm bản mới. Chưa có gì được công bố: người dùng chưa thấy gì.
 4. Kiểm bản nháp: log của workflow in từng bước đã làm hay bỏ qua, và `summary.txt`. Thử mở DMG đã tải về.
-5. **Công bố** (người dùng đồng ý một lần, theo kế hoạch M7 bước 4): bấm Publish release trên GitHub; chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit, đẩy lên `main` để Vercel xuất bản. Làm theo thứ tự này: nếu appcast lên trước, Sparkle trỏ vào địa chỉ DMG chưa có. Rồi cập nhật cask Homebrew ở `codefastlabs/homebrew-tap`.
+5. **Công bố** (người dùng đồng ý một lần cho bản thử đầu, theo kế hoạch M7 bước 4): bấm Publish release trên GitHub; chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit, đẩy lên `main` để Vercel xuất bản. Làm theo thứ tự này: nếu appcast lên trước, Sparkle trỏ vào địa chỉ DMG chưa có. Rồi cập nhật cask Homebrew ở `codefastlabs/homebrew-tap`.
 
 **Số build.** `CFBundleVersion` mặc định là mười lần số commit của HEAD (`git rev-list --count`), cộng 1 với tag ổn định, nên tăng theo lịch sử, và bản ổn định dựng lại từ đúng commit của bản beta cuối (D7) vẫn lớn hơn số của beta đó. Cờ `--build-number` của script đặt số khác khi cần.
 

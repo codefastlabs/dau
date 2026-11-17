@@ -9,7 +9,7 @@
         "com.microsoft.VSCode"
       ],
       "suggestUnderline": false,
-      "note": "Electron. Measured 10/11/2026: in-place right at 5, 10 and 20 ms nominal (14 of 14 runs right)."
+      "note": "Electron. Measured 10/11/2026 (VS Code 1.145.2, M1 machine): in-place right in 14 of 15 runs at 5, 10 and 20 ms nominal; the other run lost its first few keys and ran right after an Apple Telex field chosen through the API (cause not checked; remeasured in M7 step 3)."
     },
     {
       "name": "Google Chrome",
@@ -17,7 +17,7 @@
         "com.google.Chrome"
       ],
       "suggestUnderline": false,
-      "note": "Chromium. Measured 10/11/2026: in-place right at 5, 10 and 20 ms nominal after the M6 late-answer fix; label removed."
+      "note": "Chromium. Measured 10/11/2026 (M3 Max machine): in-place right in 7 of 7 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page; 3 of 3 with a busy page again on 17/11/2026 (Chrome 157, M1 machine, edited string at 100 ± 30 ms); TipTap editor 9 of 9 (12/11/2026); label removed."
     },
     {
       "name": "Microsoft Edge",
@@ -25,7 +25,7 @@
         "com.microsoft.edgemac"
       ],
       "suggestUnderline": false,
-      "note": "Chromium (Microsoft Edge Framework). Measured 10/11/2026: in-place right in 9 of 9 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page, after the M6 late-answer fix; label removed."
+      "note": "Chromium (Microsoft Edge Framework). Measured 10/11/2026 (M1 machine): in-place right in 9 of 9 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page; label removed."
     },
     {
       "name": "Brave",
@@ -113,7 +113,7 @@
         "org.mozilla.firefox"
       ],
       "suggestUnderline": false,
-      "note": "Gecko. Measured 10/11/2026: in-place right at 5, 10 and 20 ms nominal after the M6 late-answer fix; label removed."
+      "note": "Gecko. Measured 10/11/2026: in-place right in 7 of 7 runs at 5, 10 and 20 ms nominal (M3 Max machine) and 3 of 3 with a busy page (M1 machine); label removed."
     }
   ]
 }

@@ -51,7 +51,7 @@ Bộ gõ và app chủ dùng chung cài đặt qua một App Group. macOS chỉ 
 
 Gõ hằng ngày dùng bản Release. `scripts/dev/install-app.sh --debug` cài bản Debug, bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry); cách đo: [`docs/Compatibility.md`](docs/Compatibility.md) mục 4).
 
-Bản bạn dựng là **bản phát triển** (D7 (Cập nhật và loại bản dựng)), không phải bản chính thức. Bản chính thức chỉ do quy trình phát hành ký Developer ID tạo ra; quy trình đó chưa có.
+Bản bạn dựng là **bản phát triển** (D7 (Cập nhật và loại bản dựng)), không phải bản chính thức. Bản chính thức chỉ do quy trình phát hành ký Developer ID tạo ra; quy trình đó có ở `scripts/release/` và `.github/workflows/release.yml`, chưa chạy với chữ ký thật (`docs/Releasing.md`).
 
 Gặp lỗi ký, App Group hay chứng chỉ bị thu hồi: [`docs/Troubleshooting.md`](docs/Troubleshooting.md).
 

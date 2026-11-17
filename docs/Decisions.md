@@ -129,7 +129,7 @@ Một quy tắc duy nhất:
 - Chỉ reset bộ đệm, **không** khôi phục: mũi tên, Esc, click chuột và tổ hợp có ⌘/⌃/⌥; đổi cài đặt, đổi nguồn đầu vào, đổi ô nhập hoặc ứng dụng giữa chừng một từ.
 - **Mốc khôi phục:** "đúng như phím đã gõ" tính từ mốc gần nhất. Mặc định là đầu từ; sau gõ đúp (D26 (Gõ đúp phím dấu)), sau Backspace (D32 (Backspace)) hoặc khi từ được đọc từ ứng dụng (D20) thì mốc là chữ đang hiển thị lúc đó, cộng các phím gõ sau ("carr␣" → "car␣", "tesst␣" → "test␣", "nha" + f + k␣ → "nhafk␣").
 
-**Giới hạn đã biết — tự sửa chính tả của macOS:** từ macOS 27.2, ở app bật tự sửa chính tả, hệ thống có thể sửa chữ vừa gõ sau dấu cách, với mọi bộ gõ, kể cả chữ Dấu đã trả đúng ("carr" → "car" rồi thành "cả") và chữ cái đứng một mình. Dấu không tắt tự sửa (N4 (Không tự đổi cài đặt hệ thống)) và không chặn hệ thống thêm dấu cho từ gõ không dấu. Người gõ quay lại thêm dấu thì tính trên chữ đang hiện (D20, ý "Từ hệ thống vừa sửa"); Dấu không đoán từ người gõ định viết. Người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa.
+**Giới hạn đã biết — tự sửa chính tả của macOS:** trên macOS 27.2 (bản đã đo), ở app bật tự sửa chính tả, hệ thống có thể sửa chữ vừa gõ sau dấu cách, với mọi bộ gõ, kể cả chữ Dấu đã trả đúng ("carr" → "car" rồi thành "cả") và chữ cái đứng một mình. Dấu không tắt tự sửa (N4 (Không tự đổi cài đặt hệ thống)) và không chặn hệ thống thêm dấu cho từ gõ không dấu. Người gõ quay lại thêm dấu thì tính trên chữ đang hiện (D20, ý "Từ hệ thống vừa sửa"); Dấu không đoán từ người gõ định viết. Người dùng hoàn tác bằng ⌘Z hoặc bấm vào chữ bị sửa.
 
 **Vì sao:** từ điển tiếng Anh chỉ có tác dụng ở đúng nhóm từ trùng, và ở đó nó làm hỏng các từ tiếng Việt rất phổ biến như "cả", "sẽ". Mũi tên, Esc, click và tổ hợp phím không khôi phục vì lúc đó con trỏ có thể đã đi chỗ khác: chuỗi phím trong bộ đệm không còn ứng với chữ ở vị trí mới, khôi phục theo nó dễ thay sai vùng. Vì vậy bộ đệm bị xoá; phím sau đó chỉ sửa chữ ngay trước con trỏ khi đọc lại được chính chữ đó từ app (D20).
 
@@ -239,7 +239,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Dựng lại khi lệch: bấm chuột vào thanh địa chỉ Chrome không được báo cho bộ gõ, nên "tieemf" từng ra "tieemf".
 - Từ đã hết hợp lệ: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ; "tốt", ⌘A, "toots" từng ra "toots" và hỏng tới dấu cách.
 - App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó thì sai, thay theo vị trí Dấu tự theo dõi thì đúng; Telex của Apple khi trang bận ra cùng chữ như khi trang rảnh (trang rảnh 1/1; trang bận 2 ô hợp lệ trên 3, ô còn lại ra nguyên chuỗi phím nên là đo hỏng).
-- Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ.
+- Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ. Log VS Code ngày 10/11/2026 khớp mô hình giữ con trỏ sau chữ hơn; luật này đúng với cả hai mô hình.
 - Đầu văn bản: ở từ đầu tiên của tài liệu mới trong VS Code, "Chieeuf" từng ra "êhieuf" khi VS Code chưa báo phím nào của loạt phím dồn.
 
 **Xem thêm:** cơ chế và giới hạn ở [`docs/Architecture.md`](Architecture.md) mục "App trả lời chậm"; số lượt đo ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D11.
@@ -266,7 +266,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 - Ghostty: thay tại chỗ sai ở mọi nhịp (app bỏ qua vùng thay, D43); gạch chân đúng.
 - Chrome, Edge, Firefox và VS Code: đúng ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms).
 - Brave, Arc và các app Electron khác chưa đo, nên không có nhãn: nhãn chỉ gắn khi số đo cho thấy sai (luật trên), và kết quả đo ở app này không suy ra cho app kia.
-- Terminal của macOS: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ).
+- Terminal của macOS: thay tại chỗ đúng ở 30 và 120 ms; gạch chân không làm tốt hơn (cả hai chỉ sai khi phím gửi một lượt, 0 ms, không phải tiêu chí), nên không đề xuất.
 
 **Xem thêm:** [`docs/Compatibility.md`](Compatibility.md) mục 6.2; số lượt đo theo app ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D13.
 
@@ -604,7 +604,7 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
 - Không sandbox: app phải chép bộ gõ vào `~/Library/Input Methods`, nâng cấp tại chỗ và dừng tiến trình bộ gõ cũ. App có sandbox thì file chép ra luôn bị gắn cờ quarantine mà app không gỡ được, và không dừng được app khác (Apple DTS; không bộ gõ tham khảo nào làm vậy).
 - Không đổi giữa các bản: đổi thì bộ đệm TIS lệch, phải đăng xuất.
 - Bật không cần đăng xuất (đo bằng bản thử rồi bằng Dấu thật): danh sách "+" và việc dựng hộp thoại đọc bộ đệm của System Settings; bộ đệm không làm mới khi có nguồn mới đăng ký (không xoá thì chỉ đăng xuất mới làm mới); yêu cầu bật gửi lúc trang Keyboard đang mở sẵn bị bỏ qua im lặng.
-- Mỗi app có sandbox cũng giữ bộ đệm riêng, dùng nguyên bộ đệm có sẵn kể cả khi mở lại app: Telegram dựng bộ đệm lúc chưa có Dấu thì không chọn được Dấu, gõ vẫn ra bộ gõ khác. Xoá bộ đệm trước khi đăng ký thì app đang chạy dựng lại ở lần đăng ký và dùng được nguồn mới, không cần mở lại (bản thử).
+- Mỗi app có sandbox cũng giữ bộ đệm riêng, dùng nguyên bộ đệm có sẵn kể cả khi mở lại app: Telegram dựng bộ đệm lúc chưa có Dấu thì không chọn được Dấu từ menu nhập liệu, và vòng ⌃⌥Space bỏ qua Dấu. Xoá bộ đệm trước khi đăng ký thì app đang chạy dựng lại ở lần đăng ký và dùng được nguồn mới, không cần mở lại (bản thử).
 - Đăng xuất là đường lui cho app còn lại (đo bằng Dấu thật): sau một lần đăng nhập mới, mỗi app có sandbox dựng lại bộ đệm của nó ở lần đầu đọc nguồn đầu vào; thoát rồi mở lại app thì không.
 - Thay cả khối, không ghi đè từng file: tiến trình cũ còn đang ánh xạ mã của nó. Không dừng `imklaunchagent`: dừng nó làm app đang gõ mất kết nối với mọi bộ gõ cho tới khi mở lại app đó. Bộ gõ chỉ thoát khi bundle đã đổi: ai cũng phát được thông báo Darwin, nên một yêu cầu không kèm thay đổi không được làm đứt từ đang gõ (D18 (Phòng thủ với IMK)).
 - Kiểm chữ ký: thư mục `~/Library/Input Methods` tài khoản người dùng ghi được, nên bundle có thể bị thay; macOS có chặn bundle bị thay hay vẫn đưa phím cho nó thì chưa đo.

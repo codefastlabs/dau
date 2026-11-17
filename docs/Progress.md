@@ -55,7 +55,7 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 ### Bước 2 — Bản thử trên CI (sau bước 0)
 
 - Lần đẩy mã đầu (cần người dùng đồng ý push): workflow Test chạy trên runner `xcode-27`.
-- Tag thử dựng hai bản chính thức số build khác nhau, công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai). Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
+- Tag thử dựng hai bản chính thức số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; bản thử đầu thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
 ### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 65 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút ở mục 4)
 

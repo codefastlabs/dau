@@ -18,7 +18,7 @@ Luật làm việc:
 - Commit (nếu được giao) bằng `git commit --only <paths>`, không cuốn theo file người khác đã stage.
 
 ## Quy tắc
-- Công nghệ và thư mục của trang web do người dùng chốt ở đầu M8 (`docs/Roadmap.md`); chưa chốt thì dừng và hỏi, không tự chọn.
+- Thư mục của trang web là `site/`. Công nghệ do người dùng chốt ở đầu M8 (`docs/Roadmap.md`); chưa chốt thì dừng và hỏi, không tự chọn.
 - Nội dung: `docs/Website.md` và artboard. Đọc artboard từ file nguồn trong `docs/canvas/src/` (ảnh PNG cùng tên trong `docs/canvas/`; mục lục `docs/canvas/README.md`). Canvas đã được duyệt trước khi giao mã.
 - Nhận diện: `docs/Brand.md`, D25 (Nhận diện). Cách viết tên: D24 (Tên và định danh).
 - Ô số liệu và lời hứa: chỉ điền từ kết quả đã ghi trong `docs/Website.md`, `docs/Compatibility.md` và `docs/research/` (N5 (Chỉ hứa điều đã kiểm chứng)); chưa có thì để ô trống dạng `[...]`.

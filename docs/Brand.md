@@ -8,7 +8,7 @@ Biểu tượng, logo chữ, màu, phông và các file nhận diện cần xu�
 - Mỗi file `.icon` có bốn lớp: nền (màu nền của file; Tối là màu thứ hai), chữ "a", dấu mũ, dấu sắc; bản phát triển thêm lớp dải Hổ phách (Tối: màu thứ hai). Trong suốt và Phủ màu do macOS dẫn ra từ các lớp. Chữ "a" là đường nét đã chuyển từ Be Vietnam Pro Bold (700), theo đầu script; logo chữ dùng ExtraBold (mục "Logo chữ").
 - Bản sao phẳng cho README và web: `Resources/Brand/AppIcon.svg`, `AppIconDev.svg` (cùng script).
 - Ảnh xem trước GitHub: `Resources/Brand/github-preview.png`, 1280 × 640, xuất từ artboard bằng `scripts/assets/export-github-preview.sh` (không dùng bản chụp trong `docs/canvas/`: canvas đặt `@import` phông sau các luật CSS khác nên bản chụp dùng phông thay thế, không phải Be Vietnam Pro). Tải lên ở Settings › Social preview của repo.
-- Ảnh template thanh menu: bản tạm `Apps/DauInputMethod/Resources/ModeVietnamese.tiff`, sinh bằng `scripts/assets/make-mode-icons.swift`.
+- Ảnh template thanh menu: bản tạm `Apps/DauInputMethod/Resources/ModeVietnamese.tiff`, sinh bằng `scripts/assets/make-mode-icons.sh`.
 - Nền cửa sổ DMG: `Resources/Brand/DmgBackground.png` (640 × 400) và `DmgBackground@2x.png` (1280 × 800), vẽ từ artboard "Cửa sổ ảnh đĩa DMG" bằng `scripts/assets/make-dmg-background.sh`: chỉ màu Giấy và mũi tên Mực mờ, không biểu tượng, không chữ (Finder vẽ). Cỡ cửa sổ, cỡ biểu tượng và toạ độ hai biểu tượng ghi ở đầu script; `scripts/release/build-release.sh` ghép hai ảnh thành một TIFF nhiều độ phân giải bằng `tiffutil -cathidpicheck` nên repo không giữ TIFF.
 - Chưa xuất: favicon, `apple-touch-icon.png`, ảnh Open Graph (đi cùng website, M8).
 

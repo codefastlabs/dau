@@ -9,7 +9,7 @@ Vì sao thay tại chỗ hỏng trong Ghostty và terminal dựng bằng xterm.j
 - **Vì sao bỏ cách gửi ký tự xoá:** ở Ghostty nó chỉ đúng từ từ thứ hai, thứ ba sau mỗi lần chuyển vào app; lệnh thật thường ngắn, nên trong shell thật dùng hằng ngày gần như luôn sai (mục 1). Ở xterm.js nó không bật được vì ký tự xoá lọt vào trình soạn thảo cùng view (mục 2). Tất cả tốn khoảng 2 600 dòng mã và test.
 - **Ghostty nuốt Return ngay sau từ gạch chân**, cả với Telex của Apple: lỗi của Ghostty (mục 1).
 - **Gạch chân không sửa được dấu cho từ đã chốt** (⌫ về từ cũ, ← vào giữa từ), giống Telex của Apple. Bật gạch chân cho app mà terminal chỉ là một ô (VS Code, Cursor, app Claude) thì mọi ô của app đó mất D20 (mục 3); vì vậy các app này không mang nhãn vì terminal.
-- **Terminal trong app Claude chưa đo.** Theo bundle Claude.app 5.1231.2 (đọc 12/11/2026), terminal dùng xterm.js 5.x trong Electron 45.2.1 (Chromium 156) với cùng logic nhập liệu như mục 2. Không đo tự động được: app Claude là nơi chạy phiên điều phối.
+- **Terminal trong app Claude chưa đo.** Theo bundle Claude.app 5.1231.2 (đọc 12/11/2026; bản hiện có 5.11492.5, cùng Electron và Chromium), terminal dùng xterm.js 5.x trong Electron 45.2.1 (Chromium 156) với cùng logic nhập liệu như mục 2. Không đo tự động được: app Claude là nơi chạy phiên điều phối.
 
 ## 1. Ghostty
 

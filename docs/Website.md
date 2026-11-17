@@ -25,7 +25,7 @@ Thứ tự mục:
    - Bên phải: hoạt ảnh phát lại chuỗi phím ra chữ có dấu kèm phím vừa gõ. Là hoạt ảnh CSS dựng sẵn, không phải engine chạy trên web; tắt khi người dùng bật giảm chuyển động (`prefers-reduced-motion`).
 3. **Vì sao có Dấu:** so sánh theo loại bộ gõ, chỉ mô tả cách làm.
    - Có sẵn: gạch chân.
-   - Giả lập phím: xoá rồi gõ lại bằng phím giả; ảnh hưởng khi máy bận để ô trống tới khi có số đo của M6 (Hiệu năng dưới tải).
+   - Giả lập phím: xoá rồi gõ lại bằng phím giả; ảnh hưởng khi máy bận: số đo dưới tải ở `docs/Compatibility.md`; ô chỉ điền từ số đo (N5 (Chỉ hứa điều đã kiểm chứng)).
    - Dấu: thay chữ tại chỗ, kèm danh sách ứng dụng đã kiểm chứng.
 4. **Tính năng:** bốn thẻ có minh hoạ: giữ nguyên từ nước ngoài, thêm dấu cho từ đã gõ, theo từng ứng dụng, như một phần của macOS.
 5. **Bảng gõ Telex/VNI:** bảng thật (`<table>`), cột "Tên" ẩn trên điện thoại.

@@ -56,7 +56,7 @@ Dấu chưa có bản tải về. Dấu dựng cho macOS 14 trở lên (D1 (Nề
 Build, cài bằng Apple ID của bạn và chạy mọi bộ test: [CONTRIBUTING.md](CONTRIBUTING.md). Test engine không cần Apple ID:
 
 ```sh
-swift test --package-path Packages/DauEngine
+DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine
 ```
 
 Kiến trúc, cấu trúc thư mục và luồng một phím: [`docs/Architecture.md`](docs/Architecture.md). Thiết kế mọi màn hình: [`docs/canvas/README.md`](docs/canvas/README.md). Mục lục tài liệu: [`docs/README.md`](docs/README.md). Làm việc cùng Claude Code: [CLAUDE.md](CLAUDE.md).

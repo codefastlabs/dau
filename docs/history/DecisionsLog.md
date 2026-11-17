@@ -72,6 +72,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): đoạn "Giới hạn đã biết — tự sửa chính tả của macOS" rút còn luật; phần chuyển khỏi sổ, nguyên văn: "Nó có thể sửa chữ tiếng Anh thành chữ tiếng Việt khi phía trước là câu tiếng Việt ('…Sunrise car␣' → 'cả'), kể cả khi gõ bằng bàn phím U.S. Việc này xảy ra sau khi Dấu đã trả đúng 'car' nên đè lên kết quả gõ đúp ('carr' → 'car'). Chữ cái đứng một mình cũng bị đổi ('Mình chọn phương án d.' → 'Mình chọn phương án Đ.'). … Từ quên dấu có thể bị sửa thành từ khác ý người gõ ('Bé xây lâu đài cat␣' → 'cắt'); quay lại thêm dấu lúc đó tính trên chữ đang hiện ('cắt' + ⌫s → 'căts'), Dấu không đoán từ người gõ định viết. Các ca đã thấy đều là chữ còn thiếu dấu lúc bấm dấu cách; từ đã gõ dấu ngay trong từ không bị sửa ở lần đo nào ('Bé xây lâu đài cats␣' → 'cát', gõ tay). Hệ thống hiện chữ định sửa trong một bong bóng dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận."
 
+- 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): "từ macOS 27.2" thành "trên macOS 27.2 (bản đã đo)", vì chưa đo bản trước.
+
 ### D5. Quy tắc theo ứng dụng
 
 - 30/10/2026: "Sửa 30/10/2026 cùng D2; bản trước: quy tắc có 'chế độ khi mở app' và tuỳ chọn nhớ chế độ theo app. Lý do: khi bỏ chế độ Anh, đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ; đo 30/10/2026: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng."
@@ -129,6 +131,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 17/11/2026 (người dùng duyệt, sau kiểm toán các lượt đo trước `0bf8d3f`): số ô đối chứng Telex của Apple ghi đủ. Bản trước: "(2 ô đo hợp lệ)".
 
+- 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): "Vì sao" thêm câu log VS Code 10/11 khớp mô hình giữ con trỏ sau chữ hơn, luật đúng với cả hai mô hình.
+
 ### D12. Ưu tiên tiến trình
 
 - 10/11/2026: thêm ý "Số đo" từ bài tải nặng của M6, người dùng duyệt. Lời quyết định không đổi.
@@ -153,6 +157,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 12/11/2026 (người dùng chọn, cùng thay đổi của D43): thêm ngoại lệ ô bỏ qua vùng thay chữ (gạch chân là cách gõ đúng ở đó) và nhãn Ghostty. Bản trước: "Hiện chỉ Cursor có nhãn. Terminal không đề xuất."
 
 - 17/11/2026 (đo lại Cursor 3.30.14, theo luật sẵn có của D13 là nhãn chỉ cho app đo thấy sai; luật không đổi): Cursor bỏ nhãn. Bản trước, nguyên văn: "Hiện Cursor và Ghostty có nhãn."; "Cursor: trình soạn thảo còn sai ở nhịp danh nghĩa 5 ms và ở một ca gõ dồn 20 ms; gạch chân đúng."; "(Cursor cũng là Electron mà còn sai)".
+
+- 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): lý do không đề xuất Terminal viết theo số đo ở nhịp người. Bản trước, nguyên văn: "Terminal của macOS: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ)."
 
 ### D14. Onboarding
 
@@ -297,6 +303,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 11/11/2026: thêm ý "Thay bộ gõ đã cài" (chép tạm rồi đổi chỗ cả khối, dừng bằng thông báo Darwin, không đụng tiến trình hệ thống, không đổi trạng thái bật) và hệ quả biểu tượng cũ tới khi đăng xuất: ghi điều mã đã làm mà sổ chưa nói (`docs/research/InputMethodInstall.md` mục 3 và 6.2), phiên chính chốt.
 - 11/11/2026 (sổ viết lại): "Bật lần đầu không cần đăng xuất" đổi từ nhãn thành câu có điều kiện (macOS 27.2, tài khoản đã từng cài Dấu); các bước xoá bộ đệm (`com.apple.IntlDataCache.le*` trong mọi thư mục con của `DARWIN_USER_CACHE_DIR`) chỉ còn ở `docs/Architecture.md`. Bỏ ngày khỏi "Vì sao" ("rà soát 11/11/2026", "`codesign -R`, 11/11/2026", "Apple DTS 6/2026"). Chuyển khỏi sổ, nguyên văn: "Đo 10/11/2026 (bản Debug, một máy, một lượt): bản do bộ cài chép trùng mã băm chữ ký với bản nhúng ở cả arm64 và x86_64, cả lần cài đầu lẫn lần thay. Chưa đo: bản ký Developer ID mang quarantine (M7 (Phát hành))."
 - 16/11/2026: tên cũ "Cài đặt bộ gõ".
+
+- 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): ca Telegram ghi hai quan sát hợp lệ (menu, ⌃⌥Space). Bản trước, nguyên văn: "Telegram dựng bộ đệm lúc chưa có Dấu thì không chọn được Dấu, gõ vẫn ra bộ gõ khác."
 
 ### D38. Chữ trên giao diện
 

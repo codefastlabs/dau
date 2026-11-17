@@ -27,7 +27,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 
 ## M7 — Phát hành
 
-Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo bước và việc của từng bên: [`docs/Progress.md`](Progress.md) mục "Kế hoạch M7".
+Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo bước và việc của từng bên: [`docs/Progress.md`](Progress.md) mục "Kế hoạch M7"; phần đã xong và còn lại cũng theo mục đó, danh sách dưới đây không đánh dấu từng dòng.
 
 - Trước khi phát hành: chạy bài đo của D42, và ghi bộ nhớ (RSS) tiến trình bộ gõ của bản Release cạnh số của bản Debug trong cùng lượt (D42 ghi chênh lệch này là chưa đo).
 - Ký Developer ID, notarize, DMG.

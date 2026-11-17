@@ -143,7 +143,7 @@ Lệnh đọc nhật ký: `/usr/bin/log show --predicate 'process == "KeyboardSe
 
 ### 3.2 Bằng chứng bằng Dấu thật [Máy/Dấu]
 
-- **Triệu chứng (04/11/2026):** Telegram 13.1 (sandbox) không chọn được "Dấu – Tiếng Việt" từ menu nhập liệu, vòng ⌃⌥Space bỏ qua Dấu, chọn bằng TIS từ tiến trình khác thì phím vẫn tới Telex. Thoát rồi mở lại Telegram không đổi gì. Bộ đệm riêng của Telegram dựng lúc `~/Library/Input Methods` chỉ có bản thử, không có `DauInputMethod.app`. Chuyển hai file đó đi rồi mở lại Telegram thì Dấu chạy. Đã loại: sandbox nói chung, Secure Event Input, `allowedInputSourceLocales`.
+- **Triệu chứng (04/11/2026):** Telegram 13.1 (sandbox) không chọn được "Dấu – Tiếng Việt" từ menu nhập liệu, vòng ⌃⌥Space bỏ qua Dấu. Thoát rồi mở lại Telegram không đổi gì. Bộ đệm riêng của Telegram dựng lúc `~/Library/Input Methods` chỉ có bản thử, không có `DauInputMethod.app`. Chuyển hai file đó đi rồi mở lại Telegram thì Dấu chạy. Đã loại: sandbox nói chung, Secure Event Input, `allowedInputSourceLocales`.
 - **Luồng D37 (04/11/2026):** đặt lại cho Telegram bộ đệm cũ, để Telegram chạy suốt, bấm "Bật Dấu". App xoá 107 file bộ đệm; năm thư mục không liệt kê được (ba của WebKit, hai của Shortcuts; nhật ký kernel ghi `System Policy: Dau deny file-read-metadata`, không có yêu cầu TCC hay hộp thoại). Bộ đệm của Telegram dựng lại có Dấu; chọn Dấu từ menu được, gõ ra "việt".
 - **Đăng xuất (05/11/2026):** một app thử có sandbox dùng bộ đệm cũ không có Dấu. Sau đăng xuất và đăng nhập, bộ đệm chung và của 12 tiến trình chạy lúc đăng nhập được ghi mới; bộ đệm của app thử và của Telegram (chưa chạy) còn nguyên. Mở lên thì cả hai dựng lại bộ đệm ngay và thấy Dấu. Máy chưa khởi động lại từ 29/10.
 

@@ -206,7 +206,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
 
    Gồm: ví dụ do engine tính, phím tắt, ô tìm sidebar, ô tìm và chọn của sheet thêm quy tắc, vỏ cửa sổ, banner "Dấu chưa được bật".
 
-Lệnh 3 và 4 cần `DEVELOPER_DIR` vì Command Line Tools không có plugin macro SwiftUI.
+Bước 1 và 4 cần `DEVELOPER_DIR` vì Command Line Tools không có plugin macro SwiftUI.
 
 ## Đọc bảng kết quả
 
