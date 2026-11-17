@@ -184,11 +184,11 @@ struct LateAnswerTests {
     /// edits late, at random: after every key the text must be what the same keys give
     /// on time. (Three edits late is past `CursorTracker.lateLimit`: the answer is then
     /// taken as it is, as before the fix, and words come out wrong.)
-    static let editKeys = "Sasng nay mojot nguoiwf banj guiwr email hoir veef deadline cuar project. Minhf phari vieetjs laji kees hoajch truwocs meeting chieeuf nay. Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf dduwowjc luyeenj ddeeuf mooix ngayf. Chaofz banj, xem video treen YouTube huowsng daanx nhes. "
+    static let editKeys = "Sasng nay mojot nguoiwf banj guiwr email hoir veef deadline cuar project. Minhf phari vieetjs laji kees hoajch truwocs meeting chieeuf nay. Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf dduwowjc luyeenj ddeeuf mooix ngayf. Chaofzf banj, xem video treen YouTube huowsng daanx nhes. "
 
     static let stdKeys = "Chieeuf nay anh cos ranhr khoong, minhf ddi uoongs caf phee nhes. Deadline cuar project nayf laf thuws saus tuaanf sau. Seeps vuwaf guwir email veef buooir meeting toois qua. Toois nay xem phim treen Netflix hay YouTube ddaay? "
     static let strings = [
-        (editKeys, "Sáng nay một người bạn gửi email hỏi về deadline của project. Mình phải viết lại kế hoạch trước meeting chiều nay. Học tiếng Anh không khó, chỉ cần được luyện đều mỗi ngày. Chao bạn, xem video trên YouTube hướng dẫn nhé. "),
+        (editKeys, "Sáng nay một người bạn gửi email hỏi về deadline của project. Mình phải viết lại kế hoạch trước meeting chiều nay. Học tiếng Anh không khó, chỉ cần được luyện đều mỗi ngày. Chào bạn, xem video trên YouTube hướng dẫn nhé. "),
         (stdKeys, "Chiều nay anh có rảnh không, mình đi uống cà phê nhé. Deadline của project này là thứ sáu tuần sau. Sếp vừa gửi email về buổi meeting tối qua. Tối nay xem phim trên Netflix hay YouTube đây? "),
     ]
 
