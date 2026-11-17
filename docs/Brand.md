@@ -9,7 +9,8 @@ Biểu tượng, logo chữ, màu, phông và các file nhận diện cần xu�
 - Bản sao phẳng cho README và web: `Resources/Brand/AppIcon.svg`, `AppIconDev.svg` (cùng script).
 - Ảnh xem trước GitHub: `Resources/Brand/github-preview.png`, 1280 × 640, xuất từ artboard bằng `scripts/assets/export-github-preview.sh` (không dùng bản chụp trong `docs/canvas/`: canvas đặt `@import` phông sau các luật CSS khác nên bản chụp dùng phông thay thế, không phải Be Vietnam Pro). Tải lên ở Settings › Social preview của repo.
 - Ảnh template thanh menu: bản tạm `Apps/DauInputMethod/Resources/ModeVietnamese.tiff`, sinh bằng `scripts/assets/make-mode-icons.swift`.
-- Chưa xuất: favicon, `apple-touch-icon.png`, ảnh Open Graph (đi cùng website, M8), nền DMG (artboard cửa sổ DMG chưa duyệt).
+- Nền cửa sổ DMG: `Resources/Brand/DmgBackground.png` (640 × 400) và `DmgBackground@2x.png` (1280 × 800), vẽ từ artboard "Cửa sổ ảnh đĩa DMG" bằng `scripts/assets/make-dmg-background.sh`: chỉ màu Giấy và mũi tên Mực mờ, không biểu tượng, không chữ (Finder vẽ). Cỡ cửa sổ, cỡ biểu tượng và toạ độ hai biểu tượng ghi ở đầu script; `scripts/release/build-release.sh` ghép hai ảnh thành một TIFF nhiều độ phân giải bằng `tiffutil -cathidpicheck` nên repo không giữ TIFF.
+- Chưa xuất: favicon, `apple-touch-icon.png`, ảnh Open Graph (đi cùng website, M8).
 
 ## Mockup
 
@@ -80,7 +81,7 @@ App dùng màu và phông của hệ thống (D9); bảng màu này dành cho bi
 | `apple-touch-icon.png` | 180×180 | ghim trang trên iPhone/iPad |
 | `og-image.png` | 1200×630 | `og:image`, `twitter:image` — link chia sẻ Zalo, Messenger, Slack, iMessage, X |
 | GitHub social preview: `Resources/Brand/github-preview.png` | 1280×640 | Settings › Social preview của repo |
-| Ảnh nền DMG | theo cửa sổ cài đặt | file DMG phát hành |
+| Nền DMG: `Resources/Brand/DmgBackground.png`, `DmgBackground@2x.png` | 640×400 và 1280×800 | file DMG phát hành |
 
 ## Thẻ cho website
 `<title>Dấu – Bộ gõ tiếng Việt cho macOS</title>`, `meta description`, `og:title`, `og:description`, `og:image`, `og:locale=vi_VN`, `twitter:card=summary_large_image`. Mô tả và tiêu đề không chứa lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)).
