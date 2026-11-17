@@ -10,13 +10,13 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 
 | Ứng dụng | Thay tại chỗ | Gạch chân | Nhãn "Đề xuất" |
 |---|---|---|---|
-| Safari, TextEdit | đúng ở 30 ms (29–30/10/2026) và 120 ms (Backspace, thêm dấu) | đúng | không |
+| Safari, TextEdit | đúng ở 30 ms (29–30/10/2026) và 120 ms (Backspace, thêm dấu); Safari 27.2 ở 5 ms đúng 2/3 (17/11/2026), lượt sai hỏng đúng từ đầu của tài liệu mới, chưa rõ nguyên nhân (mục 5.1) | đúng | không |
 | Chrome | đúng ở 5–20 ms (10/11/2026, máy M3 Max), khi trang bận (10/11/2026, máy M3 Max; 17/11/2026, Chrome 157, máy M1) và trong trình soạn thảo TipTap (9/9, 12/11/2026) | đúng ở 0 ms | không |
-| Edge | đúng ở 5–20 ms và khi trang bận (10/11/2026, máy M1) | đúng ở 0 ms | không |
-| Firefox | đúng ở 5–20 ms (máy M3 Max) và khi trang bận (máy M1), 10/11/2026 | đúng ở 0 ms | không |
-| VS Code | đúng ở 5–20 ms: 14/15 lượt (10/11/2026, VS Code 1.145.2, máy M1); lượt còn lại mất vài phím đầu, chưa rõ nguyên nhân (mục 5.3) | đúng ở 0 ms | không |
+| Edge | đúng ở 5–20 ms và khi trang bận (10/11/2026, máy M1; 17/11/2026, Edge 157.0.4341.60) | đúng ở 0 ms | không |
+| Firefox | đúng ở 5–20 ms (10/11/2026, máy M3 Max) và khi trang bận (10/11/2026, máy M1; 17/11/2026, Firefox 160.0) | đúng ở 0 ms | không |
+| VS Code | đúng ở 5–20 ms: 14/15 lượt (10/11/2026, VS Code 1.145.2) và 2/2 lượt (17/11/2026, VS Code 1.146.0, mỗi lượt sau một ô Telex của Apple), máy M1 (mục 5.3) | đúng ở 0 ms | không |
 | Cursor (3.30.14) | đúng ở 5 ms (chuỗi chuẩn), 20 ms và 100 ms, ở trình soạn thảo, khung agent (⌘L) và ô nhập Agents (mục 5.4) | chưa đo | không |
-| Terminal | đúng ở 30 và 120 ms (12/11/2026) và ở 5–10 ms (29/10/2026, trước các sửa của M6), sai ở 0 ms; ⌫ không tới bộ gõ (mục 6.5) | sai ở 0 ms | không |
+| Terminal | đúng ở 30 và 120 ms (12/11/2026; 30 ms lại 1/1 ngày 17/11/2026), sai khi phím dồn dưới 30 ms và ở 0 ms; ⌫ không tới bộ gõ (mục 5.5, 6.5) | đúng ở 5–20 ms (17/11/2026), sai ở 0 ms | **có** |
 | Ghostty | sai: app bỏ qua vùng thay, Dấu không xử lý riêng (D43; mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | **có** |
 | xterm.js (trang thử trong Chrome) | sai (D43; mục 6.8) | đúng | không |
 | Terminal tích hợp của VS Code (xterm.js) | sai (D43); trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8) | đúng, cả khi chuyển sang trình soạn thảo | không: bật cho cả app thì mọi ô mất D20 |
@@ -25,7 +25,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 | WebStorm, terminal | sai (D43; mục 6.8) | đúng ở 80 ms | không: bật cho cả app thì mọi ô mất D20 |
 | Notes | đúng ở 30 ms (30/10/2026) | chưa đo | không |
 | Mail | đúng ở 30 ms (30/10/2026); số đo 11/11 (120 ms) và 12/11/2026 (30 ms) chỉ về tự sửa chính tả của macOS (mục 6.1) | chưa đo | không |
-| Telegram | đúng ở 30 ms (30/10/2026) | chưa đo | không |
+| Telegram | đúng ở 5 và 30 ms (chuỗi chuẩn) và ở 100 ± 30 ms (chuỗi `edit`), 17/11/2026 (mục 5.8) | chưa đo | không |
 
 - Brave, Arc và các app Electron khác không có nhãn: chưa đo, nên chưa có số đo cho thấy sai (D13); không suy từ Chrome, Edge, VS Code, Cursor: kết quả đo ở app này không suy ra cho app kia. Đo mà sai thì gắn lại theo D13.
 - Trình duyệt: script chỉ gõ khi ô của trang có focus, nên mọi số đo trình duyệt là gõ vào ô của trang.
@@ -55,19 +55,19 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 | Nhóm | Ứng dụng | Bundle ID | Máy này | Công nghệ giao diện | Kết quả hoặc dự đoán |
 |---|---|---|---|---|---|
 | Hệ thống | TextEdit | `com.apple.TextEdit` | có (1.21) | AppKit (NSTextView) | đã đo, mục 5.1 (phiên bản lúc đo: không rõ) |
-| Trình duyệt | Safari | `com.apple.Safari` | có (27.2) | WebKit | đã đo, mục 5.1 (phiên bản lúc đo: không rõ) |
+| Trình duyệt | Safari | `com.apple.Safari` | có (27.2) | WebKit | đã đo, mục 5.1 (lúc đo: 27.2 ngày 17/11/2026; các lượt trước: không rõ) |
 | Trình duyệt | Chrome | `com.google.Chrome` | có (157.0.8103.79) | Chromium | đã đo, mục 5.2 (lúc đo: 157 ngày 17/11/2026; các lượt trước: không rõ) |
-| Trình duyệt | Firefox | `org.mozilla.firefox` (Nightly: `org.mozilla.nightly`) | có (160.0; Nightly 162.0a1) | Gecko | đã đo, mục 5.2 (phiên bản lúc đo: không rõ) |
-| Trình duyệt | Edge | `com.microsoft.edgemac` | có (157.0.4341.60) | Chromium (`Microsoft Edge Framework`) | đã đo, mục 5.2 (phiên bản lúc đo: không rõ) |
+| Trình duyệt | Firefox | `org.mozilla.firefox` (Nightly: `org.mozilla.nightly`) | có (160.0; Nightly 162.0a1) | Gecko | đã đo, mục 5.2 (lúc đo: 160.0 ngày 17/11/2026; các lượt trước: không rõ) |
+| Trình duyệt | Edge | `com.microsoft.edgemac` | có (157.0.4341.60) | Chromium (`Microsoft Edge Framework`) | đã đo, mục 5.2 (lúc đo: 157.0.4341.60 ngày 17/11/2026; các lượt trước: không rõ) |
 | Trình duyệt | Arc | `company.thebrowser.Browser` | không | Chromium (suy luận) | như Chrome |
 | Trình duyệt | Brave | `com.brave.Browser` | không | Chromium (suy luận) | như Chrome |
-| Soạn mã | VS Code | `com.microsoft.VSCode` | có (1.146.0) | Electron | đã đo, mục 5.3 (lúc đo: 1.145.2) |
+| Soạn mã | VS Code | `com.microsoft.VSCode` | có (1.146.0) | Electron | đã đo, mục 5.3 (lúc đo: 1.146.0 ngày 17/11/2026; 1.145.2 ngày 10/11/2026) |
 | Soạn mã | Cursor | `com.todesktop.230313mzl4w4u92` | có (3.30.14) | Electron (dựng từ VS Code) | đã đo, mục 5.4 (lúc đo: 3.30.14) |
 | Soạn mã | Zed | `dev.zed.Zed` | có (1.23.2) | tự vẽ bằng Metal (GPUI, Rust), vỏ AppKit | chưa biết |
 | Soạn mã | Sublime Text | `com.sublimetext.4` | có (Build 4215) | tự vẽ, vỏ AppKit | đã đo, mục 5.7 (lúc đo: Build 4215) |
 | Soạn mã | JetBrains IDE | `com.jetbrains.WebStorm`; khác: `com.jetbrains.intellij`, `com.jetbrains.intellij.ce`, `com.jetbrains.pycharm`, `com.jetbrains.goland`, `com.google.android.studio` | WebStorm có (2026.3, `~/Applications`); các ID khác không | Java (JetBrains Runtime); terminal Reworked dựng trên trình giả lập Ghostty VT | WebStorm đã đo, mục 5.9 (lúc đo: 2026.3) |
 | Soạn mã | Xcode | `com.apple.dt.Xcode` | có (27.1) | AppKit, trình soạn mã riêng | chưa biết; có gợi ý hoàn thành mã |
-| Terminal | Terminal | `com.apple.Terminal` | có (2.15) | AppKit, chờ shell in lại chữ | đã đo, mục 5.5 (phiên bản lúc đo: không rõ) |
+| Terminal | Terminal | `com.apple.Terminal` | có (2.15) | AppKit, chờ shell in lại chữ | đã đo, mục 5.5 (lúc đo: 2.15 ngày 17/11/2026; các lượt trước: không rõ) |
 | Terminal | iTerm2 | `com.googlecode.iterm2` | không | AppKit (suy luận) | như Terminal (suy luận) |
 | Terminal | Warp | `dev.warp.Warp-Stable` | không | tự vẽ bằng Metal, Rust (suy luận) | chưa biết |
 | Terminal | Ghostty | `com.mitchellh.ghostty` | có (1.4.0) | AppKit + SwiftUI, vẽ bằng Metal | đã đo, mục 5.6 (lúc đo: 1.4.0) |
@@ -145,6 +145,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 ### 5.1 Safari, TextEdit
 
 - Câu mẫu đúng ở 30 ms, gõ tay đúng; gạch chân đúng ở 30 ms (29–30/10/2026). Cả hai cũng đúng khi gửi cả chuỗi một lần (0 ms), không là tiêu chí (D13).
+- Safari 27.2 (17/11/2026, bản Debug của `8d3e93a`, máy M1, chuyển nguồn bằng phím tắt hệ thống, có xác nhận trong ô): chuỗi `std` ở 5 ms đúng 2/3; Telex của Apple cùng điều kiện đúng (hợp lệ). Lượt sai hỏng đúng từ đầu ("Chiều" ra "hieCeuf"). Log: ở lần thay đầu của tài liệu mới, Safari trả vị trí chậm (`selectedRange` 2, Dấu theo dõi 4, `kind=late`). Nguyên nhân chưa rõ; việc mở ở mục 7. Mô hình test: `stalledStartTable`, `typedHere`.
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng.
 - `selectedRange`: TextEdit 327 / 606, Safari 622 / 1.057 µs; mismatch 0.
 - TextEdit: mũi tên reset theo mong đợi D4 × D20 chưa đo ([`docs/history/M2Testing.md`](history/M2Testing.md) mục 4). TextEdit không nằm trong script vì tự lưu tài liệu thử lên iCloud Drive ([`docs/Troubleshooting.md`](Troubleshooting.md)).
@@ -153,15 +154,16 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 
 - Gạch chân ở 0 ms đúng ở cả ba.
 - Phím dồn (10/11/2026, nhịp danh nghĩa 5, 10, 20 ms, app rảnh): Chrome và Firefox đúng 7/7 lượt mỗi app (máy M3 Max), Edge 9/9 (máy M1).
-- Trang bận (chuỗi `edit`, 100 ± 30 ms, 3 lượt mỗi app): Chrome 3/3 (10/11/2026, 06:13, máy M3 Max), Edge 3/3 và Firefox 3/3 (10/11/2026, máy M1). Chrome 157 với mã `5564963`, 17/11/2026, máy M1: thay tại chỗ lại đúng 3/3; ở chế độ gạch chân, "Hoc ⌫ j" ra "Hocj" 3/3 vì gạch chân không thêm dấu cho từ đã chốt (mục 6.8).
+- Trang bận (chuỗi `edit`, 100 ± 30 ms, 3 lượt mỗi app): Chrome 3/3 (10/11/2026, 06:13, máy M3 Max), Edge 3/3 và Firefox 3/3 (10/11/2026, máy M1). Chrome 157 với mã `5564963`, 17/11/2026, máy M1: thay tại chỗ lại đúng 3/3; Edge 157.0.4341.60 và Firefox 160.0 (17/11/2026, máy M1, bản Debug của `8d3e93a`, chuỗi `edit`, 100 ± 30 ms, trang bận `--busy 300:1000`): đúng 1/1 mỗi app; ở chế độ gạch chân, "Hoc ⌫ j" ra "Hocj" 3/3 vì gạch chân không thêm dấu cho từ đã chốt (mục 6.8).
 - Trình soạn thảo TipTap/ProseMirror trong Chrome (12/11/2026, Dấu Release 4ae3646, `typing/run.sh tiptap`, câu mẫu 41 phím, 5/10/20 ms có jitter, 3 lượt mỗi mức): đúng 9/9 lượt; Telex của Apple cùng điều kiện ra cùng một chữ ở cả 9 lượt, khác Dấu chỉ ở từ tiếng Anh (D4), nên phép đo hợp lệ. Không tái hiện được lỗi mất dấu khi gõ nhanh trong trình soạn thảo web.
+- Phím dồn, chuỗi `std` ở 5 ms (17/11/2026, máy M1, bản Debug của `8d3e93a`, chuyển nguồn bằng phím tắt hệ thống, có xác nhận trong ô): Edge 2/2, Firefox 2/2. Telex của Apple cùng điều kiện hợp lệ ở cả hai (ra "mêting"; ở Edge thêm "Ciều").
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng ở cả ba (Backspace, 82d9ecc).
 - `selectedRange`: Chrome 415 / 694, Edge 369 / 6.828, Firefox 265 / 1.174 µs.
 - Chưa đo: click reset, mũi tên reset; phím dồn khi trang bận.
 
 ### 5.3 VS Code
 
-- Thay tại chỗ đúng 14/15 lượt ở 5, 10 và 20 ms (phím dồn, 10/11/2026, máy M1, VS Code 1.145.2; hai lượt đo lúc 08:48 và 09:12). Lượt còn lại mất vài phím đầu, chạy ngay sau một ô Telex của Apple chọn bằng API; nguyên nhân chưa kiểm, đo lại ở bước 3 của kế hoạch M7 (`docs/Progress.md`). Gạch chân đúng ở 0 ms.
+- Thay tại chỗ đúng ở 5–20 ms (phím dồn, máy M1): 14/15 lượt ngày 10/11/2026 (VS Code 1.145.2) và 2/2 lượt ngày 17/11/2026 (VS Code 1.146.0, ô `vscode`, `std` ở 5 ms, bản Debug của `8d3e93a`, mỗi lượt chạy ngay sau một ô Telex của Apple, chuyển nguồn bằng phím tắt hệ thống; không mất phím đầu nào). Telex của Apple cùng điều kiện hợp lệ 2/2 (ra "mêting"). Lượt mất vài phím đầu ngày 10/11 chạy sau ô Apple chọn bằng API, không tái hiện khi chuyển bằng phím tắt. Gạch chân đúng ở 0 ms.
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng. `selectedRange` 230 / 885 µs.
 - Chưa đo: khi app bận.
 
@@ -188,10 +190,10 @@ Một app, một bundle ID, hai kiểu cửa sổ: Agents (mở khi chạy app, 
 
 ### 5.5 Terminal
 
-- 29/10/2026 (trước các sửa của M6): đúng ở 30 ms; sai ở 0 ms; đúng ở 5 và 10 ms.
-- Gạch chân ở 0 ms vẫn sai (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau); 5–30 ms đúng. Vì vậy không đề xuất.
+- Thay tại chỗ, chuỗi `std` (17/11/2026, Terminal 2.15, máy M1, bản Debug của `8d3e93a`, chuyển nguồn bằng phím tắt hệ thống, có xác nhận trong ô): 5 ms đúng 0/2, 10 ms 1/2, 20 ms 1/2, 30 ms 1/1. Lượt sai ở 10 và 20 ms sai một từ ("về" ra "veêf"), ở 5 ms sai nhiều từ. Telex của Apple cùng điều kiện sai ở 5, 10 và 20 ms, nhiều từ hơn Dấu (ô đối chứng hợp lệ). Thay tại chỗ sai khi phím dồn dưới 30 ms. Ở 0 ms sai.
+- Gạch chân ở 0 ms vẫn sai (chữ chốt đúng nhưng Terminal còn vẽ marked text cũ tới phím sau); 5–30 ms đúng (5, 10, 20 ms: 3/3 ngày 17/11/2026). Thay tại chỗ sai khi phím dồn dưới 30 ms còn gạch chân đúng, nên Terminal có nhãn "Đề xuất" (D13).
 - Thêm dấu cho từ đã gõ ra "hocj": ⌫ không tới bộ gõ (mục 6.5). `selectedRange` 408 / 637 µs.
-- Đo lại 12/11/2026 với bản hiện hành (120 và 30 ms, một lượt mỗi mức): đúng, trừ ⌫ (mục 6.5).
+- 12/11/2026 (120 và 30 ms, một lượt mỗi mức): đúng, trừ ⌫ (mục 6.5).
 
 ### 5.6 Ghostty
 
@@ -211,6 +213,7 @@ Một app, một bundle ID, hai kiểu cửa sổ: Agents (mở khi chạy app, 
 - Notes 4.13 (30/10/2026): câu mẫu đúng ở 30 ms (mismatch 0); Backspace và thêm dấu cho từ đã gõ đúng ("Học": Notes tự viết hoa chữ đầu); không tự sửa "car". `selectedRange` 330 / 1.135 µs; `insertText` cao nhất các app đã đo (3.799 / 10.207 µs).
 - Mail 16.0 (30/10/2026): câu mẫu đúng ở 30 ms (Mail tự viết hoa chữ đầu); phần còn lại chưa thử. `selectedRange` 375 / 1.245 µs. Số đo tự sửa chính tả của macOS ở Mail: 11/11/2026 (120 ms) và 12/11/2026 (30 ms), mục 6.1.
 - Telegram 13.1.0 (30/10/2026, tự gõ 30 ms mỗi phím qua System Events, Saved Messages, không gửi): câu mẫu cũ đúng, không gạch chân, không nhảy chữ. `selectedRange` 240 / 1.670 µs.
+- Telegram 13.1.0 (17/11/2026, ô `telegram` của `typing/run.sh`: ô soạn tin của Saved Messages, không gửi; bản Debug của `8d3e93a`, máy M1, chuyển nguồn bằng phím tắt hệ thống, có xác nhận trong ô): `std` ở 5 ms đúng 1/1 và ở 30 ms 1/1, `edit` ở 100 ± 30 ms 1/1; Telex của Apple ở 5 ms hợp lệ.
 - Hai ca sai ở Notes và Mail khi gõ hằng ngày (11/11/2026) là do tự sửa của macOS, với mọi bộ gõ (mục 6.1).
 
 ### 5.9 WebStorm
@@ -241,7 +244,7 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 - Chromium, Electron và Terminal áp phím bất đồng bộ, nên khi phím đến dồn hay app bận, `selectedRange` trả vị trí cũ. Ảnh chụp cũ không cập nhật trong lúc `handle` đang chạy (hỏi lại 10 lần, cách 2 ms, vẫn y nguyên).
 - Không phải do thiếu quyền Trợ năng: bộ gõ không có quyền đó mà vẫn đúng ở 20 ms trở lên.
 - Cách xử lý (D11 ý "App trả lời chậm"; cơ chế: [`docs/Architecture.md`](Architecture.md) mục "App trả lời chậm"): Dấu vẫn hỏi `selectedRange` ở phím có thay chữ và tự theo dõi vị trí con trỏ. Khi vị trí app trả khác, Dấu đọc chữ trước con trỏ một lần để chứng minh app chỉ chưa áp các thao tác vừa gõ, rồi thay ở vị trí tự theo dõi; không chứng minh được thì dựng lại hoặc reset.
-- Ở các app đã đo, chữ tiếng Việt đúng, trừ app bỏ qua vùng thay (mục 6.8); riêng trình soạn thảo WebStorm mất khôi phục D4 (mục 5.9). Terminal đo 12/11/2026 (120 và 30 ms, một lượt mỗi mức): đúng, trừ ⌫ (mục 6.5).
+- Ở các app đã đo, chữ tiếng Việt đúng, trừ app bỏ qua vùng thay (mục 6.8); riêng trình soạn thảo WebStorm mất khôi phục D4 (mục 5.9). Ngoại lệ: Terminal đúng từ 30 ms, trừ ⌫ (mục 5.5, 6.5), và sai khi phím dồn dưới 30 ms; Safari ở 5 ms hỏng từ đầu của tài liệu mới 1/3 lượt (mục 5.1).
 - Các hướng không dùng: tự cộng dồn vị trí từ một vị trí gốc thay cho việc hỏi (vị trí gốc cũng là ảnh chụp cũ, VS Code đổi gốc toạ độ); chờ ứng dụng rồi hỏi lại; so chữ trước con trỏ bằng `attributedSubstring` làm phép thay (Safari trả chữ cũ nên hỏng cả Safari).
 - Người gõ tay hiếm khi có hai phím cách nhau dưới 10 ms, nhưng phím lặp khi giữ phím, máy tải nặng hay ứng dụng tạm đứng có thể làm phím đến dồn (suy luận).
 
@@ -267,10 +270,10 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
 
 - Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE trừ WebStorm, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
-- Chưa đo: Terminal ở nhịp dồn dưới 30 ms với bản hiện hành (5 và 10 ms đo 29/10/2026, trước các sửa của M6); VS Code khi app bận.
+- Chưa đo: VS Code khi app bận.
+- Safari: chẩn đoán lần thay đầu của tài liệu mới, nơi Safari trả vị trí chậm và từ đầu hỏng (5 ms, 1/3; mục 5.1).
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo WebStorm: mất khôi phục D4 vì Dấu bị reset sau mỗi phím đi thẳng (mục 5.9). Bước kế và các ca còn đáng đo (⌫ dời dấu, Return sau từ cần khôi phục, nhịp 30 ms): [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) mục 5.
-- Chưa có đối chứng Telex của Apple ở các ô phím dồn của VS Code và Firefox.
 - Chrome: "vieetj" giữ nguyên trong thanh địa chỉ tab mới, chưa tái hiện.
 - Chrome, Edge, Firefox: phím dồn khi trang bận (mục 5.2).
 - Tự sửa chính tả của macOS (mục 6.1): những ứng dụng nào bật nó, và từ nào bị sửa.

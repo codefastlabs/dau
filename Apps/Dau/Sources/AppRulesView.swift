@@ -71,7 +71,7 @@ struct AppRulesView: View {
                 } header: {
                     // The section's description goes under its title, above the card,
                     // as in System Settings. N5, D13: the label goes only to apps whose
-                    // measurements show in-place replacement still failing (today Ghostty),
+                    // measurements show in-place replacement still failing (today Ghostty and Terminal),
                     // where underlining is the right choice; the text says when to choose
                     // it, not that it always helps. Wording approved
                     // by the user (30/10/2026).

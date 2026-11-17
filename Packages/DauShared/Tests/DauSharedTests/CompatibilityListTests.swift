@@ -76,17 +76,16 @@ struct CompatibilityListTests {
         #expect(list.version >= 1)
         #expect(list.apps.count == rawApps.count)
         let ids = list.suggestedBundleIDs
-        #expect(ids == ["com.todesktop.230313mzl4w4u92", "com.mitchellh.ghostty"])
-        #expect(list.suggestion(for: "com.todesktop.230313mzl4w4u92")?.name == "Cursor")
+        #expect(ids == ["com.mitchellh.ghostty", "com.apple.Terminal"])
         #expect(list.suggestion(for: "com.mitchellh.ghostty")?.name == "Ghostty")
+        #expect(list.suggestion(for: "com.apple.Terminal")?.name == "Terminal")
         for id in ["com.brave.Browser", "company.thebrowser.Browser", "com.vng.zalo",
                    "com.hnc.Discord", "com.tinyspeck.slackmacgap", "notion.id", "md.obsidian",
                    "com.figma.Desktop", "com.google.Chrome", "com.microsoft.edgemac",
-                   "org.mozilla.firefox", "com.microsoft.VSCode"] {
+                   "org.mozilla.firefox", "com.microsoft.VSCode", "com.todesktop.230313mzl4w4u92"] {
             #expect(list.suggestion(for: id) == nil, "\(id)")
             #expect(list.apps.contains { $0.bundleIDs.contains(id) && !$0.suggestUnderline }, "\(id)")
         }
-        #expect(list.suggestion(for: "com.apple.Terminal") == nil)
         #expect(Set(ids).count == ids.count)
         #expect(list.apps.allSatisfy { $0.name?.isEmpty == false })
     }

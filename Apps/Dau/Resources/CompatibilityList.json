@@ -1,7 +1,7 @@
 {
-  "version": 7,
+  "version": 8,
   "updated": "2026-11-17",
-  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong: Ghostty. Every app types without underline until the user turns it on. Apps where a terminal is one field among many (VS Code, Cursor, Claude) are not labeled for their terminal (D43). Terminal is not suggested. Bundle IDs from docs/Compatibility.md section 3.",
+  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong and underline right: Ghostty, Terminal. Every app types without underline until the user turns it on. Apps where a terminal is one field among many (VS Code, Cursor, Claude) are not labeled for their terminal (D43). Bundle IDs from docs/Compatibility.md section 3.",
   "apps": [
     {
       "name": "Visual Studio Code",
@@ -9,7 +9,7 @@
         "com.microsoft.VSCode"
       ],
       "suggestUnderline": false,
-      "note": "Electron. Measured 10/11/2026 (VS Code 1.145.2, M1 machine): in-place right in 14 of 15 runs at 5, 10 and 20 ms nominal; the other run lost its first few keys and ran right after an Apple Telex field chosen through the API (cause not checked; remeasured in M7 step 3)."
+      "note": "Electron. Measured 10/11/2026 (VS Code 1.145.2, M1 machine): in-place right in 14 of 15 runs at 5, 10 and 20 ms nominal; the other run lost its first few keys right after an Apple Telex field chosen through the API. 17/11/2026 (VS Code 1.146.0, M1 machine): right in 2 of 2 runs at 5 ms, each right after an Apple Telex field chosen by the system shortcut; no key lost."
     },
     {
       "name": "Google Chrome",
@@ -25,7 +25,7 @@
         "com.microsoft.edgemac"
       ],
       "suggestUnderline": false,
-      "note": "Chromium (Microsoft Edge Framework). Measured 10/11/2026 (M1 machine): in-place right in 9 of 9 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page; label removed."
+      "note": "Chromium (Microsoft Edge Framework). Measured 10/11/2026 (M1 machine): in-place right in 9 of 9 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page; 17/11/2026 (Edge 157.0.4341.60, M1 machine): 2 of 2 at 5 ms and 1 of 1 with a busy page (edited string at 100 ± 30 ms); label removed."
     },
     {
       "name": "Brave",
@@ -113,7 +113,15 @@
         "org.mozilla.firefox"
       ],
       "suggestUnderline": false,
-      "note": "Gecko. Measured 10/11/2026: in-place right in 7 of 7 runs at 5, 10 and 20 ms nominal (M3 Max machine) and 3 of 3 with a busy page (M1 machine); label removed."
+      "note": "Gecko. Measured 10/11/2026: in-place right in 7 of 7 runs at 5, 10 and 20 ms nominal (M3 Max machine) and 3 of 3 with a busy page (M1 machine); 17/11/2026 (Firefox 160.0, M1 machine): 2 of 2 at 5 ms and 1 of 1 with a busy page (edited string at 100 ± 30 ms); label removed."
+    },
+    {
+      "name": "Terminal",
+      "bundleIDs": [
+        "com.apple.Terminal"
+      ],
+      "suggestUnderline": true,
+      "note": "Apple Terminal. Measured 17/11/2026 (2.15, docs/Compatibility.md 5.5): in-place right at 30 ms and above, wrong with keys under 30 ms apart (5 ms 0/2, 10 ms 1/2, 20 ms 1/2); underline right 3/3 at 5, 10 and 20 ms; Apple Telex also wrong under 30 ms. Terminal does not pass ⌫ to the input method (6.5)."
     }
   ]
 }

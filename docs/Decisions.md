@@ -258,7 +258,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được, người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
 - Nhãn "Đề xuất" trong danh sách tương thích chỉ gắn cho app mà số đo cho thấy thay tại chỗ còn sai ở tốc độ gõ thật; sửa được ở app nào thì bỏ nhãn của app đó. Không gắn nhãn theo công nghệ giao diện khi chưa đo.
 - Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí.
-- Ghostty là app có nhãn. Terminal của macOS không đề xuất.
+- Ghostty và Terminal của macOS là các app có nhãn.
 
 **Vì sao:**
 
@@ -266,7 +266,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 - Ghostty: thay tại chỗ sai ở mọi nhịp (app bỏ qua vùng thay, D43); gạch chân đúng.
 - Chrome, Edge, Firefox và VS Code: đúng ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms).
 - Brave, Arc và các app Electron khác chưa đo, nên không có nhãn: nhãn chỉ gắn khi số đo cho thấy sai (luật trên), và kết quả đo ở app này không suy ra cho app kia.
-- Terminal của macOS: thay tại chỗ đúng ở 30 và 120 ms; gạch chân không làm tốt hơn (cả hai chỉ sai khi phím gửi một lượt, 0 ms, không phải tiêu chí), nên không đề xuất.
+- Terminal của macOS: thay tại chỗ sai khi phím dồn dưới 30 ms (5 ms 0/2, 10 và 20 ms 1/2), đúng từ 30 ms; gạch chân đúng ở 5, 10, 20 ms (17/11/2026).
 
 **Xem thêm:** [`docs/Compatibility.md`](Compatibility.md) mục 6.2; số lượt đo theo app ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D13.
 

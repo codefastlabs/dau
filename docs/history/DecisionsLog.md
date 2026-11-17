@@ -160,6 +160,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): lý do không đề xuất Terminal viết theo số đo ở nhịp người. Bản trước, nguyên văn: "Terminal của macOS: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ)."
 
+- 17/11/2026 (người dùng chốt, theo luật sẵn có của D13 sau khi đo Terminal 2.15): Terminal có nhãn. Bản trước, nguyên văn: "Ghostty là app có nhãn. Terminal của macOS không đề xuất."; "Terminal của macOS: thay tại chỗ đúng ở 30 và 120 ms; gạch chân không làm tốt hơn (cả hai chỉ sai khi phím gửi một lượt, 0 ms, không phải tiêu chí), nên không đề xuất."
+
 ### D14. Onboarding
 
 - 11/11/2026: ghi điều mã đã làm mà sổ chưa nói (`docs/research/InputMethodInstall.md` mục 5 và 6.2), phiên chính chốt: bước 1 chỉ hiện khi một bộ gõ chặn phím trong `KnownInputMethods` đang chạy (đã cài mà không chạy thì không chặn); nguồn tiếng Việt kiểu IMK khác đang bật chỉ được nhắc nhẹ ở bước 2. Thêm hai dòng dẫn D37 (bước 2 "Cài lại" khi chữ ký sai; màn chuyển vào Applications). Bản trước của bước 1: "Bước 1 phát hiện bộ gõ cũ đang chạy (OpenKey, EVKey, GoTiengViet…) qua `NSWorkspace` và hướng dẫn tắt (N4)."
