@@ -44,8 +44,9 @@
 #                     and typing goes on; any other app is an error); ⇄ switches the
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process.
-#                     The field keeps its input method, so this only checks that the input
-#                     method's observer reacts to the notification, not a real switch
+#                     The field keeps its input method (TIS reports the change, the field
+#                     does not), so this checks only that the input method's observer
+#                     reacts to the notification, not a real switch
 #                     (docs/Architecture.md, "Đổi nguồn đầu vào không qua
 #                     `activateServer`"). Example (D20): --keys "hoc ⌫j " --expect "học "
 #   --expect "…"      expected text (default: what the sample sentence must give). With --keys

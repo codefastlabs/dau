@@ -44,7 +44,7 @@ Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hi�
 | [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) | gõ trong Ghostty và terminal dựng bằng xterm.js (ô bỏ qua vùng thay chữ); sửa chữ ở chế độ gạch chân |
 | [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) | chữ của bộ gõ tới terminal và trình soạn thảo của WebStorm (JetBrains Runtime) thế nào; dự đoán từ mã nguồn và kết quả đo của Dấu |
 | [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | luồng chính của trang web bận bao lâu khi gõ, và giới hạn khi suy ra rủi ro cho thay chữ tại chỗ |
-| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | các known issue "app trả lời chậm" của bộ gõ (Cursor, D20 sau ⌫): cơ chế, hướng sửa đã thử trên mô hình, đề xuất |
+| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | các known issue "app trả lời chậm" của bộ gõ (D20 sau ⌫; Cursor 3.29.15 từng sai, 3.30.14 đúng): cơ chế, hướng sửa đã thử trên mô hình, đề xuất |
 | [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | các cách người gõ sửa chữ khi gõ, chỗ Dấu hỏng và nguyên nhân, các hướng sửa; hồ sơ người gõ |
 
 ## Lưu trữ

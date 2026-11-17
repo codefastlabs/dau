@@ -331,11 +331,11 @@ final class DauInputController: IMKInputController {
 
     /// A switch to another input source and back that IMK does not report with
     /// `deactivateServer`/`activateServer` must still end the word (D4: reset, no
-    /// restore). Measured 10/11/2026 (`0bf8d3f`): `TISSelectInputSource` from another
-    /// process makes macOS report the new source and the menu bar change, but the focused
-    /// field keeps the old input method: that path never moves the field off Dấu. The
-    /// system shortcut does activate it (M2). This observer is kept for a real switch IMK
-    /// does not report (for example "Automatically switch to a document's input source",
+    /// restore). Selecting a source with `TISSelectInputSource` from another process
+    /// (measured 10/11/2026, `0bf8d3f`) makes TIS report the new source and the menu bar
+    /// change, but the focused field keeps its input method and Dấu gets no call. The
+    /// system shortcut makes IMK call `activateServer`/`deactivateServer`. This observer
+    /// is for a real switch IMK does not report (for example "Automatically switch to a document's input source",
     /// or another app calling TIS); those paths are not measured. The system posts the
     /// distributed notification `kTISNotifySelectedKeyboardInputSourceChanged` for every
     /// switch, and a sandboxed process may observe it. A switch made with the keyboard

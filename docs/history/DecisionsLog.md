@@ -152,6 +152,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 11/11/2026: số lượt của "Vì sao (nhãn đã bỏ)" chuyển khỏi sổ, nguyên văn: "đo 10/11/2026, app rảnh, ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms; dưới 10 ms chưa đo được bằng script này): Chrome và Firefox đúng 7/7 lượt mỗi app, Edge 9/9 lượt và 3/3 lượt khi trang bận; VS Code đúng 14/15 lượt, lượt sai không phải lỗi vị trí thay chữ (vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ)."
 - 12/11/2026 (người dùng chọn, cùng thay đổi của D43): thêm ngoại lệ ô bỏ qua vùng thay chữ (gạch chân là cách gõ đúng ở đó) và nhãn Ghostty. Bản trước: "Hiện chỉ Cursor có nhãn. Terminal không đề xuất."
 
+- 17/11/2026 (đo lại Cursor 3.30.14, theo luật sẵn có của D13 là nhãn chỉ cho app đo thấy sai; luật không đổi): Cursor bỏ nhãn. Bản trước, nguyên văn: "Hiện Cursor và Ghostty có nhãn."; "Cursor: trình soạn thảo còn sai ở nhịp danh nghĩa 5 ms và ở một ca gõ dồn 20 ms; gạch chân đúng."; "(Cursor cũng là Electron mà còn sai)".
+
 ### D14. Onboarding
 
 - 11/11/2026: ghi điều mã đã làm mà sổ chưa nói (`docs/research/InputMethodInstall.md` mục 5 và 6.2), phiên chính chốt: bước 1 chỉ hiện khi một bộ gõ chặn phím trong `KnownInputMethods` đang chạy (đã cài mà không chạy thì không chặn); nguồn tiếng Việt kiểu IMK khác đang bật chỉ được nhắc nhẹ ở bước 2. Thêm hai dòng dẫn D37 (bước 2 "Cài lại" khi chữ ký sai; màn chuyển vào Applications). Bản trước của bước 1: "Bước 1 phát hiện bộ gõ cũ đang chạy (OpenKey, EVKey, GoTiengViet…) qua `NSWorkspace` và hướng dẫn tắt (N4)."

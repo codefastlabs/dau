@@ -258,14 +258,14 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được, người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
 - Nhãn "Đề xuất" trong danh sách tương thích chỉ gắn cho app mà số đo cho thấy thay tại chỗ còn sai ở tốc độ gõ thật; sửa được ở app nào thì bỏ nhãn của app đó. Không gắn nhãn theo công nghệ giao diện khi chưa đo.
 - Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí.
-- Hiện Cursor và Ghostty có nhãn. Terminal của macOS không đề xuất.
+- Ghostty là app có nhãn. Terminal của macOS không đề xuất.
 
 **Vì sao:**
 
-- Cursor: trình soạn thảo còn sai ở nhịp danh nghĩa 5 ms và ở một ca gõ dồn 20 ms; gạch chân đúng.
+- Cursor 3.30.14 (17/11/2026): thay tại chỗ đúng ở trình soạn thảo, khung agent và ô nhập Agents, nên không có nhãn.
 - Ghostty: thay tại chỗ sai ở mọi nhịp (app bỏ qua vùng thay, D43); gạch chân đúng.
-- Chrome, Edge, Firefox và VS Code: sau các lần sửa ở M6 (D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"), đúng ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms).
-- Brave, Arc và các app Electron khác từng mang nhãn chỉ vì công nghệ giao diện, chưa đo. Nhãn chỉ gắn khi số đo cho thấy sai (luật trên), và kết quả đo ở app này không suy ra cho app kia (Cursor cũng là Electron mà còn sai), nên các app đó không có nhãn cho tới khi đo.
+- Chrome, Edge, Firefox và VS Code: đúng ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms).
+- Brave, Arc và các app Electron khác chưa đo, nên không có nhãn: nhãn chỉ gắn khi số đo cho thấy sai (luật trên), và kết quả đo ở app này không suy ra cho app kia.
 - Terminal của macOS: gạch chân cũng không sửa được lỗi khi phím dồn ở đó (còn vẽ marked text cũ).
 
 **Xem thêm:** [`docs/Compatibility.md`](Compatibility.md) mục 6.2; số lượt đo theo app ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D13.

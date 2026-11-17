@@ -130,9 +130,10 @@ final class KeyReentry {
 /// input source it saw last (at activation and at each notification) and reads the
 /// current one when a notification comes: only a real switch ends the word.
 ///
-/// A real switch away and back that IMK does not report (U.S. then Dấu; a switch by
-/// `TISSelectInputSource` from another process does not reach the field, measured
-/// 10/11/2026) gives two notifications; the first one finds
+/// A real switch away and back that IMK does not report (U.S. then Dấu) gives two
+/// notifications. A source selected by `TISSelectInputSource` from another process
+/// reaches TIS and the menu bar but not the field (measured 10/11/2026), so it only
+/// exercises this path. The first notification finds
 /// U.S. current, which is not Dấu, and ends the word (D4). Both arriving only after the
 /// switch back (two switches within the delivery time of one notification) would find
 /// Dấu both times and keep the word; no person switches that fast.

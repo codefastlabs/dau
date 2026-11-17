@@ -3,7 +3,7 @@ import DauEngine
 import DauShared
 import Testing
 
-/// Keys → composer → a `LateDocument` that behaves as Cursor's editor does
+/// Keys → composer → a `LateDocument` that behaves as the word-origin model (from Cursor 3.29.15 logs, 10/11/2026)
 /// (`LateDocument.Origin.word`, Chromium's cache, the caret kept after a replaced range),
 /// every key `interval` after the previous one.
 private struct EditorSession {
@@ -39,10 +39,10 @@ private struct EditorSession {
     }
 }
 
-/// Cursor's editor answers `selectedRange` from the start of the word being typed
+/// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026): the app answers `selectedRange` from the start of the word being typed. No known app behaves this way; the known issues below are the limits of Dấu with this kind of app
 /// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/history/LogM6.md`, logs in
 /// build/load/cursor-20261110-094602 and cursor2-20261110-100405, not committed).
-@Suite("In-place mode in an app that counts positions from the start of the word (M6: Cursor's editor)")
+@Suite("In-place mode in an app that counts positions from the start of the word (M6: the word-origin model)")
 struct CursorEditorTests {
     // MARK: The app is on time (group 1 of the runs)
 
@@ -66,7 +66,7 @@ struct CursorEditorTests {
     /// and 112 ("tua" + a, sel 3, known 7, range 6,1), `mismatch` at the next mark key
     /// of each word.
     ///
-    /// Cursor's answer was right at both keys. The keys since the previous replacement
+    /// The answer in the log was right at both keys. The keys since the previous replacement
     /// came in one burst, and the answer happened to be the caret that replacement had
     /// (a position in its own word), so the text read, with that replacement replayed
     /// over it, came out as the text the tracker typed: the replacement's removed text
@@ -117,7 +117,7 @@ struct CursorEditorTests {
 
     // MARK: The app is behind (group 2 of the runs): not fixed
 
-    /// Words that came out wrong only at nominal 5 ms, not in every run: Cursor's answer
+    /// Words that came out wrong only at nominal 5 ms, not in every run: the answer
     /// was stale across a word boundary (the page had not applied the space, or the
     /// letters after it). A stale position is in the coordinates of a word the page has
     /// left, or of a word it has not filled yet, and the page applies the range in the
@@ -156,7 +156,7 @@ struct CursorEditorTests {
         #expect(s.outcomes.last?.attempt?.selection.location == word.sel)
         s.type(word.rest, every: 0.01)
         #expect(s.doc.text == word.measured)
-        withKnownIssue("Cursor's editor answers late across a word boundary (group 2, not fixed)") {
+        withKnownIssue("the word-origin model answers late across a word boundary (group 2, not fixed)") {
             #expect(s.doc.text == word.right)
         }
         #expect(s.overCalls == 0)
@@ -166,7 +166,7 @@ struct CursorEditorTests {
 
     /// The run c100-short of 11:44 (Cursor 3.29.15, Dấu Debug dc71b7f, 100 ms between
     /// keys; build/load/fix2-20261110-114446, not committed): "owr ddaau, uwf cos. anh
-    /// ddi " gave "ở dâu, ừ co. anh đi ". Cursor's answer was right at both keys; after
+    /// ddi " gave "ở dâu, ừ co. anh đi ". The answer in the log was right at both keys; after
     /// a replaced word of one letter the followed position is two past it, within
     /// `CursorTracker.lateLimit`, where the text of the app was not compared with the
     /// text typed:
@@ -257,7 +257,7 @@ struct CursorEditorTests {
     /// Code's new document, measured for the first word: sel 1, known 4, `late`,
     /// `RapidKeysTests.firstWordOfEmptyDocument`) give the same answer, the same text
     /// read and the same followed position. Replacing at the followed position is right
-    /// there and dropped in Cursor; replacing at the answer is right in Cursor and
+    /// there and dropped by the model; replacing at the answer is right in the model and
     /// replaces the first letter of the document there.
     @Test("a word-origin app on time and a late new document of a document-origin app: same answer, same text read, same followed position")
     func sameAnswerAsLateNewDocument() {
@@ -311,7 +311,7 @@ struct CursorEditorTests {
 
     // MARK: Simulation table
 
-    /// Cursor's editor with a page that applies keys late. The times are not measured:
+    /// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026), with a page that applies keys late. The times are not measured:
     /// chosen so the page falls some keys behind at 5 ms and keeps up from 10 ms (in the
     /// runs the stale answers of group 2 came only at nominal 5 ms, where the keys were
     /// in fact 2 to 20 ms apart).

@@ -51,11 +51,10 @@ final class LateDocument: InPlaceClient {
     enum Origin {
         /// The start of the document.
         case document
-        /// The start of the word being typed (Cursor's editor, runs of 10/11/2026 in
+        /// The start of the word being typed (the word-origin model, from the editor log of Cursor 3.29.15, runs of 10/11/2026 in
         /// `docs/history/LogM6.md`: at 100 ms between keys `selectedRange` was the number of
         /// letters of the word at every replacement, 0-based again after each space,
-        /// also after a replacement whose text ends with a space; VS Code and Cursor's
-        /// Agents input count from the start of the document).
+        /// also after a replacement whose text ends with a space).
         ///
         /// Measured, from the positions and texts of those logs: the answers; that a
         /// range starting past the text the app holds is dropped ("uo", range 4,1: the
