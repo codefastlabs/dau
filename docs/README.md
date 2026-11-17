@@ -8,7 +8,7 @@ Theo thứ tự trong [CLAUDE.md](../CLAUDE.md): `Progress.md`, rồi `Decisions
 
 | File | Chứa gì |
 |---|---|
-| [`docs/Progress.md`](Progress.md) | mốc đang làm, việc đang chờ, số đo, nhật ký theo ngày |
+| [`docs/Progress.md`](Progress.md) | mốc đang làm, việc đang chờ, kế hoạch mốc, nhật ký lượt đo và chẩn đoán |
 | [`docs/Decisions.md`](Decisions.md) | nguyên tắc N và quyết định D (nguồn chuẩn duy nhất), câu hỏi mở |
 | [`docs/Architecture.md`](Architecture.md) | thành phần, cấu trúc thư mục, build, luồng một phím |
 | [`docs/Roadmap.md`](Roadmap.md) | các mốc, tiêu chí hoàn thành, việc tồn đọng |
@@ -59,6 +59,7 @@ Ghi lại quá khứ, không sửa theo hiện trạng.
 | [`docs/history/LogM5.md`](history/LogM5.md) | nhật ký M5 |
 | [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md) | nhật ký giữa M5 và M6 |
 | [`docs/history/LogM6.md`](history/LogM6.md) | nhật ký M6 (kèm danh sách cắt giảm 13/11 và thống nhất thuật ngữ 16/11) |
+| [`docs/history/LogM7.md`](history/LogM7.md) | nhật ký M7, mốc đang làm: phần đã chuyển khỏi `docs/Progress.md`; phần còn lại nối vào khi đóng mốc |
 | [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) | lịch sử từng nguyên tắc và quyết định: ngày, ai chốt, bản trước, cách nói cũ |
 | [`docs/history/ResearchLog.md`](history/ResearchLog.md) | phần lịch sử tách khỏi các tài liệu nghiên cứu: kế hoạch, vòng thử theo giờ, bảng đổi số mục |
 | [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md) | lỗi tương thích đã sửa kèm chẩn đoán; lượt chạy ma trận 30/10/2026 |

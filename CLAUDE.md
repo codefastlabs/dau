@@ -2,7 +2,7 @@
 
 Dấu là input method tiếng Việt **chỉ dành cho macOS**, dựng trên InputMethodKit (IMK). Nó thay chữ tại chỗ bằng `insertText(_:replacementRange:)` thay vì giả lập phím Backspace như OpenKey. Tên chính thức: **Dấu** (đã chốt). Quy tắc dùng tên và định danh kỹ thuật: xem D24 (Tên và định danh).
 
-Phiên mới đọc `docs/Progress.md` trước (đang ở đâu, việc đang chờ, kế hoạch mốc đang làm, số đo, nhật ký theo ngày), rồi `docs/Decisions.md` — sổ quyết định (nguồn chuẩn duy nhất) — theo đoạn: mục lục ở đầu file (một dòng luật cho mỗi mục), các nguyên tắc N1–N5, rồi mọi quyết định liên quan tới việc đang làm. Các file sau đọc khi việc chạm tới, theo đoạn:
+Phiên mới đọc `docs/Progress.md` trước (đang ở đâu, việc đang chờ, kế hoạch mốc đang làm, nhật ký lượt đo và chẩn đoán), rồi `docs/Decisions.md` — sổ quyết định (nguồn chuẩn duy nhất) — theo đoạn: mục lục ở đầu file (một dòng luật cho mỗi mục), các nguyên tắc N1–N5, rồi mọi quyết định liên quan tới việc đang làm. Các file sau đọc khi việc chạm tới, theo đoạn:
 1. `docs/Architecture.md` — kiến trúc, target, luồng xử lý phím.
 2. `docs/Roadmap.md` — các mốc, tiêu chí hoàn thành.
 3. `docs/UI.md` — mô tả màn hình (mockup gốc nằm trên canvas, xem link trong file).
@@ -17,7 +17,7 @@ Luật chỉ dùng cho một loại việc nằm trong `CLAUDE.md` của thư m�
 
 ## Điều phối
 
-Phiên chính là **người điều phối**: lập kế hoạch, giao việc cho subagent trong `.claude/agents/` (vai trò ghi ở phần mô tả của từng file), kiểm chứng kết quả, commit, cập nhật `docs/Progress.md`. Phiên chính hạn chế tự viết mã lớn để giữ ngữ cảnh gọn.
+Phiên chính là **người điều phối**: lập kế hoạch, giao việc cho subagent trong `.claude/agents/` (vai trò ghi ở phần mô tả của từng file), kiểm chứng kết quả, commit, cập nhật `docs/Progress.md` (mục "Trạng thái hiện tại" và kế hoạch mốc sau mỗi bước; nhật ký theo mục "Nguồn chuẩn"). Phiên chính hạn chế tự viết mã lớn để giữ ngữ cảnh gọn.
 
 - Lệnh `/milestone M#` chạy trọn một mốc; `/audit` kiểm tra toàn repo; `/dogfood` phiên chính tự gõ như người dùng thật để tìm chỗ vấp (chiếm màn hình, hỏi giờ chạy trước).
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
@@ -30,8 +30,11 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 
 - `docs/Decisions.md` là nguồn chuẩn **duy nhất** cho quyết định. Canvas không chép sổ quyết định. Lịch sử trò chuyện trên claude.ai có nhiều đề xuất đã bị thay thế (Rust/WASM, nhúng UniKey, từ điển tiếng Anh, `NSSpellChecker`, phím chuyển nhấn-nhả ⇧, chạy OpenKey làm đáp án test…). Gặp thông tin trái với `Decisions.md` ở bất kỳ đâu thì theo `Decisions.md`, và sửa hoặc báo chỗ lệch.
 - Khi một quyết định thay đổi (người dùng đã chốt, hoặc đã giao quyết định đó trong chat): sửa `Decisions.md` trước, ghi lý do, trong cùng commit với thay đổi; rồi sửa artboard và mọi chỗ còn cách nói cũ cho khớp trong cùng lượt làm việc (cách tìm: mục "Viết tài liệu", ý "Tự soát trước khi commit").
-- **Mỗi sự kiện chỉ ghi ở một chỗ.** Quyết định ở `Decisions.md` (nơi khác dẫn số D/N, không chép lại nội dung); số đo giao diện ở `docs/research/SystemSettingsReference.md` và script kiểm; số test và số đo theo ngày ở nhật ký `Progress.md` (mốc đã đóng: trong `docs/history/`); kiến trúc ở `Architecture.md` tả cấu trúc, không chép số. Dẫn mã bằng tên kiểu/hàm, không bằng số dòng. File agent trong `.claude/agents/` chỉ nêu vai trò và nơi đọc, không chép sự kiện.
+- **Mỗi sự kiện chỉ ghi ở một chỗ.** Quyết định ở `Decisions.md` (nơi khác dẫn số D/N, không chép lại nội dung); số đo giao diện ở `docs/research/SystemSettingsReference.md` và script kiểm; số đo gõ theo từng app ở `docs/Compatibility.md`; số đo và quan sát không thuộc tài liệu nào ở nhật ký `Progress.md` (mốc đã đóng: trong `docs/history/`); diễn biến của một thay đổi (file đã sửa, số test) ở commit message; kiến trúc ở `Architecture.md` tả cấu trúc, không chép số. Dẫn mã bằng tên kiểu/hàm, không bằng số dòng. File agent trong `.claude/agents/` chỉ nêu vai trò và nơi đọc, không chép sự kiện.
 - **`Progress.md` chỉ giữ việc của mốc đang làm**, vì mọi phiên đều đọc nó. Đóng mốc theo `docs/Roadmap.md` mục "Tiêu chí đóng mốc", gồm chuyển nhật ký và ghi nhớ của mốc sang `docs/history/`.
+- **Nhật ký `Progress.md` chỉ ghi điều phiên sau cần mà chưa có nhà ở chỗ khác.** Mỗi mục: ngày — việc — kết quả — nơi chứa số, commit.
+  - Ghi: mỗi lượt đo (điều kiện, lệnh; số nằm ở tài liệu riêng thì chỉ dẫn tới), số đo và quan sát chưa có nhà (engine, D42, `/dogfood`), kết quả chẩn đoán kể cả "chưa rõ".
+  - Không ghi: quyết định (`Decisions.md`, `docs/history/DecisionsLog.md`), bước kế hoạch đã xong (ghi "xong ngày…" ở mục kế hoạch), việc đang dở ("Trạng thái hiện tại"), kết quả tra cứu (quyết định hoặc `docs/research/`), cài bản hay chuyển `stable` (trừ bước dọn của một lượt đo), thay đổi `.claude/`, các `CLAUDE.md`, hook, dọn tài liệu, sửa mã không có số đo (commit message).
 
 ## Viết tài liệu
 
@@ -72,7 +75,7 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Mỗi mạch việc một phiên:** xong một mạch việc, hoặc khi ngữ cảnh đã dài, ghi trạng thái vào `docs/Progress.md` rồi đề xuất phiên mới; phiên mới đọc `Progress.md` và tài liệu liên quan, không mang theo ngữ cảnh cũ.
 - **Giao việc gọn:** một tính năng một bản giao việc, phủ mọi phần nó chạm tới (cửa sổ, sheet, tài liệu, canvas). Đo một lần rồi dùng lại. Việc nhỏ (vài dòng tài liệu, một artboard) phiên chính tự làm.
   - Model theo loại việc: thiết kế, quyết định, kiểm toán, chẩn đoán dùng model mạnh nhất; script, công cụ đo, chụp canvas, ghi tài liệu từ báo cáo có sẵn, sửa chữ dùng sonnet; tra một chỗ hay đối chiếu cơ học dùng haiku. Model mặc định ghi trong tệp của từng agent; phiên chính đổi theo từng lần giao khi việc khác loại.
-  - Bản giao việc nói kết quả ghi vào đâu trong repo (nghiên cứu vào `docs/research/`, số đo vào nhật ký `docs/Progress.md`), để agent và phiên sau đọc thay vì làm lại; không gọi lại một agent chỉ để ghi kết quả của nó.
+  - Bản giao việc nói kết quả ghi vào đâu trong repo (nghiên cứu vào `docs/research/`, số đo theo app vào `docs/Compatibility.md`, số đo khác vào nhật ký `docs/Progress.md`), để agent và phiên sau đọc thay vì làm lại; không gọi lại một agent chỉ để ghi kết quả của nó.
   - Việc tiếp nối việc của một agent thì gọi lại chính agent đó (còn ngữ cảnh), không tạo agent mới phải đọc lại từ đầu.
 - **Ngữ cảnh gọn:** đọc file lớn bằng `grep`, `jq` hay theo đoạn, không in nguyên file vào ngữ cảnh. Kiểm toán một lần ở cuối mạch việc, theo phạm vi của diff; lượt kiểm toán lại chỉ xem các mục chặn.
 - **Làm quân sư, không làm người chuyển lời:** gặp thứ thừa, vô ích hay sai trong tài liệu (việc "chờ người dùng" về chi tiết vặt, phép đo không ai cần, câu lỗi thời) thì xử lý ngay trong lượt đó: xoá, gộp, hoặc chốt theo nguyên tắc đã có, rồi báo ngắn đã làm gì. Chỉ đưa cho người dùng những quyết định thật sự đổi sản phẩm hoặc cần quyền của họ, kèm đề xuất. Không biến một việc dọn dẹp thành việc mới cho người dùng.
