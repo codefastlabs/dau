@@ -32,7 +32,7 @@ Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bả
 - Trước khi phát hành: chạy bài đo của D42, và ghi bộ nhớ (RSS) tiến trình bộ gõ của bản Release cạnh số của bản Debug trong cùng lượt (D42 ghi chênh lệch này là chưa đo).
 - Ký Developer ID, notarize, DMG.
 - Sparkle 2: EdDSA, một kênh, appcast và loại bản theo D7. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
-- Rà entitlement của bộ gõ trước khi notarize: thử bỏ `temporary-exception.mach-register.global-name` (xem [`docs/Architecture.md`](Architecture.md)).
+- Rà entitlement của bộ gõ trước khi notarize: giữ `temporary-exception.mach-register.global-name` (rà 17/11/2026, [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md) mục "Kết nối của IMKServer và sandbox").
 - GitHub Actions: test ở mỗi lần đẩy mã, build phát hành từ tag, chạy cả test hiệu năng của engine (`PerformanceTests`).
 - Homebrew cask `dau` với `auto_updates true` trong tap riêng `codefastlabs/homebrew-tap` (D6 (Phát hành)).
 - Báo lỗi (URL issue điền sẵn, D8 (Không telemetry)); hàng "Ứng dụng gõ sai chữ" trong `UpdatesSupportView` theo artboard "Cập nhật & hỗ trợ".
