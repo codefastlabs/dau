@@ -43,7 +43,7 @@ private struct EditorSession {
 /// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/history/LogM6.md`, logs in
 /// build/load/cursor-20261110-094602 and cursor2-20261110-100405, not committed).
 @Suite("In-place mode in an app that counts positions from the start of the word (M6: the word-origin model)")
-struct CursorEditorTests {
+struct WordOriginTests {
     // MARK: The app is on time (group 1 of the runs)
 
     /// Milliseconds between the keys of the 20 ms run of 09:46 (cell c-20, Dấu Debug

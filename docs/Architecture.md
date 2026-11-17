@@ -149,7 +149,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
   - Vị trí lấy từ một `selectedRange` có thể cũ không ghi đè `known` (ghi đè làm lần trả lời chậm sau trùng với `known` sai, ví dụ "kóo").
 - Cùng cách chứng minh dùng ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ).
 - **Khi không chứng minh được:** app chậm hơn số thao tác trên thì Dấu xử lý như với câu trả lời đúng giờ (lệch thì dựng lại hoặc reset, D11). Các kịch bản app trả lời chậm mà chỉ mô hình cho ra, cùng hướng sửa dự phòng khi gặp ở app thật: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
-- **Kiểm:** client giả trong `LateAnswerTests`, `RapidKeysTests` và `CursorEditorTests` (mô hình Chrome, VS Code, Firefox theo mã nguồn, mô hình tính vị trí theo từ dựng từ log Cursor 3.29.15; thời gian của app là số chọn, không phải số đo).
+- **Kiểm:** client giả trong `LateAnswerTests`, `RapidKeysTests` và `WordOriginTests` (mô hình Chrome, VS Code, Firefox theo mã nguồn, mô hình tính vị trí theo từ dựng từ log Cursor 3.29.15; thời gian của app là số chọn, không phải số đo).
 
 **Chromium và Firefox theo mã nguồn** (chưa đo trên bản đã cài; cơ sở cho mô hình trong test):
 
