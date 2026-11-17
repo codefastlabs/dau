@@ -17,7 +17,7 @@ struct SettingsShellTests {
         defaults.removePersistentDomain(forName: suite)
         let model = SettingsModel(store: SettingsStore(defaults: defaults, suiteName: suite))
         let environment = SettingsEnvironment(model: model, inputSource: InputSourceStatus(fixed: true), actions: nil,
-                                              layoutProbe: nil, smartAdvancedExpanded: false, openWindow: nil)
+                                              layoutProbe: nil, openWindow: nil)
         return SettingsSplitViewController(sidebar: SettingsSidebarRoot(state: state, environment: environment),
                                            detail: SettingsDetailRoot(state: state, environment: environment))
     }

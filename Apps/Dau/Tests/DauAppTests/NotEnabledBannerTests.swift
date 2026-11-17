@@ -27,7 +27,7 @@ struct NotEnabledBannerTests {
         let environment = SettingsEnvironment(
             model: model, inputSource: InputSourceStatus(fixed: enabled), actions: actions,
             layoutProbe: { name, frame in probes.frames[name] = frame.isNull ? nil : frame },
-            smartAdvancedExpanded: false, openWindow: nil)
+            openWindow: nil)
         let state = SettingsWindowState(section)
         let controller = SettingsSplitViewController(sidebar: SettingsSidebarRoot(state: state, environment: environment),
                                                      detail: SettingsDetailRoot(state: state, environment: environment))

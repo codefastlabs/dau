@@ -6,7 +6,6 @@ import DauShared
 /// "Nâng cao" group (D21, D22, D23).
 struct SmartSettingsView: View {
     @Environment(SettingsModel.self) private var model
-    @Environment(\.smartAdvancedExpanded) private var expandedAtStart
     @State private var advancedExpanded = false
 
     var body: some View {
@@ -75,7 +74,6 @@ struct SmartSettingsView: View {
                 }
             }
         }
-        .onAppear { if expandedAtStart { advancedExpanded = true } }
     }
 
     private func advancedSummary(_ advanced: DauSettings.Advanced) -> String {
@@ -111,9 +109,4 @@ struct AdvancedOptions: View {
             ? String(localized: "For loanwords and names. Turning this on turns off Consonant shortcuts. In Telex, w at the start of a word always becomes ư, so this only affects z, f, j.")
             : String(localized: "For loanwords and names. Turning this on turns off Consonant shortcuts.")
     }
-}
-
-extension EnvironmentValues {
-    /// Opens "Nâng cao" when the page appears (snapshots of the expanded state).
-    @Entry var smartAdvancedExpanded = false
 }
