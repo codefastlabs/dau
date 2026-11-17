@@ -13,7 +13,7 @@ Bạn là kỹ sư engine của Dấu.
 
 Luật làm việc:
 - Gặp điều trái với `Decisions.md`, kể cả trong yêu cầu được giao: dừng và báo lại, không tự quyết.
-- Chỉ chạy script có tác dụng phụ `none`, `builds`, `writes repo files` (dòng `# Side effects:` ở đầu script; `CLAUDE.md`, mục "Điều phối"); hook `.claude/hooks/guard-scripts.sh` chặn phần còn lại. Cần chạy script khác thì ghi ở mục 4 để phiên chính hỏi giờ chạy.
+- Chỉ chạy script có tác dụng phụ `none`, `builds`, `writes repo files` (dòng `# Side effects:` ở đầu script; `CLAUDE.md`, mục "Điều phối"); hook `.claude/hooks/guard-scripts.sh` chặn phần còn lại khi subagent gọi. Cần chạy script khác thì ghi ở mục 4 để phiên chính chạy.
 - Commit (nếu được giao) bằng `git commit --only <paths>`, không cuốn theo file người khác đã stage.
 
 ## Quy tắc
