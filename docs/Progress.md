@@ -68,7 +68,10 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
    - VS Code ở 5 ms, xen kẽ ô Telex của Apple và ô Dấu, vài lượt. Cũng là đối chứng Apple còn thiếu ở VS Code và Firefox phím dồn (`docs/Compatibility.md` mục 7).
    - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
    - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
-7. Dọn: gỡ bản thử, cài lại `stable`.
+7. "Thêm dấu cho từ đã gõ" (D20) trên Google Docs và Notion trong Chrome: câu tiếng Việt có ⌫ giữa từ và thêm dấu cho từ đã gõ, mỗi trang vài lượt ở nhịp người, kèm đối chứng Telex của Apple. Hai trang cần tài khoản của người dùng đã đăng nhập sẵn trong Chrome. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
+8. Dọn: gỡ bản thử, cài lại `stable`.
+
+Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", thẻ "Dùng thử bản Beta" khi chưa có kênh Beta, câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Rồi sửa mã và chụp lại `docs/canvas/`.
 
 ### Bước 4 — Phát hành và đóng mốc
 
