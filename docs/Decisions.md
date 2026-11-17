@@ -155,6 +155,8 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
 ### D7. Cập nhật và loại bản dựng
 
 - Sparkle 2 nằm trong app chủ, appcast ký EdDSA, một kênh. Kênh Beta và phát hành theo đợt để sau bản thử đầu.
+- Appcast ở `https://dau.codefastlabs.com/appcast.xml`. Chỉ bản chính thức có URL appcast và khoá công khai EdDSA, nên chỉ bản chính thức kiểm tra và cài bản mới; bản phát triển không bao giờ bị Sparkle thay bằng bản khác Team ID.
+- Khi có kênh Beta, người dùng bật kênh đó trong app; không có cask Homebrew riêng cho Beta (D6 (Phát hành)).
 - Danh sách ứng dụng tương thích đi kèm app và đổi theo bản cập nhật app; không tải riêng.
 - Cài bản mới lúc người dùng không gõ, sau đó dừng tiến trình bộ gõ cũ để hệ thống nạp bản mới; cách thay bộ gõ đã cài ở D37, ý "Thay bộ gõ đã cài".
 - **Loại bản dựng:** ba trục độc lập, không có loại thứ tư.
@@ -162,7 +164,7 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
   - Người ký: **bản chính thức** là bản ký Developer ID của codefastlabs, đã notarize, và chỉ dựng bằng quy trình phát hành trên CI; mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**.
   - Kênh: một kênh; Ổn định/Beta khi có kênh Beta, chỉ ở bản chính thức.
 - Quay về bản trước (D19 (Quay về bản trước)) để sau bản thử đầu.
-- **Số phiên bản:** `CFBundleVersion` là số build tăng dần, Sparkle so sánh bằng số này; số hiển thị dạng "1.3.0 beta 2", tag git dạng `v1.3.0-beta.2`; bản ổn định dựng lại từ cùng commit với bản beta cuối, số hiển thị không có chữ beta.
+- **Số phiên bản:** `CFBundleVersion` là số build tăng dần, Sparkle so sánh bằng số này; số hiển thị dạng "1.3.0 beta 2", tag git dạng `v1.3.0-beta.2`; bản ổn định dựng lại từ cùng commit với bản beta cuối, số hiển thị không có chữ beta. Bản thử đầu là "0.1.0 beta 1" (tag `v0.1.0-beta.1`).
 - Bản dựng theo từng commit (Nightly), nếu làm, là bản phát triển: CI dựng, chỉ phát qua GitHub, không qua Sparkle.
 - Tính năng mới có thể nằm sau công tắc "Thử nghiệm" ngay trong bản ổn định (cài đặt cục bộ), kiểm chéo với các tính năng cùng tác động lên một đầu vào như mọi tính năng khác.
 - Không phát hành dần theo số liệu và không có cờ tính năng điều khiển từ xa. Không dùng TestFlight.
@@ -423,6 +425,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
   - Kênh Beta dùng biểu tượng chuẩn, phân biệt bằng số phiên bản ("1.3.0 beta 2") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
   - Debug và Release không có hai biểu tượng. Theo cách Apple ghi bản build (bảng About chuẩn của AppKit, `orderFrontStandardAboutPanel`, ghi mã build trong ngoặc sau số phiên bản), bản phát triển ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug ghi thêm "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho bộ gõ đã cài; bản Release không ghi cấu hình. `scripts/dev/dau-version.sh` in commit và cấu hình (Debug/Release) của từng bản đã cài.
   - Bundle ID không đổi theo loại bản (D37 (Cài bộ gõ)).
+  - Tên cũng không đổi: bản phát triển vẫn là "Dấu" (tên app, tên nguồn "Dấu – Tiếng Việt"); biểu tượng và dòng "Bản phát triển" đã phân biệt, và đổi tên nguồn giữa hai lần cài có thể vướng bộ đệm TIS (D37).
   - Biểu tượng "V" trên thanh menu giống nhau ở mọi bản (ảnh template, D9).
 
 **Vì sao:**
@@ -590,7 +593,7 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
   - **Giới hạn:** kiểm chữ ký chỉ phát hiện, không chặn. Mọi tiến trình của người dùng ghi được `~/Library/Input Methods`; bản thay thế giữ trạng thái đã bật của Dấu nên macOS không hỏi lại, và nhận phím tới lúc người dùng mở app chủ. Cách chặn là cài bộ gõ vào thư mục chỉ quản trị viên ghi được; Dấu chỉ cài cho từng tài khoản (`~/Library/Input Methods`) nên chấp nhận giới hạn này, cài cho cả máy để sau khi có người dùng cần.
 - **Chữ ký sai thì không tự thay:** bộ gõ đã cài có chữ ký sai hoặc khác Team ID thì app không tự thay, kể cả khi nó khác bản nhúng; banner "Cài lại" hiện và người dùng bấm. Trong onboarding (D14 (Onboarding)), bước 2 hiện màn lỗi cài với nút "Cài lại" thay cho "Bật Dấu": cài lại xong mới bật. Bản chủ không bật một bộ gõ có chữ ký sai (bản không phải bản chủ không kiểm chữ ký).
 
-**Hệ quả đã chấp nhận:** nếu một bản đổi biểu tượng, macOS còn hiện biểu tượng cũ tới khi đăng xuất, vì Dấu không dừng tiến trình hệ thống giữ ảnh đó (đã đo, `docs/research/InputMethodInstall.md` mục 6); tên nguồn chưa đo (câu hỏi mở "Loại bản dựng"). Nên giữ cả hai không đổi.
+**Hệ quả đã chấp nhận:** nếu một bản đổi biểu tượng, macOS còn hiện biểu tượng cũ tới khi đăng xuất, vì Dấu không dừng tiến trình hệ thống giữ ảnh đó (đã đo, `docs/research/InputMethodInstall.md` mục 6); tên nguồn chưa đo, nên mọi bản giữ cùng tên (D25). Nên giữ cả hai không đổi.
 
 **Vì sao:**
 
@@ -726,6 +729,5 @@ Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào q
 - **VoiceOver đọc tên nguồn** (D17): VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn không.
 - **Độ ổn định của "Thêm dấu cho từ đã gõ"** (D20) trên các web editor (Google Docs, Notion…).
 - **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã đi thẳng (phương án c): [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
-- **Loại bản dựng** (D7, D25): khi có kênh Beta, kênh đó có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID). Tên nguồn "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37).
 - **Liên kết ủng hộ trong app** (D39): có đặt liên kết "Ủng hộ dự án" trong app hay không (canvas trước).
 - **Tên "Dấu"** (D24): tra nhãn hiệu (Cục Sở hữu trí tuệ VN). Một bộ gõ macOS khác có tên gần giống: DauKey (`emizuki/daukey`, GPLv3, repo tạo 23/10/2026, chưa có cask); định danh không trùng, chỉ tên đọc lên gần nhau.

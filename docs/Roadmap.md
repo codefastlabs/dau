@@ -27,28 +27,39 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 
 ## M7 — Phát hành
 
+Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo bước và việc của từng bên: [`docs/Progress.md`](Progress.md) mục "Kế hoạch M7".
+
 - Trước khi phát hành: chạy bài đo của D42, và ghi bộ nhớ (RSS) tiến trình bộ gõ của bản Release cạnh số của bản Debug trong cùng lượt (D42 ghi chênh lệch này là chưa đo).
 - Ký Developer ID, notarize, DMG.
-- Sparkle 2: EdDSA, một kênh (D7). Kênh Beta và phát hành theo đợt sau bản thử đầu. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
+- Sparkle 2: EdDSA, một kênh, appcast và loại bản theo D7. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
 - Rà entitlement của bộ gõ trước khi notarize: thử bỏ `temporary-exception.mach-register.global-name` (xem [`docs/Architecture.md`](Architecture.md)).
-- GitHub Actions build từ tag, chạy cả test hiệu năng của engine (`PerformanceTests`). Artifact attestation và phép đếm cấp phát (`malloc_logger`) sau bản thử đầu.
-- Homebrew cask `dau` với `auto_updates true` trong tap riêng `codefastlabs/homebrew-tap`, sau bản thử đầu (D6 (Phát hành)). Tạo repo tap trong tổ chức `codefastlabs` cần tài khoản của người dùng.
-- Báo lỗi (URL issue điền sẵn). Quay về bản trước sau bản thử đầu (D19).
-- Loại bản dựng (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện)):
+- GitHub Actions: test ở mỗi lần đẩy mã, build phát hành từ tag, chạy cả test hiệu năng của engine (`PerformanceTests`).
+- Homebrew cask `dau` với `auto_updates true` trong tap riêng `codefastlabs/homebrew-tap` (D6 (Phát hành)).
+- Báo lỗi (URL issue điền sẵn, D8 (Không telemetry)); câu gợi ý của hàng báo lỗi trong `UpdatesSupportView` theo N5 (hàng cũ "Gặp ứng dụng gõ bị lỗi?" đã bỏ 13/11/2026).
+- Loại bản dựng (D7, D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
   - cũng bước kiểm đó: binary của Dấu.app và bộ gõ đã lược ký hiệu cục bộ (`nm`; archive lược, `xcodebuild build` thì không), và dSYM của mỗi bản phát hành được lưu lại để đọc được báo lỗi crash;
-  - số build tăng dần, số hiển thị có chữ beta;
+  - số build tăng dần, số hiển thị có chữ beta.
+- `.gitignore`: ghim phiên bản Sparkle chính xác trong `project.yml` (vì `Package.resolved` bị bỏ qua); thêm `*.p8`, `*.pem`, `*.key`, `*.p12`, `*.xcarchive`.
 - Biểu tượng thật dựng bằng Icon Composer, thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
 - Xuất các file nhận diện bản thử đầu cần theo [`docs/Brand.md`](Brand.md): biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, ảnh xem trước GitHub, nền DMG. Favicon, ảnh Open Graph và thẻ meta đi cùng website (M8).
-- Các câu hỏi mở của [`docs/Decisions.md`](Decisions.md) gắn với M7: loại bản dựng, hộp thoại App Group với bản ký Developer ID.
+- Câu hỏi mở của [`docs/Decisions.md`](Decisions.md) trả lời trong M7: hộp thoại App Group với bản ký Developer ID; hộp thoại và đăng xuất khi bật bộ gõ với bản ký Developer ID mang quarantine.
 - Kiểm tra trước phát hành (cần người):
   - VoiceOver và Tab ("Điều hướng bàn phím") qua cửa sổ Cài đặt;
   - VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn (D17 (Trợ năng): hệ thống có đọc, tên chưa xác nhận);
   - biểu tượng "V" trên thanh menu đơn sắc, đổi màu theo nền sáng/tối;
   - máy để tiếng Anh hẳn (menu app, tên "Dấu" trong Finder);
   - các sheet ở chế độ tối;
-  - danh sách "+" của System Settings có Dấu (nhìn bằng mắt);
-- Sau bản thử đầu: cài, bật và gõ thử trên macOS 14–26 và trên máy Intel (D1 (Nền tảng): tới lúc đó chỉ nói đã kiểm trên macOS 27 và Apple silicon); câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trong `docs/Decisions.md` cần cùng lượt này.
+  - danh sách "+" của System Settings có Dấu (nhìn bằng mắt).
+- Xong khi: bản 0.1.0 beta 1 có trên GitHub Releases, cài được từ DMG và bằng `brew install --cask codefastlabs/tap/dau`, Sparkle cập nhật được từ một bản chính thức trước đó; kiểm toán ĐẠT.
+
+### Sau bản thử đầu
+
+Không chặn việc đóng M7; làm khi có người dùng Beta:
+- kênh Beta và phát hành theo đợt (D7); quay về bản trước (D19 (Quay về bản trước));
+- artifact attestation và phép đếm cấp phát (`malloc_logger`) trên CI;
+- cài, bật và gõ thử trên macOS 14–26 và trên máy Intel (D1 (Nền tảng): tới lúc đó chỉ nói đã kiểm trên macOS 27 và Apple silicon); câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" ở các bản macOS đó cần cùng lượt này;
+- gửi cask vào `homebrew/cask` khi repo đạt ngưỡng (D6).
 
 ## M8 — Website
 
@@ -87,7 +98,4 @@ Mục đích: người dùng biết và học được cách gõ, và biết kh�
 ## Tồn đọng chưa gắn mốc
 
 - D39 (Ủng hộ dự án): có đặt liên kết ủng hộ trong app hay không; vẽ trên canvas trước.
-- Khi làm báo lỗi (M7), câu gợi ý của hàng báo lỗi trong `UpdatesSupportView` theo N5 (hàng cũ "Gặp ứng dụng gõ bị lỗi?" đã bỏ 13/11/2026).
-- `.gitignore` bỏ qua `Package.resolved`: ghim phiên bản Sparkle chính xác trong `project.yml`.
-- Thêm `*.p8`, `*.pem`, `*.key`, `*.xcarchive` vào `.gitignore`.
 - Ma trận tương thích còn lại ([`docs/Compatibility.md`](Compatibility.md) mục 7: app chưa đo, bài click và mũi tên rồi gõ tiếp, tự sửa chính tả của macOS) làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (người dùng chọn 13/11/2026).

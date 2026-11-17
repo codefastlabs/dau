@@ -4,13 +4,13 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 ## Trạng thái hiện tại
 
-M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. Mốc kế: M7 (Phát hành), chưa bắt đầu.
+M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. M7 (Phát hành) đang làm từ 17/11/2026, theo mục "Kế hoạch M7" bên dưới.
 
 Chờ người dùng:
-- Không có.
+- Bước 0 của kế hoạch M7: đăng ký Apple Developer Program trước tiên (việc lâu nhất).
 
 Việc tiếp theo:
-- M7: lập kế hoạch theo `docs/Roadmap.md` mục M7.
+- Bước 1 của kế hoạch M7 (giao song song 1a–1d, phiên chính làm 1e).
 
 Việc mở:
 - Trình soạn thảo WebStorm mất khôi phục D4 vì Dấu bị reset sau mỗi phím đi thẳng (`docs/Compatibility.md` mục 5.9). Bước kế: ghi log ở `commitComposition` và `deactivateServer`, chạy lại ô `webstorm` một lượt (`docs/research/JetBrainsInput.md` mục 5).
@@ -32,10 +32,48 @@ Việc mở:
 | M4 App Cài đặt | xong | ĐẠT (30/10, lần 3) |
 | M5 Onboarding, cài, gỡ | xong | ĐẠT (05/11) |
 | M6 Hiệu năng dưới tải | xong | ĐẠT (16/11) |
-| M7 Phát hành | chưa | — |
+| M7 Phát hành | đang làm | — |
 | M8 Website | chưa | — |
 | M9 Đa ngôn ngữ | phần nền (D41 (Ngôn ngữ giao diện)) và câu chữ tiếng Anh xong 06–09/11 | — |
 | M10 Học cách gõ | chưa | — |
+
+## Kế hoạch M7
+
+Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt artboard) và bước 3 (một lượt chạy chiếm màn hình); phần còn lại phiên chính và subagent làm. Thứ tự: bước 1 bắt đầu ngay, không chờ gì; bước 2 chờ bước 0 (mục 1–3) và 1a; bước 3 chờ bước 2 và 1b–1d; bước 4 chờ bước 3.
+
+### Bước 0 — Người dùng (làm một lần, song song với bước 1)
+
+1. Đăng ký Apple Developer Program (99 USD/năm). Đăng ký tổ chức nếu codefastlabs là pháp nhân (cần mã D-U-N-S, có thể mất vài ngày): Gatekeeper hiện "codefastlabs", khớp D7. Không phải pháp nhân thì đăng ký cá nhân, và phiên chính sửa câu "của codefastlabs" ở D7. Báo Team ID khi có.
+2. Khi có tài khoản: làm theo `docs/Releasing.md` (release-eng viết ở 1a): tạo chứng chỉ Developer ID Application và khoá App Store Connect API cho notarize, sinh khoá EdDSA của Sparkle bằng một lệnh, nạp cả ba vào secret của GitHub Actions. Phiên chính không cầm khoá.
+3. Vercel: nối repo với project của `dau.codefastlabs.com`, thư mục gốc theo `docs/Releasing.md` (tới M8 chỉ có `appcast.xml`).
+4. Duyệt artboard một lần (1e).
+
+### Bước 1 — Không cần ký (bắt đầu ngay, giao song song)
+
+- **1a release-eng:** Sparkle 2 ghim bản chính xác; URL appcast và khoá công khai chỉ có khi `DAU_OFFICIAL=YES` (D7), tắt gửi thông tin hệ thống của Sparkle (D8); `.gitignore`; script phát hành trong `scripts/release/` (archive, xuất Developer ID, notarize, staple, DMG, ký và sinh appcast), chạy được ở chế độ không ký; bước kiểm bản build (biểu tượng, `nm`, dSYM); số build tăng dần; GitHub Actions trên ảnh macOS 27 với Xcode 27.2 (bản xem trước của GitHub, cùng mã build với máy phát triển): test ở mỗi lần đẩy mã, tag `v*` dựng bản nháp trên GitHub Releases; thư mục appcast cho Vercel; `docs/Releasing.md`.
+- **1b app-ui-dev:** trang Cập nhật & hỗ trợ nối Sparkle theo artboard (Cập nhật & hỗ trợ, trạng thái thẻ cập nhật, thông báo cập nhật, bản phát triển); báo lỗi điền sẵn theo artboard "Báo ứng dụng gõ lỗi", mẫu issue trong `.github/ISSUE_TEMPLATE/`.
+- **1c imk-dev:** gọi `SystemInputMethodInstaller.reconcile` sau khi Sparkle cài bản mới; bản bỏ `temporary-exception.mach-register.global-name` build và qua test offline (xác nhận khi gõ thật ở bước 3).
+- **1d release-eng:** file Icon Composer cho biểu tượng chuẩn và biểu tượng bản phát triển, dựng từ hình học artboard, biên dịch trong build; ảnh xem trước GitHub; nền DMG sau khi artboard được duyệt.
+- **1e phiên chính:** artboard cửa sổ DMG (mới) và câu gợi ý của hàng báo lỗi (N5) trên canvas; người dùng duyệt một lần; chụp vào `docs/canvas/`.
+- Mỗi phần xong: test, `scripts/check-l10n/check.sh` khi đổi chuỗi, tự soát tài liệu, commit.
+
+### Bước 2 — Bản thử trên CI (sau bước 0)
+
+- Tag thử dựng hai bản chính thức số build khác nhau, công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai). Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM.
+
+### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 45 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút cuối)
+
+1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug.
+2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`; bản bỏ `temporary-exception` gõ được thì giữ, không thì trả entitlement lại.
+3. Sparkle cập nhật lên bản thử thứ hai: bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`).
+4. Kiểm cần người: VoiceOver và Tab qua cửa sổ Cài đặt, VoiceOver đọc tên nguồn, máy để tiếng Anh hẳn (người dùng đổi ngôn ngữ hệ thống). Phiên chính chụp và xem: biểu tượng thanh menu trên nền sáng và tối, các sheet ở chế độ tối, danh sách "+" của System Settings.
+5. Dọn: gỡ bản thử, cài lại `stable`.
+
+### Bước 4 — Phát hành và đóng mốc
+
+- Tag `v0.1.0-beta.1`; CI dựng bản nháp. Người dùng đồng ý một lần cho cả ba việc công bố: phát hành trên GitHub, cập nhật appcast, tạo repo `codefastlabs/homebrew-tap` với cask `dau`.
+- Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại `stable`.
+- Kiểm toán, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LogM5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LogBetweenM5AndM6.md`, M6 ở `docs/history/LogM6.md`.
@@ -58,3 +96,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - Trình soạn thảo, thay tại chỗ: chữ tiếng Việt đúng, mất khôi phục D4 ("ưindows", "Sủnise"); Dấu bị reset sau mỗi phím đi thẳng, ai gây reset chưa rõ. Terminal: ô bỏ qua vùng thay (D43). Gạch chân đúng cả hai ô. Số đo: `docs/Compatibility.md` mục 5.9.
   - Dọn: cài lại `stable` (2990a91 Release); WebStorm của người dùng đang chạy nên script không trả được tệp cài đặt, phiên chính xoá 2 mục dự án tạm trong `recentProjects.xml` và `trusted-paths.xml` sau khi WebStorm thoát.
 - 17/11 — tra tên trước M7: cask và formula `dau` còn trống trong Homebrew; repo 0 sao, dưới ngưỡng nhận gói của `homebrew/cask`. Người dùng chốt tap riêng `codefastlabs/homebrew-tap` (D6, D24) và giữ `dau.codefastlabs.com`, không cần "dấu.vn"; bộ gõ DauKey (tên gần giống) ghi ở câu hỏi mở "Tên Dấu". Hai artboard trang tải về điền lệnh `brew install --cask codefastlabs/tap/dau`, chụp lại bằng `render-canvas.sh`; trên bản điện thoại lệnh dài hơn khung, cuộn ngang trong khung (`overflow-x: auto` có sẵn) — phiên chính — commit "docs(decisions): ship the Homebrew cask from our own tap".
+- 17/11 — lập kế hoạch M7 (mục "Kế hoạch M7") — phiên chính — người dùng chốt: chưa có Apple Developer Program (đăng ký là việc đầu của bước 0); appcast ở `dau.codefastlabs.com`; bản thử đầu "0.1.0 beta 1"; trả lời câu hỏi mở "Loại bản dựng" (D7, D25). GitHub Actions có ảnh macOS 27 với Xcode 27.2 (bản xem trước), cùng mã build 27B52 với máy phát triển, nên CI dựng được. Roadmap M7 thêm "Xong khi"; việc sau bản thử đầu tách thành mục riêng, không chặn đóng mốc — commit "docs: plan M7 and settle build-type questions".

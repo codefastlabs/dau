@@ -88,6 +88,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026: thêm ý "Thay bộ gõ đã cài" ở D37 và dẫn sang từ ý "Cài bản mới lúc người dùng không gõ"; ghi điều mã đã làm mà sổ chưa nói (`docs/research/InputMethodInstall.md` mục 6.2), phiên chính chốt. Số hiển thị ví dụ đổi từ "1.3 beta 2" thành "1.3.0 beta 2" (tag `v1.3.0-beta.2`) cho khớp dạng ba số của D25 và mã; luật không đổi.
 
+- 17/11/2026 (người dùng chốt khi lập kế hoạch M7): thêm URL appcast `https://dau.codefastlabs.com/appcast.xml` (chọn thay cho GitHub Pages, buộc URL vào GitHub, và `releases/latest/download`, không tính bản prerelease); chỉ bản chính thức có URL appcast; kênh Beta bật trong app, không có cask riêng; bản thử đầu "0.1.0 beta 1". Ba ý về loại bản đến từ câu hỏi mở "Loại bản dựng".
+
 ### D8. Không telemetry
 
 - 02/11/2026: nhật ký từng phím chỉ ở bản Debug, bật bằng `DauPerfLog` ("người dùng chốt 02/11/2026").
@@ -208,6 +210,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 05/11/2026: "Biểu tượng theo loại bản (người dùng chốt 05/11/2026, các loại bản ở D7)".
 - 05/11/2026: dải chéo Hổ phách ở góc dưới phải ("người dùng chọn 05/11/2026 giữa dải góc và nền sọc; nền sọc mất ở 16–32 pt và ở kiểu Trong suốt").
+- 17/11/2026 (người dùng chốt, từ câu hỏi mở "Loại bản dựng"): bản phát triển giữ tên "Dấu".
 
 ### D26. Gõ đúp phím dấu
 
@@ -399,6 +402,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 ### Loại bản dựng
 
 - 05/11/2026: câu hỏi nêu ("nêu 05/11/2026, chốt ở M7").
+- 17/11/2026: đã trả lời, bỏ khỏi sổ (luật vào D7, D25). Bản cuối, nguyên văn: "khi có kênh Beta, kênh đó có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID). Tên nguồn "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37)."
 
 ### Tên "Dấu"
 
