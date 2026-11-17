@@ -103,7 +103,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 
 - Lớp con `IMKInputController`, mỗi client một instance và một `VietEngine` riêng. Không có trạng thái toàn cục (khác OpenKey).
 - `handle(_:client:)` đưa phím vào engine qua `InPlaceComposer` (thay tại chỗ) hoặc `MarkedComposer` (gạch chân). Cả hai là kiểu giá trị thuần, test bằng client giả.
-- Thay tại chỗ: nếu engine trả `replace`, hỏi `selectedRange` một lần để có vị trí tuyệt đối rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Bản Debug có thêm một lần hỏi sau khi thay để chẩn đoán (`ReplaceDiag.swift`); số đo trên bản Debug có lời gọi thừa này.
+- Thay tại chỗ: nếu engine trả `replace`, hỏi `selectedRange` một lần để có vị trí tuyệt đối rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Bản Debug, khi khoá `DauPerfLog` bật, hỏi thêm một `selectedRange` sau khi thay để chẩn đoán (`ReplaceDiag.swift`); lời gọi này chạy sau khi đã ghi thời gian của phím nên không nằm trong số đo (D42 (Ngưỡng hiệu năng)).
 - Engine reset khi: click chuột; `activateServer`/`deactivateServer`, `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); nguồn đầu vào đổi mà IMK không báo, nếu có đường như vậy (mục "Đổi nguồn đầu vào không qua `activateServer`").
 
 ### Vị trí thay chữ
@@ -209,11 +209,11 @@ D18. Mọi điểm vào và cách xử lý giá trị lạ:
   - event nil hoặc kiểu khác keyDown/mouseDown: `false`;
   - client nil hoặc không phải `IMKTextInput`: reset, `false`;
   - `characters` nil, rỗng, nhiều scalar, ký tự điều khiển: chỉ reset (`KeyRouter`);
-  - `selectedRange` đi qua `ClientRange.sanitized` ở một chỗ (`InPlaceComposer.selectedRange(of:)`): `NSNotFound`, âm, hoặc vị trí, độ dài, điểm cuối vượt `ClientRange.limit` (Int32.max) đều thành `NSNotFound`, tức không thay, không đọc; một lần như vậy tắt D20 và lần đọc của D11 tới `activateServer` sau. Có vùng chọn, ít chữ hơn số cần xoá: không thay. Các phép cộng còn lại trên vị trí dùng phép cộng bão hoà;
+  - `selectedRange` đi qua `ClientRange.sanitized` ở một chỗ (`InPlaceComposer.selectedRange(of:)`): `NSNotFound`, âm, hoặc vị trí, độ dài, điểm cuối vượt `ClientRange.limit` (Int32.max) đều thành `NSNotFound`, tức không thay, không đọc. Ở lần đọc của D20 (`seedWord`) kết quả đó tính là một lần đọc hỏng: hai lần hỏng liền nhau thì thôi đọc (`InPlaceComposer.failedReadLimit`), và đếm lại từ đầu khi đổi client (`noteClient`) hay `activateServer`. Có vùng chọn: vẫn thay, gộp cả vùng chọn vào vùng thay (gợi ý tự hoàn thành, D11; `CursorTracker.plan`); chỉ lần đọc của D20 (`seedWord`, `allowSelection` false) bỏ qua khi có vùng chọn. Các phép cộng còn lại trên vị trí dùng phép cộng bão hoà;
   - `attributedSubstring` nil, sai độ dài, ký tự ngoài BMP: không seed.
 - `activateServer`/`deactivateServer`/`commitComposition` với client nil: reset (gạch chân: chốt vào client đã nhận marked text nếu còn, không thì bỏ); `activateServer(nil)` không giữ bundle ID của app trước.
 - `setValue(_:forTag:client:)`: giá trị nil không chuyển cho `super`; giá trị lạ chỉ reset.
-- `inputControllerWillClose`: reset, bỏ hai bộ nghe (cài đặt, nguồn đầu vào).
+- `inputControllerWillClose`: reset, bỏ ba bộ nghe (cài đặt, nguồn đầu vào, yêu cầu thoát của app chủ).
 - `menu()` và hành động menu: không chạy ngoài main thread (`onMain` trả nil thay vì dừng chương trình); tham số của hành động không được dùng.
 - Thông báo cài đặt và nguồn đầu vào: chỉ chạy trên main thread, tham chiếu yếu tới controller.
 - Gọi ngược trong lúc xử lý (client gọi `commitComposition`, `deactivateServer`… ngay trong `insertText`, `selectedRange` hay `setMarkedText`): phím, reset và nạp lại cài đặt chạy lần lượt, không lồng (`KeyReentry`: `handle` qua `KeyReentry.key`, điểm vào khác qua `outsideKey`). Lời gọi đến lúc đang bận được giữ lại và chạy ngay sau, vì engine và composer đang bị mượn (`inout`). Phím đến lúc đang bận thì đi thẳng tới app và từ đang gõ reset sau đó. IMK có gọi ngược như vậy hay không: chưa đo.
@@ -365,7 +365,7 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 
 Trang Cập nhật & hỗ trợ (`UpdatesSupportView`); hành vi ở `docs/UI.md`.
 
-- **Có updater hay không:** `UpdaterConfiguration.isConfigured` đọc Info.plist của app; chỉ khi có cả `SUFeedURL` (https) lẫn `SUPublicEDKey` (chỉ bản chính thức, mục "Build") thì `DauApp` gọi `SparkleUpdater.startIfConfigured` lúc khởi động; mọi bản khác không tạo gì của Sparkle (D7).
+- **Có updater hay không:** `UpdaterConfiguration.isConfigured` đọc Info.plist của app; chỉ khi có cả `SUFeedURL` (https) lẫn `SUPublicEDKey` (chỉ bản chính thức, mục "Build") thì `SparkleUpdater.startIfConfigured` (`DauApp.init` luôn gọi lúc khởi động) tự kiểm `UpdaterConfiguration.isConfiguredForThisApp` và trả nil khi thiếu; mọi bản khác không tạo gì của Sparkle (D7).
 - **Sparkle:** `SparkleUpdaterBackend` giữ `SPUStandardUpdaterController` (cửa sổ chuẩn của Sparkle, không user driver riêng); lịch kiểm tra và việc hỏi trước khi cài lấy từ các khoá `SU…` trong Info.plist (mục "Build"). Chỉ file `SparkleUpdater.swift` import Sparkle, và gói test của app chủ bỏ file này ra.
 - **Trang:** `UpdatesModel` (`@Observable`, môi trường `\.updates`, chuyển vào hai cột qua `SettingsEnvironment`) theo dõi `canCheckForUpdates`, `lastUpdateCheckDate`, `automaticallyChecksForUpdates` của `SPUUpdater` bằng KVO, qua giao thức `UpdaterBackend` (test dùng bản giả). Công tắc ghi thẳng vào Sparkle.
 - **Sau khi cài bản mới:** Sparkle mở lại Dấu.app ở chỗ nó vừa cài; lần mở đó là bản chủ (mã băm chữ ký trùng bản trong Applications), nên `reconcileAtLaunch` → `SystemInputMethodInstaller.reconcile` thay bộ gõ đã cài bằng bản nhúng mới (D37, mục "Cài, bật, thay, gỡ bộ gõ"). Không có bước mở lại riêng.
@@ -411,8 +411,8 @@ Trang Cập nhật & hỗ trợ (`UpdatesSupportView`); hành vi ở `docs/UI.md
 
 ## Log, signpost, cờ Debug
 
-- `os_signpost` quanh `engine.handle` và quanh lệnh gọi client; xem bằng Instruments.
-- Nhật ký từng phím (category `perf`, `diag`) và signpost chỉ có ở bản Debug, bị loại khỏi bản Release lúc build (D8). Ở bản Debug chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain.
+- `os_signpost`: một interval `handle` bao `DauInputController.handle(_:client:)` và một interval quanh mỗi lời gọi client (`selectedRange`, `attributedSubstring`, `setMarkedText`, `insertText`); xem bằng Instruments. Ở bản Debug signpost luôn bật, không phụ thuộc khoá `DauPerfLog`.
+- Nhật ký từng phím (category `perf`, `diag`) và signpost chỉ có ở bản Debug, bị loại khỏi bản Release lúc build (D8). Nhật ký từng phím chỉ ghi khi khoá `DauPerfLog` được đặt trong global domain.
   - `scripts/selftest/typing/run.sh` tự bật lúc chạy và khi xong trả khoá về như cũ; đo tay thì bật, đo, rồi xoá (`scripts/perf/perf-report.sh`).
   - Mỗi dòng phím có `t_ns` (lúc `handle` bắt đầu, `CLOCK_UPTIME_RAW`) và `ev_ns` (thời điểm của chính sự kiện phím); `perf-report.sh` dựng từ đó khoảng cách giữa các phím và độ trễ từ lúc tạo phím tới bộ gõ, cho bài test tải nặng (`scripts/selftest/load/heavy.sh`, D42 (Ngưỡng hiệu năng)) và bài một app bận (`scripts/selftest/load/run.sh`).
 - Bộ gõ bản Debug đọc thêm khoá `DauDebugForceUnderline` (mảng bundle ID, miền global) để ép gạch chân khi thử mà không đụng cài đặt người dùng; bản Release không đọc.

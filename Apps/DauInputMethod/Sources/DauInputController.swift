@@ -498,9 +498,15 @@ final class DauInputController: IMKInputController {
 
     // IMK calls menu actions on the controller with an info dictionary as the argument
     // (kIMKCommandMenuItemName, kIMKCommandClientName); it is not needed here.
-    @objc func selectTelex(_ sender: Any?) { setTypingMethod(.telex) }
-    @objc func selectVNI(_ sender: Any?) { setTypingMethod(.vni) }
-    @objc func selectSimpleTelex(_ sender: Any?) { setTypingMethod(.simpleTelex) }
+    @objc func selectTelex(_ sender: Any?) { selectOnMain(.telex) }
+    @objc func selectVNI(_ sender: Any?) { selectOnMain(.vni) }
+    @objc func selectSimpleTelex(_ sender: Any?) { selectOnMain(.simpleTelex) }
+
+    /// Menu actions run on the main thread only (D18); anywhere else they do nothing.
+    private func selectOnMain(_ method: DauSettings.TypingMethod) {
+        nonisolated(unsafe) let controller = self
+        _ = onMain { controller.setTypingMethod(method) }
+    }
 
     /// Writes through the shared store, so the Settings app (and every other controller)
     /// reloads from the change notification.

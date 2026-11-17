@@ -1,11 +1,10 @@
 // The compatibility list (D7, D13): apps for which Dấu suggests underlining.
 //
-// Today the list ships inside the host app as a JSON resource
-// (Apps/Dau/Resources/CompatibilityList.json). In M7 the host app also downloads a
-// signed copy of the same format into the App Group container (D7, N2); the host app
-// then uses whichever valid copy has the higher `version`. The input method never reads
-// the list: underlining only follows the stored rules (D13), and a suggestion only
-// becomes a rule when the user clicks "Bật gạch chân" in Settings.
+// The list ships inside the host app as a JSON resource
+// (Apps/Dau/Resources/CompatibilityList.json) and changes with app updates; it is never
+// downloaded separately (D7). The input method never reads the list: underlining only
+// follows the stored rules (D13), and a suggestion only becomes a rule when the user
+// clicks "Bật gạch chân" in Settings.
 
 import Foundation
 
