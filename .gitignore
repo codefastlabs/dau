@@ -24,6 +24,10 @@ Package.resolved
 # Release artifacts and secrets (never commit)
 *.dmg
 *.p12
+*.p8
+*.pem
+*.key
+*.xcarchive
 *.cer
 *.mobileprovision
 *.provisionprofile

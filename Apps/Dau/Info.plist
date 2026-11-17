@@ -35,6 +35,18 @@
 	<string>GPLv3</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<!-- D8: Sparkle never sends system information. SUFeedURL and SUPublicEDKey are not here:
+	     the "Sparkle keys" phase in project.yml adds them to the official build only (D7). -->
+	<key>SUEnableSystemProfiling</key>
+	<false/>
+	<!-- D7: check when Dấu opens, at most once a day, without Sparkle's permission prompt;
+	     never download or install in the background (the standard Sparkle window asks first). -->
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
+	<key>SUAllowsAutomaticUpdates</key>
+	<false/>
 	<key>DauAppGroupIdentifier</key>
 	<string>$(APP_GROUP_ID)</string>
 </dict>
