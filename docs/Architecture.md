@@ -116,12 +116,12 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 | Có thay chữ, vị trí trùng vị trí Dấu theo dõi | một lần | không | N3, D11 |
 | Có thay chữ, vị trí khác vị trí Dấu theo dõi | một lần | một lần: chứng minh app chậm; dựng lại từ chữ đó chỉ khi phím trước cách đủ `settleInterval` | D11 |
 | Dấu/biến đổi đầu tiên trong từ đã hết hợp lệ, phím trước cách đủ `settleInterval` | một lần | tối đa một lần mỗi từ | D11 |
-| Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, phím trước cách đủ `settleInterval` | một lần, kể cả khi phím đi thẳng | một lần | D20 |
+| Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, ở mọi nhịp gõ | một lần, kể cả khi phím đi thẳng | một lần | D20 |
 | Mọi phím ở chế độ gạch chân | không | không | D13 |
 
 Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js, terminal của WebStorm) không được xử lý riêng: thay tại chỗ như mọi ô (D43 (Ô bỏ qua vùng thay chữ)).
 
-`InPlaceComposer.settleInterval` là ngưỡng chung cho các lần đọc dùng chữ để dựng từ (D20 nói vì sao). Phép chứng minh app chậm không chờ: nó không dựng từ từ chữ đọc được, chỉ quyết định thay ở vị trí nào.
+`InPlaceComposer.settleInterval` là ngưỡng cho hai lần đọc của D11 dùng chữ để dựng lại từ (dựng lại khi lệch, từ đã hết hợp lệ). Lần đọc của D20 và phép chứng minh app chậm không chờ: chữ D20 đọc được đi qua chính phép chứng minh đó (D20, ý "Phạm vi").
 
 #### App trả lời chậm
 

@@ -689,28 +689,32 @@ struct InPlaceComposerTests {
 
     // MARK: Asynchronous apps: stale snapshot
 
-    @Test("stale snapshot (keys faster than the app): no read, no damage")
+    @Test("stale snapshot (keys faster than the app): D20 reads, no damage")
     func staleFast() {
         var s = Session()
         s.doc.lag = 0.05
         s.interval = 0.01
         s.type("hoc ⌫j")
-        // Keys 10 ms apart: D20 waits for the app to settle, so the key goes straight.
-        #expect(s.doc.text == "hocj")
-        #expect(s.reads == 0)
+        // Keys 10 ms apart: D20 does not wait (D20, "Phạm vi"); the answer goes through
+        // the late-answer proof.
+        #expect(s.doc.text == "học")
+        #expect(s.reads <= 1)
+        #expect(s.overCalls == 0)
     }
 
     @Test("stale text with a fresh selection (Safari in M2): no damage when keys are fast")
     func staleTextFast() {
-        // "tôi" was produced by a replacement just before: the text read would still be
-        // "to" while the cursor is already after "tôi".
+        // "tôi" was produced by a replacement just before: the text read is still "to"
+        // while the cursor is already after "tôi". D20 reads, cannot trust that text and
+        // leaves the word as it is.
         var s = Session()
         s.doc.lag = 0.05
         s.doc.staleText = true
         s.interval = 0.02
         s.type("tooi ⌫s")
         #expect(s.doc.text == "tôis")
-        #expect(s.reads == 0)
+        #expect(s.reads == 1)
+        #expect(s.overCalls == 0)
     }
 
     @Test("same keys once the app has settled: D20 applies")
@@ -904,14 +908,28 @@ struct InPlaceComposerLetterTests {
         #expect(s.doc.text == "quer ")
     }
 
-    @Test("keys under 50 ms apart: no read on a letter")
-    func settleRule() {
+    @Test("keys under 50 ms apart: a letter still reads (D20 does not wait)")
+    func burstReads() {
         var s = Session("q")
         s.interval = 0.01
         s.composer.noteEvent(at: 0.0)
-        s.type("u")
-        #expect(s.doc.calls.isEmpty)
-        #expect(s.reads == 0)
+        s.type("uer")
+        #expect(s.reads == 1)
+        #expect(s.doc.text == "quẻ")
+        #expect(s.overCalls == 0)
+    }
+
+    /// Cases B33 and C12 of docs/research/EditingTypedText.md, and the sentence of the
+    /// real-app check of D20 at 5 and 30 ms (`docs/Progress.md`, 17/11).
+    @Test("keys 30 ms apart: a mark after ⌫ over Space or after an arrow applies (D20 does not wait)",
+          arguments: [("ban ⌫f ", "bàn "), ("tooi←s", "tối"),
+                       ("Hoc ⌫j tieesng Vieejt cungf ban ⌫j thaajt vui ", "Học tiếng Việt cùng bạn thật vui ")])
+    func burstMarkAfterReset(_ keys: String, _ expected: String) {
+        var s = Session()
+        s.interval = 0.03
+        s.type(keys)
+        #expect(s.doc.text == expected)
+        #expect(s.overCalls == 0)
     }
 
     @Test("Return or Tab, then a word: the read finds no word, nothing is joined", arguments: ["\n", "\t"])
@@ -1397,23 +1415,16 @@ struct ProducedWordTests {
     }
 }
 
-/// Reported 17/11/2026, intermittent: a word typed without its tone, Space, ⌫ back over
-/// the Space, then the mark key, and the mark did not reach the word (it was typed after
-/// it: "hocj"). Mechanisms that give that result; the way to tell them apart is what the
-/// same keys do right after (retyping the key slowly). An answer within `lateLimit`
-/// edits late is in `LateBackspaceMarkTests`.
+/// A word typed without its tone, Space, ⌫ back over the Space, then the mark key: the
+/// mark reaches the word ("học", not "hocj") at any pace and after a read that got
+/// nothing. An answer within `lateLimit` edits late is in `LateBackspaceMarkTests`.
 @Suite("InPlaceComposer: ⌫ over Space, then a mark key")
 struct BackspaceThenMarkTests {
-    @Test("1: ⌫ then the mark key under 50 ms (D20 settleInterval): typed after the word; the same key slowly applies")
-    func fastMarkAfterBackspace() {
+    @Test("1: ⌫ then the mark key under 50 ms: the mark applies (D20 does not wait)", arguments: [0.005, 0.03])
+    func fastMarkAfterBackspace(_ interval: Double) {
         var s = Session("Tôi ")
-        s.type("hoc ⌫")
-        s.interval = 0.03
-        s.type("j")
-        #expect(s.doc.text == "Tôi hocj")
-        #expect(s.kinds.last == .pass)
-        s.interval = 0.2
-        s.type("⌫j")
+        s.interval = interval
+        s.type("hoc ⌫j")
         #expect(s.doc.text == "Tôi học")
         #expect(s.overCalls == 0)
     }

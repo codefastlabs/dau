@@ -224,7 +224,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Engine tự theo dõi trạng thái trong bộ nhớ. Ở mỗi phím có thay chữ, hỏi `selectedRange` một lần để lấy vị trí tuyệt đối (N3 (Ít lời gọi vào ứng dụng đích)).
 - Vị trí khác dự đoán (app tự sửa chữ, con trỏ đã đi chỗ khác) thì reset bộ đệm, không thay chữ, trừ các trường hợp dưới.
 - **Gợi ý tự hoàn thành:** vùng bôi đen bắt đầu đúng chỗ con trỏ khi Dấu đang giữ một từ là gợi ý tự hoàn thành của app (thanh địa chỉ trình duyệt, Spotlight): thay cả từ lẫn phần gợi ý, như phím thường gõ đè vùng chọn.
-- **Dựng lại khi lệch:** khi lệch, nếu phím trước cách ít nhất 50 ms (như D20 (Thêm dấu cho từ đã gõ)) và app cho đọc chữ, Dấu đọc từ ngay trước con trỏ, dựng lại bộ đệm từ chữ thật rồi xử lý phím đó; không đọc được hoặc không có từ thì reset.
+- **Dựng lại khi lệch:** khi lệch, nếu phím trước cách ít nhất 50 ms (biên an toàn khi gõ dồn: app áp phím bất đồng bộ có thể trả chữ từ ảnh chụp cũ) và app cho đọc chữ, Dấu đọc từ ngay trước con trỏ, dựng lại bộ đệm từ chữ thật rồi xử lý phím đó; không đọc được hoặc không có từ thì reset.
 - **App trả lời chậm:** Dấu tự theo dõi vị trí con trỏ qua các từ, cùng các thao tác và các chữ chính nó vừa gõ. Ở phím có thay chữ mà `selectedRange` khác vị trí đó, ở mọi tốc độ gõ, Dấu đọc chữ trước con trỏ một lần. Chữ đọc được chứng minh app chỉ chưa áp vài thao tác vừa gõ (số thao tác được chậm có giới hạn) thì thay ở vị trí Dấu theo dõi. Cùng phép chứng minh dùng cho lần đọc chữ của D20 (Thêm dấu cho từ đã gõ) và của ý "Từ đã hết hợp lệ" bên dưới: chứng minh được app chậm thì dùng vị trí Dấu theo dõi, thay vì tin chữ cũ app trả (Chrome trang bận, "Hoc␣⌫j" ra "Học", không ra "Hocj"). Bất biến:
   - Vùng thay luôn kết thúc ở vị trí Dấu theo dõi.
   - Vị trí app trả mà có thể là vị trí cũ thì không ghi đè vị trí Dấu theo dõi.
@@ -351,7 +351,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 - **Phạm vi:**
   - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
   - App không trả vị trí hay chữ cho một lần đọc thì phím đó đi như phím đầu của từ mới. Hai lần đọc liền nhau đều không nhận được gì thì Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)); một lần đọc được ở giữa thì đếm lại từ đầu.
-  - Chỉ đọc lại chữ khi phím trước đó trên cùng ô nhập cách ít nhất 50 ms (biên an toàn khi gõ dồn).
+  - Đọc ở mọi nhịp gõ, kể cả khi phím dồn ("Hoc␣⌫j" gõ nhanh vẫn ra "Học"). Chữ đọc được kiểm như ở D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm"; không tin được thì phím đó không đặt dấu vào chữ đã có.
   - Chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").
 - **Chữ cái gõ sát chữ có sẵn:** phím đầu tiên là chữ cái thường cũng đọc từ ngay trước con trỏ. Chữ đó nối vào từ chỉ khi từ ghép vẫn là tiền tố hợp lệ theo D30, ngược lại chữ đó bắt đầu từ mới ("q" có sẵn + "uer" → "quẻ", "g" + "ias" → "giá", "tiê" + "ngs" → "tiếng"; "tôi" + "laf" → "tôilà", "sắc" + "mauf" → "sắcmàu").
   - Hệ quả: chữ cái sau ⌫ qua dấu cách nối lại từ trước khi hợp lệ ("ba␣⌫nj" → "bạn"; "duow␣⌫c" giữa từ hiện "dươc", kết thúc từ D31 khôi phục "duơc" vì "ươc" cần sắc hoặc nặng).
@@ -373,7 +373,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 **Vì sao:**
 
 - Hai lần đọc hỏng liền nhau, không phải một: ở app Claude, "cao␣⌫s" từng ra "caos", gõ lại ⌫⌫s vẫn ra "cas". Trên đồ giả, chỉ việc thôi đọc sau một lần đọc hỏng trước đó ra được đủ chuỗi đó; lần đọc hỏng ấy chưa bắt được ngoài đời. Với ngưỡng hai lần, app không bao giờ cho đọc chỉ tốn thêm một lần đọc mỗi lần kích hoạt.
-- Ngưỡng 50 ms: app áp phím bất đồng bộ trả vị trí và chữ từ ảnh chụp cũ khi phím dồn, và chữ đọc từ ảnh chụp cũ có thể bị thay sai chỗ. Ở các app đã thử, không chờ cũng chưa hỏng chữ (`docs/history/LogM0ToM4.md`, bảng "Số đo (M1–M3)", dòng "D20 không chờ"); vẫn giữ biên vì người quay lại sửa từ không gõ nhanh như vậy.
+- Không chờ khi phím dồn: app áp phím bất đồng bộ có thể trả vị trí và chữ từ ảnh chụp cũ, và chữ đó có thể bị thay sai chỗ; phép kiểm "App trả lời chậm" của D11 chặn việc đó cho lần đọc này. Chờ 50 ms sau phím trước thì "Hoc␣⌫j" gõ cách nhau 5 hay 30 ms ra "Hocj" ở Safari, Chrome, VS Code; không chờ thì ra "Học" (đo 17/11/2026, máy M1 Pro). Không chờ, mô phỏng Chrome, VS Code, Firefox ở 0–20 ms không hỏng chữ nào, và app thật cũng chưa hỏng chữ (`docs/history/LogM0ToM4.md`, bảng "Số đo (M1–M3)", dòng "D20 không chờ").
 - Chữ cái gõ sát chữ có sẵn: chọn bằng mô phỏng engine trên 10.303 ca ngoài và các tình huống sửa chữ, so với chỉ đọc ở phím dấu và với luôn nối (luôn nối làm hỏng 34 ca gõ từ mới sát từ cũ).
 - Ba ngoại lệ: trên cùng 10.303 ca, (a) không đổi ca nào, (b) đổi 2, (c) đổi 24, không bất biến nào hỏng.
 - Từ hệ thống vừa sửa: ở app bật tự sửa, hệ thống đổi "hoc" thành "học" trước phím j, và gõ lại phím dấu là xoá dấu (D26), nên "Tôi hoc␣⌫j bài" từng ra "hocj".

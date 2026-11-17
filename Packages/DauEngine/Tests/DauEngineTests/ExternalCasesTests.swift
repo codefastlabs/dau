@@ -170,8 +170,7 @@ struct ExternalCasesTests {
     /// Returns the engine's action, or nil when the key takes the normal path (nothing
     /// seeded: the engine is reset and the caller handles the key as the first key of a
     /// word).
-    /// Not mirrored: the 50 ms rule (`settleInterval`) — typing at normal speed is slower,
-    /// so every read counts as settled — and apps that give no text.
+    /// Not mirrored: apps that answer late or give no text.
     static func d20Seed(_ f: inout Field, key: Unicode.Scalar, letter: Bool) -> Action? {
         f.d20Reads += 1
         let count = min(f.text.count, 16)

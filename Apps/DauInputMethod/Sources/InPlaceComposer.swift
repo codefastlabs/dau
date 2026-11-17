@@ -104,15 +104,14 @@ struct InPlaceComposer {
     /// to 3 vowels); one more shows whether the word goes on past the read.
     static let readLength = 16
 
-    /// D20 reads only when the previous key or click on this client is at least this old.
-    /// Apps that apply keys asynchronously (Chromium, Electron, terminals) answer
-    /// `selectedRange`/`attributedSubstring` from a snapshot that can still miss the
-    /// previous keys; a word read from such a snapshot could be replaced at the wrong
-    /// place. M2 measured this read wrong below 10–20 ms between keys in Chrome, VS Code
-    /// and Terminal. Trial 30/10/2026 with no wait (`docs/history/LogM0ToM4.md`, table
-    /// "Số đo (M1–M3)", row "D20 không chờ"): no damage in five apps
-    /// even at 0 ms, VS Code at 0 ms read a stale snapshot (no word found). 50 ms
-    /// keeps a margin over the 20 ms seen in M2; a person going back to a word is slower.
+    /// A key less than this after the previous key or click on this client came in a
+    /// burst (`CursorTracker.keyInBurst`). The D11 re-sync on a mismatch and the read of a
+    /// word past valid (`checkLockedWord`) wait for it: apps that apply keys asynchronously
+    /// (Chromium, Electron, terminals) answer `selectedRange`/`attributedSubstring` from a
+    /// snapshot that can still miss the previous keys, and M2 measured such reads wrong
+    /// below 10–20 ms between keys in Chrome, VS Code and Terminal. The D20 read does not
+    /// wait (D20): its answer goes through the late-answer proof (`CursorTracker`), which
+    /// does not trust a stale snapshot.
     static let settleInterval: TimeInterval = 0.05
 
     /// Positions of the last replacement attempt of a key (Debug diagnostics).
@@ -330,7 +329,8 @@ struct InPlaceComposer {
             return result
 
         case .character(let scalar):
-            if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable, settled {
+            // D20 reads at any pace, keys in a burst included (D20, "Phạm vi").
+            if !engine.isComposing, addMarksEnabled, before == .unknown, !readUnavailable {
                 let method = engine.options.inputMethod
                 if Self.isMarkKey(scalar, method: method) {
                     return addMarks(scalar, letter: false, engine: &engine, client: client)

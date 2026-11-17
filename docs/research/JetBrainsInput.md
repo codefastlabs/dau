@@ -297,7 +297,7 @@ Byte xuống pty theo dự đoán:
 - **Ghi `commitComposition` vào log Debug rồi chạy lại ô `webstorm`** (mục 4.2). Quyết định H1' đúng hay sai, tức lỗi D4 ở WebStorm đến từ JBR hay từ chỗ khác. Đây là điều kiện để chọn cách sửa: Dấu bỏ qua `commitComposition` ngay sau phím đi thẳng, hay sửa ở chỗ khác.
 - **Trình soạn thảo: `hoaf⌫`** (đáp án "hò"; dự đoán "h"). Quyết định đường "thay rồi để phím đi" của D32 có hỏng trong JBR không (mục 3.3).
 - **Trình soạn thảo: một từ Dấu khôi phục theo D4, rồi Return ngay sau.** Dự đoán từ biến mất. Với reset sau phím đi thẳng (mục 4.2), từ nước ngoài có thể không được khôi phục chút nào, khi đó Return không có chữ để thay. Chọn từ mà phím ngay trước Return là phím Dấu tự gửi chữ (ví dụ một từ kết thúc bằng phím dấu), soát chuỗi với engine trước khi chạy. Quyết định Return/Tab có cần đường riêng trong JBR không.
-- **Trình soạn thảo ở nhịp 30 ms:** dưới ngưỡng 50 ms của D20 thì không đọc lại sau reset. Nếu H1' đúng, dự đoán chữ tiếng Việt cũng sai, kiểu "tôí" cho `toois`. Quyết định lỗi có lan sang chữ tiếng Việt khi gõ nhanh không, tức mức nghiêm trọng của lỗi cho người dùng thật.
+- **Trình soạn thảo ở nhịp 30 ms:** D20 đọc lại sau reset ở mọi nhịp (D20, "Phạm vi"), nên nếu H1' đúng thì chữ ở 30 ms dự đoán như ở nhịp 80 ms đã đo. Quyết định lỗi có lan sang chữ tiếng Việt khi gõ nhanh không, tức mức nghiêm trọng của lỗi cho người dùng thật.
 
 ## 6. Đo tự động: những điều phải xử lý
 

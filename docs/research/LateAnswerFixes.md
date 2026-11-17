@@ -1,11 +1,11 @@
-# Hai kịch bản "app trả lời chậm" chỉ có trên mô hình: cơ chế và hướng sửa dự phòng
+# Hai kịch bản "app trả lời chậm": cơ chế và hướng sửa
 
-Không app thật nào đã đo ra hai kịch bản dưới đây, và bộ test của bộ gõ (`Apps/DauInputMethod/Tests`) không có known issue nào. File này giữ cơ chế và hướng sửa ngắn gọn để dùng khi gặp ca thật. Cơ chế của `CursorTracker` ở [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm"; số đo Cursor ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
+Kịch bản A chưa app thật nào đo ra; kịch bản B có ở trình soạn thảo của Cursor 3.30.14 (mục "Hiện trạng"). Bộ test của bộ gõ (`Apps/DauInputMethod/Tests`) không có known issue nào. File này giữ cơ chế và hướng sửa ngắn gọn. Cơ chế của `CursorTracker` ở [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm"; số đo Cursor ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
 ## Hiện trạng (17/11/2026)
 
 - **Kịch bản A: D20 sau ⌫ khi app chậm 3–4 thao tác** (mô hình bộ đệm Chromium, `LateDocument.Cache.chromium`). Chrome thật, trang bận, nhịp người, chuỗi `edit`: đúng 3/3, và ở lần đọc của D20 sau ⌫ Chrome trả vị trí đúng giờ (mục 3). Chậm 1–2 thao tác thì phép chứng minh hiện có đã xử lý (`LateBackspaceMarkTests`). Hướng 2A là phương án áp khi gặp ca thật (mục 1.2).
-- **Kịch bản B: app tính vị trí theo từ** (`LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Cursor 3.30.14 tính vị trí từ đầu văn bản, ở cả trình soạn thảo, khung agent (⌘L) và ô nhập Agents, và gõ đúng ở mọi ô đã đo: `selectedRange` bằng vị trí Dấu theo dõi, hoặc chậm 1–4 thao tác như bộ đệm Chromium (`kind=late`, chữ vẫn đúng). Chưa biết app nào tính theo từ. Mô hình còn trong test (`WordOriginTests`) cho các ca đạt. Hướng 1B và 4A cần đổi N3 và D11 (mục 2.2).
+- **Kịch bản B: app tính vị trí theo từ** (`LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Ở Cursor 3.30.14, khung agent (⌘L) và ô nhập Agents tính vị trí từ đầu văn bản và gõ đúng. Trình soạn thảo có lúc tính từ đầu văn bản (đúng), có lúc tính từ đầu từ; ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai vài từ mỗi lượt, không do D20 (D20 chờ hay không chờ phím dồn đều sai như vậy). Chưa rõ vì sao trình soạn thảo đổi kiểu (số đo: [`docs/Compatibility.md`](../Compatibility.md) mục 5.4). Mô hình còn trong test (`WordOriginTests`) cho các ca đạt. Hướng 1B và 4A cần đổi N3 và D11 (mục 2.2).
 - Cursor không có nhãn "Đề xuất" (D13 (Gạch chân là đường lui cuối cùng)); số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
 Không có quyết định nào chờ người dùng ở file này. Phần đo được và phần giả định của mô hình theo từ ghi trong comment của `LateDocument.Origin`; mô hình vị trí tính từ đầu văn bản là `Origin.document`.

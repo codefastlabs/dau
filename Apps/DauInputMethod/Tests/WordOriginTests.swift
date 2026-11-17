@@ -39,7 +39,7 @@ private struct EditorSession {
     }
 }
 
-/// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026): the app answers `selectedRange` from the start of the word being typed. No app measured since behaves this way.
+/// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026): the app answers `selectedRange` from the start of the word being typed. The editor of Cursor 3.30.14 answers this way in some runs (`docs/Compatibility.md` 5.4).
 /// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/history/LogM6.md`, logs in
 /// build/load/cursor-20261110-094602 and cursor2-20261110-100405, not committed).
 @Suite("In-place mode in an app that counts positions from the start of the word (M6: the word-origin model)")

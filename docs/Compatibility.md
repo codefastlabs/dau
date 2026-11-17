@@ -15,7 +15,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 | Edge | đúng ở 5–20 ms và khi trang bận (10/11/2026, máy M1; 17/11/2026, Edge 157.0.4341.60) | đúng ở 0 ms | không |
 | Firefox | đúng ở 5–20 ms (10/11/2026, máy M3 Max) và khi trang bận (10/11/2026, máy M1; 17/11/2026, Firefox 160.0) | đúng ở 0 ms | không |
 | VS Code | đúng ở 5–20 ms: 14/15 lượt (10/11/2026, VS Code 1.145.2) và 2/2 lượt (17/11/2026, VS Code 1.146.0, mỗi lượt sau một ô Telex của Apple), máy M1 (mục 5.3) | đúng ở 0 ms | không |
-| Cursor (3.30.14) | đúng ở 5 ms (chuỗi chuẩn), 20 ms và 100 ms, ở trình soạn thảo, khung agent (⌘L) và ô nhập Agents (mục 5.4) | chưa đo | không |
+| Cursor (3.30.14) | khung agent (⌘L) và ô nhập Agents đúng ở 5 ms; trình soạn thảo đúng khi trả vị trí từ đầu văn bản, sai vài từ ở 5 ms khi trả vị trí từ đầu từ (mục 5.4) | chưa đo | không |
 | Terminal | đúng ở 30 và 120 ms (12/11/2026; 30 ms lại 1/1 ngày 17/11/2026), sai khi phím dồn dưới 30 ms và ở 0 ms; ⌫ không tới bộ gõ (mục 5.5, 6.5) | đúng ở 5–20 ms (17/11/2026), sai ở 0 ms | **có** |
 | Ghostty | sai: app bỏ qua vùng thay, Dấu không xử lý riêng (D43; mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | **có** |
 | xterm.js (trang thử trong Chrome) | sai (D43; mục 6.8) | đúng | không |
@@ -128,7 +128,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 | Backspace (D32 (Backspace)) | `hoaf` rồi ⌫ | "hoà" rồi "hò" |
 | Click reset (D4 (Từ nước ngoài), D11) | `tooi`, click sau dấu cách hoặc đầu dòng, `s` | chỉ thêm "s" ở chỗ mới. Click ngay sau một chữ thì D20 có thể đặt dấu vào chữ đó |
 | Mũi tên reset (D4 × D20) | `tooi`, ←, nghỉ một nhịp, `s` | D20 bật: "tối" (dấu vào chữ trước con trỏ, "i" giữ nguyên). D20 tắt: "tôsi" |
-| Thêm dấu cho từ đã gõ (D20) | `hoc`, dấu cách, ⌫, nghỉ ≥ 50 ms, `j` | "học". Phím dồn dưới 50 ms thì D20 cố ý không chạy ("hocj"); ứng dụng gạch chân: "hocj" |
+| Thêm dấu cho từ đã gõ (D20) | `hoc`, dấu cách, ⌫, `j` | "học", ở mọi nhịp gõ; ứng dụng gạch chân: "hocj" |
 | Tự sửa chính tả (D4) | câu tiếng Việt rồi `Sunrise carr␣` | "car". Thành "cả" là macOS sửa, không phải Dấu: Telex của Apple cũng bị (mục 6.1) |
 
 ### 4.4 Số đo
@@ -171,22 +171,23 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 
 Một app, một bundle ID, hai kiểu cửa sổ: Agents (mở khi chạy app, có ô nhập ở giữa) và IDE (giao diện kiểu VS Code: trình soạn thảo và khung agent, mở bằng ⌘L). File › Open IDE trong cửa sổ Agents khi chưa có workspace thì không mở gì; `cursor --new-window <tệp>` mở được.
 
-**Hiện trạng (3.30.14, đo 17/11/2026, bản Debug fa5ce8f+, máy M1, macOS 27.2):** thay tại chỗ đúng ở cả ba ô: `cursor` (trình soạn thảo), `cursorchat` (khung agent trong IDE) và `cursoragents` (ô nhập Agents). Chuyển nguồn bằng phím tắt hệ thống, có xác nhận bộ gõ trong ô.
+**Hiện trạng (3.30.14, đo 17/11/2026, máy M1, macOS 27.2):** khung agent (`cursorchat`) và ô nhập Agents (`cursoragents`) thay tại chỗ đúng ở mọi chuỗi đã đo. Trình soạn thảo (`cursor`) trả vị trí theo hai kiểu, chưa rõ vì sao: tính từ đầu văn bản (các lượt buổi sáng, chữ đúng) hoặc tính từ đầu từ (7/7 lượt buổi chiều, cùng bản Cursor); ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai 0–7 từ mỗi lượt. Chuyển nguồn bằng phím tắt hệ thống, có xác nhận bộ gõ trong ô.
 
 | Chuỗi | Nhịp | `cursorchat` | `cursoragents` | `cursor` |
 |---|---|---|---|---|
 | câu mẫu mặc định | 5 ms | đúng | đúng | đúng |
-| `std` | 5 ms | đúng 1/1 | đúng 1/1 | đúng 3/3 |
-| `std` | 20 ms | — | — | đúng 1/1 |
-| "anh ddi " từ tài liệu mới | 20 ms | — | — | đúng 2/2 |
-| `edit` | 100 ± 30 ms | đúng 1/1 | đúng 1/1 | đúng 1/1 |
-| `edit` | 5 ms | "Hocj" | "Hocj" | "Hocj" |
+| `std` | 5 ms | đúng 1/1 | đúng 1/1 | đúng 3/3 (vị trí từ đầu văn bản) |
+| `std` | 20 ms | — | — | đúng 1/1 (vị trí từ đầu văn bản) |
+| "anh ddi " từ tài liệu mới | 20 ms | — | — | đúng 2/2 (vị trí từ đầu văn bản) |
+| `edit` | 100 ± 30 ms | đúng 1/1 | đúng 1/1 | đúng 1/1 (vị trí từ đầu văn bản) |
+| `edit` | 5 ms | đúng 1/1 | đúng 1/1 | đúng 1/4, ba lượt kia sai 5, 3 và 2 từ (vị trí từ đầu từ) |
 
-- `edit` ở 5 ms ra "Hocj" là đúng thiết kế: D20 chỉ đọc lại chữ khi phím trước cách ít nhất 50 ms (`InPlaceComposer.settleInterval`), nên "Hoc ⌫ j" gõ dồn không thêm dấu (log: `d20=none` ở phím đó). Mọi từ khác của chuỗi `edit` đúng.
-- Vị trí (dòng `diag replace`): Cursor trả vị trí tính từ đầu văn bản. Ở mọi ô, `selectedRange` bằng vị trí Dấu theo dõi hoặc chậm 1–4 thao tác kiểu bộ đệm Chromium (`kind=late`, chữ vẫn đúng). Ba lượt `std` 5 ms ở trình soạn thảo: 41, 39 và 41 lần thay, trong đó 37, 39 và 35 đúng vị trí, còn lại trễ mà vẫn đúng chữ.
+- Các ô `std`, câu mẫu, "anh ddi " và `edit` 100 ms đo bằng bản Debug fa5ce8f+; các ô `edit` 5 ms đo bằng bản Debug của mã hiện tại.
+- Vị trí từ đầu văn bản (dòng `diag replace`): `selectedRange` bằng vị trí Dấu theo dõi hoặc chậm 1–4 thao tác kiểu bộ đệm Chromium (`kind=late`, chữ vẫn đúng). Ba lượt `std` 5 ms ở trình soạn thảo: 41, 39 và 41 lần thay, trong đó 37, 39 và 35 đúng vị trí, còn lại trễ mà vẫn đúng chữ. Khung agent và ô nhập Agents luôn trả vị trí kiểu này.
+- Vị trí từ đầu từ: `selectedRange` không quá 6 trong cả câu dài, như mô hình `LateDocument.Origin.word` (dựng từ Cursor 3.29.15). Từ sai giống nhóm lỗi của mô hình đó: câu trả lời cũ khi gõ qua ranh giới từ ("ộot", "trươcs", "duwowjc", "kóo"). Mã trước khi bỏ chờ ở D20 cũng sai như vậy trong cùng trạng thái Cursor (3/3 lượt sai 7, 3 và 2 từ, kể cả "Hocj"), nên lỗi không do D20.
 - Gạch chân chưa đo trên 3.30.14.
 - Cursor không có nhãn "Đề xuất".
-- Mô hình `LateDocument.Origin.word` (test): app tính `selectedRange` và vùng thay từ đầu từ đang gõ, dựng từ log trình soạn thảo Cursor 3.29.15 (đo 10/11/2026). Chưa biết app nào hoạt động như vậy; hướng xử lý dự phòng: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
+- Mô hình `LateDocument.Origin.word` (test): app tính `selectedRange` và vùng thay từ đầu từ đang gõ, dựng từ log trình soạn thảo Cursor 3.29.15 (đo 10/11/2026); trình soạn thảo của 3.30.14 có lúc cũng vậy (trên). Hướng xử lý: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
 
 ### 5.5 Terminal
 

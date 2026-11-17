@@ -2,7 +2,7 @@
 
 Người gõ tiếng Việt sửa chữ theo nhiều cách: đổi dấu trong từ đang gõ, ⌫ về từ vừa gõ để thêm dấu, dùng mũi tên vào giữa một từ cũ, xoá cả từ gõ lại. File này lập ma trận các cách sửa đó thành chuỗi phím có đáp án, ghi Dấu hôm nay ra gì (mô phỏng offline), gom các chỗ hỏng theo nguyên nhân, rồi đo các phương án sửa trong mô phỏng người gõ. Quyết định thuộc [`docs/Decisions.md`](../Decisions.md); phương án d đã chọn (D26 (Gõ đúp phím dấu)), các phương án khác ở mục 4.4 vẫn là đề xuất.
 
-## Hiện trạng (12/11/2026)
+## Hiện trạng (17/11/2026)
 
 - **Trong từ đang gõ, Dấu sửa tốt.** Đổi dấu, xoá dấu, đặt dấu ở cuối hay giữa từ (D28 (Đặt dấu tự do)), gõ nhầm chữ rồi ⌫, chữ thừa làm sai chính tả rồi ⌫ trước dấu cách: đúng ở 17/21 ca. Bốn ca hỏng do hai luật: từ quá 7 chữ không quay lại (D33 (Độ dài từ)), và ⌫ xoá chữ, mốc khôi phục sau ⌫ là chữ đang hiện (D32 (Backspace)).
 - **Khoá gõ đúp sau ⌫ (K4) đã sửa: phương án d là luật D26 (Gõ đúp phím dấu) từ 12/11/2026.** ⌫ xoá chữ của phím gõ đúp thì mở khoá: người lỡ gõ đúp phím dấu ("carr" ra "car"), ⌫ chữ thừa rồi gõ lại dấu, nay ra "cả". Trước đó K4 là nguyên nhân ngõ cụt lớn nhất trong mô phỏng: 60% số ngõ cụt ở cấu hình gốc, đứng đầu ở 42/45 cấu hình (mục 4.3). Độ lớn phụ thuộc tỉ lệ lỡ gõ đúp phím dấu, số giả định không có nguồn (mục 4.4).
@@ -14,7 +14,7 @@ Người gõ tiếng Việt sửa chữ theo nhiều cách: đổi dấu trong t
   - (d) ⌫ xoá chữ của phím đúp thì mở khoá D26: đã chọn, nay là luật của Dấu; ngõ cụt giảm ở mọi hồ sơ. Không thêm lời gọi vào app (test bộ gõ `InPlaceComposerTests.backspaceReleasesDoubleLock`).
   - (b) nhớ phím của từ D4 vừa khôi phục, chỉ dùng trong lần đọc D20 sẵn có (b+d ở bảng mục 4.2). Không thêm lời gọi; đổi D20 ("không giữ lịch sử từ") và D4 (mốc khôi phục). Đánh đổi: 11/100 từ tiếng Anh vừa khôi phục, ⌫ rồi thêm s, ra chữ Việt ("boot␣⌫s" → "bốt").
   - (c) mốc sau ⌫ theo phím ở phần đuôi đi thẳng chỉ sửa từ tiếng Anh (93 → 1 từ hỏng), gần như không đổi số ngõ cụt.
-- **Cần đo thật:** chọn cả từ rồi gõ lại; vị trí con trỏ sau khi thay cả từ quanh con trỏ (H7); nhịp ⌫ rồi phím dấu của người gõ nhanh so với ngưỡng 50 ms của D20; và, để biết mọi con số trên lớn cỡ nào, tỉ lệ lỡ gõ đúp phím dấu và tỉ lệ sửa theo phím (mục 5).
+- **Cần đo thật:** chọn cả từ rồi gõ lại; vị trí con trỏ sau khi thay cả từ quanh con trỏ (H7); và, để biết mọi con số trên lớn cỡ nào, tỉ lệ lỡ gõ đúp phím dấu và tỉ lệ sửa theo phím (mục 5).
 
 ## 1. Hồ sơ người gõ
 
@@ -111,7 +111,7 @@ Ký hiệu:
 | B30 | `ddungsg␣⌫⌫s␣` | đúng | ddungss | ddungss | T N | K1 (ca người dùng báo) |
 | B31 | `ddungsg␣⌫⌫⌫s␣` | đúng | ddungs | ddungs | T N | K1 |
 | B32 | `nghieengg␣⌫⌫␣` | nghiêng | nghieeng | nghieeng | T N | K5, K1 |
-| B33 | `ban␣⌫f␣`, phím cách nhau 30 ms | bàn | banf | banf | N | K9 |
+| B33 | `ban␣⌫f␣`, phím cách nhau 30 ms | bàn | bàn | banf | N | ✓ / K7 |
 | B34 | `ban␣⌫` nghỉ 1,2 s rồi `f␣`, phím 30 ms | bàn | bàn | banf | N | ✓ / K7 |
 | B35 | `hoc␣`, hệ thống sửa thành "học", `⌫j␣` | học | học | — | M T | ✓ (D20 "Từ hệ thống vừa sửa") |
 | B36 | `cat␣`, hệ thống sửa thành "cắt", `⌫s␣` | cát | căts | — | M T | K10 |
@@ -133,7 +133,7 @@ Click và mũi tên đi cùng một đường trong bộ gõ (reset, D4), nên m
 | C9 | `duong←←w` | dương | duơ‸ng | duoưng | M | K11 / K7 |
 | C10 | `ddungsg␣laf←←←⌫` | đúng là | ddungs‸ là | ddungs là | T N | K1 |
 | C11 | `ddungsg␣laf←←←⌫s` | đúng là | ddungss‸ là | ddungss là | T N | K1 |
-| C12 | `tooi←s`, phím cách nhau 30 ms | tối | tôs‸i | tôsi | N | K9 (ít gặp: mũi tên rồi phím dấu dưới 50 ms) |
+| C12 | `tooi←s`, phím cách nhau 30 ms | tối | tố‸i | tôsi | N | ✓ / K7 |
 
 ### X. Xoá cả từ rồi gõ lại (mốc phải giữ đúng)
 
@@ -188,7 +188,6 @@ Số ca theo kết quả, thay tại chỗ, không tính X5:
 | K6 | ⌫ xoá chữ cuối, không xoá dấu thanh (người mới có thể chờ ⌫ xoá dấu; kỳ vọng này là giả định). | D32 | 1 | A19 |
 | K7 | Gạch chân không có D20: không hỏi vị trí con trỏ nên không thay được chữ đã chốt. | D13, D20 (phạm vi), N3 (Ít lời gọi vào ứng dụng đích) | 31 | các ô "/ K7" |
 | K8 | D20 không tự thêm mũ/móc để từ thành hợp lệ. | D20, "Đã biết nhưng không làm" | 1 | B23 |
-| K9 | D20 chỉ đọc khi phím trước cách ít nhất 50 ms. | D20, D11 | 2 | B33, C12 |
 | K10 | Tự sửa chính tả của macOS đổi từ thành chữ khác kết quả của phím. | D4 (giới hạn đã biết), D20 | 1 | B36 |
 | K11 | D20 chỉ đọc phần trước con trỏ; dấu móc hay vị trí dấu cần cả từ ("nguo‸i" + w, "duo‸ng" + w ra "uơ" của D35 ("uơ" và "ươ")). | D20 (phạm vi), D35 | 2 | C8, C9 |
 
@@ -200,7 +199,7 @@ Không có ca nào hỏng vì reset khi dời con trỏ hay vì ⌫ qua nhiều 
 
 - **Mô phỏng người gõ** (`TypistSimTests`, `TypistSimOptionsTests`): bốn hồ sơ gõ kho câu tiếng Việt có lẫn từ tiếng Anh, bằng Telex và VNI, theo thứ tự phím riêng, gây lỗi rồi sửa như người nhìn màn hình. Mọi tỉ lệ là giả định (mục 1).
 - **Bộ gõ trong mô phỏng là bản chép** (`ImkField`): engine thật, cộng lần đọc D20 chép từ `InPlaceComposer` (`ExternalCasesTests.d20Seed`), trên ô nhập đồng bộ, con trỏ luôn ở cuối. Test `matrixRows` chạy lại 54 dòng của ma trận mục 2 (đo bằng `InPlaceComposer` thật) và 7 đầu vào ở bảng 4.2: ra đúng cả 61.
-  - Còn gần đúng: ngưỡng 50 ms của D20 (mọi lần đọc coi như đủ chậm), app trả lời chậm hay không cho đọc, lần dựng lại của D11 (Kiểm tra ngữ cảnh) khi lệch vị trí, tự sửa chính tả ("Từ hệ thống vừa sửa"), gạch chân, ô D43 (Ô bỏ qua vùng thay chữ), mũi tên và click giữa từ.
+  - Còn gần đúng: app trả lời chậm hay không cho đọc, lần dựng lại của D11 (Kiểm tra ngữ cảnh) khi lệch vị trí, tự sửa chính tả ("Từ hệ thống vừa sửa"), gạch chân, ô D43 (Ô bỏ qua vùng thay chữ), mũi tên và click giữa từ.
 - **Hai thói quen sửa**, chia theo `byKeysPercent` (giả định 50%):
   - Theo màn hình: xoá tới chỗ chữ trên màn hình còn đúng, rồi gõ tiếp.
   - Theo phím đã nhớ: sau dấu cách thì ⌫ qua nó rồi gõ đúng cách sửa sẽ làm trong từ ("ddep␣⌫j"); trong từ tiếng Anh (chữ đang hiện là Telex dở, "ưith") thì ⌫ một lần cho mỗi phím từ chỗ sai rồi gõ lại phím đúng.
@@ -318,7 +317,7 @@ Tự phản biện:
 
 - Cả hai phần lợi đến từ hai số không có nguồn: tỉ lệ lỡ gõ đúp (cho d) và tỉ lệ sửa theo phím (cho b). Nếu cả hai gần 0, b+d gần như không đổi gì; khi đó cũng không hỏng gì ngoài các ca ở bảng kiểm chéo.
 - d đảo một câu D26 viết có chủ ý. Câu đó không ghi lý do riêng cho ⌫; lý do của D26 là giữ được chữ gốc, và d vẫn giữ khi ⌫ không xoá chữ của phím đúp. Nếu có người gõ "aaa⌫a" để được "aa", d làm hỏng họ.
-- Mô phỏng là ô đồng bộ. b thay chữ ở đúng lần đọc mà D20 đang chịu ngưỡng 50 ms và kiểm tra D11, nên rủi ro app trả lời chậm như D20 hôm nay; chưa đo trên app thật.
+- Mô phỏng là ô đồng bộ. b thay chữ ở đúng lần đọc của D20, đi qua phép kiểm D11, nên rủi ro app trả lời chậm như D20 hôm nay; chưa đo trên app thật.
 - Kết quả chứng tỏ đề xuất sai: nhật ký phím (bản Debug, khoá `DauPerfLog`, người dùng tự bật, D8 (Không telemetry)) cho thấy sau một phím đúp rồi ⌫, phím kế tiếp hiếm khi là chính phím đó; hoặc ⌫ qua dấu cách rồi "s" trên từ vừa khôi phục chủ yếu là số nhiều tiếng Anh.
 
 ### 4.5 Hướng chưa đo trong mô phỏng
@@ -328,7 +327,6 @@ Tự phản biện:
 - **H6**, ⌫ về 7 chữ thì trở lại biến đổi (K5): sửa A18, B32 (B32 cần thêm b); phải đổi D33.
 - **H7**, D20 xét cả từ quanh con trỏ (K11): sửa C8, C9; cần đo con trỏ về đâu sau khi thay (mục 5); phải đổi D20.
 - **H8**, sửa sau khi chốt ở gạch chân (K7): cần `selectedRange` ở chế độ không được hỏi (D13, N3). Theo D13, hướng đúng là làm thay tại chỗ chạy được ở app người dùng đang bật gạch chân.
-- **H9**, bớt ngưỡng 50 ms sau ⌫ (K9): sửa B33, C12; rủi ro đúng loại lỗi D11 chặn. Câu "người quay lại sửa từ không gõ nhanh như vậy" của D20 chưa có số đo.
 
 ## 5. Giới hạn và phần cần đo thật
 
@@ -343,7 +341,7 @@ Tự phản biện:
   - X5: bấm đúp chọn từ rồi gõ lại, ở Notes và Chrome.
   - H7: thay một vùng có cả phần sau con trỏ thì con trỏ về đâu, ở Notes, Chrome, VS Code. Chỉ cần nếu chọn H7.
   - Telex của Apple ở các ca chữ thừa (B29–B31, `ddungsg␣⌫⌫`), để có đối chứng cho nhóm K1. Telex của Apple không khôi phục từ, nên dự đoán nó giữ "đúngg"; chưa đo.
-- **Không đo được bằng lượt chạy ngắn:** khoảng cách từ ⌫ tới phím dấu khi gõ thật (K9, H9), tỉ lệ lỡ gõ đúp phím dấu, và người gõ sửa theo phím hay theo màn hình (mục 4.4). Cần nhật ký phím của người gõ thật; D8 (Không telemetry) chỉ cho ở bản Debug với khoá `DauPerfLog`, trên máy người dùng tự bật.
+- **Không đo được bằng lượt chạy ngắn:** tỉ lệ lỡ gõ đúp phím dấu, và người gõ sửa theo phím hay theo màn hình (mục 4.4). Cần nhật ký phím của người gõ thật; D8 (Không telemetry) chỉ cho ở bản Debug với khoá `DauPerfLog`, trên máy người dùng tự bật.
 - **Ngoài phạm vi:** phím dấu không ăn khi gõ nhanh trong trình soạn thảo web. Đo riêng trên TipTap/ProseMirror trong Chrome (12/11/2026, Dấu Release, câu mẫu 41 phím, 5/10/20 ms, 3 lượt mỗi mức, đối chứng Telex của Apple): không tái hiện, Dấu đúng 9/9 ([`docs/Compatibility.md`](../Compatibility.md) mục 5.2). Mọi ca nhóm A ở đây đúng cả khi phím cách nhau 8 ms trong ô giả.
 
 ## 6. Phương pháp

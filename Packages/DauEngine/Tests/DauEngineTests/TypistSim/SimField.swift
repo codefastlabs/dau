@@ -72,8 +72,7 @@ struct EngineField: SimField {
 /// Checked against the input method: `TypistSimTests.matrixRows` replays the rows of
 /// docs/research/EditingTypedText.md, section 2, measured with the real `InPlaceComposer`
 /// and a fake client, and expects the same text.
-/// Not modelled: the 50 ms rule (`InPlaceComposer.settleInterval`, every read counts as
-/// settled), apps that answer late or give no text, autocorrect (D20 "Từ hệ thống vừa
+/// Not modelled: apps that answer late or give no text, autocorrect (D20 "Từ hệ thống vừa
 /// sửa"), underline mode (D13), fields that ignore the replacement range (D43), arrows
 /// and clicks.
 struct ImkField: SimField {
