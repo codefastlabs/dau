@@ -76,6 +76,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 30/10/2026: "Sửa 30/10/2026 cùng D2; bản trước: quy tắc có 'chế độ khi mở app' và tuỳ chọn nhớ chế độ theo app. Lý do: khi bỏ chế độ Anh, đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ; đo 30/10/2026: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng."
 
+### D6. Phát hành
+
+- 17/11/2026 (người dùng chốt): cask Homebrew nằm trong tap riêng `codefastlabs/homebrew-tap`, chuyển vào `homebrew/cask` khi repo đạt ngưỡng nổi bật. Lý do: tra ngày 17/11/2026 thấy tên `dau` còn trống trong `homebrew/cask` (không cask, không formula nào trùng), nhưng repo 0 sao, dưới ngưỡng nhận gói. Bản trước, nguyên văn: "GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (khai báo `auto_updates true`) sau bản thử đầu. Không có Mac App Store."
+
 ### D7. Cập nhật và loại bản dựng
 
 - Tên cũ: "Cập nhật".
@@ -198,6 +202,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 06/11/2026: "Dấu" là tên thương hiệu, không dịch, không bỏ dấu ở mọi ngôn ngữ ("người dùng nhấn mạnh 06/11/2026").
 
 - 11/11/2026 (sổ viết lại): Team ID dẫn D7 thay cho "ký Developer ID ở M7"; tên cask "chọn sau khi tra" thành "chưa chọn"; thêm luật "mọi bản phải ký bằng một Team ID" từ câu hỏi đã trả lời "App Group với bản ký ad-hoc".
+- 17/11/2026 (người dùng chốt, cùng D6): tên cask `dau`, trong tap `codefastlabs/homebrew-tap`. Bản trước: "Tên cask Homebrew: chưa chọn (câu hỏi mở "Tên Dấu")."
 
 ### D25. Nhận diện
 
@@ -398,6 +403,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 ### Tên "Dấu"
 
 - 30/10/2026: bundle ID và tên miền chính chốt ở D24 ("đã chốt ở D24, 30/10/2026").
+- 17/11/2026: tên cask và tên tổ chức GitHub đã trả lời (D6, D24; tổ chức `codefastlabs` có sẵn), bỏ khỏi câu hỏi; tên miền "dấu.vn" cũng bỏ (người dùng chốt giữ `dau.codefastlabs.com` của D24; ngày 17/11/2026 `xn--du-r5s.vn` chưa có bản ghi DNS, `dau.vn` và `dau.com.vn` đã có người đăng ký); thêm bộ gõ DauKey có tên gần giống. Bản trước, nguyên văn: "tra nhãn hiệu (Cục Sở hữu trí tuệ VN), tên miền (cân nhắc tên miền tiếng Việt có dấu "dấu.vn" bên cạnh một bản không dấu), tên cask Homebrew và tên tổ chức GitHub."
 
 - 11/11/2026 (sổ viết lại): chỉ giữ câu chưa có trả lời. Thêm từ thân các quyết định: VoiceOver đọc tên nguồn (D17), liên kết ủng hộ trong app (D39), ngưỡng bộ nhớ (D42). Câu "Hộp thoại và đăng xuất" bỏ phần đã trả lời và "cách làm hiện hành" (nay ở D37). Câu "Bản chủ trong `~/Applications`" bỏ ngày đo ("đo 02/11/2026 với bản trong thư mục build"; "11/11/2026").
 - 12/11/2026 (người dùng giao phiên chính): bỏ "Ngưỡng bộ nhớ" (nay là luật ở D42); thêm "Từ tiếng Anh gõ nhầm rồi ⌫ trong từ" (D32, D4), từ K3 của `docs/research/EditingTypedText.md`.

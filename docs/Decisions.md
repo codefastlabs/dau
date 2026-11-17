@@ -19,7 +19,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D3](#d3-không-macro-chỉ-unicode-dựng-sẵn) | Không macro, chỉ Unicode dựng sẵn | Không macro, bảng mã cũ, chuyển mã; chỉ xuất NFC. |
 | [D4](#d4-từ-nước-ngoài) | Từ nước ngoài | Từ không phải âm tiết hợp lệ được khôi phục khi kết thúc từ; không từ điển. |
 | [D5](#d5-quy-tắc-theo-ứng-dụng) | Quy tắc theo ứng dụng | Quy tắc riêng của app chỉ là có/không gạch chân. |
-| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask sau bản thử đầu; không App Store. |
+| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask trong tap riêng sau bản thử đầu; không App Store. |
 | [D7](#d7-cập-nhật-và-loại-bản-dựng) | Cập nhật và loại bản dựng | Sparkle 2, một kênh; bản chính thức và bản phát triển. |
 | [D8](#d8-không-telemetry) | Không telemetry | Không gửi gì; bản phát hành không ghi gì theo từng phím. |
 | [D9](#d9-giao-diện) | Giao diện | Control hệ thống, theo System Settings; chỉ màu hệ thống. |
@@ -145,9 +145,12 @@ Một quy tắc duy nhất:
 
 ### D6. Phát hành
 
-GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (khai báo `auto_updates true`) sau bản thử đầu. Không có Mac App Store.
+GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App Store.
 
-**Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store.
+- **Homebrew:** sau bản thử đầu, cask `dau` (khai báo `auto_updates true`) nằm trong tap riêng `codefastlabs/homebrew-tap`; lệnh cài: `brew install --cask codefastlabs/tap/dau`.
+- Khi repo đạt ngưỡng nổi bật của Homebrew, gửi cask vào `homebrew/cask`, giữ tên `dau`; tap riêng xoá cask và khai nó trong `tap_migrations.json`, theo [cách Homebrew chuyển gói giữa các tap](https://docs.brew.sh/Migrating-A-Formula-To-A-Tap).
+
+**Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store. `homebrew/cask` chỉ nhận repo đạt [ngưỡng nổi bật](https://docs.brew.sh/Package-Acceptance-Policy#notability) (chủ repo tự gửi: 225 sao, 90 fork hoặc 90 người theo dõi); repo có 0 sao (17/11/2026), nên lúc phát hành bản thử đầu chỉ tap riêng làm được. Tap nằm trong tổ chức `codefastlabs` nên không ai giành được tên. Lệnh cài ghi đủ tên tap vì từ Homebrew 6.0 tap không chính thức phải được [tin rõ ràng](https://docs.brew.sh/Tap-Trust), và cài bằng tên đủ thì chỉ tin đúng cask đó. Tên repo `homebrew-tap` để lệnh cài không lặp chữ và để công cụ khác của codefastlabs dùng chung tap.
 
 ### D7. Cập nhật và loại bản dựng
 
@@ -407,7 +410,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 - Tên miền: `dau.codefastlabs.com`.
 - Định danh kỹ thuật theo tên miền đảo: bundle ID app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, input mode `com.codefastlabs.dau.inputmethod.Dau.vi`, App Group `<Team ID>.com.codefastlabs.dau.shared`.
 - Mọi bản phải ký bằng một Team ID, vì App Group cần Team ID. Bản phát triển dùng Personal Team `M58DANM3ZP`; bản chính thức ký Developer ID (D7 (Cập nhật và loại bản dựng)).
-- Tên cask Homebrew: chưa chọn (câu hỏi mở "Tên Dấu").
+- Tên cask Homebrew: `dau`, trong tap `codefastlabs/homebrew-tap` (D6 (Phát hành)).
 
 **Vì sao:** "dau" đứng một mình dễ đọc thành "đau"/"dầu". Bản ký ad-hoc (không Team ID) bị macOS 27 từ chối App Group mà không báo gì; bản có Team ID, kể cả Personal Team miễn phí, dùng được App Group không cần hồ sơ cấp phép và không có hộp thoại.
 
@@ -725,4 +728,4 @@ Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào q
 - **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã đi thẳng (phương án c): [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
 - **Loại bản dựng** (D7, D25): khi có kênh Beta, kênh đó có cần cask Homebrew riêng (`dau@beta`) không, hay chỉ bật trong app (đang nghiêng về chỉ bật trong app); tên app của bản phát triển có thêm chữ để phân biệt không; bản phát triển có kiểm tra và cài bản chính thức qua Sparkle không (cài thì bản đang thử bị thay bằng bản khác Team ID). Tên nguồn "Dấu – Tiếng Việt" giữ nguyên ở mọi bản cho tới khi đo được bộ đệm TIS có giữ tên cũ khi đổi tên giữa hai lần cài không (D37).
 - **Liên kết ủng hộ trong app** (D39): có đặt liên kết "Ủng hộ dự án" trong app hay không (canvas trước).
-- **Tên "Dấu"** (D24): tra nhãn hiệu (Cục Sở hữu trí tuệ VN), tên miền (cân nhắc tên miền tiếng Việt có dấu "dấu.vn" bên cạnh một bản không dấu), tên cask Homebrew và tên tổ chức GitHub.
+- **Tên "Dấu"** (D24): tra nhãn hiệu (Cục Sở hữu trí tuệ VN). Một bộ gõ macOS khác có tên gần giống: DauKey (`emizuki/daukey`, GPLv3, repo tạo 23/10/2026, chưa có cask); định danh không trùng, chỉ tên đọc lên gần nhau.

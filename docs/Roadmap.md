@@ -32,7 +32,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 - Sparkle 2: EdDSA, một kênh (D7). Kênh Beta và phát hành theo đợt sau bản thử đầu. Cài bản mới xong thì gọi `SystemInputMethodInstaller.reconcile`, để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
 - Rà entitlement của bộ gõ trước khi notarize: thử bỏ `temporary-exception.mach-register.global-name` (xem [`docs/Architecture.md`](Architecture.md)).
 - GitHub Actions build từ tag, chạy cả test hiệu năng của engine (`PerformanceTests`). Artifact attestation và phép đếm cấp phát (`malloc_logger`) sau bản thử đầu.
-- Homebrew cask với `auto_updates true` sau bản thử đầu (D6); tên cask chọn sau khi tra (D24 (Tên và định danh)).
+- Homebrew cask `dau` với `auto_updates true` trong tap riêng `codefastlabs/homebrew-tap`, sau bản thử đầu (D6 (Phát hành)). Tạo repo tap trong tổ chức `codefastlabs` cần tài khoản của người dùng.
 - Báo lỗi (URL issue điền sẵn). Quay về bản trước sau bản thử đầu (D19).
 - Loại bản dựng (D7 (Cập nhật và loại bản dựng), D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;

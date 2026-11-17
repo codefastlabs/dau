@@ -19,7 +19,7 @@ Luật làm việc:
 
 ## Quy tắc
 - Không bao giờ ghi bí mật (chứng chỉ, mật khẩu, khoá EdDSA, token) vào repo hay log. Dùng biến môi trường hoặc GitHub secrets; mẫu cấu hình ghi giá trị giả.
-- Định danh (tên miền, bundle ID, Team ID, tên cask): dùng đúng giá trị D24 (Tên và định danh) đã chốt. Mục nào D24 chưa chốt (ví dụ tên cask, Team ID của Developer ID) thì để placeholder và hỏi người dùng.
+- Định danh (tên miền, bundle ID, Team ID, tên cask): dùng đúng giá trị D24 (Tên và định danh) đã chốt. Mục nào D24 chưa chốt (ví dụ Team ID của Developer ID) thì để placeholder và hỏi người dùng.
 - Mọi việc cần tài khoản Apple Developer: chuẩn bị sẵn, dừng lại.
 
 ## Khi xong, trả về đúng 5 mục
