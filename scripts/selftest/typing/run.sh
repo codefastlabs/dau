@@ -30,6 +30,9 @@
 #           integrated terminal of WebStorm: a cell of the same kind as vscodeterm's runs in it)
 #           | telegram (the message box of the "Saved Messages" chat in the native Telegram app;
 #           nothing is sent, the box is emptied at the end)
+#           | gdocs, gdocssafari, wordweb (an empty Google Docs document in Chrome or in Safari,
+#           or Word for the web in Chrome, of your own, signed in in that browser, given with
+#           --doc-url; one of them per run, see below)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
@@ -83,6 +86,10 @@
 #                     the page loads until its tab closes. The app stays responsive to the
 #                     window server; only the page (the renderer, which applies the text) is
 #                     late. The clean "busy app" condition of M6.
+#   --doc-url URL     gdocs, gdocssafari, wordweb: the link of the document to type into, opened when the browser's
+#                     front tab does not show such a document already. It must be empty and
+#                     yours: the run deletes everything it typed (⌘A, Delete) and leaves it empty.
+#                     The link is private: pass it on the command line, never commit it.
 #   --save DIR        also write, per app, to DIR: <app>.txt (the text read back);
 #                     <app>.perf.log (the input method's perf and diag log, ReplaceDiag:
 #                     positions of each replacement, from the start of that app's run;
@@ -122,6 +129,14 @@
 # document whose first letter the app capitalized by itself counts as a pass (noted).
 #
 # Edge, Firefox: the same local test page as Safari/Chrome, closed with ⌘W.
+# gdocs, gdocssafari, wordweb: the browser's front tab (Chrome; Safari for gdocssafari) is used when it already shows such a document (title with
+# " - Google Docs", " - Google Tài liệu" in Vietnamese, or ".docx"); otherwise --doc-url opens
+# in a new tab. The document must be empty (⌘A ⌘C copies nothing), or the run stops with
+# nothing typed. Then the marker "qkpb " is typed and must come back alone through ⌘A ⌘C
+# (tried again for about 20 s while the editor loads; any case: Word capitalizes it), or the
+# run stops. The marker is deleted, the keys typed and read back with ⌘A ⌘C, and the document
+# emptied (⌘A, Delete). The tab stays open (closing it right after an edit makes the page ask
+# "Leave site?" while it saves).
 # Notes: a new note (⌘N) in the folder shown; it syncs while it exists. The script
 # empties it and deletes it through Notes' AppleScript (to Recently Deleted).
 # Mail: a new message (⌘N), keys go to the body focused through Accessibility, the To
@@ -251,6 +266,7 @@ KEEP_SOURCE=0
 JITTER_MS=0
 WORD_PAUSE_MS=0
 BUSY=""
+DOC_URL=""
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
 # Prints the whole leading comment block.
@@ -270,9 +286,10 @@ while [[ $# -gt 0 ]]; do
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
     --word-pause) WORD_PAUSE_MS="${2:?--word-pause cần số ms}"; shift 2 ;;
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
+    --doc-url) DOC_URL="${2:?--doc-url cần đường dẫn tài liệu}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm|telegram) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm|telegram|gdocs|gdocssafari|wordweb) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -310,6 +327,13 @@ if [[ "$KEYS" == *↩* ]]; then
   for app in "${APPS[@]}"; do
     [[ $app == (ghostty|xterm|vscodeterm|vscodeswitch|webstormterm) ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty, xterm, vscodeterm, vscodeswitch và webstormterm, không với $app"
   done
+fi
+WEBDOC_APPS=(${(M)APPS:#(gdocs|gdocssafari|wordweb)})
+if (( ${#WEBDOC_APPS} )); then
+  (( ${#WEBDOC_APPS} == 1 )) || log_die 2 "Mỗi lần chạy chỉ một ô gdocs hoặc wordweb (mỗi ô một tài liệu, một --doc-url)."
+  [[ "$DOC_URL" == https://* ]] || log_die 2 "${WEBDOC_APPS[1]} cần --doc-url https://… (tài liệu trống của chính bạn, đã đăng nhập trong Chrome)."
+elif [[ -n "$DOC_URL" ]]; then
+  log_die 2 "--doc-url chỉ dùng với gdocs hoặc wordweb"
 fi
 if [[ "$KEYS2" == *$'\n'*|| "$KEYS2" == *$'\r'* || "$KEYS2" == *↩* ]]; then
   log_die 2 "--keys2 không được có xuống dòng hay ↩ (không nhấn Return trong trình soạn thảo)."
@@ -782,6 +806,120 @@ run_chrome() {
   copy_all "Google Chrome" "$FOCUS_TITLE"
   close_test_tab "Google Chrome"
 }
+
+# gdocs, gdocssafari, wordweb: an empty online document of the user's own (header: front tab or
+# --doc-url). Its tab title (the document's name, then " - Google Docs" or, with a Vietnamese
+# Google interface, " - Google Tài liệu"; Word: the name ending in ".docx") is the window title
+# every key checks. WD_APP / WD_PROC: the browser of the cell (Chrome; Safari for gdocssafari).
+WD_APP="Google Chrome"; WD_PROC="Google Chrome"
+webdoc_front_title() {
+  osascript - "$WD_PROC" <<'OSA' 2>/dev/null
+on run argv
+  set p to item 1 of argv
+  tell application "System Events"
+    set fp to name of (first process whose frontmost is true)
+    if fp is not p then return ""
+    return name of (value of attribute "AXFocusedWindow" of process p)
+  end tell
+end run
+OSA
+}
+# The front tab's title without the browser's suffix (Chrome adds " - Google Chrome - <profile>",
+# Safari adds nothing), if it is such a document.
+webdoc_doc_title() { # gdocs | gdocssafari | wordweb
+  local w="$(webdoc_front_title)"
+  w="${w%% - Google Chrome*}"
+  case "$1" in
+    gdocs|gdocssafari) [[ "$w" == *" - Google Docs" || "$w" == *" - Google Tài liệu" ]] || return 1 ;;
+    wordweb) [[ "$w" == *".docx" ]] || return 1 ;;
+  esac
+  print -r -- "$w"
+}
+webdoc_has_doc() { webdoc_doc_title "$1" >/dev/null; }
+webdoc_title_changed() { [[ "$(webdoc_front_title)" != "$1" ]]; }
+webdoc_marker() { # title
+  local title="$1" i got
+  for i in {1..6}; do
+    stopped && return 1
+    guarded "$WD_PROC" "$title" "$WS_MARKER_OSA" >/dev/null || return 1
+    # Fixed: these editors apply keys asynchronously; nothing outside them shows when.
+    sleep 0.8
+    got="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 1
+    # Earlier tries may have reached the body late: the marker alone, once or more.
+    # Word capitalizes the first letter of the document ("Qkpb"): compared in lower case.
+    if [[ -n "$got" && -z "${${${(L)got}//qkpb/}//[[:space:]]/}" ]]; then
+      guarded "$WD_PROC" "$title" 'tell application "System Events"
+        keystroke "a" using {command down}
+        delay 0.2
+        key code 51
+        delay 0.5
+      end tell' >/dev/null || return 1
+      return 0
+    fi
+    if [[ -n "$got" ]]; then
+      log_error "Dừng: ⌘A ⌘C sau chuỗi đánh dấu chép ra \"${got[1,80]}\": tài liệu không trống hoặc focus không ở thân tài liệu; không xoá gì, không gõ thêm (xoá tay chuỗi \"qkpb\" nếu có)."
+      stop_run front "tài liệu không trống hoặc focus không ở thân tài liệu (⌘A ⌘C chép ra chữ khác chuỗi đánh dấu)"
+      return 1
+    fi
+    # Fixed: nothing to observe while the editor loads.
+    sleep 2.5
+  done
+  log_error "Dừng: chuỗi đánh dấu không tới thân tài liệu sau khoảng 20 giây; không gõ gì thêm."
+  stop_run front "chuỗi đánh dấu không tới thân tài liệu (trình soạn thảo chưa nạp xong, hoặc focus ở chỗ khác)"
+  return 1
+}
+run_webdoc() { # gdocs | gdocssafari | wordweb
+  local before title
+  osascript -e "tell application \"$WD_APP\" to activate" >/dev/null 2>&1
+  wait_until -i 0.2 3 front_ok "$WD_PROC"
+  # The front tab already shows such a document (the previous cell's): use it. Otherwise open
+  # the link in a new tab. Tabs are never closed: closing one right after an edit makes the
+  # page ask "Leave site?" while it saves, and a tab of the same title could be one of the user's.
+  if ! webdoc_has_doc "$1"; then
+    before="$(webdoc_front_title)"
+    open -a "$WD_APP" "$DOC_URL"
+    wait_until -i 0.2 3 webdoc_title_changed "$before"
+    if ! wait_until -i 0.5 30 webdoc_has_doc "$1"; then
+      log_error "Dừng: sau 30 giây tab trước của $WD_APP chưa là tài liệu $1 (đang là \"$(webdoc_front_title)\"); không gõ gì."
+      stop_run front "tab tài liệu $1 không lên trước trong 30 giây"
+      return 0
+    fi
+  fi
+  title="$(webdoc_doc_title "$1")"
+  # Empty before anything is typed: a document with text (another of the user's in front)
+  # stops the run with nothing typed and nothing deleted.
+  local first
+  first="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 0
+  # The address bar had the focus (it copies the page's link; a click in the page did not take
+  # it out in Chrome, 17/11/2026): open the link again in a new tab, which loads with the focus
+  # in the document, and look again.
+  if [[ "$first" == http* ]]; then
+    log_warn "$WD_APP: focus ở thanh địa chỉ, mở lại tài liệu trong tab mới"
+    before="$(webdoc_front_title)"
+    open -a "$WD_APP" "$DOC_URL"
+    wait_until -i 0.2 3 webdoc_title_changed "$before"
+    wait_until -i 0.5 30 webdoc_has_doc "$1" || { stop_run front "tab tài liệu $1 không lên trước trong 30 giây"; return 0; }
+    title="$(webdoc_doc_title "$1")"
+    sleep 2
+    first="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 0
+  fi
+  if [[ -n "$first" ]]; then
+    log_error "Dừng: tài liệu trong tab \"$title\" không trống (⌘A ⌘C chép ra \"${first[1,80]}\"); không gõ, không xoá gì."
+    stop_run front "tài liệu trong tab trước của $WD_APP không trống"
+    return 0
+  fi
+  select_dau; webdoc_marker "$title" || return 0
+  type_keys "$WD_PROC" "$title"
+  copy_all "$WD_PROC" "$title"
+  guarded "$WD_PROC" "$title" 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.2
+    key code 51
+  end tell' >/dev/null
+}
+run_gdocs() { run_webdoc gdocs; }
+run_gdocssafari() { WD_APP=Safari; WD_PROC=Safari; run_webdoc gdocssafari; }
+run_wordweb() { run_webdoc wordweb; }
 
 run_edge() {
   open_test_page "Microsoft Edge" "Microsoft Edge"
@@ -2265,7 +2403,8 @@ bundle_id() {
     cursor|cursoragents|cursorchat) echo com.todesktop.230313mzl4w4u92 ;;
     vscodefile) echo com.microsoft.VSCode ;;
     sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
-    xterm|tiptap) echo com.google.Chrome ;;
+    xterm|tiptap|gdocs|wordweb) echo com.google.Chrome ;;
+    gdocssafari) echo com.apple.Safari ;;
     vscodeterm|vscodeswitch) echo com.microsoft.VSCode ;;
     webstorm|webstormterm) echo com.jetbrains.WebStorm ;;
     telegram) echo ru.keepcoder.Telegram ;;
