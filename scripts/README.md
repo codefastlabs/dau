@@ -38,7 +38,7 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | `kills processes` | dừng tiến trình đang chạy (bộ gõ, Dấu.app, app do script tự mở) |
 | `takes the screen` | mở app, gõ phím hoặc bấm chuột tự động: người dùng không dùng máy được trong lúc chạy |
 | `changes input source` | chọn lại nguồn đầu vào, hoặc bỏ Dấu khỏi nguồn đầu vào |
-| `changes user settings` | ghi `defaults` hoặc cài đặt App Group của người dùng (script tự trả lại khi xong, trừ khi ghi khác) |
+| `changes user settings` | ghi `defaults`, cài đặt App Group của người dùng, hoặc tệp cài đặt của app khác (script tự trả lại khi xong, trừ khi ghi khác; ví dụ `typing/run.sh` với `webstorm`: `trusted-paths.xml` và `recentProjects.xml` của WebStorm, chỉ trả lại khi script tự mở WebStorm) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 
 Hook `.claude/hooks/guard-scripts.sh` chặn agent chạy các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào). Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.

@@ -1,6 +1,9 @@
 #!/bin/zsh
 # Types a sentence into real apps with the Dấu input method and checks the text.
-# Side effects: builds, takes the screen, changes input source, changes user settings
+# Side effects: builds, takes the screen, changes input source, changes user settings, kills processes
+# (webstorm, webstormterm: WebStorm adds the run's temporary project to its trusted-paths.xml and
+# recentProjects.xml; the script puts both files back only when it launched WebStorm itself and
+# quit it normally, and says what else changed. A WebStorm it launched is quit at the end.)
 # Needs the Accessibility permission for the process running the script
 # (System Events keystrokes); the input method must be installed (Debug for the per-key
 # timings: a Release build types the same but logs nothing per key, D8), the Dấu input
@@ -21,6 +24,8 @@
 #           | vscodeterm (the integrated terminal of VS Code: xterm.js in Electron, a cell
 #           of the same kind as ghostty's runs in it) | vscodeswitch (vscodeterm, then the
 #           focus moves to an empty editor of the same VS Code window and --keys2 is typed there)
+#           | webstorm (the editor of WebStorm, on an empty file of this run) | webstormterm (the
+#           integrated terminal of WebStorm: a cell of the same kind as vscodeterm's runs in it)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
@@ -31,9 +36,9 @@
 #                     120 is close to normal typing.
 #   --keys "…"        keys to type (default: the sample sentence below). Four marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
-#                     key; ↩ the Return key (ghostty, the xterm page, vscodeterm and
-#                     vscodeswitch only: nothing runs. In ghostty Return ends the line; in
-#                     the xterm page and the VS Code cells it is recorded as ↩ in the line
+#                     key; ↩ the Return key (ghostty, the xterm page, vscodeterm,
+#                     vscodeswitch and webstormterm only: nothing runs. In ghostty Return ends the line; in
+#                     the xterm page, the VS Code cells and webstormterm it is recorded as ↩ in the line
 #                     and typing goes on; any other app is an error); ⇄ switches the
 #                     input source to U.S. (com.apple.keylayout.US, must be enabled) and
 #                     back to Dấu with TISSelectInputSource from this script's process,
@@ -80,8 +85,8 @@
 #                     `scripts/perf/perf-report.sh --input`. Also: ghostty and ghosttyvim:
 #                     <app>.raw (the raw bytes Ghostty sent to the terminal); xterm:
 #                     xterm.data (the onData chunks); tiptap: tiptap.events (the
-#                     beforeinput events); vscodeterm, vscodeswitch: <app>.raw (the raw
-#                     bytes xterm.js sent to the cell), <app>.phases (the time of each
+#                     beforeinput events); vscodeterm, vscodeswitch, webstormterm: <app>.raw (the raw
+#                     bytes the terminal sent to the cell), <app>.phases (the time of each
 #                     phase, to read next to the perf log's activations) and, for
 #                     vscodeswitch, <app>.editor.txt (the editor's text); with --shot:
 #                     <app>.png. In a Debug build, <app>.perf.log also holds the
@@ -156,10 +161,42 @@
 # copy nothing, in the terminal it copies its text) it presses ⌘1 (focus first editor group)
 # and checks again, then stops.
 #
+# WebStorm (webstorm, webstormterm; process "webstorm", bundle com.jetbrains.WebStorm, found in
+# ~/Applications or /Applications): `webstorm --temp-project <file>` (the command-line option
+# of the IDE, always a new window) opens an empty file of this run in a temporary project of
+# its own: a window titled with the file's name (dau-selftest-webstorm.txt, or
+# dau-selftest-webstormterm.txt), found by that title only; no other window is touched. The
+# IDE marks that project's folder trusted itself, so no trust dialog is expected; any other
+# window that takes the focus (a dialog) fails the title check and the run stops (exit 3) with
+# the title of the window that has the keys. Before any test key the script types the marker
+# "qkpb " (as the vscodeterm cell does): the editor must give it back through ⌘A ⌘C (webstorm),
+# the cell must read it from its tty (webstormterm); it is tried again for up to 15 s while the
+# editor is still loading, and a marker that does not come back stops the run (exit 3) without
+# typing more. The marker is then deleted from the editor.
+#   webstorm: ⌘A ⌘C read-back; the text is emptied (⌘A, Delete) before the window is closed.
+#   webstormterm: ⌥F12 (Terminal tool window, the macOS keymap's own shortcut) opens the terminal
+#     and gives it the focus; the cell of vscodeterm (same file, raw bytes, line, ⌃D) is pasted
+#     with ⌘V and Return (the input method is not in that path); the line, the raw bytes
+#     (<app>.raw), the phases and, with --shot, the pictures (webstormterm-1-before-paste,
+#     webstormterm-2-after-paste, webstormterm right after the keys) are recorded as for
+#     vscodeterm. The terminal engine in use (reworked or classic) is read, read only, from
+#     the IDE's terminal.xml and printed with the IDE's version; with --save also in
+#     DIR/webstormterm.engine. Nothing there means the IDE's default, which the source of
+#     the IDE (branch 263) says is the reworked one.
+# Both close this run's window by its close button (the cell is stopped first), also at exit
+# after Ctrl-C or a stop. A WebStorm that was not running is launched by the script and quit at the
+# end with a normal quit (never Force Quit); one that was running is left running. Settings:
+# the IDE writes the temporary project into options/trusted-paths.xml and options/recentProjects.xml
+# of its settings folder (~/Library/Application Support/JetBrains/<dataDirectoryName>, read from
+# product-info.json); the script copies both before opening anything, and, only when it launched
+# WebStorm and the IDE is gone after the quit, puts them back, deletes the temporary folders of
+# this run and lists any other file of options/ that changed. Left as it was (and said
+# in the output) when WebStorm was already running: its files are not rewritten under it.
+#
 # Safety: keys and shortcuts (⌘A ⌘C ⌘W ⌃U ⌃D) are only sent while the app under test is
 # frontmost (browsers: with the test page in front and the keyboard focus in its text
 # field; VS Code: an Untitled editor; Mail: the New Message window; Sublime Text, Ghostty:
-# the window titled dau-selftest). If a check fails (another app in front, the focus
+# the window titled dau-selftest; WebStorm: the window titled with this run's file). If a check fails (another app in front, the focus
 # outside the test field, another window, a Cursor Agents box that is not empty, the
 # typing command failing), the script stops sending keys and exits with status 3, also
 # when that happens during the last app. The last message names the check that failed.
@@ -229,7 +266,7 @@ while [[ $# -gt 0 ]]; do
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -265,7 +302,7 @@ if [[ "$KEYS" == *$'\n'*|| "$KEYS" == *$'\r'* ]]; then
 fi
 if [[ "$KEYS" == *↩* ]]; then
   for app in "${APPS[@]}"; do
-    [[ $app == (ghostty|xterm|vscodeterm|vscodeswitch) ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty, xterm, vscodeterm và vscodeswitch, không với $app"
+    [[ $app == (ghostty|xterm|vscodeterm|vscodeswitch|webstormterm) ]] || log_die 2 "↩ (Return) chỉ dùng với ghostty, xterm, vscodeterm, vscodeswitch và webstormterm, không với $app"
   done
 fi
 if [[ "$KEYS2" == *$'\n'*|| "$KEYS2" == *$'\r'* || "$KEYS2" == *↩* ]]; then
@@ -355,6 +392,8 @@ defaults write -g "$PERF_KEY" -bool true
 cleanup() {
   # VS Code's terminal cell and window of this run, if any (functions defined further down).
   (( $+functions[vscode_cleanup] )) && vscode_cleanup
+  # WebStorm's window of this run, the IDE if the script launched it, its settings files.
+  (( $+functions[ws_cleanup] )) && ws_cleanup
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
@@ -963,7 +1002,8 @@ VSCODE_PHASES="$WORK/vscode.phases"
 # The cell, a zsh script: $1 raw bytes file, $2 line file, $3 started, $4 marker, $5 ready.
 vscode_cell() {
   cat <<'CELL'
-# Runs in the VS Code terminal opened by scripts/selftest/typing/run.sh (run_vscodeterm).
+# Runs in the integrated terminal of VS Code (run_vscodeterm) or WebStorm (run_webstormterm),
+# opened by scripts/selftest/typing/run.sh.
 export LC_ALL=en_US.UTF-8
 size=(${=$(stty size </dev/tty 2>/dev/null)})
 stty raw -echo </dev/tty
@@ -1198,12 +1238,13 @@ vscode_start_cell() {
 
 # ⌃D: the cell's line editor accepts the line; again once if the line file has not come
 # (⌃D may only commit marked text, as in Ghostty).
-vscode_end_line() {
+vscode_end_line() { # [process [window title]]: VS Code unless given (WebStorm passes its own)
   stopped && return 1
-  guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "d" using {control down}' >/dev/null || return 1
+  local proc="${1:-Code}" title="${2:-$VSCODE_TITLE}"
+  guarded "$proc" "$title" 'tell application "System Events" to keystroke "d" using {control down}' >/dev/null || return 1
   if ! wait_until 2 test -e "$VSCODE_LINE"; then
-    log_warn "VS Code: dòng chưa kết thúc 2 giây sau ⌃D (⌃D chỉ chốt chữ gạch chân?), gửi lại ⌃D"
-    guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "d" using {control down}' >/dev/null || return 1
+    log_warn "$proc: dòng chưa kết thúc 2 giây sau ⌃D (⌃D chỉ chốt chữ gạch chân?), gửi lại ⌃D"
+    guarded "$proc" "$title" 'tell application "System Events" to keystroke "d" using {control down}' >/dev/null || return 1
     wait_until 3 test -e "$VSCODE_LINE"
   fi
 }
@@ -1285,6 +1326,269 @@ run_vscodeswitch() {
     fi
   fi
   vscode_close_window
+  return 0
+}
+
+# --- WebStorm (webstorm, webstormterm) ---------------------------------------------------
+# What runs, how the window is found, which settings files are touched: the leading comment
+# ("WebStorm"). `webstorm --temp-project <file>` opens the file in a new window of a temporary
+# project of its own, whether or not the IDE is running (CommandLineProcessor and
+# PlatformProjectOpenProcessor, intellij-community branch 263: a temporary project is always
+# a new frame, and its folder is marked trusted by the IDE itself).
+WS_BUNDLE_ID=com.jetbrains.WebStorm
+WS_APP=""
+for _d in "$HOME/Applications/WebStorm.app" /Applications/WebStorm.app; do
+  [[ -x "$_d/Contents/MacOS/webstorm" ]] && { WS_APP="$_d"; break; }
+done
+unset _d
+WS_PROC=webstorm   # the executable's name, as for sublime_text; ws_proc_resolve asks System Events once it runs
+WS_EDITOR_FILE=dau-selftest-webstorm.txt
+WS_TERM_FILE=dau-selftest-webstormterm.txt
+WS_LAUNCHED_FILE="$WORK/ws.launched"   # exists when this run launched the IDE
+WS_PROC_FILE="$WORK/ws.proc"           # the process name, for cleanup (a subshell ran the cell)
+WS_TITLES_FILE="$WORK/ws.titles"       # the window titles (file names) this run opened
+WS_START_MARK="$WORK/ws.start"         # temporary folders newer than this are this run's
+WS_BACKUP="$WORK/ws-backup"            # options/ of the IDE's settings folder, before the run
+# The marker typed before any test key: no Telex rule touches it, the space commits marked text.
+WS_MARKER="qkpb "
+WS_MARKER_OSA='tell application "System Events"
+    repeat with c in {"q", "k", "p", "b", " "}
+      keystroke c
+      delay 0.1
+    end repeat
+  end tell'
+
+# The IDE's settings folder, from product-info.json (dataDirectoryName); status 1 if unknown.
+ws_settings_dir() {
+  local name
+  [[ -n "$WS_APP" ]] || return 1
+  name="$(plutil -extract dataDirectoryName raw -o - "$WS_APP/Contents/Resources/product-info.json" 2>/dev/null)" || return 1
+  [[ -n "$name" ]] || return 1
+  print -r -- "$HOME/Library/Application Support/JetBrains/$name"
+}
+ws_running() {
+  [[ "$(osascript -e "tell application \"System Events\" to count (processes whose bundle identifier is \"$WS_BUNDLE_ID\")" 2>/dev/null)" == [1-9]* ]]
+}
+ws_gone() { ! ws_running; }
+# The process name System Events knows the IDE by (read once it runs; the default stays if not).
+ws_proc_resolve() {
+  local n
+  n="$(osascript -e "tell application \"System Events\" to get name of first process whose bundle identifier is \"$WS_BUNDLE_ID\"" 2>/dev/null)"
+  [[ -n "$n" ]] && { WS_PROC="$n"; print -r -- "$n" > "$WS_PROC_FILE"; }
+  return 0
+}
+# One line: version, and the terminal engine read (read only) from options/terminal.xml.
+# The setting is written only when it is not the default, which the source says is REWORKED.
+ws_engine_line() {
+  local dir v ver
+  ver="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleShortVersionString' "$WS_APP/Contents/Info.plist" 2>/dev/null) (build $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$WS_APP/Contents/Info.plist" 2>/dev/null))"
+  dir="$(ws_settings_dir)" || { print -r -- "WebStorm $ver; terminal engine: unknown (settings folder not found)"; return 0; }
+  v="$(sed -n 's/.*name="terminalEngine" value="\([A-Z_]*\)".*/\1/p' "$dir/options/terminal.xml" 2>/dev/null | head -1)"
+  if [[ -n "$v" ]]; then
+    print -r -- "WebStorm $ver; terminal engine: $v (options/terminal.xml)"
+  else
+    print -r -- "WebStorm $ver; terminal engine: not set in options/terminal.xml, so the IDE's default, REWORKED according to the source of branch 263 (not seen on screen)"
+  fi
+}
+# Copies options/ before the run touches anything (once per run).
+ws_snapshot() {
+  local dir
+  [[ -d "$WS_BACKUP" ]] && return 0
+  dir="$(ws_settings_dir)" || return 0
+  [[ -d "$dir/options" ]] || return 0
+  mkdir -p "$WS_BACKUP" && cp -Rp "$dir/options" "$WS_BACKUP/options" && print -r -- "$dir" > "$WS_BACKUP/dir"
+}
+ws_raise() { # window title substring
+  osascript -e "tell application \"System Events\" to tell process \"$WS_PROC\"
+    set frontmost to true
+    perform action \"AXRaise\" of (first window whose name contains \"$1\")
+  end tell" >/dev/null 2>&1
+}
+ws_title_present() { [[ "$(window_names "$WS_PROC")" == *"$1"* ]]; }
+# Opens the file $1 (a name; the file is created empty in this run's folder) in a temporary
+# project window and waits (120 s at most; a cold start takes a while) until that window is the
+# focused one. Nothing but the window's title is trusted: a dialog in front, or no window, stops
+# the run with the reason (status 1), and no key is sent.
+ws_open_file() {
+  local title="$1" file="$WORK/$1" i names fw
+  if [[ -z "$WS_APP" ]]; then
+    log_error "Dừng: không thấy WebStorm.app trong ~/Applications hay /Applications; không gửi phím."
+    stop_run front "không có WebStorm.app trong ~/Applications hay /Applications"
+    return 1
+  fi
+  : > "$file"
+  [[ -e "$WS_START_MARK" ]] || : > "$WS_START_MARK"
+  ws_snapshot
+  print -r -- "$title" >> "$WS_TITLES_FILE"
+  # Launched by this run only if it was not running when the first cell started.
+  if [[ ! -e "$WS_LAUNCHED_FILE" && ! -e "$WORK/ws.seen-running" ]]; then
+    if ws_running; then : > "$WORK/ws.seen-running"; else : > "$WS_LAUNCHED_FILE"; fi
+  fi
+  # The launcher hands the arguments to the running IDE and exits, or becomes the IDE; either
+  # way the script does not wait for it.
+  "$WS_APP/Contents/MacOS/webstorm" --temp-project "$file" </dev/null >/dev/null 2>&1 &!
+  for i in {1..240}; do
+    ws_proc_resolve
+    if ws_title_present "$title"; then
+      ws_raise "$title"
+      front_ok "$WS_PROC" "$title" && return 0
+    fi
+    sleep 0.5
+  done
+  names="$(window_names "$WS_PROC")"
+  fw="$(osascript -e "tell application \"System Events\" to get name of (value of attribute \"AXFocusedWindow\" of process \"$WS_PROC\")" 2>&1)"
+  log_error "Dừng: sau 120 giây không có cửa sổ \"$title\" của WebStorm đang nhận phím (cửa sổ nhận phím: \"${fw:-không đọc được}\"; các cửa sổ: ${names:-không có}); không gửi phím."
+  stop_run front "cửa sổ WebStorm của lượt này (\"$title\") không thành cửa sổ nhận phím sau 120 giây; cửa sổ nhận phím: \"${fw:-không đọc được}\" (một hộp thoại?)"
+  return 1
+}
+# The marker in the editor (the file's editor must have the focus): types it, reads it back with
+# ⌘A ⌘C, deletes it. Tried again for 15 s: the editor may still be loading. Anything else on
+# the clipboard than the marker (the project tree copies file names) is a different focus: stop.
+ws_editor_marker() { # window title
+  local title="$1" i got
+  for i in {1..5}; do
+    stopped && return 1
+    guarded "$WS_PROC" "$title" "$WS_MARKER_OSA" >/dev/null || return 1
+    # Fixed: lets the editor apply the keys before they are read back.
+    sleep 0.5
+    got="$(copy_all "$WS_PROC" "$title")" || return 1
+    if [[ "$got" == "$WS_MARKER" ]]; then
+      guarded "$WS_PROC" "$title" 'tell application "System Events"
+        keystroke "a" using {command down}
+        delay 0.1
+        key code 51
+        delay 0.2
+      end tell' >/dev/null || return 1
+      return 0
+    fi
+    if [[ -n "$got" ]]; then
+      log_error "Dừng: ⌘A ⌘C sau chuỗi đánh dấu \"$WS_MARKER\" chép ra \"${got%%$'\n'*}\", không phải chuỗi đó: focus không ở trình soạn thảo của file thử; không gõ gì thêm."
+      stop_run front "focus không ở trình soạn thảo của WebStorm: ⌘A ⌘C chép ra \"${got%%$'\n'*}\" thay vì chuỗi đánh dấu"
+      return 1
+    fi
+    # Fixed: nothing to observe while the project loads.
+    sleep 2.5
+  done
+  log_error "Dừng: chuỗi đánh dấu \"$WS_MARKER\" không tới trình soạn thảo của WebStorm sau 15 giây; không gõ gì thêm."
+  stop_run front "chuỗi đánh dấu \"$WS_MARKER\" không tới trình soạn thảo của WebStorm (IDE chưa nạp xong, hoặc phím vào chỗ khác)"
+  return 1
+}
+# Closes this run's window (by its title) with its close button, no key; says so if it stays.
+ws_close_window() { # window title
+  local i
+  ws_title_present "$1" || return 0
+  osascript -e "tell application \"System Events\" to tell process \"$WS_PROC\" to click (first button of (first window whose name contains \"$1\") whose subrole is \"AXCloseButton\")" >/dev/null 2>&1
+  for i in {1..20}; do
+    ws_title_present "$1" || return 0
+    sleep 0.5
+  done
+  log_warn "Còn cửa sổ WebStorm \"$1\" của lượt này (có thể đang hỏi gì đó), đóng tay giúp"
+}
+# At exit, also after Ctrl-C or a stop: the cell, the windows, the IDE if this run launched it,
+# the settings files (what the header says).
+ws_cleanup() {
+  local t dir f gone=1 changed
+  [[ -s "$WS_TITLES_FILE" ]] || return 0
+  [[ -s "$WS_PROC_FILE" ]] && WS_PROC="$(<"$WS_PROC_FILE")"
+  vscode_stop_cell
+  for t in ${(f)"$(<"$WS_TITLES_FILE")"}; do ws_close_window "$t"; done
+  if [[ -e "$WS_LAUNCHED_FILE" ]]; then
+    osascript -e "tell application \"$WS_APP\" to quit" >/dev/null 2>&1
+    wait_until 40 ws_gone || { gone=0; log_warn "WebStorm chưa thoát sau 40 giây (có thể đang hỏi xác nhận): thoát tay giúp (không Force Quit); script không khôi phục tệp cài đặt khi IDE còn chạy."; }
+  else
+    gone=0
+  fi
+  # Temporary folders of this run's projects: only once their windows are gone.
+  local still=0
+  for t in ${(f)"$(<"$WS_TITLES_FILE")"}; do ws_title_present "$t" && still=1; done
+  (( still )) || find "${TMPDIR:-/tmp}" -maxdepth 1 -type d -name 'dau-selftest-webstorm*' -newer "$WS_START_MARK" -exec rm -rf {} + 2>/dev/null
+  [[ -s "$WS_BACKUP/dir" ]] || return 0
+  dir="$(<"$WS_BACKUP/dir")"
+  if (( gone )); then
+    for f in trusted-paths.xml recentProjects.xml; do
+      if [[ -e "$WS_BACKUP/options/$f" ]]; then cp -p "$WS_BACKUP/options/$f" "$dir/options/$f"; else rm -f "$dir/options/$f"; fi
+    done
+    log_detail "WebStorm: trusted-paths.xml và recentProjects.xml đã trả về như trước lượt chạy"
+    changed="$(diff -rq "$WS_BACKUP/options" "$dir/options" 2>/dev/null | sed -e 's|.*/options/||' -e 's| differ$||' -e 's|^Only in .*: ||' | tr '\n' ' ')"
+    [[ -z "$changed" ]] || log_warn "WebStorm đã đổi thêm trong options/ (không khôi phục): $changed"
+  else
+    changed="$(diff -rq "$WS_BACKUP/options" "$dir/options" 2>/dev/null | sed -e 's|.*/options/||' -e 's| differ$||' -e 's|^Only in .*: ||' | tr '\n' ' ')"
+    [[ -z "$changed" ]] || log_warn "WebStorm đang chạy nên script không sửa tệp cài đặt của nó; trong options/ đã khác lúc đầu (có thể do lượt này): $changed"
+  fi
+}
+
+run_webstorm() {
+  local title="$WS_EDITOR_FILE"
+  if ws_open_file "$title" && select_dau && ws_editor_marker "$title"; then
+    if type_keys "$WS_PROC" "$title"; then
+      shot_window "$WS_PROC" webstorm
+      copy_all "$WS_PROC" "$title"
+      # Emptied, as the other editor cells do (the IDE saves this run's own file by itself).
+      stopped || guarded "$WS_PROC" "$title" 'tell application "System Events"
+        keystroke "a" using {command down}
+        delay 0.1
+        key code 51
+        delay 0.2
+      end tell' >/dev/null
+    fi
+  fi
+  ws_close_window "$title"
+  return 0
+}
+
+# The terminal half: the editor must take the marker first (the IDE is up and answers keys), then
+# ⌥F12 opens the Terminal tool window and the cell is pasted, as vscode_start_cell does it.
+ws_terminal_part() {
+  local title="$WS_TERM_FILE" engine
+  rm -f "$VSCODE_RAW" "$VSCODE_LINE" "$VSCODE_STARTED" "$VSCODE_MARKER_FILE" "$VSCODE_READY" "$VSCODE_PHASES"
+  vscode_cell > "$VSCODE_CELL"
+  ws_open_file "$title" || return 1
+  engine="$(ws_engine_line)"
+  log_detail "$engine" >&2
+  [[ -n "$SAVE_DIR" ]] && print -r -- "$engine" > "$SAVE_DIR/webstormterm.engine"
+  select_dau || return 1
+  ws_editor_marker "$title" || return 1
+  # ⌥F12 is "Terminal" in the macOS keymaps (the user's keymap inherits it and does not change it).
+  guarded "$WS_PROC" "$title" 'tell application "System Events" to key code 111 using {option down}' >/dev/null || return 1
+  # Fixed: the terminal's shell starts after the tool window shows (as in vscode_start_cell).
+  sleep 3
+  shot_window "$WS_PROC" webstormterm-1-before-paste
+  print -rn -- " /bin/zsh -f ${(qq)VSCODE_CELL} ${(qq)VSCODE_RAW} ${(qq)VSCODE_LINE} ${(qq)VSCODE_STARTED} ${(qq)VSCODE_MARKER_FILE} ${(qq)VSCODE_READY}" | pbcopy
+  guarded "$WS_PROC" "$title" 'tell application "System Events" to keystroke "v" using {command down}' >/dev/null || return 1
+  # Fixed: lets the terminal take the paste before Return; nothing to read.
+  sleep 0.3
+  guarded "$WS_PROC" "$title" 'tell application "System Events" to key code 36' >/dev/null || return 1
+  sleep 1; shot_window "$WS_PROC" webstormterm-2-after-paste
+  if ! wait_until -i 0.3 20 test -e "$VSCODE_STARTED"; then
+    log_error "Dừng: cell không chạy trong terminal của WebStorm sau 20 giây (⌥F12 không mở terminal? lệnh dán không tới terminal?); không gõ gì thêm."
+    stop_run front "cell không chạy trong terminal của WebStorm (không có tệp báo đã chạy sau 20 giây): ⌥F12 không mở terminal, hoặc lệnh dán không tới terminal"
+    return 1
+  fi
+  select_dau || return 1
+  guarded "$WS_PROC" "$title" "$WS_MARKER_OSA" >/dev/null || return 1
+  if ! wait_until -i 0.2 5 vscode_marker_back; then
+    log_error "Dừng: chuỗi đánh dấu \"$WS_MARKER\" không tới cell sau 5 giây (cell đọc được: \"$(cat "$VSCODE_MARKER_FILE" 2>/dev/null)\"): phím không vào terminal; không gõ gì thêm."
+    stop_run front "phím không vào terminal của WebStorm: chuỗi đánh dấu \"$WS_MARKER\" không tới cell"
+    return 1
+  fi
+  if ! wait_until -i 0.2 5 test -e "$VSCODE_READY"; then
+    log_error "Dừng: trình sửa dòng của cell chưa sẵn sàng sau 5 giây; không gõ gì thêm."
+    stop_run front "trình sửa dòng của cell trong terminal WebStorm chưa sẵn sàng"
+    return 1
+  fi
+  phase "terminal-keys"
+  type_keys "$WS_PROC" "$title" || return 1
+  phase "terminal-keys-done"
+  shot_window "$WS_PROC" webstormterm
+  vscode_end_line "$WS_PROC" "$title" || return 1
+  [[ -e "$VSCODE_LINE" ]] && print -r -- "$(<"$VSCODE_LINE")"
+  return 0
+}
+run_webstormterm() {
+  ws_terminal_part
+  # The cell first (it may still hold the terminal after a stop), then the window.
+  vscode_stop_cell
+  ws_close_window "$WS_TERM_FILE"
   return 0
 }
 
@@ -1745,6 +2049,7 @@ bundle_id() {
     sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
     xterm|tiptap) echo com.google.Chrome ;;
     vscodeterm|vscodeswitch) echo com.microsoft.VSCode ;;
+    webstorm|webstormterm) echo com.jetbrains.WebStorm ;;
   esac
 }
 [[ $UNDERLINE == 1 ]] && log_detail "chế độ gạch chân (D13) ép bằng $FORCE_KEY cho từng app"
@@ -1792,12 +2097,13 @@ for app in "${APPS[@]}"; do
   fi
   if (( NO_ANSWER )); then log_detail "$app: không có đáp án, chữ đọc lại: \"$got_trimmed\""
   elif [[ $ok == 1 ]]; then log_ok "$app đạt: \"$got_trimmed\""; else log_error "$app sai: \"$got_trimmed\""; FAILED=1; fi
-  # Ghostty and the VS Code terminal: the bytes the terminal sent, before the line editor
+  # Ghostty and the VS Code and WebStorm terminals: the bytes the terminal sent, before the line editor
   # applied ⌫ (DEL).
   raw_file=""; raw_who=""
   case "$app" in
     ghostty*) raw_file="$GHOSTTY_RAW"; raw_who=Ghostty ;;
     vscodeterm|vscodeswitch) raw_file="$VSCODE_RAW"; raw_who=xterm.js ;;
+    webstormterm) raw_file="$VSCODE_RAW"; raw_who="terminal của WebStorm" ;;
   esac
   if [[ -n "$raw_file" && -e "$raw_file" ]]; then
     log_detail "byte $raw_who gửi xuống terminal: \"$(visible_bytes "$raw_file")\""
@@ -1831,11 +2137,11 @@ for app in "${APPS[@]}"; do
   "$LOG" show --start "$start" --style compact \
     --predicate "subsystem == \"$IM_ID\" AND (category == \"perf\" OR category == \"diag\")" > "$WORK/perf.log" 2>/dev/null
   [[ -n "$SAVE_DIR" ]] && cp "$WORK/perf.log" "$SAVE_DIR/$app.perf.log"
-  # VS Code terminal cells: the time of each phase and the activations (a Debug build logs
+  # VS Code and WebStorm terminal cells: the time of each phase and the activations (a Debug build logs
   # `name=activate` for each; deactivateServer logs nothing), to see whether the switch to
   # the editor activated the input method again.
-  if [[ ( "$app" == vscodeterm || "$app" == vscodeswitch ) && -s "$VSCODE_PHASES" ]]; then
-    log_detail "VS Code, các pha: $(tr '\n' ';' < "$VSCODE_PHASES")"
+  if [[ ( "$app" == vscodeterm || "$app" == vscodeswitch || "$app" == webstormterm ) && -s "$VSCODE_PHASES" ]]; then
+    log_detail "$([[ $app == webstormterm ]] && echo WebStorm || echo VS Code), các pha: $(tr '\n' ';' < "$VSCODE_PHASES")"
     [[ -n "$SAVE_DIR" ]] && cp "$VSCODE_PHASES" "$SAVE_DIR/$app.phases"
     if (( DAU_RUN )) && [[ "$IM_CONFIG" != Release ]]; then
       log_detail "kích hoạt bộ gõ (name=activate): $(grep -c 'name=activate' "$WORK/perf.log") lần: $(grep 'name=activate' "$WORK/perf.log" | awk '{print $2}' | tr '\n' ' ')"
