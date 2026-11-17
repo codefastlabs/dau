@@ -11,17 +11,19 @@ Chờ người dùng:
 
 Việc tiếp theo:
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
-- Không chờ bước 0: chẩn đoán ba lỗi gõ sai chữ ở Việc mở (WebStorm, Safari, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần; nhãn trợ năng của sheet thêm quy tắc sửa offline.
+- Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán ba lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Safari, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần; nhãn trợ năng của sheet thêm quy tắc sửa offline.
 
 Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chưa rõ ảnh hưởng, chưa kiểm, giao diện, để sau):
-1. Trình soạn thảo WebStorm mất khôi phục D4 ở mọi nhịp gõ, vì Dấu bị reset sau mỗi phím đi thẳng (`docs/Compatibility.md` mục 5.9). Bước kế: ghi log ở `commitComposition` và `deactivateServer`, chạy lại ô `webstorm` một lượt (`docs/research/JetBrainsInput.md` mục 5).
-2. Safari ở lần thay đầu của tài liệu mới: Safari trả vị trí chậm, từ đầu hỏng (5 ms, 1/3 lượt sai; `docs/Compatibility.md` mục 5.1, 7). Cần chẩn đoán theo CLAUDE.md (nhiều giả thuyết, đối chứng, ít nhất ba lượt).
-3. Trình soạn thảo Cursor 3.30.14 có lúc trả vị trí từ đầu từ, khi đó chuỗi `edit` gõ cách nhau 5 ms sai vài từ (`docs/Compatibility.md` mục 5.4). Bước kế: tìm điều kiện làm trình soạn thảo đổi kiểu vị trí (buổi sáng tính từ đầu văn bản, buổi chiều từ đầu từ), rồi chọn hướng sửa ở `docs/research/LateAnswerFixes.md` kịch bản B.
-4. Bộ đệm nguồn đầu vào của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/InputMethodInstall.md` mục 10.7).
-5. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ. `scripts/selftest/app-group.sh --install` chưa chạy lại kể từ khi gộp script cài 10/11. Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
-6. Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
-7. Sheet thêm quy tắc: ba nút cuối không có nhãn trợ năng (/dogfood 11/11; chưa kiểm bằng VoiceOver).
-8. Ma trận tương thích còn lại, làm sau bản thử đầu: `docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc", danh sách ở `docs/Compatibility.md` mục 7.
+1. Google Docs (Chrome, Safari): Dấu sai cả chữ gõ liền và không thêm dấu được cho từ đã gõ (D20), 3/3 lượt, trong khi Telex của Apple gõ đúng chữ gõ liền. Nguyên nhân đo được: Google Docs trả vị trí con trỏ luôn là `(1, 0)` ở cả Chrome và Safari, nên Dấu chỉ thay được một ký tự (`docs/Compatibility.md` mục 5.10). Không có đường nào chỉ dùng API chính thức để thay quá một ký tự; sửa nhiều bước trong cửa sổ một ký tự đã đo, không được (`docs/research/WebEditorInput.md` mục 10). Bước kế: chọn hướng với người dùng; còn một phép đo: chế độ hỗ trợ chữ nổi của Google Docs (⌘⌥H, cài đặt trong tài khoản Google của người dùng, cần họ đồng ý; kể cả khi được, đó là cách vòng cho người dùng tự bật, chưa phải cách sửa trong Dấu).
+2. Trình soạn thảo WebStorm mất khôi phục D4 ở mọi nhịp gõ, vì Dấu bị reset sau mỗi phím đi thẳng (`docs/Compatibility.md` mục 5.9). Bước kế: ghi log ở `commitComposition` và `deactivateServer`, chạy lại ô `webstorm` một lượt (`docs/research/JetBrainsInput.md` mục 5).
+3. Safari ở lần thay đầu của tài liệu mới: Safari trả vị trí chậm, từ đầu hỏng (5 ms, 1/3 lượt sai; `docs/Compatibility.md` mục 5.1, 7). Cần chẩn đoán theo CLAUDE.md (nhiều giả thuyết, đối chứng, ít nhất ba lượt).
+4. Trình soạn thảo Cursor 3.30.14 có lúc trả vị trí từ đầu từ, khi đó chuỗi `edit` gõ cách nhau 5 ms sai vài từ (`docs/Compatibility.md` mục 5.4). Bước kế: tìm điều kiện làm trình soạn thảo đổi kiểu vị trí (buổi sáng tính từ đầu văn bản, buổi chiều từ đầu từ), rồi chọn hướng sửa ở `docs/research/LateAnswerFixes.md` kịch bản B.
+5. Sau khi cài lại bộ gõ, app đang có ô nhập không gửi `activateServer` cho tiến trình bộ gõ mới: phím vẫn được xử lý nhưng bộ gõ không biết app (`app=?` trong log), nên quy tắc theo app (D5) và log theo app không áp tới lần kích hoạt sau (17/11, 2/2 lần ngay sau `scripts/dev/install-app.sh`, Safari và Chrome). Ảnh hưởng khi Sparkle cập nhật: chưa đo.
+6. Bộ đệm nguồn đầu vào của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/InputMethodInstall.md` mục 10.7).
+7. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ. `scripts/selftest/app-group.sh --install` chưa chạy lại kể từ khi gộp script cài 10/11. Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
+8. Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
+9. Sheet thêm quy tắc: ba nút cuối không có nhãn trợ năng (/dogfood 11/11; chưa kiểm bằng VoiceOver).
+10. Ma trận tương thích còn lại, làm sau bản thử đầu: `docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc", danh sách ở `docs/Compatibility.md` mục 7.
 
 ## Mốc
 
@@ -61,7 +63,7 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 
 ### Bước 3 — Một lượt chạy chiếm màn hình (xin giờ một lần; người dùng ngồi cùng ở mục 4)
 
-Thời lượng: mục 1, 5, 6, 7, 8 khoảng 20–25 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh --ref` trong `docs/history/LogM6.md`). Mục 2, 3, 4 chưa có số đo.
+Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh --ref` trong `docs/history/LogM6.md`). Mục 2, 3, 4 và phần Notion của mục 7 chưa có số đo; mỗi ô `gdocs`, `wordweb` mất 22–39 giây (17/11).
 
 1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug.
 2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
@@ -71,7 +73,7 @@ Thời lượng: mục 1, 5, 6, 7, 8 khoảng 20–25 phút, cộng từng mục
 6. Phần còn lại của việc đo lại các ô đã đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), theo kiểm toán ngày 17/11; Edge, Firefox, VS Code, Safari, Terminal đã đo lại 17/11 (`docs/history/LogM7.md`). Khoảng 3–4 phút (7–10 giây mỗi ô `typing/run.sh`), bản Debug, chuyển nguồn bằng phím tắt và xác nhận trong ô gõ:
    - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
    - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
-7. "Thêm dấu cho từ đã gõ" (D20) trên Google Docs và Notion trong Chrome: câu tiếng Việt có ⌫ giữa từ và thêm dấu cho từ đã gõ, mỗi trang vài lượt ở nhịp người, kèm đối chứng Telex của Apple. Hai trang cần tài khoản của người dùng đã đăng nhập sẵn trong Chrome. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
+7. "Thêm dấu cho từ đã gõ" (D20) trên web editor trong Chrome, bằng `scripts/selftest/typing/d20-docs.sh` (tài liệu trống của người dùng, đã đăng nhập sẵn). Word trên web và Google Docs: xong 17/11 (`docs/Compatibility.md` mục 5.10; Google Docs sai, ở Việc mở). Còn Notion: script chưa có ô cho Notion. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
 8. Dọn: gỡ bản thử, cài lại `stable`.
 
 Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", thẻ "Dùng thử bản Beta" khi chưa có kênh Beta, câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Rồi sửa mã và chụp lại `docs/canvas/`.
@@ -88,3 +90,7 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
 (ngày — việc — kết quả — nơi chứa số, commit; điều gì được ghi: [`CLAUDE.md`](../CLAUDE.md), mục "Nguồn chuẩn")
 
 - 17/11 — đo engine bản release (`swift test -c release --filter Performance`, máy M3 Max): Telex 0,13 µs mỗi phím, VNI 0,12 µs. Một lần gọi `selectedRange` vào app tốn 230–622 µs p50 (số đo 29–30/10, `docs/Compatibility.md` mục 5), nên thời gian mỗi phím nằm ở số lời gọi vào app (N3), không ở engine; không thêm cổng tốc độ cho engine trên CI.
+- 17/11 — D20 trên web editor (máy M3 Max, Chrome 157.0.8103.79, bộ gõ Release `0b1a42d`): `scripts/selftest/typing/d20-docs.sh --gdocs <link> --wordweb <link>`, tài liệu trống của người dùng — Word trên web đúng 6/6, Google Docs sai 3/3 cả chữ gõ liền; số và chữ đọc lại ở `docs/Compatibility.md` mục 5.10.
+- 17/11 — chẩn đoán Google Docs (bộ gõ Debug `34644a3`, cài bằng `scripts/dev/install-app.sh --debug`, rồi cài lại bản trước bằng `--ref 0b1a42d`): `scripts/selftest/typing/run.sh --delay 80 --jitter 30 --word-pause 250 --keys … --expect … --doc-url <link> --save <dir> gdocs`, một lượt câu của `d20-docs.sh` và một lượt câu không có ⌫ — Google Docs trả vị trí `(1, 0)` ở mọi phím, Dấu chỉ thay được một ký tự; số và giả thuyết ở `docs/Compatibility.md` mục 5.10.
+- 17/11 — Google Docs trên Safari 27.2 (bộ gõ Debug `34644a3`, rồi cài lại `0b1a42d`): `scripts/selftest/typing/run.sh --delay 80 --jitter 30 --word-pause 250 --keys … --expect … --doc-url <link> --save <dir> gdocssafari`, hai câu như lượt Chrome — cũng `(1, 0)` ở mọi phím; `docs/Compatibility.md` mục 5.10.
+- 17/11 — thí nghiệm sửa nhiều bước qua cửa sổ một ký tự của Google Docs (bộ gõ Debug có thêm mã thí nghiệm, không giữ lại; ô `gdocs` và `gdocssafari` của `typing/run.sh`, câu không có ⌫; cài lại `0b1a42d` sau đó) — không được ở Chrome và Safari; số và cách làm ở `docs/research/WebEditorInput.md` mục 10.6 A.

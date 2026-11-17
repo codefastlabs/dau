@@ -26,10 +26,12 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 | Notes | đúng ở 30 ms (30/10/2026) | chưa đo | không |
 | Mail | đúng ở 30 ms (30/10/2026); số đo 11/11 (120 ms) và 12/11/2026 (30 ms) chỉ về tự sửa chính tả của macOS (mục 6.1) | chưa đo | không |
 | Telegram | đúng ở 5 và 30 ms (chuỗi chuẩn) và ở 100 ± 30 ms (chuỗi `edit`), 17/11/2026 (mục 5.8) | chưa đo | không |
+| Word trên web (Chrome) | đúng ở 80 ± 30 ms, cả thêm dấu cho từ đã gõ: 6/6 lượt (17/11/2026, máy M3 Max; mục 5.10) | chưa đo | không |
+| Google Docs (Chrome) | sai 3/3 lượt ở 80 ± 30 ms: không thêm dấu được cho từ đã gõ, và sai mọi lần thay quá một ký tự, nên sai cả chữ gõ liền mà Telex của Apple gõ đúng (17/11/2026, máy M3 Max): Google Docs trả vị trí con trỏ luôn là (1, 0), Dấu chỉ thay được một ký tự (mục 5.10) | chưa đo | không |
 
 - Brave, Arc và các app Electron khác không có nhãn: chưa đo, nên chưa có số đo cho thấy sai (D13); không suy từ Chrome, Edge, VS Code, Cursor: kết quả đo ở app này không suy ra cho app kia. Đo mà sai thì gắn lại theo D13.
 - Trình duyệt: script chỉ gõ khi ô của trang có focus, nên mọi số đo trình duyệt là gõ vào ô của trang.
-- 14 trong 42 ứng dụng ở mục 3 có số đo (JetBrains IDE: chỉ WebStorm); danh sách chưa đo ở mục 7.
+- 16 trong 43 ứng dụng ở mục 3 có số đo (JetBrains IDE: chỉ WebStorm); danh sách chưa đo ở mục 7.
 
 ## 1. Danh sách tương thích
 
@@ -84,7 +86,8 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 | Văn phòng | Pages | `com.apple.Pages` (bản "Creator Studio" 15.4) và `com.apple.iWork.Pages` (14.5) | có, cả hai bản | AppKit, bộ soạn chữ riêng của iWork | chưa biết; quy tắc phải ghi cả hai ID |
 | Văn phòng | Numbers | `com.apple.Numbers` (Creator Studio 15.4); ID cũ `com.apple.iWork.Numbers` không có trên máy | có | như Pages | chưa biết; ô bảng tính |
 | Văn phòng | Keynote | `com.apple.Keynote` (Creator Studio 15.4); ID cũ `com.apple.iWork.Keynote` không có trên máy | có | như Pages | chưa biết |
-| Văn phòng | Google Docs | web | web | trình duyệt; vẽ bằng canvas từ 2021 ([Google Workspace Updates](https://workspaceupdates.googleblog.com/2021/05/Google-Docs-Canvas-Based-Rendering-Update.html)), chữ nhập qua một ô ẩn (suy luận) | rủi ro cao (suy luận); D20 trên web editor là câu hỏi mở trong `Decisions.md` |
+| Văn phòng | Google Docs | web | web | trình duyệt; vẽ bằng canvas từ 2021 ([Google Workspace Updates](https://workspaceupdates.googleblog.com/2021/05/Google-Docs-Canvas-Based-Rendering-Update.html)), chữ nhập qua một ô ẩn (suy luận) | đã đo, mục 5.10: sai (lúc đo: Chrome 157.0.8103.79) |
+| Văn phòng | Word trên web | web | web | trình duyệt | đã đo, mục 5.10: đúng (lúc đo: Chrome 157.0.8103.79) |
 | Văn phòng | Google Sheets | web | web | trình duyệt | chưa biết |
 | Văn phòng | Notion | `notion.id` | có (7.41.1) | Electron | như VS Code (suy luận) |
 | Văn phòng | Obsidian | `md.obsidian` | không | Electron (suy luận) | như VS Code (suy luận) |
@@ -224,6 +227,15 @@ Một app, một bundle ID, hai kiểu cửa sổ: Agents (mở khi chạy app, 
 - Terminal, thay tại chỗ: "ưindows caảr toôi yeêu tieêngs Vieêtj, Sunủnise", byte gửi xuống shell giống hệt, không có ký tự xoá: ô bỏ qua vùng thay (mục 6.8).
 - Gạch chân: đúng cả hai ô. Telex của Apple: "ưindows car tôi yêu tiếng Việt, Sủnise" cả hai ô (không có khôi phục từ tiếng Anh).
 
+### 5.10 Google Docs, Word trên web
+
+- Đo 17/11/2026, máy M3 Max, macOS 27.2.1, Chrome 157.0.8103.79, bộ gõ Release `0b1a42d`: `scripts/selftest/typing/d20-docs.sh` (ô `gdocs`, `wordweb` của `typing/run.sh`, tài liệu trống của người dùng đã đăng nhập sẵn), 80 ± 30 ms một phím, nghỉ 250 ms sau mỗi từ, đối chứng Telex của Apple. Câu thử có bốn lần ⌫ qua dấu cách rồi thêm dấu cho từ vừa gõ (D20) và một ⌫ trong từ tiếng Anh; chuỗi phím và đáp án ở đầu script.
+- Word trên web: đúng 6/6 lượt (hai lượt chạy, mỗi lượt 3), cả bốn chỗ D20. Telex của Apple: "Homo nay mình hocj tiengé Vietẹ với bạn, buổi học online rất vui." (Apple không có D20).
+- Google Docs (giao diện tiếng Việt): sai 3/3 lượt, cả ba ra cùng một chữ: "Homo nay minhf hocj tiengé Vietẹ voiws banj, buôỉ học online râts vui." D20 không đặt dấu ở cả bốn chỗ, và chữ gõ liền cũng sai ("minhf", "voiws banj", "buôỉ", "râts"), trong khi Telex của Apple gõ đúng các từ đó ("mình", "với bạn", "buổi", "rất").
+- Google Docs, chẩn đoán (17/11/2026, cùng máy và Chrome, bộ gõ Debug `34644a3`, ô `gdocs` với `--save`, một lượt câu trên và một lượt câu không có ⌫ "Hoom nay minhf hojc tieengs Vieetj voiws banj, buooir hojc online raats vui. "): câu không có ⌫ cũng sai ("Hôm nay minhf học tiêngs Viêtj voiws banj, buôỉ học online râts vui."), nên lỗi không do D20. Ở cả 24 lần hỏi, Google Docs trả vị trí con trỏ `(1, 0)` dù con trỏ ở đâu trong tài liệu: suy ra ô nhập ẩn mà nó cho bộ gõ thấy chỉ có một ký tự (không đo trực tiếp độ dài chữ đọc được: D8 không ghi chữ). Mọi lần thay một ký tự đều được Google Docs áp đúng chỗ (12/12, như "oo" → "ô", "hojc" → "học"); mọi lần thay hai, ba ký tự (dấu thanh trên vần "inh", "ăn", "ơi"…) đều không làm được: Dấu thấy chữ không khớp (`resync`) và cho phím đi thẳng (12/12). Sau đó Dấu đọc lại được đúng một ký tự làm từ, nên "buooir" ra "buôỉ" (r đặt lên "i"). Lần đọc của D20 không có chữ (`seed_none`). Telex của Apple đúng, có lẽ vì nó soạn chữ bằng chữ đánh dấu (marked text) thay vì thay chữ đã có (suy luận, chưa đo).
+  - Giả thuyết bị loại: Google Docs bỏ qua vùng thay (thì cả lần thay một ký tự cũng sai, "Hoôm"); Google Docs trả vị trí chậm (khoảng cách giữa hai phím luôn ≥ 20 ms, không có `mismatch`, vị trí không đổi theo nhịp, ba lượt Release ra cùng một chữ).
+- Google Docs trên Safari 27.2 (17/11/2026, cùng máy, bộ gõ Debug `34644a3`, ô `gdocssafari`, cùng hai câu, một lượt mỗi câu): cũng sai, gần như Chrome ("Homo nay minhf hocj tiengé Vietẹ voiws banj, buôir học online râts vui."; câu không có ⌫: "Hôm nay minhf học tiêngs Viêtj voiws banj, buôir học online râts vui."). Safari cũng trả vị trí `(1, 0)` ở cả 24 lần hỏi; thay một ký tự được, thay hai, ba ký tự không được. Safari chưa có EditContext, nên cửa sổ một ký tự là cách Google Docs tự làm ở cả hai trình duyệt, không do EditContext của Chrome.
+
 ## 6. Giới hạn đã biết
 
 Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tượng nguồn): [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md).
@@ -270,8 +282,9 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
 
-- Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE trừ WebStorm, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
+- Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE trừ WebStorm, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
 - Chưa đo: VS Code khi app bận.
+- Google Docs (Chrome và Safari): tìm cách sửa khi vị trí con trỏ luôn là (1, 0) (mục 5.10; các đường thay tại chỗ còn mở: [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) mục 10). Sửa nhiều bước trong cửa sổ một ký tự đã đo, không được (mục 10.6 A của file đó). Chưa thử: chế độ hỗ trợ chữ nổi của Google Docs (Tools › Accessibility settings, hoặc ⌘⌥H) có cho bộ gõ thấy cả đoạn văn không.
 - Safari: chẩn đoán lần thay đầu của tài liệu mới, nơi Safari trả vị trí chậm và từ đầu hỏng (5 ms, 1/3; mục 5.1).
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo WebStorm: mất khôi phục D4 vì Dấu bị reset sau mỗi phím đi thẳng (mục 5.9). Bước kế và các ca còn đáng đo (⌫ dời dấu, Return sau từ cần khôi phục, nhịp 30 ms): [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) mục 5.

@@ -46,6 +46,7 @@ Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hi�
 | [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | luồng chính của trang web bận bao lâu khi gõ, và giới hạn khi suy ra rủi ro cho thay chữ tại chỗ |
 | [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | hai kịch bản "app trả lời chậm" (D20 sau ⌫ chậm 3–4 thao tác, chưa gặp ở app thật; app tính vị trí theo từ, có ở trình soạn thảo Cursor 3.30.14): cơ chế và hướng sửa |
 | [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | các cách người gõ sửa chữ khi gõ, chỗ Dấu hỏng và nguyên nhân, các hướng sửa; hồ sơ người gõ |
+| [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) | các bộ gõ macOS khác (IMK và event tap) gõ vào Google Docs thế nào; Chrome đưa gì cho bộ gõ; chế độ hỗ trợ tiếp cận của Google Docs |
 
 ## Lưu trữ
 
