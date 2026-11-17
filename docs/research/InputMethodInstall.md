@@ -232,7 +232,7 @@ D37 chọn app chủ không sandbox; bộ gõ vẫn sandbox, không mạng (N2 (
 - **Quarantine:** sandbox luôn gắn quarantine lên file app tạo ra (kể cả `move`), và app có sandbox không gỡ được; một tiến trình sandbox "không thể tạo file thực thi không bị quarantine" (Quinn, DTS, thread 811450, 701687). Bộ gõ được chép sẽ mang quarantine và có thể bị App Translocation. Trình cài McBopomofo có mã chờ hết translocation, vChewing gỡ quarantine sau khi chép. [Apple; Ngoài]
 - **Dừng app khác:** `NSRunningApplication.terminate()` và `forceTerminate()`: "Sandboxed applications can't use this method to terminate other applications". [Apple]
 - Ngoại lệ thư mục `com.apple.security.temporary-exception.files.home-relative-path.read-write` cho `/Library/Input Methods/` vẫn để lại hai vướng trên. Notarize không phải App Review (yêu cầu: Developer ID, Hardened Runtime, secure timestamp, không `get-task-allow`). [Apple]
-- Bộ gõ có sandbox gọi `TISSelectInputSource` thì đổi được nguồn nhưng bước báo cho app đang gõ bị chặn (`deny mach-lookup com.apple.tsm.portname`). [Máy/Dấu, 30/10/2026]
+- Bộ gõ có sandbox gọi `TISSelectInputSource` thì TIS báo nguồn đã đổi, và nhật ký sandbox có `deny mach-lookup com.apple.tsm.portname`; ô gõ có đổi bộ gõ hay không thì lượt đó không kiểm. Gọi từ tiến trình khác, ô gõ giữ bộ gõ cũ (`0bf8d3f`), nên lời từ chối đó chưa chứng minh là nguyên nhân. [Máy/Dấu, 30/10/2026; 10/11/2026]
 
 | Phương án | Vướng |
 |---|---|

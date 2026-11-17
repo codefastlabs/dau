@@ -327,18 +327,22 @@ final class DauInputController: IMKInputController {
         }
     }
 
-    // MARK: - Input source changes IMK does not report (M3)
+    // MARK: - Input source changes IMK may not report (M3)
 
     /// A switch to another input source and back that IMK does not report with
-    /// `deactivateServer`/`activateServer` (measured 30/10/2026: `TISSelectInputSource`
-    /// from another process, "to" → U.S. → Dấu → "o" gave "tô") must still end the word
-    /// (D4: reset, no restore). The system posts the distributed notification
-    /// `kTISNotifySelectedKeyboardInputSourceChanged` for every switch, and a sandboxed
-    /// process may observe it. A switch made with the keyboard shortcut or the menu also
-    /// activates this controller; its notification arrives just after and is ignored, so
-    /// keys typed right after the switch keep their word. Any process can post the
-    /// notification: only a real change of the selected source ends the word
-    /// (`InputSourceChange`).
+    /// `deactivateServer`/`activateServer` must still end the word (D4: reset, no
+    /// restore). Measured 10/11/2026 (`0bf8d3f`): `TISSelectInputSource` from another
+    /// process makes macOS report the new source and the menu bar change, but the focused
+    /// field keeps the old input method: that path never moves the field off Dấu. The
+    /// system shortcut does activate it (M2). This observer is kept for a real switch IMK
+    /// does not report (for example "Automatically switch to a document's input source",
+    /// or another app calling TIS); those paths are not measured. The system posts the
+    /// distributed notification `kTISNotifySelectedKeyboardInputSourceChanged` for every
+    /// switch, and a sandboxed process may observe it. A switch made with the keyboard
+    /// shortcut or the menu also activates this controller; its notification arrives just
+    /// after and is ignored, so keys typed right after the switch keep their word. Any
+    /// process can post the notification: only a real change of the selected source ends
+    /// the word (`InputSourceChange`).
     private func startObservingInputSource() {
         guard sourceObserver == nil else { return }
         let target = WeakController(self)

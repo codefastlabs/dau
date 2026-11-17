@@ -104,7 +104,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 - Lớp con `IMKInputController`, mỗi client một instance và một `VietEngine` riêng. Không có trạng thái toàn cục (khác OpenKey).
 - `handle(_:client:)` đưa phím vào engine qua `InPlaceComposer` (thay tại chỗ) hoặc `MarkedComposer` (gạch chân). Cả hai là kiểu giá trị thuần, test bằng client giả.
 - Thay tại chỗ: nếu engine trả `replace`, hỏi `selectedRange` một lần để có vị trí tuyệt đối rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Bản Debug có thêm một lần hỏi sau khi thay để chẩn đoán (`ReplaceDiag.swift`); số đo trên bản Debug có lời gọi thừa này.
-- Engine reset khi: click chuột; `activateServer`/`deactivateServer`, `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); nguồn đầu vào đổi mà IMK không báo (mục "Đổi nguồn đầu vào không qua `activateServer`").
+- Engine reset khi: click chuột; `activateServer`/`deactivateServer`, `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); nguồn đầu vào đổi mà IMK không báo, nếu có đường như vậy (mục "Đổi nguồn đầu vào không qua `activateServer`").
 
 ### Vị trí thay chữ
 
@@ -228,10 +228,11 @@ D18. Mọi điểm vào và cách xử lý giá trị lạ:
 
 ### Đổi nguồn đầu vào không qua `activateServer`
 
-- Hiện tượng: chọn U.S. rồi chọn lại Dấu bằng `TISSelectInputSource` từ tiến trình khác thì IMK không gọi `deactivateServer`/`activateServer`, từ đang gõ dở bị gõ tiếp.
-- Mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được). Khi nhận thì đọc nguồn đang chọn; chỉ reset từ đang gõ (gạch chân: chốt chữ đang hiện) khi nguồn đó không phải Dấu, không đọc được, hoặc khác nguồn đã thấy lần trước (`InputSourceChange`). Ai cũng phát được thông báo này, nên thông báo giả khi nguồn không đổi không cắt từ.
+- Hiện tượng (đo 10/11/2026, `0bf8d3f`): chọn nguồn bằng `TISSelectInputSource` từ tiến trình khác thì macOS báo nguồn đã đổi và thanh menu đổi, nhưng ô gõ đang focus vẫn giữ bộ gõ cũ. Với Dấu không có `deactivateServer`/`activateServer`, và từ đang gõ dở bị gõ tiếp. Chuyển bằng phím tắt hệ thống thì IMK có báo (M2 đo: `to`, đổi đi rồi về, `o` ra "too", lúc đó chưa có bộ nghe).
+- Bộ nghe (`InputSourceChange`) chỉ đáng giữ nếu có đường chuyển nguồn thật mà IMK không báo, ví dụ "Automatically switch to a document's input source" hay app khác gọi TIS. Các đường đó chưa đo.
+- Mỗi controller nghe thông báo phân tán `kTISNotifySelectedKeyboardInputSourceChanged` (bộ gõ có sandbox vẫn nhận được). Khi nhận thì đọc nguồn đang chọn; chỉ reset từ đang gõ (gạch chân: chốt chữ đang hiện) khi nguồn đó không phải Dấu, không đọc được, hoặc khác nguồn đã thấy lần trước. Ai cũng phát được thông báo này, nên thông báo giả khi nguồn không đổi không cắt từ.
 - Thông báo đến trong `DauInputController.activationEcho` sau `activateServer` của chính controller là tiếng vọng của lần chuyển bằng phím tắt/menu và bị bỏ qua, để phím gõ ngay sau khi chuyển không mất từ.
-- Kiểm: `scripts/selftest/typing/run.sh --keys` với `⇄` (chọn U.S. rồi Dấu từ tiến trình script), xem dòng log `source-changed-reset`. Chuỗi `to` ⇄ `o` không phân biệt được có và không có bộ nghe, vì sau reset D20 đọc lại "to" và `o` cho "tô".
+- Kiểm: phím `⇄` của `scripts/selftest/typing/run.sh --keys` (chọn U.S. rồi Dấu từ tiến trình script) chỉ kiểm được bộ nghe phản ứng với thông báo (dòng log `source-changed-reset`), không kiểm một lần chuyển nguồn thật: ô gõ không đổi bộ gõ theo lệnh đó. Chuỗi `to` ⇄ `o` cũng không phân biệt được có và không có bộ nghe, vì sau reset D20 đọc lại "to" và `o` cho "tô".
 
 ### Khởi chạy bộ gõ
 

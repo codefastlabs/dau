@@ -14,7 +14,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 | Chrome | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không |
 | Edge | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không |
 | Firefox | đúng ở 5–20 ms và khi trang bận | đúng ở 0 ms | không |
-| VS Code | đúng ở 5–20 ms (một lượt sai không do vị trí thay chữ) | đúng ở 0 ms | không |
+| VS Code | đúng ở 5–20 ms (14/14 lượt hợp lệ) | đúng ở 0 ms | không |
 | Cursor | trình soạn thảo sai ở 5 ms và một ca phím dồn ở 20 ms, đúng ở 100 ms; ô nhập Agents đúng | đúng ở 5 ms | **có** |
 | Terminal | đúng từ 5 ms, sai ở 0 ms; ⌫ không tới bộ gõ (mục 6.5) | sai ở 0 ms | không |
 | Ghostty | sai: app bỏ qua vùng thay, Dấu không xử lý riêng (D43; mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | **có** |
@@ -128,7 +128,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 | Click reset (D4 (Từ nước ngoài), D11) | `tooi`, click sau dấu cách hoặc đầu dòng, `s` | chỉ thêm "s" ở chỗ mới. Click ngay sau một chữ thì D20 có thể đặt dấu vào chữ đó |
 | Mũi tên reset (D4 × D20) | `tooi`, ←, nghỉ một nhịp, `s` | D20 bật: "tối" (dấu vào chữ trước con trỏ, "i" giữ nguyên). D20 tắt: "tôsi" |
 | Thêm dấu cho từ đã gõ (D20) | `hoc`, dấu cách, ⌫, nghỉ ≥ 50 ms, `j` | "học". Phím dồn dưới 50 ms thì D20 cố ý không chạy ("hocj"); ứng dụng gạch chân: "hocj" |
-| Tự sửa chính tả (D4) | câu tiếng Việt rồi `Sunrise carr␣` | "car". Thành "cả" thì gõ lại bằng U.S.: U.S. cũng bị sửa là macOS (mục 6.1) |
+| Tự sửa chính tả (D4) | câu tiếng Việt rồi `Sunrise carr␣` | "car". Thành "cả" là macOS sửa, không phải Dấu: Telex của Apple cũng bị (mục 6.1) |
 
 ### 4.4 Số đo
 
@@ -161,7 +161,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 ### 5.3 VS Code
 
 - Trước M6: đúng ở 30 ms; sai ở 0 và 5 ms. Ở 10 ms sai lượt 29/10 (câu mẫu cũ), đúng lượt 30/10 (câu mẫu mới); từ 20 ms đúng mọi lượt. Gạch chân đúng ở 0 và 5 ms.
-- Sau các lần sửa ở M6 (10/11/2026): phím dồn đúng 14/15 lượt; lượt sai không phải lỗi vị trí thay chữ (vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ).
+- Sau các lần sửa ở M6 (10/11/2026): phím dồn đúng 14/14 lượt hợp lệ. Một lượt sai (225 phím so với 232 ở các ô khác) chạy ngay sau ô Telex của Apple được chọn bằng API, mà ô gõ không đổi bộ gõ theo cách chọn đó (Architecture, mục "Đổi nguồn đầu vào không qua `activateServer`"): đo hỏng, không tính. Lượt đo lại đủ 232 phím, không có ô Apple đứng trước, không tái hiện được.
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng. `selectedRange` 230 / 885 µs.
 - Chưa đo: khi app bận.
 
@@ -212,7 +212,7 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 
 ### 6.1 Tự sửa chính tả của macOS đè lên chữ đã giữ
 
-- Ở ứng dụng bật tự sửa chính tả, khi phía trước là câu tiếng Việt, macOS 27.2 có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt ("…Sunrise car␣" → "cả"), kể cả khi gõ bằng U.S. Việc này xảy ra sau khi Dấu đã trả đúng chữ, nên đè lên kết quả gõ đúp ("carr" → "car").
+- Ở ứng dụng bật tự sửa chính tả, khi phía trước là câu tiếng Việt, macOS 27.2 có thể sửa chữ tiếng Anh vừa gõ thành chữ tiếng Việt ("…Sunrise car␣" → "cả"), với Dấu và với Telex của Apple (log Dấu chỉ có `pass`); tắt "Correct Spelling Automatically" thì hết. Với bàn phím U.S. chưa kiểm. Việc này xảy ra sau khi Dấu đã trả đúng chữ, nên đè lên kết quả gõ đúp ("carr" → "car").
 - Chữ cái đứng một mình cũng bị đổi ("Mình chọn phương án d." → "Mình chọn phương án Đ.").
 - Từ quên dấu có thể bị sửa thành từ khác ý người gõ ("Bé xây lâu đài cat␣" → "cắt"). Quay lại thêm dấu lúc đó tính trên chữ đang hiện ("cắt" + ⌫s → "căts"); Dấu không đoán từ người gõ định viết.
 - Tự sửa cũng sửa từ mà D4 trả về chuỗi phím (12/11/2026, `typing/run.sh --keys`, 30 ms, một lượt mỗi câu): Mail sửa "ddep" → "đẹp", "vieet" → "việt", "ddungsg" → "đúng"; Notes sửa "vieet" → "việt", "ddungsg" → "đúng", nhưng "ddep" → "đé". Vì vậy ở ứng dụng bật tự sửa, nhóm lỗi K1 ([`docs/research/EditingTypedText.md`](research/EditingTypedText.md) mục 3) phần lớn không tới tay người gõ; ở ứng dụng không có tự sửa (Chrome, trình soạn thảo mã) vẫn còn.
@@ -234,7 +234,7 @@ Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tư
 
 ### 6.3 Ô mật khẩu
 
-Ở ô nhập bảo mật (ví dụ ô mật khẩu trong Safari), macOS giữ bàn phím `com.apple.keylayout.US` và Dấu không nhận phím nào. Đây là hành vi của hệ thống, không phải lỗi ([`docs/history/M2Testing.md`](history/M2Testing.md) mục 4 dòng 17).
+Ở ô nhập bảo mật (ví dụ ô mật khẩu trong Safari), macOS giữ bàn phím `com.apple.keylayout.US` (theo nguồn TIS báo; `M2Testing.md` không ghi cách quan sát khác) và Dấu không nhận phím nào. Đây là hành vi của hệ thống, không phải lỗi ([`docs/history/M2Testing.md`](history/M2Testing.md) mục 4 dòng 17).
 
 ### 6.5 Terminal không gửi ⌫ cho bộ gõ
 
@@ -257,7 +257,6 @@ Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi 
 - Đo lại sau M6: Terminal ở nhịp dồn hơn 30 ms; VS Code khi app bận.
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo Cursor: nhóm lỗi ở 5 ms và ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa cần đổi N3 hoặc D11.
-- VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
 - Trình soạn thảo WebStorm: mất khôi phục D4 vì Dấu bị reset sau mỗi phím đi thẳng (mục 5.9). Bước kế và các ca còn đáng đo (⌫ dời dấu, Return sau từ cần khôi phục, nhịp 30 ms): [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) mục 5.
 - Đối chứng Telex của Apple ở các ô phím dồn của VS Code và Firefox: đo trước khi sửa cách chuyển nguồn của script nên ra nguyên chuỗi phím, chưa đo lại.
 - Chrome: "vieetj" giữ nguyên trong thanh địa chỉ tab mới, chưa tái hiện.

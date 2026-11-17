@@ -57,14 +57,19 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 - Lần đẩy mã đầu (cần người dùng đồng ý push): workflow Test chạy trên runner `xcode-27`.
 - Tag thử dựng hai bản chính thức số build khác nhau, công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai). Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
-### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 55 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút cuối)
+### Bước 3 — Một lượt chạy chiếm màn hình (khoảng 70 phút, xin giờ một lần; người dùng ngồi cùng khoảng 15 phút ở mục 4)
 
 1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug.
 2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
 3. Sparkle cập nhật lên bản thử thứ hai: kiểm câu dưới công tắc "Tự động kiểm tra bản mới" (kiểm tra khi mở Dấu, hỏi trước khi cài, D7); cài xong Sparkle mở lại Dấu và bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`).
 4. Kiểm cần người: VoiceOver và Tab qua cửa sổ Cài đặt, VoiceOver đọc tên nguồn, máy để tiếng Anh hẳn (người dùng đổi ngôn ngữ hệ thống). Phiên chính chụp và xem: biểu tượng thanh menu trên nền sáng và tối, các sheet ở chế độ tối, danh sách "+" của System Settings, nhãn biểu tượng trong cửa sổ DMG ở chế độ tối (theo báo cáo trên diễn đàn, Finder vẽ nhãn kiểu sáng khi thư mục có ảnh nền; chưa đo) và vị trí biểu tượng so với mũi tên nền.
 5. Báo lỗi và trang Cập nhật & hỗ trợ (bản Debug, ma trận `scripts/selftest/settings-window/run.sh` và `docs/UIChecks.md`): hàng báo lỗi, sheet báo lỗi (độ rộng control bốn lựa chọn, Tab, Esc/Return, VoiceOver đọc ô gợi ý, chế độ tối); mở Dấu bằng "Cài đặt Dấu…" khi đang ở Chrome thì ô "Ứng dụng" chọn Chrome; "Mở trên GitHub" ra form điền sẵn (cần mẫu issue đã lên nhánh mặc định).
-6. Dọn: gỡ bản thử, cài lại `stable`.
+6. Đo lại các ô đã đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), theo kiểm toán ngày 17/11, khoảng 8 phút. Bản Debug, chuyển nguồn bằng phím tắt và xác nhận trong ô gõ:
+   - VS Code ở 5 ms, xen kẽ ô Telex của Apple và ô Dấu, vài lượt. Cũng là đối chứng Apple còn thiếu ở VS Code và Firefox phím dồn (`docs/Compatibility.md` mục 7).
+   - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
+   - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
+7. Nếu hướng 2A của [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) đã vào mã: lượt hồi quy ở mục 6 của tài liệu đó (Chrome trang bận, VS Code 5 ms), khoảng 5 phút.
+8. Dọn: gỡ bản thử, cài lại `stable`.
 
 ### Bước 4 — Phát hành và đóng mốc
 
