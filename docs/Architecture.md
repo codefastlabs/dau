@@ -259,7 +259,7 @@ Dùng khi thay bộ gõ (D37) và khi gỡ (D16 (Bảo trì và gỡ cài đặt
 
 ### Bundle: biểu tượng, ký, entitlements
 
-- Biểu tượng của bundle (Finder) dùng chung `Apps/Dau/Resources/Assets.xcassets` với app chủ (AppIcon, AppIconDev, chọn theo cờ `DAU_OFFICIAL`, D25 (Nhận diện)), ra `CFBundleIconName`/`Assets.car` giống Dấu.app; tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
+- Biểu tượng của bundle (Finder) dùng chung hai file Icon Composer `Apps/Dau/Resources/AppIcon.icon` và `AppIconDev.icon` với app chủ (chọn theo cờ `DAU_OFFICIAL`, D25 (Nhận diện)), ra `CFBundleIconName`, `Assets.car` và `.icns` giống Dấu.app; tên hiển thị vẫn là "Dấu" (D24 (Tên và định danh)).
 - Biểu tượng nguồn đầu vào (ô V trên thanh menu, chỉ báo ⌃Space) là TIFF template khai trong Info.plist (`docs/history/CompatibilityFixed.md`); TIS báo `kTISPropertyIconImageURL` = `ModeVietnamese.tiff` và cờ template ở cả bundle và mode.
 - Bản Release không có `get-task-allow` (`CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO`), nên không tiến trình nào gắn debugger vào bộ gõ để đọc từ đang gõ. Bản Debug có, chỉ dùng khi thử (`scripts/dev/install-app.sh --debug`). `dau_check_input_method` (`scripts/lib/build.sh`) kiểm điều này, cùng universal và không có quyền mạng, trên bộ gõ nhúng trước khi cài.
 - Entitlements: App Sandbox, App Group, `temporary-exception.mach-register.global-name` cho tên kết nối IMK (theo mẫu IMK có sandbox; chưa thử bỏ). **Không** `com.apple.security.network.client`.

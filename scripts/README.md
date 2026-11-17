@@ -9,7 +9,7 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/build/` | bước build do `project.yml` gọi |
 | `scripts/dev/` | cài, dọn, xem bản bộ gõ trên máy |
 | `scripts/perf/` | đọc số đo từ nhật ký |
-| `scripts/assets/` | sinh biểu tượng tạm (chuẩn và bản phát triển) |
+| `scripts/assets/` | sinh nguồn biểu tượng app (file Icon Composer chuẩn và bản phát triển) và xem thử bằng `ictool`, xuất ảnh xem trước GitHub, sinh ảnh template thanh menu |
 | `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn đầu vào): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận (`load/`), cửa sổ Cài đặt, App Group |
 | `scripts/check-l10n/` | kiểm String Catalog |
 | `scripts/lib/` | công cụ dùng chung giữa các script |

@@ -1,35 +1,39 @@
-// Builds the temporary app icons for Dấu. Standard: "ấ" in Giấy on a Mực plate, the circumflex in the
-// letter colour and only the acute in Son (docs/Brand.md "Biểu tượng", D25). Development (--dev,
-// docs/Brand.md "Biểu tượng bản phát triển", D25): the same letter on a Chì plate with a Hổ phách
-// diagonal stripe across the bottom-right corner (mockup polygon 52,100 100,52 100,74 74,100,
-// clipped to the plate), outside the "a".
+// Builds the source files of the Dấu app icons: the two Icon Composer documents
+// (Apps/Dau/Resources/AppIcon.icon, AppIconDev.icon) and the flat SVGs in Resources/Brand/.
+//
+// Standard icon (docs/Brand.md "Biểu tượng", D25): "ấ" in Giấy on a Mực plate, the circumflex in
+// the letter colour and only the acute in Son. Development icon (docs/Brand.md "Biểu tượng bản
+// phát triển", D25): the same letter on a Chì plate with a Hổ phách diagonal stripe across the
+// bottom-right corner (mockup polygon 52,100 100,52 100,74 74,100), outside the "a".
 //
 // Geometry follows the canvas mockup "Nhận diện – biểu tượng ứng dụng" (a 100 × 100 design):
 //   letter "a"   Be Vietnam Pro Bold (700), size 64, centred on x = 48, baseline y = 80
 //   circumflex   stroke M34 35 L47 25 L60 35, width 7, round caps and joins, Giấy
 //   acute        stroke M63 24 L73 13, width 7.5, round caps, Son
-// The 100 grid is mapped onto the 824 × 824 plate of the macOS icon grid (1024 canvas).
+//
+// Icon Composer documents. The plate is not a layer but the document's background fill, and
+// macOS cuts the plate shape itself, so the layers are drawn on the whole 1024 canvas: the
+// mockup's 100 grid maps to 0…1024 (the flat SVGs keep the 824 pt plate of the macOS icon grid
+// inside a 1024 canvas). Each layer is one outlined path in its own SVG, so no font is needed
+// when Xcode compiles it. The Dark appearance is a second fill (for the plate, and for
+// the stripe of the development icon); Clear and Tinted are derived by macOS from the layers.
+// One document has one set of shapes for every size, so there are no thicker-mark variants
+// for 16–32 pt.
 //
 // Only the letter comes from the font: its contours are extracted once into
 // Resources/Brand/app-icon-glyphs.txt, so rendering never needs the font (never commit the
-// font file). The marks are drawn as strokes and converted to outlined paths.
-//
-// TODO(M7): the official icon is built in Icon Composer (Default / Dark / Clear / Tinted
-// appearances on macOS 26+) plus an .icns for macOS 14–15; this script is a stand-in.
+// font file).
 //
 // Usage (normally via scripts/assets/make-app-icon.sh):
 //   make-app-icon.swift outline <BeVietnamPro-Bold.ttf> <glyphs.txt>
 //       Extract the contours and advance width of "a" in font units, y up.
-//   make-app-icon.swift render [--dev] <glyphs.txt> <svg-dir> <appiconset-dir> [<preview-dir>]
-//       Write the SVG sources (AppIcon*.svg, or AppIconDev*.svg with --dev), the matching
-//       AppIcon.appiconset (AppIconDev.appiconset with --dev; the caller names the dir) PNGs and
-//       Contents.json, and optionally icon-512.png + sizes.png for review.
+//   make-app-icon.swift render <glyphs.txt> <svg-dir> <icon-dir>
+//       Write AppIcon.svg and AppIconDev.svg to <svg-dir>, and AppIcon.icon and AppIconDev.icon
+//       to <icon-dir>.
 
 import CoreGraphics
 import CoreText
 import Foundation
-import ImageIO
-import UniformTypeIdentifiers
 
 // MARK: - Path model (canvas space: 1024 × 1024, y down, like SVG)
 
@@ -176,16 +180,22 @@ func outline(fontURL: URL, out: URL) throws {
 
 // MARK: - Geometry
 
-let canvas: CGFloat = 1024
 // macOS (Big Sur and later) icon grid: 824 × 824 plate centred on the 1024 canvas,
 // continuous ("squircle") corners with radius ≈ 185.4 (mockup: rx 22.4 on 100 ≈ 184.6).
+// Used by the flat SVGs; the Icon Composer documents fill the whole canvas.
 let plateRect = CGRect(x: 100, y: 100, width: 824, height: 824)
 let plateRadius: CGFloat = 185.4
 
-/// Mockup 100 × 100 design space → canvas.
+/// Mockup 100 × 100 design space → flat SVG canvas (plate on the macOS grid).
 let grid = plateRect.width / 100
 func fromGrid(_ p: CGPoint) -> CGPoint {
     CGPoint(x: plateRect.minX + grid * p.x, y: plateRect.minY + grid * p.y)
+}
+
+/// Flat SVG canvas → Icon Composer canvas (the plate fills the 1024 square).
+func toDocument(_ p: CGPoint) -> CGPoint {
+    let k = 1024 / plateRect.width
+    return CGPoint(x: (p.x - plateRect.minX) * k, y: (p.y - plateRect.minY) * k)
 }
 
 /// Rounded rect with continuous corners (the iOS 7+/macOS 11+ shape), y down.
@@ -221,47 +231,30 @@ func squircle(_ r: CGRect, radius: CGFloat) -> Path {
     return p
 }
 
-/// Per-size adjustments. Small icons get thicker marks on the same centre lines
-/// (Brand.md: "Ở 16–32 pt tăng độ dày nét dấu") and a slightly larger letter, scaled about
-/// the top of its x-height so the gap under the circumflex stays. Widths in grid units.
-struct Variant {
-    let name: String          // SVG file suffix
-    let maxPixels: Int        // used for rendered sizes up to this many pixels
-    let circumflexWidth: CGFloat
-    let acuteWidth: CGFloat
-    let letterScale: CGFloat
-}
-
-let variants: [Variant] = [
-    Variant(name: "16", maxPixels: 16, circumflexWidth: 10, acuteWidth: 10.5, letterScale: 1.06),
-    Variant(name: "32", maxPixels: 32, circumflexWidth: 8.5, acuteWidth: 9, letterScale: 1.03),
-    Variant(name: "64", maxPixels: 64, circumflexWidth: 7.6, acuteWidth: 8.1, letterScale: 1.0),
-    Variant(name: "", maxPixels: .max, circumflexWidth: 7, acuteWidth: 7.5, letterScale: 1.0),
-]
-
-func variant(forPixels px: Int) -> Variant { variants.first { px <= $0.maxPixels }! }
-
 struct Colour {
     let hex: String
-    var cg: CGColor {
+    var rgb: (r: Double, g: Double, b: Double) {
         let v = Int(hex.dropFirst(), radix: 16)!
-        return CGColor(srgbRed: CGFloat((v >> 16) & 0xFF) / 255, green: CGFloat((v >> 8) & 0xFF) / 255,
-                       blue: CGFloat(v & 0xFF) / 255, alpha: 1)
+        return (Double((v >> 16) & 0xFF) / 255, Double((v >> 8) & 0xFF) / 255, Double(v & 0xFF) / 255)
     }
+    /// Icon Composer's colour syntax.
+    var iconColour: String { String(format: "srgb:%.5f,%.5f,%.5f,1.00000", rgb.r, rgb.g, rgb.b) }
 }
 
 // docs/Brand.md "Màu".
-let muc = Colour(hex: "#10285A")   // Mực: plate
-let giay = Colour(hex: "#F6F1E7")  // Giấy: letter and circumflex
-let son = Colour(hex: "#E0533D")   // Son: acute only
-let chi = Colour(hex: "#2C2F35")      // Chì: development plate
-let hoPhach = Colour(hex: "#F2B705")  // Hổ phách: development stripe
+let muc = Colour(hex: "#10285A")          // Mực: plate
+let mucDark = Colour(hex: "#0B0F1A")      // Mực, kiểu Tối (mockup "Nhận diện – biểu tượng ứng dụng")
+let giay = Colour(hex: "#F6F1E7")         // Giấy: letter and circumflex
+let son = Colour(hex: "#E0533D")          // Son: acute only
+let chi = Colour(hex: "#2C2F35")          // Chì: development plate
+let chiDark = Colour(hex: "#1A1B1F")
+let hoPhach = Colour(hex: "#F2B705")      // Hổ phách: development stripe
+let hoPhachDark = Colour(hex: "#D9A400")
 
 struct Layer {
     let id: String
     let path: Path
     let fill: Colour
-    var clipToPlate = false  // stripe: cut to the plate outline
 }
 
 struct Glyph {
@@ -274,154 +267,147 @@ struct Glyph {
 let letterSize: CGFloat = 64
 let letterCentreX: CGFloat = 48
 let letterBaseline: CGFloat = 80
+let circumflexWidth: CGFloat = 7
+let acuteWidth: CGFloat = 7.5
 
-/// Outlines a round-capped polyline given in grid units.
+/// Outlines a round-capped polyline given in grid units (flat SVG canvas).
 func outlinedStroke(_ points: [CGPoint], width: CGFloat) -> Path {
     let line = CGMutablePath()
     line.addLines(between: points.map(fromGrid))
     return path(line.copy(strokingWithWidth: width * grid, lineCap: .round, lineJoin: .round, miterLimit: 10))
 }
 
-func layers(glyph g: Glyph, variant v: Variant, dev: Bool = false) -> [Layer] {
+/// The letter and its two marks, bottom to top, on the flat SVG canvas.
+func glyphLayers(_ g: Glyph) -> [Layer] {
     // SVG text-anchor="middle" centres the advance box on x.
     let k = letterSize / g.em
     let originX = letterCentreX - k * g.advance / 2
-    let top = bounds(g.a).maxY  // top of the x-height (font units)
-    let anchor = CGPoint(x: letterCentreX, y: letterBaseline - k * top)
     let a = transform(g.a) { p in
-        let m = CGPoint(x: originX + k * p.x, y: letterBaseline - k * p.y)
-        return fromGrid(CGPoint(x: anchor.x + (m.x - anchor.x) * v.letterScale,
-                                y: anchor.y + (m.y - anchor.y) * v.letterScale))
+        fromGrid(CGPoint(x: originX + k * p.x, y: letterBaseline - k * p.y))
     }
-    var result = [Layer(id: "plate", path: squircle(plateRect, radius: plateRadius), fill: dev ? chi : muc)]
-    if dev {
-        let stripe: [CGPoint] = [(52, 100), (100, 52), (100, 74), (74, 100)].map { fromGrid(CGPoint(x: $0.0, y: $0.1)) }
-        var p = Path()
-        p.append(.move(stripe[0]))
-        for q in stripe.dropFirst() { p.append(.line(q)) }
-        p.append(.close)
-        result.append(Layer(id: "stripe", path: p, fill: hoPhach, clipToPlate: true))
-    }
-    result += [
+    return [
         Layer(id: "a", path: a, fill: giay),
         Layer(id: "circumflex",
               path: outlinedStroke([CGPoint(x: 34, y: 35), CGPoint(x: 47, y: 25), CGPoint(x: 60, y: 35)],
-                                   width: v.circumflexWidth),
+                                   width: circumflexWidth),
               fill: giay),
         Layer(id: "acute",
-              path: outlinedStroke([CGPoint(x: 63, y: 24), CGPoint(x: 73, y: 13)], width: v.acuteWidth),
+              path: outlinedStroke([CGPoint(x: 63, y: 24), CGPoint(x: 73, y: 13)], width: acuteWidth),
               fill: son),
     ]
-    return result
 }
 
-// Drop shadow under the plate, as on the macOS icon template.
+let stripeGrid: [CGPoint] = [(52, 100), (100, 52), (100, 74), (74, 100)].map { CGPoint(x: $0.0, y: $0.1) }
+
+func stripePath(_ map: (CGPoint) -> CGPoint) -> Path {
+    let pts = stripeGrid.map(map)
+    var p: Path = [.move(pts[0])]
+    for q in pts.dropFirst() { p.append(.line(q)) }
+    p.append(.close)
+    return p
+}
+
+// Drop shadow under the plate of the flat SVGs, as on the macOS icon template.
 let shadowOffsetY: CGFloat = 10
 let shadowBlur: CGFloat = 20
 let shadowAlpha: CGFloat = 0.30
 
-// MARK: - SVG
+// MARK: - Flat SVG
 
-func svg(_ layers: [Layer], variant v: Variant, dev: Bool = false) -> String {
+func flatSVG(_ g: Glyph, dev: Bool) -> String {
+    let plate = squircle(plateRect, radius: plateRadius)
     var lines = [
         #"<?xml version="1.0" encoding="UTF-8"?>"#,
-        "<!-- Dấu \(dev ? "development " : "")app icon (temporary, docs/Brand.md). Generated by scripts/assets/make-app-icon.sh; do not edit by hand. -->",
+        "<!-- Dấu \(dev ? "development " : "")app icon, flat copy for the README and the web (docs/Brand.md). Generated by scripts/assets/make-app-icon.sh; do not edit by hand. -->",
         "<!-- Letter outlined from Be Vietnam Pro Bold (SIL OFL 1.1), marks are outlined strokes; no font needed. -->",
-        "<!-- TODO(M7): official icon is built in Icon Composer (Default/Dark/Clear/Tinted). -->",
-    ]
-    if !v.name.isEmpty {
-        lines.append("<!-- Size variant for \(v.name) px and below: thicker marks. -->")
-    }
-    lines += [
         #"<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">"#,
         "  <defs>",
         #"    <filter id="shadow" x="-10%" y="-10%" width="120%" height="125%">"#,
         "      <feDropShadow dx=\"0\" dy=\"\(fmt(shadowOffsetY))\" stdDeviation=\"\(fmt(shadowBlur / 2))\" flood-color=\"#000\" flood-opacity=\"\(fmt(shadowAlpha))\"/>",
         "    </filter>",
-        "  </defs>",
     ]
     if dev {
-        lines.insert(#"    <clipPath id="plate-clip"><path d="\#(svgData(layers[0].path))"/></clipPath>"#, at: lines.count - 1)
+        lines.append(#"    <clipPath id="plate-clip"><path d="\#(svgData(plate))"/></clipPath>"#)
     }
-    for l in layers {
-        var attrs = "id=\"\(l.id)\" fill=\"\(l.fill.hex)\""
-        if l.id == "plate" { attrs += " filter=\"url(#shadow)\"" }
-        if l.clipToPlate { attrs += " clip-path=\"url(#plate-clip)\"" }
-        lines.append("  <path \(attrs) d=\"\(svgData(l.path))\"/>")
+    lines.append("  </defs>")
+    lines.append("  <path id=\"plate\" fill=\"\((dev ? chi : muc).hex)\" filter=\"url(#shadow)\" d=\"\(svgData(plate))\"/>")
+    if dev {
+        lines.append("  <path id=\"stripe\" fill=\"\(hoPhach.hex)\" clip-path=\"url(#plate-clip)\" d=\"\(svgData(stripePath(fromGrid)))\"/>")
+    }
+    for l in glyphLayers(g) {
+        lines.append("  <path id=\"\(l.id)\" fill=\"\(l.fill.hex)\" d=\"\(svgData(l.path))\"/>")
     }
     lines.append("</svg>")
     return lines.joined(separator: "\n") + "\n"
 }
 
-// MARK: - Raster
+// MARK: - Icon Composer document
 
-func bitmap(_ w: Int, _ h: Int) -> CGContext {
-    guard let ctx = CGContext(data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
-                              space: CGColorSpace(name: CGColorSpace.sRGB)!,
-                              bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
-        fatalError("cannot create bitmap context")
-    }
-    return ctx
+func layerSVG(_ p: Path, fill: Colour) -> String {
+    """
+    <?xml version="1.0" encoding="UTF-8"?>
+    <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+      <path fill="\(fill.hex)" d="\(svgData(p))"/>
+    </svg>
+
+    """
 }
 
-func render(_ layers: [Layer], pixels px: Int) -> CGImage {
-    let ctx = bitmap(px, px)
-    let k = CGFloat(px) / canvas
-    ctx.setShouldAntialias(true)
-    // Flip to the SVG coordinate system (y down).
-    ctx.translateBy(x: 0, y: CGFloat(px))
-    ctx.scaleBy(x: k, y: -k)
-    for l in layers {
-        ctx.saveGState()
-        if l.id == "plate" {
-            // Shadow offsets are in device space (y up), unaffected by the CTM.
-            ctx.setShadow(offset: CGSize(width: 0, height: -shadowOffsetY * k), blur: shadowBlur * k,
-                          color: CGColor(gray: 0, alpha: shadowAlpha))
-        }
-        if l.clipToPlate, let plate = layers.first {
-            ctx.addPath(cgPath(plate.path))
-            ctx.clip()
-        }
-        ctx.addPath(cgPath(l.path))
-        ctx.setFillColor(l.fill.cg)
-        ctx.fillPath()
-        ctx.restoreGState()
-    }
-    return ctx.makeImage()!
-}
+/// Writes <dir>/<name>.icon: icon.json plus Assets/*.svg (one outlined path each).
+func writeIcon(_ g: Glyph, dev: Bool, into dir: URL) throws {
+    let name = dev ? "AppIconDev" : "AppIcon"
+    let doc = dir.appendingPathComponent("\(name).icon", isDirectory: true)
+    let fm = FileManager.default
+    try? fm.removeItem(at: doc)
+    let assets = doc.appendingPathComponent("Assets", isDirectory: true)
+    try fm.createDirectory(at: assets, withIntermediateDirectories: true)
 
-func writePNG(_ image: CGImage, to url: URL, dpi: Int = 72) {
-    guard let dest = CGImageDestinationCreateWithURL(url as CFURL, UTType.png.identifier as CFString, 1, nil) else {
-        fatalError("cannot write \(url.path)")
+    func write(_ file: String, _ p: Path, _ fill: Colour) throws {
+        try layerSVG(p, fill: fill).write(to: assets.appendingPathComponent(file), atomically: true, encoding: .utf8)
     }
-    CGImageDestinationAddImage(dest, image, [kCGImagePropertyDPIWidth: dpi, kCGImagePropertyDPIHeight: dpi] as CFDictionary)
-    guard CGImageDestinationFinalize(dest) else { fatalError("cannot write \(url.path)") }
-}
+    let layers = glyphLayers(g)
+    for l in layers { try write("\(l.id).svg", transform(l.path, toDocument), l.fill) }
 
-/// Review sheet: 16, 32, 64, 128 px at actual size on light and dark backgrounds, then the
-/// same images magnified with nearest-neighbour sampling to show the pixels.
-func contactSheet(_ images: [(Int, CGImage)]) -> CGImage {
-    let pad = 24, magnified = 256
-    let width = pad + images.count * (magnified + pad)
-    let height = pad + 2 * (128 + pad) + magnified + pad
-    let ctx = bitmap(width, height)
-    // y up: bottom row = magnified, then dark, then light at the top.
-    ctx.setFillColor(CGColor(srgbRed: 0.93, green: 0.93, blue: 0.94, alpha: 1))
-    ctx.fill(CGRect(x: 0, y: 0, width: width, height: height))
-    let darkY = pad + magnified + pad
-    ctx.setFillColor(CGColor(srgbRed: 0.12, green: 0.12, blue: 0.13, alpha: 1))
-    ctx.fill(CGRect(x: 0, y: darkY - pad / 2, width: width, height: 128 + pad))
-    let lightY = darkY + 128 + pad
-    for (i, (px, img)) in images.enumerated() {
-        let x = pad + i * (magnified + pad)
-        for y in [lightY, darkY] {
-            ctx.draw(img, in: CGRect(x: x + (magnified - px) / 2, y: y + (128 - px) / 2, width: px, height: px))
-        }
-        ctx.interpolationQuality = .none
-        ctx.draw(img, in: CGRect(x: x, y: pad, width: magnified, height: magnified))
-        ctx.interpolationQuality = .high
+    // Top to bottom: the acute over the circumflex, the letter at the bottom.
+    func layerJSON(_ id: String) -> [String: Any] {
+        ["name": id, "image-name": "\(id).svg", "glass": false]
     }
-    return ctx.makeImage()!
+    var groups: [[String: Any]] = [[
+        "layers": ["acute", "circumflex", "a"].map(layerJSON),
+        "shadow": ["kind": "neutral", "opacity": 0.5],
+        "translucency": ["enabled": false, "value": 0.5],
+    ]]
+    if dev {
+        try write("stripe.svg", stripePath { toDocument(fromGrid($0)) }, hoPhach)
+        groups.append([
+            "layers": [[
+                "name": "stripe", "image-name": "stripe.svg", "glass": false,
+                // The layer fill replaces the SVG colour; the Dark rendition is the darker amber.
+                "fill-specializations": [
+                    ["value": ["solid": hoPhach.iconColour]],
+                    ["appearance": "dark", "value": ["solid": hoPhachDark.iconColour]],
+                ],
+            ] as [String: Any]],
+            "shadow": ["kind": "none", "opacity": 0],
+            "translucency": ["enabled": false, "value": 0],
+        ])
+    }
+    let (light, dark) = dev ? (chi, chiDark) : (muc, mucDark)
+    let document: [String: Any] = [
+        // Both fills go through fill-specializations (the entry without an appearance is the
+        // default). With a top-level "fill" next to a Dark specialization, ictool 27.2 paints
+        // the letter layers in the light fill colour in the Dark rendition.
+        "fill-specializations": [
+            ["value": ["solid": light.iconColour]],
+            ["appearance": "dark", "value": ["solid": dark.iconColour]],
+        ],
+        "groups": groups,
+        "supported-platforms": ["squares": ["macOS"]],
+    ]
+    let data = try JSONSerialization.data(withJSONObject: document,
+                                          options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes])
+    try data.write(to: doc.appendingPathComponent("icon.json"))
+    print("wrote \(doc.path)")
 }
 
 func loadGlyph(_ url: URL) throws -> Glyph {
@@ -436,64 +422,13 @@ func loadGlyph(_ url: URL) throws -> Glyph {
     return Glyph(em: CGFloat(em), advance: CGFloat(adv), a: parse(a))
 }
 
-func renderAll(glyphFile: URL, svgDir: URL, iconset: URL, preview: URL?, dev: Bool) throws {
-    let glyph = try loadGlyph(glyphFile)
-    let fm = FileManager.default
-    try fm.createDirectory(at: svgDir, withIntermediateDirectories: true)
-    for v in variants {
-        let base = dev ? "AppIconDev" : "AppIcon"
-        let name = v.name.isEmpty ? "\(base).svg" : "\(base)-\(v.name).svg"
-        try svg(layers(glyph: glyph, variant: v, dev: dev), variant: v, dev: dev)
-            .write(to: svgDir.appendingPathComponent(name), atomically: true, encoding: .utf8)
-        print("wrote \(svgDir.appendingPathComponent(name).path)")
-    }
-
-    // macOS app icon slots: 16, 32, 128, 256, 512 pt at 1x and 2x.
-    try fm.createDirectory(at: iconset, withIntermediateDirectories: true)
-    var entries: [String] = []
-    var cache: [Int: CGImage] = [:]
-    func image(_ px: Int) -> CGImage {
-        if let i = cache[px] { return i }
-        let i = render(layers(glyph: glyph, variant: variant(forPixels: px), dev: dev), pixels: px)
-        cache[px] = i
-        return i
-    }
-    for pt in [16, 32, 128, 256, 512] {
-        for scale in [1, 2] {
-            let px = pt * scale
-            let file = "icon_\(pt)x\(pt)\(scale == 2 ? "@2x" : "").png"
-            writePNG(image(px), to: iconset.appendingPathComponent(file), dpi: 72 * scale)
-            entries.append("""
-                {
-                  "filename" : "\(file)",
-                  "idiom" : "mac",
-                  "scale" : "\(scale)x",
-                  "size" : "\(pt)x\(pt)"
-                }
-            """)
-        }
-    }
-    let contents = "{\n  \"images\" : [\n" + entries.joined(separator: ",\n") +
-        "\n  ],\n  \"info\" : {\n    \"author\" : \"xcode\",\n    \"version\" : 1\n  }\n}\n"
-    try contents.write(to: iconset.appendingPathComponent("Contents.json"), atomically: true, encoding: .utf8)
-    print("wrote \(iconset.path)")
-
-    if let preview {
-        try fm.createDirectory(at: preview, withIntermediateDirectories: true)
-        writePNG(image(512), to: preview.appendingPathComponent("icon-512.png"))
-        writePNG(contactSheet([16, 32, 64, 128].map { ($0, image($0)) }),
-                 to: preview.appendingPathComponent("sizes.png"))
-        print("wrote previews to \(preview.path)")
-    }
-}
-
 // MARK: - Main
 
 let args = CommandLine.arguments
 func usage() -> Never {
     FileHandle.standardError.write(Data("""
     usage: make-app-icon.swift outline <font.ttf> <glyphs.txt>
-           make-app-icon.swift render [--dev] <glyphs.txt> <svg-dir> <appiconset-dir> [<preview-dir>]
+           make-app-icon.swift render <glyphs.txt> <svg-dir> <icon-dir>
 
     """.utf8))
     exit(2)
@@ -502,15 +437,17 @@ guard args.count >= 2 else { usage() }
 switch args[1] {
 case "outline" where args.count == 4:
     try outline(fontURL: URL(fileURLWithPath: args[2]), out: URL(fileURLWithPath: args[3]))
-case "render" where args.count >= 5:
-    let dev = args[2] == "--dev"
-    let rest = Array(args.dropFirst(dev ? 3 : 2))
-    guard rest.count == 3 || rest.count == 4 else { usage() }
-    try renderAll(glyphFile: URL(fileURLWithPath: rest[0]),
-                  svgDir: URL(fileURLWithPath: rest[1], isDirectory: true),
-                  iconset: URL(fileURLWithPath: rest[2], isDirectory: true),
-                  preview: rest.count == 4 ? URL(fileURLWithPath: rest[3], isDirectory: true) : nil,
-                  dev: dev)
+case "render" where args.count == 5:
+    let glyph = try loadGlyph(URL(fileURLWithPath: args[2]))
+    let svgDir = URL(fileURLWithPath: args[3], isDirectory: true)
+    let iconDir = URL(fileURLWithPath: args[4], isDirectory: true)
+    try FileManager.default.createDirectory(at: svgDir, withIntermediateDirectories: true)
+    for dev in [false, true] {
+        let file = svgDir.appendingPathComponent(dev ? "AppIconDev.svg" : "AppIcon.svg")
+        try flatSVG(glyph, dev: dev).write(to: file, atomically: true, encoding: .utf8)
+        print("wrote \(file.path)")
+        try writeIcon(glyph, dev: dev, into: iconDir)
+    }
 default:
     usage()
 }

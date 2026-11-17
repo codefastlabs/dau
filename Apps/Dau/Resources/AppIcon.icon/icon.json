@@ -1,0 +1,49 @@
+{
+  "fill-specializations" : [
+    {
+      "value" : {
+        "solid" : "srgb:0.06275,0.15686,0.35294,1.00000"
+      }
+    },
+    {
+      "appearance" : "dark",
+      "value" : {
+        "solid" : "srgb:0.04314,0.05882,0.10196,1.00000"
+      }
+    }
+  ],
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "glass" : false,
+          "image-name" : "acute.svg",
+          "name" : "acute"
+        },
+        {
+          "glass" : false,
+          "image-name" : "circumflex.svg",
+          "name" : "circumflex"
+        },
+        {
+          "glass" : false,
+          "image-name" : "a.svg",
+          "name" : "a"
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : false,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "macOS"
+    ]
+  }
+}
