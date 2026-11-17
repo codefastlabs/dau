@@ -76,6 +76,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 30/10/2026: "Sửa 30/10/2026 cùng D2; bản trước: quy tắc có 'chế độ khi mở app' và tuỳ chọn nhớ chế độ theo app. Lý do: khi bỏ chế độ Anh, đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ; đo 30/10/2026: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng."
 
+- 17/11/2026 (người dùng duyệt, sau kiểm toán các lượt đo trước `0bf8d3f`): câu "Đo được" trong "Vì sao" sửa cho đúng điều đã đo; luật không đổi. Bản trước, nguyên văn: "Đo được: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được;"
+
 ### D6. Phát hành
 
 - 17/11/2026 (người dùng chốt): cask Homebrew nằm trong tap riêng `codefastlabs/homebrew-tap`, chuyển vào `homebrew/cask` khi repo đạt ngưỡng nổi bật. Lý do: tra ngày 17/11/2026 thấy tên `dau` còn trống trong `homebrew/cask` (không cask, không formula nào trùng), nhưng repo 0 sao, dưới ngưỡng nhận gói. Bản trước, nguyên văn: "GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (khai báo `auto_updates true`) sau bản thử đầu. Không có Mac App Store."
@@ -124,6 +126,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): ý "App trả lời chậm" rút còn luật và bất biến; giới hạn chậm (`lateLimit` 2 thao tác cộng loạt phím dồn dưới 50 ms) và điều kiện so chữ khi chậm quá giới hạn chỉ còn ở `docs/Architecture.md` mục "App trả lời chậm". Số đo chuyển khỏi sổ, nguyên văn từ "Vì sao": "Thay theo vị trí đó sai 3/3 lượt, thay theo vị trí Dấu tự theo dõi đúng 3/3; Telex của Apple cùng điều kiện ra chữ ở cả 2 ô đo hợp lệ, ô thứ ba là đo hỏng do cách script chuyển nguồn (M6, 09–10/11/2026)"; "sau khi sửa, ca đó đúng mọi lần nó xảy ra (10/11/2026)" (ca đầu văn bản trong VS Code).
 - 16/11/2026 (người dùng duyệt, sau kiểm toán M6): ý "App trả lời chậm" thêm câu: cùng phép chứng minh dùng cho lần đọc chữ của D20 và của ý "Từ đã hết hợp lệ" (mã đã làm vậy trong M6, trước chỉ ghi ở `docs/Architecture.md`). "Vì sao": câu cũ "Telex của Apple cùng điều kiện ra đúng" nói mạnh hơn số đo (Apple ra chữ của chính nó, có "Hocj", "mêting"), nay là "ra cùng chữ như khi trang rảnh (2 ô đo hợp lệ)".
+
+- 17/11/2026 (người dùng duyệt, sau kiểm toán các lượt đo trước `0bf8d3f`): số ô đối chứng Telex của Apple ghi đủ. Bản trước: "(2 ô đo hợp lệ)".
 
 ### D12. Ưu tiên tiến trình
 

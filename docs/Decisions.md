@@ -141,7 +141,7 @@ Một quy tắc duy nhất:
 - Dấu **không** tự đổi Việt/Anh theo app và không có "Nhớ chế độ theo từng ứng dụng".
 - Nhớ nguồn đầu vào theo từng cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt Bàn phím › Nguồn đầu vào, N1); Cài đặt của Dấu không hiện tuỳ chọn đó.
 
-**Vì sao:** Dấu chỉ có một input mode (D2 (Chuyển Việt/Anh)), nên đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ. Đo được: lệnh đổi được nguồn nhưng bước macOS báo cho app đang gõ bị sandbox chặn (`deny mach-lookup com.apple.tsm.portname`, per-pid), thêm temporary-exception không gỡ được; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng.
+**Vì sao:** Dấu chỉ có một input mode (D2 (Chuyển Việt/Anh)), nên đổi sang U.S. phải gọi `TISSelectInputSource` từ bộ gõ. Đo được: TIS báo nguồn đã đổi; ô gõ có đổi bộ gõ không thì lượt đó không kiểm (gọi từ tiến trình khác thì ô gõ giữ bộ gõ cũ, `0bf8d3f`); nhật ký sandbox có `deny mach-lookup com.apple.tsm.portname` (per-pid), thêm temporary-exception không gỡ được, nhưng lời từ chối đó chưa chứng minh là nguyên nhân; còn khi U.S. đang bật thì Dấu không nhận sự kiện nào để đổi lại. Thêm một tiến trình chạy nền chỉ để đổi nguồn là không đáng.
 
 ### D6. Phát hành
 
@@ -238,7 +238,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Gợi ý tự hoàn thành: mọi cách người dùng tự chọn chữ (chuột, ⇧ + mũi tên, ⌘A) đều đã reset bộ đệm trước đó, nên vùng bôi đen như vậy chỉ có thể là gợi ý của app.
 - Dựng lại khi lệch: bấm chuột vào thanh địa chỉ Chrome không được báo cho bộ gõ, nên "tieemf" từng ra "tieemf".
 - Từ đã hết hợp lệ: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ; "tốt", ⌘A, "toots" từng ra "toots" và hỏng tới dấu cách.
-- App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó thì sai, thay theo vị trí Dấu tự theo dõi thì đúng; Telex của Apple khi trang bận ra cùng chữ như khi trang rảnh (2 ô đo hợp lệ).
+- App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó thì sai, thay theo vị trí Dấu tự theo dõi thì đúng; Telex của Apple khi trang bận ra cùng chữ như khi trang rảnh (trang rảnh 1/1; trang bận 2 ô hợp lệ trên 3, ô còn lại ra nguyên chuỗi phím nên là đo hỏng).
 - Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ.
 - Đầu văn bản: ở từ đầu tiên của tài liệu mới trong VS Code, "Chieeuf" từng ra "êhieuf" khi VS Code chưa báo phím nào của loạt phím dồn.
 
