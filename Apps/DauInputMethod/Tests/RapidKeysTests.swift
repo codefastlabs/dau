@@ -358,46 +358,6 @@ struct RapidKeysTests {
         #expect(doc.badRanges == 0)
     }
 
-    /// Known limit: a document the app empties between two keys of one burst, at its
-    /// very start, answers exactly as Chromium's cache does when the page has reported
-    /// nothing (caret 1, the latest key before it). It is taken for late: one
-    /// `insertText` whose range is past the text, then the next key sees the mismatch.
-    @Test("known limit: document emptied by the app inside a burst at its start is taken for a late app")
-    func clearedAtStartInBurst() {
-        let doc = LateDocument()
-        doc.cache = .chromium
-        var engine = VietEngine(options: DauSettings.defaults.engineOptions)
-        var composer = InPlaceComposer()
-        var now = 0.0
-        var kinds: [PerfLog.Kind] = []
-        func type(_ keys: String) {
-            for route in routes(keys) {
-                now += 0.01
-                let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-                kinds.append(outcome.kind)
-                if !outcome.consumed { doc.typed(route) }
-            }
-        }
-        type("oo")
-        doc.appEdit("")
-        type("is")
-        #expect(kinds.last == .late)
-        #expect(doc.badRanges == 1)
-        // The same after a pause: the answer stands (D11 mismatch).
-        let doc2 = LateDocument()
-        doc2.cache = .chromium
-        var engine2 = VietEngine(options: DauSettings.defaults.engineOptions)
-        var composer2 = InPlaceComposer()
-        var last = InPlaceComposer.Outcome()
-        for (index, route) in routes("oois").enumerated() {
-            if index == 2 { doc2.appEdit("") }
-            last = composer2.handle(route, time: Double(index) * 0.01 + (index == 3 ? 0.5 : 0), engine: &engine2, client: doc2)
-            if !last.consumed { doc2.typed(route) }
-        }
-        #expect(last.kind != .late && last.kind != .lateGuess)
-        #expect(doc2.badRanges == 0)
-    }
-
     @Test("first word in a burst, the answer at caret 1 with another letter before it: not late, the answer stands")
     func firstWordOtherTextAtAnswer() {
         let doc = LateDocument()

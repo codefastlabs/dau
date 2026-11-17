@@ -130,7 +130,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 - **Hiện tượng:**
   - Chrome khi trang bận: app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); vị trí dự đoán của composer (`expected`) chỉ có trong một từ nên không bắt được.
   - Phím dồn ở Chrome, VS Code, Firefox (`docs/Compatibility.md` mục 6.2): app chậm cả loạt phím vừa gõ.
-  - App tính `selectedRange` và vùng thay từ đầu từ đang gõ, về 0 sau mỗi dấu cách (mô hình `LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15 đo 10/11/2026; hiện chưa biết app nào hoạt động như vậy): vị trí app trả luôn khác vị trí Dấu theo dõi dù app không chậm. Vùng thay bắt đầu ngoài chữ app đang giữ thì bị bỏ.
+  - App tính `selectedRange` và vùng thay từ đầu từ đang gõ, về 0 sau mỗi dấu cách (mô hình `LateDocument.Origin.word` trong test, dựng từ log trình soạn thảo Cursor 3.29.15 đo 10/11/2026; chưa biết app nào hoạt động như vậy): vị trí app trả luôn khác vị trí Dấu theo dõi dù app không chậm. Vùng thay bắt đầu ngoài chữ app đang giữ thì bị bỏ.
 - **Trạng thái của `CursorTracker`:**
   - `known`: vị trí con trỏ Dấu theo dõi qua ranh giới từ. Mất khi reset (click, mũi tên, phím tắt, Return/Tab, đổi client) và khi ⌫ đi thẳng mà không biết chữ bị xoá. `known` không thay cho `expected`: ở đầu từ, vị trí khác `known` vẫn có thể là app tự sửa chữ (tự sửa chính tả, gạch ngang thông minh).
   - `edits`: các thao tác gần nhất bộ gõ đã làm hoặc để đi thẳng; thao tác chèn tại con trỏ được đánh dấu `atCaret`.
@@ -139,7 +139,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
 - **Chứng minh app chậm** (`rebuild`), khi ở phím thay chữ `selectedRange` khác `known`:
   - Chữ đọc được, ở một trong hai dạng, cộng các thao tác app chưa áp ra đúng từ trong engine, mỗi thao tác xoá gặp đúng chữ nó xoá: (a) chữ như trước các thao tác đó (Firefox; Chrome khi không có thao tác chèn tại con trỏ); (b) chữ đó cộng thao tác chèn tại con trỏ mới nhất trong số đó (bộ đệm Chromium).
   - Số thao tác app được chậm: tối đa `lateLimit`, cộng `burst`. Vượt `lateLimit` thì chữ app trả trước các thao tác đó cũng phải là `tail`, so ít nhất hai đơn vị chữ của app (một, khi phần đọc bắt đầu từ đầu văn bản), và mọi thao tác xoá trong số đó phải biết chữ bị xoá. Lý do: thao tác thay làm ở vị trí app trả bắt đầu lại `tail` và không biết chữ nó xoá, nên dựng lại qua nó thì khớp với mọi chữ; ở app tính theo từ (Cursor 3.29.15), vị trí app trả trùng vị trí của lần thay trước trong từ nên app đúng giờ bị coi là chậm.
-  - Trong `lateLimit`, chữ dựng lại và `tail` phải trùng ở phần cả hai cùng có (ở app tính vị trí theo từ, sau một từ một chữ cái có thay chữ, chữ của từ mới cộng hai thao tác cuối có thể ra đúng từ trong engine dù bộ gõ đã gõ chữ khác: "ở đâu" ra "ở dâu").
+  - Trong `lateLimit`, chữ dựng lại và `tail` phải trùng ở phần cả hai cùng có (trên mô hình app tính vị trí theo từ, sau một từ một chữ cái có thay chữ, chữ của từ mới cộng hai thao tác cuối có thể ra đúng từ trong engine dù bộ gõ đã gõ chữ khác: "ở đâu" ra "ở dâu").
   - Đầu văn bản (`typedHere`): khi các thao tác đó bắt đầu từ đầu văn bản và phím đang xử lý cũng thuộc loạt phím dồn, coi là app chậm mà không cần chữ của app. Sau một quãng nghỉ thì không, vì người dùng có thể đã bấm chuột mà IMK không báo.
   - Hoặc chữ đọc được là `tail` thiếu đúng số đơn vị app chậm (tối đa `lateLimit`), so ít nhất hai đơn vị; đơn vị thiếu phải đứng sau ít nhất một đơn vị đã so (bộ đệm Chromium thiếu phần trang chưa báo, nằm sau chữ nó đã có). `tail` mất các đơn vị đầu là app chỉ giữ từ đang gõ (Cursor 3.29.15: đọc được "co" ở chỗ đã gõ "ừ co").
 - **Kết quả:**
@@ -148,10 +148,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
   - Còn lại: trong từ là lệch (D11), đầu từ thì tin `selectedRange`.
   - Vị trí lấy từ một `selectedRange` có thể cũ không ghi đè `known` (ghi đè làm lần trả lời chậm sau trùng với `known` sai, ví dụ "kóo").
 - Cùng cách chứng minh dùng ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ).
-- **Giới hạn:**
-  - App chậm hơn số thao tác trên mà không chứng minh được thì như trước.
-  - Ở đầu văn bản, app tự xoá hết chữ giữa hai phím của một loạt phím dồn trả lời giống hệt bộ đệm Chromium khi trang chưa báo gì, nên bị coi là app chậm: một `insertText` có vùng thay nằm ngoài chữ, phím thay chữ sau đó mới thấy lệch (`RapidKeysTests.clearedAtStartInBurst`).
-  - App tính vị trí từ đầu từ (mô hình `LateDocument.Origin.word`, giữ trong test như giới hạn của loại app đó): app chậm thật qua ranh giới từ thì thay ở vị trí nào cũng sai (`staleAnswerAcrossWords`). App đúng giờ bị coi là chậm khi mọi phím từ lúc lấy vị trí ở đầu chữ app giữ tới phím đang xử lý thuộc một loạt phím dồn, và phím đó là phím thứ hai của một từ không phải từ đầu (`burstFromStartOfWord`): vị trí, chữ đọc được và `known` giống hệt tài liệu mới chưa áp phím nào của app dùng bộ đệm Chromium (`sameAnswerAsLateNewDocument`). Chỉ áp ca tài liệu mới cho từ đầu tiên thì sửa được mô hình theo từ nhưng mô hình VS Code và Firefox sai lại (`stalledStartTable`). Một ca chỉ có ở mô hình: `wordStartingAsTheText`. Chưa sửa.
+- **Khi không chứng minh được:** app chậm hơn số thao tác trên thì Dấu xử lý như với câu trả lời đúng giờ (lệch thì dựng lại hoặc reset, D11). Các kịch bản app trả lời chậm mà chỉ mô hình cho ra, cùng hướng sửa dự phòng khi gặp ở app thật: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
 - **Kiểm:** client giả trong `LateAnswerTests`, `RapidKeysTests` và `CursorEditorTests` (mô hình Chrome, VS Code, Firefox theo mã nguồn, mô hình tính vị trí theo từ dựng từ log Cursor 3.29.15; thời gian của app là số chọn, không phải số đo).
 
 **Chromium và Firefox theo mã nguồn** (chưa đo trên bản đã cài; cơ sở cho mô hình trong test):

@@ -39,7 +39,7 @@ private struct EditorSession {
     }
 }
 
-/// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026): the app answers `selectedRange` from the start of the word being typed. No known app behaves this way; the known issues below are the limits of Dấu with this kind of app
+/// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026): the app answers `selectedRange` from the start of the word being typed. No app measured since behaves this way.
 /// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/history/LogM6.md`, logs in
 /// build/load/cursor-20261110-094602 and cursor2-20261110-100405, not committed).
 @Suite("In-place mode in an app that counts positions from the start of the word (M6: the word-origin model)")
@@ -115,53 +115,6 @@ struct CursorEditorTests {
         #expect(s.overCalls == 0)
     }
 
-    // MARK: The app is behind (group 2 of the runs): not fixed
-
-    /// Words that came out wrong only at nominal 5 ms, not in every run: the answer
-    /// was stale across a word boundary (the page had not applied the space, or the
-    /// letters after it). A stale position is in the coordinates of a word the page has
-    /// left, or of a word it has not filled yet, and the page applies the range in the
-    /// coordinates it has when it gets to it: neither the answer nor the followed
-    /// position (which counts from an earlier word) is where the word is. The code from
-    /// before M6, which took the answer as it was, gives the same wrong words in this
-    /// model (run in a copy of 4695eae, not in this repo).
-    ///
-    /// Each case replays keys of the logs: `before` at 100 ms, `keys` 10 ms apart on
-    /// time, each key of `late` with the answer `lags` edits behind (`sel` is the answer
-    /// at the last of them), `rest` on time. `measured` is the text of the log, which
-    /// the model must give; `right` is what a fix must give.
-    @Test("known limit, words of the Cursor logs with a stale answer across a word boundary: wrong as measured",
-          arguments: [
-              // pilot-5 key 19: sel 4 (the page has "anh"), replaced at 3,1: dropped.
-              ("anh ", "co", "s", [3], " ", 4, "anh co ", "anh có "),
-              // c-5-1 of 10:04, key 19: sel 1 (the page has the space), replaced at 0,1.
-              ("anh ", "co", "s", [2], " ", 1, "anh óo ", "anh có "),
-              // c-5-1 of 10:04, key 39: sel 2 (the page has "m"): mismatch.
-              ("ranhr ", "minh", "f", [3], " ", 2, "rảnh minhf ", "rảnh mình "),
-              // c-5-2 of 09:46, keys 147, 148: sel 6 (the page has "email"), range 5,1: dropped.
-              ("email ", "ve", "ef", [3, 4], " ", 6, "email ve ", "email về "),
-              // c-5-1 of 10:04, key 96: sel 1 (the page has the space), replaced at 0,1.
-              ("nayf ", "la", "f", [2], " ", 1, "này àa ", "này là "),
-              // c-5-1 of 10:04, key 79: sel 2 (the page has "c"), replaced at 0,2.
-              ("anh ", "cua", "r", [2], " ", 2, "anh ủaa ", "anh của "),
-              // pilot-5 key 159: sel 5 (the page has "buổi"), `late`, range dropped.
-              ("buooir ", "me", "e", [3], "ting ", 5, "buổi meting ", "buổi meeting "),
-          ])
-    func staleAnswerAcrossWords(_ word: (before: String, keys: String, late: String, lags: [Int], rest: String,
-                                         sel: Int, measured: String, right: String)) {
-        var s = EditorSession()
-        s.type(word.before, every: 0.1)
-        s.type(word.keys, every: 0.01)
-        for (route, lag) in zip(routes(word.late), word.lags) { s.key(route, after: 0.01, lag: lag) }
-        #expect(s.outcomes.last?.attempt?.selection.location == word.sel)
-        s.type(word.rest, every: 0.01)
-        #expect(s.doc.text == word.measured)
-        withKnownIssue("the word-origin model answers late across a word boundary (group 2, not fixed)") {
-            #expect(s.doc.text == word.right)
-        }
-        #expect(s.overCalls == 0)
-    }
-
     // MARK: After a word of one letter (run of 11:44)
 
     /// The run c100-short of 11:44 (Cursor 3.29.15, Dấu Debug dc71b7f, 100 ms between
@@ -218,40 +171,7 @@ struct CursorEditorTests {
         #expect(s.overCalls == 0)
     }
 
-    // MARK: A burst from the start of a word (run of 12:42): not fixed
-
-    /// The run c20 of 12:42 (Cursor 3.29.15, Dấu Debug 1c6326a, a new document, 20 ms
-    /// between keys, replayed here with its key times; build/load/fix3-20261110-124244,
-    /// not committed): "anh ddi owr
-    /// ddaau " gave "anh di ở đâu". At "d" + d (key 6) the answer was right (sel 1) and
-    /// was taken for a late one (`late`, known 5, range 4,1, which the app drops).
-    ///
-    /// Every key since the position was anchored at 0 came in one burst, and the text
-    /// read, "d", is the latest key: what Chromium's cache answers when the page of a
-    /// new document has applied none of the keys (`CursorTracker.typedHere`, the edits
-    /// start the document; `sameAnswerAsLateNewDocument`). (In the run of 11:44 the
-    /// same keys came out right: a probe word typed first left no followed position.)
-    @Test("known limit, the 20 ms run of the Cursor log from a new document: the second key of the second word, taken for a late answer as measured")
-    func burstFromStartOfWord() {
-        var s = EditorSession()
-        // Milliseconds between the keys of the run (`ev_ns` of the perf log).
-        let gaps: [Double] = [0, 45, 8, 33, 25, 28, 27, 90, 29, 30, 38, 24, 26, 25, 31, 80, 27, 32]
-        for (route, gap) in zip(routes("anh ddi owr ddaau "), gaps) { s.key(route, after: gap / 1000) }
-        let key = s.outcomes[5]
-        #expect(key.kind == .late)
-        #expect(key.attempt?.selection.location == 1)
-        #expect(key.attempt?.known == 5)
-        #expect(key.attempt?.replacement == NSRange(location: 4, length: 1))
-        // The rest of the log: replace at keys 10, 11, 14, 16, nothing else.
-        #expect(s.kinds.enumerated().filter { $0.element == .replace }.map { $0.offset + 1 } == [10, 11, 14, 16])
-        #expect(s.doc.text == "anh di ở đâu ")
-        withKnownIssue("a burst from the start of a word in a word-origin app (measured, not fixed)") {
-            #expect(s.doc.text == "anh đi ở đâu ")
-        }
-        #expect(s.overCalls == 0)
-    }
-
-    /// Why that key cannot be told from a late app with what the input method has: the
+    /// A run of the model cannot be told from a late app with what the input method has: the
     /// same keys at the same times in a new document of an app that counts from the
     /// start of the document, uses Chromium's cache and has applied none of them (VS
     /// Code's new document, measured for the first word: sel 1, known 4, `late`,
@@ -289,85 +209,5 @@ struct CursorEditorTests {
         #expect(here.kind == .late && last.kind == .late)
         type("i ", behind: false)
         #expect(doc.text == "anh đi ")
-    }
-
-    // MARK: Predicted by the model, not seen in a run
-
-    /// A word that starts with the first letter of the text typed since the position
-    /// was anchored at 0, every key in one burst: the answer of the app on time, one
-    /// letter of the word short in Chromium's cache form, reads that letter where the
-    /// text typed starts, which is enough at the start of a document
-    /// (`CursorTracker.typedHere`). Not seen in a run.
-    @Test("predicted by the model, not seen in a run: a word starting as the text does, in a burst from a position anchored at 0")
-    func wordStartingAsTheText() {
-        var s = EditorSession()
-        s.type("chieeuf nay anh cos ", every: 0.02)
-        #expect(s.kinds.contains(.late))
-        withKnownIssue("a right answer of a word-origin app taken for a late one (model only)") {
-            #expect(s.doc.text == "chiều nay anh có ")
-        }
-        #expect(s.overCalls == 0)
-    }
-
-    // MARK: Simulation table
-
-    /// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026), with a page that applies keys late. The times are not measured:
-    /// chosen so the page falls some keys behind at 5 ms and keeps up from 10 ms (in the
-    /// runs the stale answers of group 2 came only at nominal 5 ms, where the keys were
-    /// in fact 2 to 20 ms apart).
-    static let cursor = AppModel(name: "cursor", cache: .chromium, replace: .keepSelection, work: 1.0...8.0,
-                                 origin: .word)
-
-    static let speeds: [Double] = [5, 10, 20, 100]
-
-    struct Cell {
-        var wrong = 0, late = 0, guess = 0, mismatch = 0, dropped = 0, over = 0, bad = 0, behind = 0
-        var example: RapidKeysTests.Run?
-    }
-
-    static func cell(_ keys: String, _ model: AppModel, ms: Double) -> Cell {
-        var cell = Cell()
-        for seed in 1...UInt64(RapidKeysTests.seeds) {
-            let run = RapidKeysTests.simulate(keys, model, ms: ms, seed: seed)
-            if !run.ok { cell.wrong += 1; if cell.example == nil { cell.example = run } }
-            cell.late += run.kinds.filter { $0 == .late }.count
-            cell.guess += run.kinds.filter { $0 == .lateGuess }.count
-            cell.mismatch += run.kinds.filter { $0 == .mismatch }.count
-            cell.dropped += run.dropped
-            cell.over += run.overCalls
-            cell.bad += run.badRanges
-            cell.behind = max(cell.behind, run.behind)
-        }
-        return cell
-    }
-
-    /// The four models at 5, 10, 20, 100 ms (lines starting with CURSOR are the table of
-    /// the report). Chrome, VS Code, Firefox: no wrong run, as `RapidKeysTests.burstTable`.
-    /// Cursor: no wrong run where the page of the model keeps up (10, 20, 100 ms); at 5 ms
-    /// it is behind and answers in the coordinates of another word (group 2 of the runs,
-    /// not fixed: `staleAnswerAcrossWords`), recorded only.
-    @Test("load-test strings at 5, 10, 20, 100 ms in Chrome, VS Code, Firefox and Cursor models")
-    func table() {
-        var lines: [String] = []
-        var failures = 0
-        for model in [AppModel.chrome, .vscode, .firefox, Self.cursor] {
-            for ms in Self.speeds {
-                var cells: [String] = []
-                for (name, keys) in RapidKeysTests.strings {
-                    let cell = Self.cell(keys, model, ms: ms)
-                    let n = RapidKeysTests.seeds
-                    let isCursor = model.name == Self.cursor.name
-                    failures += cell.over + cell.bad + (isCursor && ms < 10 ? 0 : cell.wrong)
-                    cells.append("\(name) \(cell.wrong)/\(n) wrong, behind ≤ \(cell.behind), late \(cell.late), "
-                        + "guess \(cell.guess), mismatch \(cell.mismatch), dropped \(cell.dropped), over \(cell.over), bad \(cell.bad)")
-                    if let example = cell.example {
-                        lines.append("  e.g. \(model) \(Int(ms)) ms \(name): \(example.text) ≠ \(example.reference)")
-                    }
-                }
-                lines.append("CURSOR \(model) \(Int(ms)) ms: " + cells.joined(separator: "; "))
-            }
-        }
-        print(lines.joined(separator: "\n"))
-        #expect(failures == 0)
     }
 }

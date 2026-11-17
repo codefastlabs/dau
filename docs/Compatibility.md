@@ -186,7 +186,7 @@ Một app, một bundle ID, hai kiểu cửa sổ: Agents (mở khi chạy app, 
 - Vị trí (dòng `diag replace`): Cursor trả vị trí tính từ đầu văn bản. Ở mọi ô, `selectedRange` bằng vị trí Dấu theo dõi hoặc chậm 1–4 thao tác kiểu bộ đệm Chromium (`kind=late`, chữ vẫn đúng). Ba lượt `std` 5 ms ở trình soạn thảo: 41, 39 và 41 lần thay, trong đó 37, 39 và 35 đúng vị trí, còn lại trễ mà vẫn đúng chữ.
 - Gạch chân chưa đo trên 3.30.14.
 - Cursor không có nhãn "Đề xuất".
-- Mô hình `LateDocument.Origin.word`: app tính `selectedRange` và vùng thay từ đầu từ đang gõ (dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Đó là giới hạn của Dấu với loại app này; hiện chưa biết app nào hoạt động như vậy. Các hướng xử lý: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
+- Mô hình `LateDocument.Origin.word` (test): app tính `selectedRange` và vùng thay từ đầu từ đang gõ, dựng từ log trình soạn thảo Cursor 3.29.15 (đo 10/11/2026). Chưa biết app nào hoạt động như vậy; hướng xử lý dự phòng: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
 
 ### 5.5 Terminal
 

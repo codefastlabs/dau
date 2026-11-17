@@ -301,7 +301,7 @@ struct InPlaceComposerTests {
     func noResyncWhenFast() {
         // Not at the start of a document: there, keys in one burst and an answer from
         // before all of them are an app that is slow to start
-        // (`RapidKeysTests.firstWordOfEmptyDocument`, `clearedAtStartInBurst`).
+        // (`RapidKeysTests.firstWordOfEmptyDocument`).
         var s = Session("xy ")
         s.interval = 0.01
         s.type("oo")
@@ -1400,7 +1400,7 @@ struct ProducedWordTests {
 /// Reported 17/11/2026, intermittent: a word typed without its tone, Space, ⌫ back over
 /// the Space, then the mark key, and the mark did not reach the word (it was typed after
 /// it: "hocj"). Mechanisms that give that result; the way to tell them apart is what the
-/// same keys do right after (retyping the key slowly). An answer more than `lateLimit`
+/// same keys do right after (retyping the key slowly). An answer within `lateLimit`
 /// edits late is in `LateBackspaceMarkTests`.
 @Suite("InPlaceComposer: ⌫ over Space, then a mark key")
 struct BackspaceThenMarkTests {
