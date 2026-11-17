@@ -116,7 +116,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 
 - Ứng dụng có trong `scripts/selftest/typing/run.sh`: tự gõ bằng script. Ứng dụng nào, câu mẫu và đáp án, tuỳ chọn (`--delay`, `--keys`, `--underline`, `--source`, `--busy`…), cách mở và đọc chữ, quyền cần cấp: đầu script. Script chiếm màn hình: hỏi giờ chạy trước (CLAUDE.md).
 - Nhịp: 120 ms gần gõ thường; 5, 10, 20 ms để tìm ngưỡng phím dồn; `--busy` cho trang bận (M6).
-- Đối chứng: Telex của Apple cùng điều kiện (`--source`), theo CLAUDE.md ý "Đo độ đúng khi gõ".
+- Đối chứng: Telex của Apple cùng điều kiện (`--source`), theo [`scripts/CLAUDE.md`](../scripts/CLAUDE.md) mục "Đo độ đúng khi gõ".
 - Ứng dụng khác: gõ tay (tốc độ bình thường, rồi gõ nhanh hết sức), ghi rõ cách thử ở mục 5.
 
 ### 4.3 Những gì cần kiểm tra

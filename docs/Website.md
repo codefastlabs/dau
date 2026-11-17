@@ -48,4 +48,4 @@ Thứ tự mục:
 
 ## Trang "Dấu khác các bộ gõ khác thế nào" (M10)
 
-Chưa có artboard. Nội dung và nguồn: [`docs/Roadmap.md`](Roadmap.md) mục M10; làm artboard trước khi viết mã ([CLAUDE.md](../CLAUDE.md), mục "Giao diện").
+Chưa có artboard. Nội dung và nguồn: [`docs/Roadmap.md`](Roadmap.md) mục M10; làm artboard trước khi viết mã ([`Apps/Dau/CLAUDE.md`](../Apps/Dau/CLAUDE.md)).

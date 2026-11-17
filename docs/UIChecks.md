@@ -4,7 +4,7 @@ Danh sách phải chạy hết trước khi báo xong bất kỳ thay đổi gia
 
 ## Khi nào chạy, đạt nghĩa là gì
 
-- Chạy sau mọi thay đổi giao diện, trước khi cho người dùng xem bản build (CLAUDE.md mục "Cách làm việc đã rút ra", ý "Giao diện").
+- Chạy sau mọi thay đổi giao diện, trước khi cho người dùng xem bản build ([`Apps/Dau/CLAUDE.md`](../Apps/Dau/CLAUDE.md)).
 - File này không ghi số. Mức đạt nằm ở [`scripts/selftest/settings-window/Reference.swift`](../scripts/selftest/settings-window/Reference.swift), kèm nguồn của từng số; số đo System Settings gốc ở [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) (D9 (Giao diện)).
 - Mỗi hàng của bảng kết quả là một trong ba:
   - `ok`: đạt;

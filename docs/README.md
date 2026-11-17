@@ -1,6 +1,6 @@
 # Tài liệu
 
-Mục lục mọi tài liệu trong `docs/`. Cách ghi (mỗi sự kiện ở một chỗ, khi nào sửa file nào): [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn" và "Viết tài liệu". Mỗi dòng chỉ nói file chứa gì; trạng thái và ngày nằm ở đầu từng file.
+Mục lục mọi tài liệu trong `docs/`. Cách ghi (mỗi sự kiện ở một chỗ, khi nào sửa file nào): [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn", và [`docs/CLAUDE.md`](CLAUDE.md) (luật viết tài liệu). Mỗi dòng chỉ nói file chứa gì; trạng thái và ngày nằm ở đầu từng file.
 
 ## Đọc khi bắt đầu một phiên
 

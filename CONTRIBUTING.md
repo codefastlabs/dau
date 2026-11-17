@@ -63,11 +63,11 @@ Gặp lỗi ký, App Group hay chứng chỉ bị thu hồi: [`docs/Troubleshoot
 
 ## Quy ước
 
-Quy ước đầy đủ nằm trong [CLAUDE.md](CLAUDE.md), áp dụng cho cả người lẫn Claude Code:
+Quy ước đầy đủ nằm trong [CLAUDE.md](CLAUDE.md) và `CLAUDE.md` của một số thư mục, áp dụng cho cả người lẫn Claude Code:
 
-- Mã nguồn (Swift 6, Swift Testing, tiếng Anh trong mã và commit, String Catalog): mục "Quy ước mã nguồn".
-- Engine và OpenKey (không chép mã từ OpenKey hay UniKey; đáp án test theo chính tả và `Decisions.md`): mục "OpenKey là tài liệu tham khảo, không phải đáp án".
-- Viết tài liệu: mục "Viết tài liệu".
+- Mã nguồn (Swift 6, Swift Testing, tiếng Anh trong mã và commit, String Catalog), engine và OpenKey (không chép mã từ OpenKey hay UniKey; đáp án test theo chính tả và `Decisions.md`): [CLAUDE.md](CLAUDE.md), mục "Quy ước mã nguồn".
+- Viết tài liệu: [`docs/CLAUDE.md`](docs/CLAUDE.md).
+- Đo độ đúng khi gõ (đối chứng, câu thử, đáp án): [`scripts/CLAUDE.md`](scripts/CLAUDE.md).
 - Script trong `scripts/`: [`scripts/README.md`](scripts/README.md).
 - Phát hành (tag, DMG, ký, appcast, secret của CI): [`docs/Releasing.md`](docs/Releasing.md).
 

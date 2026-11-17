@@ -11,19 +11,14 @@ Phiên mới đọc `docs/Progress.md` trước (đang ở đâu, việc đang c
 
 Mục lục mọi tài liệu khác (tra cứu, nghiên cứu, lưu trữ): `docs/README.md`.
 
+Luật chỉ dùng cho một loại việc nằm trong `CLAUDE.md` của thư mục đó. Claude Code tự nạp file đó khi đọc file trong thư mục; việc dưới đây chạm tới thư mục khác thì đọc nó trước:
+- [`docs/CLAUDE.md`](docs/CLAUDE.md) — viết tài liệu, cả README và CONTRIBUTING ở gốc.
+- [`scripts/CLAUDE.md`](scripts/CLAUDE.md) — đo độ đúng khi gõ: mọi lượt gõ thử (script, `/dogfood`) và câu thử trong test.
+- [`Apps/Dau/CLAUDE.md`](Apps/Dau/CLAUDE.md) — giao diện (app chủ, trang web, canvas): canvas trước, mã sau.
+
 ## Điều phối
 
-Phiên chính là **người điều phối**: lập kế hoạch, giao việc cho subagent trong `.claude/agents/`, kiểm chứng kết quả, commit, cập nhật `docs/Progress.md`. Phiên chính hạn chế tự viết mã lớn để giữ ngữ cảnh gọn.
-
-| Agent | Phụ trách |
-|---|---|
-| `researcher` | đọc OpenKey, test của các bộ gõ khác, tài liệu Apple; viết `docs/research/` (ghi chú OpenKey: `docs/research/OpenKeyNotes.md`) |
-| `engine-dev` | `Packages/DauEngine` và test |
-| `imk-dev` | `Apps/DauInputMethod` |
-| `app-ui-dev` | `Apps/Dau` (SwiftUI) |
-| `release-eng` | XcodeGen, CI, ký, notarize, Sparkle, Homebrew, xuất file nhận diện, triển khai trang web |
-| `web-dev` | mã trang web: trang tải về (M8), trang so sánh cách gõ (M10) |
-| `auditor` | kiểm tra độc lập, chỉ đọc; phải ĐẠT trước khi đóng mốc |
+Phiên chính là **người điều phối**: lập kế hoạch, giao việc cho subagent trong `.claude/agents/` (vai trò ghi ở phần mô tả của từng file), kiểm chứng kết quả, commit, cập nhật `docs/Progress.md`. Phiên chính hạn chế tự viết mã lớn để giữ ngữ cảnh gọn.
 
 - Lệnh `/milestone M#` chạy trọn một mốc; `/audit` kiểm tra toàn repo; `/dogfood` phiên chính tự gõ như người dùng thật để tìm chỗ vấp (chiếm màn hình, hỏi giờ chạy trước).
 - Subagent không thừa hưởng ngữ cảnh của phiên chính: mỗi lần giao việc phải nêu phạm vi, file được sửa, tiêu chí xong.
@@ -37,20 +32,14 @@ Phiên chính là **người điều phối**: lập kế hoạch, giao việc c
 - `docs/Decisions.md` là nguồn chuẩn **duy nhất** cho quyết định. Canvas không chép sổ quyết định. Lịch sử trò chuyện trên claude.ai có nhiều đề xuất đã bị thay thế (Rust/WASM, nhúng UniKey, từ điển tiếng Anh, `NSSpellChecker`, phím chuyển nhấn-nhả ⇧, chạy OpenKey làm đáp án test…). Gặp thông tin trái với `Decisions.md` ở bất kỳ đâu thì theo `Decisions.md`, và sửa hoặc báo chỗ lệch.
 - Khi một quyết định thay đổi (người dùng đã chốt, hoặc đã giao quyết định đó trong chat): sửa `Decisions.md` trước, ghi lý do, trong cùng commit với thay đổi; rồi sửa artboard và mọi chỗ còn cách nói cũ cho khớp trong cùng lượt làm việc (cách tìm: mục "Viết tài liệu", ý "Tự soát trước khi commit").
 - **Mỗi sự kiện chỉ ghi ở một chỗ.** Quyết định ở `Decisions.md` (nơi khác dẫn số D/N, không chép lại nội dung); số đo giao diện ở `docs/research/SystemSettingsReference.md` và script kiểm; số test và số đo theo ngày ở nhật ký `Progress.md` (mốc đã đóng: trong `docs/history/`); kiến trúc ở `Architecture.md` tả cấu trúc, không chép số. Dẫn mã bằng tên kiểu/hàm, không bằng số dòng. File agent trong `.claude/agents/` chỉ nêu vai trò và nơi đọc, không chép sự kiện.
-- **Đóng mốc nào thì chuyển nhật ký và ghi nhớ của mốc đó sang `docs/history/`.** Mọi phiên đều đọc `Progress.md`, nên nó chỉ giữ việc của mốc đang làm.
-- **Tài liệu nghiên cứu (`docs/research/`) có mục "Hiện trạng" ở đầu, ghi ngày.** Kết luận đổi thì sửa thẳng vào mục đó và vào thân bài, không viết thêm mục "Đính chính" ở cuối.
+- **`Progress.md` chỉ giữ việc của mốc đang làm**, vì mọi phiên đều đọc nó. Đóng mốc theo `docs/Roadmap.md` mục "Tiêu chí đóng mốc", gồm chuyển nhật ký và ghi nhớ của mốc sang `docs/history/`.
 
 ## Viết tài liệu
 
-Tài liệu mục nhanh hơn mã, vì không có test nào đỏ khi nó sai. Các luật dưới đây giữ cho nó ít, đúng và theo kịp mã.
+Luật viết đầy đủ ở [`docs/CLAUDE.md`](docs/CLAUDE.md). Hai luật dưới đây áp cho mọi thay đổi, kể cả khi chỉ sửa mã:
 
-- **Chỉ ghi điều mã không tự nói.** Quyết định và lý do (`Decisions.md`), cấu trúc và luồng giữa các thành phần (`Architecture.md`), cách dùng (README, CONTRIBUTING), kết luận nghiên cứu. Chi tiết đổi theo mã (giá trị hằng số, các bước bên trong một hàm, tuỳ chọn của script) nằm trong comment của mã hay đầu script; tài liệu dẫn tên kiểu, hàm, script.
-- **Ghi hiện trạng, không ghi nhật ký.** File tra cứu chỉ giữ điều đang đúng. Việc xong thì xoá kế hoạch và danh sách bước của nó, kết quả thay vào chỗ câu hỏi; diễn biến theo lượt, theo ngày vào nhật ký `Progress.md` (rồi `docs/history/`), không vào file tra cứu.
-- **Thứ tự theo người đọc.** Mở đầu bằng mục đích và kết luận; kết quả nằm cạnh câu hỏi nó trả lời; phần quan trọng trước, phần đã dừng hay để sau ở cuối. Câu ngắn; gạch đầu dòng cho các ý ngang hàng, không cho một đoạn văn.
-- **Đổi mã thì sửa tài liệu trong cùng commit.** Đổi hành vi, tên kiểu, tên script hay tuỳ chọn thì tự soát như ý cuối mục này.
-- **Tên file theo cách các repo của Apple đặt.** File chuẩn ở gốc repo và `README.md` của từng thư mục viết hoa toàn bộ (`README.md`, `CONTRIBUTING.md`, `LICENSE`); mọi tài liệu khác viết PascalCase, từ viết tắt giữ hoa (`docs/Decisions.md`, `docs/UIChecks.md`, `docs/research/SwiftUIWindowAPI.md`). Đổi tên file thì sửa mọi chỗ dẫn trong cùng commit.
-- **Viết cho GitHub.** Tài liệu công khai trên GitHub: file trong repo dẫn bằng liên kết bấm được (``[`docs/Decisions.md`](docs/Decisions.md)``); chú thích cuối trang dùng URL đầy đủ (GitHub không đổi liên kết tương đối ở đó); thoát `|` trong bảng; chuỗi `<…>` để trong backtick.
-- **Tự soát trước khi commit.** Không có script kiểm tài liệu: đọc lại các tài liệu đã sửa, grep `docs/`, CLAUDE.md, CONTRIBUTING, README và `.claude/` tìm tên, cách nói, số mục mà thay đổi làm lỗi thời, sửa hết trong cùng lượt; đổi tiêu đề hay số mục thì grep chỗ dẫn tới nó (cả comment trong mã và script).
+- **Đổi mã thì sửa tài liệu trong cùng commit.** Đổi hành vi, tên kiểu, tên script hay tuỳ chọn thì tự soát như ý dưới.
+- **Tự soát trước khi commit.** Không có script kiểm tài liệu: đọc lại các tài liệu đã sửa, grep `docs/`, các `CLAUDE.md`, CONTRIBUTING, README và `.claude/` tìm tên, cách nói, số mục mà thay đổi làm lỗi thời, sửa hết trong cùng lượt; đổi tiêu đề hay số mục thì grep chỗ dẫn tới nó (cả comment trong mã và script).
 
 ## Quy tắc làm việc
 
@@ -59,20 +48,16 @@ Tài liệu mục nhanh hơn mã, vì không có test nào đỏ khi nó sai. C�
 - **Kiểm tra chéo các tính năng cùng tác động lên một đầu vào.** Với mỗi cặp tính năng như vậy, liệt kê các đầu vào mà chúng cho kết quả trái nhau và quyết định bên nào thắng, ghi vào `Decisions.md` (bài học từ D4 (Từ nước ngoài)).
 - **Đo trước khi tối ưu.** Mọi khẳng định về hiệu năng phải có số đo (os_signpost / Instruments / test hiệu năng).
 - **Không ghi lời hứa chưa kiểm chứng vào giao diện** (N5 (Chỉ hứa điều đã kiểm chứng)). Dùng ô trống dạng `[Kết quả bài test tải nặng]`.
-- Làm theo mốc trong `docs/Roadmap.md`, mỗi mốc kết thúc bằng test xanh và một bản tóm tắt ngắn: đã làm gì, đã đo được gì, còn mở gì.
+
 ## Quy ước mã nguồn
 
 - Swift 6, strict concurrency. Engine là Swift package thuần, **không import Foundation/AppKit**.
 - Dự án Xcode sinh từ `project.yml` bằng XcodeGen, không commit thủ công thay đổi trong `.xcodeproj`.
 - Test bằng Swift Testing. Tên định danh, comment và commit message bằng tiếng Anh; chuỗi giao diện trong String Catalog, khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện); thuật ngữ ở `docs/Glossary.md`).
+- **API của Apple trước, vá vòng sau.** Đọc tài liệu Apple và HIG trước, ghi API được thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API, và ghi lý do.
 - Script trong `scripts/` viết bằng zsh, dòng đầu `#!/bin/zsh` (bash có sẵn trên macOS là bản 3.2); phần cần API Apple hay logic đáng kể viết bằng Swift biên dịch một lần, không dùng Python hay Perl (lý do và ngoại lệ duy nhất: `scripts/README.md` mục "Ngôn ngữ"); in ra terminal bằng tiếng Việt qua `scripts/lib/log.sh` (`scripts/README.md` mục "Đầu ra").
 - Giấy phép GPLv3 cho toàn bộ repo. Engine là của Dấu, viết từ đầu bằng Swift. Không chép mã từ OpenKey hay UniKey.
-
-## OpenKey là tài liệu tham khảo, không phải đáp án
-
-- Khi cần hiểu tường tận một tính năng (quy tắc đặt dấu, chính tả, khôi phục, gõ tắt…), clone OpenKey **ra ngoài repo** (ví dụ `/tmp/OpenKey`) và đọc mã nguồn, chủ yếu `Sources/OpenKey/engine/`.
-- Ghi lại hiểu biết **bằng lời của mình** vào `docs/research/OpenKeyNotes.md`: tính năng, hành vi, ca biên, lỗi phát hiện được, và Dấu làm hay không làm (dẫn số quyết định).
-- Kết quả mong đợi trong test viết theo quy tắc chính tả tiếng Việt và `Decisions.md`, không lấy từ kết quả chạy OpenKey. Chỗ nào Dấu cố ý khác OpenKey thì ghi rõ trong `OpenKeyNotes.md`.
+- **OpenKey là tài liệu tham khảo, không phải đáp án** (D10). Đọc mã OpenKey thì clone **ra ngoài repo** (ví dụ `/tmp/OpenKey`, chủ yếu `Sources/OpenKey/engine/`) và ghi hiểu biết **bằng lời của mình** vào `docs/research/OpenKeyNotes.md`, kèm Dấu làm hay không làm (dẫn số quyết định). Kết quả mong đợi trong test viết theo chính tả tiếng Việt và `Decisions.md`, không lấy từ kết quả chạy OpenKey; chỗ Dấu cố ý khác OpenKey ghi trong `OpenKeyNotes.md`.
 
 ## Cách làm việc đã rút ra
 
@@ -98,26 +83,13 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 - **Chốt theo số đo đã có:** số máy hay số lượt đo ít không phải lý do hoãn chốt một tính năng hay quyết định, và không ghi quyết định là "tạm" hay "chờ đo thêm" vì lý do đó. Phạm vi phép đo (máy nào, mấy lượt) ghi cạnh con số; đo thêm mà số mới nói khác thì sửa quyết định.
 - **Chẩn đoán:** dựng dòng thời gian các lần chạy đạt và không đạt; nêu ít nhất hai, ba giả thuyết và mỗi giả thuyết dự đoán gì cho từng quan sát; thử phân biệt có đối chứng, lặp ít nhất ba lần. Chỉ giả thuyết giải thích được mọi quan sát mới là nguyên nhân, còn lại ghi "chưa rõ". Lỗi chập chờn không bao giờ đổ cho việc người dùng đang dùng máy. Một app hay một bước từng chạy được (tra nhật ký `docs/Progress.md` và `docs/history/`) mà lần này hỏng thì đó là lỗi chập chờn cần chẩn đoán và thử lại ngay trong lượt, không báo là "không dùng được".
 - **Bản thử không phải kết luận:** chỉ ghi kết luận khi đã đo trên Dấu thật hoặc có nguồn. Bản thử (bundle đổi ID, app thử) phải tái hiện được một hành vi đã biết của Dấu trước khi tin kết quả của nó; quan sát trên bản thử ghi riêng một mục có nhãn, không rút kết luận. Đọc trạng thái ở chỗ người dùng nhìn thấy (danh sách "+", menu), không chỉ qua TIS từ một tiến trình mới. Nguồn chính thức nói khác quan sát thì nêu cả hai. Commit message và `Progress.md` không khẳng định nhiều hơn điều đã đo.
-- **Đo độ đúng khi gõ:**
-  - Đối chứng là bộ gõ tiếng Việt khác trong cùng điều kiện (Telex của Apple), không phải bàn phím U.S.
-  - Câu thử là câu tiếng Việt có nghĩa, mang ý tích cực, mà vẫn chứa đúng ca cần đo; không dùng từ vô nghĩa hay chuỗi ghép cho đủ ca.
-  - Đáp án là chữ người gõ muốn ra, khớp từng phím đã gõ (soát chuỗi phím trước khi chạy).
-  - Chuỗi thử gõ như người dùng thật: đặt dấu tự do, đổi và xoá dấu, ⌫ giữa từ, thêm dấu cho từ đã gõ, từ tiếng Anh; không chỉ Telex thứ tự chuẩn.
-  - Biết chắc phím vào ô nào, và bộ gõ nào đang xử lý phím trong ô đó, trước khi tin "đạt". Nguồn do macOS báo hay biểu tượng trên thanh menu chưa đủ. Bộ gõ đối chứng chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô gõ đã có focus, không bằng API từ tiến trình của script (cách làm ở đầu `scripts/selftest/typing/run.sh`). Ô đối chứng ra nguyên chuỗi phím là đo hỏng, không phải kết quả.
-  - Bước kiểm tự nó cũng là phép đo: phím gửi dồn, chữ gạch chân chưa chốt, hay một từ thử không phải tiếng Việt đều cho kết quả sai về bộ gõ.
-  - Chạy thẳng ô phân biệt được các giả thuyết, kèm đối chứng, thay vì cả ma trận.
-  - Mọi thứ cần để dựng lại một lượt đo (chuỗi phím, đáp án, lệnh) nằm trong repo, không trong thư mục tạm. Log của lượt đo thì không (ý "Repo là công khai").
+- **Đo độ đúng khi gõ:** luật ở [`scripts/CLAUDE.md`](scripts/CLAUDE.md); đọc trước mọi lượt gõ thử và trước khi soạn câu thử cho test.
 - **Tái hiện trên mã mới nhất trước khi sửa:** lỗi lấy từ tài liệu hay một lượt đo cũ thì trước khi sửa phải xác nhận nó còn xảy ra với mã mới nhất và phiên bản app hiện tại: chạy lại ô đo đó ở app thật.
 - **Chỉ báo lỗi app thật đã cho thấy:** test known issue, giới hạn trong tài liệu, nhãn trong danh sách tương thích chỉ ghi lỗi đã đo ra ở app thật. Kịch bản chỉ có trên mô hình (app giả trong test) không ghi là lỗi hay giới hạn; nó chỉ dùng để thử hướng sửa khi đã có ca thật.
 - **Sửa lỗi trước, đường lui sau:** gặp lỗi của Dấu thì đề xuất cách sửa trước; đường lui (như gạch chân, D13 (Gạch chân là đường lui cuối cùng)) chỉ bàn khi sửa không đạt.
 - **Xong trọn rồi mới commit:** một việc chỉ commit khi đã kiểm chứng xong trong cùng lượt. Bước kiểm cần người dùng đồng ý (lượt chiếm màn hình, cài bộ gõ) thì xin ngay khi nhận việc, kèm thời lượng, để chạy trước khi commit; không commit trước rồi ghi "chưa thử". Commit message, `Progress.md` và báo cáo không để lại danh sách "chưa đo, chưa thử" như việc treo: mỗi mục hoặc làm ngay trong lượt, hoặc bỏ kèm lý do không đáng làm, hoặc là quyết định của người dùng thì hỏi một lần kèm đề xuất. Chỉ điều không thể kiểm trong một lượt (cần dùng hằng ngày nhiều ngày) mới ghi, kèm cách sẽ biết.
 - **Tự phản biện trước khi giao:** kế hoạch, bản giao việc, bản tóm tắt, commit đều tự soát trước khi đưa người dùng: chỉ tới thứ có thật trong repo, không tự mâu thuẫn, không nói quá số đo, không chép lại điều đã ghi ở nơi khác.
-- **Giao diện:**
-  - Canvas trước, mã sau. Sửa artboard trên canvas, cho người dùng xem và duyệt, rồi mới giao sửa mã; mã xong thì đối chiếu lại với artboard. Không sửa giao diện mà artboard chưa có.
-  - Người dùng duyệt artboard xong thì lưu các file canvas bằng công cụ Artifact (`read` với `paths`) rồi chạy `scripts/design/render-canvas.sh <thư mục đã lưu>` để cập nhật bản chụp trong `docs/canvas/`, cùng commit với thay đổi.
-  - Giao việc giao diện thì đưa file nguồn artboard (`docs/canvas/src/`); artboard thắng bản giao việc. Chiều cao artboard đo từ bản dựng, đệm đáy 40 px như đệm đầu, không ước.
-  - Đọc tài liệu Apple và HIG trước, ghi API được thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API, và ghi lý do.
-  - Trước khi cho người dùng xem bản build giao diện, chạy ma trận cửa sổ thật và `docs/UIChecks.md`, tự xem ảnh.
+- **Giao diện:** canvas trước, mã sau; luật đầy đủ ở [`Apps/Dau/CLAUDE.md`](Apps/Dau/CLAUDE.md), đọc trước mọi thay đổi giao diện, kể cả trang web.
 - **Hướng dẫn bấm cho người dùng:** dùng đúng nhãn macOS đang hiện trên máy họ (đã thấy trên màn hình hoặc ảnh chụp); nhãn nào chưa kiểm thì nói rõ.
 - **Repo là công khai:** ghi quyết định và yêu cầu bằng lời trung tính, không trích lời, giọng hay nhận xét của người dùng. Không ghi máy nào ở đâu hay của ai, tên máy, tên tài khoản hay nơi làm việc; các máy phát triển gọi theo chip (máy M1, máy M3 Max). Nhận xét về cách phiên chính làm việc không ghi vào repo. Log và bản ghi thô của lượt đo, chẩn đoán hay chạy thử (log perf, byte thô, ảnh chụp, chữ đọc lại) không đưa lên repo, kể cả khi đã lọc hết thông tin cá nhân: chúng ở `build/` (git bỏ qua) và được dọn theo luật dọn dẹp; repo chỉ giữ kết luận, số đo đã tổng hợp và lệnh để chạy lại. Không đặt giới hạn kích thước hay độ dài cho tài liệu; giữ tài liệu gọn bằng cách sắp xếp nội dung.
 - **Sửa commit chưa push thì gộp vào nó** (`git commit --fixup` rồi `git rebase --autosquash`, hoặc `git reset --soft` khi là các commit cuối), không thêm commit "sửa lại"; lịch sử không giữ câu sai đã được sửa trước khi push.
@@ -125,15 +97,11 @@ Các luật dưới đây rút từ những lần làm sai trước đây. Chún
 
 ## Lệnh thường dùng
 
-Tuỳ chọn và tác dụng phụ của từng script ghi ở đầu script.
+Mọi script và tác dụng phụ: [`scripts/README.md`](scripts/README.md); tuỳ chọn ghi ở đầu từng script. Mọi bộ test: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
 
 - `brew install xcodegen && xcodegen generate` — sinh `Dau.xcodeproj`.
 - `scripts/dev/doctor.sh` — máy thiếu gì để build, test, chạy Dấu, kèm lệnh sửa; không đổi gì trên hệ thống.
 - `scripts/dev/dau-version.sh` — bản bộ gõ đã cài và đang chạy có đúng commit mới nhất không.
 - `scripts/dev/install-app.sh` — script cài duy nhất: build Dấu.app và đặt vào `/Applications`; Dấu.app đó thay bộ gõ đã cài (D37 (Cài bộ gõ)). `--ref stable` cài bản dùng hằng ngày.
-- `scripts/dev/clean-dau.sh` — liệt kê mọi dấu vết của Dấu trên tài khoản (chỉ đọc); `--yes` do người dùng tự chạy.
-- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine` — test engine. Các bộ test khác: [CONTRIBUTING.md](CONTRIBUTING.md), mục "Chạy test".
-- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Apps/Dau/Tests` — test của app chủ.
+- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine` — test engine; `--package-path Apps/Dau/Tests` cho app chủ.
 - `scripts/check-l10n/check.sh` — kiểm String Catalog (D41).
-- `scripts/selftest/typing/run.sh` — gõ thử trong app thật, chiếm màn hình.
-- `scripts/design/render-canvas.sh <thư mục>` — chụp canvas thành bản trong `docs/canvas/`.

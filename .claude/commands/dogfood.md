@@ -51,7 +51,7 @@ Tự soạn tại chỗ, mỗi lượt chủ đề khác, như một người vi
 - từ tiếng Anh và tên sản phẩm lẫn trong câu (email, deadline, GitHub, iPhone), viết tắt (HN, ok, k), URL hay tên file;
 - từ dễ vấp: uơ, ươ, gi/qu (giường, quyển, quốc), từ không dấu chen giữa từ có dấu.
 
-Mỗi câu có nghĩa và mang ý tích cực, kể cả câu dựng riêng cho một ca (CLAUDE.md, "Đo độ đúng khi gõ"). Trước khi gõ, soát từng chuỗi phím ra đúng chữ muốn ra.
+Mỗi câu có nghĩa và mang ý tích cực, kể cả câu dựng riêng cho một ca (`scripts/CLAUDE.md`, "Đo độ đúng khi gõ"). Trước khi gõ, soát từng chuỗi phím ra đúng chữ muốn ra.
 
 ## Cách gõ
 
@@ -69,7 +69,7 @@ Công cụ: phím gửi bằng `osascript` (System Events `keystroke`, `key code
 - Bong bóng gợi ý sửa của macOS (chữ đề xuất kèm ×) hiện dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận gợi ý. Người thật nhìn thấy nó, script thì không: chụp màn hình trước dấu cách ở chỗ dừng sau từ, ghi gợi ý như một quan sát, và soạn bước tiếp theo như người đã thấy nó (gõ tiếp, bấm ×, hay chấp nhận rồi sửa).
 - Cuối mỗi ô đọc lại toàn bộ chữ (⌘A ⌘C, khôi phục clipboard như `typing/run.sh`) và so từng từ với chữ muốn ra.
 - Ghi cả chỗ "đúng nhưng khó chịu": phải gõ lại, phải nghĩ cách gõ, gạch chân ở chỗ không cần, chữ nhảy, chậm thấy được, hành vi khác Telex của Apple mà người quen Telex của Apple sẽ bất ngờ.
-- Chỗ nghi ngờ: gõ lại đúng đoạn đó một lần nữa bằng Dấu (có lặp lại không), rồi bằng Telex của Apple trong cùng ô, chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô đã có focus (CLAUDE.md, "Đo độ đúng khi gõ"). Telex của Apple ra cùng kết quả thì ghi là hành vi của app hay macOS, không phải lỗi Dấu. Telex của Apple cũng hiện chữ bằng gạch chân, nên nó là đối chứng sát nhất cho chế độ gạch chân của Dấu.
+- Chỗ nghi ngờ: gõ lại đúng đoạn đó một lần nữa bằng Dấu (có lặp lại không), rồi bằng Telex của Apple trong cùng ô, chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô đã có focus (`scripts/CLAUDE.md`, "Đo độ đúng khi gõ"). Telex của Apple ra cùng kết quả thì ghi là hành vi của app hay macOS, không phải lỗi Dấu. Telex của Apple cũng hiện chữ bằng gạch chân, nên nó là đối chứng sát nhất cho chế độ gạch chân của Dấu.
 
 Biết giới hạn của cách làm: phím từ System Events không hẳn là phím từ bàn phím; ảnh chụp không thấy chữ nháy giữa hai lần chụp. Ghi các giới hạn này cạnh quan sát liên quan.
 

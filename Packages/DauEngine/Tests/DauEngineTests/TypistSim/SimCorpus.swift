@@ -1,5 +1,5 @@
 // Sentences for the typist simulator (TypistSimTests). Meaningful, positive Vietnamese of
-// everyday writing, some with English and code words mixed in (CLAUDE.md, "Đo độ đúng khi
+// everyday writing, some with English and code words mixed in (scripts/CLAUDE.md, "Đo độ đúng khi
 // gõ"). The expected output of each sentence is the sentence itself.
 //
 // Source: copied from scripts/research/compare-ims/vi-sentences.txt and
