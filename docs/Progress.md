@@ -52,3 +52,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - File văn bản thường: VS Code không gợi ý "Khách" cho tiền tố "Kha" nên ô ⇥ nhận gợi ý không đo được gì (hành vi của VS Code).
   - Công cụ: `install-app.sh` mở lại Dấu.app (đang chạy trước khi cài) ở tiền cảnh, cửa sổ Cài đặt lấy mất focus của app đang thử; bước kiểm cửa sổ của script gõ chặn lại trước khi gõ.
   — không commit mã.
+- 17/11 — `install-app.sh` mở lại Dấu.app (khi đang chạy trước lúc cài) bằng `open -g`, không đưa app lên trước — phiên chính — `zsh -n` đạt; chưa chạy lại script (cài bộ gõ cần người dùng chọn giờ).

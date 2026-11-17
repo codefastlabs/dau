@@ -162,7 +162,9 @@ fi
 
 BUNDLE_ID=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$APP/Contents/Info.plist")
 
-# Quit a running copy normally (never force quit) and remember to open it again.
+# Quit a running copy normally (never force quit) and remember to open it again, in the
+# background (open -g): its window must not take the focus from the app the user, or a
+# typing script, is in.
 was_running=0
 if pgrep -f "$DEST/Contents/MacOS/" >/dev/null 2>&1; then
   was_running=1
@@ -245,8 +247,8 @@ case "$reconcile_status" in
 esac
 
 if [[ "$was_running" == 1 ]]; then
-  log_step "Mở lại Dấu.app"
-  open "$DEST"
+  log_step "Mở lại Dấu.app ở nền"
+  open -g "$DEST"
 fi
 
 log_step "Phiên bản đã cài"
