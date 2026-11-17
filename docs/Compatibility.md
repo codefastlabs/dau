@@ -2,7 +2,7 @@
 
 Dấu gõ đúng hay sai trong từng ứng dụng, ở nhịp nào và vì sao; giới hạn còn lại và cách thử. Mọi số đo trên máy M1 (M1 Pro), macOS 27.2, trừ các lượt trên máy M3 Max (Chrome khi trang bận, 09/11/2026; phím dồn ở Chrome, Firefox, VS Code, 10/11/2026); ô nào chưa thử thì để trống, không điền bằng phỏng đoán. Đây không phải lời hứa (N5 (Chỉ hứa điều đã kiểm chứng)): trang web chỉ dùng kết quả theo [`docs/Website.md`](Website.md).
 
-## Hiện trạng (12/11/2026)
+## Hiện trạng (17/11/2026)
 
 Tiêu chí nhãn "Đề xuất" ở D13 (Gạch chân là đường lui cuối cùng). Nhịp là khoảng cách giữa hai phím khi tự gõ; gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí. Chi tiết và điều kiện đo: mục 5.
 
@@ -21,12 +21,14 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 | xterm.js (trang thử trong Chrome) | sai (D43; mục 6.8) | đúng | không |
 | Terminal tích hợp của VS Code (xterm.js) | sai (D43); trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8) | đúng, cả khi chuyển sang trình soạn thảo | không: bật cho cả app thì mọi ô mất D20 |
 | Sublime Text | đúng, cả thêm dấu cho từ đã gõ sau ⌫ và ← | không thêm dấu được cho từ đã chốt | không |
+| WebStorm, trình soạn thảo | chữ tiếng Việt đúng ở 80 ms; từ tiếng Anh không được khôi phục (D4), lỗi của Dấu chưa sửa (mục 5.9) | đúng ở 80 ms | không |
+| WebStorm, terminal | sai (D43; mục 6.8) | đúng ở 80 ms | không: bật cho cả app thì mọi ô mất D20 |
 | Notes | đúng ở 30 và 0 ms | chưa đo | không |
 | Mail, Telegram | đúng ở 30 ms | chưa đo | không |
 
 - Brave, Arc và các app Electron khác không có nhãn: chưa đo, nên chưa có số đo cho thấy sai (D13); không suy từ Chrome, Edge, VS Code (Cursor cũng là Electron mà còn sai). Đo mà sai thì gắn lại theo D13.
 - Kết quả trình duyệt trước 09/11/2026 (M3) chưa chắc là gõ vào ô của trang: script khi đó chỉ kiểm tiêu đề cửa sổ, nên phím có thể vào thanh địa chỉ mà lượt vẫn đạt. Từ 09/11/2026 script chỉ gõ khi ô của trang có focus; các số M6 của Chrome, Edge, Firefox đo sau ngày đó.
-- 13 trong 42 ứng dụng ở mục 3 có số đo; danh sách chưa đo ở mục 7.
+- 14 trong 42 ứng dụng ở mục 3 có số đo (JetBrains IDE: chỉ WebStorm); danh sách chưa đo ở mục 7.
 
 ## 1. Danh sách tương thích
 
@@ -62,7 +64,7 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, hỏi `selectedRange` m�
 | Soạn mã | Cursor | `com.todesktop.230313mzl4w4u92` | có (3.29.15) | Electron (dựng từ VS Code 1.128.0) | đã đo, mục 5.4 |
 | Soạn mã | Zed | `dev.zed.Zed` | có (1.23.2) | tự vẽ bằng Metal (GPUI, Rust), vỏ AppKit | chưa biết |
 | Soạn mã | Sublime Text | `com.sublimetext.4` | có (Build 4215) | tự vẽ, vỏ AppKit | đã đo, mục 5.7 |
-| Soạn mã | JetBrains IDE | `com.jetbrains.WebStorm`; khác: `com.jetbrains.intellij`, `com.jetbrains.intellij.ce`, `com.jetbrains.pycharm`, `com.jetbrains.goland`, `com.google.android.studio` | WebStorm có (2026.2.3, `~/Applications`); các ID khác không | Java (JetBrains Runtime) | chưa biết; nhập liệu qua lớp Java |
+| Soạn mã | JetBrains IDE | `com.jetbrains.WebStorm`; khác: `com.jetbrains.intellij`, `com.jetbrains.intellij.ce`, `com.jetbrains.pycharm`, `com.jetbrains.goland`, `com.google.android.studio` | WebStorm có (2026.3, `~/Applications`); các ID khác không | Java (JetBrains Runtime); terminal Reworked dựng trên trình giả lập Ghostty VT | WebStorm đã đo, mục 5.9 |
 | Soạn mã | Xcode | `com.apple.dt.Xcode` | có (27.1) | AppKit, trình soạn mã riêng | chưa biết; có gợi ý hoàn thành mã |
 | Terminal | Terminal | `com.apple.Terminal` | có (2.15) | AppKit, chờ shell in lại chữ | đã đo, mục 5.5 |
 | Terminal | iTerm2 | `com.googlecode.iterm2` | không | AppKit (suy luận) | như Terminal (suy luận) |
@@ -197,6 +199,13 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 - Telegram 13.1.0 (30/10/2026, System Events, Saved Messages, không gửi): câu mẫu cũ đúng ở 30 ms, không gạch chân, không nhảy chữ. `selectedRange` 240 / 1.670 µs.
 - Hai ca sai ở Notes và Mail khi gõ hằng ngày (11/11/2026) là do tự sửa của macOS, với mọi bộ gõ (mục 6.1).
 
+### 5.9 WebStorm
+
+- 2026.3 (WS-263.7307.202, JetBrains Runtime 25.0.4.1 b635.79), đo 17/11/2026, `typing/run.sh` (`webstorm`: trình soạn thảo, tệp `.txt` trong dự án tạm; `webstormterm`: terminal Reworked, mặc định của bản này), câu mẫu mặc định, 80 ± 30 ms một phím, nghỉ 250 ms sau mỗi từ, một lượt mỗi ô, đối chứng Telex của Apple. Cơ chế và chẩn đoán: [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md).
+- Trình soạn thảo, thay tại chỗ: "ưindows car tôi yêu tiếng Việt, Sủnise". Từ tiếng Việt đúng, hai từ tiếng Anh không được khôi phục (D4). Sau mỗi phím Dấu để đi thẳng, Dấu bị reset, nên phím kế tiếp đi qua lần đọc của D20 (`seed`, `seed_pass`, `seed_none`) và mốc khôi phục của D4 dời tới chữ đang hiện; ai gây reset chưa rõ (giả thuyết: `markedTextAbandoned:` của JetBrains Runtime). Lỗi của Dấu (D13), chưa sửa (mục 7).
+- Terminal, thay tại chỗ: "ưindows caảr toôi yeêu tieêngs Vieêtj, Sunủnise", byte gửi xuống shell giống hệt, không có ký tự xoá: ô bỏ qua vùng thay (mục 6.8).
+- Gạch chân: đúng cả hai ô. Telex của Apple: "ưindows car tôi yêu tiếng Việt, Sủnise" cả hai ô (không có khôi phục từ tiếng Anh).
+
 ## 6. Giới hạn đã biết
 
 Lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tượng nguồn): [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md).
@@ -235,6 +244,7 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 - Cơ chế (đọc mã) và các hướng đã xét: [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md). Chuỗi phím và đáp án: `scripts/research/terminal-underline/run.sh`. Quyết định: D43.
 - Ghostty 1.4.0 không thay theo `replacementRange` và báo `selectedRange` là `{0,0}`: không phải app trả lời chậm (mục 6.2), hỏi lại bao lâu cũng không đúng. Dấu không xử lý riêng (D43): thay tại chỗ sai, gạch chân đúng; Ghostty mang nhãn "Đề xuất". Số đo: mục 5.6.
+- Terminal Reworked của WebStorm 2026.3 cùng loại: thay tại chỗ sai, gạch chân đúng (mục 5.9). Không gắn nhãn, cùng lý do như VS Code.
 - Terminal dựng bằng xterm.js (terminal tích hợp của VS Code; Cursor và app Claude cùng cơ chế, chưa đo): thay tại chỗ sai, gạch chân đúng, kể cả trình soạn thảo cùng cửa sổ khi chuyển ô (số đo: research mục 2). Không gắn nhãn: các app này có nhiều ô gõ khác, bật gạch chân cho cả app thì mọi ô mất D20.
 - Ghostty nuốt Return ngay sau khi chốt chữ gạch chân, với Dấu và với Telex của Apple: lỗi của Ghostty (PR #15048 của Ghostty tả lỗi này, đóng chưa merge).
 - Gạch chân (D13) không có D20: ⌫ về từ đã chốt hay ← vào giữa từ rồi gõ dấu thì ra chữ gốc ("baj", "tôsi"); Telex của Apple cũng vậy. Ứng dụng thay tại chỗ đúng (như Sublime Text) không nên bật gạch chân.
@@ -243,11 +253,12 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
 
-- Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
+- Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE trừ WebStorm, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Docs, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
 - Đo lại sau M6: Terminal ở nhịp dồn hơn 30 ms; VS Code khi app bận.
 - Click reset và mũi tên reset cho phần lớn ứng dụng (mũi tên reset theo D4 × D20).
 - Trình soạn thảo Cursor: nhóm lỗi ở 5 ms và ca gõ dồn từ phím đầu của tài liệu mới; hai hướng sửa cần đổi N3 hoặc D11.
 - VS Code: một lượt mà vài phím đầu không tới bộ gõ, nguyên nhân chưa rõ.
+- Trình soạn thảo WebStorm: mất khôi phục D4 vì Dấu bị reset sau mỗi phím đi thẳng (mục 5.9). Bước kế và các ca còn đáng đo (⌫ dời dấu, Return sau từ cần khôi phục, nhịp 30 ms): [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) mục 5.
 - Đối chứng Telex của Apple ở các ô phím dồn của VS Code và Firefox: đo trước khi sửa cách chuyển nguồn của script nên ra nguyên chuỗi phím, chưa đo lại.
 - Chrome: "vieetj" giữ nguyên trong thanh địa chỉ tab mới, chưa tái hiện.
 - Chrome, Edge, Firefox: phím dồn khi trang bận (mục 5.2).

@@ -41,6 +41,7 @@ Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hi�
 | [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) | ca thử (chuỗi phím, không đáp án) gom từ bộ test của các bộ gõ tiếng Việt khác; ghi công ở [`docs/research/external-test-inputs/NOTICE.md`](research/external-test-inputs/NOTICE.md) |
 | [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md) | so sánh Dấu với bộ gõ khác: Telex của macOS trong ứng dụng thật, các bộ gõ khác ở mức engine |
 | [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) | gõ trong Ghostty và terminal dựng bằng xterm.js (ô bỏ qua vùng thay chữ); sửa chữ ở chế độ gạch chân |
+| [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) | chữ của bộ gõ tới terminal và trình soạn thảo của WebStorm (JetBrains Runtime) thế nào; dự đoán từ mã nguồn và kết quả đo của Dấu |
 | [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | luồng chính của trang web bận bao lâu khi gõ, và giới hạn khi suy ra rủi ro cho thay chữ tại chỗ |
 | [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | các cách người gõ sửa chữ khi gõ, chỗ Dấu hỏng và nguyên nhân, các hướng sửa; hồ sơ người gõ |
 

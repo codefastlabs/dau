@@ -13,6 +13,7 @@ Việc tiếp theo:
 - M7: lập kế hoạch theo `docs/Roadmap.md` mục M7.
 
 Việc mở:
+- Trình soạn thảo WebStorm mất khôi phục D4 vì Dấu bị reset sau mỗi phím đi thẳng (`docs/Compatibility.md` mục 5.9). Bước kế: ghi log ở `commitComposition` và `deactivateServer`, chạy lại ô `webstorm` một lượt (`docs/research/JetBrainsInput.md` mục 5).
 - Ma trận tương thích còn lại, làm sau bản thử đầu: `docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc", danh sách ở `docs/Compatibility.md` mục 7.
 - `smartAdvancedExpanded` (khoá môi trường mở sẵn "Nâng cao" ở trang Thông minh) không còn chỗ nào đặt thành true từ khi bỏ công cụ chụp `SnapshotSettings` (16/11); đường truyền qua `SettingsWindow` là mã chết, bỏ được (kiểm toán M6).
 - Bộ đệm nguồn đầu vào của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/InputMethodInstall.md` mục 10.7).
@@ -53,3 +54,6 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - Công cụ: `install-app.sh` mở lại Dấu.app (đang chạy trước khi cài) ở tiền cảnh, cửa sổ Cài đặt lấy mất focus của app đang thử; bước kiểm cửa sổ của script gõ chặn lại trước khi gõ.
   — không commit mã.
 - 17/11 — `install-app.sh` mở lại Dấu.app (khi đang chạy trước lúc cài) bằng `open -g`, không đưa app lên trước — phiên chính — đo: Dấu.app đang chạy, Claude ở trước, cài từ thư mục làm việc: sau khi cài Claude vẫn ở trước, Dấu.app chạy lại và không ở trước (script cũ: Dấu.app lên trước). `--ref` chạy script của chính commit đó, nên `--ref stable` dùng bản sửa khi `stable` ở commit có nó.
+- 17/11 — đo Dấu trong WebStorm 2026.3 (trình soạn thảo và terminal Reworked), máy M1 (M1 Pro), macOS 27.2, bản Debug của 2990a91, 80 ± 30 ms một phím, nghỉ 250 ms sau mỗi từ, một lượt mỗi ô, đối chứng Telex của Apple — imk-dev (thêm ô `webstorm`, `webstormterm` vào `scripts/selftest/typing/run.sh`), researcher (`docs/research/JetBrainsInput.md`), phiên chính chạy lượt đo — kết quả:
+  - Trình soạn thảo, thay tại chỗ: chữ tiếng Việt đúng, mất khôi phục D4 ("ưindows", "Sủnise"); Dấu bị reset sau mỗi phím đi thẳng, ai gây reset chưa rõ. Terminal: ô bỏ qua vùng thay (D43). Gạch chân đúng cả hai ô. Số đo: `docs/Compatibility.md` mục 5.9.
+  - Dọn: cài lại `stable` (2990a91 Release); WebStorm của người dùng đang chạy nên script không trả được tệp cài đặt, phiên chính xoá 2 mục dự án tạm trong `recentProjects.xml` và `trusted-paths.xml` sau khi WebStorm thoát.
