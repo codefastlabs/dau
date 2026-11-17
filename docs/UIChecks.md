@@ -15,7 +15,7 @@ Danh sách phải chạy hết trước khi báo xong bất kỳ thay đổi gia
 
 ## Danh sách
 
-Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong "Cách kiểm" là tên hàng của bảng (`real.txt` khi không ghi bảng khác); các chữ (a)–(g) ở mục "Đọc bảng kết quả".
+Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong "Cách kiểm" là tên hàng của bảng (`real.txt` khi không ghi bảng khác); các chữ (a)–(h) ở mục "Đọc bảng kết quả".
 
 ### 1. Nội dung co thành cột hẹp, căn giữa
 
@@ -196,7 +196,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
    - Các lần mở app, mỗi lần kiểm gì, cách chờ và thử lại: chú thích đầu [`run.sh`](../scripts/selftest/settings-window/run.sh), [`ax-check.swift`](../scripts/selftest/settings-window/ax-check.swift), [`check.swift`](../scripts/selftest/settings-window/check.swift).
    - Lượt nhanh chỉ cho tiêu điểm và ô tìm sidebar (mục 15, 18): `run.sh --focus <thư-mục-ra>`, vẫn chiếm màn hình.
 
-3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`): đặt bản chụp artboard trong `docs/canvas/` cạnh ảnh cửa sổ thật mà lệnh 2 chụp (`real/`, `always-<light|dark>/`, `onboarding/`). Danh sách artboard: [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: so mockup sáng với app tối.
+3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`): đặt bản chụp artboard trong `docs/canvas/` cạnh ảnh cửa sổ thật mà lệnh 2 chụp (`real/`, `always-<light|dark>/`, `onboarding/`, `report/` với artboard "Report"). Danh sách artboard: [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: so mockup sáng với app tối.
 
 4. Test:
 
@@ -222,6 +222,7 @@ Lệnh 3 và 4 cần `DEVELOPER_DIR` vì Command Line Tools không có plugin ma
   - (e) `check.txt`: nút "+" trang Ứng dụng vẽ tròn (khung trợ năng của nút là khung mục thanh công cụ, nên đo hình vẽ bằng điểm ảnh).
   - (f) `check.txt`, onboarding: cửa sổ không hiện chữ tiêu đề; tên app, tiêu đề, thẻ, cụm nút ở chỗ của mockup ở mọi bước, cả hai giao diện; thẻ rộng đủ cột, hoặc hụt đúng một thanh cuộn Always chỉ khi nội dung cuộn; view vắng trong một ảnh là `FAIL`.
   - (g) `check.txt`: mọi ảnh gỡ cài đặt (mỗi alert, mỗi sheet "Bỏ Dấu khỏi nguồn đầu vào", ở cả hai giao diện), không bị cắt.
+  - (h) `check.txt`: sheet "Báo ứng dụng gõ lỗi" (`report/`, nội dung mẫu của artboard, ở cả hai giao diện) rộng như sheet của System Settings, mục "Gửi kèm" nằm trọn trong sheet.
 
 ## Quy tắc thanh cuộn
 

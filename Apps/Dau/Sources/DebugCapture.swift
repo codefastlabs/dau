@@ -44,8 +44,9 @@ import SwiftUI
 /// scripts/selftest/settings-window on a copy re-signed ad hoc without entitlements:
 /// `--capture-onboarding` (the onboarding window on fixed services),
 /// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào"
-/// sheet, laid out without running anything). The Settings window itself is measured from outside, in the real app (`--settings-window`,
-/// ax-check.swift).
+/// sheet, laid out without running anything), `--capture-report` (the "Báo ứng dụng gõ
+/// lỗi" sheet on fixed sample content; nothing is opened or sent). The Settings window
+/// itself is measured from outside, in the real app (`--settings-window`, ax-check.swift).
 @MainActor
 enum DebugCapture {
     /// Frames the onboarding window's layout probes report, while capturing; a view that
@@ -55,7 +56,7 @@ enum DebugCapture {
 
     /// The probe closure installed in the onboarding scene while capturing.
     static var probe: (@MainActor @Sendable (String, CGRect) -> Void)? {
-        guard onboardingDirectory != nil else { return nil }
+        guard onboardingDirectory != nil || reportDirectory != nil else { return nil }
         return { @MainActor name, frame in DebugCapture.frames[name] = frame.isNull ? nil : frame }
     }
 
@@ -304,6 +305,57 @@ enum DebugCapture {
                     actions?.showUninstallSheetForCapture(false)
                     try? await Task.sleep(for: .milliseconds(600))
                 }
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
+                try? data.write(to: directory.appendingPathComponent("frames.json"))
+            }
+            print("captured to \(directory.path)")
+            exit(0)
+        }
+    }
+
+    // MARK: Problem report sheet
+
+    /// `--capture-report <dir>`: the Settings window opens on Cập nhật & hỗ trợ with the
+    /// "Báo ứng dụng gõ lỗi" sheet shown (`UpdatesSupportView`), filled with
+    /// `reportSample` instead of the running apps (the shot must not show the user's apps
+    /// and must compare with the Report artboard). Writes `report-<mode>.png` (light,
+    /// dark) and `frames.json`: per shot the sheet's size ("sheet") and the "Gửi kèm" footer
+    /// ("reportIncluded", sheet points), so check (h) can tell a cut sheet. "Mở trên
+    /// GitHub" is never pressed.
+    static let reportDirectory: URL? = {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--capture-report"), i + 1 < args.count else { return nil }
+        return URL(fileURLWithPath: args[i + 1], isDirectory: true)
+    }()
+
+    /// The artboard's sample: Google Chrome 131.0 on docs.google.com, "tieengs Vieetj".
+    static let reportSample = (app: ReportedApp(bundleID: "com.google.Chrome", name: "Google Chrome", version: "131.0"),
+                               website: "docs.google.com", example: "tieengs Vieetj")
+
+    static func startReport() {
+        guard let directory = reportDirectory else { return }
+        NSApp.setActivationPolicy(.accessory)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(600))
+            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil && $0.sheetParent == nil }) else {
+                print("no window"); exit(1)
+            }
+            placeForCapture(window, size: SettingsScene.defaultSize)
+            var report: [String: [String: [Double]]] = [:]
+            for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
+                NSApp.appearance = NSAppearance(named: name)
+                window.makeKeyAndOrderFront(nil)
+                try? await Task.sleep(for: .milliseconds(1200))
+                guard let sheet = window.attachedSheet else { print("no report sheet"); exit(1) }
+                capture(sheet, to: directory.appendingPathComponent("report-\(mode).png"),
+                        background: .windowBackgroundColor)
+                var shot = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
+                if let footer = frames["reportIncluded"] {
+                    shot["reportIncluded"] = [footer.minX, footer.minY, footer.width, footer.height].map(Double.init)
+                }
+                report["report-\(mode)"] = shot
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
                 try? data.write(to: directory.appendingPathComponent("frames.json"))

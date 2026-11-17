@@ -22,6 +22,8 @@
 //       frame when it disappears).
 //   (g) uninstall/ (Dau --capture-uninstall): both alerts and both sheets of "Bỏ Dấu khỏi
 //   nguồn đầu vào" in both appearances, not cut.
+//   (h) report/ (Dau --capture-report): the "Báo ứng dụng gõ lỗi" sheet in both
+//   appearances, Reference.reportSheetWidth wide, its "Gửi kèm" footer inside the sheet.
 // Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
 // check needs is missing (the step that writes it says why in its own table); no skip.
 // Exit status 0 only when every row is ok.
@@ -281,6 +283,26 @@ for key in ["confirm", "done", "remove", "remove-hint"].flatMap({ k in ["light",
     let min = Reference.alertMinSize
     record(at, "(g) alert not cut", expected: "≥ \(fmt(min.width))×\(fmt(min.height))", got: "\(fmt(sheet.width))×\(fmt(sheet.height))",
            ok: sheet.width >= min.width && sheet.height >= min.height)
+}
+
+// MARK: - Problem report sheet (h)
+
+let reportDir = root.appendingPathComponent("report")
+let reportShots = loadFrames(reportDir)?.shots
+for key in ["light", "dark"].map({ "report-\($0)" }) {
+    let at = "report/\(key)"
+    guard let sheet = reportShots?[key]?["sheet"], image(reportDir.appendingPathComponent("\(key).png")) != nil else {
+        harness(at, "(h)", "no capture (see the capture step in run.sh's output)")
+        continue
+    }
+    record(at, "(h) sheet width", expected: fmt(Reference.reportSheetWidth), got: fmt(sheet.width),
+           ok: abs(sheet.width - Reference.reportSheetWidth) < 1)
+    guard let footer = reportShots?[key]?["reportIncluded"] else {
+        record(at, "(h) \"Gửi kèm\" shown", expected: "a frame", got: "none", ok: false)
+        continue
+    }
+    record(at, "(h) \"Gửi kèm\" inside the sheet", expected: "bottom ≤ \(fmt(sheet.height))",
+           got: "bottom \(fmt(footer.maxY))", ok: footer.height > 0 && footer.maxY <= sheet.height)
 }
 
 print("where | check | expected | got | result")

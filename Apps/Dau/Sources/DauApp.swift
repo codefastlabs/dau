@@ -47,7 +47,8 @@ struct DauApp: App {
         #if DEBUG
         if DebugCapture.tampered { actions.forceTampered(); return }
         // Captures run a re-signed copy: its team does not match the installed one.
-        if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil { return }
+        if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
+            || DebugCapture.reportDirectory != nil { return }
         #endif
         // After the launch has gone on: the check validates the whole installed bundle.
         Task { @MainActor in actions.checkInstalled() }
@@ -61,9 +62,19 @@ struct DauApp: App {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
+            || DebugCapture.reportDirectory != nil
             || DebugCapture.settingsWindowOnly || DebugCapture.tampered { return }
         #endif
         actions.startLaunchReconcile()
+    }
+
+    /// The Settings window's first section: Gõ phím, or Cập nhật & hỗ trợ for the
+    /// `--capture-report` capture (its sheet is presented from that page).
+    private static var initialSection: SettingsSection {
+        #if DEBUG
+        if DebugCapture.reportDirectory != nil { return .updates }
+        #endif
+        return .typing
     }
 
     /// The onboarding flow on the real services, and whether it opens at launch.
@@ -72,7 +83,8 @@ struct DauApp: App {
         var flow = OnboardingFlow(detector: WorkspaceInputMethodDetector(), installer: installer)
         var opens = LaunchRouter.opensOnboarding(installer.status())
         #if DEBUG
-        if DebugCapture.uninstallDirectory != nil || DebugCapture.settingsWindowOnly { opens = false }
+        if DebugCapture.uninstallDirectory != nil || DebugCapture.reportDirectory != nil
+            || DebugCapture.settingsWindowOnly { opens = false }
         if let step = DebugCapture.onboardingStep {
             // `--onboarding <1|2|3>`: open onboarding at that step.
             flow.forcedStartStep = step
@@ -98,7 +110,7 @@ struct DauApp: App {
 
     var body: some Scene {
         Window(Text("Dấu Settings"), id: SettingsScene.id) {
-            SettingsWindow()
+            SettingsWindow(initialSection: DauApp.initialSection)
                 .environment(model)
                 .environment(inputSource)
                 .environment(\.inputMethodActions, actions)
@@ -189,6 +201,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DebugCapture.applyAppearanceOverride()
         DebugCapture.startOnboarding()
         DebugCapture.startUninstall()
+        DebugCapture.startReport()
         #endif
     }
 

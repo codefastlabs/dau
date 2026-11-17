@@ -1,5 +1,6 @@
 #!/bin/zsh
-# UI checks of the Settings window, onboarding and uninstall alerts (docs/UIChecks.md).
+# UI checks of the Settings window, onboarding, uninstall alerts and the problem report
+# sheet (docs/UIChecks.md).
 # Side effects: builds, takes the screen, kills processes, changes user settings
 #
 # Usage: scripts/selftest/settings-window/run.sh [--focus] <output-dir> [Dau.app]
@@ -8,7 +9,7 @@
 # appearance, ax-check --focus: the launch focus and accent selection of the sidebar,
 # Tab and ⌘F into the sidebar search, the sidebar search rows on the primary display.
 #
-# Six app launches, one after the other; each shows a window on screen for a while
+# Seven app launches, one after the other; each shows a window on screen for a while
 # (do not click while it runs). Needs the Accessibility and Screen Recording permissions
 # of the terminal. Changes no system setting: the scroll bar style and the appearance
 # are arguments of that one launch (`-AppleShowScrollBars` lands in the app's argument
@@ -21,30 +22,31 @@
 #   1. --capture-onboarding                    onboarding/
 #   2. --capture-onboarding --shortcut none    onboarding-no-shortcut/
 #   3. --capture-uninstall                     uninstall/ (alerts laid out, nothing removed)
+#   4. --capture-report                        report/ (sample content, nothing opened or sent)
 # The real Debug app, opened as the user opens it (`open -n`), measured from outside by
 # ax-check.swift through the Accessibility API; screenshots are `screencapture -l` of the
-# Settings window only. Launch 4 also sends Tab and ⌘F key events and a mouse wheel over the
+# Settings window only. Launch 5 also sends Tab and ⌘F key events and a mouse wheel over the
 # add-rule sheet's list (the pointer moves):
-#   4. When scrolling scroll bars              real/                  ax-check --geometry
-#   5. Always scroll bars                      always/                ax-check --pixels
-#   6. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
+#   5. When scrolling scroll bars              real/                  ax-check --geometry
+#   6. Always scroll bars                      always/                ax-check --pixels
+#   7. the other appearance, Always bars       always-<light|dark>/   ax-check --focus --pixels --sheet-shots
 # The "Dấu chưa được bật" banner is `swift test` "Not-enabled banner" (Apps/Dau/Tests).
 # Then check.swift checks the screenshots' pixels and the in-app captures.
 # What each real-window launch covers (the rows each item of docs/UIChecks.md reads):
-#   4. the focus at launch (launch-focus), the page at launch; on every display (one
+#   5. the focus at launch (launch-focus), the page at launch; on every display (one
 #      pass per pixel scale, labelled 2x/1x) every section against Reference.swift; on
 #      the primary display only: a sidebar search with no match, the add-rule sheet
 #      (AXPress "+", list, search field, selection, then "Huỷ"; no rule is added), the
 #      window's size limits (resized through Accessibility), and the window shell (the
 #      sidebar width at the widest and narrowest window).
-#   5. primary display: (a) and a screenshot of every section; the section that overflows
+#   6. primary display: (a) and a screenshot of every section; the section that overflows
 #      (Reference.scrollingSection) scrolled through its scroll bar's value: (d).
-#   6. the focus at launch, Tab and ⌘F into the search field, the sidebar search, then as
-#      launch 5 plus the add-rule sheet shots (the sheet is not checked again).
+#   7. the focus at launch, Tab and ⌘F into the search field, the sidebar search, then as
+#      launch 6 plus the add-rule sheet shots (the sheet is not checked again).
 # The screens of the onboarding captures and their fake services: DebugCapture.swift
 # (Apps/Dau/Sources). No launch uses `Automatic` scroll bars: the system turns it into
 # When scrolling or Always, both run. Waits, retries, FAIL and HARNESS rows: the header of
-# ax-check.swift; the letter checks (a)–(g): the headers of ax-check.swift and check.swift.
+# ax-check.swift; the letter checks (a)–(h): the headers of ax-check.swift and check.swift.
 # Tables: <dir>.txt per launch, check.txt (rows ok / FAIL / HARNESS: data, docs/UIChecks.md).
 # Exit status 0 only if every row is ok. The script's own messages are Vietnamese, through
 # scripts/lib/log.sh; the rows shown under each step are the tail of those tables.
@@ -134,7 +136,7 @@ build() {   # <script> <output>
 build ax-check.swift ax-check
 build check.swift check
 
-# --- Launches 1–3: in-app captures ----------------------------------------------------
+# --- Launches 1–4: in-app captures ----------------------------------------------------
 
 if (( ! focus_only )); then
 cp -R "$app" "$work/Dau.app"
@@ -168,9 +170,12 @@ capture "onboarding without shortcut" --capture-onboarding "$out/onboarding-no-s
 # "ConfirmDialogs", "UninstallRemoveSource"): laid out, captured, dismissed;
 # nothing is uninstalled.
 capture "uninstall alerts" --capture-uninstall "$out/uninstall"
+# The "Báo ứng dụng gõ lỗi" sheet (D8, mockup "Report") over Cập nhật & hỗ trợ, on the
+# artboard's sample content instead of the running apps; "Mở trên GitHub" is never pressed.
+capture "problem report sheet" --capture-report "$out/report"
 fi
 
-# --- Launches 4–6: the real window ----------------------------------------------------
+# --- Launches 5–7: the real window ----------------------------------------------------
 
 if [[ $(defaults read -g AppleInterfaceStyle 2>/dev/null) == Dark ]]; then
   current=dark other=light

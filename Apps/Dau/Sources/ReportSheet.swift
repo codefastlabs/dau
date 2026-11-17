@@ -94,6 +94,8 @@ struct ReportSheet: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .accessibilityElement(children: .combine)
+                    // Capture check (h): the footer lies inside the sheet (not cut).
+                    .layoutProbe("reportIncluded")
                 }
             }
             .formStyle(.grouped)
@@ -123,6 +125,17 @@ struct ReportSheet: View {
 
     /// The running apps, the one used right before Dấu chosen (`PreviousAppTracker`).
     private func loadApps() {
+        #if DEBUG
+        if DebugCapture.reportDirectory != nil {
+            // `--capture-report`: the artboard's sample, never the user's running apps.
+            let sample = DebugCapture.reportSample
+            choices = [sample.app]
+            appID = sample.app.bundleID
+            website = sample.website
+            example = sample.example
+            return
+        }
+        #endif
         let own = Bundle.main.bundleIdentifier
         let running = NSWorkspace.shared.runningApplications
             .filter { $0.activationPolicy == .regular }

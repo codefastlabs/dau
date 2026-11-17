@@ -19,7 +19,16 @@ struct UpdatesSupportView: View {
     /// ends (N5: "not installed" only once that was read).
     @State private var installed: InstalledRead = .unread
     enum InstalledRead: Equatable { case unread, notInstalled, build(String) }
-    @State private var isReporting = false
+    /// "Báo lỗi…" shows the sheet; the Debug capture `--capture-report` opens it at once.
+    @State private var isReporting = Self.reportAtStart
+
+    private static var reportAtStart: Bool {
+        #if DEBUG
+        DebugCapture.reportDirectory != nil
+        #else
+        false
+        #endif
+    }
 
     var body: some View {
         SettingsPage {

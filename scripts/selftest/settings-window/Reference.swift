@@ -178,6 +178,10 @@ enum Reference {
     /// Capture check (g): the uninstall alerts' sheets are at least this big (deliberate
     /// floor, not a System Settings number).
     static let alertMinSize = CGSize(width: 200, height: 120)
+    /// Capture check (h): the problem report sheet is as wide as System Settings'
+    /// grouped-Form sheet (Displays › Advanced…, docs/research/SystemSettingsReference.md
+    /// "Sheet"), as the add-rule sheet.
+    static let reportSheetWidth: CGFloat = 470
 
     // MARK: Onboarding window, check (f) (Mockup: "OnboardingConflict", "OnboardingEnable", "Onboarding")
 
