@@ -6,7 +6,7 @@ Kịch bản A chưa app thật nào đo ra; kịch bản B có ở trình soạ
 
 - **Kịch bản A: D20 sau ⌫ khi app chậm 3–4 thao tác** (mô hình bộ đệm Chromium, `LateDocument.Cache.chromium`). Chrome thật, trang bận, nhịp người, chuỗi `edit`: đúng 3/3, và ở lần đọc của D20 sau ⌫ Chrome trả vị trí đúng giờ (mục 3). Chậm 1–2 thao tác thì phép chứng minh hiện có đã xử lý (`LateBackspaceMarkTests`). Hướng 2A là phương án áp khi gặp ca thật (mục 1.2).
 - **Kịch bản B: app tính vị trí theo từ** (`LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Ở Cursor 3.30.14, khung agent (⌘L) và ô nhập Agents tính vị trí từ đầu văn bản và gõ đúng. Trình soạn thảo có lúc tính từ đầu văn bản (đúng), có lúc tính từ đầu từ; ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai vài từ mỗi lượt, không do D20 (D20 chờ hay không chờ phím dồn đều sai như vậy). Chưa rõ vì sao trình soạn thảo đổi kiểu (số đo: [`docs/Compatibility.md`](../Compatibility.md) mục 5.4). Mô hình còn trong test (`WordOriginTests`) cho các ca đạt. Hướng 1B và 4A cần đổi N3 và D11 (mục 2.2).
-- **Kịch bản C: trang bận, app chậm qua chỗ ngắt từ** (đo 18/11/2026, mục 3): Chrome và Safari sai khi trang bận, cả ở nhịp người gõ nhanh. Nguyên nhân ở Chrome: hạn mức độ chậm của phép chứng minh về 0 ở mỗi chỗ ngắt từ. Đã sửa phần lớn (commit `85dd1b1`, mục 3.3): ở phím thay chữ trong từ, app được chậm mọi thao tác kể từ lần cuối nó trả lời đúng lúc. Còn vài ca ở từ có chuỗi thay phức tạp ("được") và lỗi riêng của Safari.
+- **Kịch bản C: trang bận, app chậm qua chỗ ngắt từ** (đo 18/11/2026, mục 3): Chrome và Safari sai khi trang bận, cả ở nhịp người gõ nhanh. Nguyên nhân ở Chrome: hạn mức độ chậm của phép chứng minh về 0 ở mỗi chỗ ngắt từ. Đã sửa phần lớn (commit `d171ab9`, mục 3.3): ở phím thay chữ trong từ, app được chậm mọi thao tác kể từ lần cuối nó trả lời đúng lúc. Còn vài ca ở từ có chuỗi thay phức tạp ("được") và lỗi riêng của Safari.
 - Cursor không có nhãn "Đề xuất" (D13 (Gạch chân là đường lui cuối cùng)); số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
 Không có quyết định nào chờ người dùng ở file này. Phần đo được và phần giả định của mô hình theo từ ghi trong comment của `LateDocument.Origin`; mô hình vị trí tính từ đầu văn bản là `Origin.document`.
@@ -95,7 +95,7 @@ Mỗi hướng thử trên mô hình (`LateAnswerTests`, `RapidKeysTests`, `InPl
 - `CursorTracker.sinceOnTime` đếm số thao tác kể từ mốc đó. Ở phím thay chữ trong từ, `rebuild` cho thử tới số đó (nếu lớn hơn `lateLimit` cộng `burst`), ở mọi nhịp. Lần đọc của D20 và ở từ đã hết hợp lệ giữ hạn mức cũ, vì sau chỗ ngắt từ, ca "car" thành "cả" và ca app chậm ba thao tác để lại cùng một chữ ở cùng vị trí. Không chờ, không thêm lời gọi vào app.
 - Chrome trang bận, máy M3 Max, cùng chuỗi `edit`:
 
-| Điều kiện | Bản trước (`0b1a42d`) | Bản sửa (`85dd1b1`) |
+| Điều kiện | Bản trước (`0b1a42d`) | Bản sửa (`d171ab9`) |
 |---|---|---|
 | Nhịp người gõ nhanh (40 ± 20 ms, nghỉ 150 ms sau mỗi từ), 6 lượt | sai 4/6, tổng khoảng cách chỉnh sửa 14 | sai 2/6, tổng 7 |
 | 10 ms, 3 lượt | sai 3/3, khoảng 10 mỗi lượt | sai 2/3, khoảng 1,7 mỗi lượt |
