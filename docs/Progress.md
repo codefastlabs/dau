@@ -62,7 +62,7 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 - Workflow Test: xong 17/11, chạy trên runner `xcode-27` ở mỗi lần push lên `main`, đạt.
 - Tag thử `v0.0.1-beta.1` rồi `v0.0.1-beta.2` (số hiển thị "0.0.1", dưới bản thử đầu; tag thứ hai trên commit sau commit appcast của bản thứ nhất) dựng hai bản chính thức số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; bản thử đầu thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
-### Bước 3 — Một lượt chạy chiếm màn hình (xin giờ một lần; người dùng ngồi cùng ở mục 4)
+### Bước 3 — Một lượt chạy chiếm màn hình (người dùng ngồi cùng ở mục 4)
 
 Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh --ref` trong `docs/history/LogM6.md`). Mục 2, 3, 4 và phần Notion của mục 7 chưa có số đo; mỗi ô `gdocs`, `wordweb` mất 22–39 giây (17/11).
 

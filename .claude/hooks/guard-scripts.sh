@@ -1,17 +1,17 @@
 #!/bin/zsh
-# PreToolUse hook (Bash): repo scripts the user must schedule (CLAUDE.md, section "Điều phối")
-# run only after the user allows them in Claude Code's permission prompt.
+# PreToolUse hook (Bash): subagents never run the repo scripts that take over the screen or
+# change the installed Dấu (CLAUDE.md, section "Điều phối"); only the main session does.
 # Side effects: none
 #
-# Splits the command into simple commands (on ; && || | & and parentheses). When one of
-# them runs a script listed in the table below (directly, or through
-# zsh/bash/sh/source/env/time/nohup) and the table says it is guarded for that simple
-# command's arguments:
-#   - a subagent's call (the hook input has agent_id) is blocked with exit 2: subagents
-#     never run these scripts;
-#   - the main session's call gets permissionDecision "ask" (unless the per-machine switch at
-#     the end is on): Claude Code shows the user a
-#     permission prompt, and the script runs only if the user allows it.
+# Only what Claude Code cannot do itself: its permission rules apply to the main session and
+# to subagents alike, and a subagent's `disallowedTools` removes all of Bash, not one command.
+# Whether the main session asks the user first is Claude Code's permission mode, so the
+# main session's calls pass here untouched.
+#
+# For a subagent's call (the hook input has agent_id), splits the command into simple
+# commands (on ; && || | & and parentheses). When one of them runs a script listed in the
+# table below (directly, or through zsh/bash/sh/source/env/time/nohup) and the table says it
+# is guarded for that simple command's arguments, the call is blocked with exit 2.
 # Reading a script (cat, grep, sed) is not running it and passes. Not a lock: a script
 # run after `cd` into its own folder is not seen.
 # The table is explicit: a new script whose "# Side effects:" line disturbs the user
@@ -23,6 +23,9 @@ input=$(cat)
 cmd=$(jq -r '.tool_input.command // empty' <<< "$input")
 agent=$(jq -r '.agent_id // empty' <<< "$input")
 [[ -z $cmd ]] && exit 0
+# The main session runs every script; whether the user is asked first is Claude Code's
+# permission mode (Manual asks, Bypass permissions does not), not this hook.
+[[ -z $agent ]] && exit 0
 
 root=${CLAUDE_PROJECT_DIR:-${0:A:h:h:h}}
 # script -> when blocked: "always", "with --flag" (only when the flag is given),
@@ -73,20 +76,8 @@ for seg in ${(f)${cmd//(\&\&|\|\||[;|\&()])/$'\n'}}; do
 done
 
 (( $#blocked )) || exit 0
-if [[ -n $agent ]]; then
-  source "$root/scripts/lib/log.sh"
-  log_error "Chặn: subagent không chạy script người dùng tự chọn giờ chạy (CLAUDE.md, mục \"Điều phối\"):"
-  log_hint "${(@)blocked}"
-  log_hint "Ghi vào mục 4 của báo cáo để phiên chính chạy."
-  exit 2
-fi
-# Per-machine switch: DAU_RUN_SCRIPTS_WITHOUT_ASKING=1, in the environment or in the "env" of
-# .claude/settings.local.json (git-ignored), lets the main session run these scripts with no
-# prompt; subagents stay blocked above.
-local_settings="$root/.claude/settings.local.json"
-if [[ ${DAU_RUN_SCRIPTS_WITHOUT_ASKING-} == 1 ]] || { [[ -f $local_settings ]] &&
-   [[ $(jq -r '.env.DAU_RUN_SCRIPTS_WITHOUT_ASKING // empty' "$local_settings" 2>/dev/null) == 1 ]]; }; then
-  exit 0
-fi
-jq -n --arg reason "Script cần bạn cho phép (chiếm màn hình hoặc đổi bản Dấu đã cài): ${(j:, :)blocked}. Cho phép thì script chạy ngay." \
-  '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: $reason}}'
+source "$root/scripts/lib/log.sh"
+log_error "Chặn: subagent không chạy script chiếm màn hình hay đổi bản Dấu đã cài (CLAUDE.md, mục \"Điều phối\"):"
+log_hint "${(@)blocked}"
+log_hint "Ghi vào mục 4 của báo cáo để phiên chính chạy."
+exit 2

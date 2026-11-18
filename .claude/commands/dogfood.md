@@ -31,7 +31,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 
 1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản dùng hằng ngày, bản Release của commit mới nhất trên `main` (CLAUDE.md "Dọn sau mỗi lần chạy"); script báo chưa phải bản mới nhất thì cài bản đó trước (`scripts/dev/install-app.sh --ref main`). Lượt này cần bản khác (bản Debug, bản thử) thì gộp vào cùng lượt chạy, và cài lại bản dùng hằng ngày khi dọn.
 2. Soạn sẵn văn bản sẽ gõ (mục "Văn bản") và kế hoạch app, ghi vào `build/dogfood/<ngày>/plan.md`. Mỗi đoạn có: chữ muốn ra, chuỗi phím Telex sẽ gõ (kể cả lỗi cố ý và chỗ sửa), app và ô gõ.
-3. Báo người dùng: "sẵn sàng, khoảng N phút, dùng các app …", chờ đồng ý (CLAUDE.md, "Điểm dừng bắt buộc"). Một lần đồng ý cho một lượt.
+3. Báo người dùng một dòng: "bắt đầu, khoảng N phút, dùng các app …", rồi chạy ngay; có hỏi trước hay không là do chế độ quyền của Claude Code (CLAUDE.md, mục "Điều phối").
 
 ## Chọn app
 

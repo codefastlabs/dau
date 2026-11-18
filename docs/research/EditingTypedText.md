@@ -337,7 +337,7 @@ Tự phản biện:
 - **Danh sách từ tiếng Anh** (phụ lục): 507 từ thường gặp và từ khoá lập trình, tự lập, không phải mẫu đại diện. Số ở mục 2–4 chỉ nói "có loại hỏng này và nhiều cỡ nào trên danh sách đó".
 - **Hồ sơ người gõ:** số từ một nghiên cứu gõ tiếng Anh; gắn hồ sơ cho từng kịch bản là giả định. Mọi tỉ lệ của mô phỏng là giả định; hai số quyết định độ lớn của mục 4 là tỉ lệ lỡ gõ đúp phím dấu và tỉ lệ sửa theo phím.
 - **Kho câu của mô phỏng** (`SimCorpus`): câu tiếng Việt có nghĩa, một phần lẫn từ Anh và mã; không phải mẫu đại diện cho văn bản người dùng.
-- **Cần đo thật, gộp được một lượt ngắn** (chiếm màn hình, phiên chính xin giờ; mỗi ô kèm Telex của Apple làm đối chứng):
+- **Cần đo thật, gộp được một lượt ngắn** (chiếm màn hình, phiên chính chạy; mỗi ô kèm Telex của Apple làm đối chứng):
   - X5: bấm đúp chọn từ rồi gõ lại, ở Notes và Chrome.
   - H7: thay một vùng có cả phần sau con trỏ thì con trỏ về đâu, ở Notes, Chrome, VS Code. Chỉ cần nếu chọn H7.
   - Telex của Apple ở các ca chữ thừa (B29–B31, `ddungsg␣⌫⌫`), để có đối chứng cho nhóm K1. Telex của Apple không khôi phục từ, nên dự đoán nó giữ "đúngg"; chưa đo.

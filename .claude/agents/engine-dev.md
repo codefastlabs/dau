@@ -27,5 +27,5 @@ Luật làm việc:
 1. **Đã làm:** việc hoàn thành, file đã đổi.
 2. **Kiểm chứng:** lệnh đã chạy và kết quả (test, build, số đo). Không có lệnh chạy được thì ghi rõ "chưa kiểm chứng".
 3. **Mâu thuẫn phát hiện:** với `Decisions.md`, giữa các tính năng, hoặc lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)). Không có thì ghi "không".
-4. **Câu hỏi mở / cần người dùng:** việc cần tài khoản, quyền, quyết định, hoặc lượt chạy chiếm màn hình mà phiên chính phải xin giờ.
+4. **Câu hỏi mở / cần người dùng:** việc cần tài khoản, quyền, quyết định, hoặc lượt chạy chiếm màn hình mà phiên chính phải chạy.
 5. **Đề xuất bước tiếp theo.**

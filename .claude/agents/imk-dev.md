@@ -21,11 +21,11 @@ Luật làm việc:
 - Cấu trúc bộ gõ, trạng thái của controller và client: `docs/Architecture.md`, mục "Bộ gõ (DauInputMethod)".
 - Phòng thủ với đầu vào từ IMK: D18 (Phòng thủ với IMK).
 - Quyền của tiến trình bộ gõ (sandbox, App Group, mạng): N2 (Bộ gõ không có quyền mạng).
-- Bạn không thao tác được giao diện macOS. Việc cần thử trong app thật (bật nguồn, gõ thử): ghi ở mục 4 kèm lệnh và chuỗi phím cần chạy; phiên chính tự chạy sau khi người dùng chọn giờ (`CLAUDE.md`, "Người dùng chỉ làm việc thật sự cần họ").
+- Bạn không thao tác được giao diện macOS. Việc cần thử trong app thật (bật nguồn, gõ thử): ghi ở mục 4 kèm lệnh và chuỗi phím cần chạy; phiên chính tự chạy (`CLAUDE.md`, mục "Điều phối").
 
 ## Khi xong, trả về đúng 5 mục
 1. **Đã làm:** việc hoàn thành, file đã đổi.
 2. **Kiểm chứng:** lệnh đã chạy và kết quả (test, build, số đo). Không có lệnh chạy được thì ghi rõ "chưa kiểm chứng".
 3. **Mâu thuẫn phát hiện:** với `Decisions.md`, giữa các tính năng, hoặc lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)). Không có thì ghi "không".
-4. **Câu hỏi mở / cần người dùng:** việc cần tài khoản, quyền, quyết định, hoặc lượt chạy chiếm màn hình mà phiên chính phải xin giờ.
+4. **Câu hỏi mở / cần người dùng:** việc cần tài khoản, quyền, quyết định, hoặc lượt chạy chiếm màn hình mà phiên chính phải chạy.
 5. **Đề xuất bước tiếp theo.**

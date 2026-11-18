@@ -191,7 +191,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
    ```
 
 2. Kiểm trên cửa sổ thật: `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
-   - **Chiếm màn hình:** hỏi người dùng giờ chạy trước (CLAUDE.md).
+   - **Chiếm màn hình:** phiên chính chạy, theo chế độ quyền của Claude Code (CLAUDE.md, mục "Điều phối").
    - Cần quyền Trợ năng và Ghi màn hình cho Terminal. Không đổi cài đặt hệ thống nào.
    - Các lần mở app, mỗi lần kiểm gì, cách chờ và thử lại: chú thích đầu [`run.sh`](../scripts/selftest/settings-window/run.sh), [`AXCheck.swift`](../scripts/selftest/settings-window/AXCheck.swift), [`Check.swift`](../scripts/selftest/settings-window/Check.swift).
    - Lượt nhanh chỉ cho tiêu điểm và ô tìm sidebar (mục 15, 18): `run.sh --focus <thư-mục-ra>`, vẫn chiếm màn hình.
