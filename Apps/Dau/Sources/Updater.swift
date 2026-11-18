@@ -204,6 +204,14 @@ final class UpdatesModel {
         backend.checkForUpdates()
     }
 
+    /// The selection of "Kênh phát hành", for a key-path binding (`$updates.channel` through
+    /// `@Bindable`, as every other Settings row binds). Beta until the first appcast load,
+    /// when the row is not shown anyway. Setting it is `chooseChannel`.
+    var channel: ReleaseChannel {
+        get { channels.channel ?? .beta }
+        set { chooseChannel(newValue) }
+    }
+
     /// The user picked a channel in "Kênh phát hành".
     func chooseChannel(_ choice: ReleaseChannel) {
         guard channels.choose(choice) else { return }

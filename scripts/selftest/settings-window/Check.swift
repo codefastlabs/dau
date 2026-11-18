@@ -1,6 +1,7 @@
 // Pixel checks of the real Settings window's screenshots, and frame checks of the in-app
-// onboarding and uninstall captures (docs/UIChecks.md). run.sh compiles this file with
-// Reference.swift (every pass value) and runs it after the app launches.
+// captures: onboarding, uninstall, problem report, release-build Updates page
+// (docs/UIChecks.md). run.sh compiles this file with Reference.swift (every pass value)
+// and runs it after the app launches.
 //
 // Usage: check <out-dir> whenScrolling:<dir> always:<dir>…
 //   whenScrolling:<dir>  ax-check --geometry output (When scrolling scroll bars): (b), (c), (e)
@@ -24,6 +25,15 @@
 //   nguồn đầu vào" in both appearances, not cut.
 //   (h) report/ (Dau --capture-report): the "Báo ứng dụng gõ lỗi" sheet in both
 //   appearances, Reference.reportSheetWidth wide, its "Gửi kèm" footer inside the sheet.
+//   (i) updates-release/ (Dau --capture-updates): Cập nhật & hỗ trợ as a release build
+//   shows it, on a fake updater (Sparkle is not tested here; M7 step 2 is), for both
+//   stages of the SettingsAbout artboard in both appearances (the window is not active,
+//   so selected segments are grey): the version line on its sample values, no installed
+//   input method line, the first card as wide as the real window's (a), the "Kênh phát
+//   hành" row in the card, its control in the row's slot, right-aligned with the "Tự
+//   động kiểm tra bản mới" switch and Reference.controlHeight tall, the segments on or
+//   off by stage, Beta selected. Frames are the app's layout probes (rows, not cards),
+//   as for (f) and (h).
 // Results as ax-check: FAIL for a UI result off Reference; HARNESS when an input the
 // check needs is missing (the step that writes it says why in its own table); no skip.
 // Exit status 0 only when every row is ok.
@@ -303,6 +313,73 @@ for key in ["light", "dark"].map({ "report-\($0)" }) {
     }
     record(at, "(h) \"Gửi kèm\" inside the sheet", expected: "bottom ≤ \(fmt(sheet.height))",
            got: "bottom \(fmt(footer.maxY))", ok: footer.height > 0 && footer.maxY <= sheet.height)
+}
+
+// MARK: - Updates page of a release build (i)
+
+// Artboard SettingsAbout, both values of its `stage` tweak; a fake updater, so Sparkle is
+// not tested here (M7 step 2 is). Frames are the page's layout probes, window points. The
+// probes measure rows, not the card: a row spans the card less Reference.cardInset on each
+// side (as AXCheck's "Kiểu gõ spans its row"), so the card is the first row widened by it.
+let updatesDir = root.appendingPathComponent("updates-release")
+let updatesJSON = (try? Data(contentsOf: updatesDir.appendingPathComponent("frames.json")))
+    .flatMap { try? JSONSerialization.jsonObject(with: $0) as? [String: [String: [Double]]] }
+let updatesShots = loadFrames(updatesDir)?.shots
+let fullCardWidth = Reference.windowWidth - Reference.sidebarWidth - 2 * Reference.formMargin
+for (stage, enabled) in [("nostable", [1.0, 0.0]), ("stable", [1.0, 1.0])] {
+    for mode in ["light", "dark"] {
+        let key = "updates-release-\(stage)-\(mode)"
+        let at = "updates-release/\(key)"
+        guard let f = updatesShots?[key], let raw = updatesJSON?[key],
+              image(updatesDir.appendingPathComponent("\(key).png")) != nil else {
+            harness(at, "(i)", "no capture (see the capture step in run.sh's output)")
+            continue
+        }
+        record(at, "(i) version line", expected: "\"\(Reference.releaseVersionSample)\"",
+               got: raw["versionSample"] == [1] ? "shown" : "other", ok: raw["versionSample"] == [1])
+        // The version card's first row is always on the page: without it no probe reported,
+        // and an absent frame below would prove nothing.
+        guard let first = f["firstRow"] else {
+            harness(at, "(i) probes", "no layout probe frames (an older capture, or the probes did not report)")
+            continue
+        }
+        record(at, "(i) no installed input method line (release build)", expected: "absent",
+               got: f["installedBuild"].map { "shown at \(fmt($0))" } ?? "absent", ok: f["installedBuild"] == nil)
+        let card = first.insetBy(dx: -Reference.cardInset, dy: 0)
+        // Same card as the real window's (a): the detail column less the Form's margins, or
+        // one Always scroll bar less when the page scrolls.
+        record(at, "(i) card x, width", expected: "x \(fmt(Reference.sidebarWidth + Reference.formMargin)), width \(fmt(fullCardWidth)) (or \(fmt(fullCardWidth - alwaysScrollerWidth)) with an Always scroll bar)",
+               got: "x \(fmt(card.minX)), width \(fmt(card.width))",
+               ok: near(card.minX, Reference.sidebarWidth + Reference.formMargin)
+                   && (near(card.width, fullCardWidth) || near(card.width, fullCardWidth - alwaysScrollerWidth)))
+        guard let row = f["releaseChannel"], let control = f["channelControl"] else {
+            record(at, "(i) \"Kênh phát hành\" row and control", expected: "shown", got: "missing", ok: false)
+            continue
+        }
+        record(at, "(i) \"Kênh phát hành\" row in the card", expected: "x \(fmt(first.minX)), width \(fmt(first.width))",
+               got: "x \(fmt(row.minX)), width \(fmt(row.width))", ok: near(row.minX, first.minX) && near(row.width, first.width))
+        if let toggle = f["autoCheck"] {
+            // The Form centres a row's control on the label's first line, so a control taller
+            // than that line starts above the label's frame (the row probe), by a few points.
+            // Its slot is between the row above and the row's bottom, across the row's width.
+            let slot = CGRect(x: row.minX, y: toggle.maxY, width: row.width, height: row.maxY - toggle.maxY)
+            record(at, "(i) control in its row's slot", expected: "inside \(fmt(slot))", got: fmt(control),
+                   ok: slot.insetBy(dx: -Reference.tolerance, dy: -Reference.tolerance).contains(control))
+            // The switch sits at the row's right end, so the row's right edge is the switch's.
+            record(at, "(i) control right edge = switch right edge", expected: fmt(toggle.maxX), got: fmt(control.maxX),
+                   ok: near(control.maxX, toggle.maxX))
+        } else {
+            record(at, "(i) \"Tự động kiểm tra bản mới\" row", expected: "shown", got: "missing", ok: false)
+        }
+        record(at, "(i) control height", expected: fmt(Reference.controlHeight), got: fmt(control.height),
+               ok: near(control.height, Reference.controlHeight))
+        let got = raw["channelEnabled"].map { $0.map { $0 == 1 ? "on" : "off" }.joined(separator: ", ") } ?? "missing"
+        let want = enabled.map { $0 == 1 ? "on" : "off" }.joined(separator: ", ")
+        record(at, "(i) segments Beta, Chính thức", expected: want, got: got, ok: raw["channelEnabled"] == enabled)
+        let selected = raw["channelSelected"]?.first
+        record(at, "(i) selected segment", expected: "Beta (0)", got: selected.map { fmt(CGFloat($0)) } ?? "missing",
+               ok: selected == 0)
+    }
 }
 
 print("where | check | expected | got | result")

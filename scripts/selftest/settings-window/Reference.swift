@@ -182,6 +182,9 @@ enum Reference {
     /// grouped-Form sheet (Displays › Advanced…, docs/research/SystemSettingsReference.md
     /// "Sheet"), as the add-rule sheet.
     static let reportSheetWidth: CGFloat = 470
+    /// Capture check (i) (Mockup: "SettingsAbout"): the version line of the release-build
+    /// capture, on its sample values (`DebugCapture.releaseVersionSample`, D25).
+    static let releaseVersionSample = "Dấu 0.1.0 (6520)"
 
     // MARK: Onboarding window, check (f) (Mockup: "OnboardingConflict", "OnboardingEnable", "Onboarding")
 

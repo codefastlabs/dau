@@ -15,7 +15,7 @@ Danh sách phải chạy hết trước khi báo xong bất kỳ thay đổi gia
 
 ## Danh sách
 
-Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong "Cách kiểm" là tên hàng của bảng (`real.txt` khi không ghi bảng khác); các chữ (a)–(h) ở mục "Đọc bảng kết quả".
+Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong "Cách kiểm" là tên hàng của bảng (`real.txt` khi không ghi bảng khác); các chữ (a)–(i) ở mục "Đọc bảng kết quả".
 
 ### 1. Nội dung co thành cột hẹp, căn giữa
 
@@ -196,7 +196,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm, đạt khi. Tên trong
    - Các lần mở app, mỗi lần kiểm gì, cách chờ và thử lại: chú thích đầu [`run.sh`](../scripts/selftest/settings-window/run.sh), [`AXCheck.swift`](../scripts/selftest/settings-window/AXCheck.swift), [`Check.swift`](../scripts/selftest/settings-window/Check.swift).
    - Lượt nhanh chỉ cho tiêu điểm và ô tìm sidebar (mục 15, 18): `run.sh --focus <thư-mục-ra>`, vẫn chiếm màn hình.
 
-3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`): đặt bản chụp artboard trong `docs/canvas/` cạnh ảnh cửa sổ thật mà lệnh 2 chụp (`real/`, `always-<light|dark>/`, `onboarding/`, `report/` với artboard "Report"). Danh sách artboard: [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: so mockup sáng với app tối.
+3. So với mockup (chỉ đối chiếu nội dung, D9; không có tiêu chí đạt, số đo lấy từ `real.txt`): đặt bản chụp artboard trong `docs/canvas/` cạnh ảnh cửa sổ thật mà lệnh 2 chụp (`real/`, `always-<light|dark>/`, `onboarding/`, `report/` với artboard "Report", `updates-release/` với artboard "SettingsAbout" ở hai giá trị `stage`). Danh sách artboard: [`docs/canvas/README.md`](canvas/README.md). Không có artboard tối: so mockup sáng với app tối.
 
 4. Test:
 
@@ -223,6 +223,7 @@ Bước 1 và 4 cần `DEVELOPER_DIR` vì Command Line Tools không có plugin m
   - (f) `check.txt`, onboarding: cửa sổ không hiện chữ tiêu đề; tên app, tiêu đề, thẻ, cụm nút ở chỗ của mockup ở mọi bước, cả hai giao diện; thẻ rộng đủ cột, hoặc hụt đúng một thanh cuộn Always chỉ khi nội dung cuộn; view vắng trong một ảnh là `FAIL`.
   - (g) `check.txt`: mọi ảnh gỡ cài đặt (mỗi alert, mỗi sheet "Bỏ Dấu khỏi nguồn đầu vào", ở cả hai giao diện), không bị cắt.
   - (h) `check.txt`: sheet "Báo ứng dụng gõ lỗi" (`report/`, nội dung mẫu của artboard, ở cả hai giao diện) rộng như sheet của System Settings, mục "Gửi kèm" nằm trọn trong sheet.
+  - (i) `check.txt`: trang Cập nhật & hỗ trợ như bản phát hành hiện (`updates-release/`, `--capture-updates`), hai giai đoạn của artboard "SettingsAbout" (chưa có bản chính thức; đã có, người dùng ở Beta), ở cả hai giao diện: dòng phiên bản là số mẫu "Dấu 0.1.0 (6520)"; không có dòng bộ gõ đã cài (dòng của bản phát triển); thẻ đầu rộng như (a); hàng "Kênh phát hành" nằm trong thẻ, control nằm trong ô của hàng (giữa hàng trên và đáy hàng: Form canh control theo dòng đầu của nhãn nên control nhô lên trên khung nhãn vài điểm), cao như control của System Settings, mép phải thẳng mép phải công tắc "Tự động kiểm tra bản mới"; Beta được chọn; Chính thức tắt khi chưa có bản chính thức, bật khi đã có. Ảnh này dùng trình cập nhật giả: không kiểm Sparkle (kênh thật, appcast, cập nhật là bước 2 của M7) và biểu tượng là của bản phát triển (bản Debug không có biểu tượng chuẩn, D25). Như các ảnh chụp trong app khác, app không được kích hoạt (macOS 14 trở lên kích hoạt theo kiểu hợp tác, và kích hoạt sẽ lấy tiêu điểm của người dùng), nên đèn giao thông và đoạn được chọn có màu xám; màu so trên artboard. Khung lấy từ các điểm đo bố cục trong app (đo hàng, không đo thẻ), như (f) và (h).
 
 ## Quy tắc thanh cuộn
 

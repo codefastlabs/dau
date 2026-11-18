@@ -542,8 +542,12 @@ enum AppVersion {
     /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0 (a1b2c3d, Debug)" on Debug. "Dấu 1.0.0" with
     /// nothing to put in the parentheses, "Dấu" without a version.
     static var nameAndVersion: String {
-        nameAndVersion(marketing: marketing, build: buildNumber, commit: commit, debug: isDebug,
-                       official: !isDevelopmentBuild)
+        #if DEBUG
+        // `--capture-updates` only: the page as a release build shows it, on sample values.
+        if let sample = DebugCapture.releaseVersionSample { return sample }
+        #endif
+        return nameAndVersion(marketing: marketing, build: buildNumber, commit: commit, debug: isDebug,
+                              official: !isDevelopmentBuild)
     }
 
     /// The version in the prefilled problem report (D25, D8): the official build adds the

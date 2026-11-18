@@ -221,4 +221,27 @@ struct ReleaseChannelRowTests {
         #expect(control.selectedSegment == 1)
         #expect(control.isEnabled(forSegment: 0) && control.isEnabled(forSegment: 1))
     }
+
+    /// Regression (18/11/2026, `--capture-updates`): SwiftUI read the control's binding on
+    /// NSHostingView's asynchronous rendering thread, and a `Binding(get:set:)` made of
+    /// main-actor closures trapped there (Swift 6 executor check). A window that is never
+    /// shown renders on the main thread only, so the test reads the row's binding off the
+    /// main thread itself, as that rendering does.
+    @Test("the channel binding can be read off the main thread")
+    func bindingOffMain() async {
+        let channels = ReleaseChannels(store: FakeChannelStore())
+        channels.appcastLoaded(itemChannels: Feed.withStable)
+        let binding = ReleaseChannelRow.selection(UpdatesModel(backend: FakeUpdater(), channels: channels))
+        let read = await withCheckedContinuation { (continuation: CheckedContinuation<ReleaseChannel, Never>) in
+            let box = UncheckedBox(binding)
+            Thread.detachNewThread { continuation.resume(returning: box.value.wrappedValue) }
+        }
+        #expect(read == .stable)
+    }
+}
+
+/// Hands a value to another thread in a test (the binding is read there on purpose).
+final class UncheckedBox<Value>: @unchecked Sendable {
+    let value: Value
+    init(_ value: Value) { self.value = value }
 }

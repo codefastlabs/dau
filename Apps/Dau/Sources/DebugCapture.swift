@@ -45,7 +45,9 @@ import SwiftUI
 /// `--capture-onboarding` (the onboarding window on fixed services),
 /// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào"
 /// sheet, laid out without running anything), `--capture-report` (the "Báo ứng dụng gõ
-/// lỗi" sheet on fixed sample content; nothing is opened or sent). The Settings window
+/// lỗi" sheet on fixed sample content; nothing is opened or sent), `--capture-updates`
+/// (Cập nhật & hỗ trợ as a release build shows it, on a fake updater; Sparkle is not
+/// tested here, M7 step 2 does that with real builds). The Settings window
 /// itself is measured from outside, in the real app (`--settings-window`, AXCheck.swift).
 @MainActor
 enum DebugCapture {
@@ -56,7 +58,7 @@ enum DebugCapture {
 
     /// The probe closure installed in the onboarding scene while capturing.
     static var probe: (@MainActor @Sendable (String, CGRect) -> Void)? {
-        guard onboardingDirectory != nil || reportDirectory != nil else { return nil }
+        guard onboardingDirectory != nil || reportDirectory != nil || updatesDirectory != nil else { return nil }
         return { @MainActor name, frame in DebugCapture.frames[name] = frame.isNull ? nil : frame }
     }
 
@@ -365,6 +367,105 @@ enum DebugCapture {
         }
     }
 
+    // MARK: Updates page of a release build
+
+    /// `--capture-updates <dir>`: the Settings window opens on Cập nhật & hỗ trợ as a
+    /// release build shows it, on a fake updater (`CaptureUpdater`: checked today at 9:41,
+    /// automatic checks on) and an in-memory channel store, so Sparkle never runs, nothing
+    /// is downloaded and no setting is written. As on a release build, the version line
+    /// reads `releaseVersionSample` and the installed input method's line is absent. Like
+    /// the other captures the app is not activated (macOS 14+ activation is cooperative,
+    /// and it would take focus from the user), so selected segments are grey. Writes
+    /// `updates-release-<stage>-<mode>.png` for both values of the SettingsAbout artboard's
+    /// `stage` tweak, light and dark: `nostable` (the appcast has betas only: Beta selected,
+    /// Stable off, first description) and `stable` (a stable item exists, the user stays on
+    /// Beta: both on, second description); and `frames.json`: per shot, window points from
+    /// the top-left, the window and the page's layout probes (`updatesProbes`), plus flags:
+    /// the segments' enabled state, the selected segment, whether the version line is
+    /// `releaseVersionSample`. Not the
+    /// Accessibility API: the ad hoc re-signed copy has no Accessibility permission.
+    static let updatesDirectory: URL? = {
+        let args = CommandLine.arguments
+        guard let i = args.firstIndex(of: "--capture-updates"), i + 1 < args.count else { return nil }
+        return URL(fileURLWithPath: args[i + 1], isDirectory: true)
+    }()
+
+    /// The version line of the capture: a release build's "Dấu 0.1.0 (6520)" (D25), on
+    /// fixed sample values (version 0.1.0, build 6520, as the artboard). nil outside
+    /// `--capture-updates`, so no real path ever shows it.
+    nonisolated static let releaseVersionSample: String? = CommandLine.arguments.contains("--capture-updates")
+        ? AppVersion.nameAndVersion(marketing: "0.1.0", build: "6520", commit: nil, debug: false, official: true)
+        : nil
+
+    /// The capture's appcasts, as `SUAppcast.items.map(\.channel)` (D7: betas carry `beta`,
+    /// a stable release none).
+    static let updatesStages: [(key: String, itemChannels: [String?])] = [
+        ("nostable", ["beta", "beta"]),
+        ("stable", ["beta", nil, "beta"]),
+    ]
+
+    /// The probes of Cập nhật & hỗ trợ that `--capture-updates` records: the version card's
+    /// first row, the "Tự động kiểm tra bản mới" row (its switch at the right), the "Kênh
+    /// phát hành" row and its control, and the installed input method's line
+    /// (a development build's; the capture must not show it).
+    static let updatesProbes = ["firstRow", "autoCheck", "releaseChannel", "channelControl", "installedBuild"]
+
+    /// The release build's update model for `--capture-updates`; nil otherwise.
+    static let updatesModel: UpdatesModel? = {
+        guard updatesDirectory != nil else { return nil }
+        return UpdatesModel(backend: CaptureUpdater(), channels: ReleaseChannels(store: CaptureChannelStore()))
+    }()
+
+    static func startUpdates() {
+        guard let directory = updatesDirectory, let updates = updatesModel else { return }
+        NSApp.setActivationPolicy(.accessory)
+        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+        Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(600))
+            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil && $0.sheetParent == nil }) else {
+                print("no window"); exit(1)
+            }
+            placeForCapture(window, size: SettingsScene.defaultSize)
+            var report: [String: [String: [Double]]] = [:]
+            for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
+                NSApp.appearance = NSAppearance(named: name)
+                window.makeKeyAndOrderFront(nil)
+                for stage in updatesStages {
+                    // The first load decides Beta (no stable item); a later one with a
+                    // stable item leaves the user on Beta (D7), as the artboard's stage.
+                    updates.channels.appcastLoaded(itemChannels: stage.itemChannels)
+                    try? await Task.sleep(for: .milliseconds(900))
+                    let key = "updates-release-\(stage.key)-\(mode)"
+                    capture(window, to: directory.appendingPathComponent("\(key).png"))
+                    // The page's layout probes (`UpdatesSupportView`), window points from
+                    // the top-left; a view gone has no frame (`LayoutProbeModifier`).
+                    var shot: [String: [Double]] = [:]
+                    for name in updatesProbes {
+                        if let r = frames[name] { shot[name] = [r.minX, r.minY, r.width, r.height].map(Double.init) }
+                    }
+                    shot["window"] = [0, 0, Double(window.frame.width), Double(window.frame.height)]
+                    shot["versionSample"] = [AppVersion.nameAndVersion == releaseVersionSample ? 1 : 0]
+                    if let control = segmentedControls(in: window.contentView).first(where: {
+                        $0.accessibilityLabel() == String(localized: "Release channel") }) {
+                        shot["channelEnabled"] = (0..<control.segmentCount).map { control.isEnabled(forSegment: $0) ? 1 : 0 }
+                        shot["channelSelected"] = [Double(control.selectedSegment)]
+                    }
+                    report[key] = shot
+                }
+            }
+            if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
+                try? data.write(to: directory.appendingPathComponent("frames.json"))
+            }
+            print("captured to \(directory.path)")
+            exit(0)
+        }
+    }
+
+    private static func segmentedControls(in view: NSView?) -> [NSSegmentedControl] {
+        guard let view else { return [] }
+        return view.subviews.flatMap { ($0 as? NSSegmentedControl).map { [$0] } ?? segmentedControls(in: $0) }
+    }
+
     /// The window's accessibility tree as VoiceOver gets it, one element per line:
     /// role, title/description, value, help, indented by depth. Uses the AX API on this
     /// process (SwiftUI builds its tree only for an AX client), from a background thread
@@ -480,5 +581,24 @@ enum DebugCapture {
         context.draw(image, in: rect)
         return context.makeImage()
     }
+}
+
+/// The updater of `--capture-updates`: Sparkle's state as a release build shows it after a
+/// check today at 9:41 (the artboard's time), automatic checks on; a check does nothing.
+@MainActor
+final class CaptureUpdater: UpdaterBackend {
+    var canCheckForUpdates = true
+    var lastUpdateCheckDate: Date? = Calendar.current.date(bySettingHour: 9, minute: 41, second: 0, of: Date())
+    var automaticallyChecksForUpdates = true
+    func checkForUpdates() {}
+    func observeChanges(_ changed: @escaping @MainActor @Sendable () -> Void) {}
+    func allowedChannelsChanged() {}
+}
+
+/// The channel store of `--capture-updates`: in memory, so the capture writes no defaults.
+@MainActor
+final class CaptureChannelStore: ReleaseChannelStore {
+    var channel: ReleaseChannel?
+    var stableReleaseExists: Bool?
 }
 #endif

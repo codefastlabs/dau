@@ -38,8 +38,8 @@ struct SettingsWindow: View {
             .ignoresSafeArea()
             // "Gỡ cài đặt…": the sheet that waits for the user to remove Dấu from the input
             // sources (`InputMethodActions.performUninstall`); closing it cancels the removal.
-            .sheet(isPresented: Binding(get: { actions?.isShowingUninstallSheet == true },
-                                        set: { if !$0 { actions?.cancelUninstall() } })) {
+            // A key-path binding, not `Binding(get:set:)` (`ReleaseChannelRow.body`).
+            .sheet(isPresented: Self.uninstallSheetPresented(actions)) {
                 if let actions {
                     UninstallRemoveSheet(actions: actions)
                 }
@@ -63,6 +63,13 @@ final class SettingsWindowState {
 
     init(_ section: SettingsSection) {
         self.section = section
+    }
+
+    /// The sidebar list's selection, for a key-path binding (`SettingsSidebar`): the list
+    /// never clears the page shown, so a nil selection is ignored.
+    var listSelection: SettingsSection? {
+        get { section }
+        set { if let newValue { section = newValue } }
     }
 
     var visibleSections: [SettingsSection] {
@@ -268,9 +275,11 @@ struct SettingsSidebar: View {
 
     var body: some View {
         let visible = state.visibleSections
-        // The list never clears the page shown (a nil selection is ignored).
-        List(visible, selection: Binding(get: { state.section },
-                                         set: { if let section = $0 { state.section = section } })) { section in
+        // The list never clears the page shown (`listSelection` ignores nil). A key-path
+        // binding, not `Binding(get:set:)`: closures made in this main-actor body trap
+        // when SwiftUI reads them on its asynchronous rendering thread (Swift 6 executor
+        // check; `ReleaseChannelRow.body`).
+        List(visible, selection: Self.selection(state)) { section in
             Label {
                 Text(section.title)
             } icon: {
@@ -413,4 +422,24 @@ enum SettingsScene {
     /// height changes. At least 400 pt under the 52 pt toolbar, so the window is at least
     /// 740 × 452.
     static let minSize = CGSize(width: 740, height: 400)
+}
+
+extension SettingsWindow {
+    /// The uninstall sheet's `isPresented`: `$actions.uninstallSheetPresented` through
+    /// `@Bindable`, never shown without actions. Safe to read on SwiftUI's rendering
+    /// thread (`SettingsBindingTests`).
+    static func uninstallSheetPresented(_ actions: InputMethodActions?) -> Binding<Bool> {
+        guard let actions else { return .constant(false) }
+        @Bindable var bindable = actions
+        return $bindable.uninstallSheetPresented
+    }
+}
+
+extension SettingsSidebar {
+    /// The list's selection: `$state.listSelection` through `@Bindable`. Safe to read on
+    /// SwiftUI's rendering thread (`SettingsBindingTests`).
+    static func selection(_ state: SettingsWindowState) -> Binding<SettingsSection?> {
+        @Bindable var state = state
+        return $state.listSelection
+    }
 }

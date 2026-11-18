@@ -28,7 +28,12 @@ struct DauApp: App {
     init() {
         // "Báo lỗi…" fills in the app used right before Dấu (ReportSheet).
         PreviousAppTracker.shared.start()
+        #if DEBUG
+        // `--capture-updates`: the release build's update rows on a fake updater.
+        _updates = State(initialValue: DebugCapture.updatesModel ?? SparkleUpdater.startIfConfigured())
+        #else
         _updates = State(initialValue: SparkleUpdater.startIfConfigured())
+        #endif
         let installer = SystemInputMethodInstaller.standard()
         let (flow, opens) = DauApp.makeOnboarding(installer)
         _onboarding = State(initialValue: flow)
@@ -48,7 +53,7 @@ struct DauApp: App {
         if DebugCapture.tampered { actions.forceTampered(); return }
         // Captures run a re-signed copy: its team does not match the installed one.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
-            || DebugCapture.reportDirectory != nil { return }
+            || DebugCapture.reportDirectory != nil || DebugCapture.updatesDirectory != nil { return }
         #endif
         // After the launch has gone on: the check validates the whole installed bundle.
         Task { @MainActor in actions.checkInstalled() }
@@ -62,17 +67,18 @@ struct DauApp: App {
         #if DEBUG
         // Window captures and debug commands never touch the installed input method.
         if DebugCapture.onboardingDirectory != nil || DebugCapture.uninstallDirectory != nil
-            || DebugCapture.reportDirectory != nil
+            || DebugCapture.reportDirectory != nil || DebugCapture.updatesDirectory != nil
             || DebugCapture.settingsWindowOnly || DebugCapture.tampered { return }
         #endif
         actions.startLaunchReconcile()
     }
 
     /// The Settings window's first section: Gõ phím, or Cập nhật & hỗ trợ for the
-    /// `--capture-report` capture (its sheet is presented from that page).
+    /// `--capture-report` (its sheet is presented from that page) and `--capture-updates`
+    /// captures.
     private static var initialSection: SettingsSection {
         #if DEBUG
-        if DebugCapture.reportDirectory != nil { return .updates }
+        if DebugCapture.reportDirectory != nil || DebugCapture.updatesDirectory != nil { return .updates }
         #endif
         return .typing
     }
@@ -84,6 +90,7 @@ struct DauApp: App {
         var opens = LaunchRouter.opensOnboarding(installer.status())
         #if DEBUG
         if DebugCapture.uninstallDirectory != nil || DebugCapture.reportDirectory != nil
+            || DebugCapture.updatesDirectory != nil
             || DebugCapture.settingsWindowOnly { opens = false }
         if let step = DebugCapture.onboardingStep {
             // `--onboarding <1|2|3>`: open onboarding at that step.
@@ -202,6 +209,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         DebugCapture.startOnboarding()
         DebugCapture.startUninstall()
         DebugCapture.startReport()
+        DebugCapture.startUpdates()
         #endif
     }
 

@@ -302,6 +302,14 @@ final class InputMethodActions {
         return outcome
     }
 
+    /// The uninstall sheet's `isPresented`, for a key-path binding (`SettingsWindow`): it
+    /// reads `isShowingUninstallSheet`; the system closing the sheet (Esc) cancels the
+    /// removal. See `ReleaseChannelRow.body` for why not `Binding(get:set:)`.
+    var uninstallSheetPresented: Bool {
+        get { isShowingUninstallSheet }
+        set { if !newValue { cancelUninstall() } }
+    }
+
     /// "Huỷ gỡ cài đặt" on the sheet (or Esc).
     func cancelUninstall() {
         uninstallTask?.cancel()
