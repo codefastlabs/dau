@@ -37,10 +37,11 @@
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
 #   --delay MS        pause between keys in ms (default 30). 0 sends the whole string in
-#                     one System Events keystroke (about 1 ms per key): a stress test that
-#                     Chrome, VS Code and Terminal failed with it
-#                     (measured before M6, docs/Compatibility.md 6.2);
-#                     120 is close to normal typing.
+#                     one System Events keystroke (about 1 ms per key): a stress test,
+#                     results in docs/Compatibility.md 5.1. Only when --keys holds none of
+#                     ⌫ ← ↩ ⇄ and there is no --jitter; otherwise 0 sends the keys one by
+#                     one with no pause, as fast as System Events sends them (number in
+#                     docs/Compatibility.md 5.1). 120 is close to normal typing.
 #   --keys "…"        keys to type (default: the sample sentence below). Four marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
 #                     key; ↩ the Return key (ghostty, the xterm page, vscodeterm,

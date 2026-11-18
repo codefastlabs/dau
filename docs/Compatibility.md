@@ -10,11 +10,11 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 12/11/2026, một lượ
 
 | Ứng dụng | Thay tại chỗ | Gạch chân | Nhãn "Đề xuất" |
 |---|---|---|---|
-| Safari, TextEdit | đúng ở 30 ms (29–30/10/2026) và 120 ms (Backspace, thêm dấu); Safari 27.2 ở 5 ms đúng 2/3 (17/11/2026), lượt sai hỏng đúng từ đầu của tài liệu mới, chưa rõ nguyên nhân (mục 5.1); Safari 27.2 ở 5–20 ms đúng 18/18 lúc trang rảnh, sai 9/9 khi trang bận (18/11/2026, máy M3 Max, mục 5.1) | đúng | không |
-| Chrome | đúng ở 5–20 ms (10/11/2026, máy M3 Max), khi trang bận (10/11/2026, máy M3 Max; 17/11/2026, Chrome 157, máy M1) và trong trình soạn thảo TipTap (9/9, 12/11/2026); khi trang bận: bản `0b1a42d` sai ở 5–20 ms (9/9) và ở nhịp người gõ nhanh (4/6); từ `d171ab9` sai 2/6 ở nhịp người, lỗi nhỏ hơn nhiều ở 10 ms (18/11/2026, máy M3 Max, mục 5.2) | đúng ở 0 ms | không |
+| Safari, TextEdit | đúng ở 30 ms (29–30/10/2026) và 120 ms (Backspace, thêm dấu); Safari 27.2 ở 5 ms đúng 2/3 (17/11/2026), lượt sai hỏng đúng từ đầu của tài liệu mới, chưa rõ nguyên nhân (mục 5.1); Safari 27.2 ở 5–20 ms đúng 18/18 lúc trang rảnh, sai 9/9 khi trang bận (18/11/2026, máy M3 Max, mục 5.1); trang rảnh đúng 12/12 tới khoảng 8,5 ms một phím, sai 3/3 khi gửi cả chuỗi một lần (18/11/2026, máy M1 Pro, mục 5.1) | đúng | không |
+| Chrome | đúng ở 5–20 ms (10/11/2026, máy M3 Max), khi trang bận (10/11/2026, máy M3 Max; 17/11/2026, Chrome 157, máy M1) và trong trình soạn thảo TipTap (9/9, 12/11/2026); trang rảnh đúng 15/15 tới khoảng 8,5 ms một phím và khi gửi cả chuỗi một lần (18/11/2026, máy M1 Pro, mục 5.1); khi trang bận: bản `0b1a42d` sai ở 5–20 ms (9/9) và ở nhịp người gõ nhanh (4/6); từ `d171ab9` sai 2/6 ở nhịp người, lỗi nhỏ hơn nhiều ở 10 ms (18/11/2026, máy M3 Max, mục 5.2) | đúng ở 0 ms | không |
 | Edge | đúng ở 5–20 ms và khi trang bận (10/11/2026, máy M1; 17/11/2026, Edge 157.0.4341.60) | đúng ở 0 ms | không |
 | Firefox | đúng ở 5–20 ms (10/11/2026, máy M3 Max) và khi trang bận (10/11/2026, máy M1; 17/11/2026, Firefox 160.0) | đúng ở 0 ms | không |
-| VS Code | đúng ở 5–20 ms: 14/15 lượt (10/11/2026, VS Code 1.145.2) và 2/2 lượt (17/11/2026, VS Code 1.146.0, mỗi lượt sau một ô Telex của Apple), máy M1 (mục 5.3) | đúng ở 0 ms | không |
+| VS Code | đúng ở 5–20 ms: 14/15 lượt (10/11/2026, VS Code 1.145.2) và 2/2 lượt (17/11/2026, VS Code 1.146.0, mỗi lượt sau một ô Telex của Apple), máy M1 (mục 5.3); đúng 15/15 tới khoảng 8,5 ms một phím và khi gửi cả chuỗi một lần (18/11/2026, máy M1 Pro, mục 5.1) | đúng ở 0 ms | không |
 | Cursor (3.30.14) | khung agent (⌘L) và ô nhập Agents đúng ở 5 ms; trình soạn thảo đúng khi trả vị trí từ đầu văn bản, sai vài từ ở 5 ms khi trả vị trí từ đầu từ (mục 5.4) | chưa đo | không |
 | Terminal | đúng ở 30 và 120 ms (12/11/2026; 30 ms lại 1/1 ngày 17/11/2026), sai khi phím dồn dưới 30 ms và ở 0 ms; ⌫ không tới bộ gõ (mục 5.5, 6.5) | đúng ở 5–20 ms (17/11/2026), sai ở 0 ms | **có** |
 | Ghostty | sai: app bỏ qua vùng thay, Dấu không xử lý riêng (D43; mục 6.8) | chữ đúng, Return ngay sau từ bị nuốt | **có** |
@@ -147,9 +147,22 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 
 ### 5.1 Safari, TextEdit
 
-- Câu mẫu đúng ở 30 ms, gõ tay đúng; gạch chân đúng ở 30 ms (29–30/10/2026). Cả hai cũng đúng khi gửi cả chuỗi một lần (0 ms), không là tiêu chí (D13).
+- Câu mẫu đúng ở 30 ms, gõ tay đúng; gạch chân đúng ở 30 ms (29–30/10/2026). Cả hai cũng đúng khi gửi cả chuỗi một lần (0 ms), không là tiêu chí (D13); Safari 27.2 thì sai ở thay tại chỗ (18/11/2026, mục "Tốc độ cao nhất" dưới đây).
 - Safari 27.2 (17/11/2026, bản Debug của `8d3e93a`, máy M1, chuyển nguồn bằng phím tắt hệ thống, có xác nhận trong ô): chuỗi `std` ở 5 ms đúng 2/3; Telex của Apple cùng điều kiện đúng (hợp lệ). Lượt sai hỏng đúng từ đầu ("Chiều" ra "hieCeuf"). Log: ở lần thay đầu của tài liệu mới, Safari trả vị trí chậm (`selectedRange` 2, Dấu theo dõi 4, `kind=late`). Nguyên nhân chưa rõ; việc mở ở mục 7. Mô hình test: `stalledStartTable`, `typedHere`.
 - Safari 27.2 (18/11/2026, máy M3 Max, bản Debug của `f0a9102`, chuỗi `edit`, nhịp 5, 10, 20 ms, 3 lượt mỗi nhịp, hai bản có và không có ngưỡng 50 ms của D11): trang rảnh đúng 18/18; trang bận (`--busy 300:1000`) sai 9/9 với bản đang dùng, Telex của Apple cùng điều kiện ra đúng chữ của chính nó.
+- Tốc độ cao nhất khi máy và trang rảnh (18/11/2026, máy M1 Pro, macOS 27.2.1, CPU rảnh khoảng 75%; bản Debug của `3aad4e2`; Safari 27.2, Chrome 157.0.8103.79, VS Code 1.146.0; 3 lượt mỗi ô, mỗi lượt gõ cả ba app). Khoảng cách thật giữa hai phím tới bộ gõ đọc từ `t_ns` trong log Debug:
+
+  | Chuỗi, nhịp đặt | Khoảng cách thật p10 / p50 (ms) | Safari | Chrome | VS Code |
+  |---|---|---|---|---|
+  | `edit`, 20 ms | 25–26 / 29–32 | 3/3 | 3/3 | 3/3 |
+  | `edit`, 10 ms | 8–14 / 17 | 3/3 | 3/3 | 3/3 |
+  | `edit`, 5 ms | 6–7 / 9–10 | 3/3 | 3/3 | 3/3 |
+  | `edit`, 0 ms (từng phím, không nghỉ; chuỗi có ⌫) | 6–7 / 8,5–8,7 | 3/3 | 3/3 | 3/3 |
+  | `std`, 0 ms (cả chuỗi một lần) | Safari 0,06 / 0,11; Chrome, VS Code 0,9 / 1,4 | sai 3/3 | 3/3 | 3/3 |
+
+  - Gửi từng phím, System Events không nhanh hơn khoảng 8,5 ms một phím (p50), tức khoảng 118 phím mỗi giây, nhiều lần nhanh hơn người gõ nhanh nhất; ở mọi nhịp đó Dấu đúng ở cả ba app và không có lần `mismatch` nào.
+  - Gửi cả chuỗi một lần (không là tiêu chí, D13): Safari đưa phím tới bộ gõ dồn cả loạt, dưới 0,2 ms một phím, và Dấu sai nhiều từ mỗi lượt (`count_mismatch` 9, 9, 4). Telex của Apple cùng điều kiện ra đúng chữ của chính nó ("mêting", D4), 3/3, lượt đầu mất một dấu cách, nên ô hợp lệ và lỗi là của Dấu. Chrome và VS Code đưa phím cách nhau khoảng 1,4 ms và Dấu đúng. Cùng kiểu dồn phím như lúc trang bận ở trên (dưới 2 ms, cùng dấu thời gian): ca này tái hiện được ở trang rảnh, không cần `--busy`.
+  - Lệnh: `typing/run.sh --delay 20|10|5|0 --keys "$(scripts/selftest/load/run.sh --text edit --print keys)" --expect "$(… --print expect)" safari chrome vscode`; dòng cuối với `--text std`, đối chứng thêm `--source com.apple.inputmethod.VietnameseIM.VietnameseTelex`.
   - Chẩn đoán (18/11/2026, 3 lượt 10 ms): khác Chrome. Safari dồn phím: mỗi lượt khoảng 59 phím tới bộ gõ cách nhau dưới 2 ms, cùng dấu thời gian, sau những quãng trang bị chặn. Chỉ 1 lần mỗi lượt Dấu tin vị trí cũ chậm từ 3 ký tự, nhưng mỗi lượt có 3–4 lần Safari báo vị trí **vượt** vị trí Dấu theo dõi, điều mà một app chỉ trả lời chậm không làm ra. Chưa rõ nguyên nhân; giả thuyết: (a) trong một loạt phím dồn, Safari tự chèn một phím mà bộ gõ cũng xử lý; (b) Safari áp vùng thay của một lần thay `late` vào chữ đã đổi, nên lệch chỗ ("một" ra "mọoot"). Nhịp người gõ nhanh (cùng điều kiện như Chrome ở mục 5.2): sai 2/3, mỗi lượt vài từ.
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng.
 - `selectedRange`: TextEdit 327 / 606, Safari 622 / 1.057 µs; mismatch 0.
@@ -164,6 +177,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 - Phím dồn, chuỗi `std` ở 5 ms (17/11/2026, máy M1, bản Debug của `8d3e93a`, chuyển nguồn bằng phím tắt hệ thống, có xác nhận trong ô): Edge 2/2, Firefox 2/2. Telex của Apple cùng điều kiện hợp lệ ở cả hai (ra "mêting"; ở Edge thêm "Ciều").
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng ở cả ba (Backspace, 82d9ecc).
 - `selectedRange`: Chrome 415 / 694, Edge 369 / 6.828, Firefox 265 / 1.174 µs.
+- Tốc độ cao nhất khi trang rảnh (18/11/2026, máy M1 Pro, Chrome 157.0.8103.79): đúng 15/15 lượt, ở mọi nhịp từ 20 ms tới khoảng 8,5 ms một phím và khi gửi cả chuỗi một lần (khoảng 1,4 ms một phím); số và điều kiện ở mục 5.1.
 - Phím dồn khi trang bận (18/11/2026, máy M3 Max, Chrome 157.0.8103.79, bản Debug của `f0a9102`, chuỗi `edit`, nhịp 5, 10, 20 ms, `--busy 300:1000`, 3 lượt mỗi nhịp): Chrome sai 9/9, chữ hỏng nhiều chỗ ("bạửigui", "projecả"); Telex của Apple cùng điều kiện ra đúng chữ của chính nó lúc trang rảnh ở cả 3 nhịp, nên trang không làm rơi phím. Cùng lượt, lúc trang rảnh: đúng 18/18. Edge, Firefox chưa đo.
   - Chẩn đoán (18/11/2026, bản Debug của `f0a9102`, 10 ms, 3 lượt trang bận và 1 lượt 100 ± 30 ms trang bận làm đối chứng): phím tới bộ gõ đều, khoảng 17 ms một phím (không dồn). Trang bận làm Chrome trả vị trí chậm tới 12 ký tự. Phần lớn các lần chậm được phép chứng minh app chậm của D11 nhận ra (`late`). Lỗi nằm ở các lần phép chứng minh không qua, ở lần thay đầu của một từ, khi vị trí chậm từ 3 ký tự trở lên: quá `CursorTracker.lateLimit` (2) nên Dấu không đoán là app chậm, mà tin vị trí cũ và thay chữ lùi về đó (`kind=replace`, vị trí app báo nhỏ hơn vị trí Dấu theo dõi). Ví dụ "bạn gửi" ra "bạửigui": Dấu ở 26, Chrome báo 23, Dấu thay ở 21–23. Số lần như vậy đi cùng mức hỏng: 3, 4, 6 lần cho khoảng cách chỉnh sửa 11, 10, 21; lượt 100 ms không có lần nào và đúng. Sau mỗi lần thay sai, vị trí Dấu theo dõi lệch theo nên các lần sau cũng lệch. Nguyên nhân gốc (log Debug có các con số của phép chứng minh): độ chậm được chấp nhận là `lateLimit` cộng số phím dồn liền nhau, mà số đó về 0 ở mỗi chỗ ngắt từ (50–60 ms) trong khi Chrome vẫn chậm; hướng sửa đã thử ở [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) mục 3.
   - Sửa ở commit `d171ab9` (18/11/2026): ở phím thay chữ trong từ, app được chậm mọi thao tác kể từ lần cuối nó trả lời đúng lúc. Chrome trang bận, nhịp người gõ nhanh: sai 2/6 lượt, tổng khoảng cách chỉnh sửa 7 (bản trước 4/6, 14); 10 ms: khoảng 1,7 mỗi lượt (bản trước khoảng 10); trang rảnh đúng. Số và các ca còn lại: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) mục 3.3.
@@ -175,6 +189,7 @@ Nguồn: số M1–M3 (29–30/10/2026) ở bảng "Số đo (M1–M3)" của [`
 - Thay tại chỗ đúng ở 5–20 ms (phím dồn, máy M1): 14/15 lượt ngày 10/11/2026 (VS Code 1.145.2) và 2/2 lượt ngày 17/11/2026 (VS Code 1.146.0, ô `vscode`, `std` ở 5 ms, bản Debug của `8d3e93a`, mỗi lượt chạy ngay sau một ô Telex của Apple, chuyển nguồn bằng phím tắt hệ thống; không mất phím đầu nào). Telex của Apple cùng điều kiện hợp lệ 2/2 (ra "mêting"). Lượt mất vài phím đầu ngày 10/11 chạy sau ô Apple chọn bằng API, không tái hiện khi chuyển bằng phím tắt. Gạch chân đúng ở 0 ms.
 - Backspace, thêm dấu cho từ đã gõ (120 ms): đúng. `selectedRange` 230 / 885 µs.
 - Phím dồn, chuỗi `edit` (18/11/2026, máy M3 Max, VS Code 1.146.0, bản Debug của `f0a9102`, nhịp 5, 10, 20 ms, 3 lượt mỗi nhịp, hai bản có và không có ngưỡng 50 ms của D11): đúng 18/18.
+- Tốc độ cao nhất (18/11/2026, máy M1 Pro, VS Code 1.146.0): đúng 15/15 lượt, ở mọi nhịp từ 20 ms tới khoảng 8,5 ms một phím và khi gửi cả chuỗi một lần (khoảng 1,4 ms một phím); số và điều kiện ở mục 5.1.
 - Chưa đo: khi app bận.
 
 ### 5.4 Cursor
