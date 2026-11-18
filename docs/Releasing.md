@@ -8,8 +8,8 @@ Phiên chính và subagent không cầm khoá: chứng chỉ, khoá App Store Co
 
 | Thành phần | Ở đâu |
 |---|---|
-| Script dựng bản phát hành (archive, xuất Developer ID, notarize, staple, DMG, appcast) |release/build-release.sh` |/| Script dựng một bản beta (archive, xuất Developer ID, notarize, staple, DMG, appcast) | `scripts/release/build-release.sh` |
-| Script quảng bá beta cuối thành bản ổn định (sao tài sản, không dựng) | `scripts/release/promote-release.sh` |/release/build-release.sh` |
+| Script dựng một bản beta (archive, xuất Developer ID, notarize, staple, DMG, appcast) | `scripts/release/build-release.sh` |
+| Script quảng bá beta cuối thành bản ổn định (sao tài sản, không dựng) | `scripts/release/promote-release.sh` |
 | Kiểm một bản build (biểu tượng, ký hiệu, khoá Sparkle, bộ gõ, chữ ký) | `scripts/release/check-build.sh` |
 | Kiểm điều kiện của một tag: commit nằm trong `origin/main`, workflow Test đã đạt (dùng chung cho dựng và quảng bá) | `scripts/release/check-release-gate.sh` |
 | Kiểm appcast nền có mục của beta mới nhất đã công bố | `scripts/release/check-appcast.sh` |
