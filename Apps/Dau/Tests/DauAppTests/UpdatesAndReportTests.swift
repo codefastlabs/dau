@@ -36,14 +36,16 @@ struct UpdaterConfigurationTests {
 }
 
 @MainActor
-private final class FakeUpdater: UpdaterBackend {
+final class FakeUpdater: UpdaterBackend {
     var canCheckForUpdates = true
     var lastUpdateCheckDate: Date?
     var automaticallyChecksForUpdates = true
     var checks = 0
     var changed: (@MainActor @Sendable () -> Void)?
 
+    var channelResets = 0
     func checkForUpdates() { checks += 1 }
+    func allowedChannelsChanged() { channelResets += 1 }
     func observeChanges(_ changed: @escaping @MainActor @Sendable () -> Void) { self.changed = changed }
 }
 
@@ -53,7 +55,7 @@ struct UpdatesModelTests {
     @Test("the page follows the updater and writes the switch back")
     func follows() {
         let fake = FakeUpdater()
-        let model = UpdatesModel(backend: fake)
+        let model = UpdatesModel(backend: fake, channels: ReleaseChannels(store: FakeChannelStore()))
         #expect(model.canCheck && model.automaticChecks && model.lastCheck == nil)
 
         let date = Date(timeIntervalSince1970: 1_800_000_000)
@@ -72,7 +74,7 @@ struct UpdatesModelTests {
     @Test("\"Check for Updates…\" only reaches the updater when a check is allowed")
     func check() {
         let fake = FakeUpdater()
-        let model = UpdatesModel(backend: fake)
+        let model = UpdatesModel(backend: fake, channels: ReleaseChannels(store: FakeChannelStore()))
         model.checkForUpdates()
         fake.canCheckForUpdates = false
         model.checkForUpdates()
@@ -114,7 +116,7 @@ struct ProblemReportTests {
     private func sample(website: String = "docs.google.com", example: String = "tieengs Vieetj",
                         appVersion: String? = "131.0") -> ProblemReport {
         ProblemReport(app: "Google Chrome", website: website, kind: .missingText, example: example,
-                      macOS: "macOS 27.2", dauVersion: "Dấu 1.0.0 (a1b2c3d)", typingMethod: "Telex",
+                      macOS: "macOS 27.2", dauVersion: "Dấu 0.1.0 (6520, a1b2c3d)", typingMethod: "Telex",
                       underline: "No Underline", appVersion: appVersion)
     }
 
@@ -130,8 +132,8 @@ struct ProblemReportTests {
 
     @Test("\"Gửi kèm\": macOS, Dấu, typing method, underline, then the app and its version")
     func included() {
-        #expect(sample().included == ["macOS 27.2", "Dấu 1.0.0 (a1b2c3d)", "Telex", "No Underline", "Google Chrome 131.0"])
-        #expect(sample().includedLine == "macOS 27.2 · Dấu 1.0.0 (a1b2c3d) · Telex · No Underline · Google Chrome 131.0")
+        #expect(sample().included == ["macOS 27.2", "Dấu 0.1.0 (6520, a1b2c3d)", "Telex", "No Underline", "Google Chrome 131.0"])
+        #expect(sample().includedLine == "macOS 27.2 · Dấu 0.1.0 (6520, a1b2c3d) · Telex · No Underline · Google Chrome 131.0")
         // No version read from the app's bundle: none is made up (N5).
         #expect(sample(appVersion: nil).included.last == "No Underline")
     }
@@ -153,7 +155,7 @@ struct ProblemReportTests {
         #expect(values["problem"] == "Missing Text")
         #expect(values["example"] == "tieengs Vieetj")
         #expect(values["macos"] == "macOS 27.2")
-        #expect(values["dau-version"] == "Dấu 1.0.0 (a1b2c3d)")
+        #expect(values["dau-version"] == "Dấu 0.1.0 (6520, a1b2c3d)")
         #expect(values["settings"] == "Telex · No Underline")
         // Every value is made of what the sheet shows: its fields and the "Gửi kèm" line.
         let shown = [report.app, report.website, report.kind.title, report.example, report.includedLine]

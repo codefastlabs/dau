@@ -49,7 +49,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
         case .updates:
             // The update rows exist only on a build with an updater (D7).
             (UpdaterConfiguration.isConfiguredForThisApp
-                ? ["Check for Updates…", "Automatically check for updates"] : [])
+                ? ["Check for Updates…", "Automatically check for updates", "Release channel", "Beta", "Stable"] : [])
             + ["Version", "Wrong text in an app", "Report a Problem…", "Remove Dấu from this Mac",
                "Uninstall…", "Privacy"]
         }

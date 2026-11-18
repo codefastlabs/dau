@@ -35,7 +35,8 @@ struct ProblemReport: Equatable {
     // "Gửi kèm":
     /// "macOS 27.2".
     var macOS: String
-    /// The version line of the page's header card ("Dấu 1.0.0 (a1b2c3d)").
+    /// `AppVersion.reportVersion` (D25): "Dấu 0.1.0 (6520, a1b2c3d)" on the official build,
+    /// the page's version line ("Dấu 1.0.0 (a1b2c3d)") on a development build.
     var dauVersion: String
     /// "Telex", "VNI", "Telex đơn giản".
     var typingMethod: String
@@ -55,7 +56,7 @@ struct ProblemReport: Equatable {
         [macOS, dauVersion, typingMethod, underline, appVersion.map { "\(app) \($0)" }].compactMap { $0 }
     }
 
-    /// "macOS 27 · Dấu 1.0.0 (a1b2c3d) · Telex · Không gạch chân · Chrome 131.0".
+    /// "macOS 27 · Dấu 0.1.0 (6520, a1b2c3d) · Telex · Không gạch chân · Chrome 131.0".
     var includedLine: String { included.joined(separator: " · ") }
 
     /// The issue title: the app and the kind, both shown on the sheet.

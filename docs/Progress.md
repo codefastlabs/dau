@@ -10,7 +10,6 @@ Chờ người dùng:
 - Bước 0 của kế hoạch M7: đăng ký Apple Developer Program trước tiên (việc lâu nhất).
 
 Việc tiếp theo:
-- Bước 1f của kế hoạch M7 (hai kênh), không chờ bước 0: artboard trước, rồi app và script song song.
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán bốn lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Safari, Cursor, trang bận khi phím dồn), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần; nhãn trợ năng của sheet thêm quy tắc sửa offline.
 
@@ -58,7 +57,7 @@ Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt art
 
 Sparkle (chỉ bản phát hành kiểm tra cập nhật), trang Cập nhật & hỗ trợ và báo lỗi, biểu tượng Icon Composer, nền DMG, script phát hành chạy được ở chế độ không ký, GitHub Actions, `docs/Releasing.md`; entitlement của bộ gõ giữ nguyên (`docs/research/IMKAPINotes.md`). Chi tiết: commit message ngày 17/11, `docs/Releasing.md`, `docs/history/LogM7.md`.
 
-### Bước 1f — Hai kênh Beta và Chính thức (không cần ký, chưa làm)
+### Bước 1f — Hai kênh Beta và Chính thức (không cần ký): xong 18/11, trừ phần chạy thật ở bước 2
 
 Theo D7, ý "Kênh"; vòng phát hành: `docs/Releasing.md` mục "Kịch bản phát hành". Không chờ bước 0.
 

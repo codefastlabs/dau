@@ -70,7 +70,7 @@
       }
     },
     "%@. Only what’s shown here is sent." : {
-      "comment" : "Problem report sheet. %@ = what goes along, e.g. “macOS 27.2 · Dấu 1.0.0 (a1b2c3d) · Telex · No Underline · Google Chrome 131.0”.",
+      "comment" : "Problem report sheet. %@ = what goes along, e.g. “macOS 27.2 · Dấu 0.1.0 (6520, a1b2c3d) · Telex · No Underline · Google Chrome 131.0”.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
@@ -354,6 +354,57 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Tự động kiểm tra bản mới"
+          }
+        }
+      }
+    },
+    "Beta" : {
+      "comment" : "Release channel choice: betas and stable releases (D7).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta"
+          }
+        }
+      }
+    },
+    "Beta: the latest builds, for trying out and giving feedback. Stable: finished releases only. If you switch to Stable, Dấu keeps the version you have until a newer stable release comes out." : {
+      "comment" : "Description of the release channel row once the appcast has a stable release (D7): Sparkle never installs an older build.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta: the latest builds, for trying out and giving feedback. Stable: finished releases only. If you switch to Stable, Dấu keeps the version you have until a newer stable release comes out."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta: bản mới nhất, để dùng thử và góp ý. Chính thức: chỉ bản đã chốt. Chuyển sang Chính thức thì Dấu giữ bản đang dùng tới khi có bản chính thức mới hơn."
+          }
+        }
+      }
+    },
+    "Beta: the latest builds, for trying out and giving feedback. There is no stable release yet; once there is, you can choose the Stable channel." : {
+      "comment" : "Description of the release channel row while the appcast has no stable release (D7).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta: the latest builds, for trying out and giving feedback. There is no stable release yet; once there is, you can choose the Stable channel."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Beta: bản mới nhất, để dùng thử và góp ý. Chưa có bản chính thức nào; khi có, bạn chọn được kênh Chính thức."
           }
         }
       }
@@ -949,23 +1000,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Phím tắt hiện tại"
-          }
-        }
-      }
-    },
-    "Development build" : {
-      "comment" : "Updates & Support header card: the build is not the official one (D25). Debug, when it is, is in the version line.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Development build"
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Bản phát triển"
           }
         }
       }
@@ -2143,6 +2177,23 @@
         }
       }
     },
+    "Release channel" : {
+      "comment" : "Updates & Support row (official build only): the channel the updater follows, Beta or Stable (D7).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Release channel"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Kênh phát hành"
+          }
+        }
+      }
+    },
     "Remove Dấu from Your Input Sources" : {
       "comment" : "Title of the uninstall sheet: the user removes Dấu in System Settings.",
       "localizations" : {
@@ -2547,6 +2598,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Có lỗi khi chép hoặc đăng ký bộ gõ."
+          }
+        }
+      }
+    },
+    "Stable" : {
+      "comment" : "Release channel choice: stable releases only (D7). Off until the appcast has a stable release.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stable"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chính thức"
           }
         }
       }

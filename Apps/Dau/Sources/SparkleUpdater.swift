@@ -22,7 +22,9 @@ enum SparkleUpdater {
     /// The updater for this app, started; nil when this build has no feed and key.
     static func startIfConfigured() -> UpdatesModel? {
         guard UpdaterConfiguration.isConfiguredForThisApp else { return nil }
-        return UpdatesModel(backend: SparkleUpdaterBackend())
+        // The channel exists before Sparkle starts, so its delegate can always answer.
+        let channels = ReleaseChannels(store: DefaultsReleaseChannelStore())
+        return UpdatesModel(backend: SparkleUpdaterBackend(channels: channels), channels: channels)
     }
 }
 
@@ -32,10 +34,13 @@ enum SparkleUpdater {
 @MainActor
 final class SparkleUpdaterBackend: UpdaterBackend {
     private let controller: SPUStandardUpdaterController
+    /// Sparkle holds its delegate weakly: this keeps it alive as long as the updater.
+    private let delegate: SparkleChannelDelegate
     private var observations: [NSKeyValueObservation] = []
 
-    init() {
-        controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
+    init(channels: ReleaseChannels) {
+        delegate = SparkleChannelDelegate(channels: channels)
+        controller = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: delegate, userDriverDelegate: nil)
     }
 
     private var updater: SPUUpdater { controller.updater }
@@ -61,5 +66,42 @@ final class SparkleUpdaterBackend: UpdaterBackend {
             updater.observe(\.lastUpdateCheckDate) { _, _ in notify() },
             updater.observe(\.automaticallyChecksForUpdates) { _, _ in notify() },
         ]
+    }
+
+    func allowedChannelsChanged() {
+        // SPUUpdater.h: "should only be called in response to a user changing updater
+        // settings … may trigger a new update check … if … allowed channels has changed".
+        // The short delay lets a quick change back cancel it.
+        updater.resetUpdateCycleAfterShortDelay()
+    }
+}
+
+/// Sparkle's updater delegate for the release channel (D7, "Kênh"); the logic and the
+/// call order it relies on are documented on `ReleaseChannels` (Updater.swift).
+/// `SPUUpdaterDelegate` is `NS_SWIFT_UI_ACTOR` in Sparkle 2.10.1: both calls come on the
+/// main actor.
+final class SparkleChannelDelegate: NSObject, SPUUpdaterDelegate {
+    private let channels: ReleaseChannels
+
+    init(channels: ReleaseChannels) {
+        self.channels = channels
+    }
+
+    /// `allowedChannelsForUpdater:`: Sparkle filters the loaded appcast with this set
+    /// (the default channel is always included).
+    func allowedChannels(for updater: SPUUpdater) -> Set<String> {
+        channels.allowedAppcastChannels
+    }
+
+    /// `updater:didFinishLoadingAppcast:`: called after a successful download and parse,
+    /// with every item of the feed (before the channel filter), and before Sparkle asks
+    /// for the allowed channels in the same pass (SUAppcastDriver.m, 2.10.1).
+    func updater(_ updater: SPUUpdater, didFinishLoading appcast: SUAppcast) {
+        // A feed whose signature failed (Sparkle may go on for a while to report the
+        // error later) decides nothing.
+        guard appcast.signingValidationStatus != .failed else { return }
+        // The items Sparkle would consider at all: macOS, full (not delta) updates.
+        let items = appcast.items.filter { $0.isMacOsUpdate && !$0.isDeltaUpdate }
+        channels.appcastLoaded(itemChannels: items.map(\.channel))
     }
 }

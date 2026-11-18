@@ -4,9 +4,10 @@ import SwiftUI
 /// "Cập nhật & hỗ trợ" (artboards "SettingsAbout", "SettingsAboutDev").
 ///
 /// - The version card. On the official build (an updater exists, `UpdatesModel`, D7) it
-///   has the last check and "Kiểm tra bản mới…", and the card's second row is "Tự động
-///   kiểm tra bản mới"; Sparkle's own windows show what a check finds, the download and
-///   the install (D7). A development build has none of these and says what it is (D25).
+///   has the last check and "Kiểm tra bản mới…", then the rows "Tự động kiểm tra bản mới"
+///   and "Kênh phát hành"; Sparkle's own windows show what a check finds, the download and
+///   the install (D7). A development build has none of these; its card shows the
+///   installed input method's build (D25, D37).
 /// - "Hỗ trợ": "Báo lỗi…" (`ReportSheet`, D8) and "Gỡ cài đặt…" (D16,
 ///   `InputMethodActions.confirmUninstall`), then the privacy note.
 struct UpdatesSupportView: View {
@@ -47,9 +48,10 @@ struct UpdatesSupportView: View {
                         if let updates {
                             Subtitle(Text(verbatim: UpdatesModel.lastCheckLine(updates.lastCheck)))
                         }
-                        // D25: a development build says so (Debug is in the version line).
+                        // D25: no line naming the kind of build; the icon and the commit
+                        // in the version line tell it. A development build shows what the
+                        // installed input method is.
                         if AppVersion.isDevelopmentBuild {
-                            Subtitle(Text("Development build"))
                             switch installed {
                             case .unread: EmptyView()
                             case .notInstalled: Subtitle(Text("Input method not installed"))
@@ -74,6 +76,7 @@ struct UpdatesSupportView: View {
                         // never installs without asking (SUAllowsAutomaticUpdates false).
                         Text("When you open Dấu, at most once a day. Dấu asks you before installing.")
                     }
+                    ReleaseChannelRow(updates: updates)
                 }
             }
 
@@ -111,6 +114,38 @@ struct UpdatesSupportView: View {
             // A newer check replaced this task: its read wins, never this older one.
             guard !Task.isCancelled else { return }
             installed = build.map(InstalledRead.build) ?? .notInstalled
+        }
+    }
+}
+
+/// "Kênh phát hành" (D7, "Kênh"; artboard SettingsAbout, both values of its `stage`): the
+/// system segmented control Beta / Stable at the right of the row, like "Tone mark
+/// placement". Until the appcast has a stable release, Stable is shown but off and the
+/// description says there is none yet. The row appears once an appcast has loaded: before
+/// that Dấu cannot tell which of the two is true (N5). With automatic checks on, Sparkle
+/// checks at the first launch (no last check date yet, SPUUpdater.m 2.10.1).
+struct ReleaseChannelRow: View {
+    let updates: UpdatesModel
+
+    var body: some View {
+        let channels = updates.channels
+        if let stableExists = channels.stableReleaseExists, let channel = channels.channel {
+            LabeledContent {
+                // `SegmentedPicker`: SwiftUI's `Picker` cannot turn the Stable segment off.
+                SegmentedPicker(String(localized: "Release channel"),
+                                selection: Binding(get: { channel }, set: { updates.chooseChannel($0) }),
+                                options: [(.beta, String(localized: "Beta")), (.stable, String(localized: "Stable"))],
+                                disabled: channels.canChoose(.stable) ? [] : [.stable],
+                                fillsWidth: false, controlSize: .regular)
+            } label: {
+                Text("Release channel")
+                if stableExists {
+                    Text("Beta: the latest builds, for trying out and giving feedback. Stable: finished releases only. If you switch to Stable, Dấu keeps the version you have until a newer stable release comes out.")
+                } else {
+                    Text("Beta: the latest builds, for trying out and giving feedback. There is no stable release yet; once there is, you can choose the Stable channel.")
+                }
+            }
+            .layoutProbe("releaseChannel")
         }
     }
 }

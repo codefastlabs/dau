@@ -529,16 +529,50 @@ enum AppVersion {
         #endif
     }()
 
-    /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0 (a1b2c3d, Debug)" on a Debug build, "Dấu 1.0.0"
-    /// with nothing to put in the parentheses, or "Dấu" without a version. The header card
-    /// and the sidebar's last line both show it (docs/UI.md, artboard SettingsAboutDev).
-    static var nameAndVersion: String {
-        nameAndVersion(marketing: marketing, commit: commit, debug: isDebug)
+    /// The build number (`CFBundleVersion`), which Sparkle compares (D7).
+    static var buildNumber: String? {
+        guard let v = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String,
+              !v.isEmpty, !v.contains("$(") else { return nil }
+        return v
     }
 
-    nonisolated static func nameAndVersion(marketing: String?, commit: String?, debug: Bool) -> String {
+    /// The version line of the header card and the sidebar's last line (docs/UI.md,
+    /// artboards SettingsAbout, SettingsAboutDev), as Apple's About window puts the build in
+    /// parentheses (D25): the official build "Dấu 1.3.0 (6520)"; a development build
+    /// "Dấu 1.0.0 (a1b2c3d)", "Dấu 1.0.0 (a1b2c3d, Debug)" on Debug. "Dấu 1.0.0" with
+    /// nothing to put in the parentheses, "Dấu" without a version.
+    static var nameAndVersion: String {
+        nameAndVersion(marketing: marketing, build: buildNumber, commit: commit, debug: isDebug,
+                       official: !isDevelopmentBuild)
+    }
+
+    /// The version in the prefilled problem report (D25, D8): the official build adds the
+    /// commit after the build number, "Dấu 1.3.0 (6520, a1b2c3d)", since the number alone
+    /// does not tell which commit it was built from; a development build's line is the
+    /// page's.
+    static var reportVersion: String {
+        reportVersion(marketing: marketing, build: buildNumber, commit: commit, debug: isDebug,
+                      official: !isDevelopmentBuild)
+    }
+
+    nonisolated static func nameAndVersion(marketing: String?, build: String?, commit: String?,
+                                           debug: Bool, official: Bool) -> String {
+        let inside = official ? build : buildInfo(commit: commit, debug: debug)
+        return line(marketing: marketing, inside: inside)
+    }
+
+    nonisolated static func reportVersion(marketing: String?, build: String?, commit: String?,
+                                          debug: Bool, official: Bool) -> String {
+        guard official else {
+            return nameAndVersion(marketing: marketing, build: build, commit: commit, debug: debug, official: false)
+        }
+        let parts = [build, commit].compactMap { $0 }
+        return line(marketing: marketing, inside: parts.isEmpty ? nil : parts.joined(separator: ", "))
+    }
+
+    private nonisolated static func line(marketing: String?, inside: String?) -> String {
         guard let marketing else { return "Dấu" }
-        return buildInfo(commit: commit, debug: debug).map { "Dấu \(marketing) (\($0))" } ?? "Dấu \(marketing)"
+        return inside.map { "Dấu \(marketing) (\($0))" } ?? "Dấu \(marketing)"
     }
 }
 

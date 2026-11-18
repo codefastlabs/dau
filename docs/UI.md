@@ -170,7 +170,7 @@ Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
   - Chưa kiểm lần nào thì dòng kiểm tra lần cuối nói vậy, không hiện giờ (N5).
   - Công tắc đọc và ghi lựa chọn của chính Sparkle (`automaticallyChecksForUpdates`, mặc định bật theo Info.plist), không có khoá riêng của Dấu.
   - Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") chưa kiểm trên bản phát hành; kiểm ở lượt chạy Sparkle cập nhật của M7 (N5).
-  - Hàng "Kênh phát hành" (D7, ý "Kênh"): nút chia đoạn Beta / Chính thức. Khi appcast chưa có bản chính thức, Chính thức hiện nhưng tắt và dòng phụ nói chưa có bản chính thức nào; khi đã có, dòng phụ nói chuyển sang Chính thức thì giữ bản đang dùng tới khi có bản chính thức mới hơn.
+  - Hàng "Kênh phát hành" (D7, ý "Kênh"): nút chia đoạn Beta / Chính thức. Khi appcast chưa có bản chính thức, Chính thức hiện nhưng tắt và dòng phụ nói chưa có bản chính thức nào; khi đã có, dòng phụ nói chuyển sang Chính thức thì giữ bản đang dùng tới khi có bản chính thức mới hơn. Hàng chỉ hiện sau lần tải appcast thành công đầu tiên: trước đó Dấu chưa biết đã có bản chính thức hay chưa (N5). Không có artboard riêng cho lúc chưa hiện: trang giống artboard, chỉ thiếu hàng này.
 - Dòng phiên bản (thẻ đầu trang và cuối sidebar) theo D25: bản phát hành ghi số build trong ngoặc ("Dấu 0.1.0 (6520)"), bản phát triển ghi commit.
 - "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi", ở mọi loại bản (mục con bên dưới).
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9); luồng gỡ ở mục "Gỡ cài đặt".

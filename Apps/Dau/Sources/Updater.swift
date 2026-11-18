@@ -4,7 +4,7 @@ import SwiftUI
 
 // The update part of "Cập nhật & hỗ trợ" (D7), without Sparkle: the Sparkle-backed side
 // is SparkleUpdater.swift, left out of the unit-test package, so the choice of build,
-// the page's state and its wording are tested without linking Sparkle.
+// the page's state, the release channel and the wording are tested without linking Sparkle.
 
 /// Whether this build updates itself (D7): only the official build has an appcast URL and
 /// a public EdDSA key, written into its Info.plist by the "Sparkle keys" phase of
@@ -40,6 +40,132 @@ protocol UpdaterBackend: AnyObject {
     func checkForUpdates()
     /// Calls `changed` on the main actor whenever one of the three properties changes.
     func observeChanges(_ changed: @escaping @MainActor @Sendable () -> Void)
+    /// The user picked another release channel: the updater re-reads the allowed channels
+    /// (Sparkle: `resetUpdateCycleAfterShortDelay`, which checks in the background when
+    /// the allowed channels changed since the last check).
+    func allowedChannelsChanged()
+}
+
+// MARK: - Release channel (D7, "Kênh")
+
+/// The release channels of D7. In the appcast a beta item carries Sparkle's channel
+/// `beta`; an item without a channel is a stable release, which every channel sees.
+enum ReleaseChannel: String, CaseIterable, Sendable {
+    case beta
+    case stable
+
+    /// The appcast channel of beta items (`<sparkle:channel>beta</sparkle:channel>`).
+    static let betaAppcastChannel = "beta"
+
+    /// What the updater delegate returns from Sparkle's `allowedChannels(for:)`: the
+    /// default channel (untagged, stable items) is always allowed, so Stable is the empty
+    /// set and Beta adds `beta`.
+    var allowedAppcastChannels: Set<String> {
+        switch self {
+        case .beta: [Self.betaAppcastChannel]
+        case .stable: []
+        }
+    }
+}
+
+/// Where the channel and what the last appcast said are kept: the app's own defaults
+/// (`DefaultsReleaseChannelStore`), a fake in tests. nil means "never decided / never read".
+@MainActor
+protocol ReleaseChannelStore: AnyObject {
+    var channel: ReleaseChannel? { get set }
+    var stableReleaseExists: Bool? { get set }
+}
+
+/// The app's defaults (not the App Group: the input method has no use for them, N2).
+@MainActor
+final class DefaultsReleaseChannelStore: ReleaseChannelStore {
+    static let channelKey = "DauReleaseChannel"
+    static let stableReleaseExistsKey = "DauStableReleaseExists"
+    private let defaults: UserDefaults
+
+    init(defaults: UserDefaults = .standard) {
+        self.defaults = defaults
+    }
+
+    var channel: ReleaseChannel? {
+        // A value this build does not know is as good as none: decided again at the next load.
+        get { defaults.string(forKey: Self.channelKey).flatMap(ReleaseChannel.init(rawValue:)) }
+        set { defaults.set(newValue?.rawValue, forKey: Self.channelKey) }
+    }
+
+    var stableReleaseExists: Bool? {
+        get { defaults.object(forKey: Self.stableReleaseExistsKey) as? Bool }
+        set { defaults.set(newValue, forKey: Self.stableReleaseExistsKey) }
+    }
+}
+
+/// The release channel (D7, "Kênh"): the user's choice, and whether the appcast has a
+/// stable release yet. Both come from the appcast as Sparkle loads it, never from a build
+/// flag: the stable release is the unchanged file of the last beta, built while no
+/// stable release existed.
+///
+/// Sparkle 2.10.1 (`SUAppcastDriver.m`, `downloadDriverDidDownloadData:`): after a successful
+/// parse it calls the updater delegate's `updater(_:didFinishLoading:)` with the whole
+/// appcast, unfiltered (every item, every channel), and only then asks
+/// `allowedChannels(for:)` to filter that same appcast. `SPUUpdater` also asks
+/// `allowedChannels(for:)` at the start of each check and in `resetUpdateCycle`, before
+/// any appcast is read, only to compare with the next answer. So:
+/// - The default is written in `appcastLoaded`, the first time an appcast loads: no
+///   stable item, Beta; a stable item, Stable. Afterwards only `choose` changes it; a
+///   stable release appearing later switches nobody (D7).
+/// - Before that first load `allowedAppcastChannels` is the default channel only (the
+///   stable items). That answer is never wrong whatever the call order: it can only hide
+///   a beta for one check, never offer a beta to someone who will be on Stable; and
+///   in 2.10.1's order the first filtering already sees the decided default.
+@MainActor
+@Observable
+final class ReleaseChannels {
+    /// nil until the first appcast load (D7: the default depends on the appcast).
+    private(set) var channel: ReleaseChannel?
+    /// Whether the last appcast loaded had a stable item; nil before the first load.
+    private(set) var stableReleaseExists: Bool?
+
+    @ObservationIgnored private let store: ReleaseChannelStore
+
+    init(store: ReleaseChannelStore) {
+        self.store = store
+        channel = store.channel
+        stableReleaseExists = store.stableReleaseExists
+    }
+
+    /// Sparkle loaded the appcast: `itemChannels` holds each item's `channel` (nil for an
+    /// untagged item, a stable release).
+    func appcastLoaded(itemChannels: [String?]) {
+        let exists = itemChannels.contains { $0 == nil }
+        if stableReleaseExists != exists {
+            stableReleaseExists = exists
+            store.stableReleaseExists = exists
+        }
+        guard channel == nil else { return }
+        let first: ReleaseChannel = exists ? .stable : .beta
+        channel = first
+        store.channel = first
+    }
+
+    /// The answer to Sparkle's `allowedChannels(for:)`.
+    var allowedAppcastChannels: Set<String> {
+        channel?.allowedAppcastChannels ?? []
+    }
+
+    /// Stable can be picked only once the appcast has a stable release (the segment is
+    /// off before that, docs/UI.md).
+    func canChoose(_ choice: ReleaseChannel) -> Bool {
+        choice == .beta || stableReleaseExists == true
+    }
+
+    /// The user picked `choice`. True when the channel changed.
+    @discardableResult
+    func choose(_ choice: ReleaseChannel) -> Bool {
+        guard choice != channel, canChoose(choice) else { return false }
+        channel = choice
+        store.channel = choice
+        return true
+    }
 }
 
 /// The updater's state as the page shows it. Exists only on a build with an updater
@@ -58,10 +184,15 @@ final class UpdatesModel {
         }
     }
 
+    /// "Kênh phát hành" (D7). The same object answers Sparkle's delegate
+    /// (`SparkleUpdaterBackend`), so the page and the updater never disagree.
+    let channels: ReleaseChannels
+
     @ObservationIgnored private let backend: UpdaterBackend
 
-    init(backend: UpdaterBackend) {
+    init(backend: UpdaterBackend, channels: ReleaseChannels) {
         self.backend = backend
+        self.channels = channels
         canCheck = backend.canCheckForUpdates
         lastCheck = backend.lastUpdateCheckDate
         automaticChecks = backend.automaticallyChecksForUpdates
@@ -71,6 +202,12 @@ final class UpdatesModel {
     func checkForUpdates() {
         guard backend.canCheckForUpdates else { return }
         backend.checkForUpdates()
+    }
+
+    /// The user picked a channel in "Kênh phát hành".
+    func chooseChannel(_ choice: ReleaseChannel) {
+        guard channels.choose(choice) else { return }
+        backend.allowedChannelsChanged()
     }
 
     /// Reads the backend again (after a change it reported).

@@ -2,9 +2,11 @@ import Foundation
 import Testing
 @testable import Dau
 
-// D25: a development build's Updates & Support card says so; "Debug" goes in the
-// version's parentheses, for the app and for the installed input method, and "Release"
-// is never shown. Debug is read from the get-task-allow entitlement, as
+// D25: the version line. The official build puts its build number in the parentheses (the
+// problem report adds the commit). A development build puts the commit there, then
+// "Debug" on a Debug build, for the app and for the installed input method; "Release" is
+// never shown, nor a line naming the kind of build. Debug is read from the get-task-allow
+// entitlement, as
 // scripts/dev/dau-version.sh does; without a readable signature nothing is claimed (N5).
 // The bundles are minimal .app folders around a copy of /usr/bin/true, signed ad hoc here
 // (or not signed).
@@ -56,7 +58,7 @@ private func remove(_ apps: URL...) {
     for app in apps { try? FileManager.default.removeItem(at: app.deletingLastPathComponent()) }
 }
 
-@Suite("Development build label (D25)")
+@Suite("Version line and development build label (D25)")
 struct DevelopmentBuildTests {
     @Test("get-task-allow in the signature means Debug, its absence not Debug, no signature unknown")
     func getTaskAllow() throws {
@@ -107,9 +109,42 @@ struct DevelopmentBuildTests {
         #else
         #expect(!AppVersion.isDebug)
         #endif
-        #expect(AppVersion.nameAndVersion(marketing: "1.0.0", commit: "a1b2c3d", debug: true) == "Dấu 1.0.0 (a1b2c3d, Debug)")
-        #expect(AppVersion.nameAndVersion(marketing: "1.0.0", commit: "a1b2c3d", debug: false) == "Dấu 1.0.0 (a1b2c3d)")
-        #expect(AppVersion.nameAndVersion(marketing: "1.0.0", commit: nil, debug: false) == "Dấu 1.0.0")
-        #expect(AppVersion.nameAndVersion(marketing: nil, commit: "a1b2c3d", debug: true) == "Dấu")
+        func line(_ marketing: String?, _ commit: String?, debug: Bool) -> String {
+            AppVersion.nameAndVersion(marketing: marketing, build: "6520", commit: commit, debug: debug, official: false)
+        }
+        // The build number never shows on a development build.
+        #expect(line("1.0.0", "a1b2c3d", debug: true) == "Dấu 1.0.0 (a1b2c3d, Debug)")
+        #expect(line("1.0.0", "a1b2c3d", debug: false) == "Dấu 1.0.0 (a1b2c3d)")
+        #expect(line("1.0.0", nil, debug: false) == "Dấu 1.0.0")
+        #expect(line(nil, "a1b2c3d", debug: true) == "Dấu")
+    }
+
+    @Test("the official build's version line: the build number in the parentheses (D25)")
+    func officialVersionLine() {
+        func line(_ build: String?, debug: Bool = false) -> String {
+            AppVersion.nameAndVersion(marketing: "0.1.0", build: build, commit: "a1b2c3d", debug: debug, official: true)
+        }
+        #expect(line("6520") == "Dấu 0.1.0 (6520)")
+        #expect(line(nil) == "Dấu 0.1.0")
+        #expect(AppVersion.nameAndVersion(marketing: nil, build: "6520", commit: nil, debug: false, official: true) == "Dấu")
+    }
+
+    @Test("the problem report's version: build and commit on the official build, the page's line otherwise (D25)")
+    func reportVersion() {
+        func report(_ build: String?, _ commit: String?, debug: Bool = false, official: Bool) -> String {
+            AppVersion.reportVersion(marketing: "0.1.0", build: build, commit: commit, debug: debug, official: official)
+        }
+        #expect(report("6520", "a1b2c3d", official: true) == "Dấu 0.1.0 (6520, a1b2c3d)")
+        #expect(report("6520", nil, official: true) == "Dấu 0.1.0 (6520)")
+        #expect(report(nil, "a1b2c3d", official: true) == "Dấu 0.1.0 (a1b2c3d)")
+        #expect(report(nil, nil, official: true) == "Dấu 0.1.0")
+        #expect(report("6520", "a1b2c3d", official: false) == "Dấu 0.1.0 (a1b2c3d)")
+        #expect(report("6520", "a1b2c3d", debug: true, official: false) == "Dấu 0.1.0 (a1b2c3d, Debug)")
+    }
+
+    @Test("no \"Development build\" line in the catalog any more (D25)")
+    func noKindLine() {
+        // `Catalog.text` gives the key back when the catalog has no entry.
+        #expect(Catalog.text("Development build", "vi") == "Development build")
     }
 }

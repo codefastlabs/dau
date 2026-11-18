@@ -40,7 +40,7 @@ struct ReportSheet: View {
             kind: kind,
             example: example,
             macOS: ProblemReport.macOSName(),
-            dauVersion: AppVersion.nameAndVersion,
+            dauVersion: AppVersion.reportVersion,
             typingMethod: model.settings.typingMethod.title,
             underline: ProblemReport.underlineName(model.settings, bundleID: chosen?.bundleID),
             appVersion: chosen?.version)
