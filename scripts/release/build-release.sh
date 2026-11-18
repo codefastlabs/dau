@@ -13,7 +13,9 @@
 # HEAD, is on origin/main and passed the Test workflow (check-release-gate.sh); the tag has no
 # release yet, draft or published (a published tag is never built again; after a failed run,
 # delete the draft and the tag and tag a new commit); and the appcast on origin/main holds the
-# newest published beta (check-appcast.sh). The base appcast is that file, not the one at the
+# newest published beta (check-appcast.sh), and the build number is not one already in it (Sparkle
+# treats two builds with one number as one: a hotfix from an older branch needs --build-number in
+# the gap, docs/Releasing.md "Số build"). The base appcast is that file, not the one at the
 # tagged commit: an item reaches site/appcast.xml only after the tag, at the publish step.
 #
 # Usage:
@@ -54,7 +56,9 @@
 #
 # Output in --out: Dau-<version>.dmg (signed) or Dau-<version>-dev-unsigned.dmg,
 # Dau-<version>.dSYMs.zip, appcast/appcast.xml
-# (signed only: the site/appcast.xml of origin/main with this release added; publishing it is a
+# (signed only: the site/appcast.xml of origin/main with this release added as a NEW item tagged
+# <sparkle:channel>beta</sparkle:channel> (generate_appcast --channel beta; D7: an item without the tag
+# is a stable release every channel sees); publishing it is a
 # separate act, docs/Releasing.md), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
 # appcast, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
 # Exit status: 0 done; 1 a step or a check failed; 2 bad usage.
@@ -139,6 +143,12 @@ if (( signed )); then
   "$DAU_ROOT/scripts/release/check-appcast.sh" || exit 1
   base_appcast=$(mktemp "${TMPDIR:-/tmp}/dau-appcast.XXXXXX")
   git -C "$DAU_ROOT" show origin/main:site/appcast.xml > "$base_appcast"
+  # A build number already in the appcast would make Sparkle treat two builds as one (a hotfix
+  # from an older branch has a default number equal to a beta already out; docs/Releasing.md, "Số build").
+  if appcast_has_version "$base_appcast" "$build_number"; then
+    log_die "Số build $build_number đã có trong appcast nền (origin/main): Sparkle coi hai bản cùng số là một." \
+      "Dùng --build-number với số nằm trong khoảng trống chưa dùng giữa hai mốc (docs/Releasing.md, \"Số build\")."
+  fi
 fi
 dev_id=""
 if (( signed )); then
@@ -333,11 +343,18 @@ if (( signed )); then
   # -o: generate_appcast otherwise names the file after SUFeedURL. It keeps the items already in
   # the file (checked with an older item whose DMG was absent) and puts the new one first.
   # The private key goes in on stdin: no file, no argument (which `ps` would show), no log.
-  print -rn -- "$DAU_SPARKLE_PRIVATE_KEY" | "$gen" --ed-key-file - -o "$work/appcast.xml" \
+  # --channel beta tags only the new item (every release this script builds is a beta, D7); items
+  # already in the file keep what they have. The stable release is made by promote-release.sh,
+  # which removes the tag from the item of the last beta.
+  print -rn -- "$DAU_SPARKLE_PRIVATE_KEY" | "$gen" --ed-key-file - -o "$work/appcast.xml" --channel beta \
     --download-url-prefix "$download_base/$tag/" "$work"
   command rm -f "$work/$dmg_name"
   appcast=$work/appcast.xml
   grep -q "sparkle:edSignature" "$appcast" || log_die "Appcast không có chữ ký EdDSA."
+  if appcast_is_feed_signed "$appcast"; then
+    log_die "Appcast mang chữ ký của chính nó (SURequireSignedFeed): promote-release.sh sửa appcast sẽ làm chữ ký đó hỏng. Cần cập nhật cách quảng bá trước (docs/Releasing.md)."
+  fi
+  "$DAU_ROOT/scripts/release/check-appcast.sh" --beta "$tag" --appcast "$appcast" --base "$base_appcast" || exit 1
   log_ok "Appcast có chữ ký EdDSA: ${appcast#$DAU_ROOT/}"
 else
   skipped+=("ký bản cập nhật và sinh appcast")
