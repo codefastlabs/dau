@@ -192,6 +192,22 @@ Chỉ có một kênh (D7): mọi người nhận bản mới nhất trong appca
 3. **Chỉ gỡ mục của bản hỏng khỏi appcast khi nó không cài được** (người dùng không cập nhật qua nó được). Gỡ khỏi `site/appcast.xml` trước, đợi Vercel xuất bản, rồi mới xoá hay đổi gì trên GitHub; làm ngược lại thì appcast trỏ vào địa chỉ không còn.
 4. Quay về bản trước (D19) để sau bản thử đầu.
 
+## Hết hạn và gia hạn
+
+Dấu đã cài chạy không cần mạng (N2, D8) và không có bản quyền hay tài khoản (D6), nên không có hạn nào làm bộ gõ ngừng chạy vì hết hạn. Thứ hết hạn chỉ chặn việc phát bản mới hay việc nhận cập nhật. Riêng một chứng chỉ bị **thu hồi** làm bản đã cài không mở được nữa.
+
+| Thứ có hạn | Hết hạn hay mất thì | Bản đã cài | Cách tránh, cách cứu |
+|---|---|---|---|
+| Tên miền `codefastlabs.com` | Sparkle không đọc được appcast (`SUFeedURL` cố định trong app) | Vẫn chạy, không nhận cập nhật | Bật tự gia hạn ở nhà đăng ký. Đã mất thì không có đường nào báo bản mới cho máy đã cài: phát bản mới với địa chỉ appcast mới qua GitHub Releases và Homebrew, người dùng cài tay một lần |
+| Chứng chỉ HTTPS của `dau.codefastlabs.com` | Như trên | Vẫn chạy, không nhận cập nhật | Vercel tự cấp và gia hạn khi tên miền còn trỏ đúng. Kiểm: `curl -sI https://dau.codefastlabs.com/appcast.xml` |
+| Apple Developer Program (gia hạn hằng năm) | Không lấy được chứng chỉ Developer ID mới, nên không ký hay notarize được bản mới | Vẫn chạy, theo Apple[^devid] | Gia hạn trước hạn. Đã quá hạn thì gia hạn lại, rồi ký bản sau như thường |
+| Chứng chỉ Developer ID Application (hạn ghi trên chứng chỉ trong Keychain Access) | Không ký được bản mới | Vẫn chạy: Gatekeeper xét chứng chỉ còn hạn lúc ký[^devid]. Bản ký có dấu thời gian (`--timestamp` trong `build-release.sh`) và không dùng provisioning profile (`project.yml`), nên không có profile nào hết hạn mỗi lần mở | Tạo chứng chỉ mới, thay secret `DAU_DEVELOPER_ID_P12` và `DAU_DEVELOPER_ID_P12_PASSWORD` |
+| Chứng chỉ Developer ID **bị thu hồi** (khoá lộ, Apple thu hồi) | Mọi bản ký bằng nó không cài được và không mở được nữa[^devid] | **Không mở được** | Giữ `.p12` ngoài repo, chỉ trong secret của GitHub và trình quản lý mật khẩu. Đã bị thu hồi thì tạo chứng chỉ mới, phát ngay một bản mới; người dùng tải lại DMG hay `brew reinstall`, vì bản cũ không tự cập nhật được nữa |
+| Khoá EdDSA của Sparkle (không có hạn) | Mất khoá riêng: bản đã cài chỉ tin chữ ký của đúng khoá này | Vẫn chạy, kẹt ở bản đó | Cất bản sao trong trình quản lý mật khẩu ("Việc của người dùng", bước 4). Đã mất thì như mất tên miền: người dùng cài tay bản mới một lần |
+| Khoá App Store Connect API (notarize), bị thu hồi hay mất | Không notarize được | Không ảnh hưởng | Tạo khoá mới, thay `DAU_NOTARY_KEY`, `DAU_NOTARY_KEY_ID`, `DAU_NOTARY_ISSUER_ID` |
+
+[^devid]: Apple, Developer ID: https://developer.apple.com/support/developer-id/
+
 ## Chế độ không ký
 
 Khi không có secret nào (hoặc `--unsigned`), script vẫn chạy trọn từ archive tới DMG và báo bước nào bị bỏ qua: xuất Developer ID, notarize, staple, ký DMG, ký bản cập nhật, appcast. Bản này dựng như bản phát triển (D7, D25), dùng để kiểm quy trình, không phát cho người dùng:
