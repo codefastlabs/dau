@@ -58,6 +58,20 @@ struct CursorTracker: Equatable {
     /// keys late may be behind all of them (before M6, Chrome, VS Code and Firefox went
     /// wrong under about 20 ms; `docs/Compatibility.md` 6.2).
     private(set) var burst = 0
+    /// Edits this composer made since the app last answered at `known` (nil: no such answer
+    /// since the position was last followed or forgotten). An app that answered on time had
+    /// every edit up to then, so it can lack at most these: `rebuild` replays no further
+    /// back, whatever the time between keys. Chrome with a busy page (18/11/2026) stayed up
+    /// to 12 edits late across word ends 50–60 ms apart, past `lateLimit` + `burst`, and the
+    /// stale answer was taken as the position ("bạn gửi" → "bạửigui"). Replaying further
+    /// back than the answer on time would also take for late an app whose text was changed
+    /// into one this composer had before (⌘A unseen then the same letters typed again; "car"
+    /// autocorrected to "cả"). Without an answer on time (an app that counts positions from
+    /// the start of the word, Cursor) the bound stays `lateLimit` + `burst`.
+    private(set) var sinceOnTime: Int?
+
+    /// The app answered at `known`: it has every edit so far.
+    mutating func answeredOnTime() { sinceOnTime = 0 }
 
     /// One edit of the document made by this composer or by a key it let through.
     struct Edit: Equatable {
@@ -188,6 +202,7 @@ struct CursorTracker: Equatable {
         tail = []
         edits = []
         burst = 0
+        sinceOnTime = nil
     }
 
     private mutating func record(cursor: Int, location: Int, deleted: Int, inserted: [UInt16],
@@ -197,8 +212,10 @@ struct CursorTracker: Equatable {
             tail = []
             edits = []
             burst = 0
+            sinceOnTime = nil
         }
         burst = keyInBurst ? min(burst + 1, Self.editLimit) : 0
+        if let since = sinceOnTime { sinceOnTime = min(since + 1, Self.editLimit) }
         let back = cursor - location      // units from the start of the range to the cursor
         var deletedText: [UInt16]?
         if back >= 0, deleted >= 0, deleted <= back, back <= tail.count {
@@ -264,13 +281,19 @@ struct CursorTracker: Equatable {
     /// position with the letters of the new word, which replayed gave the engine's word
     /// though another letter was typed there (run of 11:44, 100 ms: "owr ddaau" gave
     /// "ở dâu").
-    func rebuild(_ snapshot: [UInt16], at selection: NSRange,
+    func rebuild(_ snapshot: [UInt16], at selection: NSRange, inWord: Bool = false,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
         // D18: an answer outside `ClientRange.limit` proves nothing.
         let selection = ClientRange.sanitized(selection)
         let end = selection.location
         guard let known, selection.length == 0, end != NSNotFound, end != known else { return nil }
-        let count = min(Self.lateLimit + burst, edits.count)
+        // `inWord` (a replacement inside the word being typed): the app may lack every edit
+        // since its last answer on time, at any pace. Elsewhere (the D20 read, a word past
+        // valid) the bound stays `lateLimit` + `burst`: after a word end an answer that looks a
+        // few edits late may be text the app changed itself into one this composer had before
+        // ("car" autocorrected to "cả" after the space, then ⌫ r).
+        let bound = inWord ? max(Self.lateLimit + burst, sinceOnTime ?? 0) : Self.lateLimit + burst
+        let count = min(bound, edits.count)
         var latestAtCaret: [UInt16]?
         for m in stride(from: 1, through: count, by: 1) {
             let first = edits[edits.count - m]

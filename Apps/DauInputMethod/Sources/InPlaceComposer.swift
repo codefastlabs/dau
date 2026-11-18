@@ -124,6 +124,16 @@ struct InPlaceComposer {
         var insertedLength: Int
         /// The `replacementRange` sent, or nil when nothing was sent.
         var replacement: NSRange?
+        /// Debug diagnostics of the late-answer proof (numbers only, D8): UTF-16 units read
+        /// before the answer (-1: no read), `CursorTracker.tail` and `edits` counts, the
+        /// burst count, the length `rebuild` gave (-1: no proof), and whether the word at
+        /// the end of the text read was the engine's word (-1: no read).
+        var proofRead = -1
+        var proofTail = -1
+        var proofEdits = -1
+        var proofBurst = -1
+        var proofRebuilt = -1
+        var proofWordAtAnswer = -1
     }
 
     struct Outcome: Equatable {
@@ -898,6 +908,10 @@ struct InPlaceComposer {
         // Engine letters are BMP scalars, so deleteCount scalars == deleteCount UTF-16
         // units, also for a word seeded from decomposed (NFD) text (D20).
         let selection = known ?? Self.selectedRange(of: client)
+        // An answer at the followed position: the app has every edit so far (`sinceOnTime`).
+        if let followed = tracker.known, selection == NSRange(location: followed, length: 0) {
+            tracker.answeredOnTime()
+        }
         var text = insert.description
         if let extra { text.unicodeScalars.append(extra) }
         var attempt = Attempt(deleteCount: deleteCount, selection: selection, expected: tracker.expected,
@@ -907,10 +921,21 @@ struct InPlaceComposer {
            selection.location != followed {
             let read = readBefore(selection.location, client: client)
             lateRead = (selection.location, read)
+            #if DEBUG
+            attempt.proofTail = tracker.tail.count
+            attempt.proofEdits = tracker.edits.count
+            attempt.proofBurst = tracker.burst
+            #endif
             if let read {
                 let units = Array(read.utf16)
-                if let rebuilt = tracker.rebuild(units, at: selection, accept: { Self.word(in: $0) == word }),
-                   rebuilt.count >= deleteCount {
+                let proof = tracker.rebuild(units, at: selection, inWord: true,
+                                            accept: { Self.word(in: $0) == word })
+                #if DEBUG
+                attempt.proofRead = units.count
+                attempt.proofRebuilt = proof?.count ?? -1
+                attempt.proofWordAtAnswer = Self.word(in: units) == word ? 1 : 0
+                #endif
+                if let rebuilt = proof, rebuilt.count >= deleteCount {
                     return replaceAtFollowed(followed, deleteCount: deleteCount, text: text, kind: .late,
                                              attempt: attempt, client: client)
                 }

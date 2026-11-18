@@ -23,6 +23,8 @@ struct ReplaceDiag {
     var insertedLength: Int
     /// The `replacementRange` sent, or nil when nothing was sent (mismatch, unsupported).
     var replacement: NSRange?
+    /// The late-answer proof's numbers (`InPlaceComposer.Attempt`).
+    var proof: String
 
     init(_ attempt: InPlaceComposer.Attempt) {
         deleteCount = attempt.deleteCount
@@ -31,6 +33,7 @@ struct ReplaceDiag {
         known = attempt.known
         insertedLength = attempt.insertedLength
         replacement = attempt.replacement
+        proof = "read=\(attempt.proofRead) tail=\(attempt.proofTail) edits=\(attempt.proofEdits) burst=\(attempt.proofBurst) rebuilt=\(attempt.proofRebuilt) word_at_answer=\(attempt.proofWordAtAnswer)"
     }
 
     /// Logs one line. Reads `selectedRange()` once more after the insertion to see where
@@ -43,6 +46,7 @@ struct ReplaceDiag {
             sel=\(format(diag.selection), privacy: .public) expected=\(diag.expected ?? -1, privacy: .public) known=\(diag.known ?? -1, privacy: .public) \
             rep=\(diag.replacement.map(format) ?? "-", privacy: .public) ins_len=\(diag.insertedLength, privacy: .public) \
             after=\(format(after), privacy: .public) after_expected=\(expectedAfter, privacy: .public) \
+            \(diag.proof, privacy: .public) \
             app=\(app, privacy: .public)
             """)
     }

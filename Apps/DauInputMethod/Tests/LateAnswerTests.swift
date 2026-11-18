@@ -121,6 +121,16 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
+    @Test("the same answer after a pause: not a burst, the answer stands")
+    func farBehindAfterPause() {
+        var s = LateSession()
+        s.type("nguoiwf banj gui")
+        s.doc.override = "người bxy"
+        s.type("w")
+        s.doc.override = nil
+        #expect(!s.kinds.contains(.lateGuess))
+    }
+
     @Test("first replacement, answer behind but the whole word is before it: the app moved the text, the answer stands")
     func wholeWordBeforeAnswer() {
         var s = LateSession()
@@ -221,6 +231,54 @@ struct LateAnswerTests {
             }
         }
         #expect(late.doc.text == onTime.doc.text)
+        #expect(late.doc.badRanges == 0)
+        #expect(late.overCalls == 0)
+    }
+
+    /// Busy page (`--busy 300:1000`, docs/Compatibility.md 5.2): Chrome answers up to 12 edits
+    /// late across word ends. In a word `rebuild` now allows every edit since the app's last
+    /// answer on time (`CursorTracker.sinceOnTime`), which fixed most of the real runs; the
+    /// model is harsher (lag from the start of the text, before any answer on time), so some
+    /// cases still fail: a known issue (open item in docs/Progress.md). The page is blocked
+    /// 300 ms of every second; the lag grows by one per key while blocked (an app cannot
+    /// drop edits it has applied) and is caught up after.
+    @Test("the load-test strings in a burst, answers up to twelve keys late at random: same text as on time",
+          arguments: [0, 1, 2, 3], Array(UInt64(1)...24))
+    func wholeStringLateBurst(_ which: Int, _ seed: UInt64) {
+        withKnownIssue("busy page, answers late across word ends (open item)", isIntermittent: true) {
+            Self.lateBurst(which, seed)
+        }
+    }
+
+    private static func lateBurst(_ which: Int, _ seed: UInt64) {
+        let (keysToType, expected) = strings[which % 2]
+        var step = LateSession()
+        var late = LateSession()
+        step.interval = 0.017
+        late.interval = 0.017
+        late.doc.cache = which >= 2 ? .chromium : .snapshot
+        var rng = SplitMix(seed)
+        var keys: [Unicode.Scalar] = []
+        // The page is blocked 300 ms of every second: at about 17 ms a key, some 18 keys of
+        // every 59 come while it is blocked and the lag grows by one per key (an app cannot
+        // drop edits it has applied); then it catches up and answers on time or one behind.
+        var lag = 0
+        var phase = Int(rng.next() % 59)
+        for c in keysToType.unicodeScalars {
+            phase = (phase + 1) % 59
+            lag = phase < 18 ? lag + 1 : Int(rng.next() % 2)
+            keys.append(c)
+            let route: KeyRoute = c == "⌫" ? .backspace : .character(c)
+            // Word ends came 50–60 ms after the previous key in the run: not a burst.
+            late.interval = c == " " ? 0.055 : 0.017
+            step.key(route, lag: 0)
+            late.key(route, lag: lag)
+            if late.doc.text != step.doc.text {
+                Issue.record("key \(keys.count) kinds \(late.kinds.suffix(6)): \(late.doc.text.suffix(20)) ≠ \(step.doc.text.suffix(20))")
+                break
+            }
+        }
+        #expect(late.doc.text == expected)
         #expect(late.doc.badRanges == 0)
         #expect(late.overCalls == 0)
     }
