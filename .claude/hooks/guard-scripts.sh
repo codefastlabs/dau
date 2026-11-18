@@ -9,7 +9,8 @@
 # command's arguments:
 #   - a subagent's call (the hook input has agent_id) is blocked with exit 2: subagents
 #     never run these scripts;
-#   - the main session's call gets permissionDecision "ask": Claude Code shows the user a
+#   - the main session's call gets permissionDecision "ask" (unless the per-machine switch at
+#     the end is on): Claude Code shows the user a
 #     permission prompt, and the script runs only if the user allows it.
 # Reading a script (cat, grep, sed) is not running it and passes. Not a lock: a script
 # run after `cd` into its own folder is not seen.
@@ -77,6 +78,14 @@ if [[ -n $agent ]]; then
   log_hint "${(@)blocked}"
   log_hint "Ghi vào mục 4 của báo cáo để phiên chính chạy."
   exit 2
+fi
+# Per-machine switch: DAU_RUN_SCRIPTS_WITHOUT_ASKING=1, in the environment or in the "env" of
+# .claude/settings.local.json (git-ignored), lets the main session run these scripts with no
+# prompt; subagents stay blocked above.
+local_settings="$root/.claude/settings.local.json"
+if [[ ${DAU_RUN_SCRIPTS_WITHOUT_ASKING-} == 1 ]] || { [[ -f $local_settings ]] &&
+   [[ $(jq -r '.env.DAU_RUN_SCRIPTS_WITHOUT_ASKING // empty' "$local_settings" 2>/dev/null) == 1 ]]; }; then
+  exit 0
 fi
 jq -n --arg reason "Script cần bạn cho phép (chiếm màn hình hoặc đổi bản Dấu đã cài): ${(j:, :)blocked}. Cho phép thì script chạy ngay." \
   '{hookSpecificOutput: {hookEventName: "PreToolUse", permissionDecision: "ask", permissionDecisionReason: $reason}}'

@@ -42,7 +42,7 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | `changes user settings` | ghi `defaults`, cài đặt App Group của người dùng, hoặc tệp cài đặt của app khác (script tự trả lại khi xong, trừ khi ghi khác; ví dụ `typing/run.sh` với `webstorm`: `trusted-paths.xml` và `recentProjects.xml` của WebStorm, chỉ trả lại khi script tự mở WebStorm) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 
-Hook `.claude/hooks/guard-scripts.sh` canh các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào): subagent gọi thì bị chặn; phiên chính gọi thì Claude Code hiện thẻ cấp quyền, script chỉ chạy khi người dùng cho phép. Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.
+Hook `.claude/hooks/guard-scripts.sh` canh các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào): subagent gọi thì bị chặn; phiên chính gọi thì Claude Code hiện thẻ cấp quyền, script chỉ chạy khi người dùng cho phép, trừ máy đã bật `DAU_RUN_SCRIPTS_WITHOUT_ASKING=1` (`CLAUDE.md`, mục "Điều phối"). Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.
 
 ## Ngôn ngữ
 
