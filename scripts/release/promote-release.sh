@@ -34,7 +34,7 @@ while (( $# )); do
     *)         log_die 2 "Tuỳ chọn lạ: $1" ;;
   esac
 done
-[[ $tag == v<->.<->.<-> ]] || log_die 2 "Cần --tag vX.Y.Z (bản ổn định); nhận '${tag}'. Bản beta dựng bằng build-release.sh."
+[[ $tag == v<->.<->.<-> ]] || log_die 2 "Cần --tag vX.Y.Z (bản chính thức); nhận '${tag}'. Bản beta dựng bằng build-release.sh."
 out=${out:A}
 [[ $out == $DAU_ROOT/build/?* ]] || log_die 2 "--out phải nằm trong build/ của repo (thư mục này bị xoá trước khi tải)."
 command -v gh >/dev/null || log_die "Cần GitHub CLI: brew install gh"
@@ -44,7 +44,7 @@ commit=$(git -C "$DAU_ROOT" rev-list -n1 "$tag" 2>/dev/null) || log_die "Không 
 
 # --- find the beta ---------------------------------------------------------------
 betas=(${(f)"$(git -C "$DAU_ROOT" tag --points-at "$commit" -l "v$version-beta.*")"})
-(( ${#betas} )) || log_die "Tag $tag trỏ vào commit ${commit[1,9]}, nơi không có tag v$version-beta.N nào. Bản ổn định phải đúng commit của beta cuối; cần sửa gì thì phát thêm một beta (D7)."
+(( ${#betas} )) || log_die "Tag $tag trỏ vào commit ${commit[1,9]}, nơi không có tag v$version-beta.N nào. Bản chính thức phải đúng commit của beta cuối; cần sửa gì thì phát thêm một beta (D7)."
 beta=${${(On)betas}[1]}   # largest N
 "$DAU_ROOT/scripts/release/check-release-gate.sh" --tag "$tag" || exit 1
 log_step "Quảng bá $beta thành $tag (commit ${commit[1,9]})"

@@ -10,6 +10,7 @@ Chờ người dùng:
 - Bước 0 của kế hoạch M7: đăng ký Apple Developer Program trước tiên (việc lâu nhất).
 
 Việc tiếp theo:
+- Bước 1f của kế hoạch M7 (hai kênh), không chờ bước 0: artboard trước, rồi app và script song song.
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán bốn lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Safari, Cursor, trang bận khi phím dồn), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần; nhãn trợ năng của sheet thêm quy tắc sửa offline.
 
@@ -24,7 +25,7 @@ Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chư
 8. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ. `scripts/selftest/app-group.sh --install` chưa chạy lại kể từ khi gộp script cài 10/11. Chưa kiểm: VoiceOver, cờ `--tampered` trên cửa sổ thật.
 9. Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
 10. Sheet thêm quy tắc: ba nút cuối không có nhãn trợ năng (/dogfood 11/11; chưa kiểm bằng VoiceOver).
-10. Ma trận tương thích còn lại, làm sau bản thử đầu: `docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc", danh sách ở `docs/Compatibility.md` mục 7.
+10. Ma trận tương thích còn lại, làm sau beta đầu tiên: `docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc", danh sách ở `docs/Compatibility.md` mục 7.
 
 ## Mốc
 
@@ -44,7 +45,7 @@ Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chư
 
 ## Kế hoạch M7
 
-Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt artboard) và bước 3 (một lượt chạy chiếm màn hình); phần còn lại phiên chính và subagent làm. Thứ tự: bước 1 bắt đầu ngay, không chờ gì; bước 2 chờ bước 0 (mục 1–3) và 1a; bước 3 chờ bước 2 và 1b–1d; bước 4 chờ bước 3.
+Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt artboard) và bước 3 (một lượt chạy chiếm màn hình); phần còn lại phiên chính và subagent làm. Thứ tự: bước 1 bắt đầu ngay, không chờ gì; bước 2 chờ bước 0 (mục 1–3), 1a và bước 1f; bước 3 chờ bước 2 và 1b–1d; bước 4 chờ bước 3.
 
 ### Bước 0 — Người dùng (làm một lần, song song với bước 1)
 
@@ -55,12 +56,22 @@ Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt art
 
 ### Bước 1 — Không cần ký: xong 17/11
 
-Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật & hỗ trợ và báo lỗi, biểu tượng Icon Composer, nền DMG, script phát hành chạy được ở chế độ không ký, GitHub Actions, `docs/Releasing.md`; entitlement của bộ gõ giữ nguyên (`docs/research/IMKAPINotes.md`). Chi tiết: commit message ngày 17/11, `docs/Releasing.md`, `docs/history/LogM7.md`.
+Sparkle (chỉ bản phát hành kiểm tra cập nhật), trang Cập nhật & hỗ trợ và báo lỗi, biểu tượng Icon Composer, nền DMG, script phát hành chạy được ở chế độ không ký, GitHub Actions, `docs/Releasing.md`; entitlement của bộ gõ giữ nguyên (`docs/research/IMKAPINotes.md`). Chi tiết: commit message ngày 17/11, `docs/Releasing.md`, `docs/history/LogM7.md`.
+
+### Bước 1f — Hai kênh Beta và Chính thức (không cần ký, chưa làm)
+
+Theo D7, ý "Kênh"; vòng phát hành: `docs/Releasing.md` mục "Kịch bản phát hành". Không chờ bước 0.
+
+1. Artboard trang Cập nhật & hỗ trợ: chọn kênh Beta / Chính thức; Chính thức tắt kèm dòng giải thích khi appcast chưa có bản chính thức; `docs/UI.md`. Người dùng duyệt artboard trước khi viết mã.
+2. App chủ (app-ui-dev): đọc tài liệu Sparkle 2.10.1 trước (delegate có đọc được các mục của appcast đã tải không, thứ tự gọi so với lúc hỏi kênh); lưu kênh, ghi kênh mặc định ở lần tải appcast thành công đầu tiên, trả kênh cho Sparkle qua delegate; chuỗi trong String Catalog (D41); test với appcast giả cho cả hai giai đoạn và cho việc đổi kênh.
+3. Script phát hành (release-eng, song song với 2): mục beta mới gắn `<sparkle:channel>beta</sparkle:channel>`; quảng bá bỏ thẻ đó khỏi mục của beta cuối; kiểm cả hai trong `check-appcast.sh` hay `check-build.sh`; `docs/Releasing.md`.
+
+Xong khi: test và `scripts/check-l10n/check.sh` đạt; chạy thật ở bước 2 (hai tag thử: bản thứ hai cập nhật được ở kênh Beta).
 
 ### Bước 2 — Bản thử trên CI (sau bước 0)
 
 - Workflow Test: xong 17/11, chạy trên runner `xcode-27` ở mỗi lần push lên `main`, đạt.
-- Tag thử `v0.0.1-beta.1` rồi `v0.0.1-beta.2` (số hiển thị "0.0.1", dưới bản thử đầu; tag thứ hai trên commit sau commit appcast của bản thứ nhất) dựng hai bản chính thức số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; bản thử đầu thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
+- Tag thử `v0.0.1-beta.1` rồi `v0.0.1-beta.2` (số hiển thị "0.0.1", nhỏ hơn beta đầu tiên; tag thứ hai trên commit sau commit appcast của bản thứ nhất) dựng hai bản phát hành số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; beta đầu tiên thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
 ### Bước 3 — Một lượt chạy chiếm màn hình (người dùng ngồi cùng ở mục 4)
 
@@ -77,7 +88,7 @@ Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục t�
 7. "Thêm dấu cho từ đã gõ" (D20) trên web editor trong Chrome, bằng `scripts/selftest/typing/d20-docs.sh` (tài liệu trống của người dùng, đã đăng nhập sẵn). Word trên web và Google Docs: xong 17/11 (`docs/Compatibility.md` mục 5.10; Google Docs sai, ở Việc mở). Còn Notion: script chưa có ô cho Notion. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
 8. Dọn: gỡ bản thử, cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
 
-Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", thẻ "Dùng thử bản Beta" khi chưa có kênh Beta, câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Rồi sửa mã và chụp lại `docs/canvas/`.
+Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", câu "đã kiểm chứng ở…" trong mục Hỏi đáp), và chú thích artboard biểu tượng bản phát triển ("bản không phải bản chính thức" thành "bản phát hành", Glossary). Rồi sửa mã và chụp lại `docs/canvas/`.
 
 ### Bước 4 — Phát hành và đóng mốc
 
@@ -91,7 +102,7 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
 
 (ngày — việc — kết quả — nơi chứa số, commit; điều gì được ghi: [`CLAUDE.md`](../CLAUDE.md), mục "Nguồn chuẩn")
 
-- 17/11 — đo engine bản release (`swift test -c release --filter Performance`, máy M3 Max): Telex 0,13 µs mỗi phím, VNI 0,12 µs. Một lần gọi `selectedRange` vào app tốn 230–622 µs p50 (số đo 29–30/10, `docs/Compatibility.md` mục 5), nên thời gian mỗi phím nằm ở số lời gọi vào app (N3), không ở engine; không thêm cổng tốc độ cho engine trên CI.
+- 17/11 — đo engine bản Release (`swift test -c release --filter Performance`, máy M3 Max): Telex 0,13 µs mỗi phím, VNI 0,12 µs. Một lần gọi `selectedRange` vào app tốn 230–622 µs p50 (số đo 29–30/10, `docs/Compatibility.md` mục 5), nên thời gian mỗi phím nằm ở số lời gọi vào app (N3), không ở engine; không thêm cổng tốc độ cho engine trên CI.
 - 17/11 — D20 trên web editor (máy M3 Max, Chrome 157.0.8103.79, bộ gõ Release `0b1a42d`): `scripts/selftest/typing/d20-docs.sh --gdocs <link> --wordweb <link>`, tài liệu trống của người dùng — Word trên web đúng 6/6, Google Docs sai 3/3 cả chữ gõ liền; số và chữ đọc lại ở `docs/Compatibility.md` mục 5.10.
 - 17/11 — chẩn đoán Google Docs (bộ gõ Debug `34644a3`, cài bằng `scripts/dev/install-app.sh --debug`, rồi cài lại bản trước bằng `--ref 0b1a42d`): `scripts/selftest/typing/run.sh --delay 80 --jitter 30 --word-pause 250 --keys … --expect … --doc-url <link> --save <dir> gdocs`, một lượt câu của `d20-docs.sh` và một lượt câu không có ⌫ — Google Docs trả vị trí `(1, 0)` ở mọi phím, Dấu chỉ thay được một ký tự; số và giả thuyết ở `docs/Compatibility.md` mục 5.10.
 - 17/11 — Google Docs trên Safari 27.2 (bộ gõ Debug `34644a3`, rồi cài lại `0b1a42d`): `scripts/selftest/typing/run.sh --delay 80 --jitter 30 --word-pause 250 --keys … --expect … --doc-url <link> --save <dir> gdocssafari`, hai câu như lượt Chrome — cũng `(1, 0)` ở mọi phím; `docs/Compatibility.md` mục 5.10.

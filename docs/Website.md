@@ -34,7 +34,7 @@ Thứ tự mục:
 8. **Tải về:**
    - phiên bản, ngày, dung lượng, yêu cầu hệ thống;
    - nút "Tải về (.dmg)", "Lịch sử phiên bản";
-   - lệnh Homebrew khi có cask (sau bản thử đầu; lệnh ở D6 (Phát hành));
+   - lệnh Homebrew khi có cask (sau beta đầu tiên; lệnh ở D6 (Phát hành));
    - SHA-256;
    - không phải Mac thì nút chính thành "Sao chép liên kết" kèm câu "Dấu chỉ chạy trên Mac" (trang tĩnh, không gửi email).
 9. **Góp sức:**

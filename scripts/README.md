@@ -15,7 +15,7 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`, `terminal-underline/`) |
 | `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/canvas/`) |
-| `scripts/release/` | dựng bản phát hành: archive, ký Developer ID, notarize, DMG, appcast; kiểm bản build (`docs/Releasing.md`). `build-release.sh` dựng một bản beta, chạy được không cần chứng chỉ (chế độ không ký); `promote-release.sh` biến beta cuối thành bản ổn định bằng cách sao tài sản của nó, không dựng lại; `check-release-gate.sh` (commit trong `origin/main`, workflow Test đã đạt) và `check-appcast.sh` (appcast nền có beta mới nhất) chặn bản ký sai điều kiện; `layout-dmg.sh` mở Finder nên chỉ chạy trên CI |
+| `scripts/release/` | dựng bản phát hành: archive, ký Developer ID, notarize, DMG, appcast; kiểm bản build (`docs/Releasing.md`). `build-release.sh` dựng một bản beta, chạy được không cần chứng chỉ (chế độ không ký); `promote-release.sh` biến beta cuối thành bản chính thức bằng cách sao tài sản của nó, không dựng lại; `check-release-gate.sh` (commit trong `origin/main`, workflow Test đã đạt) và `check-appcast.sh` (appcast nền có beta mới nhất) chặn bản ký sai điều kiện; `layout-dmg.sh` mở Finder nên chỉ chạy trên CI |
 
 ## Đầu mỗi script
 

@@ -164,12 +164,12 @@ Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/S
 
 Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 
-- **Phần cập nhật chỉ có ở bản chính thức** (bản có URL appcast và khoá công khai, D7 (Cập nhật và loại bản dựng)): dòng kiểm tra lần cuối và nút kiểm tra trong thẻ phiên bản, hàng công tắc tự động kiểm tra. Bản phát triển không có cả ba.
+- **Phần cập nhật chỉ có ở bản phát hành** (bản có URL appcast và khoá công khai, D7 (Cập nhật và loại bản dựng)): dòng kiểm tra lần cuối và nút kiểm tra trong thẻ phiên bản, hàng công tắc tự động kiểm tra. Bản phát triển không có cả ba.
   - Thông báo, tải và cài bản mới là cửa sổ của Sparkle (D7); trang không vẽ trạng thái tải hay cài.
   - Nút kiểm tra tắt trong lúc Sparkle đang kiểm tra hay đang có phiên cập nhật.
   - Chưa kiểm lần nào thì dòng kiểm tra lần cuối nói vậy, không hiện giờ (N5).
   - Công tắc đọc và ghi lựa chọn của chính Sparkle (`automaticallyChecksForUpdates`, mặc định bật theo Info.plist), không có khoá riêng của Dấu.
-  - Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") chưa kiểm trên bản chính thức; kiểm ở lượt chạy Sparkle cập nhật của M7 (N5).
+  - Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") chưa kiểm trên bản phát hành; kiểm ở lượt chạy Sparkle cập nhật của M7 (N5).
 - "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi", ở mọi loại bản (mục con bên dưới).
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9); luồng gỡ ở mục "Gỡ cài đặt".
 - Chú thích quyền riêng tư giữ đúng nội dung D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
@@ -237,7 +237,7 @@ Luồng theo D16 (Bảo trì và gỡ cài đặt): macOS chỉ cho người dù
 - Bộ gõ không bao giờ bị xoá khi mục lưu còn: bundle mất trước thì mục còn lại không gỡ được.
 - App không tự xoá chính nó, chỉ hướng dẫn kéo vào Thùng rác.
 
-Quay về bản trước: D19 (Quay về bản trước), chưa có ở bản thử đầu.
+Quay về bản trước: D19 (Quay về bản trước), chưa có ở beta đầu tiên.
 
 ## Khi gõ trong ứng dụng
 

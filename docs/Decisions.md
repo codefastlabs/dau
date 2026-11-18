@@ -19,9 +19,9 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D3](#d3-không-macro-chỉ-unicode-dựng-sẵn) | Không macro, chỉ Unicode dựng sẵn | Không macro, bảng mã cũ, chuyển mã; chỉ xuất NFC. |
 | [D4](#d4-từ-nước-ngoài) | Từ nước ngoài | Từ không phải âm tiết hợp lệ được khôi phục khi kết thúc từ; không từ điển. |
 | [D5](#d5-quy-tắc-theo-ứng-dụng) | Quy tắc theo ứng dụng | Quy tắc riêng của app chỉ là có/không gạch chân. |
-| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask trong tap riêng từ bản thử đầu; không App Store. |
-| [D7](#d7-cập-nhật-và-loại-bản-dựng) | Cập nhật và loại bản dựng | Sparkle 2, một kênh; bản chính thức và bản phát triển. |
-| [D8](#d8-không-telemetry) | Không telemetry | Không gửi gì; bản phát hành không ghi gì theo từng phím. |
+| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask trong tap riêng từ beta đầu tiên; không App Store. |
+| [D7](#d7-cập-nhật-và-loại-bản-dựng) | Cập nhật và loại bản dựng | Sparkle 2, kênh Beta và Chính thức, mặc định theo giai đoạn lúc cài; bản phát hành và bản phát triển. |
+| [D8](#d8-không-telemetry) | Không telemetry | Không gửi gì; bản Release không ghi gì theo từng phím. |
 | [D9](#d9-giao-diện) | Giao diện | Control hệ thống, theo System Settings; chỉ màu hệ thống. |
 | [D10](#d10-engine-tự-viết) | Engine tự viết | Swift thuần; OpenKey chỉ để tham khảo. |
 | [D11](#d11-kiểm-tra-ngữ-cảnh) | Kiểm tra ngữ cảnh | Hỏi vị trí ở phím có thay chữ; lệch thì dựng lại, chứng minh app chậm hoặc reset. |
@@ -38,7 +38,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D22](#d22-gõ-tắt-loại-trừ-z-f-w-j) | Gõ tắt loại trừ z, f, w, j | Hai tuỳ chọn loại trừ nhau. |
 | [D23](#d23-w--qu-chỉ-ở-vni) | w → qu chỉ ở VNI | Telex: w đầu từ luôn là ư. |
 | [D24](#d24-tên-và-định-danh) | Tên và định danh | "Dấu" luôn có dấu trước người dùng; định danh theo tên miền đảo. |
-| [D25](#d25-nhận-diện) | Nhận diện | Biểu tượng chuẩn chỉ ở bản chính thức. |
+| [D25](#d25-nhận-diện) | Nhận diện | Biểu tượng chuẩn chỉ ở bản phát hành. |
 | [D26](#d26-gõ-đúp-phím-dấu) | Gõ đúp phím dấu | Gõ đúp xoá dấu và khoá phím dấu tới hết từ, hoặc tới khi ⌫ xoá chữ của phím gõ đúp. |
 | [D27](#d27-không-có-phím-gõ-nhanh-ơ-ư) | Không có phím gõ nhanh ơ, ư | `[` và `]` luôn là dấu câu. |
 | [D28](#d28-đặt-dấu-tự-do) | Đặt dấu tự do | Phím dấu gõ ở đâu cũng được, dấu tự vào đúng chỗ. |
@@ -147,49 +147,53 @@ Một quy tắc duy nhất:
 
 GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App Store.
 
-- **Homebrew:** từ bản thử đầu, cask `dau` (khai báo `auto_updates true`) nằm trong tap riêng `codefastlabs/homebrew-tap`; lệnh cài: `brew install --cask codefastlabs/tap/dau`.
-- **Cask theo bản nào:** khi chỉ có một kênh (D7 (Cập nhật và loại bản dựng)), cask trỏ vào bản mới nhất đã công bố, kể cả beta; khi có kênh Beta, cask chỉ trỏ vào bản ổn định. Cask chỉ quyết định bản được cài lần đầu: `auto_updates true` nên `brew upgrade` không nâng bản, Sparkle nâng.
+- **Homebrew:** từ beta đầu tiên, cask `dau` (khai báo `auto_updates true`) nằm trong tap riêng `codefastlabs/homebrew-tap`; lệnh cài: `brew install --cask codefastlabs/tap/dau`.
+- **Cask và nút "Tải về" theo bản nào:** theo giai đoạn, như kênh mặc định (D7 (Cập nhật và loại bản dựng)): khi chưa có bản chính thức, cask và nút "Tải về" trên trang web trỏ vào beta mới nhất đã công bố; khi đã có, chỉ trỏ vào bản chính thức. Cask chỉ quyết định bản được cài lần đầu: `auto_updates true` nên `brew upgrade` không nâng bản, Sparkle nâng.
 - Khi repo đạt ngưỡng nổi bật của Homebrew, gửi cask vào `homebrew/cask`, giữ tên `dau`; tap riêng xoá cask và khai nó trong `tap_migrations.json`, theo [cách Homebrew chuyển gói giữa các tap](https://docs.brew.sh/Migrating-A-Formula-To-A-Tap).
 
-**Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store. `homebrew/cask` chỉ nhận repo đạt [ngưỡng nổi bật](https://docs.brew.sh/Package-Acceptance-Policy#notability) (chủ repo tự gửi: 225 sao, 90 fork hoặc 90 người theo dõi); repo có 0 sao (17/11/2026), nên lúc phát hành bản thử đầu chỉ tap riêng làm được. Tap nằm trong tổ chức `codefastlabs` nên không ai giành được tên. Lệnh cài ghi đủ tên tap vì từ Homebrew 6.0 tap không chính thức phải được [tin rõ ràng](https://docs.brew.sh/Tap-Trust), và cài bằng tên đủ thì chỉ tin đúng cask đó. Tên repo `homebrew-tap` để lệnh cài không lặp chữ và để công cụ khác của codefastlabs dùng chung tap. Cask theo bản mới nhất khi chỉ có một kênh vì bản thử đầu là beta mà phải cài được bằng `brew`, và người cài từ DMG cũng nhận beta qua Sparkle; khi có kênh Beta, người cài bằng `brew` chưa chọn kênh đó nên chỉ nhận bản ổn định.
+**Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store. `homebrew/cask` chỉ nhận repo đạt [ngưỡng nổi bật](https://docs.brew.sh/Package-Acceptance-Policy#notability) (chủ repo tự gửi: 225 sao, 90 fork hoặc 90 người theo dõi); repo có 0 sao (17/11/2026), nên lúc phát hành beta đầu tiên chỉ tap riêng làm được. Tap nằm trong tổ chức `codefastlabs` nên không ai giành được tên. Lệnh cài ghi đủ tên tap vì từ Homebrew 6.0 tap không chính thức phải được [tin rõ ràng](https://docs.brew.sh/Tap-Trust), và cài bằng tên đủ thì chỉ tin đúng cask đó. Tên repo `homebrew-tap` để lệnh cài không lặp chữ và để công cụ khác của codefastlabs dùng chung tap. Cask và nút "Tải về" theo giai đoạn để khớp kênh mặc định: người cài bằng `brew` hay từ trang web nhận đúng bản của kênh mà app sẽ ghi cho họ.
 
 ### D7. Cập nhật và loại bản dựng
 
-- Sparkle 2 nằm trong app chủ, appcast ký EdDSA, một kênh. Kênh Beta và phát hành theo đợt để sau bản thử đầu.
-- Appcast ở `https://dau.codefastlabs.com/appcast.xml`. Chỉ bản chính thức có URL appcast và khoá công khai EdDSA, nên chỉ bản chính thức kiểm tra và cài bản mới; bản phát triển không bao giờ bị Sparkle thay bằng bản khác Team ID.
-- Khi có kênh Beta, người dùng bật kênh đó trong app; không có cask Homebrew riêng cho Beta (D6 (Phát hành)).
+- Sparkle 2 nằm trong app chủ, appcast ký EdDSA, hai kênh: Beta và Chính thức. Phát hành theo đợt để sau beta đầu tiên.
+- Appcast ở `https://dau.codefastlabs.com/appcast.xml`. Chỉ bản phát hành có URL appcast và khoá công khai EdDSA, nên chỉ bản phát hành kiểm tra và cài bản mới; bản phát triển không bao giờ bị Sparkle thay bằng bản khác Team ID.
+- **Kênh:** người dùng chọn kênh ở trang Cập nhật & hỗ trợ, có từ beta đầu tiên; không có cask Homebrew riêng cho Beta (D6 (Phát hành)).
+  - Kênh mặc định theo giai đoạn lúc cài: appcast chưa có bản chính thức thì Beta, đã có thì Chính thức. App ghi kênh này ở lần tải appcast thành công đầu tiên; sau đó chỉ người dùng đổi, bản chính thức ra đời không chuyển kênh của ai.
+  - Khi appcast chưa có bản chính thức, lựa chọn Chính thức hiện nhưng tắt, kèm dòng giải thích. App biết đã có bản chính thức bằng cách đọc appcast lúc chạy, không bằng cờ build: bản chính thức là tệp của beta cuối (ý "Số phiên bản"), dựng lúc chưa có bản chính thức nào.
+  - Trong appcast, mục beta gắn kênh `beta` của Sparkle; mục không gắn kênh là bản chính thức, kênh nào cũng thấy. Quảng bá beta cuối thành bản chính thức là bỏ thẻ kênh khỏi mục của nó.
+  - Rời kênh Beta thì giữ bản đang chạy tới khi có bản chính thức số build cao hơn: Sparkle không hạ bản.
 - Danh sách ứng dụng tương thích đi kèm app và đổi theo bản cập nhật app; không tải riêng.
 - **Cửa sổ của Sparkle:** thông báo, tải và cài bản mới dùng cửa sổ chuẩn của Sparkle (có tiếng Việt và tiếng Anh, D41 (Ngôn ngữ giao diện)). Trang Cập nhật & hỗ trợ chỉ có nút "Kiểm tra bản mới…", giờ kiểm tra lần cuối và công tắc "Tự động kiểm tra bản mới".
-- **Khi nào kiểm tra:** Dấu.app thoát khi đóng cửa sổ cuối, nên chỉ kiểm tra lúc Dấu đang mở: khi mở Dấu, tối đa mỗi ngày một lần. Kiểm tra cả khi Dấu không mở để sau bản thử đầu.
+- **Khi nào kiểm tra:** Dấu.app thoát khi đóng cửa sổ cuối, nên chỉ kiểm tra lúc Dấu đang mở: khi mở Dấu, tối đa mỗi ngày một lần. Kiểm tra cả khi Dấu không mở để sau beta đầu tiên.
 - **Không cài ngầm:** luôn hỏi người dùng trước khi cài. Cài xong Sparkle mở lại Dấu, và bản chủ vừa mở thay bộ gõ đã cài, lúc người dùng đang ở Dấu chứ không gõ ở app khác (D37, ý "Thay bộ gõ đã cài").
 - **Loại bản dựng:** ba trục độc lập, không có loại thứ tư.
-  - Cấu hình build: Debug hoặc Release (D8 (Không telemetry) nói khác nhau ở đâu).
-  - Người ký: **bản chính thức** là bản ký Developer ID của codefastlabs, đã notarize, và chỉ dựng bằng quy trình phát hành trên CI; mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**.
-  - Kênh: một kênh; Ổn định/Beta khi có kênh Beta, chỉ ở bản chính thức.
-- Quay về bản trước (D19 (Quay về bản trước)) để sau bản thử đầu.
+  - Cấu hình build: **bản Debug** hoặc **bản Release** (D8 (Không telemetry) nói khác nhau ở đâu). Bản Debug chỉ có trên máy người dựng từ mã nguồn.
+  - Người ký: **bản phát hành** là bản ký Developer ID của codefastlabs, đã notarize, và chỉ dựng bằng quy trình phát hành trên CI; mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**.
+  - Giai đoạn: **bản beta** chỉ tới kênh Beta, **bản chính thức** tới cả hai kênh; chỉ bản phát hành có kênh.
+- Quay về bản trước (D19 (Quay về bản trước)) để sau beta đầu tiên.
 - **Số phiên bản** (theo cách Apple đánh số):
-  - Số hiển thị (`CFBundleShortVersionString`) luôn là ba số nguyên "1.3.0", không có chữ beta. Mọi beta của một phiên bản và bản ổn định của nó cùng một số hiển thị.
+  - Số hiển thị (`CFBundleShortVersionString`) luôn là ba số nguyên "1.3.0", không có chữ beta. Mọi beta của một phiên bản và bản chính thức của nó cùng một số hiển thị.
   - `CFBundleVersion` là số build tăng dần, mỗi bản dựng một số; Sparkle so sánh bằng số này.
   - Chữ "beta" chỉ nằm ngoài tệp nhị phân: tag git `v1.3.0-beta.2`, bản pre-release trên GitHub, appcast. Trong app, các beta phân biệt bằng commit trong ngoặc sau số hiển thị (D25 (Nhận diện)).
-  - **Bản ổn định là tệp nhị phân của bản beta cuối, giữ nguyên, không dựng lại.** Tag `v1.3.0` đặt vào đúng commit của beta cuối. Muốn sửa gì sau beta cuối thì phát thêm một beta.
-  - Bản thử đầu là tag `v0.1.0-beta.1`, số hiển thị "0.1.0".
+  - **Bản chính thức là tệp nhị phân của bản beta cuối, giữ nguyên, không dựng lại.** Tag `v1.3.0` đặt vào đúng commit của beta cuối. Muốn sửa gì sau beta cuối thì phát thêm một beta.
+  - Beta đầu tiên là tag `v0.1.0-beta.1`, số hiển thị "0.1.0".
 - Bản dựng theo từng commit (Nightly), nếu làm, là bản phát triển: CI dựng, chỉ phát qua GitHub, không qua Sparkle.
-- Tính năng mới có thể nằm sau công tắc "Thử nghiệm" ngay trong bản ổn định (cài đặt cục bộ), kiểm chéo với các tính năng cùng tác động lên một đầu vào như mọi tính năng khác.
+- Tính năng mới có thể nằm sau công tắc "Thử nghiệm" ngay trong bản chính thức (cài đặt cục bộ), kiểm chéo với các tính năng cùng tác động lên một đầu vào như mọi tính năng khác.
 - Không phát hành dần theo số liệu và không có cờ tính năng điều khiển từ xa. Không dùng TestFlight.
 - Nhận diện từng loại bản: D25 (Nhận diện).
 
 **Hệ quả đã chấp nhận:** người dùng đã chọn cài rồi thoát Dấu (⌘Q) trước khi cài xong thì Sparkle cài lúc thoát mà không mở lại Dấu (`SPUUserDriver.h`, Sparkle 2.10.1); bộ gõ cũ chạy tiếp tới lần mở Dấu sau, lúc đó bản chủ thay nó (D37). Không thêm mã cho trường hợp này.
 
-**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. Cửa sổ của Sparkle thay cho thẻ trạng thái và thông báo tự vẽ: Sparkle đã có bản tiếng Việt và tự kiểm chữ ký trước khi cài, còn bản tự vẽ cần một user driver riêng và từng hứa điều chưa có (quay về bản trước, chữ ký "đã xác minh" trước khi tải, N5). Không cài ngầm: Sparkle cài ngầm lúc app thoát mà không mở lại app, nên bộ gõ cũ chạy tiếp tới lần mở Dấu sau. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)). Số phiên bản theo Apple: tài liệu `CFBundleShortVersionString` quy định ba số nguyên ngăn bằng dấu chấm, và Apple đánh dấu bản beta bằng số build và kênh, không bằng số hiển thị. Phát nguyên bản beta cuối làm bản ổn định (như bản RC của Apple) thì bản tới tay mọi người là tệp người dùng Beta đã chạy, còn dựng lại từ cùng commit chưa chắc ra cùng tệp (máy CI, Xcode, gói phụ thuộc có thể đã khác), và người dùng Beta không phải tải lại một bản không đổi gì. Bản sửa gấp dựng từ nhánh cũ hơn `main` có số build nhỏ hơn beta đang chạy, nên không kéo người dùng Beta về bản cũ.
+**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Hai kênh từ beta đầu tiên: người dùng tự chọn giữa bản mới nhất và bản đã chín. Kênh mặc định theo giai đoạn lúc cài, nên người cài để dùng thử vẫn ở Beta khi bản chính thức ra đời, còn người cài sau đó nhận bản chính thức. Danh sách đi kèm app: beta đầu tiên cần tới tay người dùng sớm; phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. Cửa sổ của Sparkle thay cho thẻ trạng thái và thông báo tự vẽ: Sparkle đã có bản tiếng Việt và tự kiểm chữ ký trước khi cài, còn bản tự vẽ cần một user driver riêng và từng hứa điều chưa có (quay về bản trước, chữ ký "đã xác minh" trước khi tải, N5). Không cài ngầm: Sparkle cài ngầm lúc app thoát mà không mở lại app, nên bộ gõ cũ chạy tiếp tới lần mở Dấu sau. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)). Số phiên bản theo Apple: tài liệu `CFBundleShortVersionString` quy định ba số nguyên ngăn bằng dấu chấm, và Apple đánh dấu bản beta bằng số build và kênh, không bằng số hiển thị. Phát nguyên bản beta cuối làm bản chính thức (như bản RC của Apple) thì bản tới tay mọi người là tệp người dùng Beta đã chạy, còn dựng lại từ cùng commit chưa chắc ra cùng tệp (máy CI, Xcode, gói phụ thuộc có thể đã khác), và người dùng Beta không phải tải lại một bản không đổi gì. Bản sửa gấp dựng từ nhánh cũ hơn `main` có số build nhỏ hơn beta đang chạy, nên không kéo người dùng Beta về bản cũ.
 
 ### D8. Không telemetry
 
 - Không telemetry. Báo lỗi chỉ qua GitHub issue điền sẵn; người dùng xem lại trước khi gửi. Không có đường email: Dấu chưa có địa chỉ nhận báo lỗi.
 - Không bao giờ gửi nội dung người dùng đã gõ.
 - Log chẩn đoán dùng `os.Logger`, nằm trên máy.
-- Bản phát hành không ghi gì theo từng phím, kể cả không có chữ.
+- Bản Release không ghi gì theo từng phím, kể cả không có chữ.
 - Nhật ký từng phím chỉ có ở bản Debug và chỉ bật bằng khoá `DauPerfLog`.
-- Log của bộ gõ ở bản phát hành cũng không ghi app nào đang gõ hay lúc nào: không có bundle ID của app đích, kể cả theo từng lần kích hoạt; đường dẫn ghi ở mức riêng tư. Log chỉ ghi sự kiện của chính Dấu (khởi chạy, thoát, nạp cài đặt, mở app chủ).
+- Log của bộ gõ ở bản Release cũng không ghi app nào đang gõ hay lúc nào: không có bundle ID của app đích, kể cả theo từng lần kích hoạt; đường dẫn ghi ở mức riêng tư. Log chỉ ghi sự kiện của chính Dấu (khởi chạy, thoát, nạp cài đặt, mở app chủ).
 
 **Vì sao:** giờ và app của từng phím là siêu dữ liệu về cách gõ, và ai chạy được lệnh dưới tài khoản người dùng có thể bật rồi đọc mà không cần quyền Theo dõi đầu vào. Lý do đó áp cho cả app và giờ của từng lần kích hoạt (lúc người dùng đưa focus vào app nào), không chỉ từng phím.
 
@@ -294,7 +298,7 @@ Telex, đặt dấu kiểu mới (hoà, thuý), đặt dấu tự do bật, tự
 
 ### D16. Bảo trì và gỡ cài đặt
 
-- App có "Gỡ cài đặt" (bộ gõ nằm trong `~/Library/Input Methods`, không gỡ được bằng cách kéo vào Thùng rác). "Quay về bản trước" (D19) để sau bản thử đầu (D7).
+- App có "Gỡ cài đặt" (bộ gõ nằm trong `~/Library/Input Methods`, không gỡ được bằng cách kéo vào Thùng rác). "Quay về bản trước" (D19) để sau beta đầu tiên (D7).
 - **Gỡ cài đặt cần người dùng bấm "–":**
   - Sau khi xác nhận, app mở thẳng danh sách Input Sources của System Settings và hướng dẫn bỏ "Dấu – Tiếng Việt" bằng "–".
   - App không tự chuyển bàn phím. Nếu Dấu đang được chọn, sheet nhắc chọn bàn phím khác khi nút "–" bị mờ, phòng bản macOS khác chưa đo.
@@ -337,7 +341,7 @@ Coi mọi tham số từ IMK là có thể nil hoặc bất thường (ví dụ 
 
 Quay về bản trước tạm tắt tự động cập nhật cho tới khi có bản mới hơn bản lỗi. Cài đặt và quy tắc ứng dụng được giữ nguyên.
 
-- Chưa làm ở bản thử đầu (D7 (Cập nhật và loại bản dựng)).
+- Chưa làm ở beta đầu tiên (D7 (Cập nhật và loại bản dựng)).
 
 - Bản cũ được đặt vào chỗ bản chủ, nên bộ gõ lùi theo ở lần mở kế tiếp (D37 (Cài bộ gõ)).
 
@@ -421,7 +425,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 - Bản không dấu "dau" chỉ dùng cho định danh kỹ thuật (bundle ID, tên target, repo, cask) và không bao giờ đứng một mình trước người dùng.
 - Tên miền: `dau.codefastlabs.com`.
 - Định danh kỹ thuật theo tên miền đảo: bundle ID app `com.codefastlabs.dau`, bộ gõ `com.codefastlabs.dau.inputmethod.Dau`, input mode `com.codefastlabs.dau.inputmethod.Dau.vi`, App Group `<Team ID>.com.codefastlabs.dau.shared`.
-- Mọi bản phải ký bằng một Team ID, vì App Group cần Team ID. Bản phát triển dùng Personal Team `M58DANM3ZP`; bản chính thức ký Developer ID (D7 (Cập nhật và loại bản dựng)).
+- Mọi bản phải ký bằng một Team ID, vì App Group cần Team ID. Bản phát triển dùng Personal Team `M58DANM3ZP`; bản phát hành ký Developer ID (D7 (Cập nhật và loại bản dựng)).
 - Tên cask Homebrew: `dau`, trong tap `codefastlabs/homebrew-tap` (D6 (Phát hành)).
 
 **Vì sao:** "dau" đứng một mình dễ đọc thành "đau"/"dầu". Bản ký ad-hoc (không Team ID) bị macOS 27 từ chối App Group mà không báo gì; bản có Team ID, kể cả Personal Team miễn phí, dùng được App Group không cần hồ sơ cấp phép và không có hộp thoại.
@@ -430,7 +434,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 
 - Biểu tượng "ấ" màu Giấy trên nền Mực, riêng dấu sắc màu Son; logo chữ "Dấu" Be Vietnam Pro một màu; Son chỉ dùng trong biểu tượng; app vẫn dùng phông và màu hệ thống (D9 (Giao diện)).
 - **Biểu tượng theo loại bản** (các loại bản ở D7 (Cập nhật và loại bản dựng)):
-  - Biểu tượng chuẩn chỉ có ở bản chính thức, chọn bằng một cờ build mà chỉ quy trình phát hành trên CI đặt. Mặc định, tức mọi bản phát triển (Debug, Release tự dựng, bản người khác build), dùng biểu tượng **bản phát triển**.
+  - Biểu tượng chuẩn chỉ có ở bản phát hành, chọn bằng một cờ build mà chỉ quy trình phát hành trên CI đặt. Mặc định, tức mọi bản phát triển (Debug, Release tự dựng, bản người khác build), dùng biểu tượng **bản phát triển**.
   - Biểu tượng bản phát triển giữ chữ "ấ", khác nền và có thêm một dấu hiệu bằng hình để vẫn nhận ra khi macOS bỏ màu (kiểu Trong suốt, Phủ màu của Icon Composer): **nền Chì, dải chéo màu Hổ phách ở góc dưới phải**. Không có chữ, không dùng Son cho dải, không đảo màu.
   - Kênh Beta dùng biểu tượng chuẩn. Số hiển thị không có chữ beta (D7); mỗi beta phân biệt bằng commit trong ngoặc ("Dấu 1.3.0 (a1b2c3d)") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
   - Debug và Release không có hai biểu tượng. Theo cách Apple ghi bản build (bảng About chuẩn của AppKit, `orderFrontStandardAboutPanel`, ghi mã build trong ngoặc sau số phiên bản), bản phát triển ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug ghi thêm "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho bộ gõ đã cài; bản Release không ghi cấu hình. `scripts/dev/dau-version.sh` in commit và cấu hình (Debug/Release) của từng bản đã cài.
@@ -440,7 +444,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 
 **Vì sao:**
 
-- Biểu tượng chỉ trả lời câu "đây có phải bản chính thức không"; bằng chứng là chữ ký Developer ID, app chủ kiểm chữ ký của bộ gõ (D37).
+- Biểu tượng chỉ trả lời câu "đây có phải bản phát hành không"; bằng chứng là chữ ký Developer ID, app chủ kiểm chữ ký của bộ gõ (D37).
 - Dải góc thay vì nền sọc: nền sọc mất ở 16–32 pt và ở kiểu Trong suốt. Không có chữ vì 16–32 pt không đọc được. Không đảo màu vì dễ nhầm với kiểu Tối của biểu tượng chuẩn.
 - Kênh Beta dùng biểu tượng chuẩn: người dùng Beta là người dùng thật, đổi biểu tượng mỗi lần đổi kênh chỉ gây rối.
 - Không ghi "Release": đặt cạnh "Bản phát triển" thì đọc thành hai từ đối nhau (phát triển / phát hành). Release là trạng thái bình thường; Debug là ngoại lệ (log mỗi phím, `get-task-allow`, D8) nên mới cần ghi.
@@ -615,7 +619,7 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
 - Thay cả khối, không ghi đè từng file: tiến trình cũ còn đang ánh xạ mã của nó. Không dừng `imklaunchagent`: dừng nó làm app đang gõ mất kết nối với mọi bộ gõ cho tới khi mở lại app đó. Bộ gõ chỉ thoát khi bundle đã đổi: ai cũng phát được thông báo Darwin, nên một yêu cầu không kèm thay đổi không được làm đứt từ đang gõ (D18 (Phòng thủ với IMK)).
 - Kiểm chữ ký: thư mục `~/Library/Input Methods` tài khoản người dùng ghi được, nên bundle có thể bị thay; macOS có chặn bundle bị thay hay vẫn đưa phím cho nó thì chưa đo.
 - Yêu cầu mã thay cho so hai Team ID: hai bản ký ad-hoc đều không có Team ID nên từng "khớp" nhau, và mã khác của cùng team từng đạt. Bộ gõ đã cài bằng bản phát triển (Personal Team) đạt yêu cầu mới (`codesign -R`); chứng chỉ Developer ID của cùng team cũng thoả `anchor apple generic` và Team ID.
-- Chữ ký sai không tự thay: bộ gõ nhận mọi phím gõ, tự thay sẽ che dấu hiệu bundle bị can thiệp. Người chuyển từ bản phát triển sang bản chính thức (khác Team ID) thấy banner một lần. Onboarding theo cùng luật: nếu "Bật Dấu" bật luôn bộ gõ đã cài thì Dấu tự tay bật một bundle nó biết là không phải của mình.
+- Chữ ký sai không tự thay: bộ gõ nhận mọi phím gõ, tự thay sẽ che dấu hiệu bundle bị can thiệp. Người chuyển từ bản phát triển sang bản phát hành (khác Team ID) thấy banner một lần. Onboarding theo cùng luật: nếu "Bật Dấu" bật luôn bộ gõ đã cài thì Dấu tự tay bật một bundle nó biết là không phải của mình.
 - Hơn một bản trong cùng thư mục: mỗi bản đều do người dùng đặt vào Applications, nên mở bản nào thì bộ gõ theo bản đó; không thêm màn yêu cầu xoá bớt.
 - Bản chủ: khi bản Dấu.app nào cũng cài và thay được bộ gõ, và chỉ thay khi số build của bản nhúng lớn hơn, thì mở một bản mới hơn từ ảnh đĩa làm bộ gõ khác bản app đã cài, quay về bản trước (D19 (Quay về bản trước)) không lùi được bộ gõ, và bản phát triển cùng số build không bao giờ được thay.
 - So mã băm với bản trong Applications, không xét đường dẫn đang chạy: macOS có thể chạy app từ một đường dẫn ngẫu nhiên (App Translocation); điều kiện không được Apple công bố và không có cách được hỗ trợ để nhận biết hay lấy đường dẫn gốc (Apple DTS, Developer Forums 724969).

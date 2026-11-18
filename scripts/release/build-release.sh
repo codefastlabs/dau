@@ -96,7 +96,7 @@ if [[ $tag == v<->.<->.<->-beta.<-> ]]; then
   others=(${(f)"$(git -C "$DAU_ROOT" tag --points-at "$tag_commit" -l 'v*-beta.*' | grep -vx -- "$tag" || true)"})
   (( ${#others} == 0 )) || log_die 2 "Commit ${tag_commit[1,9]} đã có tag beta khác (${(j:, :)others}): mỗi beta cần một commit mới để có số build riêng (D7)."
 elif [[ $tag == v<->.<->.<-> ]]; then
-  log_die 2 "Tag $tag là bản ổn định: bản ổn định là tệp nhị phân của beta cuối, giữ nguyên, không dựng lại (D7). Dùng scripts/release/promote-release.sh --tag $tag. Cần sửa gì thì phát thêm một beta."
+  log_die 2 "Tag $tag là bản chính thức: bản chính thức là tệp nhị phân của beta cuối, giữ nguyên, không dựng lại (D7). Dùng scripts/release/promote-release.sh --tag $tag. Cần sửa gì thì phát thêm một beta."
 elif [[ -n $tag && $tag == v* ]]; then
   log_die 2 "Tag '$tag' không đúng dạng vX.Y.Z-beta.N (D7)."
 fi

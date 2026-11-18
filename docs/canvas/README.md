@@ -57,7 +57,7 @@
 - [Khi gõ trong ứng dụng](TypingStates.png) · [nguồn](src/TypingStates.dc.html)
 - [Ảnh chia sẻ Open Graph 1200×630](OgImage.png) · [nguồn](src/OgImage.dc.html)
 - [Ảnh xem trước GitHub 1280×640](GithubPreview.png) · [nguồn](src/GithubPreview.dc.html)
-- [Cửa sổ ảnh đĩa DMG (bản chính thức)](DmgWindow.png) · [nguồn](src/DmgWindow.dc.html)
+- [Cửa sổ ảnh đĩa DMG (bản phát hành)](DmgWindow.png) · [nguồn](src/DmgWindow.dc.html)
 
 ## Gỡ cài đặt
 

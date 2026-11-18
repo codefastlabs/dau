@@ -139,7 +139,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên (ví dụ 
 - `scripts/perf/perf-report.sh --last 5m --app <tên app hoặc một phần bundle ID>` ngay sau khi gõ; `typing/run.sh` tự in báo cáo này. Cột, cách bật nhật ký từng phím (`DauPerfLog`) và tắt sau khi đo: đầu script.
 - Ghi: `selectedRange` p50 / p99 µs, `count_mismatch` (vị trí khác dự đoán), `count_unsupported` (ứng dụng trả `NSNotFound`).
 - `event_client-changed` tăng theo từng phím, hay `event_client-not-text-input` khác 0: báo lại ngay.
-- Bản Debug có thêm một lần hỏi chẩn đoán sau mỗi lần thay (`ReplaceDiag.swift`), chạy sau khi ghi thời gian nên không nằm trong số. Bản phát hành không ghi gì theo từng phím (D8), nên số đo lấy từ bản Debug. Cần p99 đáng tin thì gõ thêm vài trăm phím có dấu.
+- Bản Debug có thêm một lần hỏi chẩn đoán sau mỗi lần thay (`ReplaceDiag.swift`), chạy sau khi ghi thời gian nên không nằm trong số. Bản Release không ghi gì theo từng phím (D8), nên số đo lấy từ bản Debug. Cần p99 đáng tin thì gõ thêm vài trăm phím có dấu.
 
 ## 5. Số đo theo ứng dụng
 
@@ -287,7 +287,7 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 ## 7. Còn mở
 
-Các mục dưới đây làm sau bản thử đầu: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
+Các mục dưới đây làm sau beta đầu tiên: người thử báo lỗi thay cho đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
 
 - Ứng dụng chưa đo (mục 3): Arc, Brave, Zed, JetBrains IDE trừ WebStorm, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred; phần còn lại của Mail. Ứng dụng Electron đáng thử thêm: Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`), Postman (`com.postmanlabs.mac`); Zoom (`us.zoom.xos`).
 - Chưa đo: VS Code khi app bận.

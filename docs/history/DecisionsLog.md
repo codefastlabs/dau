@@ -85,6 +85,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 17/11/2026 (người dùng chốt): cask Homebrew nằm trong tap riêng `codefastlabs/homebrew-tap`, chuyển vào `homebrew/cask` khi repo đạt ngưỡng nổi bật. Lý do: tra ngày 17/11/2026 thấy tên `dau` còn trống trong `homebrew/cask` (không cask, không formula nào trùng), nhưng repo 0 sao, dưới ngưỡng nhận gói. Bản trước, nguyên văn: "GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (khai báo `auto_updates true`) sau bản thử đầu. Không có Mac App Store."
 - 18/11/2026 (người dùng chốt, khi rà kịch bản phát hành): "sau bản thử đầu" đổi thành "từ bản thử đầu", ở thân và mục lục, cho khớp phần lý do và Roadmap M7 (bản thử đầu cài được bằng `brew`); luật không đổi. Thêm ý "Cask theo bản nào" (trước đó chỉ ghi trong `docs/Releasing.md`).
 
+- 18/11/2026 (người dùng chốt, theo D7 cùng ngày): cask và nút "Tải về" trên trang web theo giai đoạn như kênh mặc định. Bản trước, nguyên văn: "khi chỉ có một kênh (D7 (Cập nhật và loại bản dựng)), cask trỏ vào bản mới nhất đã công bố, kể cả beta; khi có kênh Beta, cask chỉ trỏ vào bản ổn định."
+
 ### D7. Cập nhật và loại bản dựng
 
 - Tên cũ: "Cập nhật".
@@ -98,6 +100,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 18/11/2026 (người dùng chốt, từ so sánh với cách Apple đánh số phiên bản): số hiển thị luôn là ba số nguyên, chữ beta chỉ ở tag, GitHub và appcast; bản ổn định là tệp nhị phân của beta cuối, không dựng lại; bản thử đầu là tag `v0.1.0-beta.1`, số hiển thị "0.1.0". Bản trước, nguyên văn: "**Số phiên bản:** `CFBundleVersion` là số build tăng dần, Sparkle so sánh bằng số này; số hiển thị dạng "1.3.0 beta 2", tag git dạng `v1.3.0-beta.2`; bản ổn định dựng lại từ cùng commit với bản beta cuối, số hiển thị không có chữ beta. Bản thử đầu là "0.1.0 beta 1" (tag `v0.1.0-beta.1`)." Phương án đã loại: giữ chữ beta trong số hiển thị (bản ổn định phải dựng lại, thành tệp chưa ai chạy).
 - 17/11/2026 (người dùng đồng ý đề xuất của phiên chính): thêm "Hệ quả đã chấp nhận" về ⌘Q giữa lúc cài (Sparkle cài lúc thoát mà không mở lại Dấu); app-ui-dev phát hiện khi đọc `SPUUserDriver.h` lúc nối Sparkle. Phương án đã loại: thêm mã ép mở lại Dấu sau khi cài.
 
+- 18/11/2026 (người dùng chốt trong chat): hai kênh Beta và Chính thức từ beta đầu tiên, người dùng chọn trong app; kênh mặc định theo giai đoạn lúc cài (chưa có bản chính thức thì Beta, đã có thì Chính thức), sau đó chỉ người dùng đổi; lựa chọn Chính thức hiện nhưng tắt khi appcast chưa có bản chính thức. Đổi từ ngữ cho ba trục loại bản: "bản chính thức" (bản CI ký) thành "bản phát hành", "bản ổn định" thành "bản chính thức", "bản thử đầu" thành "beta đầu tiên". Phương án đã loại: giữ một kênh tới khi có tín hiệu cần kênh Beta; nhịp phát hành cố định. Bản trước, nguyên văn: "Sparkle 2 nằm trong app chủ, appcast ký EdDSA, một kênh. Kênh Beta và phát hành theo đợt để sau bản thử đầu."; "Khi có kênh Beta, người dùng bật kênh đó trong app; không có cask Homebrew riêng cho Beta (D6 (Phát hành))."; "Kênh: một kênh; Ổn định/Beta khi có kênh Beta, chỉ ở bản chính thức."; các câu khác: lịch sử git của `docs/Decisions.md` (commit này).
+
 ### D8. Không telemetry
 
 - 02/11/2026: nhật ký từng phím chỉ ở bản Debug, bật bằng `DauPerfLog` ("người dùng chốt 02/11/2026").
@@ -105,6 +109,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 11/11/2026: thêm ý log bộ gõ ở bản phát hành không ghi app đích hay thời điểm theo từng lần kích hoạt (hai dòng log Release từng ghi bundle ID ở mức công khai; rà soát bảo mật, người dùng duyệt).
 
 - 17/11/2026 (người dùng chọn khi duyệt artboard M7): bỏ đường email, chỉ còn GitHub issue điền sẵn; nút "Sao chép nội dung" bỏ khỏi sheet báo lỗi. Bản trước, nguyên văn: "Không telemetry. Báo lỗi qua GitHub issue điền sẵn hoặc "Sao chép nội dung" để gửi email." Lý do: repo chưa có địa chỉ email nhận báo lỗi.
+
+- 18/11/2026 (theo D7 cùng ngày, đổi từ ngữ): "bản phát hành" ở D8 nghĩa là cấu hình Release, viết lại thành "bản Release"; luật không đổi.
 
 ### D9. Giao diện
 
@@ -233,6 +239,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 05/11/2026: dải chéo Hổ phách ở góc dưới phải ("người dùng chọn 05/11/2026 giữa dải góc và nền sọc; nền sọc mất ở 16–32 pt và ở kiểu Trong suốt").
 - 17/11/2026 (người dùng chốt, từ câu hỏi mở "Loại bản dựng"): bản phát triển giữ tên "Dấu".
 - 18/11/2026 (theo D7 cùng ngày): bản Beta phân biệt bằng commit trong ngoặc thay vì số phiên bản. Bản trước, nguyên văn: "Kênh Beta dùng biểu tượng chuẩn, phân biệt bằng số phiên bản ("1.3.0 beta 2") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry))."
+
+- 18/11/2026 (theo D7 cùng ngày, đổi từ ngữ): "bản chính thức" (bản CI ký) thành "bản phát hành"; luật không đổi.
 
 ### D26. Gõ đúp phím dấu
 

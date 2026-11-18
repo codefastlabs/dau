@@ -16,7 +16,11 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 | input source | nguồn đầu vào | khái niệm của macOS; cách gọi theo D38 |
 | Input menu | menu nguồn đầu vào | menu nguồn đầu vào trên thanh menu |
 | input method | bộ gõ | phần mềm gõ (Dấu, OpenKey…); "bộ gõ Dấu" là tiến trình bộ gõ, khác app Dấu |
-| development build | bản phát triển | các loại bản: D7 (Cập nhật và loại bản dựng), D25 (Nhận diện) |
+| official build | bản phát hành | bản do CI dựng, ký Developer ID và công bố; trục "ai dựng và ký" của D7 (Cập nhật và loại bản dựng), D25 (Nhận diện) |
+| development build | bản phát triển | mọi bản không do CI ký: Debug, Release tự dựng, bản fork (D7) |
+| Debug / Release | bản Debug / bản Release | cấu hình build của Xcode, giữ nguyên tên (D7) |
+| Beta channel / Stable channel | kênh Beta / kênh Chính thức | chọn ở trang Cập nhật & hỗ trợ (D7) |
+| beta / stable release | bản beta / bản chính thức | bản chính thức là tệp của beta cuối (D7) |
 | Dấu – Vietnamese | Dấu – Tiếng Việt | tên nguồn đầu vào; macOS chọn theo ngôn ngữ hệ thống (D41), nên trong câu luôn là `%@` (`SystemUINames.dauInputSource`), không viết cứng |
 | typing method | kiểu gõ | Telex, VNI, Simple Telex |
 | Simple Telex | Telex đơn giản | D29 (Telex đơn giản) |
@@ -50,6 +54,7 @@ Thuật ngữ dùng trong chuỗi giao diện của Dấu (String Catalog, D41 (
 - **Động từ đi với dấu:** "đặt dấu" (thêm dấu vào chữ), "đổi dấu", "xoá dấu", "viết không dấu". Không dùng "bỏ dấu": từ này vừa được hiểu là đặt dấu, vừa được hiểu là xoá dấu.
 - **"cài đặt"** là danh từ, chỉ phần Cài đặt (Settings). Động từ install viết "cài" ("cài lại", "chưa cài được"). "Gỡ cài đặt" là cụm cố định cho Uninstall.
 - **"nguồn đầu vào"**, không viết "nguồn nhập liệu" (D38).
+- **"chính thức"** chỉ đối lập với beta: bản chính thức, kênh Chính thức (D7). Bản do CI ký là "bản phát hành"; cấu hình build viết "bản Debug", "bản Release". Không viết "bản ổn định", "bản release", "bản thử đầu" (viết "beta đầu tiên").
 - **Tên Dấu và chữ "dấu":** câu nói về dấu không mở đầu bằng chữ "dấu" trần, vì đầu câu viết hoa sẽ đọc thành tên app; viết "dấu thanh…" hoặc đảo câu. Bỏ app khỏi danh sách nguồn luôn viết đủ "bỏ Dấu khỏi nguồn đầu vào".
 
 ## Cách viết câu tiếng Anh

@@ -39,7 +39,7 @@ Dấu là một nguồn đầu vào như mọi bàn phím khác trên Mac. Chuy�
 
 ### Những gì bạn gõ ở lại trên máy bạn.
 
-Bộ gõ không có quyền kết nối mạng. Không telemetry. Bản phát hành không ghi lại phím nào bạn gõ, kể cả thời điểm gõ hay ứng dụng đang gõ.[^7]
+Bộ gõ không có quyền kết nối mạng. Không telemetry. Bản Release không ghi lại phím nào bạn gõ, kể cả thời điểm gõ hay ứng dụng đang gõ.[^7]
 
 ### Ít hơn, có chủ đích.
 
@@ -49,7 +49,7 @@ Việc macOS đã làm tốt, Dấu không làm lại: gõ tắt văn bản đã
 
 ## Sắp ra mắt
 
-Dấu chưa có bản tải về. Dấu dựng cho macOS 14 trở lên (D1 (Nền tảng)), nhưng tới nay mới thử trên macOS 27.2 và Apple silicon; bản thử đầu chỉ hứa những gì đã thử.[^8] Các mốc tới khi phát hành: [`docs/Roadmap.md`](docs/Roadmap.md). Những ứng dụng đã thử và giới hạn còn lại: [`docs/Compatibility.md`](docs/Compatibility.md).
+Dấu chưa có bản tải về. Dấu dựng cho macOS 14 trở lên (D1 (Nền tảng)), nhưng tới nay mới thử trên macOS 27.2 và Apple silicon; beta đầu tiên chỉ hứa những gì đã thử.[^8] Các mốc tới khi phát hành: [`docs/Roadmap.md`](docs/Roadmap.md). Những ứng dụng đã thử và giới hạn còn lại: [`docs/Compatibility.md`](docs/Compatibility.md).
 
 ## Dành cho nhà phát triển
 
