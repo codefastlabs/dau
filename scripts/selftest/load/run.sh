@@ -36,8 +36,9 @@
 #   mode   inplace; underline (--underline, D13)
 #   rep    1..N
 # = (2 browsers × 2 loads + 2 apps × 1 load) × 2 modes × N = 36 cells for N = 3. The
-# loop runs rep, then app, then load, then mode, so slow drift (heat, other work on the
-# Mac) spreads over every condition instead of landing on one.
+# loop runs app, then rep, then load, then mode: each app is done before the next one
+# (scripts/CLAUDE.md), and within an app slow drift (heat, other work on the Mac) spreads
+# over the loads and modes compared instead of landing on one.
 #
 # Text: a fixed Telex string (TEXT_KEYS below, 227 keys) and the text the engine gives for
 # it (TEXT_EXPECT): four sentences of modern Vietnamese with English words that must be
@@ -140,8 +141,8 @@ loads_for() { # app → its load conditions
   esac
 }
 CELLS=()
-for rep in {1..$REPS}; do
-  for app in $APPS; do
+for app in $APPS; do
+  for rep in {1..$REPS}; do
     for load in ${=$(loads_for $app)}; do
       [[ -n "$ONLY_LOADS" && " $ONLY_LOADS " != *" $load "* ]] && continue
       for mode in $MODES; do CELLS+=("$app $load $mode $rep"); done
