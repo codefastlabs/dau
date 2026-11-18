@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Promotes the last beta of a version to its stable release: a draft GitHub release for vX.Y.Z with the beta's DMG and dSYMs (D7).
-# Side effects: changes GitHub (creates a draft release; with --dry-run only downloads into build/)
+# Side effects: builds (downloads the beta's assets into build/); unless --dry-run also: changes GitHub (creates a draft release)
 # The stable release is the binary of the last beta, unchanged and not rebuilt (like an Apple
 # release candidate): same DMG, same signature, same stapled notarization ticket, same
 # CFBundleVersion. Only the file name changes (Dau-X.Y.Z-beta.N.dmg -> Dau-X.Y.Z.dmg), which

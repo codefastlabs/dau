@@ -14,7 +14,7 @@
 # review file when keys, Dấu output and their expected text are unchanged; otherwise it is
 # "unreviewed" (with the old class in rule_notes). Prints the per-source counts and the
 # per-class table of docs/research/external-test-inputs/README.md section 1.
-# Writes only under build/ (git-ignored; hence "builds", though nothing is compiled). Runs nothing
+# Writes only under build/ (git-ignored), nothing is compiled. Runs nothing
 # from the other projects.
 set -euo pipefail
 source "${0:A:h:h:h}/lib/log.sh"

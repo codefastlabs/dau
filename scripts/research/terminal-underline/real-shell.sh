@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Types lines into the user's own Ghostty window (their real shell and configuration) and records what the shell's line editor ended with.
-# Side effects: takes the screen, changes input source
+# Side effects: builds, takes the screen, changes input source
 #
 # Usage: scripts/research/terminal-underline/real-shell.sh <source-id> <label> <keys-line>...
 #   source-id  input source to type with (Dấu: com.codefastlabs.dau.inputmethod.Dau.vi;

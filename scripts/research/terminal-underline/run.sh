@@ -1,6 +1,6 @@
 #!/bin/zsh
 # Types the cells of docs/research/TerminalAndUnderline.md (sections 1–3) in Sublime Text, Ghostty, xterm.js, Terminal.app, the terminal and editor of VS Code and text fields, with Dấu and Apple's Vietnamese Telex as the control.
-# Side effects: builds, takes the screen, changes input source, changes user settings
+# Side effects: builds, takes the screen, changes input source, changes user settings, kills processes
 #
 # Usage: scripts/research/terminal-underline/run.sh [--delay MS] [CELL]...
 #   --delay MS   pause between keys (default 120, close to normal typing)

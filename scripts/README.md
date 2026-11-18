@@ -25,14 +25,14 @@ Mỗi script tự mô tả ở phần đầu file; không có bảng liệt kê 
 - `# Usage:`: cách gọi và mọi tuỳ chọn.
 - `# Side effects:`: ngay sau dòng chú thích đầu, dùng đúng các từ trong bảng "Tác dụng phụ" dưới đây.
 
-File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch và chạy; nó hưởng tác dụng phụ của script gọi nó. Tìm script gọi một công cụ: `grep -rn <tên file> scripts`. Tên file `.swift` viết PascalCase như mọi mã Swift của repo (`InputSource.swift`); tên công cụ biên dịch ra là một lệnh nên viết chữ thường nối gạch như script (`dau_swift_tool input-source …` ra `build/tools/input-source`).
+File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch và chạy; nó hưởng tác dụng phụ của script gọi nó. File `.py` trong `scripts/research/external-tests/` (mục "Ngôn ngữ") cũng vậy: `compare.sh` và `extract.sh` gọi chúng. Script gọi một script khác hưởng mọi tác dụng phụ của script đó với đối số nó truyền. Tìm script gọi một công cụ: `grep -rn <tên file> scripts`. Tên file `.swift` viết PascalCase như mọi mã Swift của repo (`InputSource.swift`); tên công cụ biên dịch ra là một lệnh nên viết chữ thường nối gạch như script (`dau_swift_tool input-source …` ra `build/tools/input-source`).
 
 ## Tác dụng phụ
 
 | Từ | Nghĩa |
 |---|---|
 | `none` | chỉ đọc; không ghi gì ngoài file tạm |
-| `builds` | chạy xcodegen, xcodebuild hoặc swiftc; ghi vào `build/` hoặc thư mục tạm, không đổi file được theo dõi bởi git |
+| `builds` | ghi vào `build/` hoặc thư mục tạm (biên dịch bằng xcodegen, xcodebuild, swiftc; xuất ảnh; tải file), không đổi file được theo dõi bởi git |
 | `writes repo files` | ghi đè file được theo dõi bởi git trong repo (xem bằng `git diff`) |
 | `installs input method` | thay bộ gõ trong `~/Library/Input Methods` (script không tự chép: Dấu.app vừa cài thay nó, D37 (Cài bộ gõ)) |
 | `installs app` | chép Dấu.app vào `/Applications` và đăng ký với LaunchServices |
