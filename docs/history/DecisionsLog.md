@@ -242,6 +242,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 18/11/2026 (theo D7 cùng ngày, đổi từ ngữ): "bản chính thức" (bản CI ký) thành "bản phát hành"; luật không đổi.
 
+- 18/11/2026 (người dùng chốt, sau phản biện của phiên chính): bản phát hành ghi số build trong ngoặc thay cho commit, khớp cửa sổ cập nhật của Sparkle; bản phát triển giữ commit; báo lỗi điền sẵn ghi cả số build và commit. Phương án đã loại: chỉ ghi số hiển thị (cửa sổ Sparkle vẫn hiện số build); ghi chữ "Beta" cạnh số phiên bản bằng cách đọc appcast (chữ phụ thuộc mạng). Bản trước, nguyên văn: "Kênh Beta dùng biểu tượng chuẩn. Số hiển thị không có chữ beta (D7); mỗi beta phân biệt bằng commit trong ngoặc ("Dấu 1.3.0 (a1b2c3d)") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry))."; D7: "Trong app, các beta phân biệt bằng commit trong ngoặc sau số hiển thị (D25 (Nhận diện))."
+
+- 18/11/2026 (người dùng chốt): bỏ dòng "Bản phát triển" ở trang Cập nhật & hỗ trợ của bản phát triển; biểu tượng và commit trong ngoặc đã phân biệt loại bản. Bản trước, nguyên văn: "…vì người đọc là người phát triển, và ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug…"; "biểu tượng và dòng "Bản phát triển" đã phân biệt"; ở "Vì sao": "Không ghi "Release": đặt cạnh "Bản phát triển" thì đọc thành hai từ đối nhau (phát triển / phát hành)."
+
 ### D26. Gõ đúp phím dấu
 
 - Tên cũ: "Sau khi gõ đúp phím dấu".

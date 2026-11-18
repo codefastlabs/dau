@@ -56,7 +56,7 @@ Mục tiêu: beta đầu tiên (tag `v0.1.0-beta.1`, D7 (Cập nhật và loại
 ### Sau beta đầu tiên
 
 Không chặn việc đóng M7; làm khi có người dùng:
-- sửa gấp bản chính thức từ nhánh khi `main` đã có việc dở: `check-release-gate.sh` và workflow Test nhận nhánh phát hành ([`docs/Releasing.md`](Releasing.md), mục "Kịch bản phát hành"); cần trước bản chính thức đầu tiên;
+- sửa gấp bản chính thức từ nhánh khi `main` đã có việc dở: `check-release-gate.sh` và workflow Test nhận nhánh phát hành, script phát hành từ chối số build đã phát ([`docs/Releasing.md`](Releasing.md), mục "Kịch bản phát hành"); cần trước bản chính thức đầu tiên;
 - kiểm `generate_appcast` có ghi `sparkle:minimumSystemVersion` không, thêm nếu thiếu; cần trước lần nâng bản macOS tối thiểu;
 - phát hành theo đợt (D7); quay về bản trước (D19 (Quay về bản trước));
 - artifact attestation và phép đếm cấp phát (`malloc_logger`) trên CI;

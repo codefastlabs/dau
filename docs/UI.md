@@ -164,12 +164,14 @@ Artboard: [thêm quy tắc](canvas/SettingsAppsAdd.png), [chưa chọn](canvas/S
 
 Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 
-- **Phần cập nhật chỉ có ở bản phát hành** (bản có URL appcast và khoá công khai, D7 (Cập nhật và loại bản dựng)): dòng kiểm tra lần cuối và nút kiểm tra trong thẻ phiên bản, hàng công tắc tự động kiểm tra. Bản phát triển không có cả ba.
+- **Phần cập nhật chỉ có ở bản phát hành** (bản có URL appcast và khoá công khai, D7 (Cập nhật và loại bản dựng)): dòng kiểm tra lần cuối và nút kiểm tra trong thẻ phiên bản, hàng công tắc tự động kiểm tra, hàng "Kênh phát hành". Bản phát triển không có cả bốn.
   - Thông báo, tải và cài bản mới là cửa sổ của Sparkle (D7); trang không vẽ trạng thái tải hay cài.
   - Nút kiểm tra tắt trong lúc Sparkle đang kiểm tra hay đang có phiên cập nhật.
   - Chưa kiểm lần nào thì dòng kiểm tra lần cuối nói vậy, không hiện giờ (N5).
   - Công tắc đọc và ghi lựa chọn của chính Sparkle (`automaticallyChecksForUpdates`, mặc định bật theo Info.plist), không có khoá riêng của Dấu.
   - Câu dưới công tắc ("khi bạn mở Dấu, tối đa mỗi ngày một lần", "hỏi bạn trước khi cài") chưa kiểm trên bản phát hành; kiểm ở lượt chạy Sparkle cập nhật của M7 (N5).
+  - Hàng "Kênh phát hành" (D7, ý "Kênh"): nút chia đoạn Beta / Chính thức. Khi appcast chưa có bản chính thức, Chính thức hiện nhưng tắt và dòng phụ nói chưa có bản chính thức nào; khi đã có, dòng phụ nói chuyển sang Chính thức thì giữ bản đang dùng tới khi có bản chính thức mới hơn.
+- Dòng phiên bản (thẻ đầu trang và cuối sidebar) theo D25: bản phát hành ghi số build trong ngoặc ("Dấu 0.1.0 (6520)"), bản phát triển ghi commit.
 - "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi", ở mọi loại bản (mục con bên dưới).
 - Nút gỡ cài đặt dùng dạng `role: .destructive` của hệ thống (D9); luồng gỡ ở mục "Gỡ cài đặt".
 - Chú thích quyền riêng tư giữ đúng nội dung D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
@@ -182,14 +184,14 @@ Artboard: [Báo ứng dụng gõ lỗi](canvas/Report.png).
 - URL chỉ mang những gì sheet hiện: bốn trường và các mục "Gửi kèm". Mẫu issue: `.github/ISSUE_TEMPLATE/typing-problem.yml`, mỗi trường điền theo `id` của nó.
 - "Ứng dụng" tự chọn ứng dụng người dùng vừa dùng ngay trước Dấu; danh sách là các ứng dụng đang chạy (cùng ứng dụng vừa dùng nếu nó đã thoát). Dấu chỉ giữ ứng dụng đó trong bộ nhớ cho sheet, không lưu, không ghi nhật ký (D8).
 - "Trang web" không bắt buộc: Dấu không đọc được trang đang mở trong trình duyệt mà không xin quyền (N4).
-- "Gửi kèm": phiên bản macOS, dòng phiên bản như ở thẻ đầu trang, kiểu gõ, quy tắc gạch chân của ứng dụng đã chọn (D5, D13), phiên bản của ứng dụng đó (không đọc được thì bỏ, N5). Ô "Ví dụ đã gõ" có gửi, nên sheet không hứa "không gửi chữ đã gõ".
+- "Gửi kèm": phiên bản macOS, dòng phiên bản kèm commit (D25: "Dấu 0.1.0 (6520, a1b2c3d)"), kiểu gõ, quy tắc gạch chân của ứng dụng đã chọn (D5, D13), phiên bản của ứng dụng đó (không đọc được thì bỏ, N5). Ô "Ví dụ đã gõ" có gửi, nên sheet không hứa "không gửi chữ đã gõ".
 - Ô gợi ý đầu sheet là đường lui của D37 cho ứng dụng không chọn được Dấu: đăng xuất một lần; tên mục menu là tên của macOS (D38).
 
 #### Bản phát triển
 
 Artboard: [bản phát triển](canvas/SettingsAboutDev.png).
 
-- Biểu tượng và dòng phiên bản theo D25 (Nhận diện) (loại bản: D7 (Cập nhật và loại bản dựng)): thẻ đầu trang dùng biểu tượng bản phát triển; dòng phiên bản cuối sidebar giống tên và phiên bản ở thẻ đầu trang.
+- Biểu tượng và dòng phiên bản theo D25 (Nhận diện) (loại bản: D7 (Cập nhật và loại bản dựng)): thẻ đầu trang dùng biểu tượng bản phát triển; dòng phiên bản cuối sidebar giống tên và phiên bản ở thẻ đầu trang. Không có dòng ghi loại bản.
 - Dòng tiếp theo là bản của bộ gõ đã cài, thứ thật sự xử lý phím; nó có thể khác bản app đang mở (D37).
   - Commit và chữ ký đọc từ bundle trong `~/Library/Input Methods`, như `scripts/dev/dau-version.sh`.
   - Không có chữ ký thì không ghi "Debug"; không có commit lẫn "Debug" thì ghi số phiên bản của bundle, không có thì "–" (N5); chưa cài thì "Chưa cài bộ gõ".

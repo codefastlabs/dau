@@ -62,8 +62,8 @@ Sparkle (chỉ bản phát hành kiểm tra cập nhật), trang Cập nhật & 
 
 Theo D7, ý "Kênh"; vòng phát hành: `docs/Releasing.md` mục "Kịch bản phát hành". Không chờ bước 0.
 
-1. Artboard trang Cập nhật & hỗ trợ: chọn kênh Beta / Chính thức; Chính thức tắt kèm dòng giải thích khi appcast chưa có bản chính thức; `docs/UI.md`. Người dùng duyệt artboard trước khi viết mã.
-2. App chủ (app-ui-dev): đọc tài liệu Sparkle 2.10.1 trước (delegate có đọc được các mục của appcast đã tải không, thứ tự gọi so với lúc hỏi kênh); lưu kênh, ghi kênh mặc định ở lần tải appcast thành công đầu tiên, trả kênh cho Sparkle qua delegate; chuỗi trong String Catalog (D41); test với appcast giả cho cả hai giai đoạn và cho việc đổi kênh.
+1. Artboard trang Cập nhật & hỗ trợ: chọn kênh Beta / Chính thức, số build trong dòng phiên bản trên mọi artboard Cài đặt và báo lỗi, bỏ dòng "Bản phát triển" (D25); Chính thức tắt kèm dòng giải thích khi appcast chưa có bản chính thức; `docs/UI.md`. Người dùng duyệt artboard trước khi viết mã.
+2. App chủ (app-ui-dev): đọc tài liệu Sparkle 2.10.1 trước (delegate có đọc được các mục của appcast đã tải không, thứ tự gọi so với lúc hỏi kênh); lưu kênh, ghi kênh mặc định ở lần tải appcast thành công đầu tiên, trả kênh cho Sparkle qua delegate; chuỗi trong String Catalog (D41); test với appcast giả cho cả hai giai đoạn và cho việc đổi kênh. Cùng lượt: dòng phiên bản của bản phát hành ghi số build, báo lỗi điền sẵn ghi số build và commit (D25), sửa test của `AppVersion`. Bỏ dòng "Development build" ở trang Cập nhật & hỗ trợ của bản phát triển (D25) và chuỗi của nó trong String Catalog.
 3. Script phát hành (release-eng, song song với 2): mục beta mới gắn `<sparkle:channel>beta</sparkle:channel>`; quảng bá bỏ thẻ đó khỏi mục của beta cuối; kiểm cả hai trong `check-appcast.sh` hay `check-build.sh`; `docs/Releasing.md`.
 
 Xong khi: test và `scripts/check-l10n/check.sh` đạt; chạy thật ở bước 2 (hai tag thử: bản thứ hai cập nhật được ở kênh Beta).
@@ -88,7 +88,7 @@ Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục t�
 7. "Thêm dấu cho từ đã gõ" (D20) trên web editor trong Chrome, bằng `scripts/selftest/typing/d20-docs.sh` (tài liệu trống của người dùng, đã đăng nhập sẵn). Word trên web và Google Docs: xong 17/11 (`docs/Compatibility.md` mục 5.10; Google Docs sai, ở Việc mở). Còn Notion: script chưa có ô cho Notion. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
 8. Dọn: gỡ bản thử, cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
 
-Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", câu "đã kiểm chứng ở…" trong mục Hỏi đáp), và chú thích artboard biểu tượng bản phát triển ("bản không phải bản chính thức" thành "bản phát hành", Glossary). Rồi sửa mã và chụp lại `docs/canvas/`.
+Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Ảnh chụp `docs/canvas/` của các artboard đã sửa ở bước 1f (kênh, số build, từ ngữ) sinh lại khi người dùng duyệt. Rồi sửa mã và chụp lại `docs/canvas/`.
 
 ### Bước 4 — Phát hành và đóng mốc
 

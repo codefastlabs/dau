@@ -174,7 +174,7 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
 - **Số phiên bản** (theo cách Apple đánh số):
   - Số hiển thị (`CFBundleShortVersionString`) luôn là ba số nguyên "1.3.0", không có chữ beta. Mọi beta của một phiên bản và bản chính thức của nó cùng một số hiển thị.
   - `CFBundleVersion` là số build tăng dần, mỗi bản dựng một số; Sparkle so sánh bằng số này.
-  - Chữ "beta" chỉ nằm ngoài tệp nhị phân: tag git `v1.3.0-beta.2`, bản pre-release trên GitHub, appcast. Trong app, các beta phân biệt bằng commit trong ngoặc sau số hiển thị (D25 (Nhận diện)).
+  - Chữ "beta" chỉ nằm ngoài tệp nhị phân: tag git `v1.3.0-beta.2`, bản pre-release trên GitHub, appcast. Trong app và cửa sổ của Sparkle, các beta phân biệt bằng số build trong ngoặc sau số hiển thị (D25 (Nhận diện)).
   - **Bản chính thức là tệp nhị phân của bản beta cuối, giữ nguyên, không dựng lại.** Tag `v1.3.0` đặt vào đúng commit của beta cuối. Muốn sửa gì sau beta cuối thì phát thêm một beta.
   - Beta đầu tiên là tag `v0.1.0-beta.1`, số hiển thị "0.1.0".
 - Bản dựng theo từng commit (Nightly), nếu làm, là bản phát triển: CI dựng, chỉ phát qua GitHub, không qua Sparkle.
@@ -436,10 +436,11 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 - **Biểu tượng theo loại bản** (các loại bản ở D7 (Cập nhật và loại bản dựng)):
   - Biểu tượng chuẩn chỉ có ở bản phát hành, chọn bằng một cờ build mà chỉ quy trình phát hành trên CI đặt. Mặc định, tức mọi bản phát triển (Debug, Release tự dựng, bản người khác build), dùng biểu tượng **bản phát triển**.
   - Biểu tượng bản phát triển giữ chữ "ấ", khác nền và có thêm một dấu hiệu bằng hình để vẫn nhận ra khi macOS bỏ màu (kiểu Trong suốt, Phủ màu của Icon Composer): **nền Chì, dải chéo màu Hổ phách ở góc dưới phải**. Không có chữ, không dùng Son cho dải, không đảo màu.
-  - Kênh Beta dùng biểu tượng chuẩn. Số hiển thị không có chữ beta (D7); mỗi beta phân biệt bằng commit trong ngoặc ("Dấu 1.3.0 (a1b2c3d)") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
-  - Debug và Release không có hai biểu tượng. Theo cách Apple ghi bản build (bảng About chuẩn của AppKit, `orderFrontStandardAboutPanel`, ghi mã build trong ngoặc sau số phiên bản), bản phát triển ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug ghi thêm "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho bộ gõ đã cài; bản Release không ghi cấu hình. `scripts/dev/dau-version.sh` in commit và cấu hình (Debug/Release) của từng bản đã cài.
+  - Kênh Beta dùng biểu tượng chuẩn. Số hiển thị không có chữ beta (D7); bản phát hành ghi số build (`CFBundleVersion`) trong ngoặc ("Dấu 1.3.0 (6520)") ở trang Cập nhật & hỗ trợ và thanh bên, như bảng About chuẩn của AppKit (`orderFrontStandardAboutPanel`) và khớp cách cửa sổ của Sparkle ghi khi hai bản cùng số hiển thị. Beta hay chính thức do hàng "Kênh phát hành" cho biết, không ghi cạnh số phiên bản.
+  - Báo lỗi điền sẵn (D8 (Không telemetry)) ghi cả số build và commit ("Dấu 1.3.0 (6520, a1b2c3d)"): từ số build không biết được bản dựng từ commit nào.
+  - Debug và Release không có hai biểu tượng. Bản phát triển ghi commit thay cho số build ("Dấu 1.0.0 (a1b2c3d)"), vì người đọc là người phát triển; trang Cập nhật & hỗ trợ không có dòng ghi loại bản. Chỉ bản Debug ghi thêm "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho bộ gõ đã cài; bản Release không ghi cấu hình. `scripts/dev/dau-version.sh` in commit và cấu hình (Debug/Release) của từng bản đã cài.
   - Bundle ID không đổi theo loại bản (D37 (Cài bộ gõ)).
-  - Tên cũng không đổi: bản phát triển vẫn là "Dấu" (tên app, tên nguồn "Dấu – Tiếng Việt"); biểu tượng và dòng "Bản phát triển" đã phân biệt, và đổi tên nguồn giữa hai lần cài có thể vướng bộ đệm TIS (D37).
+  - Tên cũng không đổi: bản phát triển vẫn là "Dấu" (tên app, tên nguồn "Dấu – Tiếng Việt"); biểu tượng và commit trong ngoặc đã phân biệt, và đổi tên nguồn giữa hai lần cài có thể vướng bộ đệm TIS (D37).
   - Biểu tượng "V" trên thanh menu giống nhau ở mọi bản (ảnh template, D9).
 
 **Vì sao:**
@@ -447,7 +448,8 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 - Biểu tượng chỉ trả lời câu "đây có phải bản phát hành không"; bằng chứng là chữ ký Developer ID, app chủ kiểm chữ ký của bộ gõ (D37).
 - Dải góc thay vì nền sọc: nền sọc mất ở 16–32 pt và ở kiểu Trong suốt. Không có chữ vì 16–32 pt không đọc được. Không đảo màu vì dễ nhầm với kiểu Tối của biểu tượng chuẩn.
 - Kênh Beta dùng biểu tượng chuẩn: người dùng Beta là người dùng thật, đổi biểu tượng mỗi lần đổi kênh chỉ gây rối.
-- Không ghi "Release": đặt cạnh "Bản phát triển" thì đọc thành hai từ đối nhau (phát triển / phát hành). Release là trạng thái bình thường; Debug là ngoại lệ (log mỗi phím, `get-task-allow`, D8) nên mới cần ghi.
+- Số build trong ngoặc ở bản phát hành: người dùng không đọc được commit. Số build tăng dần nên so được bản nào mới hơn, và trùng chữ với cửa sổ cập nhật: khi bản mới và bản đang chạy cùng số hiển thị, Sparkle tự ghi số build sau cả hai (`SPUStandardVersionDisplay`, Sparkle 2.10.1). Bản phát triển giữ commit vì người đọc cần biết bản dựng từ đâu.
+- Không có dòng "Bản phát triển": người thấy bản phát triển là người phát triển, và biểu tượng cùng commit trong ngoặc đã cho biết loại bản. Không ghi "Release": Release là trạng thái bình thường; Debug là ngoại lệ (log mỗi phím, `get-task-allow`, D8) nên mới cần ghi.
 
 **Xem thêm:** màu và artboard ở [`docs/Brand.md`](Brand.md).
 
