@@ -53,7 +53,10 @@ settings:
     ENABLE_HARDENED_RUNTIME: YES
     # Shared by every target (host app and input method report the same version).
     # Info.plist files read them via $(MARKETING_VERSION) / $(CURRENT_PROJECT_VERSION).
-    # TODO(M7): CI sets both from the release tag.
+    # Release builds (scripts/release/build-release.sh) set MARKETING_VERSION from the tag and
+    # CURRENT_PROJECT_VERSION from the commit count; development builds from
+    # scripts/dev/install-app.sh set MARKETING_VERSION from the nearest vX.Y.Z tag on HEAD
+    # (scripts/lib/build.sh). A build from Xcode itself keeps the values here.
     MARKETING_VERSION: 0.1.0
     CURRENT_PROJECT_VERSION: 1
     MACOSX_DEPLOYMENT_TARGET: "14.0"

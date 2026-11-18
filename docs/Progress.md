@@ -60,7 +60,7 @@ Sparkle (chỉ bản chính thức kiểm tra cập nhật), trang Cập nhật 
 ### Bước 2 — Bản thử trên CI (sau bước 0)
 
 - Workflow Test: xong 17/11, chạy trên runner `xcode-27` ở mỗi lần push lên `main`, đạt.
-- Tag thử dựng hai bản chính thức số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; bản thử đầu thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
+- Tag thử `v0.0.1-beta.1` rồi `v0.0.1-beta.2` (số hiển thị "0.0.1", dưới bản thử đầu; tag thứ hai trên commit sau commit appcast của bản thứ nhất) dựng hai bản chính thức số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; bản thử đầu thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
 
 ### Bước 3 — Một lượt chạy chiếm màn hình (xin giờ một lần; người dùng ngồi cùng ở mục 4)
 
@@ -68,7 +68,7 @@ Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục t�
 
 1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug.
 2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
-3. Sparkle cập nhật lên bản thử thứ hai: kiểm câu dưới công tắc "Tự động kiểm tra bản mới" (kiểm tra khi mở Dấu, hỏi trước khi cài, D7); cài xong Sparkle mở lại Dấu và bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`).
+3. Sparkle cập nhật lên bản thử thứ hai: kiểm câu dưới công tắc "Tự động kiểm tra bản mới" (kiểm tra khi mở Dấu, hỏi trước khi cài, D7); cài xong Sparkle mở lại Dấu và bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`); gõ ngay ở một app đang mở để đo Việc mở 6 khi Sparkle cập nhật (`app=?` trong log hay không).
 4. Kiểm cần người: VoiceOver và Tab qua cửa sổ Cài đặt, VoiceOver đọc tên nguồn, máy để tiếng Anh hẳn (người dùng đổi ngôn ngữ hệ thống). Phiên chính chụp và xem: biểu tượng thanh menu trên nền sáng và tối, các sheet ở chế độ tối, danh sách "+" của System Settings, nhãn biểu tượng trong cửa sổ DMG ở chế độ tối (theo báo cáo trên diễn đàn, Finder vẽ nhãn kiểu sáng khi thư mục có ảnh nền; chưa đo) và vị trí biểu tượng so với mũi tên nền.
 5. Báo lỗi và trang Cập nhật & hỗ trợ (bản Debug, ma trận `scripts/selftest/settings-window/run.sh` và `docs/UIChecks.md`): hàng báo lỗi, sheet báo lỗi (độ rộng control bốn lựa chọn, Tab, Esc/Return, VoiceOver đọc ô gợi ý, chế độ tối); mở Dấu bằng "Cài đặt Dấu…" khi đang ở Chrome thì ô "Ứng dụng" chọn Chrome; "Mở trên GitHub" ra form điền sẵn (cần mẫu issue đã lên nhánh mặc định).
 6. Phần còn lại của việc đo lại các ô đã đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), theo kiểm toán ngày 17/11; Edge, Firefox, VS Code, Safari, Terminal đã đo lại 17/11 (`docs/history/LogM7.md`). Khoảng 3–4 phút (7–10 giây mỗi ô `typing/run.sh`), bản Debug, chuyển nguồn bằng phím tắt và xác nhận trong ô gõ:
@@ -83,6 +83,7 @@ Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo s�
 
 - Tag `v0.1.0-beta.1`; CI dựng bản nháp. Người dùng đồng ý một lần cho cả ba việc công bố: phát hành trên GitHub, cập nhật appcast, tạo repo `codefastlabs/homebrew-tap` với cask `dau`.
 - Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
+- Gỡ hai bản thử 0.0.1 (chỉ máy này từng cài): xoá mục của chúng khỏi `site/appcast.xml` trước, rồi xoá hai bản phát hành và tag trên GitHub; cùng lần đồng ý công bố ở trên.
 - Kiểm toán, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
 
 ## Nhật ký

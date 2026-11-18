@@ -19,7 +19,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D3](#d3-không-macro-chỉ-unicode-dựng-sẵn) | Không macro, chỉ Unicode dựng sẵn | Không macro, bảng mã cũ, chuyển mã; chỉ xuất NFC. |
 | [D4](#d4-từ-nước-ngoài) | Từ nước ngoài | Từ không phải âm tiết hợp lệ được khôi phục khi kết thúc từ; không từ điển. |
 | [D5](#d5-quy-tắc-theo-ứng-dụng) | Quy tắc theo ứng dụng | Quy tắc riêng của app chỉ là có/không gạch chân. |
-| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask trong tap riêng sau bản thử đầu; không App Store. |
+| [D6](#d6-phát-hành) | Phát hành | GPLv3, DMG ký và notarize; Homebrew cask trong tap riêng từ bản thử đầu; không App Store. |
 | [D7](#d7-cập-nhật-và-loại-bản-dựng) | Cập nhật và loại bản dựng | Sparkle 2, một kênh; bản chính thức và bản phát triển. |
 | [D8](#d8-không-telemetry) | Không telemetry | Không gửi gì; bản phát hành không ghi gì theo từng phím. |
 | [D9](#d9-giao-diện) | Giao diện | Control hệ thống, theo System Settings; chỉ màu hệ thống. |
@@ -147,10 +147,11 @@ Một quy tắc duy nhất:
 
 GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App Store.
 
-- **Homebrew:** sau bản thử đầu, cask `dau` (khai báo `auto_updates true`) nằm trong tap riêng `codefastlabs/homebrew-tap`; lệnh cài: `brew install --cask codefastlabs/tap/dau`.
+- **Homebrew:** từ bản thử đầu, cask `dau` (khai báo `auto_updates true`) nằm trong tap riêng `codefastlabs/homebrew-tap`; lệnh cài: `brew install --cask codefastlabs/tap/dau`.
+- **Cask theo bản nào:** khi chỉ có một kênh (D7 (Cập nhật và loại bản dựng)), cask trỏ vào bản mới nhất đã công bố, kể cả beta; khi có kênh Beta, cask chỉ trỏ vào bản ổn định. Cask chỉ quyết định bản được cài lần đầu: `auto_updates true` nên `brew upgrade` không nâng bản, Sparkle nâng.
 - Khi repo đạt ngưỡng nổi bật của Homebrew, gửi cask vào `homebrew/cask`, giữ tên `dau`; tap riêng xoá cask và khai nó trong `tap_migrations.json`, theo [cách Homebrew chuyển gói giữa các tap](https://docs.brew.sh/Migrating-A-Formula-To-A-Tap).
 
-**Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store. `homebrew/cask` chỉ nhận repo đạt [ngưỡng nổi bật](https://docs.brew.sh/Package-Acceptance-Policy#notability) (chủ repo tự gửi: 225 sao, 90 fork hoặc 90 người theo dõi); repo có 0 sao (17/11/2026), nên lúc phát hành bản thử đầu chỉ tap riêng làm được. Tap nằm trong tổ chức `codefastlabs` nên không ai giành được tên. Lệnh cài ghi đủ tên tap vì từ Homebrew 6.0 tap không chính thức phải được [tin rõ ràng](https://docs.brew.sh/Tap-Trust), và cài bằng tên đủ thì chỉ tin đúng cask đó. Tên repo `homebrew-tap` để lệnh cài không lặp chữ và để công cụ khác của codefastlabs dùng chung tap.
+**Vì sao:** Apple không hỗ trợ phân phối input method qua Mac App Store. `homebrew/cask` chỉ nhận repo đạt [ngưỡng nổi bật](https://docs.brew.sh/Package-Acceptance-Policy#notability) (chủ repo tự gửi: 225 sao, 90 fork hoặc 90 người theo dõi); repo có 0 sao (17/11/2026), nên lúc phát hành bản thử đầu chỉ tap riêng làm được. Tap nằm trong tổ chức `codefastlabs` nên không ai giành được tên. Lệnh cài ghi đủ tên tap vì từ Homebrew 6.0 tap không chính thức phải được [tin rõ ràng](https://docs.brew.sh/Tap-Trust), và cài bằng tên đủ thì chỉ tin đúng cask đó. Tên repo `homebrew-tap` để lệnh cài không lặp chữ và để công cụ khác của codefastlabs dùng chung tap. Cask theo bản mới nhất khi chỉ có một kênh vì bản thử đầu là beta mà phải cài được bằng `brew`, và người cài từ DMG cũng nhận beta qua Sparkle; khi có kênh Beta, người cài bằng `brew` chưa chọn kênh đó nên chỉ nhận bản ổn định.
 
 ### D7. Cập nhật và loại bản dựng
 

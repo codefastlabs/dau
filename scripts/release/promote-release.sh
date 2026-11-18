@@ -16,7 +16,8 @@
 #                another beta (build-release.sh).
 #     --dry-run  download and check, create nothing on GitHub.
 #     --out      download directory (default build/promote; wiped first, must be inside build/).
-# Needs the GitHub CLI (gh), logged in (GH_TOKEN on CI), and the tags fetched.
+# Before anything it runs check-release-gate.sh: the commit must be on origin/main and have passed the
+# Test workflow. Needs the GitHub CLI (gh), logged in (GH_TOKEN on CI), and the tags and origin/main fetched.
 # The draft is not a pre-release; publishing it and the Homebrew cask: docs/Releasing.md.
 # Exit status: 0 done; 1 a check failed; 2 bad usage.
 
@@ -45,6 +46,7 @@ commit=$(git -C "$DAU_ROOT" rev-list -n1 "$tag" 2>/dev/null) || log_die "Không 
 betas=(${(f)"$(git -C "$DAU_ROOT" tag --points-at "$commit" -l "v$version-beta.*")"})
 (( ${#betas} )) || log_die "Tag $tag trỏ vào commit ${commit[1,9]}, nơi không có tag v$version-beta.N nào. Bản ổn định phải đúng commit của beta cuối; cần sửa gì thì phát thêm một beta (D7)."
 beta=${${(On)betas}[1]}   # largest N
+"$DAU_ROOT/scripts/release/check-release-gate.sh" --tag "$tag" || exit 1
 log_step "Quảng bá $beta thành $tag (commit ${commit[1,9]})"
 (( ${#betas} == 1 )) || log_warn "Commit có nhiều tag beta (${(j:, :)betas}); dùng $beta."
 

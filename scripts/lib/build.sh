@@ -8,7 +8,9 @@
 #                                 find-identity line each ("N) <SHA-1> "<name>"")
 #   dau_require_signing_identity  stop early when the keychain has no usable
 #                                 "Apple Development" identity (revoked, expired, missing)
-#   dau_build SCHEME CONFIG       xcodegen, then xcodebuild universal into $DAU_DERIVED
+#   dau_marketing_version         X.Y.Z of the nearest vX.Y.Z[-beta.N] tag on HEAD; empty with no tag
+#   dau_build SCHEME CONFIG       xcodegen, then xcodebuild universal into $DAU_DERIVED, with
+#                                 MARKETING_VERSION from dau_marketing_version when there is one
 #   dau_check_input_method BUNDLE CONFIG
 #                                 the checks of an input method bundle (the one inside a
 #                                 built Dau.app): universal (D1), valid signature, no
@@ -48,8 +50,21 @@ dau_require_signing_identity() {
   return 1
 }
 
+dau_marketing_version() { # X.Y.Z of the nearest vX.Y.Z[-beta.N] tag reachable from HEAD; empty with no tag
+  local t
+  t=$(git -C "$DAU_ROOT" describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null) || return 0
+  t=${${t#v}%%-*}
+  [[ $t == <->.<->.<-> ]] && print -r -- $t
+  return 0
+}
+
 dau_build() {
-  local scheme="$1" config="$2"
+  local scheme="$1" config="$2" version version_args=()
+  # The development build shows the version of the nearest release tag on HEAD (D7: every
+  # beta and its stable show the same X.Y.Z); with no tag, the number in project.yml.
+  # A build from Xcode itself does not go through here and keeps project.yml.
+  version=$(dau_marketing_version)
+  [[ -z $version ]] || version_args=(MARKETING_VERSION=$version)
   if ! command -v xcodegen >/dev/null 2>&1; then
     log_error "Cần XcodeGen: brew install xcodegen"
     return 1
@@ -57,7 +72,7 @@ dau_build() {
   dau_require_signing_identity || return 1
   log_step "Sinh Dau.xcodeproj"
   (cd "$DAU_ROOT" && xcodegen generate --quiet) || return 1
-  log_step "Build $config universal (scheme $scheme)"
+  log_step "Build $config universal (scheme $scheme)${version:+, số hiển thị $version}"
   xcodebuild \
     -project "$DAU_ROOT/Dau.xcodeproj" \
     -scheme "$scheme" \
@@ -65,6 +80,7 @@ dau_build() {
     -destination 'generic/platform=macOS' \
     -derivedDataPath "$DAU_DERIVED" \
     -quiet \
+    $version_args \
     build
 }
 

@@ -83,6 +83,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 ### D6. Phát hành
 
 - 17/11/2026 (người dùng chốt): cask Homebrew nằm trong tap riêng `codefastlabs/homebrew-tap`, chuyển vào `homebrew/cask` khi repo đạt ngưỡng nổi bật. Lý do: tra ngày 17/11/2026 thấy tên `dau` còn trống trong `homebrew/cask` (không cask, không formula nào trùng), nhưng repo 0 sao, dưới ngưỡng nhận gói. Bản trước, nguyên văn: "GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Homebrew cask (khai báo `auto_updates true`) sau bản thử đầu. Không có Mac App Store."
+- 18/11/2026 (người dùng chốt, khi rà kịch bản phát hành): "sau bản thử đầu" đổi thành "từ bản thử đầu", ở thân và mục lục, cho khớp phần lý do và Roadmap M7 (bản thử đầu cài được bằng `brew`); luật không đổi. Thêm ý "Cask theo bản nào" (trước đó chỉ ghi trong `docs/Releasing.md`).
 
 ### D7. Cập nhật và loại bản dựng
 

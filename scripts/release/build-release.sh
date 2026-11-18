@@ -9,6 +9,13 @@
 # refuses it and points to promote-release.sh, which copies the beta's assets. Anything to fix
 # after the last beta is a new beta, on a new commit.
 #
+# Signed mode refuses to start (before the long build) unless, in order: the tagged commit is
+# HEAD, is on origin/main and passed the Test workflow (check-release-gate.sh); the tag has no
+# release yet, draft or published (a published tag is never built again; after a failed run,
+# delete the draft and the tag and tag a new commit); and the appcast on origin/main holds the
+# newest published beta (check-appcast.sh). The base appcast is that file, not the one at the
+# tagged commit: an item reaches site/appcast.xml only after the tag, at the publish step.
+#
 # Usage:
 #   scripts/release/build-release.sh [--tag vX.Y.Z-beta.N] [--build-number N] [--unsigned] [--layout] [--out DIR]
 #     --tag           the beta tag; sets the displayed version, the same for every beta of a version
@@ -47,7 +54,7 @@
 #
 # Output in --out: Dau-<version>.dmg (signed) or Dau-<version>-dev-unsigned.dmg,
 # Dau-<version>.dSYMs.zip, appcast/appcast.xml
-# (signed only: the current site/appcast.xml with this release added; publishing it is a
+# (signed only: the site/appcast.xml of origin/main with this release added; publishing it is a
 # separate act, docs/Releasing.md), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
 # appcast, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
 # Exit status: 0 done; 1 a step or a check failed; 2 bad usage.
@@ -109,6 +116,29 @@ if (( ! force_unsigned && ${#set_vars} > 0 )); then
 fi
 if (( signed )) && [[ -z $display ]]; then
   log_die 2 "Bản ký cần --tag vX.Y.Z-beta.N: tag đặt số phiên bản và địa chỉ tải trong appcast."
+fi
+# --- gates (signed mode only: an unsigned build only checks the pipeline) ----------------------
+# B1 the tagged commit is on origin/main and the Test workflow passed on it; B2 a published tag is
+# never built again; A1 the appcast on origin/main holds the newest published beta, so the new
+# item does not replace it. All before the long build, so a refusal costs nothing.
+base_appcast=""
+trap '[[ -z $base_appcast ]] || command rm -f "$base_appcast"' EXIT
+if (( signed )); then
+  log_step "Kiểm điều kiện phát hành"
+  [[ $tag_commit == $(git -C "$DAU_ROOT" rev-parse HEAD) ]] \
+    || log_die "Tag $tag không trỏ vào HEAD (${tag_commit[1,9]}): bản ký chỉ dựng đúng commit được tag."
+  "$DAU_ROOT/scripts/release/check-release-gate.sh" --tag "$tag" --commit "$tag_commit" || exit 1
+  command -v gh >/dev/null || log_die "Cần GitHub CLI để kiểm bản phát hành đã có: brew install gh"
+  existing=$(gh release view "$tag" --json isDraft --jq .isDraft 2>&1) || existing=${existing:-error}
+  case $existing in
+    false) log_die "Tag $tag đã có bản phát hành đã công bố: không bao giờ dựng lại một tag đã công bố. Cần sửa gì thì phát beta mới trên commit mới (docs/Releasing.md, \"Khi một bản bị hỏng\")." ;;
+    true)  log_die "Tag $tag đã có bản nháp: xoá bản nháp và tag, rồi tag lại lên một commit mới (docs/Releasing.md, \"Phát hành một tag\")." ;;
+    *"release not found"*) ;;
+    *)     log_die "Không đọc được bản phát hành $tag bằng gh: $existing" ;;
+  esac
+  "$DAU_ROOT/scripts/release/check-appcast.sh" || exit 1
+  base_appcast=$(mktemp "${TMPDIR:-/tmp}/dau-appcast.XXXXXX")
+  git -C "$DAU_ROOT" show origin/main:site/appcast.xml > "$base_appcast"
 fi
 dev_id=""
 if (( signed )); then
@@ -172,7 +202,11 @@ fi
 
 # --- notarize ----------------------------------------------------------------
 notary_key_file=""
-cleanup() { [[ -z $notary_key_file ]] || command rm -f "$notary_key_file"; return 0; }
+cleanup() {
+  [[ -z $notary_key_file ]] || command rm -f "$notary_key_file"
+  [[ -z $base_appcast ]] || command rm -f "$base_appcast"
+  return 0
+}
 trap cleanup EXIT
 notarize() { # file: submit, wait, fail unless Accepted (the log of a rejection is printed)
   local file=$1 result id nstatus
@@ -294,7 +328,7 @@ if (( signed )); then
   [[ -x $gen ]] || log_die "Không thấy generate_appcast trong $derived/SourcePackages/artifacts."
   work=$out/appcast
   mkdir -p "$work"
-  cp "$DAU_ROOT/site/appcast.xml" "$work/appcast.xml"
+  cp "$base_appcast" "$work/appcast.xml"   # site/appcast.xml of origin/main, checked above
   cp "$dmg" "$work/"
   # -o: generate_appcast otherwise names the file after SUFeedURL. It keeps the items already in
   # the file (checked with an older item whose DMG was absent) and puts the new one first.

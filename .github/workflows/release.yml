@@ -1,3 +1,6 @@
+# Before building (signed mode) or promoting, the scripts check that the tagged commit is on
+# origin/main and passed the Test workflow (scripts/release/check-release-gate.sh); the whole
+# history is fetched for that.
 # Release: two paths by tag (docs/Releasing.md, "Phát hành một tag").
 # - vX.Y.Z-beta.N builds Dấu with scripts/release/build-release.sh and makes a DRAFT GitHub
 #   pre-release with the DMG, the dSYMs and the updated appcast. Nothing is published and the
@@ -15,9 +18,11 @@ on:
   push:
     tags: ['v*']
 
-# Needed to create the draft release; nothing else.
+# contents: create the draft release. actions: the scripts read the result of the Test workflow
+# (check-release-gate.sh) before building or promoting.
 permissions:
   contents: write
+  actions: read
 
 env:
   DEVELOPER_DIR: /Applications/Xcode_27.2.app/Contents/Developer
@@ -65,8 +70,10 @@ jobs:
 
       - name: Build the release
         id: build
-        # Passed to the script by name (scripts/release/build-release.sh, "Mode").
+        # Passed to the script by name (scripts/release/build-release.sh, "Mode"). GH_TOKEN: the
+        # signed mode reads releases and the Test result through gh before building.
         env:
+          GH_TOKEN: ${{ github.token }}
           DAU_TEAM_ID: ${{ secrets.DAU_TEAM_ID }}
           DAU_SPARKLE_PUBLIC_KEY: ${{ secrets.DAU_SPARKLE_PUBLIC_KEY }}
           DAU_SPARKLE_PRIVATE_KEY: ${{ secrets.DAU_SPARKLE_PRIVATE_KEY }}

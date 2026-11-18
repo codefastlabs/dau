@@ -4,7 +4,8 @@
 # The only install script. Release unless --debug: Release is the build for day-to-day
 # typing (no get-task-allow, no per-key log, D8); Debug only while measuring.
 #
-# 1. Builds scheme Dau (the app with the input method inside it, universal) and checks the
+# 1. Builds scheme Dau (the app with the input method inside it, universal), shown as the X.Y.Z
+#    of the nearest vX.Y.Z[-beta.N] tag on HEAD (no tag: the number in project.yml), and checks the
 #    build before anything outside the repo is touched: each bundle holds only the icon set
 #    its Info.plist names (an earlier build's other set, left by Xcode after DAU_OFFICIAL
 #    changed, is removed by one clean rebuild; D25), the app's signature (--deep --strict)
