@@ -99,7 +99,7 @@ Bản ổn định là tệp nhị phân của bản beta cuối, giữ nguyên,
    Workflow Release chạy `scripts/release/promote-release.sh`: tìm tag `v0.1.0-beta.N` cùng commit (N lớn nhất), tải DMG và dSYM của bản phát hành đó, đổi tên thành `Dau-0.1.0.dmg` và `Dau-0.1.0.dSYMs.zip` (đổi tên không đổi chữ ký hay vé notarize: cả hai nằm trên nội dung DMG; script kiểm lại bằng `codesign`, `stapler validate`, `spctl` và số hiển thị của Dau.app trong DMG), rồi tạo **bản nháp** không pre-release. Script từ chối khi tag không trỏ vào commit của tag beta nào, khi beta chưa công bố, hay khi đã có bản phát hành cùng tag. Chạy thử trên máy mà không tạo gì: `scripts/release/promote-release.sh --tag v0.1.0 --dry-run`.
 3. **Công bố:** bấm Publish release trên GitHub. Không đụng `site/appcast.xml`. Cask Homebrew ở `codefastlabs/homebrew-tap`: theo D6 (Phát hành).
 
-**Số build.** `CFBundleVersion` mặc định là mười lần số commit của HEAD (`git rev-list --count`), nên tăng theo lịch sử; mỗi bản dựng một số, và số này cùng commit trong ngoặc phân biệt các beta của một phiên bản (chúng cùng số hiển thị). Bản ổn định không có số riêng: nó mang số của beta cuối. Cờ `--build-number` của script đặt số khác khi cần.
+**Số build.** `CFBundleVersion` mặc định là mười lần số commit của HEAD (`git rev-list --count`), nên tăng theo lịch sử; mỗi bản dựng một số, và số này cùng commit trong ngoặc phân biệt các beta của một phiên bản (chúng cùng số hiển thị). Bản ổn định không có số riêng: nó mang số của beta cuối. Cờ `--build-number` của script đặt số khác khi cần. Vì vậy `main` đã push không bao giờ bị viết lại (force push, rebase): lịch sử ngắn lại thì số build lùi.
 
 ## Khi một bản bị hỏng
 
