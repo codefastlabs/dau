@@ -75,14 +75,14 @@ Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục t�
    - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
    - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
 7. "Thêm dấu cho từ đã gõ" (D20) trên web editor trong Chrome, bằng `scripts/selftest/typing/d20-docs.sh` (tài liệu trống của người dùng, đã đăng nhập sẵn). Word trên web và Google Docs: xong 17/11 (`docs/Compatibility.md` mục 5.10; Google Docs sai, ở Việc mở). Còn Notion: script chưa có ô cho Notion. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
-8. Dọn: gỡ bản thử, cài lại `stable`.
+8. Dọn: gỡ bản thử, cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
 
 Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7, và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", thẻ "Dùng thử bản Beta" khi chưa có kênh Beta, câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Rồi sửa mã và chụp lại `docs/canvas/`.
 
 ### Bước 4 — Phát hành và đóng mốc
 
 - Tag `v0.1.0-beta.1`; CI dựng bản nháp. Người dùng đồng ý một lần cho cả ba việc công bố: phát hành trên GitHub, cập nhật appcast, tạo repo `codefastlabs/homebrew-tap` với cask `dau`.
-- Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại `stable`.
+- Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
 - Kiểm toán, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
 
 ## Nhật ký

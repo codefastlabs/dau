@@ -29,7 +29,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 
 ## Trước khi chạy (không chiếm màn hình)
 
-1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản ổn định người dùng dùng hằng ngày (tag `stable`, CLAUDE.md "Dọn sau mỗi lần chạy"). Lượt này cần bản khác (commit mới nhất, bản Debug) thì việc cài nó cũng cần người dùng đồng ý: gộp vào cùng lượt chạy, và cài lại bản ổn định khi dọn.
+1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản dùng hằng ngày, bản Release của commit mới nhất trên `main` (CLAUDE.md "Dọn sau mỗi lần chạy"); bản đã cài cũ hơn thì cài bản đó trước (`scripts/dev/install-app.sh --ref main`). Lượt này cần bản khác (bản Debug, bản thử) thì gộp vào cùng lượt chạy, và cài lại bản dùng hằng ngày khi dọn.
 2. Soạn sẵn văn bản sẽ gõ (mục "Văn bản") và kế hoạch app, ghi vào `build/dogfood/<ngày>/plan.md`. Mỗi đoạn có: chữ muốn ra, chuỗi phím Telex sẽ gõ (kể cả lỗi cố ý và chỗ sửa), app và ô gõ.
 3. Báo người dùng: "sẵn sàng, khoảng N phút, dùng các app …", chờ đồng ý (CLAUDE.md, "Điểm dừng bắt buộc"). Một lần đồng ý cho một lượt.
 
@@ -75,7 +75,7 @@ Biết giới hạn của cách làm: phím từ System Events không hẳn là 
 
 ## Dọn
 
-Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ, và cài lại bản ổn định (`scripts/dev/install-app.sh --ref stable`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
+Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ, và cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
 
 ## Sau lượt gõ
 
