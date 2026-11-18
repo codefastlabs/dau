@@ -7,8 +7,8 @@ import DauShared
 // D7, "Kênh": beta items carry Sparkle's channel `beta`, untagged items are stable. The
 // default is written once, at the first appcast load (no stable item: Beta; one: Stable);
 // afterwards only the user changes it. Sparkle is not linked here: the appcast is the
-// list of item channels its delegate passes on (`SparkleChannelDelegate`), the store a
-// dictionary or a throwaway defaults suite. No network, no window on screen.
+// list of item channels its delegate passes on (`SparkleChannelDelegate`), the store an
+// in-memory fake: no test writes the user's preferences. No network, no window on screen.
 
 @MainActor
 final class FakeChannelStore: ReleaseChannelStore {
@@ -126,21 +126,6 @@ struct ReleaseChannelTests {
         #expect(fake.channelResets == 1 && channels.channel == .stable)
     }
 
-    @Test("the defaults store reads back what it wrote; an unknown value is none")
-    func defaultsStore() {
-        let suite = "dau.tests.channel"
-        let defaults = UserDefaults(suiteName: suite)!
-        defaults.removePersistentDomain(forName: suite)
-        defer { defaults.removePersistentDomain(forName: suite) }
-        let store = DefaultsReleaseChannelStore(defaults: defaults)
-        #expect(store.channel == nil && store.stableReleaseExists == nil)
-        store.channel = .stable
-        store.stableReleaseExists = false
-        #expect(store.channel == .stable && store.stableReleaseExists == false)
-        defaults.set("nightly", forKey: DefaultsReleaseChannelStore.channelKey)
-        #expect(store.channel == nil)
-    }
-
     @Test("the Vietnamese wording follows the artboard")
     func vietnamese() {
         #expect(Catalog.text("Release channel", "vi") == "Kênh phát hành")
@@ -166,9 +151,11 @@ struct ReleaseChannelRowTests {
     /// The Updates & Support page with `channels`; the segmented controls on it and
     /// whether the row reported a frame.
     func layout(_ channels: ReleaseChannels) -> (controls: [NSSegmentedControl], row: Bool) {
-        let suite = "dau.tests.channelrow"
+        // The page needs a settings model; its store is only read here (nothing is saved,
+        // so no preferences file is made). A fresh suite name each time: never an earlier
+        // run's state, and nothing to delete afterwards.
+        let suite = "dau.tests.channelrow.\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite) ?? .standard
-        defaults.removePersistentDomain(forName: suite)
         let model = SettingsModel(store: SettingsStore(defaults: defaults, suiteName: suite))
         var frames: [String: CGRect] = [:]
         let environment = SettingsEnvironment(

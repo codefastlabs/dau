@@ -15,7 +15,12 @@
 # are arguments of that one launch (`-AppleShowScrollBars` lands in the app's argument
 # domain; `--appearance` is a Debug flag of Dấu), never the global defaults. Every launch
 # passes `-AppleLanguages (vi)`: the expected texts are the Vietnamese ones, whatever the
-# Mac's language (the app follows macOS's language list, D41).
+# Mac's language (the app follows macOS's language list, D41), and
+# `-ApplePersistenceIgnoreState YES`: a capture ends with exit(), so macOS keeps its open
+# windows as state to restore, and the next launch of the ad hoc copy reopened the
+# onboarding window in front of Settings (the uninstall and report captures found no
+# sheet in 3 of 3 launches without the flag, 0 of 3 with it, 18/11/2026). The installed Dấu
+# opened Settings as usual (checked once).
 #
 # In-app captures, on a copy of the Debug app re-signed ad hoc without entitlements (so
 # the copy has no App Group and its fake services cannot touch the user's settings):
@@ -154,7 +159,7 @@ codesign --force --sign - --entitlements "$work/ent.plist" "$work/Dau.app" >/dev
 capture() {   # <step name> <Dau arguments…>
   local step=$1 rc=0
   shift
-  "$work/Dau.app/Contents/MacOS/Dau" -AppleLanguages '(vi)' "$@" >"$work/capture.log" 2>&1 || rc=$?
+  "$work/Dau.app/Contents/MacOS/Dau" -AppleLanguages '(vi)' -ApplePersistenceIgnoreState YES "$@" >"$work/capture.log" 2>&1 || rc=$?
   if (( rc != 0 )); then
     log_error "Chụp trong app ($step) lỗi: Dau $* — mã thoát $rc"
     log_hint "${(@f)$(tail -5 "$work/capture.log")}"
@@ -213,7 +218,7 @@ real_window() {   # <dir name> <appearance> <ax-check modes…> -- <app argument
   # leftover as a file to open (`application(_:openFiles:)`). The 8 argument sets measured
   # on Dấu fit this; that SwiftUI then opens no window is not measured. Put every app
   # flag that takes a value (`-AppleShowScrollBars`, `--appearance`) before --settings-window.
-  open -n "$app" --args -AppleLanguages '(vi)' "$@" --settings-window
+  open -n "$app" --args -AppleLanguages '(vi)' -ApplePersistenceIgnoreState YES "$@" --settings-window
   pid=""
   wait_until 10 new_app_pid "$before" || true
   if [[ -z $pid ]]; then
