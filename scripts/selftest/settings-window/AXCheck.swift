@@ -167,7 +167,7 @@ func wait(_ seconds: Double) { RunLoop.main.run(until: Date().addingTimeInterval
 /// Polls `condition` every `interval` s on the main run loop until it holds or `timeout` s
 /// have passed (it is read once more at the deadline). True when it held.
 @discardableResult
-func waitUntil(timeout: Double, interval: Double = 0.1, _ condition: () -> Bool) -> Bool {
+func waitUntil(timeout: Double, interval: Double = 0.05, _ condition: () -> Bool) -> Bool {
     let start = Date()
     while !condition() {
         guard Date().timeIntervalSince(start) < timeout else { return condition() }
@@ -179,7 +179,7 @@ func waitUntil(timeout: Double, interval: Double = 0.1, _ condition: () -> Bool)
 /// Reads `read` every `interval` s until it gives the same value on `reads` reads in a row,
 /// each accepted by `valid`, or `timeout` s have passed. Returns the last value, whether it
 /// settled, and the time taken.
-func waitSettled<T: Equatable>(timeout: Double, interval: Double = 0.2, reads: Int = 3,
+func waitSettled<T: Equatable>(timeout: Double, interval: Double = 0.1, reads: Int = 3,
                                valid: (T) -> Bool = { _ in true },
                                _ read: () -> T) -> (value: T, settled: Bool, seconds: Double) {
     let start = Date()
@@ -206,7 +206,7 @@ func awaitState(_ d: String, _ p: String, _ what: String, timeout: Double, _ con
 /// at the timeout is a HARNESS row.
 @discardableResult
 func awaitSettled<T: Equatable>(_ d: String, _ p: String, _ what: String, timeout: Double = 3,
-                                interval: Double = 0.1, reads: Int = 3, valid: (T) -> Bool = { _ in true },
+                                interval: Double = 0.05, reads: Int = 3, valid: (T) -> Bool = { _ in true },
                                 _ read: () -> T) -> Bool {
     let r = waitSettled(timeout: timeout, interval: interval, reads: reads, valid: valid, read)
     if !r.settled {
@@ -249,7 +249,7 @@ func require<T>(_ d: String, _ p: String, _ what: String, within seconds: Double
     let mark = axErrors.count
     var found = find()
     if found == nil {
-        waitUntil(timeout: seconds, interval: 0.2) { found = find(); return found != nil }
+        waitUntil(timeout: seconds, interval: 0.05) { found = find(); return found != nil }
     }
     if let found { return found }
     if axErrors.count > mark {
@@ -282,7 +282,7 @@ func standardWindows() -> [AXUIElement] {
 /// here, and the sidebar lookups then FAIL.
 nonisolated(unsafe) let window: AXUIElement = {
     var found: AXUIElement?
-    if waitUntil(timeout: 15, interval: 0.2, { found = standardWindows().first; return found != nil }), let found {
+    if waitUntil(timeout: 15, interval: 0.05, { found = standardWindows().first; return found != nil }), let found {
         return found
     }
     let shown = ((attr(app, kAXWindowsAttribute) as? [AXUIElement]) ?? [])
@@ -455,7 +455,7 @@ func screenshot(_ d: String, _ p: String, _ name: String, frames: [String: CGRec
     // takes the front): look again a few times.
     var number = windowNumber(w), tries = 1
     if number == nil {
-        waitUntil(timeout: 2, interval: 0.4) { tries += 1; number = windowNumber(w); return number != nil }
+        waitUntil(timeout: 2, interval: 0.1) { tries += 1; number = windowNumber(w); return number != nil }
     }
     guard let number else {
         harness(d, p, "screenshot \(name)", expected: "window in the on-screen window list", got: "not listed after \(tries) tries")
@@ -664,7 +664,7 @@ func measureSidebarSearch(_ d: String, _ tag: String) {
         windowElements { role($0) == "AXStaticText" }
             .filter { rel($0).maxX <= sidebarWidth && rel($0).minY > Reference.sidebarFirstRowY && label($0).contains(query) }
     }
-    waitUntil(timeout: 5, interval: 0.2) { rowCount(outline) == 0 && !emptyStateTexts().isEmpty }
+    waitUntil(timeout: 5, interval: 0.05) { rowCount(outline) == 0 && !emptyStateTexts().isEmpty }
     check(d, p, "rows without a match", CGFloat(rowCount(outline)), 0, tolerance: Reference.exact)
     let texts = emptyStateTexts()
     record(d, p, "empty state", expected: "text naming the query in the sidebar", got: texts.first.map(label) ?? "none", ok: !texts.isEmpty)
@@ -673,7 +673,7 @@ func measureSidebarSearch(_ d: String, _ tag: String) {
     _ = screenshot(d, p, "sidebar-search-empty-\(tag)")
     guard drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) else { return }
     // The check below reports a timeout.
-    waitUntil(timeout: 5, interval: 0.2) { rowCount(outline) == sections.count }
+    waitUntil(timeout: 5, interval: 0.05) { rowCount(outline) == sections.count }
     check(d, p, "rows after clearing", CGFloat(rowCount(outline)), CGFloat(sections.count), tolerance: Reference.exact)
 }
 
@@ -727,36 +727,48 @@ func closeSheet(_ d: String) {
     }
     if let cancel = require(d, sheetPage, "Huỷ button to close the sheet", find: { sheetButton(sheet, "Huỷ") }),
        drive(d, sheetPage, "press Huỷ", press(cancel)) {
-        let closed = waitUntil(timeout: 5, interval: 0.2) { attachedSheet() == nil }
+        let closed = waitUntil(timeout: 5, interval: 0.05) { attachedSheet() == nil }
         record(d, sheetPage, "Huỷ closes the sheet", expected: "closed", got: closed ? "closed" : "still open", ok: closed)
     }
     guard attachedSheet() != nil else { return }
     for down in [true, false] {
         CGEvent(keyboardEventSource: nil, virtualKey: 53, keyDown: down)?.post(tap: .cghidEventTap)
     }
-    if !waitUntil(timeout: 5, interval: 0.2, { attachedSheet() == nil }) {
+    if !waitUntil(timeout: 5, interval: 0.05, { attachedSheet() == nil }) {
         record(d, sheetPage, "sheet closed for the next checks", expected: "closed (Huỷ, then Escape)", got: "still open", ok: false)
     }
 }
 
-/// Reads of the app list's row count that must agree, 0.2 s apart, before it counts as
-/// settled: 2 s without a change. The list has been read at 1 and 13 rows for over a
-/// second before it grew to the full list (docs/history/LogM5.md), so a short window
-/// settled on a list still loading.
-let appListSettleReads = 11
+/// Reads of the app list's row count that must agree, 0.1 s apart, before it counts as
+/// settled. The sheet builds its list off the main thread and sets it in one assignment
+/// (`AddAppRuleSheet.loadApps`): about 0.15 s on the first open, and the list already
+/// held every row at the first read in run.sh (18/11/2026), so 3 reads suffice. An older
+/// sheet was once read at 13, then 1 row before 106 (docs/history/LogM5.md, 04/11/2026);
+/// a list caught short would still FAIL loudly at "search cleared", which compares with
+/// this count.
+let appListSettleReads = 3
+let appListSettleInterval = 0.1
 
-/// Waits for the app list (it is read off the main thread): the same row count, more than
-/// none, on `appListSettleReads` reads 0.2 s apart, within 15 s. Returns that count; nil
-/// (recorded FAIL) when it never settles, stays empty or there is no list.
+/// Waits for the app list: the same row count, more than none, on `appListSettleReads`
+/// reads `appListSettleInterval` s apart, within 15 s. The count is the outline's own
+/// `AXRows` (`rowCount`), read on the outline found once, not a walk of the sheet's tree
+/// on every read (a walk took about 0.25 s per read). Returns that count; nil (recorded
+/// FAIL) when it never settles, stays empty or there is no list.
 func settledAppCount(_ d: String, _ sheet: AXUIElement) -> Int? {
     let outlinesAtOpen = all(sheet) { role($0) == "AXOutline" }
         .map { "\(string($0, kAXDescriptionAttribute) ?? "-"):\(rowCount($0))" }
     let mark = axErrors.count
-    let read = waitSettled(timeout: 15, interval: 0.2, reads: appListSettleReads, valid: { $0 > 0 }) { appRows(sheet).count }
-    let settled = read.settled, last = read.value
-    let expected = "rows, the same on \(appListSettleReads) reads 0.2 s apart, within 15 s"
-    let got = (appList(sheet) == nil ? "no outline labelled \"Ứng dụng\"" : "\(last) rows")
-        + " after \(String(format: "%.1f", read.seconds)) s; outlines at open: "
+    let start = Date()
+    var list = appList(sheet)
+    if list == nil { waitUntil(timeout: 15) { list = appList(sheet); return list != nil } }
+    let remaining = max(0, 15 - Date().timeIntervalSince(start))
+    let read = list.map { list in
+        waitSettled(timeout: remaining, interval: appListSettleInterval, reads: appListSettleReads, valid: { $0 > 0 }) { rowCount(list) }
+    }
+    let settled = read?.settled ?? false, last = read?.value ?? 0
+    let expected = "rows, the same on \(appListSettleReads) reads \(fmt(CGFloat(appListSettleInterval))) s apart, within 15 s"
+    let got = (list == nil ? "no outline labelled \"Ứng dụng\"" : "\(last) rows")
+        + " after \(String(format: "%.1f", Date().timeIntervalSince(start))) s; outlines at open: "
         + (outlinesAtOpen.joined(separator: ", ").nonEmpty ?? "none")
     if !settled && axErrors.count > mark {
         harness(d, sheetPage, "app list settles", expected: expected,
@@ -781,6 +793,9 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     func srel(_ e: AXUIElement) -> CGRect { frame(e).offsetBy(dx: -s.minX, dy: -s.minY) }
     guard let total = settledAppCount(d, sheet),
           let list = require(d, p, "app list", find: { appList(sheet) }) else { return }
+    // The outline's own rows (`AXRows`), not `appRows(sheet)`, which walks the sheet's
+    // whole tree to find the outline again on every read.
+    func rows() -> [AXUIElement] { (attr(list, kAXRowsAttribute) as? [AXUIElement]) ?? [] }
 
     // The sheet's texts and buttons are there (content, docs/UI.md). Where they sit is not
     // measured: what the window does with them is (the list, search, selection, Huỷ).
@@ -817,7 +832,7 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
         all(sheet) { role($0) == "AXScrollArea" && !all($0) { CFEqual($0, list) }.isEmpty }
             .min { frame($0).width * frame($0).height < frame($1).width * frame($1).height } })
     else { return }
-    let rowsNow = appRows(sheet)
+    let rowsNow = rows()
     let rowHeight = rowsNow.map { frame($0).height }.max() ?? 0
     let visibleHeight = frame(listArea).height
     record(d, p, "list overflows its card", expected: "rows taller than the card",
@@ -827,7 +842,7 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
         children(listArea).first { role($0) == "AXScrollBar" && string($0, kAXOrientationAttribute) == "AXVerticalOrientation" } })
 
     // A real mouse wheel over the list: the rows move up.
-    if let firstRow = require(d, p, "first app row", find: { appRows(sheet).first }) {
+    if let firstRow = require(d, p, "first app row", find: { rows().first }) {
         let before = frame(firstRow).minY
         let area = frame(listArea)
         let point = CGPoint(x: area.midX, y: area.midY)
@@ -861,7 +876,7 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     // out of view may carry no text, so the list is stepped through with its scroll bar.
     let wanted = Set(Reference.alwaysInstalledApps)
     func visibleNames() -> Set<String> {
-        Set(appRows(sheet).flatMap { all($0) { role($0) == "AXStaticText" }.map(label) })
+        Set(rows().flatMap { all($0) { role($0) == "AXStaticText" }.map(label) })
     }
     var names = visibleNames(), positions = 1
     if let bar, !wanted.isSubset(of: names), rowsNow.count > 0, rowHeight > 0 {
@@ -888,7 +903,7 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     if let bar {
         let area = srel(listArea)
         func lastInView() -> Bool {
-            guard let last = appRows(sheet).last else { return false }
+            guard let last = rows().last else { return false }
             let r = srel(last)
             return r.minY >= area.minY - Reference.tolerance && r.maxY <= area.maxY + Reference.tolerance
         }
@@ -900,7 +915,7 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
             pushes += 1
             drive(d, p, "scroll the list to the end", set(bar, kAXValueAttribute, NSNumber(value: 1.0)))
         } while !waitUntil(timeout: 1, lastInView) && pushes < 15
-        if let last = require(d, p, "last app row", find: { appRows(sheet).last }) {
+        if let last = require(d, p, "last app row", find: { rows().last }) {
             let r = srel(last)
             record(d, p, "last app visible at the end", expected: "inside \(fmt(area))", got: "\(fmt(r)) after \(pushes) \(pushes == 1 ? "push" : "pushes")",
                    ok: r.minY >= area.minY - Reference.tolerance && r.maxY <= area.maxY + Reference.tolerance)
@@ -913,7 +928,7 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
         _ = screenshot(d, p, "apps-add-sheet-bottom-\(tag)")
         if drive(d, p, "scroll the list to the top", set(bar, kAXValueAttribute, NSNumber(value: 0.0))) {
             awaitState(d, p, "first app in view after scrolling to the top", timeout: 3) {
-                guard let first = appRows(sheet).first else { return false }
+                guard let first = rows().first else { return false }
                 return srel(first).minY >= area.minY - Reference.tolerance
             }
         }
@@ -924,21 +939,21 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     // Each wait ends when the list shows what the check below expects; the check reports
     // a timeout (5 s).
     if let field, drive(d, p, "type a query", set(field, kAXValueAttribute, "zzzz-no-such-app" as CFString)) {
-        waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).isEmpty }
-        check(d, p, "search with no match", CGFloat(appRows(sheet).count), 0, tolerance: Reference.exact)
+        waitUntil(timeout: 5, interval: 0.05) { rows().isEmpty }
+        check(d, p, "search with no match", CGFloat(rows().count), 0, tolerance: Reference.exact)
         if drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) {
-            waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).count == total }
-            check(d, p, "search cleared", CGFloat(appRows(sheet).count), CGFloat(total), tolerance: Reference.exact)
+            waitUntil(timeout: 5, interval: 0.05) { rows().count == total }
+            check(d, p, "search cleared", CGFloat(rows().count), CGFloat(total), tolerance: Reference.exact)
         }
     }
 
     // Selection wiring: a selected row enables Thêm; a query that hides it disables Thêm,
     // and clearing the query leaves it off (the selection was dropped, so Return cannot add
     // an app out of view).
-    guard let row = require(d, p, "first app row", find: { appRows(sheet).first }),
+    guard let row = require(d, p, "first app row", find: { rows().first }),
           drive(d, p, "select the first app", set(list, kAXSelectedRowsAttribute, [row] as CFArray)) else { return }
     // Thêm turns on with the selection; the check below reports a timeout.
-    waitUntil(timeout: 3, interval: 0.2) { confirm.map(enabled) ?? !selectedRows(list).isEmpty }
+    waitUntil(timeout: 3, interval: 0.05) { confirm.map(enabled) ?? !selectedRows(list).isEmpty }
     if let confirm {
         record(d, p, "Thêm with selection", expected: "enabled", got: enabled(confirm) ? "enabled" : "disabled", ok: enabled(confirm))
     }
@@ -947,15 +962,15 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
        drive(d, p, "type a query", set(field, kAXValueAttribute, "zzzz-no-such-app" as CFString)) {
         // The list empties with the query; then Thêm is read once it stays the same on 3
         // reads (the check below reports what it settled on).
-        waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).isEmpty }
-        _ = waitSettled(timeout: 2, interval: 0.2, reads: 3) { enabled(confirm) }
+        waitUntil(timeout: 5, interval: 0.05) { rows().isEmpty }
+        _ = waitSettled(timeout: 2, interval: 0.1, reads: 3) { enabled(confirm) }
         record(d, p, "Thêm after search hides selection", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
         if drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) {
             // Thêm is already off before the query is cleared, so waiting for "off" would
             // prove nothing: wait for the full list to come back, then for Thêm to stay
             // the same on 3 reads.
-            waitUntil(timeout: 5, interval: 0.2) { appRows(sheet).count == total }
-            _ = waitSettled(timeout: 2, interval: 0.2, reads: 3) { enabled(confirm) }
+            waitUntil(timeout: 5, interval: 0.05) { rows().count == total }
+            _ = waitSettled(timeout: 2, interval: 0.1, reads: 3) { enabled(confirm) }
             record(d, p, "Thêm after search cleared", expected: "disabled", got: enabled(confirm) ? "enabled" : "disabled", ok: !enabled(confirm))
         }
     }
@@ -1004,7 +1019,7 @@ func measureLimits() {
 /// a 2 s poll).
 func checkShown(_ d: String, _ p: String, _ when: String, _ index: Int) {
     let want = Reference.sectionTitles[index]
-    waitUntil(timeout: 3, interval: 0.2) { windowTitle() == want }
+    waitUntil(timeout: 3, interval: 0.05) { windowTitle() == want }
     record(d, p, "page \(when)", expected: want, got: windowTitle(), ok: windowTitle() == want)
 }
 

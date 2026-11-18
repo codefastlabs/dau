@@ -112,18 +112,9 @@ enum DebugCapture {
         NSApp.setActivationPolicy(.accessory)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         Task { @MainActor in
-            // The window opens once the Settings window has appeared (LaunchRouting):
-            // wait for it, up to 10 s.
-            var found: NSWindow?
-            for _ in 0..<50 where found == nil {
-                try? await Task.sleep(for: .milliseconds(200))
-                found = NSApp.windows.first { $0.isVisible && $0.title == String(localized: "Set Up Dấu") }
-            }
-            try? await Task.sleep(for: .milliseconds(500))
-            guard let flow = onboardingFlow, let window = found else {
-                print("no onboarding window:", NSApp.windows.map { "\($0.title) \($0.frame) visible=\($0.isVisible)" })
-                exit(1)
-            }
+            // The window opens once the Settings window has appeared (LaunchRouting).
+            let window = await window("onboarding window") { $0.title == String(localized: "Set Up Dấu") }
+            guard let flow = onboardingFlow else { print("no onboarding flow"); exit(1) }
             placeForCapture(window, size: window.frame.size)
             if CommandLine.arguments.contains("--active") {
                 NSApp.setActivationPolicy(.regular)
@@ -134,10 +125,10 @@ enum DebugCapture {
             // Show another step first so step 1's probes report again; drop the
             // Settings window's probes.
             flow.show(.typing)
-            try? await Task.sleep(for: .milliseconds(300))
+            require(await poll { frames.keys.contains { $0.hasSuffix("-3") } }, "step 3's probes")
             frames = frames.filter { $0.key.hasPrefix("onb") }
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-                NSApp.appearance = NSAppearance(named: name)
+                await applyAppearance(name, to: window)
                 let openKey = onboardingDetector?.found ?? []
                 onboardingInstaller?.current = .installed(version: nil)
                 onboardingInstaller?.enableWaits = false
@@ -179,6 +170,7 @@ enum DebugCapture {
                         flow.refresh()
                         installer?.enableWaits = true
                         Task { @MainActor in await flow.enable() }
+                        require(await poll { flow.isWorking }, "Bật Dấu waiting")
                     }),
                     // The wait ends with Dấu still off.
                     ("2-failed", {
@@ -206,8 +198,8 @@ enum DebugCapture {
                     // from the shot before, a view gone has none (it is FAIL in check (f)),
                     // the step's own views report again when the step changes.
                     await setUp()
-                    try? await Task.sleep(for: .milliseconds(700))
-                    capture(window, to: directory.appendingPathComponent("onboarding-\(key)-\(mode).png"))
+                    await captureSettled(window, to: directory.appendingPathComponent("onboarding-\(key)-\(mode).png"),
+                                         "onboarding \(key) \(mode)")
                     // Step views name their probes "<name>-<step>": keep the shown step's.
                     var entry: [String: [Double]] = [:]
                     for (name, r) in frames {
@@ -265,14 +257,11 @@ enum DebugCapture {
         NSApp.setActivationPolicy(.accessory)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(600))
-            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil }) else {
-                print("no window"); exit(1)
-            }
+            let window = await window("Settings window") { _ in true }
             placeForCapture(window, size: SettingsScene.defaultSize)
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-                NSApp.appearance = NSAppearance(named: name)
+                await applyAppearance(name, to: window)
                 let sample = UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: true)
                 let alerts: [(String, NSAlert)] = [
                     ("confirm", UninstallAlert.confirmation().0),
@@ -285,27 +274,26 @@ enum DebugCapture {
                     panel.appearance = NSAppearance(named: name)
                     panel.orderFront(nil)
                     placeForCapture(panel, size: panel.frame.size)
-                    try? await Task.sleep(for: .milliseconds(900))
                     // The alert's glass shows whatever is behind it (the backdrop): put it
                     // on the window background, roughly what it covers over the Settings window.
-                    capture(panel, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
-                            background: .windowBackgroundColor)
+                    await captureSettled(panel, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
+                                         background: .windowBackgroundColor, "alert \(key) \(mode)")
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(panel.frame.width), Double(panel.frame.height)]]
                     panel.orderOut(nil)
-                    try? await Task.sleep(for: .milliseconds(300))
+                    require(await poll { !panel.isVisible }, "alert \(key) to close")
                 }
                 // The sheet of the Settings window, on the fake preparation.
                 window.makeKeyAndOrderFront(nil)
                 let sheets: [(String, Bool)] = [("remove", false), ("remove-hint", true)]
                 for (key, dauIsSelected) in sheets {
                     actions?.showUninstallSheetForCapture(true, dauIsSelected: dauIsSelected)
-                    try? await Task.sleep(for: .milliseconds(1200))
+                    require(await poll { window.attachedSheet != nil }, "sheet \(key)")
                     guard let sheet = window.attachedSheet else { print("no sheet for \(key)"); exit(1) }
-                    capture(sheet, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
-                            background: .windowBackgroundColor)
+                    await captureSettled(sheet, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
+                                         background: .windowBackgroundColor, "sheet \(key) \(mode)")
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
                     actions?.showUninstallSheetForCapture(false)
-                    try? await Task.sleep(for: .milliseconds(600))
+                    require(await poll { window.attachedSheet == nil }, "sheet \(key) to close")
                 }
             }
             if let data = try? JSONSerialization.data(withJSONObject: report, options: [.sortedKeys, .prettyPrinted]) {
@@ -340,19 +328,18 @@ enum DebugCapture {
         NSApp.setActivationPolicy(.accessory)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(600))
-            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil && $0.sheetParent == nil }) else {
-                print("no window"); exit(1)
-            }
+            let window = await window("Settings window") { $0.sheetParent == nil }
             placeForCapture(window, size: SettingsScene.defaultSize)
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-                NSApp.appearance = NSAppearance(named: name)
+                await applyAppearance(name, to: window)
                 window.makeKeyAndOrderFront(nil)
-                try? await Task.sleep(for: .milliseconds(1200))
+                // The sheet opens with the page (`UpdatesSupportView`); `captureSettled`
+                // then waits for its layout (the footer probe included) and its slide-in.
+                require(await poll { window.attachedSheet != nil }, "report sheet")
                 guard let sheet = window.attachedSheet else { print("no report sheet"); exit(1) }
-                capture(sheet, to: directory.appendingPathComponent("report-\(mode).png"),
-                        background: .windowBackgroundColor)
+                await captureSettled(sheet, to: directory.appendingPathComponent("report-\(mode).png"),
+                                     background: .windowBackgroundColor, "report sheet \(mode)")
                 var shot = ["sheet": [0, 0, Double(sheet.frame.width), Double(sheet.frame.height)]]
                 if let footer = frames["reportIncluded"] {
                     shot["reportIncluded"] = [footer.minX, footer.minY, footer.width, footer.height].map(Double.init)
@@ -421,22 +408,25 @@ enum DebugCapture {
         NSApp.setActivationPolicy(.accessory)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         Task { @MainActor in
-            try? await Task.sleep(for: .milliseconds(600))
-            guard let window = NSApp.windows.first(where: { $0.isVisible && $0.contentView != nil && $0.sheetParent == nil }) else {
-                print("no window"); exit(1)
-            }
+            let window = await window("Settings window") { $0.sheetParent == nil }
             placeForCapture(window, size: SettingsScene.defaultSize)
             var report: [String: [String: [Double]]] = [:]
             for (mode, name) in [("light", NSAppearance.Name.aqua), ("dark", .darkAqua)] {
-                NSApp.appearance = NSAppearance(named: name)
+                await applyAppearance(name, to: window)
                 window.makeKeyAndOrderFront(nil)
                 for stage in updatesStages {
                     // The first load decides Beta (no stable item); a later one with a
                     // stable item leaves the user on Beta (D7), as the artboard's stage.
                     updates.channels.appcastLoaded(itemChannels: stage.itemChannels)
-                    try? await Task.sleep(for: .milliseconds(900))
+                    // The row shows the stage: Stable on only once a stable item exists.
+                    let stableOn = stage.itemChannels.contains { $0 == nil }
+                    require(await poll {
+                        segmentedControls(in: window.contentView).first {
+                            $0.accessibilityLabel() == String(localized: "Release channel") && $0.segmentCount == 2
+                        }.map { $0.isEnabled(forSegment: 1) == stableOn } ?? false
+                    }, "the channel row of stage \(stage.key)")
                     let key = "updates-release-\(stage.key)-\(mode)"
-                    capture(window, to: directory.appendingPathComponent("\(key).png"))
+                    await captureSettled(window, to: directory.appendingPathComponent("\(key).png"), key)
                     // The page's layout probes (`UpdatesSupportView`), window points from
                     // the top-left; a view gone has no frame (`LayoutProbeModifier`).
                     var shot: [String: [Double]] = [:]
@@ -539,6 +529,125 @@ enum DebugCapture {
         }
     }
 
+    // MARK: Waiting for a state, not a clock
+
+    /// One display frame at 60 Hz: the polling step. Each step is a `Task.sleep`, so the
+    /// main run loop turns between reads and SwiftUI applies its pending updates.
+    static let frameStep = Duration.milliseconds(16)
+
+    /// Polls `condition` once per frame until it holds; false after `timeout`.
+    static func poll(timeout: Duration = .seconds(3), _ condition: () -> Bool) async -> Bool {
+        let clock = ContinuousClock(), deadline = clock.now + timeout
+        while !condition() {
+            if clock.now >= deadline { return condition() }
+            try? await Task.sleep(for: frameStep)
+        }
+        return true
+    }
+
+    /// Waits until `read` gives the same value on `reads` reads one frame apart (a step
+    /// before each read, so the first read already sees what the last change laid out);
+    /// false after `timeout`.
+    static func settled<T: Equatable>(reads: Int = 3, timeout: Duration = .seconds(3), _ read: () -> T) async -> Bool {
+        let clock = ContinuousClock(), deadline = clock.now + timeout
+        try? await Task.sleep(for: frameStep)
+        var last = read(), same = 1
+        while same < reads {
+            if clock.now >= deadline { return false }
+            try? await Task.sleep(for: frameStep)
+            let now = read()
+            same = now == last ? same + 1 : 1
+            last = now
+        }
+        return true
+    }
+
+    /// Ends the capture run with a reason (run.sh shows the app's last lines) when a state
+    /// the next step needs did not come.
+    static func require(_ ok: Bool, _ what: String) {
+        guard !ok else { return }
+        print("capture: timed out waiting for \(what)")
+        exit(1)
+    }
+
+    /// The first visible window `matching`, once it is there (up to 10 s: the app is still
+    /// launching); ends the run otherwise.
+    static func window(_ what: String, matching: (NSWindow) -> Bool) async -> NSWindow {
+        var found: NSWindow?
+        _ = await poll(timeout: .seconds(10)) {
+            found = NSApp.windows.first { $0.isVisible && $0.contentView != nil && matching($0) }
+            return found != nil
+        }
+        guard let found else {
+            print("no \(what):", NSApp.windows.map { "\($0.title) \($0.frame) visible=\($0.isVisible)" })
+            exit(1)
+        }
+        return found
+    }
+
+    /// Sets the app's appearance and waits until `window` draws in it.
+    static func applyAppearance(_ name: NSAppearance.Name, to window: NSWindow) async {
+        NSApp.appearance = NSAppearance(named: name)
+        require(await poll { window.effectiveAppearance.bestMatch(from: [.aqua, .darkAqua]) == name },
+                "the \(name.rawValue) appearance")
+    }
+
+    /// What a shot of `window` depends on that the app can read: its frame, its attached
+    /// sheet's, the layout probes' frames. Equal on consecutive frames = laid out.
+    static func layoutState(_ window: NSWindow) -> String {
+        let probes = frames.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: ";")
+        return "\(window.frame) \(window.isVisible) \(window.attachedSheet.map { "\($0.frame)" } ?? "-") \(probes)"
+    }
+
+    /// Captures `window` once what it shows has come to rest, then writes the PNG:
+    /// 1. its layout state (`layoutState`) is the same on 3 frames;
+    /// 2. pending drawing is done and handed to the window server;
+    /// 3. two composited images in a row agree (< 0.5% of sampled pixels differ), so a
+    ///    sheet sliding in or an alert fading in has ended; a spinner in the shot (the
+    ///    uninstall sheet, "2-waiting") moves on fewer pixels than that.
+    /// Each step ends the run on timeout (3 s), naming `what`.
+    static func captureSettled(_ window: NSWindow, to url: URL, background: NSColor? = nil, _ what: String) async {
+        let layoutOwner = window.sheetParent ?? window
+        require(await settled { layoutState(layoutOwner) }, "\(what): layout")
+        window.contentView?.layoutSubtreeIfNeeded()
+        window.displayIfNeeded()
+        CATransaction.flush()
+        var image: CGImage?
+        if compositedImage(window) != nil {
+            var previous: CGImage?
+            let rested = await poll {
+                let now = compositedImage(window)
+                defer { previous = now }
+                guard let now, let previous else { return false }
+                if nearlyEqual(now, previous) { image = now; return true }
+                return false
+            }
+            require(rested, "\(what): drawing to come to rest")
+        }
+        capture(window, image: image, to: url, background: background)
+    }
+
+    /// Fewer than 0.5% of the pixels on a 4-pixel grid differ (any channel by more than 2).
+    private static func nearlyEqual(_ a: CGImage, _ b: CGImage) -> Bool {
+        guard a.width == b.width, a.height == b.height, a.bitsPerPixel == 32, b.bitsPerPixel == 32,
+              a.bytesPerRow == b.bytesPerRow,
+              let da = a.dataProvider?.data, let db = b.dataProvider?.data,
+              let pa = CFDataGetBytePtr(da), let pb = CFDataGetBytePtr(db) else { return false }
+        var differ = 0, total = 0
+        for y in stride(from: 0, to: a.height, by: 4) {
+            let row = y * a.bytesPerRow
+            for x in stride(from: 0, to: a.width, by: 4) {
+                let i = row + x * 4
+                total += 1
+                if abs(Int(pa[i]) - Int(pb[i])) > 2 || abs(Int(pa[i + 1]) - Int(pb[i + 1])) > 2
+                    || abs(Int(pa[i + 2]) - Int(pb[i + 2])) > 2 || abs(Int(pa[i + 3]) - Int(pb[i + 3])) > 2 {
+                    differ += 1
+                }
+            }
+        }
+        return total > 0 && differ * 200 < total
+    }
+
     /// The window as the window server composites it (materials, scroll edge effects),
     /// through `CGWindowListCreateImage`, which needs no permission for the app's own
     /// windows. The function is unavailable to Swift in the macOS 15+ SDK, so it is
@@ -552,8 +661,10 @@ enum DebugCapture {
         return create(.null, 8, UInt32(window.windowNumber), 1 | 8)?.takeRetainedValue()
     }
 
-    private static func capture(_ window: NSWindow, to url: URL, background: NSColor? = nil) {
-        var image = compositedImage(window)
+    /// Writes `image` (or, without one, what `window` composites now, or its own drawing)
+    /// to `url` as a PNG.
+    private static func capture(_ window: NSWindow, image settledImage: CGImage? = nil, to url: URL, background: NSColor? = nil) {
+        var image = settledImage ?? compositedImage(window)
         if image == nil, let frameView = window.contentView?.superview {
             frameView.display()
             if let rep = frameView.bitmapImageRepForCachingDisplay(in: frameView.bounds) {
