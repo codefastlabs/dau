@@ -2,6 +2,21 @@
 
 Cách một bản Dấu ra đời: từ tag git tới DMG, bản cập nhật Sparkle và Homebrew. Quyết định: D6 (Phát hành), D7 (Cập nhật và loại bản dựng), D25 (Nhận diện). Kế hoạch mốc: [`docs/Progress.md`](Progress.md) mục "Kế hoạch M7".
 
+```mermaid
+flowchart TD
+  tag["Tag v* đẩy lên"] --> wf["Workflow Release"]
+  wf -- "vX.Y.Z-beta.N" --> build["build-release.sh:<br>archive, ký, notarize,<br>DMG, appcast"]
+  wf -- "vX.Y.Z" --> promote["promote-release.sh:<br>sao DMG của beta cuối,<br>không dựng"]
+  build --> draft["Bản nháp trên<br>GitHub Releases"]
+  promote --> draft
+  draft -- "Publish" --> pub["Bản đã công bố,<br>DMG trên GitHub"]
+  pub -. "chỉ beta: chép appcast.xml" .-> site["site/appcast.xml<br>trên main"]
+  site -- "Vercel xuất bản" --> feed["dau.codefastlabs.com<br>/appcast.xml"]
+  feed --> sparkle["Sparkle trong<br>Dấu đã cài"]
+  sparkle -. "tải DMG" .-> pub
+  pub -. "D6" .-> cask["Cask dau ở<br>codefastlabs/homebrew-tap"]
+```
+
 Phiên chính và subagent không cầm khoá: chứng chỉ, khoá App Store Connect và khoá EdDSA chỉ nằm ở máy người dùng và trong secret của GitHub. Mọi thứ trong repo là mã, mẫu cấu hình và tên secret.
 
 ## Thành phần
@@ -65,9 +80,53 @@ Hai đường theo tag; mọi tag bắt đầu bằng `v` và theo dạng dướ
 
 Số hiển thị luôn là ba số nguyên `X.Y.Z`, chữ "beta N" chỉ nằm ngoài tệp nhị phân: tên tag, tiêu đề bản phát hành trên GitHub (D7). Bản phát triển dựng bằng `scripts/dev/install-app.sh` mang số `X.Y.Z` của tag `v*` gần nhất trên HEAD (không có tag thì số trong `project.yml`; build bằng Xcode giữ `project.yml`).
 
+Vòng đời của một bản, từ tag tới lúc thôi phát:
+
+```mermaid
+stateDiagram-v2
+  state "Bản nháp" as Nhap
+  state "Beta đã công bố" as Beta
+  state "Bản ổn định đã công bố, cùng tệp với beta cuối" as OnDinh
+  state "Bị hỏng" as Hong
+  state "Gỡ khỏi appcast, vẫn còn trên GitHub" as Go
+  [*] --> Nhap: đẩy tag beta, CI dựng
+  Nhap --> [*]: CI hỏng, xoá bản nháp và tag
+  Nhap --> Beta: Publish, chép appcast
+  Beta --> OnDinh: tag ổn định cùng commit, quảng bá, Publish
+  Beta --> Hong: phát hiện lỗi
+  OnDinh --> Hong: phát hiện lỗi
+  Hong --> Go: không cài được
+  note right of Hong
+    Luôn phát ngay một beta sửa trên commit mới.
+    Không xoá bản hỏng khỏi GitHub.
+  end note
+```
+
 **Điều kiện chung** (`scripts/release/check-release-gate.sh`, chạy được trên máy): workflow chỉ dựng bản ký hay quảng bá khi commit được tag nằm trong `origin/main` và workflow Test đã đạt trên đúng commit đó; thiếu một trong hai thì dừng và báo lý do. Tag lên commit chưa lên `main` hay chưa xanh thì xoá tag, sửa, rồi tag lại.
 
 ### Đường beta
+
+Các điểm kiểm trước khi dựng, theo thứ tự `scripts/release/build-release.sh` chạy chúng:
+
+```mermaid
+flowchart TD
+  tag["Đẩy tag vX.Y.Z-beta.N"] --> fmt{"Tag đúng dạng,<br>commit chưa<br>có beta khác?"}
+  fmt -- không --> stop1["Dừng"]
+  fmt -- có --> sec{"Secret?"}
+  sec -- "không có cái nào" --> uns["Bản không ký, là bản phát triển:<br>DMG chỉ là artifact của lần chạy, 7 ngày"]
+  sec -- "thiếu một phần" --> stop2["Dừng, báo secret còn thiếu"]
+  sec -- đủ --> gate{"check-release-gate.sh:<br>commit trên main,<br>Test đã đạt?"}
+  gate -- không --> stopg["Dừng: xoá tag, sửa, tag lại"]
+  gate -- có --> exist{"Tag đã có<br>bản phát hành?"}
+  exist -- "đã công bố" --> stope["Dừng: phát một beta mới"]
+  exist -- "bản nháp" --> stopd["Dừng: xoá bản nháp và tag,<br>tag lên commit mới"]
+  exist -- chưa --> ac{"check-appcast.sh:<br>appcast có beta<br>mới nhất đã công bố?"}
+  ac -- không --> stopa["Dừng: công bố xong bản trước"]
+  ac -- có --> b["Archive, xuất Developer ID,<br>notarize, staple, DMG"]
+  b --> cb["check-build.sh trên archive và DMG"]
+  cb --> appc["Appcast của origin/main<br>thêm mục bản mới, ký EdDSA"]
+  appc --> draft["Bản nháp pre-release:<br>DMG, dSYM, appcast.xml"]
+```
 
 1. Chắc chắn `main` xanh (workflow Test) và đã commit mọi thứ của bản này.
 2. Tag và đẩy tag. Với hai bản thử của kế hoạch M7 bước 2, việc này công bố chúng lên appcast, nên cần người dùng đồng ý trước khi đẩy tag.
@@ -100,6 +159,29 @@ Bản ổn định là tệp nhị phân của bản beta cuối, giữ nguyên,
 3. **Công bố:** bấm Publish release trên GitHub. Không đụng `site/appcast.xml`. Cask Homebrew ở `codefastlabs/homebrew-tap`: theo D6 (Phát hành).
 
 **Số build.** `CFBundleVersion` mặc định là mười lần số commit của HEAD (`git rev-list --count`), nên tăng theo lịch sử; mỗi bản dựng một số, và số này cùng commit trong ngoặc phân biệt các beta của một phiên bản (chúng cùng số hiển thị). Bản ổn định không có số riêng: nó mang số của beta cuối. Cờ `--build-number` của script đặt số khác khi cần. Vì vậy `main` đã push không bao giờ bị viết lại (force push, rebase): lịch sử ngắn lại thì số build lùi.
+
+### Thứ tự công bố và gỡ
+
+Sơ đồ cho luật thứ tự ở bước 5 của đường beta và bước 3 của mục "Khi một bản bị hỏng": appcast chỉ trỏ vào DMG đã có địa chỉ công khai trên GitHub.
+
+```mermaid
+sequenceDiagram
+  participant R as Người phát hành
+  participant GH as GitHub Releases
+  participant M as main, site/appcast.xml
+  participant V as Vercel
+  participant S as Sparkle trong Dấu đã cài
+  Note over R,S: Công bố một beta
+  R->>GH: Publish release, DMG có địa chỉ công khai
+  R->>M: Chép appcast.xml của bản đó, commit, đẩy
+  M->>V: Xuất bản appcast
+  S->>V: Đọc appcast, thấy bản mới
+  S->>GH: Tải DMG
+  Note over R,S: Gỡ một bản không cài được
+  R->>M: Gỡ mục của bản đó khỏi appcast, đẩy
+  M->>V: Xuất bản appcast
+  R->>GH: Rồi mới xoá hay đổi bản đó
+```
 
 ## Khi một bản bị hỏng
 
