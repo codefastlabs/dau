@@ -1,18 +1,25 @@
 #!/bin/zsh
-# Builds the official Dấu release: archive, Developer ID export, notarize, staple, DMG, appcast (D7).
+# Builds a beta of the official Dấu release: archive, Developer ID export, notarize, staple, DMG, appcast (D7).
 # Side effects: builds; with --layout: takes the screen
 # One path from source to DMG, the same on CI and on a development Mac. Without the signing
 # secrets it still runs to the DMG ("unsigned" build) and says which steps it skipped.
 #
+# A stable tag (vX.Y.Z) is NOT built: the stable release is the binary of the last beta,
+# unchanged and not rebuilt (D7), so it has no build to run and nothing to sign. This script
+# refuses it and points to promote-release.sh, which copies the beta's assets. Anything to fix
+# after the last beta is a new beta, on a new commit.
+#
 # Usage:
-#   scripts/release/build-release.sh [--tag vX.Y.Z[-beta.N]] [--build-number N] [--unsigned] [--layout] [--out DIR]
-#     --tag           the release tag; sets the displayed version: v0.1.0-beta.1 is "0.1.0 beta 1"
-#                     (MARKETING_VERSION), v1.3.0 is "1.3.0" (D7). Default: $GITHUB_REF_NAME when it
-#                     looks like a tag, else the version in project.yml.
+#   scripts/release/build-release.sh [--tag vX.Y.Z-beta.N] [--build-number N] [--unsigned] [--layout] [--out DIR]
+#     --tag           the beta tag; sets the displayed version, the same for every beta of a version
+#                     and for its stable release: v0.1.0-beta.1 is "0.1.0" (MARKETING_VERSION, always
+#                     three integers). The "beta N" lives only outside the binary (tag, GitHub
+#                     release title) (D7). Default: $GITHUB_REF_NAME when it looks like a tag, else
+#                     the version in project.yml.
 #     --build-number  CFBundleVersion, the number Sparkle compares. Default: ten times the number
-#                     of commits in HEAD (git rev-list --count), plus 1 for a stable tag. It grows
-#                     with history, is the same on every machine, and a stable rebuilt from the
-#                     commit of the last beta (D7) still outranks that beta.
+#                     of commits in HEAD (git rev-list --count). It grows with history and is the
+#                     same on every machine. One number per build, so a new beta needs a new commit:
+#                     the script refuses a beta tag on a commit that already has another beta tag.
 #     --unsigned      do not sign with Developer ID even when the secrets are there.
 #     --layout        lay the DMG window out with Finder (layout-dmg.sh, takes the screen): CI only.
 #     --out           output directory (default build/release; wiped first, must be inside build/).
@@ -42,7 +49,7 @@
 # Dau-<version>.dSYMs.zip, appcast/appcast.xml
 # (signed only: the current site/appcast.xml with this release added; publishing it is a
 # separate act, docs/Releasing.md), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
-# appcast, display and signed.
+# appcast, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
 # Exit status: 0 done; 1 a step or a check failed; 2 bad usage.
 
 set -euo pipefail
@@ -72,18 +79,21 @@ out=${out:A}
 [[ $out == $DAU_ROOT/build/?* ]] || log_die 2 "--out phải nằm trong build/ của repo (thư mục này bị xoá trước khi build)."
 
 # --- version -----------------------------------------------------------------
-display="" file_version="dev"
-if [[ $tag == v<->.<->.<->(|-beta.<->) ]]; then
-  base=${${tag#v}%%-*}
-  if [[ $tag == *-beta.* ]]; then display="$base beta ${tag##*.}"; else display=$base; fi
+display="" label="" file_version="dev"
+if [[ $tag == v<->.<->.<->-beta.<-> ]]; then
+  display=${${tag#v}%%-*}                 # X.Y.Z for every beta and the stable (D7)
+  label="$display beta ${tag##*.}"        # for the GitHub release title, never in the binary
   file_version=${tag#v}
+  # One number per build: a second beta on the same commit would get the same CFBundleVersion.
+  tag_commit=$(git -C "$DAU_ROOT" rev-list -n1 "$tag" 2>/dev/null || git -C "$DAU_ROOT" rev-parse HEAD)
+  others=(${(f)"$(git -C "$DAU_ROOT" tag --points-at "$tag_commit" -l 'v*-beta.*' | grep -vx -- "$tag" || true)"})
+  (( ${#others} == 0 )) || log_die 2 "Commit ${tag_commit[1,9]} đã có tag beta khác (${(j:, :)others}): mỗi beta cần một commit mới để có số build riêng (D7)."
+elif [[ $tag == v<->.<->.<-> ]]; then
+  log_die 2 "Tag $tag là bản ổn định: bản ổn định là tệp nhị phân của beta cuối, giữ nguyên, không dựng lại (D7). Dùng scripts/release/promote-release.sh --tag $tag. Cần sửa gì thì phát thêm một beta."
 elif [[ -n $tag && $tag == v* ]]; then
-  log_die 2 "Tag '$tag' không đúng dạng vX.Y.Z hoặc vX.Y.Z-beta.N (D7)."
+  log_die 2 "Tag '$tag' không đúng dạng vX.Y.Z-beta.N (D7)."
 fi
-if [[ -z $build_number ]]; then
-  build_number=$(( $(git -C "$DAU_ROOT" rev-list --count HEAD) * 10 ))
-  [[ -n $display && $tag != *-beta.* ]] && (( build_number += 1 ))
-fi
+[[ -n $build_number ]] || build_number=$(( $(git -C "$DAU_ROOT" rev-list --count HEAD) * 10 ))
 [[ $build_number == <-> ]] || log_die 2 "--build-number phải là số nguyên."
 version_args=(CURRENT_PROJECT_VERSION=$build_number)
 [[ -n $display ]] && version_args+=("MARKETING_VERSION=$display")
@@ -98,7 +108,7 @@ if (( ! force_unsigned && ${#set_vars} > 0 )); then
   signed=1
 fi
 if (( signed )) && [[ -z $display ]]; then
-  log_die 2 "Bản ký cần --tag vX.Y.Z[-beta.N]: tag đặt số phiên bản và địa chỉ tải trong appcast."
+  log_die 2 "Bản ký cần --tag vX.Y.Z-beta.N: tag đặt số phiên bản và địa chỉ tải trong appcast."
 fi
 dev_id=""
 if (( signed )); then
@@ -301,7 +311,7 @@ fi
 
 # --- summary -----------------------------------------------------------------
 {
-  print -r -- "Dấu ${display:-dev} (build $build_number), chế độ: $([[ $signed == 1 ]] && print ký || print không ký)"
+  print -r -- "Dấu ${label:-${display:-dev}} (hiển thị ${display:-dev}, build $build_number), chế độ: $([[ $signed == 1 ]] && print ký || print không ký)"
   print -r -- "DMG: $dmg_name"
   print -r -- "Bố cục cửa sổ DMG: $laid_out"
   for s in $skipped; do print -r -- "Đã bỏ qua: $s"; done
@@ -309,7 +319,7 @@ fi
 if [[ -n ${GITHUB_OUTPUT-} ]]; then
   {
     print -r -- "dmg=$dmg"; print -r -- "dsyms=$dsyms"; print -r -- "appcast=$appcast"
-    print -r -- "display=${display:-dev}"; print -r -- "signed=$signed"
+    print -r -- "display=${display:-dev}"; print -r -- "label=${label:-${display:-dev}}"; print -r -- "signed=$signed"
   } >> "$GITHUB_OUTPUT"
 fi
 command rm -rf "$derived"

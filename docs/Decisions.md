@@ -166,7 +166,12 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
   - Người ký: **bản chính thức** là bản ký Developer ID của codefastlabs, đã notarize, và chỉ dựng bằng quy trình phát hành trên CI; mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**.
   - Kênh: một kênh; Ổn định/Beta khi có kênh Beta, chỉ ở bản chính thức.
 - Quay về bản trước (D19 (Quay về bản trước)) để sau bản thử đầu.
-- **Số phiên bản:** `CFBundleVersion` là số build tăng dần, Sparkle so sánh bằng số này; số hiển thị dạng "1.3.0 beta 2", tag git dạng `v1.3.0-beta.2`; bản ổn định dựng lại từ cùng commit với bản beta cuối, số hiển thị không có chữ beta. Bản thử đầu là "0.1.0 beta 1" (tag `v0.1.0-beta.1`).
+- **Số phiên bản** (theo cách Apple đánh số):
+  - Số hiển thị (`CFBundleShortVersionString`) luôn là ba số nguyên "1.3.0", không có chữ beta. Mọi beta của một phiên bản và bản ổn định của nó cùng một số hiển thị.
+  - `CFBundleVersion` là số build tăng dần, mỗi bản dựng một số; Sparkle so sánh bằng số này.
+  - Chữ "beta" chỉ nằm ngoài tệp nhị phân: tag git `v1.3.0-beta.2`, bản pre-release trên GitHub, appcast. Trong app, các beta phân biệt bằng commit trong ngoặc sau số hiển thị (D25 (Nhận diện)).
+  - **Bản ổn định là tệp nhị phân của bản beta cuối, giữ nguyên, không dựng lại.** Tag `v1.3.0` đặt vào đúng commit của beta cuối. Muốn sửa gì sau beta cuối thì phát thêm một beta.
+  - Bản thử đầu là tag `v0.1.0-beta.1`, số hiển thị "0.1.0".
 - Bản dựng theo từng commit (Nightly), nếu làm, là bản phát triển: CI dựng, chỉ phát qua GitHub, không qua Sparkle.
 - Tính năng mới có thể nằm sau công tắc "Thử nghiệm" ngay trong bản ổn định (cài đặt cục bộ), kiểm chéo với các tính năng cùng tác động lên một đầu vào như mọi tính năng khác.
 - Không phát hành dần theo số liệu và không có cờ tính năng điều khiển từ xa. Không dùng TestFlight.
@@ -174,7 +179,7 @@ GPLv3. DMG ký Developer ID + notarize trên GitHub Releases. Không có Mac App
 
 **Hệ quả đã chấp nhận:** người dùng đã chọn cài rồi thoát Dấu (⌘Q) trước khi cài xong thì Sparkle cài lúc thoát mà không mở lại Dấu (`SPUUserDriver.h`, Sparkle 2.10.1); bộ gõ cũ chạy tiếp tới lần mở Dấu sau, lúc đó bản chủ thay nó (D37). Không thêm mã cho trường hợp này.
 
-**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. Cửa sổ của Sparkle thay cho thẻ trạng thái và thông báo tự vẽ: Sparkle đã có bản tiếng Việt và tự kiểm chữ ký trước khi cài, còn bản tự vẽ cần một user driver riêng và từng hứa điều chưa có (quay về bản trước, chữ ký "đã xác minh" trước khi tải, N5). Không cài ngầm: Sparkle cài ngầm lúc app thoát mà không mở lại app, nên bộ gõ cũ chạy tiếp tới lần mở Dấu sau. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)).
+**Vì sao:** phát hành dần theo số liệu và cờ tính năng điều khiển từ xa đều cần số liệu từ máy người dùng (D8), nên Dấu dựa vào người dùng Beta và báo lỗi. Một kênh và danh sách đi kèm app: bản thử đầu cần tới tay người dùng sớm; hai kênh, phát theo đợt và file danh sách ký riêng là hạ tầng cho lúc đã có nhiều người dùng. Cửa sổ của Sparkle thay cho thẻ trạng thái và thông báo tự vẽ: Sparkle đã có bản tiếng Việt và tự kiểm chữ ký trước khi cài, còn bản tự vẽ cần một user driver riêng và từng hứa điều chưa có (quay về bản trước, chữ ký "đã xác minh" trước khi tải, N5). Không cài ngầm: Sparkle cài ngầm lúc app thoát mà không mở lại app, nên bộ gõ cũ chạy tiếp tới lần mở Dấu sau. TestFlight chỉ dành cho app phân phối qua App Store (D6 (Phát hành)). Số phiên bản theo Apple: tài liệu `CFBundleShortVersionString` quy định ba số nguyên ngăn bằng dấu chấm, và Apple đánh dấu bản beta bằng số build và kênh, không bằng số hiển thị. Phát nguyên bản beta cuối làm bản ổn định (như bản RC của Apple) thì bản tới tay mọi người là tệp người dùng Beta đã chạy, còn dựng lại từ cùng commit chưa chắc ra cùng tệp (máy CI, Xcode, gói phụ thuộc có thể đã khác), và người dùng Beta không phải tải lại một bản không đổi gì. Bản sửa gấp dựng từ nhánh cũ hơn `main` có số build nhỏ hơn beta đang chạy, nên không kéo người dùng Beta về bản cũ.
 
 ### D8. Không telemetry
 
@@ -426,7 +431,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 - **Biểu tượng theo loại bản** (các loại bản ở D7 (Cập nhật và loại bản dựng)):
   - Biểu tượng chuẩn chỉ có ở bản chính thức, chọn bằng một cờ build mà chỉ quy trình phát hành trên CI đặt. Mặc định, tức mọi bản phát triển (Debug, Release tự dựng, bản người khác build), dùng biểu tượng **bản phát triển**.
   - Biểu tượng bản phát triển giữ chữ "ấ", khác nền và có thêm một dấu hiệu bằng hình để vẫn nhận ra khi macOS bỏ màu (kiểu Trong suốt, Phủ màu của Icon Composer): **nền Chì, dải chéo màu Hổ phách ở góc dưới phải**. Không có chữ, không dùng Son cho dải, không đảo màu.
-  - Kênh Beta dùng biểu tượng chuẩn, phân biệt bằng số phiên bản ("1.3.0 beta 2") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
+  - Kênh Beta dùng biểu tượng chuẩn. Số hiển thị không có chữ beta (D7); mỗi beta phân biệt bằng commit trong ngoặc ("Dấu 1.3.0 (a1b2c3d)") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry)).
   - Debug và Release không có hai biểu tượng. Theo cách Apple ghi bản build (bảng About chuẩn của AppKit, `orderFrontStandardAboutPanel`, ghi mã build trong ngoặc sau số phiên bản), bản phát triển ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug ghi thêm "Debug" trong ngoặc cùng commit ("Dấu 1.0.0 (a1b2c3d, Debug)"), cả cho bộ gõ đã cài; bản Release không ghi cấu hình. `scripts/dev/dau-version.sh` in commit và cấu hình (Debug/Release) của từng bản đã cài.
   - Bundle ID không đổi theo loại bản (D37 (Cài bộ gõ)).
   - Tên cũng không đổi: bản phát triển vẫn là "Dấu" (tên app, tên nguồn "Dấu – Tiếng Việt"); biểu tượng và dòng "Bản phát triển" đã phân biệt, và đổi tên nguồn giữa hai lần cài có thể vướng bộ đệm TIS (D37).

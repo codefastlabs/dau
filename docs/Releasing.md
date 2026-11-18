@@ -8,11 +8,12 @@ Phiên chính và subagent không cầm khoá: chứng chỉ, khoá App Store Co
 
 | Thành phần | Ở đâu |
 |---|---|
-| Script dựng bản phát hành (archive, xuất Developer ID, notarize, staple, DMG, appcast) | `scripts/release/build-release.sh` |
+| Script dựng bản phát hành (archive, xuất Developer ID, notarize, staple, DMG, appcast) |release/build-release.sh` |/| Script dựng một bản beta (archive, xuất Developer ID, notarize, staple, DMG, appcast) | `scripts/release/build-release.sh` |
+| Script quảng bá beta cuối thành bản ổn định (sao tài sản, không dựng) | `scripts/release/promote-release.sh` |/release/build-release.sh` |
 | Kiểm một bản build (biểu tượng, ký hiệu, khoá Sparkle, bộ gõ, chữ ký) | `scripts/release/check-build.sh` |
 | Sắp xếp cửa sổ DMG bằng Finder (chỉ CI) | `scripts/release/layout-dmg.sh` |
 | Test ở mỗi lần đẩy mã | `.github/workflows/test.yml` |
-| Tag `v*` dựng bản nháp trên GitHub Releases | `.github/workflows/release.yml` |
+| Tag `v*`: beta dựng bản nháp, bản ổn định quảng bá beta cuối, trên GitHub Releases | `.github/workflows/release.yml` |
 | Appcast, thư mục gốc của project Vercel | `site/appcast.xml` |
 
 Cách gọi và tuỳ chọn của từng script nằm ở đầu script.
@@ -52,25 +53,47 @@ Cách gọi và tuỳ chọn của từng script nằm ở đầu script.
 
 ## Phát hành một tag
 
+Hai đường theo tag; mọi tag bắt đầu bằng `v` và theo dạng dưới đây, dạng khác bị từ chối.
+
+| Tag | Số hiển thị (`CFBundleShortVersionString`) | Workflow làm gì |
+|---|---|---|
+| `v0.1.0-beta.1` | 0.1.0 | dựng một bản beta (đường beta, dưới) |
+| `v0.1.0-beta.2` | 0.1.0 | dựng một bản beta, trên commit mới |
+| `v0.1.0` | 0.1.0 (cùng tệp với beta cuối) | quảng bá beta cuối, không dựng (đường ổn định, dưới) |
+
+Số hiển thị luôn là ba số nguyên `X.Y.Z`, chữ "beta N" chỉ nằm ngoài tệp nhị phân: tên tag, tiêu đề bản phát hành trên GitHub (D7).
+
+### Đường beta
+
 1. Chắc chắn `main` xanh (workflow Test) và đã commit mọi thứ của bản này.
-2. Tag và đẩy tag: số hiển thị lấy từ tag (D7). Với hai bản thử của kế hoạch M7 bước 2, việc này công bố chúng lên appcast, nên cần người dùng đồng ý trước khi đẩy tag.
+2. Tag và đẩy tag. Với hai bản thử của kế hoạch M7 bước 2, việc này công bố chúng lên appcast, nên cần người dùng đồng ý trước khi đẩy tag.
 
    ```sh
    git tag v0.1.0-beta.1
    git push origin v0.1.0-beta.1
    ```
 
-   | Tag | Số hiển thị (`CFBundleShortVersionString`) |
-   |---|---|
-   | `v0.1.0-beta.1` | 0.1.0 beta 1 |
-   | `v1.3.0` | 1.3.0 |
-
-   Dạng khác bị từ chối.
-3. Workflow Release dựng bản ký, rồi tạo **bản nháp** trên GitHub Releases (đánh dấu pre-release nếu tag có `-beta.`) kèm DMG, dSYM và `appcast.xml` đã thêm bản mới. Chưa có gì được công bố: người dùng chưa thấy gì. Thiếu secret thì workflow dựng bản không ký (dưới) và chỉ lưu DMG thành artifact của lần chạy (7 ngày), không tạo bản nháp.
+   Mỗi beta cần một commit mới: script từ chối tag beta lên commit đã có tag beta khác, vì cùng commit thì cùng số build.
+3. Workflow Release dựng bản ký, rồi tạo **bản nháp** pre-release trên GitHub Releases (tiêu đề "Dấu 0.1.0 beta 1") kèm DMG, dSYM và `appcast.xml` đã thêm bản mới. Chưa có gì được công bố: người dùng chưa thấy gì. Thiếu secret thì workflow dựng bản không ký (dưới) và chỉ lưu DMG thành artifact của lần chạy (7 ngày), không tạo bản nháp.
 4. Kiểm bản nháp: log của workflow in từng bước đã làm hay bỏ qua, và `summary.txt`. Thử mở DMG đã tải về.
-5. **Công bố** (người dùng đồng ý một lần cho bản thử đầu, theo kế hoạch M7 bước 4): bấm Publish release trên GitHub; chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit, đẩy lên `main` để Vercel xuất bản. Làm theo thứ tự này: nếu appcast lên trước, Sparkle trỏ vào địa chỉ DMG chưa có. Rồi cập nhật cask Homebrew ở `codefastlabs/homebrew-tap`.
+5. **Công bố** (người dùng đồng ý một lần cho bản thử đầu, theo kế hoạch M7 bước 4): bấm Publish release trên GitHub; chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit, đẩy lên `main` để Vercel xuất bản. Làm theo thứ tự này: nếu appcast lên trước, Sparkle trỏ vào địa chỉ DMG chưa có. Rồi cập nhật cask Homebrew ở `codefastlabs/homebrew-tap` trỏ vào DMG của bản này: khi chỉ có một kênh, cask theo bản mới nhất đã công bố, kể cả beta (bản thử đầu là beta và phải cài được bằng `brew`, Roadmap M7). Khi có kênh Beta (D7), cask chỉ theo bản ổn định.
 
-**Số build.** `CFBundleVersion` mặc định là mười lần số commit của HEAD (`git rev-list --count`), cộng 1 với tag ổn định, nên tăng theo lịch sử, và bản ổn định dựng lại từ đúng commit của bản beta cuối (D7) vẫn lớn hơn số của beta đó. Cờ `--build-number` của script đặt số khác khi cần.
+### Đường ổn định (quảng bá beta cuối)
+
+Bản ổn định là tệp nhị phân của bản beta cuối, giữ nguyên, không dựng lại (như bản ứng viên của Apple): cùng DMG, chữ ký, vé notarize và `CFBundleVersion`. Muốn sửa gì sau beta cuối thì phát thêm một beta, không sửa rồi tag bản ổn định.
+
+1. Beta cuối đã công bố (bước 5 ở trên): item của nó đã nằm trong `site/appcast.xml` cho mọi người, nên bản ổn định **không thêm item** vào appcast (cùng `sparkle:version`). Khi có kênh Beta (sau bản thử đầu, D7) thì đổi kênh của item; chưa làm.
+2. Tag **đúng commit của tag beta cuối** rồi đẩy tag:
+
+   ```sh
+   git tag v0.1.0 v0.1.0-beta.2
+   git push origin v0.1.0
+   ```
+
+   Workflow Release chạy `scripts/release/promote-release.sh`: tìm tag `v0.1.0-beta.N` cùng commit (N lớn nhất), tải DMG và dSYM của bản phát hành đó, đổi tên thành `Dau-0.1.0.dmg` và `Dau-0.1.0.dSYMs.zip` (đổi tên không đổi chữ ký hay vé notarize: cả hai nằm trên nội dung DMG; script kiểm lại bằng `codesign`, `stapler validate`, `spctl` và số hiển thị của Dau.app trong DMG), rồi tạo **bản nháp** không pre-release. Script từ chối khi tag không trỏ vào commit của tag beta nào, khi beta chưa công bố, hay khi đã có bản phát hành cùng tag. Chạy thử trên máy mà không tạo gì: `scripts/release/promote-release.sh --tag v0.1.0 --dry-run`.
+3. **Công bố:** bấm Publish release trên GitHub. Không đụng `site/appcast.xml`. Rồi cập nhật cask Homebrew ở `codefastlabs/homebrew-tap` trỏ vào DMG của bản ổn định (D6).
+
+**Số build.** `CFBundleVersion` mặc định là mười lần số commit của HEAD (`git rev-list --count`), nên tăng theo lịch sử; mỗi bản dựng một số, và số này cùng commit trong ngoặc phân biệt các beta của một phiên bản (chúng cùng số hiển thị). Bản ổn định không có số riêng: nó mang số của beta cuối. Cờ `--build-number` của script đặt số khác khi cần.
 
 ## Chế độ không ký
 
@@ -99,3 +122,5 @@ Bố cục (kích thước cửa sổ, vị trí biểu tượng, nền) nằm t
 ## Còn phải thấy chạy thật
 
 Phần ký, notarize, staple, `layout-dmg.sh` và `generate_appcast` ký thật cần tài khoản hoặc Finder nên chưa chạy ở máy phát triển; chế độ không ký đã chạy trọn tới DMG. Lần thấy chúng chạy đầu tiên là bước 2 của kế hoạch M7 (hai tag thử sau bước 0): sửa script theo log của lần đó.
+
+Đường quảng bá (`promote-release.sh`) cũng chưa chạy thật: cần một bản beta đã công bố trên GitHub (bước 2 của kế hoạch M7) để `gh release download`, kiểm `codesign` / `stapler` / `spctl` trên tệp đã đổi tên và tạo bản nháp. Lần thấy nó chạy đầu tiên là lúc quảng bá beta cuối của 0.1.0: chạy `--dry-run` trước, và sửa script hay tài liệu này theo log. Việc đổi tên DMG không làm hỏng chữ ký hay vé notarize là suy từ cách hai thứ này gắn vào nội dung tệp; `--dry-run` là lần kiểm thật.

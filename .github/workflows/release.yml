@@ -1,6 +1,10 @@
-# Release: a tag vX.Y.Z or vX.Y.Z-beta.N builds Dấu with scripts/release/build-release.sh and
-# makes a DRAFT GitHub release with the DMG and the dSYMs. Nothing is published and the
-# appcast is not touched (docs/Releasing.md, "Phát hành một tag").
+# Release: two paths by tag (docs/Releasing.md, "Phát hành một tag").
+# - vX.Y.Z-beta.N builds Dấu with scripts/release/build-release.sh and makes a DRAFT GitHub
+#   pre-release with the DMG, the dSYMs and the updated appcast. Nothing is published and the
+#   appcast on the site is not touched.
+# - vX.Y.Z (stable) builds NOTHING: scripts/release/promote-release.sh takes the DMG and dSYMs of
+#   the last beta on the same commit and makes a DRAFT release from them, same binary, same
+#   notarization ticket, no appcast change (D7).
 # With the secrets below the build is signed with Developer ID, notarized and the appcast is
 # signed; without them it builds a development build (D7), unsigned and not for users, and
 # makes NO release: the *-dev-unsigned.dmg is only an artifact of the run (7 days). Simpler and
@@ -23,7 +27,9 @@ env:
 # Secrets live only in the env of the two steps that use them, never workflow-wide: other
 # steps run third-party code (Homebrew formulae, actions).
 jobs:
+  # Any tag with a hyphen (a beta, or a malformed one that the script then refuses).
   release:
+    if: contains(github.ref_name, '-')
     runs-on: xcode-27
     timeout-minutes: 90
     steps:
@@ -85,7 +91,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          flags=(--draft --title "Dấu ${{ steps.build.outputs.display }}" --generate-notes)
+          flags=(--draft --title "Dấu ${{ steps.build.outputs.label }}" --generate-notes)
           case "$GITHUB_REF_NAME" in *-beta.*) flags+=(--prerelease) ;; esac
           files=("${{ steps.build.outputs.dmg }}" "${{ steps.build.outputs.dsyms }}")
           # The updated appcast is a release asset, not published: docs/Releasing.md.
@@ -95,3 +101,20 @@ jobs:
       - name: Remove the keychain
         if: always() && env.DAU_KEYCHAIN != ''
         run: security delete-keychain "$DAU_KEYCHAIN" || true
+
+  # Stable tag: promote the last beta, no build, no secrets. Checks the signature and the
+  # stapled ticket of the DMG with codesign, stapler and spctl, so it needs the macOS runner.
+  promote:
+    if: ${{ !contains(github.ref_name, '-') }}
+    runs-on: xcode-27
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          # The script reads which beta tags point at the commit of the tag.
+          fetch-depth: 0
+
+      - name: Draft the stable release from the last beta
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: scripts/release/promote-release.sh --tag "$GITHUB_REF_NAME"

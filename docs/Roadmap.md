@@ -27,7 +27,7 @@ Kế hoạch của các mốc này: [`docs/history/Plans.md`](history/Plans.md).
 
 ## M7 — Phát hành
 
-Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo bước và việc của từng bên: [`docs/Progress.md`](Progress.md) mục "Kế hoạch M7"; phần đã xong và còn lại cũng theo mục đó, danh sách dưới đây không đánh dấu từng dòng.
+Mục tiêu: bản thử đầu (tag `v0.1.0-beta.1`, D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo bước và việc của từng bên: [`docs/Progress.md`](Progress.md) mục "Kế hoạch M7"; phần đã xong và còn lại cũng theo mục đó, danh sách dưới đây không đánh dấu từng dòng.
 
 - Trước khi phát hành: chạy bài đo của D42, và ghi bộ nhớ (RSS) tiến trình bộ gõ của bản Release cạnh số của bản Debug trong cùng lượt (D42 ghi chênh lệch này là chưa đo).
 - Ký Developer ID, notarize, DMG.
@@ -39,7 +39,7 @@ Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bả
 - Loại bản dựng (D7, D25 (Nhận diện)):
   - cờ build chọn biểu tượng chuẩn, chỉ quy trình phát hành trên CI đặt: bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và bộ gõ là `AppIcon`, không phải `AppIconDev`;
   - cũng bước kiểm đó: binary của Dấu.app và bộ gõ đã lược ký hiệu cục bộ (`nm`; archive lược, `xcodebuild build` thì không), và dSYM của mỗi bản phát hành được lưu lại để đọc được báo lỗi crash;
-  - số build tăng dần, số hiển thị có chữ beta.
+  - số build tăng dần, số hiển thị ba số không có chữ beta; bản ổn định là tệp của beta cuối, không dựng lại.
 - `.gitignore`: ghim phiên bản Sparkle chính xác trong `project.yml` (vì `Package.resolved` bị bỏ qua); thêm `*.p8`, `*.pem`, `*.key`, `*.p12`, `*.xcarchive`.
 - Biểu tượng thật dựng bằng Icon Composer, thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
 - Xuất các file nhận diện bản thử đầu cần theo [`docs/Brand.md`](Brand.md): biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, ảnh xem trước GitHub, nền DMG. Favicon, ảnh Open Graph và thẻ meta đi cùng website (M8).
@@ -51,7 +51,7 @@ Mục tiêu: bản thử đầu "0.1.0 beta 1" (D7 (Cập nhật và loại bả
   - máy để tiếng Anh hẳn (menu app, tên "Dấu" trong Finder);
   - các sheet ở chế độ tối;
   - danh sách "+" của System Settings có Dấu (nhìn bằng mắt).
-- Xong khi: bản 0.1.0 beta 1 có trên GitHub Releases, cài được từ DMG và bằng `brew install --cask codefastlabs/tap/dau`, Sparkle cập nhật được từ một bản chính thức trước đó; kiểm toán ĐẠT.
+- Xong khi: bản `v0.1.0-beta.1` có trên GitHub Releases, cài được từ DMG và bằng `brew install --cask codefastlabs/tap/dau`, Sparkle cập nhật được từ một bản chính thức trước đó; kiểm toán ĐẠT.
 
 ### Sau bản thử đầu
 

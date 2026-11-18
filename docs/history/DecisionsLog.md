@@ -94,6 +94,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 17/11/2026 (người dùng chốt khi lập kế hoạch M7): thêm URL appcast `https://dau.codefastlabs.com/appcast.xml` (chọn thay cho GitHub Pages, buộc URL vào GitHub, và `releases/latest/download`, không tính bản prerelease); chỉ bản chính thức có URL appcast; kênh Beta bật trong app, không có cask riêng; bản thử đầu "0.1.0 beta 1". Ba ý về loại bản đến từ câu hỏi mở "Loại bản dựng".
 - 17/11/2026 (người dùng chọn khi duyệt artboard M7): cửa sổ chuẩn của Sparkle thay cho thẻ cập nhật sáu trạng thái và thông báo tự vẽ (artboard "Trạng thái thẻ cập nhật", "Thông báo cập nhật" bỏ khỏi canvas); chỉ kiểm tra lúc Dấu mở; không cài ngầm. Bản trước, nguyên văn: "Cài bản mới lúc người dùng không gõ, sau đó dừng tiến trình bộ gõ cũ để hệ thống nạp bản mới; cách thay bộ gõ đã cài ở D37, ý "Thay bộ gõ đã cài"." Phương án đã loại: giữ bản tự vẽ (cần user driver riêng); thêm kiểm tra khi Dấu không mở (tiến trình nền, để sau bản thử đầu).
+- 18/11/2026 (người dùng chốt, từ so sánh với cách Apple đánh số phiên bản): số hiển thị luôn là ba số nguyên, chữ beta chỉ ở tag, GitHub và appcast; bản ổn định là tệp nhị phân của beta cuối, không dựng lại; bản thử đầu là tag `v0.1.0-beta.1`, số hiển thị "0.1.0". Bản trước, nguyên văn: "**Số phiên bản:** `CFBundleVersion` là số build tăng dần, Sparkle so sánh bằng số này; số hiển thị dạng "1.3.0 beta 2", tag git dạng `v1.3.0-beta.2`; bản ổn định dựng lại từ cùng commit với bản beta cuối, số hiển thị không có chữ beta. Bản thử đầu là "0.1.0 beta 1" (tag `v0.1.0-beta.1`)." Phương án đã loại: giữ chữ beta trong số hiển thị (bản ổn định phải dựng lại, thành tệp chưa ai chạy).
 - 17/11/2026 (người dùng đồng ý đề xuất của phiên chính): thêm "Hệ quả đã chấp nhận" về ⌘Q giữa lúc cài (Sparkle cài lúc thoát mà không mở lại Dấu); app-ui-dev phát hiện khi đọc `SPUUserDriver.h` lúc nối Sparkle. Phương án đã loại: thêm mã ép mở lại Dấu sau khi cài.
 
 ### D8. Không telemetry
@@ -230,6 +231,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 05/11/2026: "Biểu tượng theo loại bản (người dùng chốt 05/11/2026, các loại bản ở D7)".
 - 05/11/2026: dải chéo Hổ phách ở góc dưới phải ("người dùng chọn 05/11/2026 giữa dải góc và nền sọc; nền sọc mất ở 16–32 pt và ở kiểu Trong suốt").
 - 17/11/2026 (người dùng chốt, từ câu hỏi mở "Loại bản dựng"): bản phát triển giữ tên "Dấu".
+- 18/11/2026 (theo D7 cùng ngày): bản Beta phân biệt bằng commit trong ngoặc thay vì số phiên bản. Bản trước, nguyên văn: "Kênh Beta dùng biểu tượng chuẩn, phân biệt bằng số phiên bản ("1.3.0 beta 2") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry))."
 
 ### D26. Gõ đúp phím dấu
 

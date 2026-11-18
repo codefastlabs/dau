@@ -15,7 +15,7 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/lib/` | công cụ dùng chung giữa các script |
 | `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`, `terminal-underline/`) |
 | `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/canvas/`) |
-| `scripts/release/` | dựng bản phát hành: archive, ký Developer ID, notarize, DMG, appcast; kiểm bản build (`docs/Releasing.md`). `build-release.sh` chạy được không cần chứng chỉ (chế độ không ký); `layout-dmg.sh` mở Finder nên chỉ chạy trên CI |
+| `scripts/release/` | dựng bản phát hành: archive, ký Developer ID, notarize, DMG, appcast; kiểm bản build (`docs/Releasing.md`). `build-release.sh` dựng một bản beta, chạy được không cần chứng chỉ (chế độ không ký); `promote-release.sh` biến beta cuối thành bản ổn định bằng cách sao tài sản của nó, không dựng lại; `layout-dmg.sh` mở Finder nên chỉ chạy trên CI |
 
 ## Đầu mỗi script
 
@@ -41,6 +41,7 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | `changes input source` | chọn lại nguồn đầu vào, hoặc bỏ Dấu khỏi nguồn đầu vào |
 | `changes user settings` | ghi `defaults`, cài đặt App Group của người dùng, hoặc tệp cài đặt của app khác (script tự trả lại khi xong, trừ khi ghi khác; ví dụ `typing/run.sh` với `webstorm`: `trusted-paths.xml` và `recentProjects.xml` của WebStorm, chỉ trả lại khi script tự mở WebStorm) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
+| `changes GitHub` | tạo hoặc đổi thứ trên GitHub (bản nháp phát hành) bằng tài khoản đang đăng nhập `gh` |
 
 Hook `.claude/hooks/guard-scripts.sh` canh các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào): subagent gọi thì bị chặn; phiên chính gọi thì Claude Code hiện thẻ cấp quyền, script chỉ chạy khi người dùng cho phép, trừ máy đã bật `DAU_RUN_SCRIPTS_WITHOUT_ASKING=1` (`CLAUDE.md`, mục "Điều phối"). Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.
 
