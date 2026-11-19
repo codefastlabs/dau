@@ -36,6 +36,7 @@ Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hi�
 |---|---|
 | [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) | đọc mã OpenKey: tính năng, ca biên, Dấu làm hay không; chỗ Dấu cố ý khác OpenKey |
 | [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md) | tài liệu và header của Apple về các API InputMethodKit mà bộ gõ dùng |
+| [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) | API của InputMethodKit so với cách Dấu đang dùng, từng việc mở có API nào giúp không và phép đo rẻ nhất |
 | [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) | cài, bật, nâng cấp, gỡ bộ gõ; lần cài đầu; bộ gõ cũ cần phát hiện |
 | [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) | số đo giao diện của System Settings dùng làm chuẩn |
 | [`docs/research/SwiftUIWindowAPI.md`](research/SwiftUIWindowAPI.md) | API của Apple cho sidebar, thanh công cụ, tiêu đề, ô tìm của cửa sổ Cài đặt; cách vá đã gỡ |
@@ -44,7 +45,7 @@ Mỗi chủ đề một file; kết luận hiện hành và ngày ở mục "Hi�
 | [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) | gõ trong Ghostty và terminal dựng bằng xterm.js (ô bỏ qua vùng thay chữ); sửa chữ ở chế độ gạch chân |
 | [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) | chữ của bộ gõ tới terminal và trình soạn thảo của WebStorm (JetBrains Runtime) thế nào; dự đoán từ mã nguồn và kết quả đo của Dấu |
 | [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | luồng chính của trang web bận bao lâu khi gõ, và giới hạn khi suy ra rủi ro cho thay chữ tại chỗ |
-| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | hai kịch bản "app trả lời chậm" (D20 sau ⌫ chậm 3–4 thao tác, chưa gặp ở app thật; app tính vị trí theo từ, có ở trình soạn thảo Cursor 3.30.14): cơ chế và hướng sửa |
+| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | ba kịch bản "app trả lời chậm" (D20 sau ⌫ chậm 3–4 thao tác, chưa gặp ở app thật; app tính vị trí theo từ, có ở trình soạn thảo Cursor 3.30.14; trang bận, app chậm qua chỗ ngắt từ): cơ chế và hướng sửa |
 | [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | các cách người gõ sửa chữ khi gõ, chỗ Dấu hỏng và nguyên nhân, các hướng sửa; hồ sơ người gõ |
 | [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) | các bộ gõ macOS khác (IMK và event tap) gõ vào Google Docs thế nào; Chrome đưa gì cho bộ gõ; chế độ hỗ trợ tiếp cận của Google Docs |
 

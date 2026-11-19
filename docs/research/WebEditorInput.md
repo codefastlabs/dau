@@ -15,7 +15,7 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
 | Phím Việt | IMK (bản chính); app event tap tách riêng | chữ đánh dấu cho tới khi app chứng minh đọc lại đúng ở hai vị trí khác nhau, rồi thay tại chỗ, kiểm sau mỗi lần ghi | không có xử lý riêng; tác giả ghi Google Docs sẽ tự về chữ đánh dấu, ô kiểm thử Google Docs còn trống (mục 3) |
 | fcitx5-macos (fcitx5-unikey, fcitx5-bamboo) | IMK | luôn chữ đánh dấu cho cả từ; chốt bằng `insertText` không có vùng thay | không có xử lý riêng (mục 4) |
 | KeyIn, VietIME, InputKey, GoTiengViet (isthaison) | IMK | chỉ chữ đánh dấu | không có xử lý riêng (mục 5) |
-| Telex của Apple | IMK | chữ đánh dấu | gõ đúng (Dấu đo, [`docs/Compatibility.md`](../Compatibility.md) mục 5.10); tác giả VietTelex cũng ghi bộ gõ của Apple gạch chân trong Google Docs (mục 6) |
+| Telex của Apple | IMK | chữ đánh dấu | gõ đúng (Dấu đo, [`docs/Compatibility.md`](../Compatibility.md) mục 5.10); tác giả VietTelex cũng ghi bộ gõ của Apple gạch chân trong Google Docs; theo WebKit, Telex đơn giản thay tại chỗ và chỉ lùi về chữ đánh dấu khi app không áp đúng (mục 6) |
 | OpenKey, EVKey, Gõ Nhanh, PHTV, goxkey, DauKey, VnKey; XKey.app | event tap, Backspace giả | xoá bằng Backspace giả rồi gõ chữ mới | tuỳ chọn hay quy tắc "gửi từng phím", gửi chậm, ký tự rỗng trước (mục 7) |
 | Keyman (SIL, nhiều thứ tiếng) | IMK, kèm gửi phím ⌫ giả (cần quyền Trợ năng) | app "tuân thủ": thay tại chỗ bằng `insertText` với vùng thay; app khác: ⌫ giả rồi chèn | Chrome bị ghi cứng là app không tuân thủ, vì Google Docs (mục 11.1) |
 | macSKK, Gureum, Squirrel, OpenVanilla, iAvro (tiếng Nhật, Hàn, Trung, Bangla) | IMK | chữ đánh dấu; macSKK đưa chữ vừa chốt về chữ đánh dấu, chỉ sau khi đọc lại thấy đúng chữ đó | không có xử lý riêng (mục 11.2) |
@@ -150,6 +150,7 @@ Không thấy xử lý riêng cho Google Docs hay trình duyệt trong các bộ
 
 - Bộ gõ IMK của macOS (`com.apple.inputmethod.VietnameseIM.VietnameseTelex`). Dấu đo: gõ đúng chữ gõ liền trong Google Docs, nơi Dấu sai ([`docs/Compatibility.md`](../Compatibility.md) mục 5.10).
 - Dấu chưa đo việc nó dùng chữ đánh dấu ở Google Docs. Hai tác giả khác ghi điều này: VietTelex (issue #37: bàn phím tiếng Việt có sẵn của macOS gạch chân trong Google Docs) và Phím Việt (`docs/DECISIONS.md` D12: bộ gõ tiếng Việt mặc định của Apple gạch chân). [`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) cũng gọi nó là gạch chân ở terminal.
+- Theo commit 313286@main của WebKit, Telex đơn giản của Apple (commit gọi theo tên) là bộ gõ "không chế độ": gõ bằng `insertText` có vùng thay, hỏi `selectedRange` trong lúc xử lý phím để kiểm chữ đã vào chưa, và chuyển sang chữ đánh dấu tới hết phiên nếu chưa. Nên gạch chân mà hai tác giả trên thấy có thể là chế độ lùi đó, không phải cách gõ mặc định. Bộ gõ Telex (không đơn giản) có cùng cơ chế không: chưa rõ. Chi tiết: [`docs/research/IMKCapabilities.md`](IMKCapabilities.md) mục 5.
 
 ## 7. Bộ gõ event tap (đối chiếu)
 
