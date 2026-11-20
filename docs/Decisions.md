@@ -57,6 +57,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D41](#d41-ngôn-ngữ-giao-diện) | Ngôn ngữ giao diện | Tiếng Việt và tiếng Anh, theo ngôn ngữ ưu tiên của macOS. |
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Chạy bài tải nặng trước mỗi bản phát hành; vượt ngưỡng thì không phát hành. |
 | [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Không xử lý riêng; gõ đúng bằng gạch chân người dùng tự bật; Ghostty mang nhãn "Đề xuất". |
+| [D44](#d44-văn-xuôi-tiếng-việt) | Văn xuôi tiếng Việt | Viết thành câu tự nhiên, rõ ràng, đủ ý; bảo toàn tối đa ý nghĩa gốc. |
 
 Cuối sổ: [Đã biết nhưng không làm](#đã-biết-nhưng-không-làm), [Đã cân nhắc và loại bỏ](#đã-cân-nhắc-và-loại-bỏ), [Câu hỏi mở](#câu-hỏi-mở).
 
@@ -707,6 +708,24 @@ Có những ô nhận chữ của `insertText(_:replacementRange:)` nhưng bỏ 
 - Mỗi nhánh riêng trong đường xử lý phím là thêm chỗ để lỗi; mã đơn giản đáng hơn một cách sửa chỉ đúng một phần.
 
 **Xem thêm:** cơ chế và số đo ở [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md); [`docs/Compatibility.md`](Compatibility.md) mục 5.6, 6.8; cách làm cũ và lý do bỏ ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D43.
+
+### D44. Văn xuôi tiếng Việt
+
+Tài liệu tiếng Việt trong dự án phải được viết thành câu đủ ý, tự nhiên, rõ ràng và chuẩn xác cao nhất, theo cách một người viết tiếng Việt viết cho người khác đọc. Câu nào rút gọn đến mức người đọc phải tự điền chủ ngữ, vị ngữ, hoặc tự suy đoán mối liên hệ giữa các vế thì câu đó chưa viết xong.
+
+- Mỗi câu nói trọn vẹn một việc hoặc một ý, có đầy đủ chủ ngữ và vị ngữ.
+- Khi có nhiều ý ngang hàng thì mỗi ý viết thành một câu riêng. Các ý đó được xuống dòng hoặc đứng sau gạch đầu dòng. Mỗi gạch đầu dòng là một câu hoàn chỉnh, không phải một cụm danh từ cộc lốc.
+- Các câu nối tiếp nhau phải được viết thành đoạn văn mạch lạc. Không nhồi nhét nhiều việc vào một câu đơn bằng cách lạm dụng dấu hai chấm, dấu gạch chéo hay ngoặc đơn chỉ để lấy ngắn.
+- Kết quả viết lại hoặc viết mới phải đạt độ tự nhiên, rõ ràng và chuẩn xác cao nhất theo đúng cấu hình được chỉ định, đồng thời bảo toàn tối đa ý nghĩa gốc. Tuyệt đối không thêm sự kiện ngoài thực tế, không bỏ bớt số đo, không làm lệch dữ liệu kiểm chứng và không đổi các thuật ngữ đã chốt trong [`docs/Glossary.md`](Glossary.md). Số hiệu nguyên tắc N/D, mã lệnh và đường dẫn phải giữ nguyên.
+- Không miễn trừ tài liệu cũ hay tài liệu lịch sử: mọi tài liệu markdown (kể cả sổ quyết định và tài liệu trong [`docs/history/`](history/)) đều áp dụng chuẩn văn xuôi này để người đọc không bị vấp khi tra cứu. Quá trình viết lại tài liệu hiện có được thực hiện từng bước có đối soát kỹ lưỡng.
+- Tiêu đề mục và cột nhãn định danh (như cột "Tên" trong bảng mục lục) được dùng ngữ danh từ rõ nghĩa, không viết tắt khó hiểu. Mọi nội dung diễn giải, tóm tắt luật (như cột "Luật") và ghi chú phân tích đều là văn xuôi và phải viết thành câu đầy đủ ý.
+- Chuỗi ký tự hiển thị trên giao diện người dùng tuân thủ quy chuẩn thiết kế của macOS, nhưng toàn bộ phần văn bản mô tả và hướng dẫn đi kèm trong tài liệu phải là câu văn xuôi hoàn chỉnh.
+
+**Vì sao:** Quy định cũ về viết câu ngắn ở [`docs/CLAUDE.md`](CLAUDE.md) từng bị hiểu máy móc thành việc lược bỏ động từ, ghép nối vụng về bằng dấu ngắt câu, khiến câu từ cụt lủn và buộc người đọc phải tự dịch lại trong đầu. Việc tạo ra các ngoại lệ miễn trừ (như giữ nguyên văn phong cũ trong tài liệu lịch sử hay sổ quyết định) là không chính đáng vì vẫn gây khó khăn cho người đọc khi tiếp cận. Một tài liệu chuẩn mực phải vừa bảo toàn trọn vẹn độ chính xác kỹ thuật, vừa mang lại trải nghiệm đọc tự nhiên và sáng rõ nhất. Người dùng giao phiên chính chốt ngày 20/11/2026.
+
+**Hệ quả đã chấp nhận:** Văn bản diễn giải sẽ dài hơn. Các tài liệu hiện có sẽ được lên kế hoạch rà soát và viết lại từng bước mà không làm thay đổi các số đo và dữ kiện thực nghiệm.
+
+**Xem thêm:** quy tắc viết tài liệu ở [`docs/CLAUDE.md`](CLAUDE.md), mục "Thứ tự theo người đọc" và "Câu đủ ý".
 
 ## Đã biết nhưng không làm
 
