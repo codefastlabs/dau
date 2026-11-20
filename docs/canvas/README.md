@@ -1,10 +1,10 @@
 # Bản chụp canvas thiết kế
 
-Ảnh chụp các artboard trên trang "Thiết kế" của canvas mockup, để xem thiết kế đã duyệt mà không cần mở canvas trên claude.ai. Canvas vẫn là nơi sửa thiết kế (`Apps/Dau/CLAUDE.md`); thư mục này chỉ là bản chụp, sinh bằng `scripts/design/render-canvas.sh`, không sửa tay.
+Thư mục này lưu trữ ảnh chụp các artboard trên trang "Thiết kế" của canvas mockup, giúp bạn xem lại các giao diện đã được phê duyệt mà không cần mở trực tiếp canvas trên claude.ai. Mọi chỉnh sửa thiết kế vẫn được thực hiện trực tiếp trên canvas (theo hướng dẫn tại `Apps/Dau/CLAUDE.md`); các tệp trong thư mục này chỉ là bản chụp kết xuất tự động bằng script `scripts/design/render-canvas.sh` và tuyệt đối không chỉnh sửa thủ công.
 
-- `*.png`: ảnh chụp từng artboard.
-- `src/*.dc.html`: nguồn của artboard (nội dung, câu chữ chính xác); agent đọc file này thay cho canvas.
-- `canvas.json`: vị trí, kích thước và tiêu đề các artboard.
+- Các tệp định dạng `*.png` là ảnh chụp giao diện của từng artboard.
+- Các tệp trong thư mục `src/*.dc.html` là mã nguồn HTML của artboard (chứa nội dung và câu chữ chính xác của giao diện); các công cụ agent có thể đọc tệp này thay cho việc truy cập canvas.
+- Tệp `canvas.json` lưu trữ thông tin về vị trí tọa độ, kích thước và tiêu đề của toàn bộ các artboard.
 
 ## Thiết lập Dấu
 
