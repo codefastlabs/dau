@@ -4,9 +4,9 @@
 
 <h1 align="center">Dấu</h1>
 
-<p align="center"><strong>Gõ tiếng Việt trên Mac, dấu nào vào đúng chỗ nấy.</strong></p>
+<p align="center"><strong>Bộ gõ tiếng Việt tự nhiên và chuẩn xác cho macOS.</strong></p>
 
-<p align="center">Miễn phí trọn vẹn · Mã nguồn mở · cho macOS</p>
+<p align="center">Hoàn toàn miễn phí · Mã nguồn mở · Thiết kế riêng cho macOS</p>
 
 <p align="center">
   <picture>
@@ -19,25 +19,25 @@
 
 ### Một lựa chọn không cần thoả hiệp.
 
-Người dùng Mac từ lâu luôn phải đứng trước sự đánh đổi: chấp nhận những lỗi vụng về của bộ gõ mặc định, hoặc cài phần mềm bên thứ ba nhưng phải cấp quyền can thiệp hệ thống, chịu cảnh giật con trỏ và nỗi lo thường trực về an toàn dữ liệu. Dấu ra đời để xoá bỏ sự đánh đổi đó: một bộ gõ tiếng Việt thông minh, chuẩn xác, nhưng hoạt động nguyên bản, mượt mà và an toàn như chính một phần của macOS.
+Người dùng Mac từ lâu luôn phải đứng trước sự đánh đổi: chấp nhận những lỗi vụng về của bộ gõ mặc định, hoặc cài phần mềm bên thứ ba nhưng phải cấp quyền can thiệp hệ thống, chịu cảnh giật con trỏ và nỗi lo thường trực về an toàn dữ liệu. Dấu ra đời để xoá bỏ sự đánh đổi đó: một bộ gõ tiếng Việt thông minh, chuẩn xác, nhưng hoạt động nguyên bản, mượt mà và an toàn như một bàn phím hệ thống.
 
-### Gõ tiếng Việt, đúng từng dấu.
+### Chính tả chuẩn xác, dù kiểu mới hay kiểu cũ.
 
 Dấu hỗ trợ Telex, VNI và Telex đơn giản. Dấu thanh luôn tự động vào đúng nguyên âm theo chính tả, cho phép bạn lựa chọn kiểu đặt dấu mới (hoà, thuý) hoặc kiểu cũ (hòa, thúy). Khi một từ đã sai chính tả, Dấu dừng biến đổi chứ không tự ý đoán thay bạn.[^1] Thử nghiệm thực tế với 60 câu tiếng Việt thông dụng trên Safari và Chrome, Dấu cho kết quả chính xác 677 trên tổng số 678 từ.[^2]
 
-### Dấu đặt ở đâu cũng được.
+### Tự do bỏ dấu ở bất kỳ vị trí nào.
 
 Bạn không cần gõ phím dấu ngay cạnh chữ cái mang dấu. Chuỗi `tuongw` cho ra "tương", `hoaf` cho ra "hoà", và dấu thanh sẽ tự động dời về đúng vị trí khi bạn gõ thêm nguyên âm.[^3]
 
-### Quên dấu? Quay lại thêm.
+### Bổ sung dấu linh hoạt cho từ đã gõ.
 
 Bạn có thể đặt con trỏ ngay sau một từ đã gõ không dấu rồi bấm phím dấu để bổ sung, như gõ thêm `ej` sau `viet` để thành "việt". Khi bạn nhấn ⌫, Dấu sẽ xoá chữ cuối cùng và tự động sắp xếp lại dấu theo vần còn lại, chẳng hạn chuyển "hoà" thành "hò".[^4]
 
-### Câu có chữ tiếng Anh? Cứ gõ.
+### Gõ liền mạch câu xen lẫn tiếng Anh.
 
 Bạn có thể gõ liền mạch câu xen lẫn tiếng Anh như "Sếp vừa gửi email về buổi meeting chiều nay" mà không cần chuyển bàn phím. Khi kết thúc một từ không phải âm tiết tiếng Việt hợp lệ, Dấu sẽ tự động trả lại đúng các phím bạn đã gõ mà không cần từ điển.[^5] Nếu muốn giữ chữ gốc ngay giữa từ, bạn chỉ cần gõ đúp phím dấu, như gõ `carr` để ra "car".
 
-### Là một phần của macOS.
+### Hoạt động như bàn phím hệ thống.
 
 Dấu là một nguồn đầu vào chuẩn như mọi bàn phím khác trên Mac, không phải ứng dụng chạy ngoài can thiệp phím. Bạn có thể chuyển đổi giữa tiếng Việt và tiếng Anh bằng chính phím tắt cùng menu nguồn đầu vào của macOS mà không cần cấp quyền Trợ năng (Accessibility). Đây là điều kiện then chốt để Dấu hoạt động bình thường ngay cả trên các máy tính chịu sự quản lý bảo mật nghiêm ngặt của doanh nghiệp hay cơ quan nhà nước.[^6] Thao tác thay chữ được thực hiện trực tiếp tại chỗ qua API nhập liệu của Apple, hoàn toàn không giả lập phím Backspace gây giật con trỏ.
 
