@@ -180,15 +180,15 @@ Nguyên nhân và hướng đã chọn: [`docs/research/LateAnswerFixes.md`](Lat
 
 ### 4.3 Google Docs luôn trả vị trí (1, 0)
 
-Các đường đã xét và đã đo: [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.5, 10.6 (vùng thay lớn hơn cửa sổ bị kẹp; không đọc được thêm chữ; sửa nhiều bước sau khi xử lý phím làm hỏng ô nhập; Safari cũng (1, 0); chữ đánh dấu có vùng thay cũng bị kẹp trong chữ của trang). Mục này chỉ thêm điều mới:
+Các đường đã xét và đã đo: [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.5, 10.6 (gửi vùng thay lớn hơn cửa sổ thì hỏng; trước con trỏ chỉ đọc được một ký tự; sửa nhiều bước sau khi xử lý phím làm hỏng ô nhập; Safari cũng (1, 0); chữ đánh dấu có vùng thay cũng bị kẹp trong chữ của trang). Mục này chỉ thêm điều mới:
 
 - **WebKit có đường riêng cho docs.google.com** [WebKit]: bảng quirk (`QuirkTable.json`) gắn cho `*://docs.google.com/*` hai hành vi, `InputMethodMustUseCompositionEvents` và `InputMethodUsesCorrectKeyEventOrder`.
   - Cái thứ nhất được trả cho bộ gõ qua lời gọi bất đồng bộ `isMarkedTextRequiredForComposition` (`WebViewImpl::isMarkedTextRequiredForCompositionWithCompletionHandler`, `WKWebViewMac.mm`): trang báo "phải dùng chữ đánh dấu". Lời gọi này thuộc giao thức bất đồng bộ riêng của AppKit, **không có trong `IMKTextInput`** [Apple, header], nên bộ gõ bên thứ ba không hỏi được. Commit 315032@main nói tới "AppKit SPI để tắt nhập không chế độ" (modeless input), tức đường riêng của Apple.
   - Cái thứ hai đang tắt cứng (`Quirks::inputMethodUsesCorrectKeyEventOrder` trả không).
   - Hệ quả: bộ gõ của Apple có đường để biết Google Docs cần chữ đánh dấu; Dấu thì không. Khớp với số đo Telex của Apple gõ đúng ở Google Docs (mục 5).
-- **Tín hiệu công khai để nhận ra cửa sổ một ký tự** [Suy luận]: `string(from:actualRange:)` ở Chromium trả vùng thật là phần giao với bản sao chữ, nên lộ ra bản sao chỉ dài một ký tự; `length()` có thể nhỏ bất thường. Đây chỉ là cách nhận ra, không phải cách sửa: điều Dấu làm được sau khi nhận ra là chuyển sang chữ đánh dấu, tức tự bật gạch chân, **trái D13 và D5**.
+- **Tín hiệu công khai để nhận ra cửa sổ một ký tự** [Dấu đo, 22/11/2026]: `length()` trả 0 ở cả Chrome và Safari. Đọc vùng vượt quá chữ có sẵn thì trả nil, không trả vùng giao. Ở Chrome, đọc từ vị trí 1 còn ra chữ dù sau con trỏ không có gì. Tín hiệu ổn định nhất là vị trí vẫn `(1, 0)` sau khi Dấu đã chèn vài ký tự ([`docs/Compatibility.md`](../Compatibility.md) mục 5.10). Đây chỉ là cách nhận ra, không phải cách sửa: điều Dấu làm được sau khi nhận ra là chuyển sang chữ đánh dấu, tức tự bật gạch chân, **trái D13 và D5**.
 - **Hình học** (`firstRect`, `characterIndex`): Chromium hỏi renderer đồng bộ, nhưng chỉ cho khung và chỉ số trong chữ EditContext của trang, không cho chữ (đã ghi ở [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.2). Không giúp thay quá một ký tự.
-- **Đo:** không đề xuất phép đo mới cho phần sửa. Nếu người dùng muốn xét lại D13 cho Google Docs, phép đo rẻ nhất là bản Debug ghi `actualRange` và `length()` ở một lần gõ Google Docs (Chrome, Safari), để biết tín hiệu nhận ra có ổn định không.
+- **Đo:** phép đo `actualRange` và `length()` đã chạy ngày 22/11/2026 (tín hiệu ở ý trên). Không còn phép đo nào cho thay tại chỗ. Các tuỳ chọn hỗ trợ tiếp cận của Google Docs không đo, vì chúng chỉ là cách vòng người dùng phải tự bật ([`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.6 B).
 
 ### 4.4 WebStorm reset sau mỗi phím
 Số đo và giả thuyết dưới đây có từ trước khi Dấu tự chèn ký tự (N3, 22/11/2026): nay chỉ ⌫, Return, Tab, Esc, mũi tên và phím có ⌘, ⌃, ⌥ đi thẳng. Ca WebStorm chưa đo lại (WebStorm không có trên máy đo ngày 22/11/2026).
