@@ -32,47 +32,38 @@ DELAY=120
 # 300:1000: the test page blocks its main thread 300 ms of every second, M6); fast (30 ms
 # between keys instead of --delay).
 # Keys: ⌫ Delete, ← left arrow, ↩ Return (typing/run.sh).
-# First round (11/11/2026): Sublime holds the three edits of an already typed word: change
-# the mark (D26), ⌫ back into a committed word then add a mark (D20), move left into a
-# word then add a mark (D20). Ghostty cells start at an empty line, as right after Return;
-# the underline cell ends with Return.
-# Second and third rounds (11/11/2026, t2- and t3- cells): Debug trials of erasing with
-# DEL (in the key, after the key, a document length probe); they ran builds 13d4df7 and
-# 237e68f, results in the log of docs/history/LogM6.md. Their cells went with the trials.
-# Fourth round (t4-): measured the D43 code of the time, which told terminals apart and
-# erased with DEL; that code is gone (D43 now: no special handling, the old way in
-# docs/history/DecisionsLog.md section D43). The cells stay: the terminals (Ghostty with
-# zsh and vim, xterm.js) come out wrong in place and right with underline (D13); the text
-# fields (Chrome, also with a busy page; Safari; Sublime Text) must come out right. One
-# line covers D32 (hoaf ⌫), D4 (windows), a word whose first replacement comes late
-# (nguwowif) and short ones.
-# Fifth round (t5-): in-place typing in terminals of Electron apps, and the move from a
-# terminal to an editor in the same window (docs/research/TerminalAndUnderline.md,
-# section 2, "Chuyển ô trong cùng view"). Terminal.app at 120 and 30 ms; VS Code's integrated terminal
-# (vscodeterm: xterm.js in Electron, also with a Return in the line); vscodeswitch types in
-# the terminal, then moves the focus to an empty editor of the same window and types there
-# (the 7th and 8th fields: keys and expected text of the editor); t5-vsterm-apple is the
-# control of t5-vsterm with Apple's Telex; t5-ghostty is the Ghostty cell with the same sentence
-# (no ↩: Return ends the line of the Ghostty cell). Roughly 9 to 11 minutes for the six cells
-# (VS Code opens a window and a terminal for each of the three: about 2 minutes each; the
-# others about 1 minute).
-# The sentence is Vietnamese with a meaning: "tôi dùng windows để hò hát với bạn", then, after a
-# Return, "đường đẹp vui vẻ". Keys checked one by one against the answer (Telex, D4, D32):
-# tooi→tôi (oo); dungf→dùng (tone f); windows→windows (D4, restored); ddeer→để (dd, ee, hỏi r);
-# hoaf⌫→hò (⌫ in the middle of a word that took a tone, D32); hats→hát; vowis→với (ow→ơ, sắc s on
-# ơ); banj→bạn; ↩; dduwowngf→đường (dd, uw→ư, ow→ơ, huyền f); ddepj→đẹp; vui; ver→vẻ. The
-# editor line of t5-vsswitch: hoom→hôm, nay, dduwowngf→đường, ddepj→đẹp, vui, ver→vẻ.
+# Cell groups (results: docs/research/TerminalAndUnderline.md; measurements of the removed
+# D43 approach that erased with DEL: docs/history/ResearchLog.md section 4):
+# - sub-*: Sublime Text holds the three edits of an already typed word: change the mark
+#   (D26), ⌫ back into a committed word then add a mark (D20), move left into a word then
+#   add a mark (D20).
+# - gh-*: Ghostty cells start at an empty line, as right after Return; the underline cell
+#   ends with Return.
+# - t4-*: one line covering D32 (hoaf ⌫), D4 (windows), a word whose first replacement
+#   comes late (nguwowif) and short ones, in terminals (Ghostty with zsh and vim, xterm.js)
+#   and text fields (Chrome, also with a busy page; Safari; Sublime Text).
+# - t5-*: in-place typing in Terminal.app (120 and 30 ms) and VS Code's integrated
+#   terminal (xterm.js in Electron, also with a Return in the line); vsswitch types in the
+#   terminal, then moves the focus to an empty editor of the same window and types there
+#   (the 7th and 8th fields: keys and expected text of the editor); t5-vsterm-apple is the
+#   control of t5-vsterm with Apple's Telex; t5-ghostty is the Ghostty cell with the same
+#   sentence (no ↩: Return ends the line of the Ghostty cell). Roughly 9 to 11 minutes for
+#   the six cells (VS Code opens a window and a terminal for each of three: about 2
+#   minutes each; the others about 1 minute).
+# - t6-*: underline (D13) in VS Code, same keys as t5-vsterm and t5-vsswitch; --underline
+#   forces it for the whole app, so the editor of t6-vsswitch-ul is underlined too. About
+#   4 to 5 minutes for the two cells.
+# The t5/t6 sentence is Vietnamese with a meaning: "tôi dùng windows để hò hát với bạn",
+# then, after a Return, "đường đẹp vui vẻ". Keys checked one by one against the answer
+# (Telex, D4, D32): tooi→tôi (oo); dungf→dùng (tone f); windows→windows (D4, restored);
+# ddeer→để (dd, ee, hỏi r); hoaf⌫→hò (⌫ in the middle of a word that took a tone, D32);
+# hats→hát; vowis→với (ow→ơ, sắc s on ơ); banj→bạn; ↩; dduwowngf→đường (dd, uw→ư, ow→ơ,
+# huyền f); ddepj→đẹp; vui; ver→vẻ. The editor line of t5-vsswitch: hoom→hôm, nay,
+# dduwowngf→đường, ddepj→đẹp, vui, ver→vẻ.
 # "expect" is the text the keys mean in Vietnamese, with ↩ shown as in the line of the
-# cell (typing/run.sh). For t5-vsterm it is not the prediction: an xterm.js field ignores
-# the replacement range, so the replacements double (D43); the cell measures whether that
-# is what the VS Code terminal gives. The line of the cell is the verdict (what a zsh
-# prompt shows); the raw bytes are what to read next to it.
-# Sixth round (t6-): underline (D13) in VS Code, for the choice between D13 as it is (the
-# user turns underline on for the app) and underline only in xterm.js fields. Same keys as
-# t5-vsterm and t5-vsswitch; --underline forces it for the whole app, so the editor of
-# t6-vsswitch-ul is underlined too and shows what a user who turns it on for VS Code gets.
-# The control (Apple's Telex in the same terminal) is t5-vsterm-apple, already measured.
-# About 4 to 5 minutes for the two cells.
+# cell (typing/run.sh). Fields that ignore the replacement range (D43) come out wrong in
+# place; the cells measure what each app gives, the line being the verdict (what a zsh
+# prompt shows) and the raw bytes what to read next to it.
 CELLS=(
   "sub-dau|sublime|dau|inplace|tooisf ba ⌫j tooi←s|tồi bạ tối"
   "sub-dau-ul|sublime|dau|underline|tooisf ba ⌫j tooi←s|tồi bạ tối"

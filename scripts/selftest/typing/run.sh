@@ -679,9 +679,6 @@ OSA
     fi
     return 1
   fi
-  # Fixed: apps that apply text asynchronously (browsers, Electron) may still be
-  # catching up with the last keys, and their text can only be read through ⌘A ⌘C,
-  # which changes the selection; no state to poll for that is common to every app.
   # The source in effect right after the last key. The check in select_dau is from before
   # the keys: with macOS's "Automatically switch to a document's input source" on, the
   # focused document may have its own source.
@@ -694,6 +691,9 @@ OSA
     stop_run source "nguồn đầu vào sau khi gõ là \"$after\", không phải nguồn cần đo"
     return 1
   fi
+  # Fixed: apps that apply text asynchronously (browsers, Electron) may still be
+  # catching up with the last keys, and their text can only be read through ⌘A ⌘C,
+  # which changes the selection; no state to poll for that is common to every app.
   sleep 0.8
 }
 
@@ -901,7 +901,7 @@ run_webdoc() { # gdocs | gdocssafari | wordweb
     wait_until -i 0.2 3 webdoc_title_changed "$before"
     wait_until -i 0.5 30 webdoc_has_doc "$1" || { stop_run front "tab tài liệu $1 không lên trước trong 30 giây"; return 0; }
     title="$(webdoc_doc_title "$1")"
-    sleep 2
+    sleep 2  # Fixed: the document loads its text after the tab title appears; nothing common to poll
     first="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 0
   fi
   if [[ -n "$first" ]]; then
@@ -1306,7 +1306,7 @@ on run argv
 end run
 OSA
     fi
-    sleep 0.25
+    sleep 0.25  # Poll step of this bounded loop (40 × 0.25 s)
   done
   log_warn "Còn cửa sổ VS Code của lượt này, đóng tay giúp (không lưu)"
 }
@@ -1355,6 +1355,7 @@ vscode_start_cell() {
   # Fixed: lets the terminal take the paste before Return; nothing to read.
   sleep 0.3
   guarded Code "$VSCODE_TITLE" 'tell application "System Events" to key code 36' >/dev/null || return 1
+  # Fixed: lets the terminal draw the line for the picture
   sleep 1; shot_window Code vscode-2-after-paste
   if ! wait_until -i 0.3 20 test -e "$VSCODE_STARTED"; then
     log_error "Dừng: cell không chạy trong terminal của VS Code sau 20 giây (lệnh dán không tới terminal?); không gõ gì thêm."
@@ -1445,7 +1446,7 @@ vscode_focus_editor() {
   stopped && return 1
   log_warn "VS Code: sau cú bấm chuột focus chưa ở trình soạn thảo trống, thử ⌘1"
   guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "1" using {command down}' >/dev/null || return 1
-  sleep 0.5
+  sleep 0.5  # Fixed: time for VS Code to move the focus; checked on the next line
   vscode_editor_has_focus && return 0
   stopped && return 1
   log_error "Dừng: focus không vào trình soạn thảo trống sau khi bấm chuột và ⌘1 (⌘A ⌘C còn chép được chữ); không gõ gì thêm."
@@ -1578,7 +1579,7 @@ ws_open_file() {
       ws_raise "$title"
       front_ok "$WS_PROC" "$title" && return 0
     fi
-    sleep 0.5
+    sleep 0.5  # Poll step of this bounded loop
   done
   names="$(window_names "$WS_PROC")"
   fw="$(osascript -e "tell application \"System Events\" to get name of (value of attribute \"AXFocusedWindow\" of process \"$WS_PROC\")" 2>&1)"
@@ -1625,7 +1626,7 @@ ws_close_window() { # window title
   osascript -e "tell application \"System Events\" to tell process \"$WS_PROC\" to click (first button of (first window whose name contains \"$1\") whose subrole is \"AXCloseButton\")" >/dev/null 2>&1
   for i in {1..20}; do
     ws_title_present "$1" || return 0
-    sleep 0.5
+    sleep 0.5  # Poll step of this bounded loop (20 × 0.5 s)
   done
   log_warn "Còn cửa sổ WebStorm \"$1\" của lượt này (có thể đang hỏi gì đó), đóng tay giúp"
 }
@@ -1703,6 +1704,7 @@ ws_terminal_part() {
   # Fixed: lets the terminal take the paste before Return; nothing to read.
   sleep 0.3
   guarded "$WS_PROC" "$title" 'tell application "System Events" to key code 36' >/dev/null || return 1
+  # Fixed: lets the terminal draw the line for the picture
   sleep 1; shot_window "$WS_PROC" webstormterm-2-after-paste
   if ! wait_until -i 0.3 20 test -e "$VSCODE_STARTED"; then
     log_error "Dừng: cell không chạy trong terminal của WebStorm sau 20 giây (⌥F12 không mở terminal? lệnh dán không tới terminal?); không gõ gì thêm."
@@ -1751,7 +1753,7 @@ run_cursoragents() {
   wait_until -i 0.3 15 front_ok Cursor "Cursor Agents"
   guarded Cursor "Cursor Agents" 'tell application "System Events" to keystroke "n" using {command down}' \
     >/dev/null || return 0
-  sleep 0.5
+  sleep 0.5  # Fixed: time for Cursor to open the new draft; read back next
   local draft
   draft="$(copy_all Cursor "Cursor Agents")"
   if [[ -n "$draft" ]]; then

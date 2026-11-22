@@ -10,7 +10,6 @@
 #   log_error TEXT       "✗ TEXT"            a failure (stderr); the caller decides to stop
 #   log_hint TEXT        "    TEXT"          what to do about the warning or error above (stderr)
 #   log_die [CODE] TEXT  log_error, then exit CODE (default 1)
-#   log_ask TEXT         "? TEXT " with no newline, before a `read` (stderr)
 #   log_done [TEXT]      "==> TEXT · <time since the script started>" (default "Xong")
 #   log_duration SECONDS "8 giây", "2 phút 14 giây"
 #   log_usage FILE       the comment block at the top of FILE, without "# " and the shebang (stdout)
@@ -51,12 +50,6 @@ log_die() {
   [[ $1 == <-> ]] && { code=$1; shift; }
   log_error "$@"
   exit $code
-}
-
-log_ask() {
-  local on='' off=''
-  _dau_log_color 2 && { on=$'\e[1;36m'; off=$'\e[0m'; }
-  print -rn -u 2 -- "${on}?${off} $1 "
 }
 
 log_duration() { # seconds (may be fractional)

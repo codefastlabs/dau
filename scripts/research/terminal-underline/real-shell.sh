@@ -19,7 +19,8 @@
 # Output: build/terminal-underline/real-shell.txt (appended). The clipboard is put back
 # at the end. Exit status: 0 done; 3 Ghostty left the front (stopped); 4 the source did
 # not switch.
-# Measured with it: docs/research/TerminalAndUnderline.md, section 1.
+# Measured with it: docs/history/ResearchLog.md section 4 (the removed D43 approach) and
+# docs/research/TerminalAndUnderline.md section 1 (underline).
 set -uo pipefail
 ROOT="${0:A:h:h:h:h}"
 source $ROOT/scripts/lib/log.sh
@@ -38,7 +39,7 @@ paste_text() { # text
   print -rn -- "$1" | pbcopy
   [[ "$(front)" == ghostty ]] || { log_error "Ghostty không ở trước, dừng"; exit 3; }
   osascript -e 'tell application "System Events" to keystroke "v" using command down'
-  sleep 0.4
+  sleep 0.4 # Fixed: Ghostty draws the pasted text with nothing to read from outside the terminal
 }
 cycle_to() { # id
   local json key mods using="" n
@@ -53,13 +54,13 @@ cycle_to() { # id
   for n in {1..6}; do
     [[ "$($SRC current)" == $1 ]] && return 0
     osascript -e "tell application \"System Events\" to key code $key using {$using}"
-    sleep 0.6
+    sleep 0.6 # Fixed: the loop itself re-reads the source; one switch per pass
   done
   [[ "$($SRC current)" == $1 ]] || { log_error "không chuyển được sang $1"; exit 4; }
 }
 
 osascript -e 'tell application "Ghostty" to activate'
-sleep 1
+sleep 1 # Fixed: Ghostty takes the front; checked on the next line
 [[ "$(front)" == ghostty ]] || { log_error "Ghostty không ở trước, dừng"; exit 3; }
 cycle_to $WANT
 log_detail "nguồn: $($SRC current)"
@@ -80,9 +81,10 @@ on run argv
   end tell
 end run
 OSA
-  sleep 0.5
+  sleep 0.5 # Fixed: time for the input method to handle the last key; nothing to read
   paste_text "\" >> '$OUT'"
   osascript -e 'tell application "System Events" to key code 36'
-  sleep 0.8
+  sleep 0.8 # Fixed: time for zsh to run the line before the next paste; the output file is
+            # appended by zsh itself, so its size is not a sign that the prompt is back
 done
 log_ok "xong $LABEL"

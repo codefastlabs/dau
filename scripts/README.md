@@ -88,7 +88,6 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 | `log_error` | `✗` | stderr | lỗi; script gọi tự quyết dừng hay không |
 | `log_hint` | 4 dấu cách | stderr | cách xử lý cảnh báo hay lỗi ngay trên |
 | `log_die` | `✗` | stderr | lỗi rồi thoát (mã mặc định 1) |
-| `log_ask` | `?` | stderr | câu hỏi trước `read` |
 | `log_done` | `==>` | stdout | dòng cuối của script chạy xong, kèm thời gian từ lúc bắt đầu |
 
 - Mã thoát: 0 đạt; 1 lỗi hoặc kiểm không đạt; 2 gọi sai (tham số lạ, hai cờ không đi cùng nhau). Script có mã riêng thì ghi ở đầu file. Riêng hook `.claude/hooks/guard-scripts.sh` thoát 2 để chặn lệnh, theo quy ước hook của Claude Code.
