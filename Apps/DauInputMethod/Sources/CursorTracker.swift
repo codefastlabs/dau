@@ -58,8 +58,9 @@ struct CursorTracker: Equatable {
     /// keys late may be behind all of them (before M6, Chrome, VS Code and Firefox went
     /// wrong under about 20 ms; `docs/Compatibility.md` 6.2).
     private(set) var burst = 0
-    /// Edits this composer made since the app last answered at `known` (nil: no such answer
-    /// since the position was last followed or forgotten). An app that answered on time had
+    /// Edits this composer made since the app last answered at `known`, or since the position
+    /// was anchored at an answer of the app (`anchor`) (nil: neither since the position was
+    /// last followed or forgotten). An app that answered on time had
     /// every edit up to then, so it can lack at most these: `rebuild` replays no further
     /// back, whatever the time between keys. Chrome with a busy page (18/11/2026) stayed up
     /// to 12 edits late across word ends 50–60 ms apart, past `lateLimit` + `burst`, and the
@@ -224,9 +225,16 @@ struct CursorTracker: Equatable {
     /// The position is known from the app (D20 read): start following from there.
     /// A location outside `ClientRange.limit` (D18) is not a position: forgotten.
     mutating func anchor(at location: Int) {
-        if known != location { forgetPosition() }
+        guard known != location else { return }
+        forgetPosition()
         guard ClientRange.isUsable(position: location) else { return }
         known = location
+        // The app told this position with no edit of this composer after it: as an answer
+        // on time, a late answer can lack every edit since, and no more (`sinceOnTime`).
+        // Without it, an app late from the start of a document (Chrome, busy page,
+        // 23/11/2026: "mojot" gave "mọot", three edits late at the second "o") stayed
+        // capped at `lateLimit` + `burst`.
+        sinceOnTime = 0
     }
 
     /// Forget the expected position: engine reset, focus or client changed.

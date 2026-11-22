@@ -180,6 +180,30 @@ struct LateAnswerTests {
     /// and the next word's answers stayed there. Anchoring at that answer made "tieesng"
     /// replace the "o" of "Hoc" ("Hếcj tieng"). Not anchored, the next word is proved late
     /// and comes out right; D20 does not apply to "Hoc" (the read gave no usable word).
+    /// Chrome, busy page, human fast pace (23/11/2026, 1 of 3 runs): the page stopped after
+    /// "Sáng nay " and Chrome's cache wrote "m" and "o" at its caret, later before earlier.
+    /// At "j" the answer was two edits late (proved); at the second "o" three, and with no
+    /// answer on time since the start of the document `rebuild` could replay two ("mojot"
+    /// gave "mọot"). The position the D20 read anchored at the first key counts as one.
+    /// The texts are the cache's as the log's positions show it (the log holds no text, D8).
+    @Test("busy page, start of the document: a late answer with no answer on time yet is proved from the anchor")
+    func lateFromDocumentStart() {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        let keys = Array("Sasng nay mojot ".unicodeScalars)
+        let gaps = [0.2, 0.03, 0.054, 0.066, 0.041, 0.056, 0.218, 0.103, 0.043, 0.062, 0.195, 0.049, 0.068, 0.05, 0.066, 0.1]
+        // Index of the key → the cache's text then (nil: on time).
+        let cached: [Int: String] = [2: "S", 12: "Sáng nay o", 13: "Sáng nay o"]
+        for (i, key) in keys.enumerated() {
+            s.interval = gaps[i]
+            s.doc.override = cached[i]
+            s.type(String(Character(key)))
+        }
+        #expect(s.doc.text == "Sáng nay một ")
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
     @Test("busy page, 10 ms: a D20 read in a burst far behind does not move the followed position")
     func staleD20ReadInBurst() {
         let before = "chiều nay. "
