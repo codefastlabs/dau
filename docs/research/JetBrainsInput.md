@@ -11,7 +11,7 @@ Phiên bản đã đọc:
 
 Đường dẫn trong bài là tên lớp và hàm; liên kết cố định theo commit ở mục 7.
 
-## Hiện trạng (17/11/2026)
+## Hiện trạng (đo 17/11/2026, soát lại 22/11/2026)
 
 **Đổi từ 22/11/2026:** các số đo dưới đây là của bản Dấu trước khi Dấu tự chèn ký tự (N3): khi đó ký tự engine để nguyên đi thẳng tới app và AppKit tự chèn. Nay Dấu tự chèn mọi ký tự đó bằng `insertText`; chỉ ⌫, Return, Tab, Esc, mũi tên và phím có ⌘, ⌃, ⌥ còn đi thẳng. Giả thuyết H1' (mục 4.2) có thể bị ảnh hưởng, vì không còn chữ nào do AppKit chèn ngoài `handle`; chưa đo lại, WebStorm không có trên máy đo ngày 22/11/2026. Chữ "phím đi thẳng" trong file này, trừ chỗ nói khác, có nghĩa phím đó khi ấy do app xử lý.
 

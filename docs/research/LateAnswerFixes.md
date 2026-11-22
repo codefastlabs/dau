@@ -67,7 +67,7 @@ Chưa làm vì chưa có app nào cần; dưới đây là phương án và cái
 
 ## 3. Kịch bản C: trang bận, app chậm qua chỗ ngắt từ
 
-Đo 18/11/2026 trên máy M3 Max (Chrome 157.0.8103.79, Safari 27.2), số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.1, 5.2. Hướng đã chọn ở mục 3.3; còn mở vài ca.
+Đo 18/11/2026 trên máy M3 Max (Chrome 157.0.8103.79, Safari 27.2), số đo ở [`docs/history/CompatibilityFixed.md`](../history/CompatibilityFixed.md) mục "Safari và Chrome khi phím dồn hay trang bận, trước khi Dấu tự chèn ký tự". Hướng đã chọn ở mục 3.3; còn mở vài ca.
 
 ### 3.1 Cơ chế (Chrome)
 
@@ -117,7 +117,7 @@ Mỗi hướng thử trên mô hình (`LateAnswerTests`, `RapidKeysTests`, `InPl
 
 ## 5. Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng
 
-Đo 18/11/2026 (lỗi) và 22/11/2026 (sau khi sửa) trên máy M1 Pro (Safari 27.2), số đo và các quan sát nó giải thích ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.1.
+Đo 18/11/2026 (lỗi) và 22/11/2026 (sau khi sửa) trên máy M1 Pro (Safari 27.2), số đo và các quan sát nó giải thích ở [`docs/history/CompatibilityFixed.md`](../history/CompatibilityFixed.md) mục "Safari và Chrome khi phím dồn hay trang bận, trước khi Dấu tự chèn ký tự" (lỗi) và [`docs/Compatibility.md`](../Compatibility.md) mục 5.1 (sau khi sửa).
 
 ### 5.1 Cơ chế
 
@@ -140,7 +140,7 @@ Chọn ngày 22/11/2026 và ghi ở [`docs/Decisions.md`](../Decisions.md) N3 (�
 
 Cái giá: thêm một `insertText` cho mỗi ký tự đó (N3 vẫn tối đa một lần cho mỗi phím, nhưng bảng "phím nào gọi gì" ở [`docs/Architecture.md`](../Architecture.md) đổi). Trang web nhận ký tự đó như phím bộ gõ đã xử lý (theo mã WebKit: `keydown` có `keyCode` 229, `key` vẫn là chữ thật, không có `keypress`, chữ tới trước `keydown`, nên `preventDefault` ở `keydown` không chặn được chữ; chưa đo trên trang thật).
 
-Số đo sau khi sửa (22/11/2026): [`docs/Compatibility.md`](../Compatibility.md) mục 5.1, ý "Hiện trạng sau khi Dấu tự chèn ký tự".
+Số đo sau khi sửa (22/11/2026): [`docs/Compatibility.md`](../Compatibility.md) mục 5.1.
 
 Các hướng khác không chọn:
 

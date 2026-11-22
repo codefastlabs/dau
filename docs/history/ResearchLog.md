@@ -862,3 +862,107 @@ Hai câu hỏi của lần xét thứ hai (đáp án của họ trích nguyên v
   - (c): 24 ca của chuỗi gonhanh `integration_test.rs:complex_mau_sac_continuous_session` (`#3`–`#26`), "sắc" + "ddepj" nay "sắcđẹp", "sắc" + "ddor" nay "sắcđỏ"; `#3` và `#17` chuyển từ X sang khớp.
 - `compare.sh`: khớp 8.061 → 8.063, X 6 → 4, A, B, C, D, E không đổi.
 - Lớp IMK làm ở `InPlaceComposer` (test `InPlaceComposerExceptionTests`); chưa gõ thử trên Dấu thật.
+
+## 4. `docs/research/TerminalAndUnderline.md`
+
+Chuyển ngày 22/11/2026: các cách gửi ký tự xoá cho terminal bỏ qua vùng thay (D43 cũ, đã bỏ 12/11/2026), bảng giả thuyết và các lượt đo của chúng. Tên kiểu và test nhắc tới dưới đây (`EraseMode`, `FakeXtermPage`, `WebHost`, `RangeIgnoreDetector`, `SharedViewTests`, `XtermPageTests`, `RangeIgnoreTests`) còn trong git ở commit d916a0d.
+
+### Ghostty (mục cũ 1)
+
+Kết quả (zsh, 120 ms giữa hai phím, một lượt mỗi ô; Telex của Apple ra đúng ở mọi ô):
+
+| Cách | `dd` | `toois` | `vieetj` | Dòng `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ` |
+|---|---|---|---|---|
+| Thay tại chỗ, trước D43 cũ | "dđ" | "toôis" | "vieetj" | — |
+| Ký tự xoá gửi trong phím (bản thử) | "d" | "toi" | "viet" | mọi lần thay có DEL đều mất |
+| Ký tự xoá gửi sau phím (bản thử) | "đ" | "tối" | "việt" | đúng, cả ở 30 ms và trong vim |
+| D43 cũ (đã bỏ) | — | — | — | "toôis việt đi học nhà người hò windows ": từ đầu sai, còn lại đúng; zsh và vim |
+
+- D43 cũ ở 30 ms giữa hai phím: không nhận ra (phím dồn không được xét), dòng ra như trước D43 cũ.
+- Thời gian xử lý mỗi phím của D43 cũ ngang thay tại chỗ thường; số ở nhật ký [`docs/history/LogM6.md`](../history/LogM6.md) ngày 11/11.
+
+Trong shell thật (12/11/2026, `scripts/research/terminal-underline/real-shell.sh`; cửa sổ Ghostty có sẵn, zsh với oh-my-zsh, powerlevel10k, zsh-autosuggestions; Dấu Release 89543e5, bản dùng hằng ngày; 120 ms; một lượt; đưa Ghostty ra trước là một lần kích hoạt, như khi người dùng chuyển sang nó; ba dòng liền nhau trong cùng lần kích hoạt):
+
+| Dòng | Dấu | Telex của Apple |
+|---|---|---|
+| `tooi dungf windows ddeer hoaf⌫ hats vowis banj ` | "toôi dungf windows để hò hát với bạn ": hai từ đầu sai | "tôi dùng ưindows để hoà hát với bạn " |
+| `dduwowngf ddepj vui ver ` | "đường đẹp vui vẻ " | "đường đẹp vui vẻ " |
+| `hoom nay tooi ddi hocj ` | "hôm nay tôi đi học " | "hôm nay tôi đi học" |
+
+- Cấu hình thật ra như ô thử: sai đến lúc nhận ra ô, sau đó đúng, cả qua Return. Không thấy dấu hiệu plugin hay theme làm khác.
+- Mỗi lần chuyển vào Ghostty là bắt đầu lại từ chưa nhận ra. Lệnh ngắn gõ ngay sau khi chuyển vào thì gần như luôn rơi vào một, hai từ đầu, nên trong cách dùng thường ngày gõ tiếng Việt ở Ghostty gần như luôn sai.
+
+### xterm.js (mục cũ 2)
+
+Vì sao chữ dồn ở lượt thứ tư:
+
+1. Trước khi nhận ra ô, các lần thay có vùng thay để chữ thay lại sau con trỏ của textarea. Trạng thái mà các khúc dữ liệu đo được buộc phải có ở phím j: textarea " ê", con trỏ ở 1. Tức là lần thay ở chữ e thứ hai của "vieetj" đổi chữ "í" (của lần thay "tối" trước đó) thành "ê" với con trỏ đứng trước; phím cách (đi qua keypress) nằm trước con trỏ.
+2. Từ phím j, ký tự xoá gửi trong phím đi qua keydown 229 và chèn ở con trỏ: " ⌫⌫ệtê". Giá trị cũ " ê" không còn liền, nên xterm.js gửi cả chuỗi. Mỗi lần sửa sau cũng chèn ở giữa, nên gửi lại mọi lần sửa trước cộng "ê" ở cuối. Nhật ký 11/11 chép các khúc không có dấu cách đầu ("⌫⌫ệtê"); dòng chữ đo được ("vieêeệtê") chỉ ra được khi khúc bắt đầu bằng một ký tự mà ⌫ đầu tiên xoá đi.
+3. Lượt thứ hai đúng vì bật từ phím đầu: không có lần thay có vùng thay nào, con trỏ luôn ở cuối textarea.
+
+Giả thuyết đã xét, dự đoán cho từng quan sát (O1: cách cũ ra "toôoiís vieêetj dđd "; O2: gửi trong phím từ phím đầu ra "tối việt đ "; O3: lượt thứ tư, mỗi lần gửi lặp lại các lần sửa trước cộng "ê"):
+
+| Giả thuyết | O1 | O2 | O3 | Kết luận |
+|---|---|---|---|---|
+| H1. Chữ còn lại sau con trỏ của textarea, phép trừ của `_handleAnyTextareaChanges` hỏng | khớp | khớp (con trỏ luôn ở cuối) | khớp từng ký tự: " ⌫⌫ệtê", " ⌫⌫ệt ⌫đê", dòng "toôoiís vieêeệtê ệtđêi hoệtọcê" | nguyên nhân |
+| H2. Lần thay có vùng thay mở một phiên soạn chữ, `compositionend` gửi phần đuôi textarea | không: `ImeCommitText` không có phiên soạn chữ thì không phát sự kiện `composition*` | khớp | không: phần đuôi tính từ lúc `compositionstart` không gồm chữ đứng trước | loại |
+| H3. Mỗi lần sửa gửi hai lần (`_inputEvent` và `_handleAnyTextareaChanges`) | — | không: sẽ ra mỗi lần sửa hai lần | không: lặp cả các lần sửa trước, không phải lần sửa hiện tại | loại |
+| H4. Textarea chỉ đầy dần (không bao giờ làm rỗng), con trỏ vẫn ở cuối | — | khớp | không: khi con trỏ ở cuối, phép trừ ra đúng phần mới (test đối chứng) | không đủ |
+
+Mô hình: `FakeXtermPage` (test của bộ gõ, đã bỏ cùng D43 cũ; còn ở commit d916a0d) dựng ba lớp trên theo mã, dẫn từng hàm trong comment. Với view mới (`_markedRange` {0,0}), nó cho lại đúng O1 và O2. O3 cho lại đúng từng ký tự khi bắt đầu từ trạng thái textarea mà các khúc dữ liệu đo được buộc phải có (" ê", con trỏ ở 1); cùng phím đó với con trỏ ở cuối thì không dồn (H4). Mô hình chưa cho lại câu trả lời `selectedRange` 2 ở chữ e thứ hai: con số đó phụ thuộc `_markedRange` của view, không đọc được từ dữ liệu đã lưu (chưa rõ).
+
+Cách gửi trong phím (`EraseMode.inKey` của D43 cũ; đã bỏ cùng D43 cũ, 12/11/2026):
+
+- Bản đã đo 12/11 chỉ gửi trong phím khi không có `insertText` có vùng thay nào từ lần Return (hay Enter bàn phím số) gần nhất mà bộ gõ để đi tới app. Return làm xterm.js xoá textarea. Lúc kích hoạt coi như chưa biết. Thường là bắt đầu ở phím Return đầu tiên sau khi nhận ra.
+- Delete có sửa dấu (D32 (Backspace)) bị giữ lại và gửi phần sửa không kèm chữ mà Delete sẽ xoá: để Delete đi tiếp thì trang nhận keydown thật sau phần chữ, thứ tự giữa phần sửa và DEL của phím do trang quyết.
+- Return và Tab không gửi phần sửa: keydown thật của chúng tới trước khi xterm.js gửi phần sửa. Từ cần khôi phục giữ như đang hiện, như ở Ghostty.
+- Một đơn vị chữ khác phím vừa gõ (`w` ra "ư" ở đầu từ) gửi thành chữ, DEL, chữ: một đơn vị đi đường keydown thật, trên đường đó xterm.js gửi phím gốc chứ không gửi chữ.
+- Mỗi phím vẫn tối đa một `insertText`, không hỏi vị trí, không đọc chữ; Ghostty và ô thường không đổi (test `XtermPageTests`, `RangeIgnoreTests`, đã bỏ).
+
+Chuyển ô trong cùng view (mô hình: test `SharedViewTests`, đã bỏ cùng D43 cũ; phần đo trên VS Code ở cuối mục này):
+
+- Theo mã Chromium (`RenderWidgetHostViewCocoa`, nhánh main 12/11/2026), `mouseEvent:` không chuyển mouse down cho input context, còn `finishComposingText` thoát ngay khi không có marked text. Vì vậy click giữa hai phần tử của trang không tới bộ gõ: không reset, kết luận "terminal" của D43 cũ giữ nguyên. `insertText:replacementRange:` không lọc ký tự điều khiển.
+- Giả định của mô hình:
+  - Đổi focus giữa hai phần tử soạn thảo không đổi client IMK và không gọi `activateServer`.
+  - Ô soạn thảo nhận DEL như một ký tự. Chưa đọc TipTap hay EditContext của Monaco.
+- Kết quả trên mô hình; chuỗi gõ trong ô soạn thảo là `hoom nay tooi ddi hocj vui ver ↩camr own banj `, đáp án "hôm nay tôi đi học vui vẻ ⏎cảm ơn bạn ":
+
+| Ca | Ô soạn thảo giữ (␡ là DEL) |
+|---|---|
+| a. xterm.js đã nhận ra, đã qua Return, rồi click sang ô soạn thảo | "ho␡ôm nay to␡ôi d␡đi hoc␡␡ọc vui ve␡ẻ ⏎cam␡␡ảm o␡ơn ban␡␡ạn ": DEL ở mọi phím thay chữ |
+| b. xterm.js đã nhận ra, chưa có Return | dòng đầu đúng; Return gõ trong ô soạn thảo bật cách gửi DEL, nên dòng sau sai như ca a |
+| c. Ô kiểu Ghostty cùng view (giả định, chưa thấy app nào như vậy) | DEL sau mọi phím thay chữ |
+| d. Ô soạn thảo rồi click sang terminal | ô soạn thảo đúng; terminal tới dòng thứ ba mới được nhận ra, nên cả ba dòng sai như trước D43 cũ. Nguyên nhân là trạng thái của composer còn từ ô soạn thảo; coi click như reset thì nhận ra như lần kích hoạt mới |
+
+Cách đã xét để vẫn gửi trong phím (không chọn ở D43 cũ: còn lọt ký tự xoá):
+
+- Sau khi đã có kết luận "terminal", ở mỗi phím thay chữ hỏi `selectedRange` một lần, như ô thường (N3). Vị trí lớn hơn 2 thì bỏ kết luận và thay tại chỗ.
+- Không đọc thêm chữ; mỗi phím vẫn tối đa một `insertText`.
+- Thử trên mô hình (đã bỏ khỏi mã):
+  - Ghostty và xterm.js vẫn được nhận ra như cũ; Ghostty tốn thêm một `selectedRange` mỗi phím thay chữ.
+  - Mọi client giả của ô thường cho ra chữ như cũ.
+  - Ca a–c đúng hết khi ô soạn thảo đã có chữ. Khi ô soạn thảo rỗng, từ đầu tiên còn lọt DEL ("ho␡ôm") vì vị trí lúc đó còn ≤ 2. Trình soạn thảo kiểu Cursor (vị trí tính từ đầu từ) còn lọt DEL ở các từ ngắn.
+  - Ca d không sửa được bằng cách này.
+
+Đo trên VS Code (12/11/2026, bộ gõ Debug 3325750, 120 ms, một lượt mỗi ô; `scripts/research/terminal-underline/run.sh 't5-*'`):
+
+- Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 cũ nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4, và ở ⌫).
+- Chuyển ô: terminal `tooi vieetj ddi hocj ↩`, click sang tài liệu trống cùng cửa sổ, gõ `hoom nay tooi ddi hocj vui ver `: trình soạn thảo ra đúng "hôm nay tôi đi học vui vẻ ", 0 ký tự xoá; không có `activate` giữa lúc click và lúc gõ xong.
+- Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Bản sau đó chặn ca này bằng `WebHost` (app có nhân web không nhận ký tự xoá); cả hai đã bỏ cùng D43 cũ.
+
+Lượt xác nhận `WebHost` (12/11/2026, bộ gõ Debug 2bea19c chạy sandbox, 120 ms, một lượt mỗi ô; câu `tooi dungf windows ddeer hoaf⌫ hats vowis banj `, dòng hai `dduwowngf ddepj vui ver `):
+
+- Kết quả đọc gói (`event=web-host`): Terminal và Ghostty không chứa nhân web, VS Code có (Chromium); 0,4–17 ms từ lúc hỏi tới lúc có kết quả, một lần 51 ms (lần đọc đầu sau khi cài), đều ngoài đường phím.
+- Ghostty: nhận ra ô (`after-key`, không bị chặn), gửi ký tự xoá; "toôi dungf windows để hò hát với bạn ": hai từ đầu sai (trước khi nhận ra), từ thứ ba trở đi đúng.
+- VS Code: lượt này không nhận ra ô; terminal sai như cách cũ, trình soạn thảo sau khi chuyển ô đúng "hôm nay đường đẹp vui vẻ ", 0 ký tự xoá. Terminal.app: đúng trừ ⌫ ("ho"). Telex của Apple trong terminal VS Code: "tôi dùng ưindows để ho hát với bạn ↩đường đẹp vui vẻ " (phép đo hợp lệ).
+- Cửa sổ mở trên một file trong thư mục chưa được tin cậy thì VS Code hỏi tin cậy trước khi tạo terminal; ô `vscodeterm` mở cửa sổ trống (VS Code mặc định tin cửa sổ trống).
+
+Kết quả trên trang thử (xterm.js 5.5.0 trong Chrome, 120 ms, một lượt mỗi ô; Telex của Apple ra đúng):
+
+| Cách | `toois vieetj dd ` |
+|---|---|
+| Thay tại chỗ, trước D43 cũ | "toôoiís vieêetj dđd ": phím gốc và chữ thay đều tới shell |
+| Ký tự xoá gửi trong phím, bật từ đầu (bản thử) | "tối việt đ " |
+| D43 cũ gửi trong phím ngay từ phím nhận ra (lượt thứ tư) | sai nặng hơn: mỗi lần gửi lặp lại các lần sửa trước cộng một chữ "ê" thừa (H1) |
+| D43 cũ gửi trong phím từ dòng sau Return (đo 12/11/2026, chuỗi dài hơn có Return; đã bỏ) | dòng đang gõ lúc nhận ra sai như trước D43 cũ; dòng sau Return đúng ("tối việt đi học nhà người hò windows ưa ước"), như mô hình dự đoán |
+

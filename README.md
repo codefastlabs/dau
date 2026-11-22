@@ -19,7 +19,7 @@
 
 ### Một lựa chọn không cần thoả hiệp.
 
-Người dùng Mac từ lâu luôn phải đứng trước sự đánh đổi: chấp nhận những lỗi vụng về của bộ gõ mặc định, hoặc cài phần mềm bên thứ ba nhưng phải cấp quyền can thiệp hệ thống, chịu cảnh giật con trỏ và nỗi lo thường trực về an toàn dữ liệu. Dấu ra đời để xoá bỏ sự đánh đổi đó: một bộ gõ tiếng Việt thông minh, chuẩn xác, nhưng hoạt động nguyên bản, mượt mà và an toàn như một bàn phím hệ thống.
+Người dùng Mac từ lâu luôn phải đứng trước sự đánh đổi: chấp nhận những lỗi vụng về của bộ gõ mặc định, hoặc cài phần mềm bên thứ ba nhưng phải cấp quyền can thiệp hệ thống, chịu cảnh giật con trỏ và nỗi lo thường trực về an toàn dữ liệu. Dấu ra đời để xoá bỏ sự đánh đổi đó: một bộ gõ tiếng Việt thông minh, chuẩn xác, nhưng hoạt động như một nguồn đầu vào của macOS, như mọi bàn phím hệ thống.
 
 ### Chính tả chuẩn xác, dù kiểu mới hay kiểu cũ.
 
@@ -39,11 +39,11 @@ Bạn có thể gõ liền mạch câu xen lẫn tiếng Anh như "Sếp vừa g
 
 ### Hoạt động như bàn phím hệ thống.
 
-Dấu là một nguồn đầu vào chuẩn như mọi bàn phím khác trên Mac, không phải ứng dụng chạy ngoài can thiệp phím. Bạn có thể chuyển đổi giữa tiếng Việt và tiếng Anh bằng chính phím tắt cùng menu nguồn đầu vào của macOS mà không cần cấp quyền Trợ năng (Accessibility). Đây là điều kiện then chốt để Dấu hoạt động bình thường ngay cả trên các máy tính chịu sự quản lý bảo mật nghiêm ngặt của doanh nghiệp hay cơ quan nhà nước.[^6] Thao tác thay chữ được thực hiện trực tiếp tại chỗ qua API nhập liệu của Apple, hoàn toàn không giả lập phím Backspace gây giật con trỏ.
+Dấu là một nguồn đầu vào chuẩn như mọi bàn phím khác trên Mac, không phải ứng dụng chạy ngoài can thiệp phím. Bạn có thể chuyển đổi giữa tiếng Việt và tiếng Anh bằng chính phím tắt cùng menu nguồn đầu vào của macOS mà không cần cấp quyền Trợ năng (Accessibility).[^6] Thao tác thay chữ được thực hiện trực tiếp tại chỗ qua API nhập liệu của Apple, hoàn toàn không giả lập phím Backspace gây giật con trỏ.
 
 ### Những gì bạn gõ ở lại trên máy bạn.
 
-Tiến trình bộ gõ bị cô lập hoàn toàn trong sandbox, không có quyền kết nối mạng và không chứa bất kỳ cơ chế thu thập dữ liệu (telemetry) nào. Bản phát hành chính thức không ghi lại phím bấm, thời điểm gõ hay ứng dụng bạn đang dùng.[^7] Thiết kế này mang lại sự an tâm tuyệt đối cho các môi trường xử lý văn bản cơ mật, dữ liệu tài chính cũng như các hệ thống đòi hỏi tiêu chuẩn an toàn thông tin cao nhất.
+Tiến trình bộ gõ chạy trong sandbox, không có quyền kết nối mạng và không chứa bất kỳ cơ chế thu thập dữ liệu (telemetry) nào. Bản phát hành chính thức không ghi lại phím bấm, thời điểm gõ hay ứng dụng bạn đang dùng.[^7]
 
 ### Ít hơn, có chủ đích.
 

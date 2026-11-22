@@ -17,6 +17,11 @@ dau/
 ├─ Apps/
 │  ├─ DauInputMethod/          # bộ gõ (IMK), sandbox, không quyền mạng (N2 (Bộ gõ không có quyền mạng))
 │  └─ Dau/                     # app chủ SwiftUI, không sandbox (D37 (Cài bộ gõ)): Cài đặt, onboarding, cài/thay/gỡ bộ gõ, cập nhật (Sparkle), báo lỗi
+├─ Config/                     # xcconfig ký mã (Signing.xcconfig, Local.xcconfig.example)
+├─ Resources/Brand/            # file nhận diện gốc (docs/Brand.md)
+├─ scripts/                    # script build, đo, phát hành: scripts/README.md
+├─ site/                       # trang web; tới M8 chỉ có appcast.xml (docs/Releasing.md)
+├─ .github/                    # GitHub Actions và mẫu issue (docs/Releasing.md)
 └─ docs/                       # mục lục: docs/README.md
 ```
 
