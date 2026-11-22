@@ -25,7 +25,6 @@ set -uo pipefail
 root=${0:A:h:h:h}
 source "${0:A:h:h}/lib/log.sh"
 source "${0:A:h:h}/lib/bundle-config.sh"
-source "${0:A:h:h}/lib/xcode.sh"
 im="$HOME/Library/Input Methods/DauInputMethod.app"
 app="$root/build/DerivedData.noindex/Build/Products/Debug/Dau.app"
 host="/Applications/Dau.app"
@@ -114,8 +113,8 @@ latest_verdict() { # prints "ok|<reason>", "reinstall|<reason>" or "unknown|<rea
   plist=$im/Contents/Info.plist
   i_xc=${DAU_VERSION_INSTALLED_XCODE_BUILD:-$(/usr/libexec/PlistBuddy -c "Print :DTXcodeBuild" "$plist" 2>/dev/null)}
   i_sdk=$(/usr/libexec/PlistBuddy -c "Print :DTSDKBuild" "$plist" 2>/dev/null)
-  n_xc=$( (dau_developer_dir >/dev/null 2>&1 && xcodebuild -version 2>/dev/null) | sed -n 's/^Build version //p')
-  n_sdk=$( (dau_developer_dir >/dev/null 2>&1 && xcrun --sdk macosx --show-sdk-build-version 2>/dev/null) | head -1)
+  n_xc=$(xcodebuild -version 2>/dev/null | sed -n 's/^Build version //p')
+  n_sdk=$(xcrun --sdk macosx --show-sdk-build-version 2>/dev/null | head -1)
   if [[ -z $i_xc || -z $i_sdk ]]; then print -r -- "unknown|bộ gõ đã cài không ghi DTXcodeBuild hoặc DTSDKBuild"; return; fi
   if [[ -z $n_xc || -z $n_sdk ]]; then print -r -- "unknown|không đọc được Xcode hoặc SDK hiện tại (xcodebuild -version, xcrun --show-sdk-build-version)"; return; fi
   if [[ $i_xc != $n_xc || $i_sdk != $n_sdk ]]; then

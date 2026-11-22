@@ -243,9 +243,7 @@ source "$ROOT/scripts/lib/log.sh"
 source "$ROOT/scripts/lib/wait.sh"
 source "$ROOT/scripts/lib/bundle-config.sh"
 HERE="$ROOT/scripts/selftest/typing"
-source "$ROOT/scripts/lib/xcode.sh"
 source "$ROOT/scripts/lib/swift-tool.sh"
-dau_developer_dir
 LOG=/usr/bin/log
 
 # "carr" comes first: after Vietnamese text, macOS 27.2 autocorrect turns a typed "car"

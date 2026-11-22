@@ -26,37 +26,33 @@ fail() { log_error "$1"; shift; (( $# )) && log_hint "$@"; blocked=1; }
 
 # --- Xcode, Swift ----------------------------------------------------------------------
 log_step "Công cụ build"
+# The scripts and manual commands use the Xcode that xcode-select picks; nothing overrides it.
+# `xcode-select -p` prints $DEVELOPER_DIR when that is set, the same folder the tools then use.
 selected=$(xcode-select -p 2>/dev/null)
-dev_dir=""
-if [[ -n ${DEVELOPER_DIR-} && -x $DEVELOPER_DIR/usr/bin/xcodebuild ]]; then
-  dev_dir=$DEVELOPER_DIR
-elif [[ -n $selected && -x $selected/usr/bin/xcodebuild ]]; then
-  dev_dir=$selected
-elif [[ -d /Applications/Xcode.app/Contents/Developer ]]; then
-  dev_dir=/Applications/Xcode.app/Contents/Developer
+if [[ -n ${DEVELOPER_DIR-} ]]; then
+  log_warn "DEVELOPER_DIR đang đặt là $DEVELOPER_DIR và ghi đè lựa chọn của xcode-select."
+  log_hint "Repo không dùng biến này. Bỏ nó (unset DEVELOPER_DIR) để mọi lệnh dùng Xcode mà xcode-select chọn."
 fi
-if [[ -z $dev_dir ]]; then
+if [[ -n $selected && -x $selected/usr/bin/xcodebuild ]]; then
+  xv=$(xcodebuild -version 2>/dev/null | tr '\n' ' ')
+  if [[ -n $xv ]]; then
+    log_ok "Xcode: ${xv% }  ($selected)"
+  else
+    fail "Có Xcode ở $selected nhưng xcodebuild không chạy được." \
+      "Mở Xcode một lần để chấp nhận giấy phép và cài thành phần bổ sung, hoặc: sudo xcodebuild -license accept"
+  fi
+elif [[ -d /Applications/Xcode.app/Contents/Developer ]]; then
+  fail "xcode-select đang trỏ tới ${selected:-không đâu}, không phải Xcode, nên không build và test được." \
+    "Chọn Xcode (cần mật khẩu quản trị): sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
+else
   fail "Không tìm thấy Xcode (xcode-select -p: ${selected:-không có})." \
     "Cài Xcode từ App Store rồi mở một lần để chấp nhận giấy phép; xem phiên bản đã thử trong CONTRIBUTING.md, mục \"Chuẩn bị máy\"."
-else
-  xv=$(DEVELOPER_DIR=$dev_dir xcodebuild -version 2>/dev/null | tr '\n' ' ')
-  if [[ -z $xv ]]; then
-    fail "Có Xcode ở $dev_dir nhưng xcodebuild không chạy được." \
-      "Mở Xcode một lần để chấp nhận giấy phép và cài thành phần bổ sung, hoặc: sudo xcodebuild -license accept"
-  else
-    log_ok "Xcode: ${xv% }  ($dev_dir)"
-  fi
-  if [[ $selected == /Library/Developer/CommandLineTools* ]]; then
-    log_ok "xcode-select đang trỏ tới Command Line Tools: không sao, các script tự dùng $dev_dir (dau_developer_dir)."
-    log_detail "Với lệnh gõ tay, đặt: export DEVELOPER_DIR=$dev_dir"
-  fi
-  export DEVELOPER_DIR=$dev_dir
 fi
 sv=$(swift --version 2>/dev/null | head -1)
 if [[ -n $sv ]]; then
   log_ok "Swift: $sv"
 else
-  fail "Không chạy được swift." "Cài Xcode (hoặc: xcode-select --install cho Command Line Tools)."
+  fail "Không chạy được swift." "Cài Xcode. Chỉ có Command Line Tools thì không đủ (CONTRIBUTING.md, mục \"Chuẩn bị máy\")."
 fi
 
 if command -v xcodegen >/dev/null; then

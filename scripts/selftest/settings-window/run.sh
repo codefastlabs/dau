@@ -71,8 +71,6 @@ focus_only=0
 if [[ ${1:-} == --focus ]]; then focus_only=1; shift; fi
 [[ -n ${1:-} ]] || log_die 2 "Thiếu thư mục kết quả. Dùng: scripts/selftest/settings-window/run.sh [--focus] <output-dir> [Dau.app]"
 out=$1
-source "${here:h:h}/lib/xcode.sh"
-dau_developer_dir
 # Absolute: the copy is made from it and pgrep matches its full path (a relative argument
 # never matched the launched process).
 app=${2:-${here:h:h:h}/build/DerivedData.noindex/Build/Products/Debug/Dau.app}

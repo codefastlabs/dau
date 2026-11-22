@@ -25,8 +25,6 @@
 DAU_ROOT="${${(%):-%x}:A:h:h:h}"
 DAU_DERIVED="$DAU_ROOT/build/DerivedData.noindex"
 source "$DAU_ROOT/scripts/lib/log.sh"
-source "$DAU_ROOT/scripts/lib/xcode.sh"
-dau_developer_dir
 
 dau_signing_identities() {
   # find-identity -v still lists a revoked identity, tagged CSSMERR_TP_CERT_REVOKED, and
@@ -43,7 +41,7 @@ dau_require_signing_identity() {
     "a) Máy Mac khác dùng cùng Apple ID đang có chứng chỉ hợp lệ: xuất nó kèm khoá riêng ra" \
     "   .p12 ở máy đó (Keychain Access › login › My Certificates › Export), nhập ở máy này." \
     "b) Tạo chứng chỉ mới cho máy này. Chứng chỉ của máy Mac kia có thể bị thu hồi. Tự chạy:" \
-    "   xcodegen generate && DEVELOPER_DIR=$DEVELOPER_DIR \\" \
+    "   xcodegen generate && \\" \
     "     xcodebuild -project Dau.xcodeproj -scheme Dau -configuration Release \\" \
     "     -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex \\" \
     "     -allowProvisioningUpdates build"

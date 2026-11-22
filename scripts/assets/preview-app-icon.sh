@@ -13,10 +13,9 @@ set -euo pipefail
 
 ROOT="${0:A:h:h:h}"
 source "$ROOT/scripts/lib/log.sh"
-source "$ROOT/scripts/lib/xcode.sh"
-dau_developer_dir
-IC="$DEVELOPER_DIR/../Applications/Icon Composer.app/Contents/Executables/ictool"
-[[ -x $IC ]] || log_die "Không thấy ictool trong Icon Composer.app của Xcode ($IC)."
+# Icon Composer's ictool, not the one in usr/bin (xcrun --find ictool), which cannot export images.
+IC="$(xcode-select -p)/../Applications/Icon Composer.app/Contents/Executables/ictool"
+[[ -x $IC ]] || log_die "Không thấy ictool trong Icon Composer.app của Xcode mà xcode-select chọn ($IC)."
 OUT=${1:-$ROOT/build/icon-check}
 mkdir -p "$OUT"
 

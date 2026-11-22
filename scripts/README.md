@@ -61,7 +61,7 @@ Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command
 - Mỗi script chạy riêng, tức không phải file nạp bằng `source` trong `scripts/lib/`, có dòng `set` với `-u` và `-o pipefail`. Cờ `-u` coi biến chưa đặt là lỗi. Cờ `-o pipefail` làm cả pipeline hỏng khi một lệnh giữa pipeline hỏng.
 - `-e` chỉ bật ở script dừng ngay khi có lỗi. Script gom lỗi rồi báo một lượt (ví dụ `clean-dau.sh`, `typing/run.sh`) để `-e` tắt và tự kiểm mã thoát.
 - Dưới `pipefail`, `grep -q` ở cuối pipeline có thể làm lệnh trước nó hỏng vì SIGPIPE: so trong shell (`[[ $(lệnh) == *mẫu* ]]`) hoặc dùng `grep -c`.
-- Thư mục Xcode lấy qua `dau_developer_dir` (`scripts/lib/xcode.sh`), không viết cứng. Riêng `dev/doctor.sh` tự tìm, vì chính việc tìm Xcode là thứ nó kiểm.
+- Script dùng bản Xcode mà `xcode-select` chọn, không đặt `DEVELOPER_DIR` và không viết cứng đường dẫn Xcode. Công cụ nằm trong Xcode thì tìm bằng `xcrun --find`, hoặc từ `xcode-select -p` khi `xcrun` không thấy nó (như `ictool` của Icon Composer). `dev/doctor.sh` báo khi `xcode-select` chưa trỏ tới Xcode.
 - Chờ một trạng thái bằng `scripts/lib/wait.sh`, không bằng `sleep` cố định. `sleep` chỉ còn ở chỗ không có gì để đọc, kèm chú thích lý do.
 - ShellCheck không đọc zsh nên không có chú thích `# shellcheck`.
 

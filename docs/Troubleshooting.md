@@ -29,7 +29,7 @@ Bộ gõ chỉ mở một bản Dấu.app đạt kiểm chữ ký. Bộ gõ ch�
 ### `swift test` hoặc `xcodebuild` báo không thấy SDK
 
 - **Nguyên nhân:** `xcode-select -p` đang trỏ tới Command Line Tools.
-- **Xử lý:** không cần đổi `xcode-select`. Các script tự chọn Xcode (`scripts/lib/xcode.sh`); với lệnh gõ tay thì thêm `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer`.
+- **Xử lý:** chọn Xcode một lần bằng `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`. Script và lệnh gõ tay đều dùng bản Xcode mà `xcode-select` chọn. `scripts/dev/doctor.sh` báo khi lựa chọn này chưa đúng.
 
 ### App Group không chạy, cài đặt không sang được bộ gõ
 

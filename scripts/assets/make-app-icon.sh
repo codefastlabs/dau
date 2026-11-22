@@ -22,9 +22,7 @@ BRAND="$ROOT/Resources/Brand"
 GLYPHS="$BRAND/app-icon-glyphs.txt"
 ICONS="$ROOT/Apps/Dau/Resources"
 source "${0:A:h:h}/lib/log.sh"
-source "${0:A:h:h}/lib/xcode.sh"
 source "${0:A:h:h}/lib/swift-tool.sh"
-dau_developer_dir
 TOOL=$(dau_swift_tool make-app-icon "$ROOT/scripts/assets/MakeAppIcon.swift") || exit 1
 
 if [[ "${1:-}" == "outline" ]]; then

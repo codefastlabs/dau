@@ -10,9 +10,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 OUT="$ROOT/Apps/DauInputMethod/Resources"
 source "${0:A:h:h}/lib/log.sh"
-source "${0:A:h:h}/lib/xcode.sh"
 source "${0:A:h:h}/lib/swift-tool.sh"
-dau_developer_dir
 TOOL=$(dau_swift_tool make-mode-icons "$ROOT/scripts/assets/MakeModeIcons.swift") || exit 1
 
 TMP="$(mktemp -d)"
