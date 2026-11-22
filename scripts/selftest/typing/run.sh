@@ -133,10 +133,13 @@
 # gdocs, gdocssafari, wordweb: the browser's front tab (Chrome; Safari for gdocssafari) is used when it already shows such a document (title with
 # " - Google Docs", " - Google Tài liệu" in Vietnamese, or ".docx"); otherwise --doc-url opens
 # in a new tab. The document must be empty (⌘A ⌘C copies nothing), or the run stops with
-# nothing typed. Then the marker "qkpb " is typed and must come back alone through ⌘A ⌘C
-# (tried again for about 20 s while the editor loads; any case: Word capitalizes it), or the
-# run stops. The marker is deleted, the keys typed and read back with ⌘A ⌘C, and the document
-# emptied (⌘A, Delete). The tab stays open (closing it right after an edit makes the page ask
+# nothing typed. Then the marker "1qkpb " is typed and must come back alone through ⌘A ⌘C
+# (tried again for about 20 s while the editor loads), or the run stops. The marker stays: the
+# keys are typed after it, read back with ⌘A ⌘C without it, and the document emptied (⌘A,
+# Delete). It starts with a digit and the keys never start the document: Word for the web
+# drops the first marked-text composition of an empty document (Apple's Telex and Dấu's
+# underline mode, 22/11/2026: "qkpb" gave "kpb", "Hom nay" gave "om nay"; docs/Compatibility.md
+# 5.10), and a digit goes in without marked text. The tab stays open (closing it right after an edit makes the page ask
 # "Leave site?" while it saves).
 # Notes: a new note (⌘N) in the folder shown; it syncs while it exists. The script
 # empties it and deletes it through Notes' AppleScript (to Recently Deleted).
@@ -477,6 +480,15 @@ fi
 is_current_source() { [[ "$("$INPUT_SOURCE" current 2>/dev/null)" == "$1" ]]; }
 select_dau() {
   stopped && return 1
+  # --underline: the input method reads $FORCE_KEY when it is activated. A field that was
+  # already in front with Dấu (an online document's tab, opened before the run) gets no
+  # activation, and the run typed in place ("Không thấy underline-on", 23/11/2026): leave
+  # Dấu for U.S., then come back, both with the system's shortcut. Leaving through the API
+  # was not enough: Chrome sent no activation on the way back in 1 of 3 runs.
+  if [[ $UNDERLINE == 1 && -z "$SOURCE_ID" ]] && is_current_source "$DAU_SOURCE"; then
+    cycle_to_source "$US_SOURCE"
+    wait_until 3 is_current_source "$US_SOURCE"
+  fi
   # Already the current source: nothing to switch. The script never selects a source
   # through the API on this path, so what macOS reports is what the system switched to.
   if ! is_current_source "$DAU_SOURCE"; then
@@ -836,27 +848,44 @@ webdoc_doc_title() { # gdocs | gdocssafari | wordweb
 }
 webdoc_has_doc() { webdoc_doc_title "$1" >/dev/null; }
 webdoc_title_changed() { [[ "$(webdoc_front_title)" != "$1" ]]; }
+WD_MARKER=1qkpb
+WD_MARKER_OSA='tell application "System Events"
+    repeat with c in {"1", "q", "k", "p", "b", " "}
+      keystroke c
+      delay 0.1
+    end repeat
+  end tell'
 webdoc_marker() { # title
   local title="$1" i got
   for i in {1..6}; do
     stopped && return 1
-    guarded "$WD_PROC" "$title" "$WS_MARKER_OSA" >/dev/null || return 1
+    guarded "$WD_PROC" "$title" "$WD_MARKER_OSA" >/dev/null || return 1
     # Fixed: these editors apply keys asynchronously; nothing outside them shows when.
     sleep 0.8
     got="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 1
-    # Earlier tries may have reached the body late: the marker alone, once or more.
-    # Word capitalizes the first letter of the document ("Qkpb"): compared in lower case.
-    if [[ -n "$got" && -z "${${${(L)got}//qkpb/}//[[:space:]]/}" ]]; then
+    # The marker once: kept, the keys go after it. Compared in lower case (an editor may
+    # capitalize it). → takes away the selection ⌘A left, the caret at its end: a first key
+    # typed over the selection would replace the marker (Word for the web also dropped the
+    # first marked-text composition then, "Hom" gave "om", 22/11/2026).
+    if [[ "${(L)got}" == $WD_MARKER ]]; then
+      guarded "$WD_PROC" "$title" 'tell application "System Events"
+        key code 124
+        delay 0.3
+      end tell' >/dev/null || return 1
+      return 0
+    fi
+    # Earlier tries reached the body late: the marker more than once. Emptied, typed again.
+    if [[ -n "$got" && -z "${${${(L)got}//$WD_MARKER/}//[[:space:]]/}" ]]; then
       guarded "$WD_PROC" "$title" 'tell application "System Events"
         keystroke "a" using {command down}
         delay 0.2
         key code 51
         delay 0.5
       end tell' >/dev/null || return 1
-      return 0
+      continue
     fi
     if [[ -n "$got" ]]; then
-      log_error "Dừng: ⌘A ⌘C sau chuỗi đánh dấu chép ra \"${got[1,80]}\": tài liệu không trống hoặc focus không ở thân tài liệu; không xoá gì, không gõ thêm (xoá tay chuỗi \"qkpb\" nếu có)."
+      log_error "Dừng: ⌘A ⌘C sau chuỗi đánh dấu chép ra \"${got[1,80]}\": tài liệu không trống hoặc focus không ở thân tài liệu; không xoá gì, không gõ thêm (xoá tay chuỗi \"$WD_MARKER\" nếu có)."
       stop_run front "tài liệu không trống hoặc focus không ở thân tài liệu (⌘A ⌘C chép ra chữ khác chuỗi đánh dấu)"
       return 1
     fi
@@ -909,7 +938,17 @@ run_webdoc() { # gdocs | gdocssafari | wordweb
   fi
   select_dau; webdoc_marker "$title" || return 0
   type_keys "$WD_PROC" "$title"
-  copy_all "$WD_PROC" "$title"
+  # The text after the marker (and the space that ended it).
+  local text
+  text="$(copy_all "$WD_PROC" "$title")"
+  # No marker at the start: a key replaced it (the keys did not go after it): no result.
+  if [[ "${(L)text[1,${#WD_MARKER}]}" != $WD_MARKER ]]; then
+    log_error "Dừng: chữ đọc lại không bắt đầu bằng chuỗi đánh dấu \"$WD_MARKER\" (\"${text[1,80]}\"): phím đã gõ đè lên nó, kết quả không dùng được."
+    stop_run front "chữ đọc lại không bắt đầu bằng chuỗi đánh dấu"
+  else
+    text="${text[$(( ${#WD_MARKER} + 1 )),-1]}"
+    print -r -- "${text# }"
+  fi
   guarded "$WD_PROC" "$title" 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.2
