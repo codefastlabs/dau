@@ -36,9 +36,13 @@ if [[ -n ${DEVELOPER_DIR-} ]]; then
 fi
 if [[ -n $selected && -x $selected/usr/bin/xcodebuild ]]; then
   xv=$(xcodebuild -version 2>/dev/null | tr '\n' ' ')
+  want=$(<$root/.xcode-version)
   [[ -n $xv ]] && have_xcode=1
-  if [[ -n $xv ]]; then
+  if [[ -n $xv && $xv == "Xcode $want "* ]]; then
     log_ok "Xcode: ${xv% }  ($selected)"
+  elif [[ -n $xv ]]; then
+    log_warn "Xcode: ${xv% }  ($selected), khác bản $want mà dự án và CI dùng (.xcode-version)."
+    log_hint "Build và test vẫn chạy, nhưng kết quả có thể khác CI. Nếu máy có sẵn Xcode $want thì chọn nó bằng: sudo xcode-select -s <Xcode $want.app>/Contents/Developer"
   else
     fail "Có Xcode ở $selected nhưng xcodebuild không chạy được." \
       "Mở Xcode một lần để chấp nhận giấy phép và cài thành phần bổ sung, hoặc: sudo xcodebuild -license accept"
@@ -48,7 +52,7 @@ elif [[ -d /Applications/Xcode.app/Contents/Developer ]]; then
     "Chọn Xcode (cần mật khẩu quản trị): sudo xcode-select -s /Applications/Xcode.app/Contents/Developer"
 else
   fail "Không tìm thấy Xcode (xcode-select -p: ${selected:-không có})." \
-    "Cài Xcode từ App Store rồi mở một lần để chấp nhận giấy phép; xem phiên bản đã thử trong CONTRIBUTING.md, mục \"Chuẩn bị máy\"."
+    "Cài Xcode $(<$root/.xcode-version) (bản ghi trong .xcode-version) rồi mở một lần để chấp nhận giấy phép."
 fi
 sv=$(swift --version 2>/dev/null | head -1)
 if [[ -n $sv ]]; then

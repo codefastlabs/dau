@@ -10,7 +10,7 @@ Cảm ơn bạn muốn góp sức cho Dấu. Dấu là phần mềm tự do theo
 
 ## Chuẩn bị máy
 
-- Bạn cần Xcode (dự án đã thử với Xcode 27.2 và Swift 6.4) và XcodeGen (cài bằng `brew install xcodegen`). Chỉ có Command Line Tools thì không đủ, vì `swift test` hỏng khi build sạch do thiếu plugin `TestingMacros`.
+- Bạn cần Xcode đúng bản ghi trong [`.xcode-version`](.xcode-version) và XcodeGen (cài bằng `brew install xcodegen`). CI cũng build và test bằng bản Xcode này. Chỉ có Command Line Tools thì không đủ, vì `swift test` hỏng khi build sạch do thiếu plugin `TestingMacros`.
 - Mọi lệnh và script trong repo dùng bản Xcode mà `xcode-select` chọn. Nếu `xcode-select -p` đang trỏ tới Command Line Tools, bạn hãy chọn Xcode một lần bằng `sudo xcode-select -s /Applications/Xcode.app/Contents/Developer`.
 - Bạn nên chạy `scripts/dev/doctor.sh` trước tiên. Lệnh này không cài hay đổi gì trên hệ thống; nó chỉ ghi vào `build/` và `.build/`. Lệnh này liệt kê những gì máy bạn còn thiếu (Xcode, XcodeGen, chứng chỉ ký khớp Team, bản đã cài, nguồn đầu vào) và in lệnh sửa cho từng mục.
 
