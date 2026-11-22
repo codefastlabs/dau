@@ -155,7 +155,8 @@ flowchart TD
 ```
 
 1. Bảo đảm `main` đang xanh (workflow Test) và mọi thứ của bản này đã được commit.
-2. Tag và đẩy tag. Với hai bản thử ở bước 2 của kế hoạch M7, việc này công bố chúng lên appcast, nên cần người dùng đồng ý trước khi đẩy tag.
+2. Chạy bài tải nặng của D42 (Ngưỡng hiệu năng) trên commit sẽ được tag: `scripts/selftest/load/heavy.sh` với bộ gõ bản Debug. Đây là lượt chạy chiếm màn hình, nên phiên chính chạy nó (`CLAUDE.md`, mục "Điều phối"). Chữ gõ ra phải đúng ở mọi ô, và p99 cùng bộ nhớ phải nằm trong ngưỡng. Nếu không đạt thì không tag cho tới khi rõ nguyên nhân. Ghi số đo vào nhật ký `docs/Progress.md`; trang tải về lấy số của mục "Đo được" từ đó.
+3. Tag và đẩy tag. Với hai bản thử ở bước 2 của kế hoạch M7, việc này công bố chúng lên appcast, nên cần người dùng đồng ý trước khi đẩy tag.
 
    ```sh
    git tag v0.1.0-beta.1
@@ -165,9 +166,9 @@ flowchart TD
    Mỗi beta cần một commit mới. Script từ chối tag beta đặt lên commit đã có tag beta khác, vì cùng commit thì cùng số build.
 
    **Tag đã công bố không bao giờ được dựng lại:** bản ký từ chối một tag đã có bản phát hành không phải bản nháp. Nếu CI hỏng trước khi công bố, hãy xoá bản nháp (và tag) trên GitHub rồi tag lên một commit mới. Tag còn bản nháp cũng bị từ chối, để không dựng đè lên bản nháp đó.
-3. Workflow Release dựng bản ký, rồi tạo một **bản nháp** pre-release trên GitHub Releases (tiêu đề "Dấu 0.1.0 beta 1") kèm DMG, dSYM và `appcast.xml`. Appcast này là appcast của `origin/main` cộng mục của bản mới; nó không lấy file ở commit được tag, vì mục của bản trước chỉ được đưa vào file trên `main` ở bước Công bố. Bản ký từ chối dựng nếu appcast đó thiếu beta mới nhất đã công bố trên GitHub (`check-appcast.sh`), nên phải công bố xong bản trước (bước 5) rồi mới tag bản sau. Ở bước này chưa có gì được công bố, nên người dùng chưa thấy gì. Nếu thiếu secret, workflow dựng bản không ký (xem bên dưới) và chỉ lưu DMG thành artifact của lần chạy (7 ngày), không tạo bản nháp.
-4. Kiểm bản nháp. Log của workflow in từng bước đã làm hay bị bỏ qua, kèm `summary.txt`. Hãy thử mở DMG đã tải về.
-5. **Công bố.** Người dùng đồng ý một lần cho beta đầu tiên, theo bước 4 của kế hoạch M7. Bấm Publish release trên GitHub, rồi chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit và đẩy lên `main` để Vercel xuất bản. Phải làm theo đúng thứ tự này, vì nếu appcast lên trước thì Sparkle sẽ trỏ vào một địa chỉ DMG chưa có. Cask Homebrew nằm ở `codefastlabs/homebrew-tap` và theo D6 (Phát hành).
+4. Workflow Release dựng bản ký, rồi tạo một **bản nháp** pre-release trên GitHub Releases (tiêu đề "Dấu 0.1.0 beta 1") kèm DMG, dSYM và `appcast.xml`. Appcast này là appcast của `origin/main` cộng mục của bản mới; nó không lấy file ở commit được tag, vì mục của bản trước chỉ được đưa vào file trên `main` ở bước Công bố. Bản ký từ chối dựng nếu appcast đó thiếu beta mới nhất đã công bố trên GitHub (`check-appcast.sh`), nên phải công bố xong bản trước (bước 5) rồi mới tag bản sau. Ở bước này chưa có gì được công bố, nên người dùng chưa thấy gì. Nếu thiếu secret, workflow dựng bản không ký (xem bên dưới) và chỉ lưu DMG thành artifact của lần chạy (7 ngày), không tạo bản nháp.
+5. Kiểm bản nháp. Log của workflow in từng bước đã làm hay bị bỏ qua, kèm `summary.txt`. Hãy thử mở DMG đã tải về.
+6. **Công bố.** Người dùng đồng ý một lần cho beta đầu tiên, theo bước 4 của kế hoạch M7. Bấm Publish release trên GitHub, rồi chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml`, commit và đẩy lên `main` để Vercel xuất bản. Phải làm theo đúng thứ tự này, vì nếu appcast lên trước thì Sparkle sẽ trỏ vào một địa chỉ DMG chưa có. Cask Homebrew nằm ở `codefastlabs/homebrew-tap` và theo D6 (Phát hành).
 
 ### Đường chính thức (quảng bá beta cuối)
 
