@@ -2,7 +2,7 @@
 
 Tài liệu này ghi Dấu gõ đúng hay sai trong từng ứng dụng, ở nhịp nào và vì sao, cùng các giới hạn còn lại và cách thử. Mọi số đo được lấy trên máy M1 (M1 Pro), macOS 27.2, trừ các lượt trên máy M3 Max (Chrome khi trang bận, phím dồn ở Chrome và Firefox, 10/11/2026). Ô nào chưa thử thì để trống, không điền bằng phỏng đoán. Đây không phải lời hứa (N5 (Chỉ hứa điều đã kiểm chứng)); trang web chỉ dùng kết quả theo [`docs/Website.md`](Website.md).
 
-## Hiện trạng (22/11/2026)
+## Hiện trạng (23/11/2026)
 
 Tiêu chí của nhãn "Đề xuất" nằm ở D13 (Gạch chân là đường lui cuối cùng). Nhịp là khoảng cách giữa hai phím khi tự gõ. Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, nên không là tiêu chí. Chi tiết và điều kiện đo nằm ở mục 5.
 
@@ -20,18 +20,23 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 22/11/2026, sau khi Dấ
 | Ghostty | Sai, vì app bỏ qua vùng thay và Dấu không xử lý riêng (D43; mục 6.8). | Chữ đúng, nhưng Return ngay sau từ bị nuốt. | **có** |
 | xterm.js (trang thử trong Chrome) | Sai (D43; mục 6.8). | Đúng. | không |
 | Terminal tích hợp của VS Code (xterm.js) | Sai (D43). Trình soạn thảo cùng cửa sổ vẫn đúng sau khi chuyển từ terminal sang (mục 6.8). | Đúng, cả khi chuyển sang trình soạn thảo. | không: bật cho cả app thì mọi ô mất D20 |
-| Sublime Text | Đúng, kể cả thêm dấu cho từ đã gõ sau ⌫ và sau ←. | Không thêm dấu được cho từ đã chốt. | không |
+| Sublime Text | Đúng, kể cả thêm dấu cho từ đã gõ sau ⌫ và sau ←. Đo lại sau khi Dấu tự chèn ký tự (23/11/2026, 30 ms) vẫn đúng. | Không thêm dấu được cho từ đã chốt. | không |
+| Zed | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
+| Xcode | Đúng ở 30 ms trên tệp văn bản, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
 | WebStorm, trình soạn thảo | Chữ tiếng Việt đúng ở 80 ms. Từ tiếng Anh không được khôi phục (D4); đây là lỗi của Dấu, chưa sửa (mục 5.9). | Đúng ở 80 ms. | không |
 | WebStorm, terminal | Sai (D43; mục 6.8). | Đúng ở 80 ms. | không: bật cho cả app thì mọi ô mất D20 |
 | Notes | Đúng ở 30 ms (30/10/2026). | chưa đo | không |
 | Mail | Đúng ở 30 ms (30/10/2026). Số đo ngày 11/11 (120 ms) và 12/11/2026 (30 ms) chỉ nói về tự sửa chính tả của macOS (mục 6.1). | chưa đo | không |
 | Telegram | Đúng ở 5 và 30 ms (chuỗi chuẩn) và ở 100 ± 30 ms (chuỗi `edit`), ngày 17/11/2026 (mục 5.8). | chưa đo | không |
+| Antigravity | Ô nhắn tin đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
+| Obsidian | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
+| Notion | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
 | Word trên web (Chrome) | Đúng ở 80 ± 30 ms, kể cả thêm dấu cho từ đã gõ: 6/6 lượt (17/11/2026, máy M3 Max) và 9/9 sau khi Dấu tự chèn ký tự (22/11/2026, Chrome 158); mục 5.10. | Mất ký tự đầu tiên của tài liệu trống, 6/6 (22/11/2026), như Telex của Apple; mục 5.10. | không |
 | Google Docs (Chrome) | Sai 3/3 lượt ở 80 ± 30 ms (17/11/2026, máy M3 Max). Dấu không thêm dấu được cho từ đã gõ và sai mọi lần thay quá một ký tự, nên sai cả chữ gõ liền mà Telex của Apple gõ đúng. Lý do là Google Docs luôn trả vị trí con trỏ là (1, 0), nên Dấu chỉ thay được một ký tự (mục 5.10). | Chữ gõ liền đúng 5/5 (23/11/2026, Chrome 158); không thêm dấu cho từ đã chốt (mục 6.8). Mục 5.10. | không |
 
 - Brave, Arc và các app Electron khác không có nhãn. Chúng chưa được đo, nên chưa có số đo nào cho thấy sai (D13). Kết quả của Chrome, Edge, VS Code hay Cursor không được suy ra cho các app này, vì kết quả đo ở app này không suy ra cho app kia. Nếu đo mà thấy sai thì gắn lại nhãn theo D13.
 - Với trình duyệt, script chỉ gõ khi ô của trang có focus, nên mọi số đo trình duyệt là gõ vào ô của trang.
-- 16 trong 43 ứng dụng ở mục 3 có số đo (với JetBrains IDE thì chỉ có WebStorm). Danh sách chưa đo nằm ở mục 7.
+- 21 trong 44 ứng dụng ở mục 3 có số đo (với JetBrains IDE thì chỉ có WebStorm). Danh sách chưa đo nằm ở mục 7.
 
 ## 1. Danh sách tương thích
 
@@ -53,7 +58,7 @@ Dấu thay chữ tại chỗ: ở phím có thay chữ, Dấu hỏi `selectedRan
 
 ## 3. Ứng dụng và công nghệ giao diện
 
-Cột "Máy này" tra trong `/Applications`, `~/Applications`, `/System/Applications`, `/System/Library/CoreServices` và bằng `mdfind kMDItemCFBundleIdentifier == '…'`. Phiên bản là `CFBundleShortVersionString` vào lúc tra (với Cursor, Ghostty, Sublime Text là lúc đo). Chrome, Edge, Firefox, VS Code, Cursor, Safari, Terminal, Ghostty, Sublime Text, Notes, Mail, Telegram và WebStorm tra lại ngày 17/11/2026; các dòng khác tra ngày 30/10/2026. Cột cuối ghi phiên bản lúc đo nếu nhật ký có và ghi "không rõ" nếu không có. Công nghệ đọc từ bundle (`Contents/Frameworks`, `otool -L`, không mở app); với app không có trên máy, cột này ghi "suy luận". "web" nghĩa là thử trong trình duyệt. Cột cuối là kết quả đo (mục 5) hoặc dự đoán (suy luận).
+Cột "Máy này" tra trong `/Applications`, `~/Applications`, `/System/Applications`, `/System/Library/CoreServices` và bằng `mdfind kMDItemCFBundleIdentifier == '…'`. Phiên bản là `CFBundleShortVersionString` vào lúc tra (với Cursor, Ghostty, Sublime Text là lúc đo). Chrome, Edge, Firefox, VS Code, Cursor, Safari, Terminal, Ghostty, Sublime Text, Notes, Mail, Telegram và WebStorm tra lại ngày 17/11/2026; Zed, Xcode, Antigravity, Notion và Obsidian tra ngày 23/11/2026; các dòng khác tra ngày 30/10/2026. Cột cuối ghi phiên bản lúc đo nếu nhật ký có và ghi "không rõ" nếu không có. Công nghệ đọc từ bundle (`Contents/Frameworks`, `otool -L`, không mở app); với app không có trên máy, cột này ghi "suy luận". "web" nghĩa là thử trong trình duyệt. Cột cuối là kết quả đo (mục 5) hoặc dự đoán (suy luận).
 
 | Nhóm | Ứng dụng | Bundle ID | Máy này | Công nghệ giao diện | Kết quả hoặc dự đoán |
 |---|---|---|---|---|---|
@@ -66,10 +71,11 @@ Cột "Máy này" tra trong `/Applications`, `~/Applications`, `/System/Applicat
 | Trình duyệt | Brave | `com.brave.Browser` | không | Chromium (suy luận) | như Chrome |
 | Soạn mã | VS Code | `com.microsoft.VSCode` | có (1.146.0) | Electron | đã đo, mục 5.3 (lúc đo: 1.146.0 ngày 17/11/2026; 1.145.2 ngày 10/11/2026) |
 | Soạn mã | Cursor | `com.todesktop.230313mzl4w4u92` | có (3.30.14) | Electron (dựng từ VS Code) | đã đo, mục 5.4 (lúc đo: 3.30.14) |
-| Soạn mã | Zed | `dev.zed.Zed` | có (1.23.2) | tự vẽ bằng Metal (GPUI, Rust), vỏ AppKit | chưa biết |
+| Soạn mã | Zed | `dev.zed.Zed` | có (1.29.2) | tự vẽ bằng Metal (GPUI, Rust), vỏ AppKit | đã đo, mục 5.11 (lúc đo: 1.29.2) |
 | Soạn mã | Sublime Text | `com.sublimetext.4` | có (Build 4215) | tự vẽ, vỏ AppKit | đã đo, mục 5.7 (lúc đo: Build 4215) |
 | Soạn mã | JetBrains IDE | `com.jetbrains.WebStorm`; khác: `com.jetbrains.intellij`, `com.jetbrains.intellij.ce`, `com.jetbrains.pycharm`, `com.jetbrains.goland`, `com.google.android.studio` | WebStorm có (2026.3, `~/Applications`); các ID khác không | Java (JetBrains Runtime); terminal Reworked dựng trên trình giả lập Ghostty VT | WebStorm đã đo, mục 5.9 (lúc đo: 2026.3) |
-| Soạn mã | Xcode | `com.apple.dt.Xcode` | có (27.1) | AppKit, trình soạn mã riêng | chưa biết; có gợi ý hoàn thành mã |
+| Soạn mã | Xcode | `com.apple.dt.Xcode` | có (27.2) | AppKit, trình soạn mã riêng | đã đo trên tệp văn bản, mục 5.11 (lúc đo: 27.2); có gợi ý hoàn thành mã, chưa đo ở tệp mã |
+| Soạn mã | Antigravity | `com.google.antigravity` | có (2.33.0) | Electron; bản 2.x là app agent, chỉ có ô nhắn tin | đã đo, mục 5.11 (lúc đo: 2.33.0) |
 | Terminal | Terminal | `com.apple.Terminal` | có (2.15) | AppKit, chờ shell in lại chữ | đã đo, mục 5.5 (lúc đo: 2.15 ngày 17/11/2026; các lượt trước: không rõ) |
 | Terminal | iTerm2 | `com.googlecode.iterm2` | không | AppKit (suy luận) | như Terminal (suy luận) |
 | Terminal | Warp | `dev.warp.Warp-Stable` | không | tự vẽ bằng Metal, Rust (suy luận) | chưa biết |
@@ -90,8 +96,8 @@ Cột "Máy này" tra trong `/Applications`, `~/Applications`, `/System/Applicat
 | Văn phòng | Google Docs | web | web | trình duyệt; vẽ bằng canvas từ 2021 ([Google Workspace Updates](https://workspaceupdates.googleblog.com/2021/05/Google-Docs-Canvas-Based-Rendering-Update.html)), chữ nhập qua một ô ẩn (suy luận) | đã đo, mục 5.10: sai (lúc đo: Chrome 157.0.8103.79) |
 | Văn phòng | Word trên web | web | web | trình duyệt | đã đo, mục 5.10: đúng (lúc đo: Chrome 158.0.8127.37) |
 | Văn phòng | Google Sheets | web | web | trình duyệt | chưa biết |
-| Văn phòng | Notion | `notion.id` | có (7.41.1) | Electron | như VS Code (suy luận) |
-| Văn phòng | Obsidian | `md.obsidian` | không | Electron (suy luận) | như VS Code (suy luận) |
+| Văn phòng | Notion | `notion.id` | có (7.44.1) | Electron, trình soạn khối riêng | đã đo, mục 5.11 (lúc đo: 7.44.1) |
+| Văn phòng | Obsidian | `md.obsidian` | có (1.15.1) | Electron, trình soạn thảo CodeMirror | đã đo, mục 5.11 (lúc đo: 1.15.1) |
 | Apple | Ghi chú (Notes) | `com.apple.Notes` | có (4.13) | AppKit | đã đo, mục 5.8 (lúc đo: 4.13) |
 | Apple | Mail | `com.apple.mail` | có (16.0) | AppKit; khung soạn thư dùng WebKit (suy luận) | đã đo, mục 5.8 (lúc đo: 16.0) |
 | Apple | Tin nhắn (Messages) | `com.apple.MobileSMS` | có (26.0) | Mac Catalyst | chưa biết |
@@ -246,6 +252,7 @@ Cursor là một app với một bundle ID, nhưng có hai kiểu cửa sổ. C�
 ### 5.7 Sublime Text
 
 - Build 4215 đo ngày 11/11/2026 ở 120 ms (`scripts/research/terminal-underline/run.sh`). Thay tại chỗ đúng, kể cả thêm dấu cho từ đã gõ sau ⌫ và sau ←.
+- Sau khi Dấu tự chèn ký tự, Build 4215 đo lại ngày 23/11/2026 ở 30 ms (cách đo ở mục 5.11): câu `edit` và `hoaf⌫` đều đúng 1/1.
 - Gạch chân không thêm dấu được cho từ đã chốt, giống Telex của Apple (mục 6.8), nên ở Sublime Text không nên bật gạch chân.
 - Khi gõ tay ngày 29/10/2026, `selectedRange` là 334 / 3.718 µs (n=35, sơ bộ).
 
@@ -293,6 +300,19 @@ Cursor là một app với một bundle ID, nhưng có hai kiểu cửa sổ. C�
   - **Nguyên nhân:** Google Docs trên Safari áp sai lần `insertText(…, NSNotFound)` của bộ gõ khi đang có vùng chọn: ký tự vào tài liệu nhưng vẫn ở trạng thái được chọn.
   - Hai cách sửa đã thử trên bản Debug. Chèn với vùng thay là chính vùng chọn vẫn mất 3/3. Cho riêng phím gõ đè lên vùng chọn (vùng chọn đã biết từ lần hỏi của D20) đi thẳng thì đúng 3/3.
 
+### 5.11 Zed, Xcode, Antigravity, Obsidian, Notion
+
+Các app này được đo để biết ngoài Terminal (mục 6.5) còn app nào giữ ⌫ lại, không đưa cho bộ gõ. Ở cả năm app, ⌫ tới bộ gõ và chữ đúng.
+
+- Lượt đo chạy ngày 23/11/2026, 06:34–06:44 và 07:03–07:04 (Notion), trên máy M3 Max với bộ gõ Release của `db57e09` đã cài. Nhịp là 30 ms một phím. Có hai chuỗi phím. Chuỗi thứ nhất là câu `edit` (`scripts/selftest/load/run.sh --text edit --print keys|expect`), có ⌫ giữa từ ("khoong⌫g") và ⌫ qua dấu cách rồi thêm dấu (D20, "Hoc ⌫j"). Chuỗi thứ hai là `--keys "hoaf⌫ " --expect "hò "` (D32). Lệnh là `scripts/selftest/typing/run.sh` với ô `zed`, `xcode`, `antigravity`, `obsidian`, `notion`; ô nào gõ vào đâu ghi ở đầu script.
+- Zed 1.29.2 (trình soạn thảo, tệp văn bản trống) đúng 1/1 câu `edit` và 2/2 `hoaf⌫`.
+- Xcode 27.2 (trình soạn mã, tệp văn bản trống mở bằng `xed`) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`. Lượt này chỉ đo tệp văn bản. Ở tệp mã, Xcode có gợi ý hoàn thành mã, và trường hợp đó chưa đo.
+- Antigravity 2.33.0 (ô nhắn tin của app agent, không gửi) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`.
+- Obsidian 1.15.1 (ghi chú trong một kho tạm) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`.
+- Notion 7.44.1 (thân một trang riêng tư mới, đưa vào Trash sau khi đo) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`.
+- Ở lượt này Sublime Text cũng được đo lại (mục 5.7).
+- Bộ gõ bản Release không ghi nhật ký từng phím (D8), nên lượt này không có số đo thời gian.
+
 ## 6. Giới hạn đã biết
 
 Các lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biểu tượng nguồn, 6.9 ⌫ rồi phím dấu ở Safari khi trang bận) nằm ở [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md).
@@ -325,7 +345,7 @@ Các lỗi đã sửa (mục cũ 6.4 Backspace trong Chromium, 6.6 và 6.7 biể
 
 ### 6.5 Terminal không gửi ⌫ cho bộ gõ
 
-Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó. D20 sau ⌫ không chạy ("hocj"). Lượt đo D20 ngày 30/10/2026 phát hiện lỗi này (nhật ký 30/10 trong [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md)). Lượt đo ngày 12/11/2026 (`hoaf⌫` trong câu, 120 và 30 ms) xác nhận rằng Terminal ra "ho" thay vì "hò".
+Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ được ở đó. D20 sau ⌫ không chạy ("hocj"). Lượt đo D20 ngày 30/10/2026 phát hiện lỗi này (nhật ký 30/10 trong [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md)). Lượt đo ngày 12/11/2026 (`hoaf⌫` trong câu, 120 và 30 ms) xác nhận rằng Terminal ra "ho" thay vì "hò". Ở các app khác đã đo `hoaf⌫` (mục 5), ⌫ đều tới bộ gõ, kể cả các app có trình soạn thảo riêng như Zed, Xcode, Obsidian và Notion (mục 5.11).
 
 ### 6.8 Terminal bỏ qua vùng thay; gạch chân không sửa được từ đã chốt
 
@@ -340,7 +360,7 @@ Terminal xử lý ⌫ mà không đưa phím cho bộ gõ, nên D32 không giữ
 
 Các mục dưới đây làm sau beta đầu tiên: người thử báo lỗi thay vì đo trước (`docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc").
 
-- Các ứng dụng chưa đo (mục 3) là Arc, Brave, Zed, JetBrains IDE trừ WebStorm, Xcode, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Sheets, Notion, Obsidian, Messages, Spotlight, Finder, Figma, Raycast, Alfred và phần còn lại của Mail. Các ứng dụng Electron đáng thử thêm là Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`) và Postman (`com.postmanlabs.mac`); ngoài ra còn Zoom (`us.zoom.xos`).
+- Các ứng dụng chưa đo (mục 3) là Arc, Brave, JetBrains IDE trừ WebStorm, iTerm2, Warp, Zalo, Messenger (web), Telegram Desktop, Discord, Slack, Microsoft Teams, Word, Excel, PowerPoint, Pages, Numbers, Keynote, Google Sheets, Messages, Spotlight, Finder, Figma, Raycast, Alfred và phần còn lại của Mail. Các ứng dụng Electron đáng thử thêm là Claude (`com.anthropic.claudefordesktop`), GitHub Desktop (`com.github.GitHubClient`) và Postman (`com.postmanlabs.mac`); ngoài ra còn Zoom (`us.zoom.xos`).
 - VS Code khi app bận chưa được đo.
 - Với Google Docs (Chrome và Safari), cần tìm cách sửa khi trước con trỏ bộ gõ chỉ thấy một ký tự (mục 5.10; các đường đã xét nằm ở [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) mục 10). Sửa nhiều bước và gửi thẳng vùng thay rộng hơn đều đã đo và không được (mục 10.6 của file đó).
 - Google Docs trên Safari mất ký tự đầu tiên khi Dấu gõ đè lên vùng chọn (mục 5.10). Nguyên nhân đã rõ; cách sửa đo được là cho phím đó đi thẳng, tức thêm một ngoại lệ vào N3, nên cần người dùng quyết định.

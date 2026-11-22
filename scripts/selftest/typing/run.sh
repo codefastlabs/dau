@@ -18,7 +18,11 @@
 #           | cursoragents (the prompt box of Cursor's agents window) | cursorchat (the agent
 #           prompt box inside an IDE window of Cursor, opened with ⌘L; same app, other kind
 #           of window) | vscodefile (VS Code
-#           opened on a file, as cursor is) | sublime (Sublime Text) | ghostty (Ghostty)
+#           opened on a file, as cursor is) | sublime (Sublime Text) | zed (Zed) | xcode (the
+#           Xcode source editor, on a file opened with xed) | antigravity (the message box
+#           of Antigravity 2.x; nothing is sent) | obsidian (a note in a temporary vault of
+#           this run; the vault list is put back after) | notion (a new private page of
+#           this run, moved to Trash after) | ghostty (Ghostty)
 #           | ghosttyvim (vim in insert mode in a Ghostty window) | xterm (xterm.js in a
 #           Chrome page: the terminal of Electron apps such as the Claude desktop app)
 #           | tiptap (a TipTap/ProseMirror editor in a Chrome page: the message box of the
@@ -291,7 +295,7 @@ while [[ $# -gt 0 ]]; do
     --doc-url) DOC_URL="${2:?--doc-url cần đường dẫn tài liệu}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
-    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm|telegram|gdocs|gdocssafari|wordweb) APPS+=("$1"); shift ;;
+    safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|zed|xcode|antigravity|obsidian|notion|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm|telegram|gdocs|gdocssafari|wordweb) APPS+=("$1"); shift ;;
     *) log_die 2 "Tham số không hợp lệ: $1" ;;
   esac
 done
@@ -426,6 +430,8 @@ cleanup() {
   (( $+functions[vscode_cleanup] )) && vscode_cleanup
   # WebStorm's window of this run, the IDE if the script launched it, its settings files.
   (( $+functions[ws_cleanup] )) && ws_cleanup
+  # Obsidian's vault list as it was, and what the temporary vault left in its settings.
+  (( $+functions[obs_cleanup] )) && obs_cleanup
   [[ $UNDERLINE == 1 ]] && defaults delete -g "$FORCE_KEY" >/dev/null 2>&1
   restore_perf_key
   "$CLIPBOARD" restore "$WORK/clipboard.plist" 2>/dev/null || log_warn "Không khôi phục được clipboard"
@@ -1811,6 +1817,45 @@ run_cursoragents() {
   end tell' >/dev/null
 }
 
+# The message box of Antigravity 2.x (an Electron agent app: one window, "Antigravity", no
+# editor of its own). Seen 23/11/2026 (Antigravity 2.33.0): ⌘N starts a new conversation
+# and moves the focus into the box, the focused element is AXTextArea "Message input".
+# A box that is not empty (a draft) stops the run before anything is typed. Return is never
+# sent: nothing goes to an agent. The box is emptied at the end.
+ag_focus() {
+  osascript -e 'tell application "System Events" to tell process "Antigravity" to set value of attribute "AXManualAccessibility" to true' >/dev/null 2>&1
+  [[ "$(osascript -e 'tell application "System Events" to tell process "Antigravity" to get {role, description} of (value of attribute "AXFocusedUIElement")' 2>/dev/null)" == "AXTextArea, Message input" ]]
+}
+run_antigravity() {
+  open -a Antigravity
+  osascript -e 'tell application "System Events" to tell process "Antigravity"
+    set frontmost to true
+    perform action "AXRaise" of (first window whose name is "Antigravity")
+  end tell' >/dev/null 2>&1
+  wait_until -i 0.3 15 front_ok Antigravity Antigravity
+  guarded Antigravity Antigravity 'tell application "System Events" to keystroke "n" using {command down}' \
+    >/dev/null || return 0
+  if ! wait_until 5 ag_focus; then
+    log_error "Dừng: focus của Antigravity không ở ô Message input sau ⌘N — không gõ gì"
+    stop_run front "focus của Antigravity không ở ô Message input"
+    return 0
+  fi
+  local draft
+  draft="$(copy_all Antigravity Antigravity)"
+  if [[ -n "$draft" ]]; then
+    log_error "Dừng: ô nhập của Antigravity không trống — không gõ gì"
+    stop_run front "ô nhập của Antigravity không trống"
+    return 0
+  fi
+  select_dau; type_keys Antigravity Antigravity
+  copy_all Antigravity Antigravity
+  guarded Antigravity Antigravity 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+  end tell' >/dev/null
+}
+
 # The same prompt box in the IDE window. Cursor is one app and one process with two kinds
 # of window: the "Cursor Agents" window (run_cursoragents) and IDE windows (run_cursor opens
 # one with `cursor --new-window <file>`). Observed on Cursor 3.30.14: ⌘L in an IDE window
@@ -2110,6 +2155,187 @@ run_sublime() {
   wait_until 5 sublime_closed
   sublime_closed || log_warn "Còn tab \"$SELFTEST_TITLE\" của Sublime Text (có thể còn hộp thoại lưu), đóng tay giúp (Don't Save)"
 }
+
+# An editor with its own text engine (Zed, Xcode), opened by its command-line tool on an
+# empty file of this run, in a window of its own: $1 the System Events process, the rest
+# the command that opens a file (the file is appended). After the text is read back the
+# file is emptied and saved (it is this run's own file), so ⌘W closes it without asking.
+editor_front() { # process
+  front_ok "$1" "$SELFTEST_TITLE" && return 0
+  osascript -e "tell application \"System Events\" to tell process \"$1\"
+    set frontmost to true
+    perform action \"AXRaise\" of (first window whose name contains \"$SELFTEST_TITLE\")
+  end tell" >/dev/null 2>&1
+  return 1
+}
+editor_closed() { [[ "$(window_names "$1")" != *"$SELFTEST_TITLE"* ]]; }
+cli_editor() { # process command...
+  local proc="$1"; shift
+  local file="$WORK/$SELFTEST_TITLE.txt"
+  : > "$file"
+  "$@" "$file" >/dev/null 2>&1
+  # Not there in time: type_keys's guard reports it and stops the run.
+  # An app started by the command can drop the file while it restores its own windows
+  # (Xcode at launch: the welcome window and the last project, no file): ask again.
+  local i
+  for i in {1..60}; do
+    editor_front "$proc" && break
+    (( i % 10 == 0 )) && "$@" "$file" >/dev/null 2>&1
+    sleep 0.5
+  done
+  select_dau; type_keys "$proc" "$SELFTEST_TITLE"
+  copy_all "$proc" "$SELFTEST_TITLE"
+  # The delays between the keys stay fixed: pacing, nothing read in between.
+  guarded "$proc" "$SELFTEST_TITLE" 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+    delay 0.2
+    keystroke "s" using {command down}
+    delay 0.5
+    keystroke "w" using {command down}
+  end tell' >/dev/null || return 0
+  # Zed closes the tab but keeps the window, named after the file it was opened on.
+  # Closed one at a time: the list of windows shrinks with each click.
+  wait_until 3 editor_closed "$proc" || osascript -e "tell application \"System Events\" to tell process \"$proc\"
+    repeat 5 times
+      if not (exists (first window whose name contains \"$SELFTEST_TITLE\")) then exit repeat
+      click (first button of (first window whose name contains \"$SELFTEST_TITLE\") whose subrole is \"AXCloseButton\")
+      delay 0.5
+    end repeat
+  end tell" >/dev/null 2>&1
+  wait_until 10 editor_closed "$proc"
+  editor_closed "$proc" || log_warn "Còn cửa sổ \"$SELFTEST_TITLE\" của $proc, đóng tay giúp (không lưu)"
+}
+# Obsidian (CodeMirror in Electron), in a temporary vault of this run: the user's vaults may
+# sync (iCloud), so nothing is written to them. Obsidian keeps its vault list in
+# obsidian.json; it is copied, the temporary vault added and the user's vaults marked not
+# open (so none of their windows opens), then the copy is put back and whatever the run
+# added next to it (the vault's own settings file, snapshot and Quick Look folders) removed,
+# in cleanup, also after a stop. Obsidian has to be closed while the file is changed: a
+# running Obsidian is quit (normally, as from its menu). Seen 23/11/2026 (Obsidian 1.15.1):
+# obsidian://open?vault=…&file=… opens the note in a window titled
+# "dau-selftest - dau-selftest - Obsidian <version>" with the caret in the empty body.
+OBS_DIR="$HOME/Library/Application Support/obsidian"
+OBS_ID=da5e1f7e5700beef
+OBS_SAVED=0
+obs_gone() { ! pgrep -xq Obsidian; }
+obs_quit() {
+  obs_gone && return 0
+  osascript -e 'tell application "Obsidian" to quit' >/dev/null 2>&1
+  wait_until 10 obs_gone
+}
+obs_cleanup() {
+  (( OBS_SAVED )) || return 0
+  obs_quit || log_warn "Obsidian chưa thoát; vẫn khôi phục danh sách kho"
+  cp "$WORK/obsidian.json" "$OBS_DIR/obsidian.json"
+  local f
+  for f in "$OBS_DIR"/*(N); do
+    grep -qxF "${f:t}" "$WORK/obsidian.before" || rm -rf "$f"
+  done
+  OBS_SAVED=0
+}
+run_obsidian() {
+  local vault="$WORK/$SELFTEST_TITLE" key
+  [[ -f "$OBS_DIR/obsidian.json" ]] || { log_error "Dừng: không thấy $OBS_DIR/obsidian.json"; stop_run front "Obsidian chưa mở lần nào trên máy"; return 0; }
+  pgrep -xq Obsidian && log_detail "Obsidian đang chạy: thoát Obsidian để thêm kho tạm"
+  obs_quit || { log_error "Dừng: Obsidian không thoát"; stop_run front "Obsidian không thoát"; return 0; }
+  mkdir -p "$vault"; : > "$vault/$SELFTEST_TITLE.md"
+  cp "$OBS_DIR/obsidian.json" "$WORK/obsidian.json"
+  ls "$OBS_DIR" > "$WORK/obsidian.before"
+  OBS_SAVED=1
+  for key in $(plutil -extract vaults raw "$OBS_DIR/obsidian.json" 2>/dev/null); do
+    plutil -replace "vaults.$key.open" -bool false "$OBS_DIR/obsidian.json"
+  done
+  plutil -insert "vaults.$OBS_ID" -json "{\"path\":\"$vault\",\"ts\":${EPOCHSECONDS}000,\"open\":true}" "$OBS_DIR/obsidian.json"
+  open "obsidian://open?vault=$SELFTEST_TITLE&file=$SELFTEST_TITLE"
+  wait_until -i 0.5 20 editor_front Obsidian
+  select_dau; type_keys Obsidian "$SELFTEST_TITLE"
+  copy_all Obsidian "$SELFTEST_TITLE"
+  obs_cleanup
+}
+# Notion (Electron, its own block editor): a new private page of this run, moved to Trash at
+# the end. Its accessibility tree comes and goes (empty for minutes after a while), so the
+# steps check the window title, the one thing it always reports. Seen 23/11/2026 (Notion
+# 7.44.1, English UI):
+# - ⌘N shows a menu (New page, New chat, …); "1" picks New page, which opens in a new tab of
+#   the front window, titled "New page", in Private, the focus in its title. A title that
+#   stays the old one means the menu did not come (Notion still loading): stop.
+# - The title is pasted (the input source must not touch it), Return moves the caret into
+#   the empty body, and the window title becomes the page's.
+# - The page menu is the "•••" pop-up button "Actions" 24 pt from the window's right edge,
+#   61 pt below its top (clicked there: the button is not always in the tree). It opens
+#   with a search field focused; "Move to Trash" pasted there
+#   and Return trash the page, and its tab shows the page that was open before; ⌘W closes
+#   that tab, the one ⌘N opened.
+notion_paste() { # text: pasted into Notion's focus through the clipboard (restored by cleanup)
+  printf '%s' "$1" | pbcopy
+  guarded Notion "" 'tell application "System Events" to keystroke "v" using {command down}' >/dev/null
+}
+notion_title_is() { front_ok Notion "$1"; }
+notion_trash() { # title the page has now
+  local title="$1"
+  # Only while this run's page is in front, so the click can only reach its "•••". Esc first:
+  # with the text still selected after the read-back, the click did not open the menu (the
+  # paste and Return then went into the page).
+  if ! osascript -e "tell application \"System Events\" to tell process \"Notion\"
+    if not frontmost then error \"not front\"
+    if name of window 1 is not \"$title\" then error \"not the page\"
+    key code 53
+    delay 0.3
+    set {x, y} to position of window 1
+    set {w, h} to size of window 1
+    click at {x + w - 24, y + 61}
+  end tell" >/dev/null 2>&1; then
+    log_warn "Không bấm được menu của trang Notion: trang \"$title\" còn trong Private, xoá tay giúp (Move to Trash)"
+    return 0
+  fi
+  sleep 0.8  # Fixed: the menu fades in before its search field takes keys; nothing to read
+  notion_paste "Move to Trash"
+  sleep 0.8  # Fixed: the list filters as the text arrives; nothing to read
+  guarded Notion "" 'tell application "System Events" to key code 36' >/dev/null
+  # Trashed: the tab shows the page open before. Not: the paste and Return went into this
+  # run's own page (the menu did not open), and the page is left for the user.
+  if wait_until 5 eval '! notion_title_is "$title"'; then
+    guarded Notion "" 'tell application "System Events" to keystroke "w" using {command down}' >/dev/null
+  else
+    log_warn "Trang Notion \"$title\" chưa vào Trash, xoá tay giúp (Move to Trash)"
+  fi
+}
+run_notion() {
+  local before
+  open -a Notion
+  wait_until -i 0.5 30 front_ok Notion ""
+  before="$(window_names Notion)"
+  guarded Notion "" 'tell application "System Events"
+    keystroke "n" using {command down}
+    delay 1
+    keystroke "1"
+  end tell' >/dev/null || return 0
+  if ! wait_until 5 notion_title_is "New page"; then
+    log_error "Dừng: Notion chưa mở trang mới (cửa sổ vẫn là \"$before\"); có thể Notion còn đang tải — không gõ gì"
+    stop_run front "Notion chưa mở trang mới"
+    return 0
+  fi
+  sleep 0.5  # Fixed: the title field takes keys once the page is drawn; nothing to read
+  notion_paste "$SELFTEST_TITLE"
+  sleep 0.5
+  # No title in the guard: the window title follows the title field as the paste lands.
+  guarded Notion "" 'tell application "System Events" to key code 36' >/dev/null
+  if ! wait_until 5 notion_title_is "$SELFTEST_TITLE"; then
+    log_error "Dừng: trang mới của Notion không nhận tiêu đề \"$SELFTEST_TITLE\" — không gõ gì"
+    stop_run front "trang mới của Notion không nhận tiêu đề"
+    notion_trash "New page"
+    return 0
+  fi
+  select_dau; type_keys Notion "$SELFTEST_TITLE"
+  copy_all Notion "$SELFTEST_TITLE"
+  notion_trash "$SELFTEST_TITLE"
+}
+# Zed: GPUI, its own text input, not AppKit's text system.
+run_zed() { cli_editor Zed /Applications/Zed.app/Contents/MacOS/cli -n; }
+# Xcode's source editor; xed opens the file in Xcode.
+run_xcode() { cli_editor Xcode /usr/bin/xed; }
 
 # Ghostty (System Events process "ghostty"). Its AppleScript cannot read a window's text,
 # so the new window runs a small line editor of this run's own (the cell below) in place
@@ -2447,6 +2673,8 @@ bundle_id() {
     cursor|cursoragents|cursorchat) echo com.todesktop.230313mzl4w4u92 ;;
     vscodefile) echo com.microsoft.VSCode ;;
     sublime) echo com.sublimetext.4 ;; ghostty|ghosttyvim) echo com.mitchellh.ghostty ;;
+    zed) echo dev.zed.Zed ;; xcode) echo com.apple.dt.Xcode ;; antigravity) echo com.google.antigravity ;;
+    obsidian) echo md.obsidian ;; notion) echo notion.id ;;
     xterm|tiptap|gdocs|wordweb) echo com.google.Chrome ;;
     gdocssafari) echo com.apple.Safari ;;
     vscodeterm|vscodeswitch) echo com.microsoft.VSCode ;;
