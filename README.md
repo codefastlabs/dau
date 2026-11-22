@@ -60,7 +60,7 @@ Dấu chưa có bản cài để tải về. Dấu nhắm tới macOS 14 trở l
 Cách build, cách cài bộ gõ bằng Apple ID cá nhân và cách chạy các bộ test ghi ở [CONTRIBUTING.md](CONTRIBUTING.md). Riêng test của engine thì bạn chạy được mà không cần Apple ID, bằng lệnh sau:
 
 ```sh
-DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine
+swift test --package-path Packages/DauEngine
 ```
 
 Các tài liệu sau giúp bạn tìm hiểu thêm về dự án:

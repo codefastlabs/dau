@@ -4,8 +4,8 @@
 // "Dau/Localizable.xcstrings"), so the tests run with `swift test`: no Xcode project, no
 // signing. No test puts a window on screen.
 //
-//   swift test --package-path Apps/Dau/Tests   (DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer
-//   when xcode-select points at the Command Line Tools)
+//   swift test --package-path Apps/Dau/Tests   (needs Xcode, not only the Command Line Tools:
+//   CONTRIBUTING.md, "Chuẩn bị máy")
 
 import PackageDescription
 

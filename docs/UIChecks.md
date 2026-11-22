@@ -187,7 +187,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm và điều kiện đ�
 1. Build bản Debug:
 
    ```
-   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcodebuild -project Dau.xcodeproj -scheme Dau -configuration Debug -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex build
+   xcodebuild -project Dau.xcodeproj -scheme Dau -configuration Debug -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex build
    ```
 
 2. Kiểm trên cửa sổ thật bằng `scripts/selftest/settings-window/run.sh <thư-mục-ra>`.
@@ -201,12 +201,12 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm và điều kiện đ�
 4. Chạy test:
 
    ```
-   DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Apps/Dau/Tests
+   swift test --package-path Apps/Dau/Tests
    ```
 
    Bộ test gồm ví dụ do engine tính, phím tắt, ô tìm sidebar, ô tìm và việc chọn trong sheet thêm quy tắc, vỏ cửa sổ và banner "Dấu chưa được bật".
 
-Bước 1 và bước 4 cần `DEVELOPER_DIR`, vì Command Line Tools không có plugin macro của SwiftUI.
+Bước 1 và bước 4 cần chọn Xcode, vì Command Line Tools không có plugin macro của SwiftUI. Cách chọn ghi ở [CONTRIBUTING.md](../CONTRIBUTING.md), mục "Chuẩn bị máy".
 
 ## Đọc bảng kết quả
 

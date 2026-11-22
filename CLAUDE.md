@@ -110,5 +110,5 @@ Mọi script và tác dụng phụ: [`scripts/README.md`](scripts/README.md); tu
 - `scripts/dev/doctor.sh` — máy thiếu gì để build, test, chạy Dấu, kèm lệnh sửa; không đổi gì trên hệ thống.
 - `scripts/dev/dau-version.sh` — bộ gõ đã cài và đang chạy có phải bản mới nhất của `main` không (so đầu vào build và Xcode, không chỉ so commit).
 - `scripts/dev/install-app.sh` — script cài duy nhất: build Dấu.app và đặt vào `/Applications`; Dấu.app đó thay bộ gõ đã cài (D37 (Cài bộ gõ)). `--ref main` cài bản dùng hằng ngày (bản Release của commit mới nhất trên `main`).
-- `DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine` — test engine; `--package-path Apps/Dau/Tests` cho app chủ.
+- `swift test --package-path Packages/DauEngine` — test engine; `--package-path Apps/Dau/Tests` cho app chủ.
 - `scripts/check-l10n/check.sh` — kiểm String Catalog (D41).
