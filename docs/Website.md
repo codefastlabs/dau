@@ -26,8 +26,8 @@ Các mục xếp theo thứ tự sau:
    - Bên phải là hoạt ảnh phát lại chuỗi phím thành chữ có dấu, kèm phím vừa gõ. Hoạt ảnh này dựng sẵn bằng CSS, không phải engine chạy trên web. Hoạt ảnh tắt khi người dùng bật giảm chuyển động (`prefers-reduced-motion`). Nội dung hoạt ảnh theo mô hình [Gõ phím dấu ở đâu cũng được](canvas/ModelTonePlacement.png) (D28 (Đặt dấu tự do), D15 (Cài đặt mặc định)).
 3. **Vì sao có Dấu** so sánh các loại bộ gõ và chỉ mô tả cách mỗi loại làm việc.
    - Bộ gõ có sẵn của macOS dùng gạch chân.
-   - Bộ gõ giả lập phím xoá chữ cũ rồi gõ lại bằng phím giả. Ảnh hưởng của cách này khi máy bận lấy từ số đo dưới tải ở `docs/Compatibility.md`; ô số liệu chỉ điền từ số đo (N5).
-   - Dấu thay chữ tại chỗ. Mục này kèm danh sách ứng dụng đã kiểm chứng.
+   - Bộ gõ giả lập phím xoá chữ cũ rồi gõ lại bằng phím giả. Dấu không đo các bộ gõ này, nên mục chỉ tả cách chúng làm và không đặt số đo nào cho chúng (N5).
+   - Dấu thay chữ tại chỗ. Mục này kèm danh sách ứng dụng đã kiểm chứng. Chỉ cột của Dấu có ô số đo khi máy bận, lấy từ bài tải nặng của D42 (Ngưỡng hiệu năng).
    - Mô hình [Ba cách gõ “hoà”](canvas/ModelThreeWays.png) so ba loại bộ gõ trên cùng bốn phím (N3, D13). Mô hình [Đường đi của một phím](canvas/ModelKeyFlow.png) tả phím đi từ macOS qua bộ gõ tới ứng dụng (N3, N2).
 4. **Tính năng** gồm bốn thẻ có minh hoạ: giữ nguyên từ nước ngoài, thêm dấu cho từ đã gõ, theo từng ứng dụng, và như một phần của macOS. Mỗi thẻ có một mô hình:
    - [Giữ nguyên từ nước ngoài](canvas/ModelForeignWords.png) (D4, D26).
@@ -36,7 +36,12 @@ Các mục xếp theo thứ tự sau:
    - [Như một phần của macOS](canvas/ModelPartOfMacOS.png) (D2, N1, N4).
 5. **Bảng gõ Telex và VNI** là một bảng thật (`<table>`). Cột "Tên" ẩn trên điện thoại. Mô hình [VNI: chữ số sau âm tiết thành dấu](canvas/ModelVNI.png) đứng cạnh bảng và cũng dùng cho câu hỏi đáp về VNI (D36, D26).
 6. **Quyền riêng tư** nằm trên nền Mực và nêu ba cam kết. Nội dung giữ đúng D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng). Mô hình [Những gì bạn gõ ở lại trên máy bạn](canvas/ModelPrivacy.png) tả hai phần chạy riêng của Dấu.
-7. **Đo được** có bốn ô số liệu để trống. Các ô chỉ điền từ kết quả test thật.
+7. **Đo được** có bốn ô. Câu dẫn nói đúng hai nhịp đo: test engine chạy trên mỗi commit, còn bài tải nặng chạy trước mỗi bản phát hành. Mỗi ô ghi đúng thứ đã đo và ghi điều kiện đo ngay cạnh số (N5).
+   - Ô thứ nhất là số ca test engine.
+   - Ô thứ hai là p99 thời gian bộ gõ xử lý một phím có thay chữ dưới tải nặng, kèm ngưỡng 20 ms, bản Debug, máy đo và ngày đo (D42). Ô này không gọi số đó là độ trễ, vì nó không gồm thời gian của ứng dụng.
+   - Ô thứ ba là bộ nhớ (RSS) của tiến trình bộ gõ trong bài tải nặng, kèm ngưỡng 96 MB, bản đo, máy đo và ngày đo (D42).
+   - Dưới ô thứ hai có một dòng nói bản nào vượt ngưỡng ở ô đó hay ô bộ nhớ thì không được phát hành. Điều kiện này có bước tương ứng trong `docs/Releasing.md`. Mục không đặt tỷ lệ chữ đúng thành một ô, vì D42 buộc chữ đúng ở mọi ô của bài tải nặng thì mới phát hành, nên tỷ lệ đó luôn trọn vẹn.
+   - Ô thứ tư là số ứng dụng đã đo, nói rõ danh sách gồm cả chỗ Dấu còn gõ sai, và dẫn tới `docs/Compatibility.md`.
 8. **Tải về:**
    - Mục này ghi phiên bản, ngày phát hành, dung lượng và yêu cầu hệ thống.
    - Mục có nút "Tải về (.dmg)" và nút "Lịch sử phiên bản".

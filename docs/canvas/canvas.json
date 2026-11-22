@@ -53,7 +53,7 @@
     },
     "Landing.dc.html": {
       "expand": "fill",
-      "h": 7546,
+      "h": 7702,
       "title": "Trang tải về – máy tính",
       "w": 1280,
       "x": 0,
@@ -61,7 +61,7 @@
     },
     "LandingMobile.dc.html": {
       "expand": "fill",
-      "h": 11488,
+      "h": 11819,
       "title": "Trang tải về – điện thoại",
       "w": 390,
       "x": 1360,
@@ -299,7 +299,7 @@
       "x": 1830,
       "y": 14900,
       "w": 1200,
-      "h": 698,
+      "h": 726,
       "title": "Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)"
     },
     "ModelKeyFlow.dc.html": {
