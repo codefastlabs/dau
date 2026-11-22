@@ -774,6 +774,10 @@ open_test_page_of() { # page file, browser app name, process
 # not click in Safari (why was not kept). A click, not a script in the page: it needs
 # no browser setting.
 # Whether it worked is not judged here: type_keys's guard still checks the title.
+# Called before select_dau, so the source is chosen with the field focused (scripts/CLAUDE.md):
+# with macOS's "Automatically switch to a document's input source" on, a source chosen while
+# the address field had the focus can be switched back when the focus moves into the field
+# (Safari, 23/11/2026: the source became U.S. while typing, 5 of 36 runs; cause not shown).
 focus_test_field() { # process
   stopped && return 1
   wait_until -i 0.3 2 front_ok "$1" "$FOCUS_TITLE" && return 0
@@ -806,14 +810,14 @@ focus_test_field() { # process
 
 run_safari() {
   open_test_page Safari Safari
-  select_dau; focus_test_field Safari; type_keys Safari "$FOCUS_TITLE"
+  focus_test_field Safari; select_dau; type_keys Safari "$FOCUS_TITLE"
   copy_all Safari "$FOCUS_TITLE"
   close_test_tab Safari
 }
 
 run_chrome() {
   open_test_page "Google Chrome" "Google Chrome"
-  select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
+  focus_test_field "Google Chrome"; select_dau; type_keys "Google Chrome" "$FOCUS_TITLE"
   copy_all "Google Chrome" "$FOCUS_TITLE"
   close_test_tab "Google Chrome"
 }
@@ -961,14 +965,14 @@ run_wordweb() { run_webdoc wordweb; }
 
 run_edge() {
   open_test_page "Microsoft Edge" "Microsoft Edge"
-  select_dau; focus_test_field "Microsoft Edge"; type_keys "Microsoft Edge" "$FOCUS_TITLE"
+  focus_test_field "Microsoft Edge"; select_dau; type_keys "Microsoft Edge" "$FOCUS_TITLE"
   copy_all "Microsoft Edge" "$FOCUS_TITLE"
   close_test_tab "Microsoft Edge"
 }
 
 run_firefox() {
   open_test_page Firefox firefox
-  select_dau; focus_test_field firefox; type_keys firefox "$FOCUS_TITLE"
+  focus_test_field firefox; select_dau; type_keys firefox "$FOCUS_TITLE"
   copy_all firefox "$FOCUS_TITLE"
   close_test_tab firefox
 }
@@ -2344,7 +2348,7 @@ run_xterm() {
   local got
   open -a "Google Chrome" "$XTERM_PAGE"
   wait_until -i 0.3 15 front_ok "Google Chrome" "$PAGE_TITLE"
-  select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
+  focus_test_field "Google Chrome"; select_dau; type_keys "Google Chrome" "$FOCUS_TITLE"
   shot_window "Google Chrome" xterm
   got="$(copy_all "Google Chrome" "$FOCUS_TITLE")"
   close_test_tab "Google Chrome"
@@ -2405,7 +2409,7 @@ HTML
 run_tiptap() {
   local got
   open_test_page_of "$TIPTAP_PAGE" "Google Chrome" "Google Chrome"
-  select_dau; focus_test_field "Google Chrome"; type_keys "Google Chrome" "$FOCUS_TITLE"
+  focus_test_field "Google Chrome"; select_dau; type_keys "Google Chrome" "$FOCUS_TITLE"
   got="$(copy_all "Google Chrome" "$FOCUS_TITLE")"
   close_test_tab "Google Chrome"
   log_detail "beforeinput của editor: \"${got#*$'\n'}\"" >&2
