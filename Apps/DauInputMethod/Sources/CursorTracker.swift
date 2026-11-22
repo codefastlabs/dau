@@ -83,8 +83,32 @@ struct CursorTracker: Equatable {
         return last.deleted
     }
 
-    /// The app answered at `known`: it has every edit so far.
-    mutating func answeredOnTime() { sinceOnTime = 0 }
+    /// The app answered at `known`: it has every edit so far, except the latest ones that
+    /// an answer at `known` cannot tell apart. A replacement that leaves the caret where
+    /// it was (a mark on a letter, "u" → "ư") gives the same answer whether the app has
+    /// applied it or not; and Chromium's cache answers the caret the page reported plus
+    /// the latest text inserted at the caret (`rebuild`), so that text may be missing too,
+    /// with such replacements before it. Taking every such answer as on time capped
+    /// `rebuild` one or two edits short of a late answer (Chrome, busy page, 22/11/2026:
+    /// "dduwowjc" gave "đụơc", the answer at "o" one edit late, at `known` after "ư").
+    mutating func answeredOnTime() {
+        guard let known else { sinceOnTime = 0; return }
+        var caret = known, missing = 0, cacheForm = false
+        for edit in edits.reversed() {
+            let after = edit.cursor.addingSaturated(edit.inserted.count).subtractingSaturated(edit.deleted)
+            guard after == caret else { break }
+            if edit.cursor == caret {
+                missing += 1                       // left the caret where it was
+            } else if !cacheForm, edit.atCaret, !edit.inserted.isEmpty, edit.deleted == 0 {
+                cacheForm = true                   // Chromium's cache writes it at the page's caret
+                caret = edit.cursor
+                missing += 1
+            } else {
+                break
+            }
+        }
+        sinceOnTime = missing
+    }
 
     /// One edit of the document made by this composer or by a key it let through (⌫).
     struct Edit: Equatable {

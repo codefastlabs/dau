@@ -175,6 +175,35 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
+    /// Chrome, busy page, 10 ms between keys (22/11/2026, 1 of 3 runs): at "j" after
+    /// "Hoc ⌫" the D20 read answered after "Ho", further behind than `rebuild` can prove,
+    /// and the next word's answers stayed there. Anchoring at that answer made "tieesng"
+    /// replace the "o" of "Hoc" ("Hếcj tieng"). Not anchored, the next word is proved late
+    /// and comes out right; D20 does not apply to "Hoc" (the read gave no usable word).
+    @Test("busy page, 10 ms: a D20 read in a burst far behind does not move the followed position")
+    func staleD20ReadInBurst() {
+        let before = "chiều nay. "
+        var s = LateSession(before)
+        s.interval = 0.017
+        s.type("Hoc")
+        s.interval = 0.058
+        s.type(" ")
+        s.interval = 0.01
+        s.type("⌫")
+        let stuck = "chiều nay. Ho"           // the page, after "Ho"
+        s.interval = 0.033
+        s.doc.override = "chiều nay. H "      // a read that holds no usable word
+        s.type("j")
+        s.interval = 0.017
+        s.doc.override = stuck
+        s.type(" tiees")
+        s.doc.override = nil
+        s.type("ng ")
+        #expect(s.doc.text == "chiều nay. Hocj tiếng ")
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
     @Test("dau-busy-2: được — the answer is behind the input method's own replacement")
     func ownReplacementLate() {
         var s = LateSession()
@@ -187,6 +216,35 @@ struct LateAnswerTests {
         s.type(" ")
         #expect(s.doc.text == "cần được luyện ")
         #expect(s.overCalls == 0)
+    }
+
+    /// Chrome, busy page, human fast pace (22/11/2026: "dduwowjc" gave "đụơc" in 1 of 6
+    /// runs). The answer at "o" was one edit late, without the "u" → "ư" replacement, which
+    /// leaves the caret where it was: the answer was at `known` and was taken as on time, so
+    /// `rebuild` at "j" (three edits late) could replay only two. Every lag the page can
+    /// build up (at most one more per key) from 0 to 3 up to "j", then on time; both caches, in a
+    /// burst and not.
+    @Test("được: an answer at the followed position one caret-neutral replacement late is not on time",
+          arguments: [LateDocument.Cache.snapshot, .chromium], [0.017, 0.06])
+    func caretNeutralLateAnswer(_ cache: LateDocument.Cache, _ interval: TimeInterval) {
+        let word = Array("dduwowjc ".unicodeScalars)
+        var failures: [String] = []
+        func run(_ lags: [Int]) {
+            var s = LateSession()
+            s.doc.cache = cache
+            s.type("Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf ")
+            s.interval = interval
+            for (key, lag) in zip(word, lags) { s.type(String(Character(key)), lag: lag) }
+            if !s.doc.text.hasSuffix("cần được ") || s.overCalls > 0 || s.doc.badRanges > 0 {
+                failures.append("\(lags): \(s.doc.text.suffix(10))")
+            }
+        }
+        func lags(_ prefix: [Int]) {
+            guard prefix.count < 7 else { return run(prefix + [0, 0]) }
+            for lag in 0...min(3, (prefix.last ?? 0) + 1) { lags(prefix + [lag]) }
+        }
+        lags([])
+        #expect(failures.isEmpty, "\(failures.count) lag sequences, first: \(failures.prefix(3))")
     }
 
     /// The strings of `scripts/selftest/load/run.sh` (`--text edit`, the 1b string, and
@@ -237,15 +295,16 @@ struct LateAnswerTests {
 
     /// Busy page (`--busy 300:1000`, docs/Compatibility.md 5.2): Chrome answers up to 12 edits
     /// late across word ends. In a word `rebuild` now allows every edit since the app's last
-    /// answer on time (`CursorTracker.sinceOnTime`), which fixed most of the real runs; the
-    /// model is harsher (lag from the start of the text, before any answer on time), so some
-    /// cases still fail: a known issue (open item in docs/Progress.md). The page is blocked
+    /// answer on time (`CursorTracker.sinceOnTime`); with the fixes of 22/11/2026 the real runs
+    /// came out right (Chrome 9/9 at 10 ms). The model is harsher (lag from the start of the
+    /// text, before any answer on time), so some cases still fail: a known issue of the model
+    /// (docs/research/LateAnswerFixes.md 3.3). The page is blocked
     /// 300 ms of every second; the lag grows by one per key while blocked (an app cannot
     /// drop edits it has applied) and is caught up after.
     @Test("the load-test strings in a burst, answers up to twelve keys late at random: same text as on time",
           arguments: [0, 1, 2, 3], Array(UInt64(1)...24))
     func wholeStringLateBurst(_ which: Int, _ seed: UInt64) {
-        withKnownIssue("busy page, answers late across word ends (open item)", isIntermittent: true) {
+        withKnownIssue("busy page, answers late across word ends (model harsher than the real runs)", isIntermittent: true) {
             Self.lateBurst(which, seed)
         }
     }

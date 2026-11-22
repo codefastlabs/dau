@@ -729,6 +729,8 @@ struct InPlaceComposer {
         var selection = askSelection(client: client)
         var read: String?
         var didRead = false
+        // The answer is behind the followed position, not proved late, in a burst (below).
+        var staleInBurst = false
         if let known = tracker.known, selection.length == 0, selection.location != NSNotFound,
            selection.location >= 0, selection.location != known, !tracker.edits.isEmpty {
             didRead = true
@@ -744,14 +746,24 @@ struct InPlaceComposer {
                 let count = min(known, Self.readLength, rebuilt.count)
                 read = String(decoding: rebuilt.suffix(count), as: UTF16.self)
                 selection = NSRange(location: known, length: 0)
+            } else if selection.location < known, tracker.keyInBurst {
+                // Not proved, the answer behind the followed position, and this key came in a
+                // burst after the edits it lacks: no time for a click IMK does not report, so
+                // the app is taken to be further behind than `rebuild` can replay (Chrome,
+                // busy page, 10 ms between keys, 22/11/2026: "Hoc ⌫j" answered after "Ho").
+                // Anchoring there moved `known` back to a stale caret, and the next word's
+                // first replacement, the app still behind, then replaced a letter of this one
+                // ("Hoc ⌫j tieesng" gave "Hếcj tieng"). The followed position stays; the text
+                // read is not this word, so nothing is seeded: the key starts a word.
+                staleInBurst = true
             }
         }
-        if selection.length == 0, selection.location != NSNotFound, selection.location >= 0 {
+        if !staleInBurst, selection.length == 0, selection.location != NSNotFound, selection.location >= 0 {
             tracker.anchor(at: selection.location)
         }
         // A read that gave nothing usable is not made again for this key (N3): no seed, as `seedWord`
         // does for such a read.
-        var outcome = didRead && read == nil ? nil
+        var outcome = didRead && read == nil || staleInBurst ? nil
             : seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read,
                        rule: letter ? .letter : .mark)
         if var failed = outcome, failed.kind == .mismatch || failed.kind == .unsupported {
