@@ -19,65 +19,65 @@
 
 ### Một lựa chọn không cần thoả hiệp.
 
-Người dùng Mac từ lâu luôn phải đứng trước sự đánh đổi: chấp nhận những lỗi vụng về của bộ gõ mặc định, hoặc cài phần mềm bên thứ ba nhưng phải cấp quyền can thiệp hệ thống, chịu cảnh giật con trỏ và nỗi lo thường trực về an toàn dữ liệu. Dấu ra đời để xoá bỏ sự đánh đổi đó: một bộ gõ tiếng Việt thông minh, chuẩn xác, nhưng hoạt động như một nguồn đầu vào của macOS, như mọi bàn phím hệ thống.
+Người gõ tiếng Việt trên Mac thường phải chọn một trong hai đường. Đường thứ nhất là dùng bộ gõ có sẵn của macOS và chịu những chỗ nó gõ chưa đúng. Đường thứ hai là cài bộ gõ của bên thứ ba, cấp cho nó quyền can thiệp vào hệ thống, và chấp nhận việc nó xoá rồi gõ lại chữ bằng phím giả. Dấu được làm ra để người gõ không phải chọn như vậy: Dấu đặt dấu đúng chính tả, và Dấu là một nguồn đầu vào của macOS như mọi bàn phím của hệ thống.
 
 ### Chính tả chuẩn xác, dù kiểu mới hay kiểu cũ.
 
-Dấu hỗ trợ Telex, VNI và Telex đơn giản. Dấu thanh luôn tự động vào đúng nguyên âm theo chính tả, cho phép bạn lựa chọn kiểu đặt dấu mới (hoà, thuý) hoặc kiểu cũ (hòa, thúy). Khi một từ đã sai chính tả, Dấu dừng biến đổi chứ không tự ý đoán thay bạn.[^1] Thử nghiệm thực tế với 60 câu tiếng Việt thông dụng trên Safari và Chrome, Dấu cho kết quả chính xác 677 trên tổng số 678 từ.[^2]
+Dấu có ba kiểu gõ: Telex, VNI và Telex đơn giản. Dấu thanh luôn tự vào đúng nguyên âm theo chính tả, và bạn chọn được kiểu đặt dấu mới (hoà, thuý) hay kiểu cũ (hòa, thúy). Khi một từ đã sai chính tả, Dấu ngừng biến đổi từ đó chứ không đoán thay bạn.[^1] Trong một lượt gõ thử 60 câu tiếng Việt thông dụng trên Safari và Chrome, Dấu gõ đúng 677 trên 678 từ.[^2]
 
 ### Tự do bỏ dấu ở bất kỳ vị trí nào.
 
-Bạn không cần gõ phím dấu ngay cạnh chữ cái mang dấu. Chuỗi `tuongw` cho ra "tương", `hoaf` cho ra "hoà", và dấu thanh sẽ tự động dời về đúng vị trí khi bạn gõ thêm nguyên âm.[^3]
+Bạn không cần gõ phím dấu ngay sau chữ cái mang dấu. Chuỗi `tuongw` ra "tương", chuỗi `hoaf` ra "hoà", và dấu thanh tự dời về đúng chỗ khi bạn gõ thêm nguyên âm.[^3]
 
 ### Bổ sung dấu linh hoạt cho từ đã gõ.
 
-Bạn có thể đặt con trỏ ngay sau một từ đã gõ không dấu rồi bấm phím dấu để bổ sung, như gõ thêm `ej` sau `viet` để thành "việt". Khi bạn nhấn ⌫, Dấu sẽ xoá chữ cuối cùng và tự động sắp xếp lại dấu theo vần còn lại, chẳng hạn chuyển "hoà" thành "hò".[^4]
+Bạn có thể đặt con trỏ ngay sau một từ đã gõ không dấu rồi bấm phím dấu để thêm dấu, ví dụ gõ thêm `ej` sau `viet` để được "việt". Khi bạn bấm ⌫, Dấu xoá chữ cuối và đặt lại dấu theo phần vần còn lại, ví dụ "hoà" thành "hò".[^4]
 
 ### Gõ liền mạch câu xen lẫn tiếng Anh.
 
-Bạn có thể gõ liền mạch câu xen lẫn tiếng Anh như "Sếp vừa gửi email về buổi meeting chiều nay" mà không cần chuyển bàn phím. Khi kết thúc một từ không phải âm tiết tiếng Việt hợp lệ, Dấu sẽ tự động trả lại đúng các phím bạn đã gõ mà không cần từ điển.[^5] Nếu muốn giữ chữ gốc ngay giữa từ, bạn chỉ cần gõ đúp phím dấu, như gõ `carr` để ra "car".
+Bạn có thể gõ một câu có xen tiếng Anh như "Sếp vừa gửi email về buổi meeting chiều nay" mà không phải chuyển bàn phím. Khi một từ kết thúc mà không phải âm tiết tiếng Việt hợp lệ, Dấu trả lại đúng các phím bạn đã gõ; Dấu làm việc này mà không dùng từ điển.[^5] Muốn giữ chữ gốc ngay giữa từ thì bạn gõ đúp phím dấu, ví dụ gõ `carr` để được "car".
 
 ### Hoạt động như bàn phím hệ thống.
 
-Dấu là một nguồn đầu vào chuẩn như mọi bàn phím khác trên Mac, không phải ứng dụng chạy ngoài can thiệp phím. Bạn có thể chuyển đổi giữa tiếng Việt và tiếng Anh bằng chính phím tắt cùng menu nguồn đầu vào của macOS mà không cần cấp quyền Trợ năng (Accessibility).[^6] Thao tác thay chữ được thực hiện trực tiếp tại chỗ qua API nhập liệu của Apple, hoàn toàn không giả lập phím Backspace gây giật con trỏ.
+Dấu là một nguồn đầu vào như mọi bàn phím khác trên Mac, không phải một ứng dụng chạy bên ngoài để chặn phím. Bạn chuyển giữa tiếng Việt và tiếng Anh bằng phím tắt và menu nguồn đầu vào của chính macOS, và không phải cấp quyền Trợ năng (Accessibility).[^6] Dấu thay chữ tại chỗ qua API nhập liệu của Apple, không giả lập phím Backspace.
 
 ### Những gì bạn gõ ở lại trên máy bạn.
 
-Tiến trình bộ gõ chạy trong sandbox, không có quyền kết nối mạng và không chứa bất kỳ cơ chế thu thập dữ liệu (telemetry) nào. Bản phát hành chính thức không ghi lại phím bấm, thời điểm gõ hay ứng dụng bạn đang dùng.[^7]
+Tiến trình bộ gõ chạy trong sandbox và không có quyền mạng. Dấu không có telemetry. Bản phát hành không ghi lại phím bạn bấm, lúc bạn gõ hay ứng dụng bạn đang dùng.[^7]
 
 ### Ít hơn, có chủ đích.
 
-Dấu không làm lại những tính năng mà hệ điều hành macOS đã giải quyết hiệu quả. Chẳng hạn, tính năng gõ tắt đã có sẵn mục Thay thế văn bản (Text Replacement) của hệ thống, còn việc chuyển đổi ngôn ngữ đã có phím tắt nguồn đầu vào chuyên dụng. Ứng dụng không hỗ trợ các bảng mã cũ, không chứa quảng cáo và không có các phiên bản trả phí. Toàn bộ các quy tắc gõ cùng lý do đằng sau đều được ghi nhận chi tiết và minh bạch trong [`docs/Decisions.md`](docs/Decisions.md).
+Dấu không làm lại việc macOS đã làm. Gõ tắt cả cụm từ đã có mục Thay thế văn bản (Text Replacement) của hệ thống, còn chuyển ngôn ngữ đã có phím tắt nguồn đầu vào. Dấu không có bảng mã cũ, không có quảng cáo và không có bản trả phí. Mọi quy tắc gõ và lý do của chúng ghi trong [`docs/Decisions.md`](docs/Decisions.md).
 
 ---
 
 ## Sắp ra mắt
 
-Hiện tại Dấu chưa phát hành bản cài đặt tải về công khai. Ứng dụng được thiết kế cho macOS 14 trở lên (theo quyết định D1 (Nền tảng)), nhưng đến nay mới được thử nghiệm kỹ lưỡng trên macOS 27.2 và kiến trúc Apple silicon; bản beta đầu tiên chỉ cam kết những điều đã được kiểm chứng thực tế.[^8] Bạn có thể theo dõi lộ trình phát triển chi tiết tại [`docs/Roadmap.md`](docs/Roadmap.md), cũng như xem danh sách các ứng dụng đã thử nghiệm và các giới hạn kỹ thuật còn lại tại [`docs/Compatibility.md`](docs/Compatibility.md).
+Dấu chưa có bản cài để tải về. Dấu được làm cho macOS 14 trở lên (D1 (Nền tảng)), nhưng tới nay mới được kiểm trên macOS 27.2 và máy Apple silicon. Bản beta đầu tiên chỉ hứa những điều đã kiểm chứng.[^8] Các mốc phát triển ghi ở [`docs/Roadmap.md`](docs/Roadmap.md). Các ứng dụng đã thử và các giới hạn còn lại ghi ở [`docs/Compatibility.md`](docs/Compatibility.md).
 
 ## Dành cho nhà phát triển
 
-Hướng dẫn biên dịch, cài đặt bộ gõ bằng tài khoản Apple ID cá nhân và quy trình chạy các bộ kiểm thử được ghi chi tiết tại tài liệu [CONTRIBUTING.md](CONTRIBUTING.md). Bạn có thể kiểm thử riêng thư viện engine mà không cần tài khoản Apple ID bằng lệnh sau:
+Cách build, cách cài bộ gõ bằng Apple ID cá nhân và cách chạy các bộ test ghi ở [CONTRIBUTING.md](CONTRIBUTING.md). Riêng engine thì bạn chạy test được mà không cần Apple ID, bằng lệnh sau:
 
 ```sh
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-path Packages/DauEngine
 ```
 
-Để tìm hiểu sâu hơn về dự án, bạn có thể tham khảo các tài liệu kỹ thuật sau:
-- Tổng quan kiến trúc, cấu trúc thư mục và luồng xử lý phím được mô tả tại [`docs/Architecture.md`](docs/Architecture.md).
-- Bản vẽ thiết kế của toàn bộ các màn hình giao diện được lưu trữ tại [`docs/canvas/README.md`](docs/canvas/README.md).
-- Mục lục toàn bộ tài liệu kỹ thuật và nghiên cứu của dự án nằm tại [`docs/README.md`](docs/README.md).
-- Hướng dẫn phối hợp cùng công cụ phát triển nằm tại [CLAUDE.md](CLAUDE.md).
+Các tài liệu sau giúp bạn tìm hiểu thêm về dự án:
+- Kiến trúc, cấu trúc thư mục và luồng xử lý một phím được mô tả ở [`docs/Architecture.md`](docs/Architecture.md).
+- Bản thiết kế của mọi màn hình nằm ở [`docs/canvas/README.md`](docs/canvas/README.md).
+- Mục lục mọi tài liệu kỹ thuật và nghiên cứu nằm ở [`docs/README.md`](docs/README.md).
+- Luật làm việc cho công cụ phát triển (Claude Code) nằm ở [CLAUDE.md](CLAUDE.md).
 
-Khi báo lỗi gõ phím, bạn vui lòng mở một issue mới trên GitHub, nêu rõ tên ứng dụng gặp lỗi, kiểu gõ đang dùng (Telex hay VNI) cùng chuỗi phím bấm cụ thể đã gõ. Bạn lưu ý không dán các thông tin hoặc nội dung riêng tư vào phần mô tả lỗi.
+Để báo lỗi gõ, bạn mở một issue trên GitHub và ghi tên ứng dụng bị lỗi, kiểu gõ đang dùng (Telex hay VNI) và chuỗi phím đã gõ. Đừng dán thông tin hay nội dung riêng tư vào phần mô tả lỗi.
 
 ## Giấy phép
 
-Dự án được phát hành dưới giấy phép mã nguồn mở GNU General Public License v3.0 (GPLv3). Bạn có thể xem toàn văn giấy phép tại tệp [LICENSE](LICENSE).
+Dấu phát hành theo giấy phép GNU General Public License v3.0 (GPLv3). Toàn văn giấy phép nằm trong file [LICENSE](LICENSE).
 
-[^1]: Căn cứ theo các quyết định D15 (Cài đặt mặc định), D29 (Telex đơn giản) và D30 (Kiểm tra chính tả). Hành vi này được kiểm chứng thông qua các bài kiểm thử của engine (`TonePlacementTests`, `VNITests`, `SpellingTests`) tại [`Packages/DauEngine/Tests`](https://github.com/codefastlabs/dau/tree/main/Packages/DauEngine/Tests).
-[^2]: Kết quả từ một lượt đo thực hiện vào ngày 09/11/2026 trên một máy chạy macOS 27.2: gõ Telex theo thứ tự chuẩn với khoảng cách giữa các phím là 30 ms. Từ sai duy nhất là "taxi" bị biến đổi thành "tãi" do đây là một âm tiết tiếng Việt hợp lệ (theo quyết định D4 (Từ nước ngoài)). Phương pháp chấm điểm không xét vị trí dấu thanh. Bạn có thể xem chi tiết điều kiện đo và giới hạn tại [`docs/research/CompetitorComparison.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/CompetitorComparison.md), mục 1.
-[^3]: Theo quyết định D28 (Đặt dấu tự do). Hành vi này được kiểm chứng qua các bài kiểm thử của engine (`TonePlacementTests`) tại [`Packages/DauEngine/Tests`](https://github.com/codefastlabs/dau/tree/main/Packages/DauEngine/Tests).
+[^1]: Theo các quyết định D15 (Cài đặt mặc định), D29 (Telex đơn giản) và D30 (Kiểm tra chính tả). Các test của engine kiểm hành vi này (`TonePlacementTests`, `VNITests`, `SpellingTests`), nằm ở [`Packages/DauEngine/Tests`](https://github.com/codefastlabs/dau/tree/main/Packages/DauEngine/Tests).
+[^2]: Số này lấy từ một lượt đo ngày 09/11/2026 trên một máy chạy macOS 27.2, gõ Telex theo thứ tự chuẩn, mỗi phím cách nhau 30 ms. Từ sai duy nhất là "taxi" bị biến đổi thành "tãi" do đây là một âm tiết tiếng Việt hợp lệ (theo quyết định D4 (Từ nước ngoài)). Phương pháp chấm điểm không xét vị trí dấu thanh. Điều kiện đo và giới hạn của lượt đo ghi ở [`docs/research/CompetitorComparison.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/CompetitorComparison.md), mục 1.
+[^3]: Theo quyết định D28 (Đặt dấu tự do). Các test của engine kiểm hành vi này (`TonePlacementTests`), nằm ở [`Packages/DauEngine/Tests`](https://github.com/codefastlabs/dau/tree/main/Packages/DauEngine/Tests).
 [^4]: Theo các quyết định D20 (Thêm dấu cho từ đã gõ) và D32 (Backspace). Tính năng thêm dấu cho từ đã gõ không áp dụng trên các ứng dụng đang bật chế độ gạch chân (theo quyết định D13 (Gạch chân là đường lui cuối cùng)), ví dụ như trình giả lập dòng lệnh Ghostty (theo quyết định D43 (Ô bỏ qua vùng thay chữ)).
 [^5]: Theo quyết định D4 (Từ nước ngoài). Trong cùng lượt đo với chú thích [^2], ở các câu trộn lẫn tiếng Việt và tiếng Anh, Dấu xử lý chính xác 184 trên 188 từ. Với danh sách 105 từ tiếng Anh và từ khóa lập trình có chứa các phím dấu Telex, Dấu giữ nguyên được 88 từ, xử lý sai 7 từ và có 10 từ trùng với một âm tiết tiếng Việt hợp lệ. Trên các ứng dụng bật tính năng tự động sửa chính tả của macOS, hệ thống có thể tự điều chỉnh từ vừa gõ sau khi bấm dấu cách đối với mọi bộ gõ; người dùng có thể hoàn tác bằng tổ hợp phím ⌘Z. Nguồn số liệu nằm tại [`docs/research/CompetitorComparison.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/CompetitorComparison.md), mục 1.
 [^6]: Theo quyết định D2 (Chuyển Việt/Anh). Dấu đã được kiểm nghiệm thực tế và hoạt động bình thường mà không cần cấp quyền Trợ năng trên Chrome, VS Code và Terminal. Nguồn dữ liệu nằm tại [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md), nguyên tắc N4 (Không tự đổi cài đặt hệ thống).

@@ -1,59 +1,59 @@
 # Tài liệu
 
-Tài liệu này là mục lục tra cứu toàn bộ các tài liệu kỹ thuật nằm trong thư mục `docs/`. Quy ước ghi nhận thông tin (mỗi sự kiện chỉ ghi tại một nơi duy nhất, quy định thời điểm cập nhật từng tệp) được hướng dẫn tại [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn" và [`docs/CLAUDE.md`](CLAUDE.md) (quy tắc viết tài liệu). Trong các bảng danh mục dưới đây, mỗi mục tóm tắt ngắn gọn nội dung cốt lõi của từng tài liệu; trạng thái hiện tại và ngày cập nhật cụ thể được ghi nhận ở phần đầu của mỗi tệp.
+Đây là mục lục các tài liệu trong thư mục `docs/`. Luật ghi thông tin (mỗi sự kiện chỉ ghi ở một chỗ, file nào cập nhật lúc nào) nằm ở [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn"; luật viết tài liệu nằm ở [`docs/CLAUDE.md`](CLAUDE.md). Mỗi dòng trong các bảng dưới đây tóm tắt một tài liệu. Hiện trạng và ngày cập nhật ghi ở đầu từng file.
 
 ## Đọc khi bắt đầu một phiên làm việc
 
-Khi bắt đầu một phiên làm việc mới, bạn nên đọc tài liệu theo thứ tự ưu tiên đã quy định trong [CLAUDE.md](../CLAUDE.md): trước hết là `Progress.md`, tiếp theo là các phần liên quan trong `Decisions.md`; bốn tài liệu còn lại sẽ được đọc khi công việc thực tế chạm tới phạm vi tương ứng.
+Một phiên làm việc mới đọc tài liệu theo thứ tự ghi trong [CLAUDE.md](../CLAUDE.md): trước hết là `Progress.md`, rồi các phần liên quan trong `Decisions.md`. Bốn tài liệu còn lại chỉ đọc khi việc đang làm chạm tới chúng.
 
 | Tệp tài liệu | Nội dung tóm tắt |
 |---|---|
-| [`docs/Progress.md`](Progress.md) | Ghi nhận tiến độ mốc đang thực hiện, các công việc đang chờ, kế hoạch chi tiết, cùng nhật ký đo đạc và chẩn đoán lỗi. |
-| [`docs/Decisions.md`](Decisions.md) | Ghi nhận các nguyên tắc (N) và quyết định (D) làm nguồn chân lý chuẩn xác duy nhất của dự án, đi kèm danh sách câu hỏi mở. |
-| [`docs/Architecture.md`](Architecture.md) | Mô tả các thành phần hệ thống, cấu trúc thư mục, quy trình biên dịch và luồng xử lý chi tiết của từng phím gõ. |
-| [`docs/Roadmap.md`](Roadmap.md) | Tổng hợp các mốc phát triển, tiêu chí hoàn thành của từng mốc và các hạng mục tồn đọng chưa gắn mốc. |
-| [`docs/UI.md`](UI.md) | Mô tả chi tiết nội dung, bố cục và logic hiển thị của từng màn hình giao diện (thiết kế gốc nằm trên canvas). |
-| [`docs/Brand.md`](Brand.md) | Quy định hệ thống nhận diện thương hiệu gồm biểu tượng, màu sắc, phông chữ và danh sách tệp đồ họa cần xuất bản. |
+| [`docs/Progress.md`](Progress.md) | Tài liệu ghi tiến độ của mốc đang làm, các việc đang chờ, kế hoạch mốc và nhật ký các lượt đo, chẩn đoán. |
+| [`docs/Decisions.md`](Decisions.md) | Sổ ghi các nguyên tắc (N) và quyết định (D). Đây là nguồn chuẩn duy nhất cho quyết định của dự án; cuối sổ có danh sách câu hỏi mở. |
+| [`docs/Architecture.md`](Architecture.md) | Tài liệu tả các thành phần, cấu trúc thư mục, cách build và luồng xử lý một phím. |
+| [`docs/Roadmap.md`](Roadmap.md) | Tài liệu ghi các mốc, tiêu chí hoàn thành của từng mốc và các việc tồn đọng chưa gắn mốc. |
+| [`docs/UI.md`](UI.md) | Tài liệu tả nội dung, bố cục và cách hiển thị của từng màn hình; bản thiết kế gốc nằm trên canvas. |
+| [`docs/Brand.md`](Brand.md) | Tài liệu ghi biểu tượng, màu, phông chữ và danh sách file nhận diện cần xuất. |
 
 ## Tra cứu khi cần
 
-Các tài liệu dưới đây được sử dụng để tra cứu chuyên sâu khi công việc phát triển yêu cầu:
+Các tài liệu dưới đây dùng để tra cứu khi việc đang làm cần tới.
 
 | Tệp tài liệu | Nội dung tóm tắt |
 |---|---|
-| [`docs/canvas/README.md`](canvas/README.md) | Lưu trữ bản chụp hình ảnh và tệp mã nguồn HTML của toàn bộ các artboard thiết kế đã được phê duyệt. |
-| [`docs/UIChecks.md`](UIChecks.md) | Bảng danh mục các tiêu chí kiểm tra giao diện người dùng kèm theo các câu lệnh kiểm thử tự động. |
-| [`docs/Website.md`](Website.md) | Quy định nội dung, cấu trúc và tiêu chuẩn kỹ thuật của trang web tải về cùng trang so sánh tính năng bộ gõ. |
-| [`docs/Compatibility.md`](Compatibility.md) | Ma trận tương thích ứng dụng ghi nhận phương pháp kiểm thử, kết quả đo đạc thực tế và các giới hạn kỹ thuật đã biết. |
-| [`docs/Glossary.md`](Glossary.md) | Bảng thuật ngữ song ngữ Anh – Việt chuẩn hóa cho các chuỗi giao diện và hướng dẫn đặt câu tiếng Anh. |
-| [`docs/Releasing.md`](Releasing.md) | Hướng dẫn toàn diện quy trình phát hành: sơ đồ luồng công việc, chuẩn bị tài khoản và secret, quy trình gắn tag, cùng hướng dẫn xử lý chứng chỉ. |
-| [`docs/Troubleshooting.md`](Troubleshooting.md) | Tổng hợp các sự cố thường gặp trong quá trình sử dụng và phát triển ứng dụng kèm theo hướng dẫn khắc phục cụ thể. |
-| [`scripts/README.md`](../scripts/README.md) | Hướng dẫn sử dụng các script tự động hóa trong thư mục `scripts/`, tác động phụ của từng script và quy ước viết mã. |
+| [`docs/canvas/README.md`](canvas/README.md) | Thư mục giữ bản chụp và nguồn HTML của mọi artboard đã được duyệt. |
+| [`docs/UIChecks.md`](UIChecks.md) | Bảng các tiêu chí kiểm giao diện, kèm lệnh kiểm tự động. |
+| [`docs/Website.md`](Website.md) | Tài liệu ghi nội dung và quy tắc của trang tải về và trang so sánh cách gõ. |
+| [`docs/Compatibility.md`](Compatibility.md) | Tài liệu ghi Dấu gõ đúng hay sai trong từng ứng dụng, cách thử, số đo và các giới hạn đã biết. |
+| [`docs/Glossary.md`](Glossary.md) | Bảng thuật ngữ Anh – Việt cho chuỗi giao diện, kèm cách đặt câu tiếng Anh. |
+| [`docs/Releasing.md`](Releasing.md) | Tài liệu ghi cách phát hành: sơ đồ các bước, tài khoản và secret cần chuẩn bị, cách gắn tag và cách xử lý chứng chỉ. |
+| [`docs/Troubleshooting.md`](Troubleshooting.md) | Tài liệu ghi các sự cố thường gặp khi dùng và khi phát triển Dấu, kèm cách khắc phục. |
+| [`scripts/README.md`](../scripts/README.md) | Tài liệu ghi cách dùng các script trong `scripts/`, tác dụng phụ của từng script và quy ước viết script. |
 
 ## Tài liệu nghiên cứu
 
-Mỗi tài liệu nghiên cứu tập trung vào một chủ đề kỹ thuật cụ thể; kết luận hiện hành và thời điểm cập nhật được ghi tại mục "Hiện trạng" ở đầu tệp, và mọi khẳng định đều có nguồn dẫn chứng xác thực:
+Mỗi tài liệu nghiên cứu bàn một chủ đề kỹ thuật. Kết luận hiện hành và ngày cập nhật ghi ở mục "Hiện trạng" đầu file, và mỗi khẳng định đều dẫn nguồn.
 
 | Tệp tài liệu | Nội dung nghiên cứu |
 |---|---|
-| [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) | Phân tích mã nguồn OpenKey: tổng hợp tính năng, các trường hợp biên, quyết định Dấu làm hay không làm, và các điểm Dấu cố ý khác biệt. |
-| [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md) | Tài liệu kỹ thuật và tệp header của Apple về các API trong InputMethodKit mà bộ gõ đang trực tiếp sử dụng. |
-| [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) | Kiểm toán toàn diện API của InputMethodKit so với hiện trạng Dấu đang gọi, tìm kiếm API phù hợp cho từng việc mở và đề xuất phép đo rẻ nhất. |
-| [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) | Nghiên cứu cơ chế cài đặt, kích hoạt, nâng cấp và gỡ bỏ bộ gõ trên macOS, cùng giải pháp phát hiện xung đột với các bộ gõ cũ. |
-| [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) | Tổng hợp số đo khoảng cách và bố cục giao diện của ứng dụng System Settings để làm chuẩn thiết kế cho Dấu. |
-| [`docs/research/SwiftUIWindowAPI.md`](research/SwiftUIWindowAPI.md) | Nghiên cứu API của Apple dành cho thanh bên (sidebar), thanh công cụ, thanh tiêu đề và ô tìm kiếm của cửa sổ Cài đặt. |
-| [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) | Tập hợp các chuỗi phím thử nghiệm biên thu thập từ bộ test của các bộ gõ tiếng Việt khác (ghi công tại [`docs/research/external-test-inputs/NOTICE.md`](research/external-test-inputs/NOTICE.md)). |
-| [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md) | Báo cáo so sánh Dấu với các bộ gõ khác: đối chiếu với Telex mặc định của macOS trên ứng dụng thật và so sánh ở cấp độ engine. |
-| [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) | Phân tích cơ chế gõ phím trong terminal Ghostty và terminal xterm.js (nhóm ô nhập bỏ qua vùng thay chữ), cùng giải pháp sửa chữ ở chế độ gạch chân. |
-| [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) | Nghiên cứu đường truyền ký tự vào terminal và trình soạn thảo của WebStorm (JetBrains Runtime), kết hợp dự đoán từ mã nguồn và số đo thực tế. |
-| [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | Đo lường thời gian bận của luồng chính trên trang web khi gõ phím và đánh giá giới hạn rủi ro đối với cơ chế thay chữ tại chỗ. |
-| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | Phân tích cơ chế và đề xuất hướng xử lý cho bốn kịch bản ứng dụng trả lời chậm (chậm sau ⌫, tính vị trí theo từ, trang bận qua chỗ ngắt từ, và WebKit dồn phím). |
-| [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | Khảo sát các hành vi chỉnh sửa văn bản của người dùng khi đang gõ, phân tích nguyên nhân lỗi của Dấu và đề xuất hướng khắc phục. |
-| [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) | Khảo sát cách các bộ gõ trên macOS nhập liệu vào Google Docs, phân tích dữ liệu Chrome gửi cho bộ gõ và cơ chế hỗ trợ tiếp cận của Google Docs. |
+| [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) | Tài liệu đọc mã OpenKey và ghi các tính năng, các trường hợp biên, việc Dấu làm hay không làm và những chỗ Dấu cố ý khác. |
+| [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md) | Tài liệu ghi điều tài liệu và header của Apple nói về các API InputMethodKit mà bộ gõ đang dùng. |
+| [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) | Tài liệu đối chiếu API của InputMethodKit với những gì Dấu đang gọi, tìm API hợp với từng việc mở và đề xuất phép đo rẻ nhất. |
+| [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) | Tài liệu nghiên cứu cách macOS cài, bật, nâng cấp và gỡ bộ gõ, và cách phát hiện bộ gõ cũ đang xung đột. |
+| [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) | Tài liệu ghi số đo khoảng cách và bố cục của System Settings, dùng làm chuẩn cho giao diện Dấu. |
+| [`docs/research/SwiftUIWindowAPI.md`](research/SwiftUIWindowAPI.md) | Tài liệu nghiên cứu API của Apple cho thanh bên (sidebar), thanh công cụ, thanh tiêu đề và ô tìm kiếm của cửa sổ Cài đặt. |
+| [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) | Thư mục gom các chuỗi phím thử trường hợp biên, lấy từ bộ test của các bộ gõ tiếng Việt khác (ghi công tại [`docs/research/external-test-inputs/NOTICE.md`](research/external-test-inputs/NOTICE.md)). |
+| [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md) | Tài liệu so sánh Dấu với Telex có sẵn của macOS trên ứng dụng thật, và với các bộ gõ khác ở mức engine. |
+| [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) | Tài liệu phân tích cách gõ phím trong terminal Ghostty và terminal xterm.js (nhóm ô nhập bỏ qua vùng thay chữ), cùng giải pháp sửa chữ ở chế độ gạch chân. |
+| [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) | Tài liệu nghiên cứu đường ký tự đi vào terminal và trình soạn thảo của WebStorm (JetBrains Runtime), từ dự đoán theo mã nguồn và từ số đo. |
+| [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | Tài liệu đo thời gian luồng chính của trang web bận khi gõ phím, và giới hạn rủi ro của nó với cách thay chữ tại chỗ. |
+| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | Tài liệu phân tích và đề xuất hướng sửa cho bốn kịch bản ứng dụng trả lời chậm (chậm sau ⌫, tính vị trí theo từ, trang bận qua chỗ ngắt từ, và WebKit dồn phím). |
+| [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | Tài liệu khảo sát cách người dùng sửa chữ khi đang gõ, nguyên nhân Dấu sai và hướng sửa. |
+| [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) | Tài liệu khảo sát cách các bộ gõ trên macOS nhập chữ vào Google Docs, dữ liệu Chrome gửi cho bộ gõ và chế độ hỗ trợ tiếp cận của Google Docs. |
 
 ## Tài liệu lưu trữ lịch sử
 
-Thư mục này lưu trữ các bản ghi lịch sử của dự án nhằm phản ánh đúng nguyên trạng quá khứ. Tên tệp và đường dẫn liên kết vẫn được cập nhật khi có sự thay đổi để đảm bảo các liên kết tra cứu và tìm kiếm luôn hoạt động chính xác:
+Thư mục `docs/history/` giữ các bản ghi lịch sử của dự án, đúng như lúc chúng được ghi. Riêng tên file và liên kết vẫn được sửa khi file đổi tên, để liên kết và tìm kiếm còn đúng.
 
 | Tệp tài liệu | Nội dung lưu trữ |
 |---|---|

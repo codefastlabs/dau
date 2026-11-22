@@ -1,104 +1,107 @@
 # Lộ trình
 
-Tài liệu này tổng hợp toàn bộ các mốc phát triển từ giai đoạn khởi tạo khung dự án cho đến bản phát hành chính thức, tiêu chí hoàn thành của từng mốc, và danh sách các hạng mục tồn đọng chưa gắn mốc. Bạn có thể theo dõi mốc đang thực hiện, kế hoạch chi tiết cùng các số liệu đo đạc thực tế tại [`docs/Progress.md`](Progress.md).
+Tài liệu này liệt kê các mốc từ khung dự án tới bản phát hành, tiêu chí xong của từng mốc và những việc tồn đọng chưa gắn mốc. Mốc đang làm, kế hoạch chi tiết và số đo nằm ở [`docs/Progress.md`](Progress.md).
 
 ## Tiêu chí đóng mốc
 
-Một mốc phát triển chỉ được coi là hoàn thành và đóng lại khi thỏa mãn toàn bộ các điều kiện sau:
-- Toàn bộ các bài kiểm thử liên quan đều vượt qua thành công (pass 100%).
-- Toàn bộ mã nguồn, giao diện và tài liệu đã được tự rà soát kỹ lưỡng, đảm bảo không có điểm nào mâu thuẫn với sổ quyết định [`docs/Decisions.md`](Decisions.md).
-- Báo cáo kiểm toán độc lập của mốc đạt kết quả ĐẠT.
-- Phiên làm việc đã lập bản tóm tắt ngắn gọn ghi nhận những việc đã làm, số liệu đo đạc thực tế và các câu hỏi kỹ thuật còn mở.
-- Toàn bộ nhật ký chi tiết của mốc đã được chuyển sang lưu trữ an toàn trong thư mục [`docs/history/`](history/).
+Một mốc được đóng khi đủ các điều kiện sau:
+- Mọi test đều xanh.
+- Phiên làm việc đã tự rà soát mốc với [`docs/Decisions.md`](Decisions.md).
+- Kiểm toán của mốc ĐẠT.
+- Mốc có một bản tóm tắt ngắn ghi việc đã làm, số đo và các câu hỏi còn mở.
+- Nhật ký của mốc đã được chuyển sang `docs/history/`.
 
 ## Mốc đã đóng
 
-| Mốc | Mục tiêu hoàn thành | Nhật ký phát triển |
+| Mốc | Mục tiêu | Nhật ký |
 |---|---|---|
-| M0 Khung dự án | Khởi tạo kho mã nguồn, cấu hình `project.yml` với hai target ứng dụng và hai package thư viện, hỗ trợ biên dịch universal. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
-| M1 Engine | Xây dựng thư viện `VietEngine` độc lập cho các kiểu gõ Telex, VNI và Telex đơn giản, đi kèm bộ kiểm thử đầy đủ và số đo vi mô cho từng phím gõ. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
-| M2 Bộ gõ tối thiểu | Hoàn thiện bộ gõ IMK có khả năng thay chữ tại chỗ, đồng thời chốt phương thức xác định vị trí con trỏ thay chữ trên hệ thống. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md), [`docs/history/M2Testing.md`](history/M2Testing.md) |
-| M3 Độ tin cậy | Xây dựng cơ chế reset khi lệch ngữ cảnh, phòng thủ lỗi bất thường từ IMK, áp dụng gạch chân theo danh sách tương thích và thiết lập ma trận tương thích. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
-| M4 App Cài đặt | Xây dựng cửa sổ ứng dụng Cài đặt theo thiết kế tại `docs/UI.md`, đồng bộ cấu hình qua App Group bằng thông báo Darwin. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
-| M5 Onboarding, cài, gỡ | Hoàn thiện quy trình onboarding ba bước, phát hiện bộ gõ cũ, cùng script cài đặt và gỡ bỏ bộ gõ sạch sẽ trên máy người dùng. | [`docs/history/LogM5.md`](history/LogM5.md) |
-| M6 Hiệu năng dưới tải | Đảm bảo bộ gõ xử lý chính xác khi ứng dụng đích bị bận và khi toàn hệ thống chịu tải nặng (`scripts/selftest/load/heavy.sh`, theo ngưỡng D42), đối chứng đạt chuẩn với Telex của Apple. | [`docs/history/LogM6.md`](history/LogM6.md) |
+| M0 Khung dự án | Dựng repo và `project.yml` với hai target app, hai package, build universal. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
+| M1 Engine | Viết `VietEngine` cho Telex, VNI và Telex đơn giản, kèm bộ test và số đo cho mỗi phím. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
+| M2 Bộ gõ tối thiểu | Làm bộ gõ IMK thay chữ tại chỗ và chốt cách lấy vị trí thay chữ. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md), [`docs/history/M2Testing.md`](history/M2Testing.md) |
+| M3 Độ tin cậy | Làm phần reset khi lệch ngữ cảnh, phòng thủ IMK, gạch chân theo danh sách tương thích, quy tắc theo ứng dụng và ma trận tương thích. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
+| M4 App Cài đặt | Làm cửa sổ Cài đặt theo `docs/UI.md` và phần cài đặt dùng chung qua App Group. | [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) |
+| M5 Onboarding, cài, gỡ | Làm onboarding, phần phát hiện bộ gõ cũ, cùng việc cài và gỡ bộ gõ. | [`docs/history/LogM5.md`](history/LogM5.md) |
+| M6 Hiệu năng dưới tải | Bảo đảm Dấu gõ đúng khi app bận và khi cả máy dưới tải (`scripts/selftest/load/heavy.sh`, ngưỡng D42), có đối chứng với Telex của Apple. | [`docs/history/LogM6.md`](history/LogM6.md) |
 
-Kế hoạch chi tiết ban đầu của các mốc trên được lưu trữ tại [`docs/history/Plans.md`](history/Plans.md). Phần nền tảng cho mốc M9 (Đa ngôn ngữ) đã được hoàn thành trong giai đoạn chuyển tiếp giữa mốc M5 và M6, xem chi tiết tại [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md).
+Kế hoạch của các mốc này nằm ở [`docs/history/Plans.md`](history/Plans.md). Phần nền của M9 (Đa ngôn ngữ) đã làm xong giữa M5 và M6; nhật ký của phần đó nằm ở [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md).
 
 ## M7 — Phát hành
 
-Mục tiêu chính của mốc là đưa bản beta đầu tiên (gắn thẻ phiên bản `v0.1.0-beta.1`, theo quyết định D7 (Cập nhật và loại bản dựng)) đến tay người dùng thông qua tệp DMG, cơ chế tự cập nhật Sparkle và trình quản lý gói Homebrew. Kế hoạch thực hiện theo từng bước cùng phân công nhiệm vụ được ghi nhận chi tiết tại [`docs/Progress.md`](Progress.md), mục "Kế hoạch M7". Các hạng mục cụ thể bao gồm:
+Mục tiêu của M7 là đưa beta đầu tiên (tag `v0.1.0-beta.1`, D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo từng bước và việc của từng bên nằm ở [`docs/Progress.md`](Progress.md), mục "Kế hoạch M7". Phần đã xong và phần còn lại cũng ghi ở mục đó, nên danh sách dưới đây không đánh dấu từng dòng.
 
-- Trước khi phát hành, dự án sẽ chạy lại bài đo tải nặng theo quyết định D42, đồng thời ghi nhận mức tiêu thụ bộ nhớ (RSS) của tiến trình bộ gõ bản Release đặt cạnh số đo của bản Debug trong cùng một lượt chạy.
-- Thực hiện ký số bằng chứng chỉ Developer ID, công chứng (notarize) với Apple và đóng gói tệp cài đặt DMG.
-- Tích hợp Sparkle 2 sử dụng chữ ký EdDSA, phát hành tệp appcast và phân định loại bản dựng theo quyết định D7. Hệ thống chia làm hai kênh Beta và Chính thức, có công tắc chuyển đổi kênh trong trang Cài đặt; sau khi cài đặt phiên bản mới, ứng dụng sẽ gọi `SystemInputMethodInstaller.reconcile` để cập nhật bộ gõ nhúng vào hệ thống.
-- Rà soát lại toàn bộ quyền entitlement của bộ gõ trước khi notarize, duy trì quyền `temporary-exception.mach-register.global-name` đã được đối soát vào ngày 17/11/2026 (chi tiết xem tại [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md)).
-- Cấu hình GitHub Actions để tự động chạy kiểm thử trên mỗi lần đẩy mã nguồn, tự động build bản phát hành khi có tag mới, và kích hoạt cả bài kiểm thử hiệu năng chuyên sâu của engine (`PerformanceTests`).
-- Thiết lập Homebrew cask `dau` có hỗ trợ `auto_updates true` trong tap riêng `codefastlabs/homebrew-tap` (theo quyết định D6 (Phát hành)).
-- Xây dựng luồng báo lỗi gõ phím trực tiếp bằng đường dẫn tạo issue điền sẵn thông tin (theo quyết định D8 (Không telemetry)), đi kèm hàng "Ứng dụng gõ sai chữ" trong giao diện `UpdatesSupportView`.
-- Chuẩn hóa loại bản dựng theo các quyết định D7 và D25 (Nhận diện):
-  - Bản build phát hành chính thức trên CI sẽ truyền cờ `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`) và sử dụng biểu tượng `AppIcon`, phân biệt với `AppIconDev` của bản phát triển.
-  - Tệp nhị phân của bản phát hành được lược bỏ các ký hiệu nội bộ (strip symbols) và tệp dSYM được lưu trữ riêng để hỗ trợ giải mã báo cáo sự cố (crash report).
-  - Số hiệu bản build tăng dần liên tục, số phiên bản hiển thị gồm ba chữ số sạch sẽ; bản phát hành chính thức sẽ sử dụng trực tiếp tệp nhị phân của bản beta cuối cùng chứ không biên dịch lại.
-- Cập nhật `.gitignore` và cố định phiên bản chính xác của Sparkle trong `project.yml`.
-- Thiết kế biểu tượng chính thức bằng công cụ Icon Composer để thay thế cho biểu tượng tạm thời (xem tại [`docs/Brand.md`](Brand.md)).
-- Xuất toàn bộ các tệp nhận diện cần thiết cho bản beta đầu tiên theo danh mục tại [`docs/Brand.md`](Brand.md).
-- Giải đáp thực tế các câu hỏi mở còn lại trong sổ quyết định [`docs/Decisions.md`](Decisions.md), bao gồm việc kiểm tra hộp thoại App Group và thao tác kích hoạt bộ gõ khi mang cờ kiểm dịch (quarantine).
-- Thực hiện kiểm tra thủ công trước khi phát hành với người dùng thật:
-  - Kiểm tra khả năng điều hướng bằng VoiceOver và phím Tab qua toàn bộ cửa sổ Cài đặt.
-  - Xác nhận VoiceOver đọc đúng tên nguồn đầu vào "Dấu – Tiếng Việt" khi chuyển đổi bàn phím (theo quyết định D17 (Trợ năng)).
-  - Kiểm tra biểu tượng "V" trên thanh menu là đồ họa đơn sắc và tự động thích ứng theo giao diện sáng/tối.
-  - Kiểm tra giao diện khi hệ điều hành chuyển hoàn toàn sang tiếng Anh.
-  - Kiểm tra hiển thị của các sheet giao diện ở chế độ nền tối (Dark Mode).
-  - Xác nhận Dấu xuất hiện chính xác trong danh sách bàn phím "+" của mục System Settings.
-- Tiêu chí hoàn thành mốc: Bản phát hành `v0.1.0-beta.1` được tải lên GitHub Releases, người dùng có thể cài đặt dễ dàng qua tệp DMG hoặc lệnh `brew install --cask codefastlabs/tap/dau`, cơ chế tự cập nhật Sparkle hoạt động ổn định và báo cáo kiểm toán của mốc đạt kết quả ĐẠT.
+- Trước khi phát hành, phiên làm việc chạy bài đo của D42. Trong cùng lượt đó, phiên ghi bộ nhớ (RSS) của tiến trình bộ gõ bản Release cạnh số của bản Debug, vì D42 ghi chênh lệch này là chưa đo.
+- Bản phát hành được ký Developer ID, notarize và đóng thành DMG.
+- Sparkle 2 dùng chữ ký EdDSA, appcast và loại bản theo D7. Có hai kênh, Beta và Chính thức:
+  - Công tắc chọn kênh nằm ở trang Cập nhật & hỗ trợ, và artboard phải có trước.
+  - Kênh mặc định theo giai đoạn lúc cài.
+  - Mục beta trong appcast gắn kênh `beta`; quảng bá một bản là bỏ thẻ kênh của nó.
+  - Cài bản mới xong, app gọi `SystemInputMethodInstaller.reconcile` để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
+- Trước khi notarize, phiên làm việc rà entitlement của bộ gõ và giữ `temporary-exception.mach-register.global-name`. Lần rà gần nhất là ngày 17/11/2026, ghi ở [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md), mục "Kết nối của IMKServer và sandbox".
+- GitHub Actions chạy test ở mỗi lần đẩy mã, build bản phát hành từ tag, và chạy cả test hiệu năng của engine (`PerformanceTests`).
+- Homebrew cask `dau` có `auto_updates true` và nằm trong tap riêng `codefastlabs/homebrew-tap` (D6 (Phát hành)).
+- Báo lỗi dùng URL issue điền sẵn (D8 (Không telemetry)). Hàng "Ứng dụng gõ sai chữ" trong `UpdatesSupportView` làm theo artboard "Cập nhật & hỗ trợ".
+- Loại bản dựng theo D7 và D25 (Nhận diện):
+  - Một cờ build chọn biểu tượng chuẩn, và chỉ quy trình phát hành trên CI đặt cờ này. Bản build phát hành truyền `DAU_OFFICIAL=YES` cho `xcodebuild` (`project.yml`), rồi kiểm bản build: `CFBundleIconName` của Dấu.app và của bộ gõ phải là `AppIcon`, không phải `AppIconDev`.
+  - Cũng bước kiểm đó xác nhận binary của Dấu.app và của bộ gõ đã lược ký hiệu cục bộ (kiểm bằng `nm`; archive có lược, còn `xcodebuild build` thì không). dSYM của mỗi bản phát hành được lưu lại để đọc được báo lỗi crash.
+  - Số build tăng dần. Số hiển thị gồm ba số và không có chữ beta. Bản chính thức là tệp của beta cuối, không dựng lại.
+- `.gitignore` và `project.yml` được sửa như sau. `project.yml` ghim phiên bản Sparkle chính xác, vì `Package.resolved` bị git bỏ qua. `.gitignore` thêm `*.p8`, `*.pem`, `*.key`, `*.p12`, `*.xcarchive`.
+- Biểu tượng thật được dựng bằng Icon Composer để thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
+- Phiên làm việc xuất các file nhận diện mà beta đầu tiên cần theo [`docs/Brand.md`](Brand.md): biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, ảnh xem trước GitHub và nền DMG. Favicon, ảnh Open Graph và thẻ meta đi cùng website (M8).
+- M7 trả lời hai câu hỏi mở của [`docs/Decisions.md`](Decisions.md). Câu thứ nhất là hộp thoại App Group với bản ký Developer ID. Câu thứ hai là hộp thoại và việc đăng xuất khi bật bộ gõ với bản ký Developer ID mang quarantine.
+- Trước khi phát hành, một người phải kiểm các điều sau:
+  - VoiceOver và Tab ("Điều hướng bàn phím") đi được qua cửa sổ Cài đặt.
+  - VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn. Theo D17 (Trợ năng), hệ thống có đọc, nhưng tên đọc ra chưa được xác nhận.
+  - Biểu tượng "V" trên thanh menu đơn sắc và đổi màu theo nền sáng hay tối.
+  - Khi máy để tiếng Anh hẳn, menu app và tên "Dấu" trong Finder hiện đúng.
+  - Các sheet hiện đúng ở chế độ tối.
+  - Danh sách "+" của System Settings có Dấu; điều này kiểm bằng mắt.
+- M7 xong khi bản `v0.1.0-beta.1` có trên GitHub Releases, cài được từ DMG và bằng `brew install --cask codefastlabs/tap/dau`, Sparkle cập nhật được từ một bản phát hành trước đó và chọn được kênh, và kiểm toán ĐẠT.
 
-### Kế hoạch sau bản beta đầu tiên
+### Sau beta đầu tiên
 
-Các hạng mục dưới đây không chặn việc hoàn thành mốc M7 và sẽ được triển khai khi có phản hồi từ người dùng thực tế:
-- Xây dựng quy trình sửa lỗi khẩn cấp cho bản chính thức từ nhánh riêng biệt khi nhánh `main` đang phát triển dở dang (chi tiết xem tại [`docs/Releasing.md`](Releasing.md)).
-- Kiểm tra và bổ sung thuộc tính `sparkle:minimumSystemVersion` vào công cụ sinh appcast trước khi nâng mức yêu cầu hệ điều hành tối thiểu.
-- Hoàn thiện cơ chế phát hành theo từng đợt (staged rollout) theo quyết định D7 và khả năng quay về phiên bản trước theo quyết định D19 (Quay về bản trước).
-- Tích hợp cơ chế chứng thực nguồn gốc phần mềm (artifact attestation) và bài đếm cấp phát bộ nhớ (`malloc_logger`) trên CI.
-- Mở rộng kiểm thử và trải nghiệm gõ thực tế trên các phiên bản macOS từ 14 đến 26 cùng các dòng máy Mac sử dụng chip Intel (theo quyết định D1 (Nền tảng)).
-- Đệ trình cask chính thức vào kho lưu trữ cộng đồng `homebrew/cask` khi dự án đạt đủ độ phổ biến theo quy định (theo quyết định D6).
+Các việc dưới đây không chặn việc đóng M7 và sẽ làm khi đã có người dùng:
+- Dấu cần một quy trình sửa gấp bản chính thức từ một nhánh khi `main` đã có việc dở. Trong quy trình đó, `check-release-gate.sh` và workflow Test nhận nhánh phát hành, còn script phát hành từ chối số build đã phát ([`docs/Releasing.md`](Releasing.md), mục "Kịch bản phát hành"). Việc này cần xong trước bản chính thức đầu tiên.
+- Phiên làm việc kiểm `generate_appcast` có ghi `sparkle:minimumSystemVersion` không, và thêm nếu thiếu. Việc này cần xong trước lần nâng bản macOS tối thiểu.
+- Dấu sẽ có phát hành theo đợt (D7) và quay về bản trước (D19 (Quay về bản trước)).
+- CI sẽ có artifact attestation và phép đếm cấp phát (`malloc_logger`).
+- Phiên làm việc cài, bật và gõ thử trên macOS 14–26 và trên máy Intel. Theo D1 (Nền tảng), tới lúc đó Dấu chỉ nói đã kiểm trên macOS 27 và Apple silicon. Câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trên các bản macOS đó cũng cần lượt thử này.
+- Cask sẽ được gửi vào `homebrew/cask` khi repo đạt ngưỡng (D6).
 
-## M8 — Website giới thiệu
+## M8 — Website
 
-- Chốt công nghệ xây dựng trang web chính thức. Thư mục mã nguồn của trang web đã được thống nhất đặt tại `site/`, tương ứng với thư mục gốc trên nền tảng Vercel nơi tệp `appcast.xml` đang lưu trữ.
-- Xây dựng trang web tải về theo tài liệu [`docs/Website.md`](Website.md) và bộ nhận diện [`docs/Brand.md`](Brand.md), đảm bảo tính chất trang tĩnh, giao diện tương thích tốt trên mọi kích thước màn hình, có đầy đủ thẻ meta, ảnh Open Graph và favicon.
-- Toàn bộ các thông số kỹ thuật và cam kết hiển thị trên trang web bắt buộc phải lấy từ dữ liệu đo đạc thực tế (tuân thủ nguyên tắc N5 (Chỉ hứa điều đã kiểm chứng)).
-- Tiêu chí hoàn thành mốc: Trang web đạt điểm số Google Lighthouse từ 95 điểm trở lên trên cả bốn hạng mục đo đạc trên thiết bị di động, và báo cáo kiểm toán đạt kết quả ĐẠT.
+- Người dùng chốt công nghệ của trang web. Thư mục đã chốt ngày 17/11/2026 là `site/`, thư mục gốc của project Vercel, nơi `appcast.xml` đã nằm ([`docs/Releasing.md`](Releasing.md)).
+- Trang tải về được dựng theo [`docs/Website.md`](Website.md) (mục "Trang tải về (M8)") và [`docs/Brand.md`](Brand.md). Trang là trang tĩnh, responsive, có thẻ meta, ảnh Open Graph và favicon.
+- Các ô số liệu và lời hứa chỉ được điền từ kết quả đã đo (N5 (Chỉ hứa điều đã kiểm chứng)).
+- M8 xong khi Lighthouse đạt từ 95 trở lên ở cả bốn hạng mục trên điện thoại và kiểm toán ĐẠT.
 
-## M9 — Đa ngôn ngữ (Phần còn lại)
+## M9 — Đa ngôn ngữ (phần còn lại)
 
-Mục đích của mốc là giúp Dấu có thể được cộng đồng người Việt sử dụng rộng rãi, đồng thời hỗ trợ người nước ngoài đang học tập và làm việc bằng tiếng Việt. Các quy tắc ngôn ngữ, hệ thống khóa chuỗi, tên nguồn đầu vào và cơ chế chọn ngôn ngữ riêng cho ứng dụng tuân thủ quyết định D41 (Ngôn ngữ giao diện). Các ngôn ngữ mới chỉ được bổ sung khi có người bản ngữ sử dụng thành thạo tham gia duyệt bản dịch.
+Mục đích của M9 là để người Việt có thể dùng Dấu rộng rãi, và để người nước ngoài học tiếng Việt cũng muốn dùng nó. Quy tắc ngôn ngữ, khoá chuỗi, tên nguồn và cách đặt ngôn ngữ riêng cho Dấu theo D41 (Ngôn ngữ giao diện). Một ngôn ngữ khác chỉ được thêm khi có người nói thạo ngôn ngữ đó duyệt.
 
-- Thực nghiệm để kiểm tra xem macOS có cho phép gán ngôn ngữ hiển thị riêng cho tiến trình bộ gõ trong mục cài đặt của hệ điều hành hay không.
-- Nghiên cứu cơ chế hiển thị mục "Open Dấu Settings…" ở cuối menu nhập liệu của hệ thống khi bộ gõ khai báo trang cài đặt riêng.
-- Thiết kế phiên bản tiếng Anh cho các màn hình chính trên bản vẽ canvas.
-- Cập nhật bộ script kiểm tra cửa sổ thật (`scripts/selftest/settings-window/run.sh`) để kiểm thử bố cục giao diện độc lập trên từng ngôn ngữ khác nhau.
-- Xây dựng phiên bản tiếng Anh cho trang web tải về thuộc mốc M8.
-- Tiêu chí hoàn thành mốc: Khi hệ thống macOS chuyển sang tiếng Anh, toàn bộ ứng dụng, bộ gõ, màn hình onboarding và các hộp thoại đều hiển thị tiếng Anh chuẩn xác; script `run.sh` chạy thành công trên cả hai ngôn ngữ; và báo cáo kiểm toán đạt kết quả ĐẠT.
+- Câu hỏi mở "Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng" (`docs/Decisions.md`) cần được trả lời bằng phép đo: bộ gõ có đặt được ngôn ngữ riêng hay không.
+- Mục "Open Dấu Settings…" của hệ thống, mục cuối của menu nhập liệu, chỉ có khi bộ gõ khai báo được trang cài đặt riêng. Việc này cần một lượt nghiên cứu riêng trước khi làm.
+- Canvas cần bản tiếng Anh cho các màn chính.
+- Bộ kiểm cửa sổ thật (`scripts/selftest/settings-window/run.sh`) cần chạy theo từng ngôn ngữ, vì độ dài chữ làm đổi bố cục. Hiện nay mọi lần mở đều ép tiếng Việt (`-AppleLanguages (vi)`).
+- Trang tải về (M8) cần có bản tiếng Anh.
+- M9 xong khi một máy để tiếng Anh hẳn thấy toàn bộ app, bộ gõ, onboarding và hộp thoại bằng tiếng Anh, `run.sh` đạt ở cả hai ngôn ngữ, và kiểm toán ĐẠT.
 
 ## M10 — Học cách gõ
 
-Mục đích của mốc là giúp người dùng dễ dàng làm quen, thực hành các kiểu gõ và hiểu rõ sự khác biệt giữa Dấu với các bộ gõ tiếng Việt khác.
+Mục đích của M10 là để người dùng biết và học được cách gõ, và biết các bộ gõ khác nhau thế nào về cách gõ.
 
-- Các tính năng tích hợp trực tiếp trong ứng dụng:
-  - Khung gõ thử tương tác giải thích trực quan từng bước gõ phím (ví dụ minh họa luồng `vieetj` → vi → viê → việt).
-  - Bảng tra cứu trực quan và tiện lợi cho các kiểu gõ Telex, Telex đơn giản và VNI.
-  - Bố cục giao diện gọn gàng và tương đồng ứng dụng System Settings theo quyết định D9 (Giao diện).
-  - Tuyệt đối không lưu trữ bất kỳ dữ liệu nào về nội dung phím người dùng đã gõ thử theo quyết định D8 (Không telemetry).
-- Nội dung xây dựng trên trang web giới thiệu:
-  - Xây dựng chuyên trang so sánh "Dấu khác các bộ gõ khác thế nào".
-  - Toàn bộ các điểm khác biệt nêu ra bắt buộc phải có số liệu và bằng chứng đo đạc thực tế (tuân thủ nguyên tắc N5).
-  - Dữ liệu đối chiếu được trích xuất từ các tài liệu [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md), [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) và bộ dữ liệu kiểm thử chính tả của dự án.
-  - Dẫn chiếu minh bạch tới mục "Đã biết nhưng không làm" trong sổ quyết định `docs/Decisions.md`.
-- Toàn bộ nội dung hướng dẫn sẽ có sẵn cả hai phiên bản tiếng Việt và tiếng Anh sau khi mốc M9 hoàn thành.
-- Tiêu chí hoàn thành mốc: Bản vẽ thiết kế nội dung được duyệt trên canvas, mọi ví dụ minh họa đều có bài test tương ứng trong engine, và báo cáo kiểm toán đạt kết quả ĐẠT.
+- Phần trong app gồm các việc sau:
+  - Một ô gõ thử giải thích từng bước, ví dụ `vieetj` → vi → viê → việt, và phím nào làm gì.
+  - Một bảng tra cho Telex, Telex đơn giản và VNI.
+  - Phần này theo D9 (Giao diện), tức là gọn như System Settings.
+  - Phần này không lưu gì về chữ đã gõ (D8 (Không telemetry)).
+- Phần trên trang web là trang "Dấu khác các bộ gõ khác thế nào":
+  - Trang chỉ ghi những khác biệt đã đo được (N5).
+  - Nguồn là [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md), [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) và bộ dữ liệu kiểm thử (đặt dấu kiểu mới hay kiểu cũ, đặt dấu tự do, khôi phục từ nước ngoài, uơ và ươ…).
+  - Trang dẫn tới mục "Đã biết nhưng không làm" của `docs/Decisions.md`.
+- Nội dung có bản tiếng Việt và tiếng Anh nếu M9 đã xong.
+- M10 xong khi người dùng duyệt nội dung trên canvas, mọi ví dụ trong phần học có test engine tương ứng, và kiểm toán ĐẠT.
 
-## Hạng mục tồn đọng chưa gắn mốc
+## Tồn đọng chưa gắn mốc
 
-- Xem xét việc có bổ sung liên kết "Ủng hộ dự án" vào bên trong giao diện ứng dụng hay không (theo quyết định D39 (Ủng hộ dự án)), với điều kiện phải hoàn thiện bản vẽ thiết kế trên canvas trước khi lập trình.
-- Hoàn thiện ma trận tương thích cho các ứng dụng còn lại (ghi nhận tại mục 7 của [`docs/Compatibility.md`](Compatibility.md)) sau khi phát hành bản beta đầu tiên, dựa trên phản hồi lỗi thực tế từ người dùng thay vì tự đo đạc trước toàn bộ.
+- Theo D39 (Ủng hộ dự án), còn phải quyết có đặt liên kết ủng hộ trong app hay không. Nếu đặt thì vẽ trên canvas trước.
+- Phần ma trận tương thích còn lại ([`docs/Compatibility.md`](Compatibility.md), mục 7: các app chưa đo, bài click hay bấm mũi tên rồi gõ tiếp, và tự sửa chính tả của macOS) làm sau beta đầu tiên. Người thử báo lỗi thay cho việc đo trước; người dùng chọn cách này ngày 13/11/2026.
