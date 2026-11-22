@@ -52,7 +52,7 @@ Sổ này là nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết
 | [D36](#d36-vni-chữ-số-thành-dấu) | VNI: chữ số thành dấu | Với VNI, chữ số sau âm tiết hợp lệ thành dấu. |
 | [D37](#d37-cài-bộ-gõ) | Cài bộ gõ | App chủ không chạy sandbox, bản chủ giữ bộ gõ đã cài trùng với bản nhúng, và app kiểm chữ ký bộ gõ. |
 | [D38](#d38-chữ-trên-giao-diện) | Chữ trên giao diện | Tên giao diện của macOS hiện đúng như macOS của người dùng đang hiện. |
-| [D39](#d39-ủng-hộ-dự-án) | Ủng hộ dự án | Dấu nhận ủng hộ tự nguyện và vẫn miễn phí trọn vẹn. |
+| [D39](#d39-ủng-hộ-dự-án) | Ủng hộ dự án | Dấu nhận ủng hộ tự nguyện, vẫn miễn phí trọn vẹn, và ghi công người ủng hộ khi họ đồng ý. |
 | [D40](#d40-chữ-dựng-sẵn-và-phím-z) | Chữ dựng sẵn và phím z | Chữ dựng sẵn là chữ cái của từ, và phím z không bỏ mũ hay móc. |
 | [D41](#d41-ngôn-ngữ-giao-diện) | Ngôn ngữ giao diện | Giao diện có tiếng Việt và tiếng Anh, chọn theo ngôn ngữ ưu tiên của macOS. |
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Trước mỗi bản phát hành phải chạy bài tải nặng, và vượt ngưỡng thì không phát hành. |
@@ -656,7 +656,18 @@ Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "
 - Dấu nhận ủng hộ tự nguyện qua GitHub Sponsors, và qua chuyển khoản trong nước bằng mã VietQR cho người không có thẻ thanh toán quốc tế.
 - Việc ủng hộ không đổi việc Dấu miễn phí trọn vẹn (D6 (Phát hành)). Dấu không có bản trả phí, không khoá tính năng và không có quảng cáo.
 - Trang tải về có liên kết "Ủng hộ dự án" ở chân trang.
+- Trang Cập nhật & hỗ trợ của app có hàng "Ủng hộ dự án" với nút "Ủng hộ…" mở mục Góp sức của trang web trong trình duyệt.
 - Người dùng mở tài khoản Sponsors của tổ chức `codefastlabs` và tài khoản ngân hàng nhận chuyển khoản, và lo phần thuế, pháp lý, vì đây là việc cần tài khoản.
+- **Ghi nhận người ủng hộ.** Dấu ghi công người ủng hộ ở bốn chỗ:
+  - Trang Cập nhật & hỗ trợ của app có mục "Người ủng hộ" liệt kê tên. Danh sách đi kèm bản phát hành, như danh sách tương thích (D7 (Cập nhật và loại bản dựng)); app không tải danh sách qua mạng.
+  - Mục Góp sức của trang web có phần Cảm ơn hiện cùng danh sách đó.
+  - Ghi chú phát hành của mỗi bản nêu những người ủng hộ trong khoảng thời gian làm ra bản đó.
+  - Mục Góp sức của trang web ghi tiền ủng hộ đã dùng vào việc gì. Mục này chỉ ghi khoản đã chi thật (N5 (Chỉ hứa điều đã kiểm chứng)).
+- Danh sách tên nằm ở một file trong repo. App, trang web và ghi chú phát hành cùng lấy tên từ file đó.
+- Dấu chỉ nêu tên khi người ủng hộ đồng ý. Người ủng hộ qua GitHub Sponsors để chế độ công khai thì được tính là đồng ý. Người chuyển khoản VietQR muốn được nêu tên thì ghi tên muốn hiện vào nội dung chuyển khoản; Dấu không bao giờ nêu tên chủ tài khoản ngân hàng.
+- Dấu không hiện số tiền, không xếp hạng người ủng hộ, và không có huy hiệu hay đặc quyền nào trong app.
+
+**Vì sao ghi công như vậy:** người ủng hộ cần thấy tên mình ở chỗ họ dùng hằng ngày và thấy tiền của họ đã làm ra việc gì. Dấu không biết ai đã ủng hộ, vì Dấu không có tài khoản người dùng và không gửi dữ liệu đi (D8 (Không telemetry), N2 (Bộ gõ không có quyền mạng)), nên cách ghi nhận là ghi công công khai có sự đồng ý, không phải đặc quyền cần xác minh qua mạng. Số tiền và bảng xếp hạng bị loại vì chúng lộ thông tin riêng và tạo áp lực. Người dùng chốt ngày 22/11/2026.
 
 ### D40. Chữ dựng sẵn và phím z
 
@@ -785,5 +796,4 @@ Mục này chỉ giữ câu chưa có trả lời. Khi một câu đã được 
 - **VoiceOver đọc tên nguồn** (D17): chưa biết VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn không.
 - **Độ ổn định của "Thêm dấu cho từ đã gõ"** (D20) trên các web editor (Google Docs, Notion…) chưa được biết.
 - **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Câu hỏi là giữ D32 như hiện nay, hay đổi mốc khôi phục sau ⌫ cho phần chữ đã được chèn nguyên (phương án c); xem [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
-- **Liên kết ủng hộ trong app** (D39): chưa quyết có đặt liên kết "Ủng hộ dự án" trong app hay không (canvas trước).
 - **Tên "Dấu"** (D24): việc tra nhãn hiệu (Cục Sở hữu trí tuệ VN) chưa làm. Một bộ gõ macOS khác có tên gần giống là DauKey (`emizuki/daukey`, GPLv3, repo tạo 23/10/2026, chưa có cask). Định danh không trùng, chỉ tên đọc lên gần nhau.

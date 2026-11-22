@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>VNI: chữ số sau âm tiết thành dấu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+body{margin:0}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 8px;box-sizing:border-box;border-radius:7px;background:#fff;border:1px solid rgba(16,40,90,.18);box-shadow:0 1px 0 rgba(16,40,90,.18);font-size:15px;font-weight:600;color:#1D1D1F}
+.field{position:relative;height:64px;border-radius:12px;background:#fff;border:1px solid rgba(16,40,90,.14);box-sizing:border-box;font-size:28px;font-weight:500;color:#1D1D1F;overflow:hidden}
+.fr{position:absolute;left:20px;top:0;height:64px;display:flex;align-items:center;white-space:pre;opacity:0}
+.caret{display:inline-block;width:2px;height:30px;background:#10285A;margin-left:1px}
+.ul{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+.cap{font-size:15px;line-height:1.55;color:#3A3A40;margin:0}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#10285A;margin:0}
+.h{font-size:36px;line-height:1.2;font-weight:800;color:#1D1D1F;margin:0}
+.lead{font-size:18px;line-height:1.55;color:#3A3A40;margin:0;max-width:820px}
+.card{background:#fff;border-radius:16px;border:1px solid rgba(16,40,90,.1);box-sizing:border-box}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(16,40,90,.08);color:#10285A;white-space:nowrap}
+.tag{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#10285A;background:rgba(16,40,90,.07);padding:2px 6px;border-radius:6px}
+.slot{border:1.5px dashed rgba(16,40,90,.35);border-radius:10px;padding:10px 14px;font-size:14px;color:#10285A;background:rgba(255,255,255,.5)}
+@keyframes vn10{0%{opacity:1}13.043%{opacity:0}100%{opacity:0}}
+.vn10{animation:vn10 6.90s step-end infinite}
+@keyframes vn11{0%{opacity:0}13.043%{opacity:1}26.087%{opacity:0}100%{opacity:0}}
+.vn11{animation:vn11 6.90s step-end infinite}
+@keyframes vn12{0%{opacity:0}26.087%{opacity:1}39.130%{opacity:0}100%{opacity:0}}
+.vn12{animation:vn12 6.90s step-end infinite}
+@keyframes vn13{0%{opacity:0}39.130%{opacity:1}52.174%{opacity:0}100%{opacity:0}}
+.vn13{animation:vn13 6.90s step-end infinite}
+@keyframes vn14{0%{opacity:0}52.174%{opacity:1}65.217%{opacity:0}100%{opacity:0}}
+.vn14{animation:vn14 6.90s step-end infinite}
+@keyframes vn15{0%{opacity:0}65.217%{opacity:1}100.000%{opacity:0}100%{opacity:0}}
+.vn15{animation:vn15 6.90s step-end infinite}@keyframes vn20{0%{opacity:1}17.647%{opacity:0}100%{opacity:0}}
+.vn20{animation:vn20 5.10s step-end infinite}
+@keyframes vn21{0%{opacity:0}17.647%{opacity:1}35.294%{opacity:0}100%{opacity:0}}
+.vn21{animation:vn21 5.10s step-end infinite}
+@keyframes vn22{0%{opacity:0}35.294%{opacity:1}52.941%{opacity:0}100%{opacity:0}}
+.vn22{animation:vn22 5.10s step-end infinite}
+@keyframes vn23{0%{opacity:0}52.941%{opacity:1}100.000%{opacity:0}100%{opacity:0}}
+.vn23{animation:vn23 5.10s step-end infinite}@keyframes vn30{0%{opacity:1}17.647%{opacity:0}100%{opacity:0}}
+.vn30{animation:vn30 5.10s step-end infinite}
+@keyframes vn31{0%{opacity:0}17.647%{opacity:1}35.294%{opacity:0}100%{opacity:0}}
+.vn31{animation:vn31 5.10s step-end infinite}
+@keyframes vn32{0%{opacity:0}35.294%{opacity:1}52.941%{opacity:0}100%{opacity:0}}
+.vn32{animation:vn32 5.10s step-end infinite}
+@keyframes vn33{0%{opacity:0}52.941%{opacity:1}100.000%{opacity:0}100%{opacity:0}}
+.vn33{animation:vn33 5.10s step-end infinite}
+@media (prefers-reduced-motion: reduce){.fr{animation:none !important;opacity:0}.fr.last{opacity:1}}
+</style>
+</helmet>
+<div style="width: 1200px; min-height: 628px; box-sizing: border-box; padding: 64px; background: #F6F1E7; font-family: 'Be Vietnam Pro', sans-serif; color: #1D1D1F; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 12px"><p class="eyebrow">Bảng gõ</p><h2 class="h">VNI: chữ số sau âm tiết thành dấu</h2><p class="lead">Với VNI, chữ số gõ sau một âm tiết hợp lệ thành dấu. Muốn giữ chữ số, bạn gõ đúp nó.</p></div><div style="display: flex; gap: 24px; align-items: stretch"><div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 0; min-width: 0"><p style="margin: 0; font-size: 14px; font-weight: 700; color: #10285A">VNI: chữ số là dấu</p><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span class="kc">v</span><span class="kc">i</span><span class="kc">e</span><span class="kc">6</span><span class="kc">t</span><span class="kc">5</span></div><div class="field"><div class="fr vn10">v<span class="caret"></span></div>
+<div class="fr vn11">vi<span class="caret"></span></div>
+<div class="fr vn12">vie<span class="caret"></span></div>
+<div class="fr vn13">viê<span class="caret"></span></div>
+<div class="fr vn14">viêt<span class="caret"></span></div>
+<div class="fr vn15 last">việt<span class="caret"></span></div></div><p class="cap">6 thêm mũ, 5 là dấu nặng.</p></div><div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 0; min-width: 0"><p style="margin: 0; font-size: 14px; font-weight: 700; color: #10285A">Gõ đúp để giữ chữ số</p><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span class="kc">U</span><span class="kc">2</span><span class="kc">2</span><span class="kc">3</span></div><div class="field"><div class="fr vn20">U<span class="caret"></span></div>
+<div class="fr vn21">Ù<span class="caret"></span></div>
+<div class="fr vn22">U2<span class="caret"></span></div>
+<div class="fr vn23 last">U23<span class="caret"></span></div></div><p class="cap">Gõ đúp chữ số thì Dấu bỏ dấu và giữ chữ số.</p></div><div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 0; min-width: 0"><p style="margin: 0; font-size: 14px; font-weight: 700; color: #10285A">Số đứng riêng</p><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span class="kc">2</span><span class="kc">0</span><span class="kc">2</span><span class="kc">4</span></div><div class="field"><div class="fr vn30">2<span class="caret"></span></div>
+<div class="fr vn31">20<span class="caret"></span></div>
+<div class="fr vn32">202<span class="caret"></span></div>
+<div class="fr vn33 last">2024<span class="caret"></span></div></div><p class="cap">Chữ số gõ khi chưa có chữ nào thì giữ nguyên.</p></div></div><div class="card" style="padding: 18px 24px; display: flex; gap: 22px; flex-wrap: wrap; font-size: 15px"><span><span class="kc">1</span> sắc</span><span><span class="kc">2</span> huyền</span><span><span class="kc">3</span> hỏi</span><span><span class="kc">4</span> ngã</span><span><span class="kc">5</span> nặng</span><span><span class="kc">6</span> mũ â ê ô</span><span><span class="kc">7</span> móc ơ ư</span><span><span class="kc">8</span> trăng ă</span><span><span class="kc">9</span> đ</span><span><span class="kc">0</span> xoá dấu</span></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":628}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

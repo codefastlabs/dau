@@ -53,7 +53,7 @@
     },
     "Landing.dc.html": {
       "expand": "fill",
-      "h": 7078,
+      "h": 7546,
       "title": "Trang tải về – máy tính",
       "w": 1280,
       "x": 0,
@@ -61,7 +61,7 @@
     },
     "LandingMobile.dc.html": {
       "expand": "fill",
-      "h": 10640,
+      "h": 11488,
       "title": "Trang tải về – điện thoại",
       "w": 390,
       "x": 1360,
@@ -294,6 +294,76 @@
       "w": 900,
       "h": 620,
       "title": "Cửa sổ ảnh đĩa DMG (bản phát hành)"
+    },
+    "ModelThreeWays.dc.html": {
+      "x": 1830,
+      "y": 14900,
+      "w": 1200,
+      "h": 698,
+      "title": "Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)"
+    },
+    "ModelKeyFlow.dc.html": {
+      "x": 3110,
+      "y": 14900,
+      "w": 1200,
+      "h": 720,
+      "title": "Mô hình – Đường đi của một phím (N3, N2; Website mục 3)"
+    },
+    "ModelTonePlacement.dc.html": {
+      "x": 4390,
+      "y": 14900,
+      "w": 1200,
+      "h": 660,
+      "title": "Mô hình – Gõ phím dấu ở đâu cũng được (D28, D15; Website mục 2)"
+    },
+    "ModelForeignWords.dc.html": {
+      "x": 1830,
+      "y": 15740,
+      "w": 1200,
+      "h": 666,
+      "title": "Mô hình – Giữ nguyên từ nước ngoài (D4, D26; Website mục 4)"
+    },
+    "ModelAddMarks.dc.html": {
+      "x": 3110,
+      "y": 15740,
+      "w": 1200,
+      "h": 556,
+      "title": "Mô hình – Thêm dấu cho từ đã gõ (D20, D32, D13; Website mục 4)"
+    },
+    "ModelPerApp.dc.html": {
+      "x": 4390,
+      "y": 15740,
+      "w": 1200,
+      "h": 724,
+      "title": "Mô hình – Theo từng ứng dụng (D5, D13, D43; Website mục 4)"
+    },
+    "ModelPartOfMacOS.dc.html": {
+      "x": 1830,
+      "y": 16584,
+      "w": 1200,
+      "h": 602,
+      "title": "Mô hình – Như một phần của macOS (D2, N1, N4; Website mục 4)"
+    },
+    "ModelPrivacy.dc.html": {
+      "x": 3110,
+      "y": 16584,
+      "w": 1200,
+      "h": 608,
+      "title": "Mô hình – Hai phần chạy riêng (N2, D8; Website mục 6)"
+    },
+    "ModelVNI.dc.html": {
+      "x": 4390,
+      "y": 16584,
+      "w": 1200,
+      "h": 628,
+      "title": "Mô hình – VNI: chữ số thành dấu (D36, D26; Website mục 5 và Hỏi đáp)"
+    },
+    "SettingsAboutSupporters.dc.html": {
+      "x": 4900,
+      "y": 5440,
+      "w": 900,
+      "h": 760,
+      "title": "Cập nhật & hỗ trợ – cuộn xuống: Người ủng hộ"
     }
   },
   "createdOnFiles": {
@@ -315,7 +385,7 @@
     },
     "row2": {
       "kind": "title1",
-      "maxW": 4820,
+      "maxW": 5800,
       "text": "Cửa sổ Cài đặt",
       "w": 240,
       "x": 0,
@@ -343,6 +413,14 @@
       "text": "Trang tải về",
       "w": 240,
       "x": 0,
+      "y": 14640
+    },
+    "row6": {
+      "kind": "title1",
+      "maxW": 3760,
+      "text": "Mô hình minh hoạ cho website",
+      "w": 240,
+      "x": 1830,
       "y": 14640
     }
   },
@@ -372,6 +450,7 @@
     "SettingsAppsAddEmpty.dc.html",
     "SettingsAbout.dc.html",
     "SettingsAboutDev.dc.html",
+    "SettingsAboutSupporters.dc.html",
     "ConfirmDialogs.dc.html",
     "UninstallRemoveSource.dc.html",
     "Report.dc.html",
@@ -387,7 +466,16 @@
     "AppIconDev.dc.html",
     "Landing.dc.html",
     "LandingMobile.dc.html",
-    "DmgWindow.dc.html"
+    "DmgWindow.dc.html",
+    "ModelThreeWays.dc.html",
+    "ModelKeyFlow.dc.html",
+    "ModelTonePlacement.dc.html",
+    "ModelForeignWords.dc.html",
+    "ModelAddMarks.dc.html",
+    "ModelPerApp.dc.html",
+    "ModelPartOfMacOS.dc.html",
+    "ModelPrivacy.dc.html",
+    "ModelVNI.dc.html"
   ],
   "pages": [
     {

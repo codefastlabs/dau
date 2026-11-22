@@ -103,5 +103,5 @@ Mục đích của M10 là để người dùng biết và học được cách 
 
 ## Tồn đọng chưa gắn mốc
 
-- Theo D39 (Ủng hộ dự án), còn phải quyết có đặt liên kết ủng hộ trong app hay không. Nếu đặt thì vẽ trên canvas trước.
+- Làm phần ghi nhận người ủng hộ theo D39 (Ủng hộ dự án): file danh sách tên trong repo, mục "Người ủng hộ" ở trang Cập nhật & hỗ trợ (`docs/UI.md`), và dòng cảm ơn trong ghi chú phát hành (thêm vào `docs/Releasing.md` khi làm). Phần trên trang web thuộc M8 (`docs/Website.md`, mục Góp sức).
 - Phần ma trận tương thích còn lại ([`docs/Compatibility.md`](Compatibility.md), mục 7: các app chưa đo, bài click hay bấm mũi tên rồi gõ tiếp, và tự sửa chính tả của macOS) làm sau beta đầu tiên. Người thử báo lỗi thay cho việc đo trước; người dùng chọn cách này ngày 13/11/2026.

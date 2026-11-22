@@ -338,6 +338,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): "Còn mở: có đặt liên kết trong app hay không" chuyển thành câu hỏi mở.
 
+- 22/11/2026: thêm phần ghi nhận người ủng hộ ở bốn chỗ (mục "Người ủng hộ" trong app, phần Cảm ơn trên trang web, ghi chú phát hành, khoản chi công khai), cùng luật đồng ý nêu tên; người dùng chốt. Cùng ngày, người dùng duyệt nút "Ủng hộ…" ở trang Cập nhật & hỗ trợ, nên câu hỏi mở "Liên kết ủng hộ trong app" được trả lời và bỏ khỏi sổ.
+
 ### D40. Chữ dựng sẵn và phím z
 
 - Tên cũ: "Phím ra chữ có dấu dựng sẵn và phím z".

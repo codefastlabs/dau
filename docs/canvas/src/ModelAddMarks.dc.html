@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Thêm dấu cho từ đã gõ</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+body{margin:0}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 8px;box-sizing:border-box;border-radius:7px;background:#fff;border:1px solid rgba(16,40,90,.18);box-shadow:0 1px 0 rgba(16,40,90,.18);font-size:15px;font-weight:600;color:#1D1D1F}
+.field{position:relative;height:64px;border-radius:12px;background:#fff;border:1px solid rgba(16,40,90,.14);box-sizing:border-box;font-size:28px;font-weight:500;color:#1D1D1F;overflow:hidden}
+.fr{position:absolute;left:20px;top:0;height:64px;display:flex;align-items:center;white-space:pre;opacity:0}
+.caret{display:inline-block;width:2px;height:30px;background:#10285A;margin-left:1px}
+.ul{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+.cap{font-size:15px;line-height:1.55;color:#3A3A40;margin:0}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#10285A;margin:0}
+.h{font-size:36px;line-height:1.2;font-weight:800;color:#1D1D1F;margin:0}
+.lead{font-size:18px;line-height:1.55;color:#3A3A40;margin:0;max-width:820px}
+.card{background:#fff;border-radius:16px;border:1px solid rgba(16,40,90,.1);box-sizing:border-box}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(16,40,90,.08);color:#10285A;white-space:nowrap}
+.tag{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#10285A;background:rgba(16,40,90,.07);padding:2px 6px;border-radius:6px}
+.slot{border:1.5px dashed rgba(16,40,90,.35);border-radius:10px;padding:10px 14px;font-size:14px;color:#10285A;background:rgba(255,255,255,.5)}
+@keyframes am10{0%{opacity:1}25.000%{opacity:0}100%{opacity:0}}
+.am10{animation:am10 4.80s step-end infinite}
+@keyframes am11{0%{opacity:0}25.000%{opacity:1}50.000%{opacity:0}100%{opacity:0}}
+.am11{animation:am11 4.80s step-end infinite}
+@keyframes am12{0%{opacity:0}50.000%{opacity:1}100.000%{opacity:0}100%{opacity:0}}
+.am12{animation:am12 4.80s step-end infinite}@keyframes am20{0%{opacity:1}36.842%{opacity:0}100%{opacity:0}}
+.am20{animation:am20 3.80s step-end infinite}
+@keyframes am21{0%{opacity:0}36.842%{opacity:1}100.000%{opacity:0}100%{opacity:0}}
+.am21{animation:am21 3.80s step-end infinite}@keyframes am30{0%{opacity:1}36.842%{opacity:0}100%{opacity:0}}
+.am30{animation:am30 3.80s step-end infinite}
+@keyframes am31{0%{opacity:0}36.842%{opacity:1}100.000%{opacity:0}100%{opacity:0}}
+.am31{animation:am31 3.80s step-end infinite}
+@media (prefers-reduced-motion: reduce){.fr{animation:none !important;opacity:0}.fr.last{opacity:1}}
+</style>
+</helmet>
+<div style="width: 1200px; min-height: 556px; box-sizing: border-box; padding: 64px; background: #F6F1E7; font-family: 'Be Vietnam Pro', sans-serif; color: #1D1D1F; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 12px"><p class="eyebrow">Tính năng</p><h2 class="h">Thêm dấu cho từ đã gõ</h2><p class="lead">Quên dấu? Đặt con trỏ ngay sau từ rồi gõ phím dấu, không cần xoá rồi gõ lại. Tính năng này không áp ở ứng dụng đang bật gạch chân.</p></div><div style="display: flex; gap: 24px; align-items: stretch"><div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 0; min-width: 0"><p style="margin: 0; font-size: 14px; font-weight: 700; color: #10285A">Thêm dấu cho từ quên dấu</p><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span class="kc">e</span><span class="kc">j</span></div><div class="field"><div class="fr am10">Hẹn gặp ở viet<span class="caret"></span></div>
+<div class="fr am11">Hẹn gặp ở viêt<span class="caret"></span></div>
+<div class="fr am12 last">Hẹn gặp ở việt<span class="caret"></span></div></div><p class="cap">Con trỏ đứng ngay sau “viet”. Gõ e rồi j, Dấu thêm dấu vào chính từ đó.</p></div><div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 0; min-width: 0"><p style="margin: 0; font-size: 14px; font-weight: 700; color: #10285A">Chỉ thiếu dấu thanh</p><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span class="kc">j</span></div><div class="field"><div class="fr am20">hoc<span class="caret"></span></div>
+<div class="fr am21 last">học<span class="caret"></span></div></div><p class="cap">Một phím dấu là đủ khi từ chỉ thiếu dấu thanh.</p></div><div class="card" style="padding: 24px; display: flex; flex-direction: column; gap: 16px; flex: 1 1 0; min-width: 0"><p style="margin: 0; font-size: 14px; font-weight: 700; color: #10285A">Xoá bằng ⌫</p><div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center"><span class="kc">⌫</span></div><div class="field"><div class="fr am30">hoà<span class="caret"></span></div>
+<div class="fr am31 last">hò<span class="caret"></span></div></div><p class="cap">⌫ xoá chữ cuối, và Dấu đặt lại dấu theo phần vần còn lại.</p></div></div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":556}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Theo từng ứng dụng</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+body{margin:0}
+.kc{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;padding:0 8px;box-sizing:border-box;border-radius:7px;background:#fff;border:1px solid rgba(16,40,90,.18);box-shadow:0 1px 0 rgba(16,40,90,.18);font-size:15px;font-weight:600;color:#1D1D1F}
+.field{position:relative;height:64px;border-radius:12px;background:#fff;border:1px solid rgba(16,40,90,.14);box-sizing:border-box;font-size:28px;font-weight:500;color:#1D1D1F;overflow:hidden}
+.fr{position:absolute;left:20px;top:0;height:64px;display:flex;align-items:center;white-space:pre;opacity:0}
+.caret{display:inline-block;width:2px;height:30px;background:#10285A;margin-left:1px}
+.ul{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:5px}
+.cap{font-size:15px;line-height:1.55;color:#3A3A40;margin:0}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#10285A;margin:0}
+.h{font-size:36px;line-height:1.2;font-weight:800;color:#1D1D1F;margin:0}
+.lead{font-size:18px;line-height:1.55;color:#3A3A40;margin:0;max-width:820px}
+.card{background:#fff;border-radius:16px;border:1px solid rgba(16,40,90,.1);box-sizing:border-box}
+.chip{display:inline-flex;align-items:center;height:24px;padding:0 10px;border-radius:999px;font-size:13px;font-weight:600;background:rgba(16,40,90,.08);color:#10285A;white-space:nowrap}
+.tag{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:#10285A;background:rgba(16,40,90,.07);padding:2px 6px;border-radius:6px}
+.slot{border:1.5px dashed rgba(16,40,90,.35);border-radius:10px;padding:10px 14px;font-size:14px;color:#10285A;background:rgba(255,255,255,.5)}
+.sw{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:13px;background:#c7c7cc;margin:0;position:relative;flex:none}.sw::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:11px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.3)}.sw:checked{background:#10285A}.sw:checked::after{left:20px}
+@media (prefers-reduced-motion: reduce){.fr{animation:none !important;opacity:0}.fr.last{opacity:1}}
+</style>
+</helmet>
+<div style="width: 1200px; min-height: 724px; box-sizing: border-box; padding: 64px; background: #F6F1E7; font-family: 'Be Vietnam Pro', sans-serif; color: #1D1D1F; display: flex; flex-direction: column; gap: 32px">
+<div style="display: flex; flex-direction: column; gap: 12px"><p class="eyebrow">Tính năng</p><h2 class="h">Theo từng ứng dụng</h2><p class="lead">Mặc định Dấu thay chữ tại chỗ, không gạch chân. Với ứng dụng nào gõ sai chữ, bạn bật gạch chân riêng cho ứng dụng đó. Nhãn “Đề xuất” chỉ có ở ứng dụng mà số đo cho thấy cần gạch chân.</p></div><div class="card" style="overflow: hidden"><div style="display: flex; align-items: center; padding: 14px 20px; font-size: 13px; font-weight: 700; color: #5A5A60; letter-spacing: .04em; text-transform: uppercase"><span style="flex: 1">Ứng dụng</span><span style="width: 150px">Cách gõ</span><span style="width: 44px">Gạch chân</span></div><div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 10px 20px; box-sizing: border-box; border-top: 1px solid rgba(16,40,90,.08)"><span style="width: 36px; height: 36px; border-radius: 9px; background: #2F6FDE; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700">S</span><span style="font-size: 17px; font-weight: 600; flex: 1">Safari</span><span style="font-size: 15px; color: #3A3A40; width: 150px">Thay tại chỗ</span><input type="checkbox" class="sw" aria-label="Gạch chân khi gõ trong Safari"></div><div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 10px 20px; box-sizing: border-box; border-top: 1px solid rgba(16,40,90,.08)"><span style="width: 36px; height: 36px; border-radius: 9px; background: #3C8A4A; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700">C</span><span style="font-size: 17px; font-weight: 600; flex: 1">Chrome</span><span style="font-size: 15px; color: #3A3A40; width: 150px">Thay tại chỗ</span><input type="checkbox" class="sw" aria-label="Gạch chân khi gõ trong Chrome"></div><div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 10px 20px; box-sizing: border-box; border-top: 1px solid rgba(16,40,90,.08)"><span style="width: 36px; height: 36px; border-radius: 9px; background: #1D1D1F; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700">T</span><span style="font-size: 17px; font-weight: 600; flex: 1">Terminal</span><span class="chip">Đề xuất</span><span style="font-size: 15px; color: #3A3A40; width: 150px">Gạch chân</span><input type="checkbox" class="sw" aria-label="Gạch chân khi gõ trong Terminal" checked></div><div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 10px 20px; box-sizing: border-box; border-top: 1px solid rgba(16,40,90,.08)"><span style="width: 36px; height: 36px; border-radius: 9px; background: #5B3FA8; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700">G</span><span style="font-size: 17px; font-weight: 600; flex: 1">Ghostty</span><span class="chip">Đề xuất</span><span style="font-size: 15px; color: #3A3A40; width: 150px">Gạch chân</span><input type="checkbox" class="sw" aria-label="Gạch chân khi gõ trong Ghostty" checked></div></div><p class="cap">Dấu không tự đổi giữa tiếng Việt và tiếng Anh theo ứng dụng. Muốn mỗi cửa sổ nhớ nguồn đầu vào riêng, bạn dùng tuỳ chọn “Tự động chuyển sang nguồn đầu vào của tài liệu” của macOS.</p>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1200,"height":724}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

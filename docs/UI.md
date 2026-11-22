@@ -175,6 +175,10 @@ Artboard: [Cập nhật & hỗ trợ](canvas/SettingsAbout.png).
 - Nút "Báo lỗi…" mở sheet "Báo ứng dụng gõ lỗi" ở mọi loại bản (xem mục con bên dưới).
 - Nút gỡ cài đặt dùng kiểu `role: .destructive` của hệ thống (D9). Luồng gỡ được tả ở mục "Gỡ cài đặt".
 - Chú thích về quyền riêng tư giữ đúng nội dung của D8 (Không telemetry) và N2 (Bộ gõ không có quyền mạng).
+- Cuối trang là mục "Người ủng hộ" (D39 (Ủng hộ dự án)); artboard [cuộn xuống](canvas/SettingsAboutSupporters.png) vẽ mục này.
+  - Mục liệt kê tên người ủng hộ. Danh sách đi kèm bản Dấu đang chạy, nên app không tải gì qua mạng; chỉ người đã đồng ý mới được nêu tên.
+  - Mục không hiện số tiền và không xếp thứ tự theo số tiền.
+  - Hàng "Ủng hộ dự án" có nút "Ủng hộ…" mở mục Góp sức của trang web trong trình duyệt.
 
 #### Báo ứng dụng gõ lỗi
 

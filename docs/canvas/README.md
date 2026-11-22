@@ -1,10 +1,10 @@
 # Bản chụp canvas thiết kế
 
-Thư mục này lưu trữ ảnh chụp các artboard trên trang "Thiết kế" của canvas mockup, giúp bạn xem lại các giao diện đã được phê duyệt mà không cần mở trực tiếp canvas trên claude.ai. Mọi chỉnh sửa thiết kế vẫn được thực hiện trực tiếp trên canvas (theo hướng dẫn tại `Apps/Dau/CLAUDE.md`); các tệp trong thư mục này chỉ là bản chụp kết xuất tự động bằng script `scripts/design/render-canvas.sh` và tuyệt đối không chỉnh sửa thủ công.
+Ảnh chụp các artboard trên trang "Thiết kế" của canvas mockup, để xem thiết kế đã duyệt mà không cần mở canvas trên claude.ai. Canvas vẫn là nơi sửa thiết kế (`Apps/Dau/CLAUDE.md`); thư mục này chỉ là bản chụp, sinh bằng `scripts/design/render-canvas.sh`, không sửa tay.
 
-- Các tệp định dạng `*.png` là ảnh chụp giao diện của từng artboard.
-- Các tệp trong thư mục `src/*.dc.html` là mã nguồn HTML của artboard (chứa nội dung và câu chữ chính xác của giao diện); các công cụ agent có thể đọc tệp này thay cho việc truy cập canvas.
-- Tệp `canvas.json` lưu trữ thông tin về vị trí tọa độ, kích thước và tiêu đề của toàn bộ các artboard.
+- `*.png`: ảnh chụp từng artboard.
+- `src/*.dc.html`: nguồn của artboard (nội dung, câu chữ chính xác); agent đọc file này thay cho canvas.
+- `canvas.json`: vị trí, kích thước và tiêu đề các artboard.
 
 ## Thiết lập Dấu
 
@@ -49,6 +49,10 @@ Thư mục này lưu trữ ảnh chụp các artboard trên trang "Thiết kế"
 - [Ứng dụng – thêm quy tắc](SettingsAppsAdd.png) · [nguồn](src/SettingsAppsAdd.dc.html)
 - [Ứng dụng – thêm quy tắc, chưa chọn](SettingsAppsAddEmpty.png) · [nguồn](src/SettingsAppsAddEmpty.dc.html)
 
+## Cập nhật & hỗ trợ
+
+- [Cập nhật & hỗ trợ – cuộn xuống: Người ủng hộ](SettingsAboutSupporters.png) · [nguồn](src/SettingsAboutSupporters.dc.html)
+
 ## Khác
 
 - [Xác nhận quay về / gỡ cài đặt](ConfirmDialogs.png) · [nguồn](src/ConfirmDialogs.dc.html)
@@ -76,4 +80,16 @@ Thư mục này lưu trữ ảnh chụp các artboard trên trang "Thiết kế"
 
 - [Trang tải về – máy tính](Landing.png) · [nguồn](src/Landing.dc.html)
 - [Trang tải về – điện thoại](LandingMobile.png) · [nguồn](src/LandingMobile.dc.html)
+
+## Mô hình
+
+- [Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)](ModelThreeWays.png) · [nguồn](src/ModelThreeWays.dc.html)
+- [Mô hình – Đường đi của một phím (N3, N2; Website mục 3)](ModelKeyFlow.png) · [nguồn](src/ModelKeyFlow.dc.html)
+- [Mô hình – Gõ phím dấu ở đâu cũng được (D28, D15; Website mục 2)](ModelTonePlacement.png) · [nguồn](src/ModelTonePlacement.dc.html)
+- [Mô hình – Giữ nguyên từ nước ngoài (D4, D26; Website mục 4)](ModelForeignWords.png) · [nguồn](src/ModelForeignWords.dc.html)
+- [Mô hình – Thêm dấu cho từ đã gõ (D20, D32, D13; Website mục 4)](ModelAddMarks.png) · [nguồn](src/ModelAddMarks.dc.html)
+- [Mô hình – Theo từng ứng dụng (D5, D13, D43; Website mục 4)](ModelPerApp.png) · [nguồn](src/ModelPerApp.dc.html)
+- [Mô hình – Như một phần của macOS (D2, N1, N4; Website mục 4)](ModelPartOfMacOS.png) · [nguồn](src/ModelPartOfMacOS.dc.html)
+- [Mô hình – Hai phần chạy riêng (N2, D8; Website mục 6)](ModelPrivacy.png) · [nguồn](src/ModelPrivacy.dc.html)
+- [Mô hình – VNI: chữ số thành dấu (D36, D26; Website mục 5 và Hỏi đáp)](ModelVNI.png) · [nguồn](src/ModelVNI.dc.html)
 

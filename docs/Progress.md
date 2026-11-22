@@ -11,6 +11,7 @@ Chờ người dùng:
 
 Việc tiếp theo:
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
+- Không chờ bước 0, chuẩn bị cho M8: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`. Chín mô hình minh hoạ cách Dấu làm việc và phần ghi nhận người ủng hộ (D39 (Ủng hộ dự án)) đã có artboard được duyệt; `docs/Website.md` dẫn mỗi mục tới mô hình của nó. Thứ tự M8 so với beta đầu tiên vẫn theo `docs/Roadmap.md` cho tới khi người dùng chọn khác.
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần.
 
 Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chưa rõ ảnh hưởng, chưa kiểm, giao diện, để sau). API IMK nào giúp được từng việc và phép đo rẻ nhất: [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) mục "Hiện trạng" và mục 4.
