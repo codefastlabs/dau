@@ -117,7 +117,7 @@ Mỗi hướng thử trên mô hình (`LateAnswerTests`, `RapidKeysTests`, `InPl
 
 ## 5. Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng
 
-Đo 18/11/2026 (lỗi) và 22/11/2026 (sau khi sửa) trên máy M1 Pro (Safari 27.2), số đo và các quan sát nó giải thích ở [`docs/history/CompatibilityFixed.md`](../history/CompatibilityFixed.md) mục "Safari và Chrome khi phím dồn hay trang bận, trước khi Dấu tự chèn ký tự" (lỗi) và [`docs/Compatibility.md`](../Compatibility.md) mục 5.1 (sau khi sửa).
+Đo 18/11/2026 trên máy M1 Pro (lỗi) và 22/11/2026 trên máy M3 Max (sau khi sửa), cả hai lần ở Safari 27.2; số đo và các quan sát nó giải thích ở [`docs/history/CompatibilityFixed.md`](../history/CompatibilityFixed.md) mục "Safari và Chrome khi phím dồn hay trang bận, trước khi Dấu tự chèn ký tự" (lỗi) và [`docs/Compatibility.md`](../Compatibility.md) mục 5.1 (sau khi sửa).
 
 ### 5.1 Cơ chế
 
@@ -159,7 +159,7 @@ Bản thử tự xoá riêng cho Safari (18/11/2026) không gộp vì không x�
 
 Sau khi tự chèn, ⌫ vẫn có thể chờ trong hàng khi trang Safari bận và bị lời gọi kế vượt, nên phím dấu ngay sau ⌫ không được thêm cho từ trước ("Hoc ⌫j" ra "Hocj", "khoong⌫g" ra "khôngg kó"; 22/11/2026). Lúc j đọc chữ cho D20, Safari trả vị trí hơn vị trí Dấu theo dõi 1 (⌫ chưa áp), rồi lần đọc không cho chữ dùng được, nên j bắt đầu từ mới. Chữ không bị xáo nhưng D20 không áp: đây là lỗi của Dấu (Telex của Apple không có D20 nên không dùng để so).
 
-**Hướng đã chọn: chờ ⌫ chưa áp, cho mọi app** (ngoại lệ của N3, lý do và số đo ở [`docs/Decisions.md`](../Decisions.md) N3 đoạn "Vì sao ngoại lệ sau ⌫ chưa áp"). Khi `selectedRange` đầu tiên sau ⌫ trả đúng vị trí Dấu theo dõi cộng số đơn vị ⌫ xoá, Dấu hỏi lại tới khi app áp ⌫ hoặc hết hạn 20 ms, trong khoảng xét 0,3 s sau ⌫. Đo 22/11/2026 (máy M1 Pro, [`docs/Compatibility.md`](../Compatibility.md) mục 5.1): ở Safari ⌫ được áp trong khoảng 3 ms và trang bận đúng 3/3 ở hai ô (trước: "Hocj" 1/3, "khôngg kó" 2/3); ở Chrome câu trả lời không đổi trong lúc chờ nên mỗi lần chờ hết hạn sau 21–22 ms và chữ không đổi (hạn 0,3 s làm Chrome đứng 402–414 ms và sai chữ ở từ khác). Mô hình WebKit đầy đủ trang bận và phím dồn: 0/40 sai.
+**Hướng đã chọn: chờ ⌫ chưa áp, cho mọi app** (ngoại lệ của N3, lý do và số đo ở [`docs/Decisions.md`](../Decisions.md) N3 đoạn "Vì sao ngoại lệ sau ⌫ chưa áp"). Khi `selectedRange` đầu tiên sau ⌫ trả đúng vị trí Dấu theo dõi cộng số đơn vị ⌫ xoá, Dấu hỏi lại tới khi app áp ⌫ hoặc hết hạn 20 ms, trong khoảng xét 0,3 s sau ⌫. Đo 22/11/2026 (máy M3 Max, [`docs/Compatibility.md`](../Compatibility.md) mục 5.1): ở Safari ⌫ được áp trong khoảng 3 ms và trang bận đúng 3/3 ở hai ô (trước: "Hocj" 1/3, "khôngg kó" 2/3); ở Chrome câu trả lời không đổi trong lúc chờ nên mỗi lần chờ hết hạn sau 21–22 ms và chữ không đổi (hạn 0,3 s làm Chrome đứng 402–414 ms và sai chữ ở từ khác). Mô hình WebKit đầy đủ trang bận và phím dồn: 0/40 sai.
 
 Các cách khác không chọn:
 
