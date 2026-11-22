@@ -46,7 +46,7 @@ Nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết định (D) �
 | [D30](#d30-kiểm-tra-chính-tả) | Kiểm tra chính tả | Từ hết là tiền tố hợp lệ thì ngừng biến đổi. |
 | [D31](#d31-âm-tiết-tiếng-việt-hợp-lệ) | Âm tiết tiếng Việt hợp lệ | Định nghĩa theo chính tả chuẩn, nới cho địa danh. |
 | [D32](#d32-backspace) | Backspace | Bỏ chữ cuối đang hiện và đặt lại dấu. |
-| [D33](#d33-độ-dài-từ) | Độ dài từ | Dài hơn 7 chữ cái thì khôi phục ngay và đi thẳng. |
+| [D33](#d33-độ-dài-từ) | Độ dài từ | Dài hơn 7 chữ cái thì khôi phục ngay, phần còn lại của từ để nguyên. |
 | [D34](#d34-chữ-hoa-với-phím-biến-đổi) | Chữ hoa với phím biến đổi | Hoa/thường theo chữ cái gõ đầu tiên. |
 | [D35](#d35-uơ-và-ươ) | "uơ" và "ươ" | "uơ" ở cuối từ, thành "ươ" khi gõ thêm. |
 | [D36](#d36-vni-chữ-số-thành-dấu) | VNI: chữ số thành dấu | Chữ số sau âm tiết hợp lệ thành dấu. |
@@ -76,7 +76,7 @@ Tiến trình bộ gõ không có quyền mạng. Mọi kết nối nằm ở ap
 Tối thiểu lời gọi vào ứng dụng đích khi đang gõ.
 
 - Mỗi phím tối đa một lần gọi `insertText`.
-- Ở mọi app, ký tự mà engine để nguyên (chữ, số, dấu câu, dấu cách, phím không kèm ⌘, ⌃, ⌥) do Dấu chèn bằng `insertText` tại con trỏ (`NSNotFound`), không để phím đi thẳng: mọi thao tác chữ tới app qua cùng một đường. Phím đi thẳng chỉ còn ⌫ (D32 (Backspace)), Return, Tab, Esc, mũi tên, phím chức năng và phím có ⌘, ⌃, ⌥. Không có ngoại lệ theo app (D5 (Quy tắc theo ứng dụng)).
+- Ở mọi app, ký tự mà engine để nguyên (chữ, số, dấu câu, dấu cách, phím không kèm ⌘, ⌃, ⌥) do Dấu chèn bằng `insertText` tại con trỏ (`NSNotFound`), không để phím đi thẳng: mọi thao tác chữ tới app qua cùng một đường. Phím đi thẳng chỉ còn ⌫ (D32 (Backspace)), Return, Tab, Esc, mũi tên, phím chức năng và phím có ⌘, ⌃, ⌥. Ba loại phím khác cũng đi thẳng. Phím chết (phím không cho ký tự, như dấu ´ của bàn phím quốc tế) không có ký tự nào để Dấu chèn, nên app tự ghép nó với phím sau. Sự kiện mang nhiều ký tự một lúc đi thẳng vì engine chỉ nhận một ký tự mỗi phím. Phím đến trong lúc Dấu còn đang xử lý phím trước đi thẳng vì engine đang bận, và từ đang gõ kết thúc khi phím trước xong (D18 (Phòng thủ với IMK)). Không có ngoại lệ theo app (D5 (Quy tắc theo ứng dụng)).
 - Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc; trừ chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)). Phím Dấu tự chèn và phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
 - Đọc chữ trước con trỏ chỉ ở các trường hợp một quyết định cho phép, mỗi trường hợp một lần đọc: lệch vị trí và từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)), phím đầu khi chưa biết chữ trước con trỏ (D20).
 - **Ngoại lệ sau ⌫ chưa áp:** ở phím đến trong hạn chờ ngay sau một ⌫ đi thẳng mà Dấu biết chữ bị xoá, phím đó hỏi `selectedRange` (phím Dấu tự chèn cũng hỏi một lần trong trường hợp này). Nếu `selectedRange` đầu tiên trả đúng vị trí Dấu theo dõi cộng số đơn vị ⌫ xoá (app chưa áp ⌫), Dấu hỏi lại `selectedRange` tới khi app áp xong ⌫ hoặc hết một hạn chờ, rồi xử lý phím như thường, kể cả một lần đọc chữ lại nếu đường đó cần. Hết hạn thì xử lý như khi không chờ. Không có ngoại lệ theo app.
@@ -358,7 +358,7 @@ Quay về bản trước tạm tắt tự động cập nhật cho tới khi có
 
 ### D20. Thêm dấu cho từ đã gõ
 
-Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như chữ cái, không như chuỗi phím đã gõ, và chỉ áp dụng khi kết quả là âm tiết tiếng Việt hợp lệ; nếu không thì phím đi thẳng.
+Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như chữ cái, không như chuỗi phím đã gõ, và chỉ áp dụng khi kết quả là âm tiết tiếng Việt hợp lệ; nếu không thì Dấu chèn nguyên phím đó như chữ cái.
 
 - Nhờ vậy không xung đột với D4 (Từ nước ngoài): "car" giữ bằng "carr", sau đó quay lại gõ thêm "s" vẫn ra "cars"; gõ liền trong cùng từ thì do D26 (Gõ đúp phím dấu).
 - Áp dụng cho cả phím dấu thanh lẫn phím biến đổi (aa, ee, oo, w, dd…) theo luật bình thường trên chữ đang hiển thị.
@@ -366,7 +366,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 - "Hợp lệ" ở đây xét theo mức tiền tố của D30 (Kiểm tra chính tả), như lúc đang gõ ("viet" + e → "viêt"), với một khác biệt: nguyên âm phải giữ đúng dấu phụ đang hiển thị, vì không tự thêm biến đổi khác (nên "viet" + j → "vietj", không chờ mũ như lúc gõ "viẹt"). Hệ quả: "hoc" + f hiện "hòc", kết thúc từ thì D31 (Âm tiết tiếng Việt hợp lệ) khôi phục thành "hocf".
 - Gõ đúp trên từ đọc lại vẫn là xoá dấu theo D26 ("cả" + r → "car").
 - Không giữ "lịch sử từ" để Backspace quay lại sửa như OpenKey: lùi về sau từ rồi gõ phím dấu đã được D20 phủ.
-- **Khi nào đọc:** ở phím chữ cái hoặc dấu thanh/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng đi thẳng: một `selectedRange` và một lần đọc chữ trước con trỏ (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
+- **Khi nào đọc:** ở phím chữ cái hoặc dấu thanh/biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return/Tab), kể cả khi trước con trỏ không có chữ hoặc phím đó cuối cùng được chèn nguyên: một `selectedRange` và một lần đọc chữ trước con trỏ (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách không đọc.
 - **Phạm vi:**
   - Không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
   - App không trả vị trí hay chữ cho một lần đọc thì phím đó đi như phím đầu của từ mới. Hai lần đọc liền nhau đều không nhận được gì thì Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)); một lần đọc được ở giữa thì đếm lại từ đầu.
@@ -376,8 +376,8 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
   - Hệ quả: chữ cái sau ⌫ qua dấu cách nối lại từ trước khi hợp lệ ("ba␣⌫nj" → "bạn"; "duow␣⌫c" giữa từ hiện "dươc", kết thúc từ D31 khôi phục "duơc" vì "ươc" cần sắc hoặc nặng).
 - **Ba ngoại lệ:**
   - (a) Chữ cuối của từ có sẵn là chữ thường mà phím là chữ hoa thì bắt đầu từ mới, vì tiếng Việt không có chữ hoa giữa âm tiết ("#Hà" + "Nooij" → "#HàNội"; "VI" + "EEJT" → "VIỆT" và "V" + "ieejt" → "Việt" vẫn nối). Trừ khi phím đó đặt dấu thanh hoặc biến đổi lên từ có sẵn, vì khi đó phím không thêm chữ nào ("hoc" + "J" → "học").
-  - (b) Từ có sẵn không phải tiếng Việt (không là tiền tố hợp lệ theo D30, dài hơn 7 chữ cái như D33 (Độ dài từ), hoặc có chữ cái engine không biết) thì chữ gõ tiếp, kể cả phím dấu, thuộc về từ đó và đi thẳng tới hết từ, như khi gõ liền ("foo" + "bar" → "foobar", "keyboard" + "bar" → "keyboardbar").
-  - (b) thắng (a), vì chữ hoa giữa một từ nước ngoài là kiểu viết camelCase ("foo" + "Bar" → "fooBar", như gõ liền). Đánh đổi: từ tiếng Việt gõ dính sau từ nước ngoài cũng đi thẳng ("iPhone" + "mowis" → "iPhonemowis", như gõ liền).
+  - (b) Từ có sẵn không phải tiếng Việt (không là tiền tố hợp lệ theo D30, dài hơn 7 chữ cái như D33 (Độ dài từ), hoặc có chữ cái engine không biết) thì chữ gõ tiếp, kể cả phím dấu, thuộc về từ đó và được chèn nguyên tới hết từ, như khi gõ liền ("foo" + "bar" → "foobar", "keyboard" + "bar" → "keyboardbar").
+  - (b) thắng (a), vì chữ hoa giữa một từ nước ngoài là kiểu viết camelCase ("foo" + "Bar" → "fooBar", như gõ liền). Đánh đổi: từ tiếng Việt gõ dính sau từ nước ngoài cũng được chèn nguyên ("iPhone" + "mowis" → "iPhonemowis", như gõ liền).
   - (c) Phím đầu tiên là phím dấu thanh/biến đổi mà không áp dụng được lên từ tiếng Việt có sẵn (từ ghép hết hợp lệ) thì bắt đầu từ mới như chữ cái ("anh" + "emx" → "anhẽm", "tôi" + "ddi" → "tôiđi"). Gõ đúp xoá dấu theo D26 vẫn là áp dụng ("cả" + "r" → "car").
 - **Từ hệ thống vừa sửa:** tự sửa chính tả của macOS (D4) có thể đổi từ Dấu vừa trả ngay sau dấu cách. Khi người gõ ⌫ qua dấu cách hoặc dấu câu vừa kết thúc từ (không tính Return, Tab) rồi gõ phím dấu, và kết quả D20 trên từ Dấu đã trả trùng với chữ đang hiện (không phân biệt hoa thường), Dấu giữ nguyên chữ: kết quả như khi hệ thống không sửa ("Tôi hoc␣⌫j bài" → "Tôi học bài", không thành "hocj"). Hệ thống sửa thành chữ khác kết quả đó ("cat" → "cắt", ⌫ s) thì D20 tính trên chữ đang hiện như cũ.
   - Không áp dụng khi từ Dấu đã trả kết thúc lúc còn hiện chữ của phím gõ đúp (D26) hoặc là từ D4 đã khôi phục: người gõ đã chọn chữ không dấu ("carr" → "car", hệ thống sửa thành "cả", ⌫ r vẫn ra "car"). Từ mà Backspace đã xoá chữ của phím gõ đúp thì tính như mọi từ ("carr" ⌫ r → "cả").
@@ -414,7 +414,7 @@ Thuộc nhóm Nâng cao, mặc định tắt.
 
 ### D22. Gõ tắt loại trừ z, f, w, j
 
-Gõ tắt phụ âm và "Cho phép z, f, w, j" loại trừ nhau.
+Gõ tắt phụ âm và "Cho phép phụ âm z, f, w, j" loại trừ nhau.
 
 - Bật mục này thì tắt mục kia, ghi rõ trong giao diện.
 - Với Telex, w đầu từ luôn thành ư (D23 (w → qu chỉ ở VNI)) nên "cho phép w" không có tác dụng; giao diện ghi chú điều này khi đang dùng Telex.
@@ -464,7 +464,7 @@ Gõ tắt w → qu chỉ có ở VNI. Với Telex, w ở đầu từ luôn là �
 
 ### D26. Gõ đúp phím dấu
 
-Sau khi gõ đúp phím dấu để giữ chữ gốc (chuẩn Telex, D4 (Từ nước ngoài)), các phím dấu tiếp theo trong cùng từ đi thẳng như chữ cái cho tới khi kết thúc từ (ranh giới theo D4), hoặc tới khi Backspace xoá chữ của phím gõ đúp: "carr" → "car", "carrs" → "cars". Khớp với ví dụ ở D20 (Thêm dấu cho từ đã gõ).
+Sau khi gõ đúp phím dấu để giữ chữ gốc (chuẩn Telex, D4 (Từ nước ngoài)), các phím dấu tiếp theo trong cùng từ được chèn nguyên như chữ cái cho tới khi kết thúc từ (ranh giới theo D4), hoặc tới khi Backspace xoá chữ của phím gõ đúp: "carr" → "car", "carrs" → "cars". Khớp với ví dụ ở D20 (Thêm dấu cho từ đã gõ).
 
 - Cùng luật cho gõ đúp phím biến đổi ("aaa" → "aa", "ddd" → "dd", "ww" → "w") và cho VNI ("a11" → "a1").
 - **Backspace:** khi chữ của phím gõ đúp còn trên màn hình, khoá giữ nguyên ("tesst" ⌫ s → "tess"). Backspace xoá chữ đó thì mở khoá, phím sau lại đặt dấu và biến đổi như thường ("carr" ⌫ r → "cả", "nhaamff" ⌫ f → "nhầm", "aaa" ⌫ a → "â", VNI "a11" ⌫ 1 → "á"). Chính Backspace đó cho kết quả như khi còn khoá.
@@ -523,7 +523,7 @@ Kiểm tra chính tả luôn chạy trong engine, không có công tắc riêng:
 
 **Hệ quả đã chấp nhận:** giữa từ tiếng Anh có thể nháy chữ có dấu ("mẻt…"); khi tắt tự khôi phục, chữ sai chính tả ở lại.
 
-**Vì sao:** nhận dấu thanh trên vần tắc giữa từ để sửa dấu bằng phím dấu thanh khác ("hocfj" → "học", "matfs" → "mát") và đặt dấu tự do (D28 (Đặt dấu tự do): "cafts" → "cát") vẫn chạy. Đã loại phương án cho phím đó đi thẳng như chữ cái: hỏng cả ba cách gõ trên.
+**Vì sao:** nhận dấu thanh trên vần tắc giữa từ để sửa dấu bằng phím dấu thanh khác ("hocfj" → "học", "matfs" → "mát") và đặt dấu tự do (D28 (Đặt dấu tự do): "cafts" → "cát") vẫn chạy. Đã loại phương án chèn nguyên phím đó như chữ cái: hỏng cả ba cách gõ trên.
 
 ### D31. Âm tiết tiếng Việt hợp lệ
 
@@ -566,10 +566,10 @@ Backspace bỏ chữ cuối đang hiển thị khỏi bộ đệm và đặt l�
 
 ### D33. Độ dài từ
 
-Từ dài hơn âm tiết dài nhất (7 chữ cái, như "nghiêng") thì khôi phục ngay về chuỗi phím đã gõ (nếu đã biến đổi, không chờ kết thúc từ) và để mọi phím còn lại đi thẳng tới hết từ.
+Từ dài hơn âm tiết dài nhất (7 chữ cái, như "nghiêng") thì khôi phục ngay về chuỗi phím đã gõ (nếu đã biến đổi, không chờ kết thúc từ) và chèn nguyên mọi phím còn lại tới hết từ.
 
 - Khi tắt công tắc "Tự khôi phục từ không phải tiếng Việt" thì chỉ ngừng biến đổi, không khôi phục (cùng ý nghĩa công tắc ở D30 (Kiểm tra chính tả)).
-- Xoá hết từ bằng Backspace thì hết trạng thái đi thẳng: "permission" + 10 ⌫ + "vieetj" → "việt".
+- Xoá hết từ bằng Backspace thì hết trạng thái chèn nguyên: "permission" + 10 ⌫ + "vieetj" → "việt".
 
 **Vì sao:** nhờ vậy bộ đệm có dung lượng cố định, không cấp phát thêm, không mất chữ.
 
@@ -591,7 +591,7 @@ Móc trên cặp u-o (Telex "uow"/"uwo", VNI "uo7") cho "uơ" khi cặp đứng 
 Với VNI, chữ số sau âm tiết hợp lệ thành dấu ("U23" → "Ủ", "A4" → "Ã", "lan2" → "làn"), cùng luật tiếng Việt thắng (D4 (Từ nước ngoài)).
 
 - Muốn giữ chữ số thì gõ đúp ("U223" → "U23", D26 (Gõ đúp phím dấu)).
-- Chữ số khi bộ đệm rỗng đi thẳng ("2024").
+- Chữ số khi bộ đệm rỗng được chèn nguyên ("2024").
 - Ghi rõ trong bảng gõ VNI và phần hỏi đáp của website.
 
 ### D37. Cài bộ gõ
@@ -771,6 +771,6 @@ Chỉ giữ câu chưa có trả lời. Câu đã trả lời thì luật vào q
 - **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không.
 - **VoiceOver đọc tên nguồn** (D17): VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn không.
 - **Độ ổn định của "Thêm dấu cho từ đã gõ"** (D20) trên các web editor (Google Docs, Notion…).
-- **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã đi thẳng (phương án c): [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
+- **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã được chèn nguyên (phương án c): [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
 - **Liên kết ủng hộ trong app** (D39): có đặt liên kết "Ủng hộ dự án" trong app hay không (canvas trước).
 - **Tên "Dấu"** (D24): tra nhãn hiệu (Cục Sở hữu trí tuệ VN). Một bộ gõ macOS khác có tên gần giống: DauKey (`emizuki/daukey`, GPLv3, repo tạo 23/10/2026, chưa có cask); định danh không trùng, chỉ tên đọc lên gần nhau.

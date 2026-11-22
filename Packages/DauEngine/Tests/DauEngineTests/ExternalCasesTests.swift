@@ -159,13 +159,13 @@ struct ExternalCasesTests {
     /// engine decide, with the three exceptions of D20:
     /// - (b) a word that is not Vietnamese takes the key unchanged, any case: one the
     ///   engine cannot seed (all letters, longer than 7 or unknown) goes to D33's
-    ///   pass-through state (`VietEngine.seedOverflow`), one locked by spelling before
+    ///   unchanged-typing state (`VietEngine.seedOverflow`), one locked by spelling before
     ///   the key stays seeded;
     /// - (a) on a Vietnamese word, an upper-case key after a lower-case letter is not
     ///   seeded ("#Hà" + N), unless a mark key changes the word ("hoc" + J → "học");
     /// - D20 plain letter: a plain letter on a Vietnamese word joins only if the result is still a
     ///   valid prefix (D30: not locked by spelling, not past D33's length);
-    /// - (c) a mark key on a Vietnamese word that passes through and leaves it locked or
+    /// - (c) a mark key on a Vietnamese word that stays unchanged and leaves it locked or
     ///   past 7 letters is not seeded ("anh" + e, "tôi" + d); a D26 double key applies.
     /// Returns the engine's action, or nil when the key takes the normal path (nothing
     /// seeded: the engine is reset and the caller handles the key as the first key of a
@@ -302,7 +302,7 @@ struct ExternalCasesTests {
                 if !f.engine.isComposing { f.knownNoWord = true }
             }
 
-            // D33: after overflow every key passes through unchanged until the word ends.
+            // D33: after overflow every key goes in unchanged until the word ends.
             if pre.overflow && key != "⌫" && key != "←" && key != "⎋" {
                 if f.text != preText + [plainKey] {
                     f.fail("overflow-passthrough", "key changed text after D33 overflow")

@@ -78,7 +78,7 @@ struct VNITests {
     ])
     func digitsAsCharacters(_ c: Case) { expectTyped(c.keys, c.expected, vni) }
 
-    @Test func numbersPassThrough() {
+    @Test func numbersGoInUnchanged() {
         var engine = VietEngine(options: vni)
         for key in "2024".unicodeScalars {
             let action = engine.handle(key)
@@ -138,7 +138,7 @@ struct VNITests {
         expectTyped("fan ", "fan ", vni)
     }
 
-    /// D22: "Cho phép z, f, w, j" works for w in VNI.
+    /// D22: "Cho phép phụ âm z, f, w, j" works for w in VNI.
     @Test(arguments: [
         Case("wa1 ", "wá "), Case("za1 ", "zá "), Case("fan2 ", "fàn "), Case("ja5 ", "jạ "),
         Case("wen ", "wen "),

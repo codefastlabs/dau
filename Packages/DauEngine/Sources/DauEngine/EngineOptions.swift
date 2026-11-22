@@ -23,8 +23,8 @@ public struct EngineOptions: Sendable, Equatable {
     public enum Advanced: Sendable, Equatable {
         case off
         /// Consonant shortcuts (D21): f → ph, j → gi at the start, g → ng, h → nh,
-        /// k → ch at the end, applied only at a word boundary and only when the result
-        /// is a valid syllable.
+        /// k → ch at the end, VNI w → qu (D23); applied only at a word boundary and only
+        /// when the result is a valid syllable.
         case consonantShortcuts
         /// Accept z, f, w, j as initial consonants (D22). In Telex a leading w is
         /// always ư (D23), so only z, f, j matter there.

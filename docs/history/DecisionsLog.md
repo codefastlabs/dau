@@ -28,6 +28,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 16/11/2026 (người dùng chốt, thống nhất thuật ngữ; luật ở `docs/Glossary.md` mục "Từ dễ hiểu hai nghĩa"): đổi tên D28 và D37 (ghi dưới từng mục), "bỏ dấu" nghĩa xoá thành "xoá dấu", "cài đặt" làm động từ thành "cài", "phím dấu" nghĩa hẹp thành "phím dấu thanh", "nguồn nhập liệu" thành "nguồn đầu vào". Luật không đổi. Bản trước của từng câu: lịch sử git của `docs/Decisions.md` (0ea31f3).
 
+- 22/11/2026 (người dùng duyệt, dọn dẹp sau khi N3 đổi sang Dấu tự chèn ký tự): sửa câu cho khớp mã, không đổi hành vi. N3 thêm ba loại phím đi thẳng mà mã đã để đi thẳng nhưng sổ chưa nêu: phím chết, sự kiện mang nhiều ký tự và phím đến trong lúc đang xử lý phím trước (D18). D20, D26, D30, D33, D36 và câu hỏi mở "Từ tiếng Anh gõ nhầm rồi ⌫ trong từ" đổi "đi thẳng" thành "chèn nguyên" ở các chỗ nói về ký tự engine để nguyên, vì từ 22/11 "đi thẳng" trong N3 chỉ còn nghĩa là phím để app tự xử lý. D22 trích đúng nhãn giao diện "Cho phép phụ âm z, f, w, j" thay cho "Cho phép z, f, w, j". Bản trước của từng câu: lịch sử git của `docs/Decisions.md` (commit này).
+
 ## Nguyên tắc
 
 ### N3. Ít lời gọi vào ứng dụng đích

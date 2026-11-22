@@ -59,7 +59,7 @@ public struct CompatibilityList: Sendable, Codable, Equatable {
         }
     }
 
-    /// Increases with every published list; M7 keeps the copy with the higher version.
+    /// Maintainers bump it with every edit of the list; not used at run time.
     public var version: Int
     public var apps: [Entry]
 

@@ -84,7 +84,7 @@ struct SeedTests {
 
     /// D20 exception (b) + D33: a word the engine cannot seed (here 8 letters) takes the
     /// keys typed after it unchanged until it ends, like an over-long word typed here.
-    @Test func seedOverflowPassesTheRestOfTheWord() {
+    @Test func seedOverflowKeepsTheRestOfTheWordUnchanged() {
         var t = Typist()
         t.text.append(contentsOf: "keyboard".unicodeScalars)
         t.engine.seedOverflow(shown: 8)

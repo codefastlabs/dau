@@ -47,7 +47,7 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 ## Luồng một phím
 
 1. IMK gọi `handle(event, client)` trên main thread. Event nil hay bất thường bị bỏ qua (D18).
-2. Phím điều khiển (mũi tên, tổ hợp ⌘/⌃/⌥, Esc…): reset engine, trả `false` cho hệ thống xử lý. Không khôi phục từ (D4 (Từ nước ngoài)).
+2. Phím điều khiển (mũi tên, tổ hợp ⌘/⌃/⌥, Esc…), phím chết và sự kiện mang nhiều ký tự (`KeyRouter`): reset engine, trả `false` cho hệ thống xử lý. Không khôi phục từ (D4 (Từ nước ngoài)).
 3. Backspace: engine bỏ chữ cuối đang hiển thị và đặt lại dấu (D32 (Backspace)). Phím luôn đi tiếp tới app để app tự xoá chữ cuối; khi dấu phải dời, bộ gõ thay phần trước nó trong cùng phím (mục "Backspace thay tại chỗ").
 4. Ký tự: `engine.handle(scalar)`.
    - `passThrough`: bộ gõ tự chèn ký tự đó bằng `client.insertText(ký tự, replacementRange: NSNotFound)` tại con trỏ và trả `true`, không hỏi `selectedRange` (trừ ngay sau một ⌫ đi thẳng, mục "App trả lời chậm", ý "Chờ ⌫ chưa áp"). Mọi thao tác chữ vì vậy tới app qua cùng một đường, theo đúng thứ tự bộ gõ gọi (N3, ý "Vì sao Dấu tự chèn ký tự"). Điều này áp cho mọi app và cho mọi nhánh mà phím cuối cùng được để nguyên: D4, D20, D30, D33, và các nhánh dựng lại hay reset của D11.
@@ -55,14 +55,14 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
    - Engine rỗng mà chưa biết chữ trước con trỏ: có thể đọc chữ của app trước (D20 (Thêm dấu cho từ đã gõ), mục "Thêm dấu cho từ đã gõ").
 5. Ký tự kết thúc từ (Space, dấu câu, Enter, Tab): từ không phải âm tiết tiếng Việt hợp lệ thì khôi phục phím gốc (D4), rồi chốt và reset.
 
-Phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3), Return, Tab, Enter bàn phím số (bước 5 với `endWord()`, sau lần khôi phục nếu có) và các phím ở bước 2.
+Phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3), Return, Tab, Enter bàn phím số (bước 5 với `endWord()`, sau lần khôi phục nếu có) và các phím ở bước 2. Phím đến trong lúc bộ gõ còn đang xử lý phím trước cũng đi thẳng (mục "Đầu vào từ IMK", ý "Gọi ngược trong lúc xử lý"; N3).
 
 Ở chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)), bước 3–5 ghi chữ bằng marked text thay cho thay chữ tại chỗ (mục "Chế độ gạch chân").
 
 ## DauEngine
 
 - `struct VietEngine: Sendable` giữ từ đang gõ trong bộ đệm dung lượng cố định.
-  - Bộ đệm là `TextBuffer`: tối đa 32 scalar, lưu trong `SIMD32<UInt32>` (`InlineArray` cần macOS 26).
+  - Bộ đệm là `TextBuffer` (dung lượng và cách lưu: comment của kiểu).
   - Không cấp phát mỗi phím (số đo: bảng "Số đo (M1–M3)" ở `docs/history/LogM0ToM4.md`, dòng cấp phát).
 - API: mọi hàm `mutating`, trả `Action`.
   - `handle(_ key: Unicode.Scalar)`: chữ cái và chữ số nối vào từ; ký tự in ra khác (Space, Enter, Tab, dấu câu) kết thúc từ (D4) và nằm luôn trong `insert`; ký tự điều khiển, 0x7F và phím chức năng 0xF700–0xF8FF chỉ `reset()`.

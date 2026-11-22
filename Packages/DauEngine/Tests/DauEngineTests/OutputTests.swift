@@ -4,7 +4,7 @@ import DauEngine
 /// The `Action` contract and NFC output (D3).
 @Suite("Đầu ra: Action và NFC")
 struct OutputTests {
-    @Test func plainLettersPassThrough() {
+    @Test func plainLettersGoInUnchanged() {
         var engine = VietEngine()
         do { let result = engine.handle("c"); #expect(result == .passThrough) }
         do { let result = engine.handle("a"); #expect(result == .passThrough) }
@@ -46,8 +46,8 @@ struct OutputTests {
         #expect(!engine.isComposing)
     }
 
-    /// D31 lone letters: nothing to replace, so the app inserts the boundary itself.
-    @Test func loneLetterBoundaryPassesThrough() {
+    /// D31 lone letters: nothing to replace, so the boundary goes in unchanged.
+    @Test func loneLetterBoundaryGoesInUnchanged() {
         for keys in ["aw", "aa", "dd", "aas", "DD"] {
             var engine = VietEngine()
             for k in keys.unicodeScalars { _ = engine.handle(k) }

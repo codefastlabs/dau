@@ -54,7 +54,7 @@ struct EditingTests {
         #expect(!t.engine.lockedByDouble && locked.lockedByDouble)
     }
 
-    /// D33: deleting the whole overflowed word ends the pass-through state (like D26's lock).
+    /// D33: deleting the whole overflowed word ends the unchanged-typing state (like D26's lock).
     @Test(arguments: [
         Case("permission⌫⌫⌫⌫⌫⌫⌫⌫⌫⌫vieetj", "việt"),
         Case("permission⌫⌫⌫⌫⌫⌫⌫⌫⌫⌫vieetj ", "việt "),
@@ -68,7 +68,7 @@ struct EditingTests {
         expectTyped("permission⌫⌫⌫⌫⌫⌫⌫⌫⌫⌫vie6t5", "việt", vni)
     }
 
-    /// D33: partial deletion keeps the pass-through state.
+    /// D33: partial deletion keeps the unchanged-typing state.
     @Test(arguments: [
         Case("permission⌫vieetj", "permissiovieetj"),
         Case("permission⌫⌫⌫⌫⌫⌫⌫⌫⌫vieetj", "pvieetj"),
@@ -91,7 +91,7 @@ struct EditingTests {
     func backspaceMovesRestoreBaseline(_ c: Case) { expectTyped(c.keys, c.expected) }
 
     /// Backspace that only removes the last character is left to the app.
-    @Test func backspacePassesThroughWhenSimple() {
+    @Test func backspaceLeavesToAppWhenSimple() {
         var engine = VietEngine()
         _ = engine.handle("c")
         _ = engine.handle("a")

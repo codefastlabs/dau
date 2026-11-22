@@ -45,8 +45,6 @@ public struct TextBuffer: Sendable, RandomAccessCollection, Equatable, CustomStr
         length = 0
     }
 
-    @inlinable var isFull: Bool { length >= TextBuffer.capacity }
-
     public static func == (lhs: TextBuffer, rhs: TextBuffer) -> Bool {
         if lhs.length != rhs.length { return false }
         var i = 0
@@ -67,7 +65,8 @@ public struct TextBuffer: Sendable, RandomAccessCollection, Equatable, CustomStr
 
 /// What the input method should do with the key it just passed to the engine.
 public enum Action: Sendable, Equatable {
-    /// Let the key go to the application unchanged (IMK returns `false`).
+    /// Nothing to replace: the key's own character (if any) goes in unchanged; the IMK
+    /// layer inserts it (N3).
     case passThrough
     /// Delete `deleteCount` Unicode scalars immediately before the cursor and insert
     /// `insert` in their place, in one `insertText(_:replacementRange:)` call (N3).

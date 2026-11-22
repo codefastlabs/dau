@@ -1,7 +1,7 @@
 import Testing
 import DauEngine
 
-/// Consonant shortcuts (D21) and "Cho phép z, f, w, j" (D22), mutually exclusive by
+/// Consonant shortcuts (D21) and "Cho phép phụ âm z, f, w, j" (D22), mutually exclusive by
 /// construction (`EngineOptions.Advanced`).
 @Suite("Gõ tắt phụ âm (D21), cho phép z f w j (D22)")
 struct ShortcutTests {

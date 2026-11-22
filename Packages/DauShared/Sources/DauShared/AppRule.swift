@@ -10,7 +10,7 @@
 public struct AppRule: Sendable, Codable, Equatable, Hashable, Identifiable {
     /// Where the rule comes from.
     public enum Source: String, Sendable, Codable, CaseIterable {
-        /// From the signed compatibility list (D7, D13); shown with the "Đề xuất" badge.
+        /// From the bundled compatibility list (D7, D13); shown with the "Đề xuất" badge.
         case suggested
         /// Added by the user.
         case user

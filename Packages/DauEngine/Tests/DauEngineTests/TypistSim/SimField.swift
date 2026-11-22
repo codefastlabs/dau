@@ -31,7 +31,7 @@ struct SimVariant: OptionSet, Hashable, Sendable {
     /// full valid syllable (D31): "ddungsg␣⌫⌫" shows "đúng". Costs a read, a
     /// `selectedRange` and an `insertText` on that ⌫ (N3).
     static let rewriteOnBackspace = SimVariant(rawValue: 2)
-    /// (c) H4 "tail typed straight": ⌫ that deletes a character added (passed through)
+    /// (c) H4 "tail typed straight": ⌫ that deletes a character added (typed unchanged)
     /// while the word is locked by spelling (D30) puts the engine back as it was before
     /// that key, raw keys included (only the last raw key is dropped). Any other ⌫: D32.
     static let tailStraight = SimVariant(rawValue: 4)

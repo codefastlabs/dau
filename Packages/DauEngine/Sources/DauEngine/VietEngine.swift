@@ -1,4 +1,4 @@
-// Dấu's Vietnamese input engine (Telex, Telex đơn giản). Pure Swift, no Foundation.
+// Dấu's Vietnamese input engine (Telex, Telex đơn giản, VNI). Pure Swift, no Foundation.
 //
 // Hot path rules (docs/Architecture.md, section "DauEngine"): no `String`, no `any`, no closures, no heap allocation
 // per key. State is a handful of SIMD vectors and integers; output is a `TextBuffer`.
@@ -33,14 +33,14 @@ public struct VietEngine: Sendable {
     var doubleLetters = 0
     /// D30: the word is no longer a prefix of a valid syllable.
     var lockedBySpelling = false
-    /// D33: the word grew past 7 letters; everything passes through until it ends.
+    /// D33: the word grew past 7 letters; every key goes in unchanged until it ends.
     var overflow = false
     /// D33: letters the app shows for the overflowed word; ⌫ to zero ends the state.
     /// At most `overflowShownLimit`.
     var overflowShown = 0
     /// D18: ceiling for `overflowShown`, so neither a hostile count from the IMK layer
     /// nor an endless word can overflow the counter. Far above any word a person
-    /// types; past it, ⌫ ends the pass-through state early, which only resets.
+    /// types; past it, ⌫ ends the unchanged-typing state early, which only resets.
     static let overflowShownLimit = 1 << 20
     /// D20: the next key is the first one after `seed(displayed:)`.
     var seedPending = false
@@ -53,7 +53,7 @@ public struct VietEngine: Sendable {
     public var isComposing: Bool { word.count > 0 || overflow }
 
     /// The last scalar of the word as the engine believes it is shown (nil when no
-    /// word is tracked, or after D33 overflow, when the rest passes through). The IMK
+    /// word is tracked, or after D33 overflow, when the rest goes in unchanged). The IMK
     /// layer reads it before `backspace()`: that is the character the app's own Delete
     /// removes when the key is not consumed.
     public var lastShown: Unicode.Scalar? {
@@ -61,7 +61,7 @@ public struct VietEngine: Sendable {
         return screen[screen.count - 1]
     }
 
-    /// D30: the word is no longer a prefix of a valid syllable, so keys pass through
+    /// D30: the word is no longer a prefix of a valid syllable, so keys go in unchanged
     /// until it ends (not D33's overflow). The IMK layer checks the app's text then
     /// (D11): a word that stopped being Vietnamese may be one the app replaced.
     public var isSpellingLocked: Bool { lockedBySpelling && !overflow }
@@ -126,7 +126,7 @@ public struct VietEngine: Sendable {
     /// gives the right result (or when the engine is not tracking a word).
     public mutating func backspace() -> Action {
         if overflow {
-            // D33: deleting the whole word ends the pass-through state.
+            // D33: deleting the whole word ends the unchanged-typing state.
             overflowShown -= 1
             if overflowShown <= 0 { reset() }
             return .passThrough
@@ -225,7 +225,7 @@ public struct VietEngine: Sendable {
     /// D20 (exception b) with D33: the app already shows, right before the cursor, a
     /// word that is not Vietnamese and that `seed(displayed:)` cannot take (longer than
     /// 7 letters, or letters the engine does not know). The keys typed next belong to
-    /// that word: as with an over-long word typed here (D33), every key passes through
+    /// that word: as with an over-long word typed here (D33), every key goes in
     /// unchanged until the word ends, and nothing is restored (D4: the engine never
     /// changed it). `shown`: how many characters the app shows for the word; ⌫ ends
     /// the state once they are all deleted. A count of zero or less leaves the engine
@@ -611,7 +611,7 @@ public struct VietEngine: Sendable {
     }
 
     /// D33: the word is longer than any syllable. Restore the keys typed (if anything
-    /// was transformed and auto restore is on) and let the rest of the word through.
+    /// was transformed and auto restore is on) and let the rest of the word go in unchanged.
     mutating func startOverflow(_ v: UInt32) -> Action {
         overflow = true
         overflowShown = (options.autoRestore && raw != screen ? raw.length : screen.length) + 1
@@ -669,7 +669,7 @@ public struct VietEngine: Sendable {
     }
 
     /// Smallest replacement turning `old` into `new`. If the only change is the typed
-    /// character appended at the end, the app can insert it itself.
+    /// character appended at the end, returns `.passThrough`: nothing to replace.
     static func diff(from old: TextBuffer, to new: TextBuffer, typed: UInt32?) -> Action {
         let p = commonPrefix(old, new)
         if let typed, p == old.length, new.length == old.length + 1, new.value(at: p) == typed {

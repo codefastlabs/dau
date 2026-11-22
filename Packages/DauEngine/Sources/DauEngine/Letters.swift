@@ -4,7 +4,7 @@
 
 /// ASCII constants used across the engine.
 enum Ch {
-    static let a = UInt8(ascii: "a"), b = UInt8(ascii: "b"), c = UInt8(ascii: "c")
+    static let a = UInt8(ascii: "a"), c = UInt8(ascii: "c")
     static let d = UInt8(ascii: "d"), e = UInt8(ascii: "e"), f = UInt8(ascii: "f")
     static let g = UInt8(ascii: "g"), h = UInt8(ascii: "h"), i = UInt8(ascii: "i")
     static let j = UInt8(ascii: "j"), k = UInt8(ascii: "k"), n = UInt8(ascii: "n")

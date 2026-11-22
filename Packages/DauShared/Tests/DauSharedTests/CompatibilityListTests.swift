@@ -66,7 +66,7 @@ struct CompatibilityListTests {
         #expect(CompatibilityList.decode(data) == list)
     }
 
-    @Test("D13, D43: shipped list suggests only Cursor and Ghostty")
+    @Test("D13, D43: shipped list suggests only Ghostty and Terminal")
     func shippedList() throws {
         let data = try Data(contentsOf: Self.shippedURL)
         // Strict decode too, so a typo cannot silently drop an entry.

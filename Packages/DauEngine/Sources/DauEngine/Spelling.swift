@@ -21,7 +21,7 @@ enum Spelling {
     /// "kr" (Krông Pắc). "gi" and "qu" are listed only so that prefix checks accept
     /// "g", "q"; they are parsed specially.
     static let initials: [UInt32] = parse("b c ch d đ g gh gi h k kh kr l m n ng ngh nh p ph qu r s t th tr v x")
-    /// Extra initials accepted with "Cho phép z, f, w, j" (D22).
+    /// Extra initials accepted with "Cho phép phụ âm z, f, w, j" (D22).
     static let extraInitials: [UInt32] = parse("f j w z")
 
     /// Rhymes (vowel cluster + final consonant), one line per main vowel or cluster:

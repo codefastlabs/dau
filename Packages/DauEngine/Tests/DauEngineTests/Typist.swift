@@ -1,7 +1,7 @@
 import DauEngine
 
-/// Simulates a text field driven by the engine the way the IMK layer will drive it:
-/// `.passThrough` lets the app insert the key itself, `.replace` deletes and inserts.
+/// Simulates a text field driven by the engine the way the IMK layer drives it:
+/// `.passThrough` adds the key unchanged, `.replace` deletes and inserts.
 ///
 /// Key script notation:
 /// - `⌫` Backspace (`engine.backspace()`)
