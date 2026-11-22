@@ -1,6 +1,6 @@
 # Tài liệu
 
-Đây là mục lục các tài liệu trong thư mục `docs/`. Luật ghi thông tin (mỗi sự kiện chỉ ghi ở một chỗ, file nào cập nhật lúc nào) nằm ở [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn"; luật viết tài liệu nằm ở [`docs/CLAUDE.md`](CLAUDE.md). Mỗi dòng trong các bảng dưới đây tóm tắt một tài liệu. Hiện trạng và ngày cập nhật ghi ở đầu từng file.
+Đây là mục lục các tài liệu trong thư mục `docs/`. Luật ghi thông tin nằm ở [CLAUDE.md](../CLAUDE.md), mục "Nguồn chuẩn". Luật đó quy định mỗi sự kiện chỉ ghi ở một chỗ và file nào cập nhật lúc nào. Luật viết tài liệu nằm ở [`docs/CLAUDE.md`](CLAUDE.md). Mỗi dòng trong các bảng dưới đây tóm tắt một tài liệu. Hiện trạng và ngày cập nhật ghi ở đầu từng file.
 
 ## Đọc khi bắt đầu một phiên làm việc
 
@@ -32,41 +32,41 @@ Các tài liệu dưới đây dùng để tra cứu khi việc đang làm cần
 
 ## Tài liệu nghiên cứu
 
-Mỗi tài liệu nghiên cứu bàn một chủ đề kỹ thuật. Kết luận hiện hành và ngày cập nhật ghi ở mục "Hiện trạng" đầu file, và mỗi khẳng định đều dẫn nguồn.
+Mỗi tài liệu nghiên cứu bàn một chủ đề kỹ thuật. Kết luận hiện hành và ngày cập nhật ghi ở mục "Hiện trạng" đầu file. Mỗi khẳng định đều dẫn nguồn.
 
 | Tệp tài liệu | Nội dung nghiên cứu |
 |---|---|
 | [`docs/research/OpenKeyNotes.md`](research/OpenKeyNotes.md) | Tài liệu đọc mã OpenKey và ghi các tính năng, các trường hợp biên, việc Dấu làm hay không làm và những chỗ Dấu cố ý khác. |
 | [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md) | Tài liệu ghi điều tài liệu và header của Apple nói về các API InputMethodKit mà bộ gõ đang dùng. |
 | [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) | Tài liệu đối chiếu API của InputMethodKit với những gì Dấu đang gọi, tìm API hợp với từng việc mở và đề xuất phép đo rẻ nhất. |
-| [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) | Tài liệu nghiên cứu cách macOS cài, bật, nâng cấp và gỡ bộ gõ, và cách phát hiện bộ gõ cũ đang xung đột. |
+| [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) | Tài liệu nghiên cứu cách macOS cài, bật, nâng cấp và gỡ bộ gõ, cùng cách phát hiện bộ gõ cũ đang xung đột. |
 | [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) | Tài liệu ghi số đo khoảng cách và bố cục của System Settings, dùng làm chuẩn cho giao diện Dấu. |
 | [`docs/research/SwiftUIWindowAPI.md`](research/SwiftUIWindowAPI.md) | Tài liệu nghiên cứu API của Apple cho thanh bên (sidebar), thanh công cụ, thanh tiêu đề và ô tìm kiếm của cửa sổ Cài đặt. |
 | [`docs/research/external-test-inputs/README.md`](research/external-test-inputs/README.md) | Thư mục gom các chuỗi phím thử trường hợp biên, lấy từ bộ test của các bộ gõ tiếng Việt khác (ghi công tại [`docs/research/external-test-inputs/NOTICE.md`](research/external-test-inputs/NOTICE.md)). |
-| [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md) | Tài liệu so sánh Dấu với Telex có sẵn của macOS trên ứng dụng thật, và với các bộ gõ khác ở mức engine. |
+| [`docs/research/CompetitorComparison.md`](research/CompetitorComparison.md) | Tài liệu so sánh Dấu với Telex có sẵn của macOS trên ứng dụng thật và với các bộ gõ khác ở mức engine. |
 | [`docs/research/TerminalAndUnderline.md`](research/TerminalAndUnderline.md) | Tài liệu phân tích cách gõ phím trong terminal Ghostty và terminal xterm.js (nhóm ô nhập bỏ qua vùng thay chữ), cùng giải pháp sửa chữ ở chế độ gạch chân. |
 | [`docs/research/JetBrainsInput.md`](research/JetBrainsInput.md) | Tài liệu nghiên cứu đường ký tự đi vào terminal và trình soạn thảo của WebStorm (JetBrains Runtime), từ dự đoán theo mã nguồn và từ số đo. |
-| [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | Tài liệu đo thời gian luồng chính của trang web bận khi gõ phím, và giới hạn rủi ro của nó với cách thay chữ tại chỗ. |
-| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | Tài liệu phân tích và đề xuất hướng sửa cho bốn kịch bản ứng dụng trả lời chậm (chậm sau ⌫, tính vị trí theo từ, trang bận qua chỗ ngắt từ, và WebKit dồn phím). |
+| [`docs/research/WebInputDelay.md`](research/WebInputDelay.md) | Tài liệu đo thời gian luồng chính của trang web bận khi gõ phím và giới hạn rủi ro của nó với cách thay chữ tại chỗ. |
+| [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | Tài liệu phân tích và đề xuất hướng sửa cho bốn kịch bản ứng dụng trả lời chậm (chậm sau ⌫, tính vị trí theo từ, trang bận qua chỗ ngắt từ và WebKit dồn phím). |
 | [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | Tài liệu khảo sát cách người dùng sửa chữ khi đang gõ, nguyên nhân Dấu sai và hướng sửa. |
 | [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) | Tài liệu khảo sát cách các bộ gõ trên macOS nhập chữ vào Google Docs, dữ liệu Chrome gửi cho bộ gõ và chế độ hỗ trợ tiếp cận của Google Docs. |
 | [`docs/research/VietnameseProse.md`](research/VietnameseProse.md) | Tài liệu tìm nguồn cho các thói quen câu tiếng Anh trong văn tiếng Việt của repo (dấu phẩy trước "và", bị động thừa, danh hoá…), đo số lần xuất hiện và xếp theo mức chắc chắn. |
 
 ## Tài liệu lưu trữ lịch sử
 
-Thư mục `docs/history/` giữ các bản ghi lịch sử của dự án. Sự kiện, số đo và ngày giữ đúng như lúc ghi. Câu chữ được viết lại theo D44, còn tên file và liên kết được sửa khi file đổi tên để liên kết và tìm kiếm còn đúng.
+Thư mục `docs/history/` giữ các bản ghi lịch sử của dự án. Sự kiện, số đo và ngày giữ đúng như lúc ghi. Câu chữ viết lại theo D44, còn tên file và liên kết sửa khi file đổi tên để liên kết và tìm kiếm còn đúng.
 
 | Tệp tài liệu | Nội dung lưu trữ |
 |---|---|
 | [`docs/history/Plans.md`](history/Plans.md) | Kế hoạch ban đầu của các mốc phát triển đã đóng, cùng các bước thử nghiệm cài đặt trên máy sạch đã bị loại bỏ. |
 | [`docs/history/M2Testing.md`](history/M2Testing.md) | Báo cáo chi tiết các đợt gõ thử nghiệm mốc M2 trên máy thật và kết quả đo đạc tương ứng. |
-| [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) | Nhật ký phát triển các mốc M0–M4; bảng "Số đo (M1–M3)" là nguồn dữ liệu gốc cho các số đo thời kỳ đầu được các tài liệu khác dẫn chiếu. |
+| [`docs/history/LogM0ToM4.md`](history/LogM0ToM4.md) | Nhật ký phát triển các mốc M0–M4; bảng "Số đo (M1–M3)" là nguồn dữ liệu gốc cho các số đo thời kỳ đầu mà các tài liệu khác dẫn chiếu. |
 | [`docs/history/LogM5.md`](history/LogM5.md) | Nhật ký phát triển và kiểm toán chi tiết của mốc M5. |
-| [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md) | Nhật ký công việc kỹ thuật được thực hiện trong giai đoạn chuyển tiếp giữa mốc M5 và M6. |
+| [`docs/history/LogBetweenM5AndM6.md`](history/LogBetweenM5AndM6.md) | Nhật ký công việc kỹ thuật làm trong giai đoạn chuyển tiếp giữa mốc M5 và M6. |
 | [`docs/history/LogM6.md`](history/LogM6.md) | Nhật ký phát triển mốc M6, đi kèm danh sách hạng mục cắt giảm ngày 13/11 và bảng thống nhất thuật ngữ ngày 16/11. |
-| [`docs/history/LogM7.md`](history/LogM7.md) | Nhật ký phát triển mốc M7 đang thực hiện: lưu trữ các phần việc đã hoàn thành được chuyển từ `docs/Progress.md`. |
+| [`docs/history/LogM7.md`](history/LogM7.md) | Nhật ký phát triển mốc M7 đang thực hiện: lưu trữ các phần việc đã hoàn thành, chuyển từ `docs/Progress.md`. |
 | [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) | Lịch sử ban hành và điều chỉnh của từng nguyên tắc và quyết định: ngày chốt, người quyết định, nội dung cũ và lý do thay đổi. |
-| [`docs/history/ResearchLog.md`](history/ResearchLog.md) | Phần nhật ký lịch sử được tách khỏi các tài liệu nghiên cứu: kế hoạch thử nghiệm, các vòng kiểm tra theo giờ và bảng theo dõi đổi mục. |
+| [`docs/history/ResearchLog.md`](history/ResearchLog.md) | Phần nhật ký lịch sử tách khỏi các tài liệu nghiên cứu: kế hoạch thử nghiệm, các vòng kiểm tra theo giờ và bảng theo dõi đổi mục. |
 | [`docs/history/CompatibilityFixed.md`](history/CompatibilityFixed.md) | Ghi nhận chi tiết các lỗi tương thích ứng dụng đã được khắc phục kèm kết quả chẩn đoán và lượt chạy ma trận ngày 30/10/2026. |
-| [`docs/history/DocsLog.md`](history/DocsLog.md) | Phần nhật ký lịch sử được tách khỏi các tài liệu khi chúng chuyển đổi sang mô hình chỉ ghi nhận hiện trạng. |
+| [`docs/history/DocsLog.md`](history/DocsLog.md) | Phần nhật ký lịch sử tách khỏi các tài liệu khi chúng chuyển đổi sang mô hình chỉ ghi nhận hiện trạng. |
 | [`docs/history/CommitMap.md`](history/CommitMap.md) | Bảng tra cứu đối chiếu mã băm commit cũ và commit mới sau khi viết lại lịch sử kho mã nguồn. |

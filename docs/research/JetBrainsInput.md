@@ -1,6 +1,6 @@
 # Gõ trong WebStorm (JetBrains Runtime): terminal và trình soạn thảo
 
-Chữ của bộ gõ đi từ macOS tới terminal và trình soạn thảo của WebStorm theo đường nào, và Dấu (thay tại chỗ bằng `insertText(_:replacementRange:)`) ra chữ gì ở đó. Mục 1–3 tả cơ chế đọc từ mã nguồn. Mục 4 đặt dự đoán cạnh kết quả của lượt đo ngày 17/11/2026. Điều chưa đo được ghi rõ "chỉ từ mã nguồn".
+Chữ của bộ gõ đi từ macOS tới terminal và trình soạn thảo của WebStorm theo đường nào. Phần còn lại cho biết Dấu (thay tại chỗ bằng `insertText(_:replacementRange:)`) ra chữ gì ở đó. Mục 1–3 tả cơ chế đọc từ mã nguồn. Mục 4 đặt dự đoán cạnh kết quả của lượt đo ngày 17/11/2026. Điều chưa đo được ghi rõ "chỉ từ mã nguồn".
 
 Phiên bản đã đọc:
 
@@ -22,7 +22,7 @@ Phiên bản đã đọc:
 - **Ai gây reset: chưa rõ.** Giả thuyết duy nhất giải thích mọi quan sát: lời gọi `markedTextAbandoned:` mà JBR làm ở cuối mỗi `insertText` tới được Dấu thành `commitComposition`. Điều kiện là chỉ khi Dấu không còn đang xử lý phím, tức với chữ AppKit tự chèn cho phím đi thẳng. Phần "tới được Dấu" và "chỉ khi không đang xử lý phím" chưa có nguồn. Mục 4.2.
 - **Terminal (Reworked), Dấu thay tại chỗ:** ra "ưindows caảr toôi yeêu tieêngs Vieêtj, Sunủnise". Byte xuống pty là đúng chuỗi đó, không có DEL. Đây là ô bỏ qua vùng thay chữ như D43 (Ô bỏ qua vùng thay chữ), khớp cơ chế ở mục 2.2.
 - **Gạch chân của Dấu đúng ở cả hai ô.** Telex của Apple ra chữ tiếng Việt đúng ở cả hai ô; Telex của Apple không khôi phục từ nước ngoài, nên cũng ra "ưindows", "Sủnise".
-- **JBR làm vùng thay bằng hai bước: chọn vùng rồi gõ chữ mới** (mục 1.2). Lượt đo thấy đúng hai bước này trong trình soạn thảo. Log chẩn đoán hỏi `selectedRange` ngay sau `insertText`, trước khi JBR gửi chữ, và nhận về đúng vùng thay dưới dạng vùng chọn (`after` = `rep`). Chữ cuối cùng đúng chỗ (mục 4.1).
+- **JBR làm vùng thay bằng hai bước: chọn vùng rồi gõ chữ mới** (mục 1.2). Lượt đo thấy đúng hai bước này trong trình soạn thảo. Log chẩn đoán hỏi `selectedRange` ngay sau `insertText`, trước khi JBR gửi chữ và nhận về đúng vùng thay dưới dạng vùng chọn (`after` = `rep`). Chữ cuối cùng đúng chỗ (mục 4.1).
 - **Return gõ khi Dấu đang bật tới được terminal:** sau ⌘V, phím Return của script (Dấu để đi, dòng `pass` trong log terminal) chạy được ô ghi byte. Vậy nhánh "giữ phím" của JBR không nuốt Return với Dấu (mục 1.5, 1.6).
 - **Terminal đang dùng là Reworked, chạy trình giả lập Ghostty VT** (mục 2.1). Script đo đọc cùng kết luận từ cài đặt; trên màn hình chưa xem.
 
@@ -44,7 +44,7 @@ Chỉ từ mã nguồn, chưa đo:
 - `doCommandBySelector` với `insertNewline:`, `insertTab:`, `deleteBackward:` bật lại cờ "cần sự kiện phím". Phím bộ gõ để đi vẫn tới Java như phím thường.
 - Mọi sự kiện Java vào cùng một hàng đợi (`EventQueue`, trong IntelliJ là `IdeEventQueue`) và được xử lý trên luồng sự kiện (EDT), theo thứ tự vào hàng.
 
-Hệ quả, suy từ mã: nếu bộ gõ nuốt phím mà không gọi `insertText` hay `setMarkedText`, JBR vẫn gõ ký tự gốc của phím. Với Dấu, chỉ nhánh "Từ hệ thống vừa sửa" của D20 nuốt phím như vậy, và nhánh này chỉ chạy sau tự sửa chính tả của macOS, thứ ô Java không có. Nên trên thực tế không gặp.
+Hệ quả, suy từ mã: nếu bộ gõ nuốt phím mà không gọi `insertText` hay `setMarkedText`, JBR vẫn gõ ký tự gốc của phím. Với Dấu, chỉ nhánh "Từ hệ thống vừa sửa" của D20 nuốt phím như vậy. Nhánh này chỉ chạy sau tự sửa chính tả của macOS, thứ ô Java không có. Nên trên thực tế không gặp.
 
 ### 1.2 `insertText(_:replacementRange:)`
 
@@ -53,7 +53,7 @@ Theo `AWTView.insertText:replacementRange:`:
 1. Vùng thay có độ dài lớn hơn 0 thì gọi `CInputMethod.selectRange(vị trí, độ dài)`. Hàm này **không chọn ngay**: nó đặt một việc vào cuối hàng đợi EDT (`LWCToolkit.invokeLater`). Việc đó:
    - component là `JTextComponent` hoặc `TextComponent` của AWT: gọi `select(đầu, cuối)`;
    - component khác: chuyển cho bộ nghe chung `TextInput` của JBR (JBR-7133). Trong IntelliJ, bộ nghe này (`IdeEventQueue.addTextInputListener`) chỉ chọn chữ trong ô tìm nhanh của danh sách và cây (`SpeedSearchSupply`); component khác thì không có gì xảy ra.
-2. Chọn đường gửi chữ: có marked text, hoặc lời gọi tới ngoài lúc xử lý phím, thì đi đường "bộ gõ phức tạp": `CInputMethod.insertText` tạo một `InputMethodEvent` với toàn bộ chuỗi là chữ đã chốt, và tắt việc tạo sự kiện phím cho phím này. Còn lại, tức không marked text và đang trong `keyDown:`, chuỗi được giữ làm `actualCharacters`, và `keyDown:` biến nó thành các KEY_TYPED (mục 1.1).
+2. Chọn đường gửi chữ: có marked text hoặc lời gọi tới ngoài lúc xử lý phím, thì đi đường "bộ gõ phức tạp". `CInputMethod.insertText` tạo một `InputMethodEvent` với toàn bộ chuỗi là chữ đã chốt và tắt tạo sự kiện phím cho phím này. Còn lại, tức không marked text và đang trong `keyDown:`, chuỗi được giữ làm `actualCharacters`. `keyDown:` biến nó thành các KEY_TYPED (mục 1.1).
 3. Cuối cùng gọi `abandonInput:`. Hàm này gửi `markedTextAbandoned:` tới `[NSInputManager currentInputManager]`, rồi chốt marked text còn lại phía Java (không còn gì sau bước 2).
 
 Vậy vùng thay **được tôn trọng**, nhưng dưới dạng "đổi vùng chọn của component, rồi gõ chữ mới". Có hai điều kiện:
@@ -61,22 +61,22 @@ Vậy vùng thay **được tôn trọng**, nhưng dưới dạng "đổi vùng 
 - Component phải biết chọn theo vị trí bộ gõ đưa, tức `select` của `JTextComponent`.
 - Phần gõ chữ phải thay vùng chọn. Với KEY_TYPED, điều này tuỳ component xử lý phím có vùng chọn thế nào.
 
-Thứ tự trên EDT với lời gọi của Dấu trong lúc xử lý phím: việc chọn vùng, rồi KEY_PRESSED của phím, rồi các KEY_TYPED của chữ thay. Việc chọn vào hàng trong `interpretKeyEvents`; sự kiện phím vào hàng sau khi `interpretKeyEvents` xong.
+Thứ tự trên EDT với lời gọi của Dấu trong lúc xử lý phím: chọn vùng, rồi KEY_PRESSED của phím, rồi các KEY_TYPED của chữ thay. Lệnh chọn vào hàng trong `interpretKeyEvents`; sự kiện phím vào hàng sau khi `interpretKeyEvents` xong.
 
-Lịch sử: JBR-7119 (5/2024) thêm bước chọn vùng, vì chọn chữ Hán thay chữ Hangul/Kana không thay mà thêm vào sau ([JBR-7119](https://youtrack.jetbrains.com/issue/JBR-7119)). JBR-7133 thêm bộ nghe `TextInput` cho component không phải `JTextComponent`, vì Fleet không dùng được bản sửa của JBR-7119 ([JBR-7133](https://youtrack.jetbrains.com/issue/JBR-7133)). Trước đó, JBR bỏ hẳn vùng thay. Đường "chuỗi một ký tự trong lúc xử lý phím" đến từ JDK-8195675, sửa lỗi bộ gõ tự viết đưa một ký tự mà bị bỏ qua.
+Lịch sử: JBR-7119 (5/2024) thêm bước chọn vùng, vì chọn chữ Hán thay chữ Hangul/Kana không thay mà thêm vào sau ([JBR-7119](https://youtrack.jetbrains.com/issue/JBR-7119)). JBR-7133 thêm bộ nghe `TextInput` cho component không phải `JTextComponent`, vì Fleet không dùng được bản sửa của JBR-7119 ([JBR-7133](https://youtrack.jetbrains.com/issue/JBR-7133)). Trước đó, JBR bỏ hẳn vùng thay. Đường "chuỗi một ký tự trong lúc xử lý phím" có từ JDK-8195675, sửa lỗi bộ gõ tự viết đưa một ký tự mà bị bỏ qua.
 
 Apple quy định vùng thay đo từ đầu kho chữ của view ([`insertText(_:replacementRange:)`](https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:))). JBR chuyển nguyên vị trí và độ dài sang `select`, nên ý nghĩa của chúng tuỳ `InputMethodRequests` của từng component (mục 2, 3).
 
 ### 1.3 `setMarkedText`
 
 - Có vùng thay thì cũng hẹn chọn vùng như trên.
-- `CInputMethod.startIMUpdate` lưu chuỗi đang soạn. Đây là thứ `hasMarkedText` dựa vào, và nó được đặt ngay trên luồng AppKit.
+- `CInputMethod.startIMUpdate` lưu chuỗi đang soạn. Đây là thứ `hasMarkedText` dựa vào. Trạng thái này đặt ngay trên luồng AppKit.
 - `dispatchText` gửi một `InputMethodEvent` với toàn bộ chuỗi là chữ đang soạn (0 ký tự đã chốt).
 - Chuỗi rỗng xoá marked text và tắt sự kiện phím cho phím đó.
 
 ### 1.4 Các câu hỏi của bộ gõ trả gì
 
-Mọi câu hỏi chạy trên EDT bằng `LWCToolkit.invokeAndWait`. Việc hỏi được đặt vào **cuối** hàng đợi, luồng AppKit quay vòng chờ, nên câu trả lời đến sau khi EDT đã xử lý mọi sự kiện vào hàng trước nó, kể cả các phím trước. Hai trường hợp không có câu trả lời:
+Mọi câu hỏi chạy trên EDT bằng `LWCToolkit.invokeAndWait`. Câu hỏi nằm ở **cuối** hàng đợi, luồng AppKit quay vòng chờ, nên câu trả lời đến sau khi EDT đã xử lý mọi sự kiện vào hàng trước nó, kể cả các phím trước. Hai trường hợp không có câu trả lời:
 
 - EDT đang chờ ngược luồng AppKit (`isBlockingEventDispatchThread`): JBR bỏ câu hỏi.
 - Không có component có focus hay `InputMethodContext`.
@@ -129,7 +129,7 @@ Dấu chỉ dùng hàng đầu và hàng thứ ba (D11, D20).
   - `TerminalEventDispatcher` (bộ chặn trong `IdeEventQueue`, khi "Override IDE shortcuts" bật) hoặc `TerminalKeyListener` chuyển sự kiện phím cho `TerminalKeyEventsHandlerImpl`.
   - KEY_TYPED đi qua `TerminalEmulatorKeyEventEncoder` (Ghostty) thành byte UTF-8, gửi bằng `TerminalInput.sendString` qua một kênh tới pty (bất đồng bộ).
   - Sau mỗi phím đã gửi, bộ xử lý **xoá vùng chọn** của trình soạn thảo và đưa con trỏ trình soạn thảo về con trỏ terminal (`syncEditorCaretWithModel`).
-  - KEY_PRESSED của phím chữ không được xử lý; Backspace, Return, phím có ⌃/⌥ được mã hoá ngay ở KEY_PRESSED.
+  - KEY_PRESSED của phím chữ không được xử lý; Backspace, Return, phím có ⌃/⌥ mã hoá ngay ở KEY_PRESSED.
 - **Chữ của `InputMethodEvent`:** `handleInputMethodTextChanged`. Phần đã chốt gửi thẳng xuống pty bằng `sendString`. Phần đang soạn hiện bằng một inlay tại con trỏ, không gửi gì.
 - **Vùng thay:** `select` của `EditorComponentImpl` (mục 3.1) đặt vùng chọn lên chữ đầu ra. KEY_TYPED sau đó gửi chữ mới xuống pty và xoá vùng chọn. Chữ cũ đã nằm trong bộ đệm dòng của shell từ trước; không có gì gửi lệnh xoá. **Thay chữ đã gửi không có tác dụng nào**, ngoài vùng chọn nháy lên một lúc.
 - **Vị trí trả về đi sau shell:** đoán chữ trước (type-ahead) chỉ bật ở chế độ tách frontend/backend; `TerminalViewImpl.createOutputModelController` tắt nó khi IDE chạy một tiến trình. Vì vậy vị trí con trỏ chỉ đổi khi shell đã in lại chữ: phím đi qua kênh, xuống pty, shell in lại, trình giả lập xử lý, mô hình đầu ra cập nhật trên EDT. Ở nhịp chậm, `selectedRange` gần như luôn đã có phím trước; ở nhịp nhanh thì có thể chưa.
@@ -142,7 +142,7 @@ Dấu chỉ dùng hàng đầu và hàng thứ ba (D11, D20).
   - `getInsertPositionOffset` luôn 0, `getSelectedText` null, nên `selectedRange` luôn {0, 0}.
   - `getCommittedText` trả null, nên `attributedSubstring` trả nil.
   - `getTextLocation` là ô của con trỏ.
-- **Chữ:** `processInputMethodEvent` gửi phần đã chốt xuống pty (`sendString`); phần đang soạn chỉ được vẽ đè tại con trỏ. KEY_TYPED đi `TerminalKeyEventProcessor`. Khi đang có chữ soạn dở, bộ xử lý phím không gửi gì.
+- **Chữ:** `processInputMethodEvent` gửi phần đã chốt xuống pty (`sendString`); phần đang soạn chỉ vẽ đè tại con trỏ. KEY_TYPED đi `TerminalKeyEventProcessor`. Khi đang có chữ soạn dở, bộ xử lý phím không gửi gì.
 - **Vùng thay:** `select` không áp dụng; bộ nghe `TextInput` của IntelliJ không xử lý component này. Vùng thay bị bỏ hẳn. Về mặt bộ gõ, đây giống ứng dụng Ghostty: vị trí 0, không có chữ để đọc.
 
 ### 2.4 Thay chữ đã gửi có tác dụng gì không
@@ -153,7 +153,7 @@ Không, ở cả hai engine. Byte đã ghi xuống pty thuộc về chương tr�
 
 ### 3.1 Cơ chế
 
-- **Component có focus:** `EditorComponentImpl`, lớp con của `JTextComponent` (để có trợ năng). Nó ghi đè `select(đầu, cuối)` cho đúng trường hợp này: comment nói JDK gọi hàm khi bộ gõ muốn thay chữ đã chốt.
+- **Component có focus:** `EditorComponentImpl`, lớp con của `JTextComponent` (để có trợ năng). Lớp này ghi đè `select(đầu, cuối)` cho đúng trường hợp này: comment nói JDK gọi hàm khi bộ gõ muốn thay chữ đã chốt.
   - Hàm đặt vùng chọn cùng độ lệch so với mọi con trỏ, nếu chữ ở mọi con trỏ giống nhau.
   - Không thì đặt một vùng chọn theo vị trí tuyệt đối.
   - Hàm lấy chữ theo vùng trước khi chọn; vùng vượt độ dài tài liệu thì ném lỗi trong việc đặt trên EDT. Lỗi đó IDE ghi là lỗi nội bộ (suy luận).
@@ -194,7 +194,7 @@ Ngoại lệ có thể:
 
 Dấu có hai đường gọi `insertText` rồi trả phím cho ứng dụng: ⌫ dời dấu (D32; [`docs/Architecture.md`](../Architecture.md) mục "Backspace thay tại chỗ"), và Return/Tab sau một từ cần khôi phục (D4; `InPlaceComposer`, nhánh `endWord`). Trong JBR, trên EDT:
 
-1. Việc chọn vùng thay.
+1. Chọn vùng thay.
 2. KEY_PRESSED của ⌫, Return hay Tab. `IdeKeyEventDispatcher` chạy action trên vùng vừa chọn:
    - Backspace xoá vùng chọn;
    - Enter (`EnterAction.insertNewLineAtCaret`) xoá vùng chọn rồi xuống dòng;
@@ -239,7 +239,7 @@ Chuỗi phím `windows carr tooi yeeu tieengs Vieetj, Sunrise `, đáp án "wind
 Log theo phím của ô trình soạn thảo (`webstorm.perf.log` do `--save` ghi), 47 dòng phím cho 47 phím của chuỗi (khớp từng phím):
 
 - **Phím ngay sau một phím đi thẳng** (bản trước 22/11/2026; `pass` hay `seed_pass`, Dấu để app tự chèn chữ, nay Dấu tự chèn) luôn gặp engine rỗng và chưa biết chữ trước con trỏ. Phím đó đi đường đọc của D20 (`seed_none`, `seed_pass`, `seed`), kể cả chữ cái đầu mỗi từ sau dấu cách, nơi lẽ ra không cần đọc.
-- **Phím ngay sau một phím Dấu tự gửi chữ** (`seed`, `replace`, hay `seed_none` có `insertText`) luôn còn từ trong engine (`d20=none`, `diff=1`). Ví dụ: "o" thứ hai của `tooi` thay thành "ô", rồi "i" đi thẳng không đọc; hai chữ "r" của `carr` liền nhau, nên D26 (Gõ đúp phím dấu) ra "car" đúng.
+- **Phím ngay sau một phím Dấu tự gửi chữ** (`seed`, `replace` hay `seed_none` có `insertText`) luôn còn từ trong engine (`d20=none`, `diff=1`). Ví dụ: "o" thứ hai của `tooi` thay thành "ô", rồi "i" đi thẳng không đọc; hai chữ "r" của `carr` liền nhau, nên D26 (Gõ đúp phím dấu) ra "car" đúng.
 - Không có dòng `activate` nào trong lúc gõ (một dòng trước phím đầu). Không có `client-changed`, `source-changed-reset`, phím `reset` hay `commit` do chuột.
 
 Giả thuyết và dự đoán của từng giả thuyết:
@@ -256,14 +256,14 @@ Kết luận:
 
 - **Reset sau mỗi phím đi thẳng là quan sát chắc** từ log.
 - **Ai gây reset thì chưa rõ.** H1' giải thích mọi quan sát, nhưng phần quyết định của nó chưa có nguồn: chỉ chữ chèn ngoài `handle` mới làm Dấu reset. Các lời gọi `commitComposition` và `deactivateServer` không được ghi vào log perf, nên log không thấy trực tiếp chúng.
-- **Cách phân biệt:** ghi một dòng `perf.note` trong `commitComposition` và `deactivateServer` của bản Debug, rồi chạy lại ô `webstorm` một lần. H1' dự đoán một dòng `commitComposition` ngay sau mỗi phím đi thẳng, và không có dòng nào sau phím Dấu tự gửi chữ.
+- **Cách phân biệt:** ghi một dòng `perf.note` trong `commitComposition` và `deactivateServer` của bản Debug, rồi chạy lại ô `webstorm` một lần. H1' dự đoán một dòng `commitComposition` ngay sau mỗi phím đi thẳng và không có dòng nào sau phím Dấu tự gửi chữ.
 
 Vì sao mất khôi phục:
 
 - D20 dựng lại từ từ chữ đang hiện. Theo [`docs/Architecture.md`](../Architecture.md) mục "Thêm dấu cho từ đã gõ", mốc khôi phục D4 là chữ đã đọc.
-- `windows`: "w" đầu từ thành "ư". "i" đi thẳng rồi reset. Từ đó mỗi phím đọc lại, và mốc khôi phục luôn là chữ đang hiện "ưi…". Phím gốc "w" không còn trong engine, nên ở dấu cách không có gì để khôi phục: "ưindows".
+- `windows`: "w" đầu từ thành "ư". "i" đi thẳng rồi reset. Từ đó mỗi phím đọc lại. Mốc khôi phục luôn là chữ đang hiện "ưi…". Phím gốc "w" không còn trong engine, nên ở dấu cách không có gì để khôi phục: "ưindows".
 - `Sunrise`: "S", "u", "n" mỗi phím một lần đọc. "r" đặt dấu hỏi lên từ vừa đọc: "Sủn" (Dấu tự gửi chữ, engine còn từ). "i" đi thẳng rồi reset. "s", "e" đọc lại "Sủni…", không còn là tiếng Việt nên đi thẳng. Mốc là "Sủni", nên dấu cách không khôi phục: "Sủnise". Ở app không reset, từ hết hợp lệ và dấu cách khôi phục "Sunrise".
-- Chữ tiếng Việt vẫn đúng: mỗi lần đọc dựng lại đúng từ đang hiện, và các phím biến đổi hay dấu thanh áp lên từ đó (D20). Dự đoán cũ "mọi nhịp đều đúng" sai ở phần D4; dự đoán phụ "reset sau mỗi lần thay" sai ở chỗ reset theo phím đi thẳng chứ không theo lần thay.
+- Chữ tiếng Việt vẫn đúng: mỗi lần đọc dựng lại đúng từ đang hiện. Các phím biến đổi hay dấu thanh áp lên từ đó (D20). Dự đoán cũ "mọi nhịp đều đúng" sai ở phần D4; dự đoán phụ "reset sau mỗi lần thay" sai ở chỗ reset theo phím đi thẳng chứ không theo lần thay.
 
 ### 4.3 Dự đoán trước lượt đo (chuỗi `toois vieetj dd `)
 
@@ -279,9 +279,9 @@ Cách ra "toôis vieêtj dđ " (terminal Reworked, 120 ms, shell kịp in lại 
 
 1. `t`: lần đọc của D20 thấy dấu nhắc, không có từ; Dấu biết vị trí. `o`, `o`: lần thay đầu khớp vị trí, nên Dấu thay "o" bằng "ô". Terminal nhận thêm "ô": "toô". Từ đây vị trí thật đi trước vị trí Dấu theo dõi một ký tự.
 2. `i` đi thẳng. `s` cần thay "ôi": `selectedRange` lệch, phím trước cách quá 50 ms. Dấu đọc từ trước con trỏ là "toôi" (D11, "Dựng lại khi lệch"). Đó không phải tiếng Việt, nên `s` đi thẳng: "toôis".
-3. `vieetj` diễn ra như vậy: "ê" được thêm vào ("vieê"), `j` gặp lệch, đọc "vieêt", đi thẳng: "vieêtj". `dd`: "dđ".
+3. `vieetj` diễn ra như vậy. "ê" thêm vào ("vieê"), `j` gặp lệch, đọc "vieêt", rồi đi thẳng ra "vieêtj". `dd`: "dđ".
 
-Lượt đo cũng có reset sau mỗi phím đi thẳng trong terminal (cùng mẫu trong `webstormterm.perf.log`). Nó đổi phím nào đi đường đọc, nhưng không đổi kết luận: chữ thay luôn nối sau chữ cũ.
+Lượt đo cũng có reset sau mỗi phím đi thẳng trong terminal (cùng mẫu trong `webstormterm.perf.log`). Reset này đổi phím nào đi đường đọc, nhưng không đổi kết luận: chữ thay luôn nối sau chữ cũ.
 
 Byte xuống pty theo dự đoán:
 
@@ -296,14 +296,14 @@ Byte xuống pty theo dự đoán:
 
 Đáp án theo luật, không theo dự đoán. Mỗi ca kèm điều nó quyết định:
 
-- **Ghi `commitComposition` vào log Debug rồi chạy lại ô `webstorm`** (mục 4.2). Quyết định H1' đúng hay sai, tức lỗi D4 ở WebStorm đến từ JBR hay từ chỗ khác. Đây là điều kiện để chọn cách sửa: Dấu bỏ qua `commitComposition` ngay sau phím đi thẳng, hay sửa ở chỗ khác.
+- **Ghi `commitComposition` vào log Debug rồi chạy lại ô `webstorm`** (mục 4.2). Quyết định H1' đúng hay sai, tức lỗi D4 ở WebStorm do JBR hay do chỗ khác gây ra. Đây là điều kiện để chọn cách sửa: Dấu bỏ qua `commitComposition` ngay sau phím đi thẳng hay sửa ở chỗ khác.
 - **Trình soạn thảo: `hoaf⌫`** (đáp án "hò"; dự đoán "h"). Quyết định đường "thay rồi để phím đi" của D32 có hỏng trong JBR không (mục 3.3).
 - **Trình soạn thảo: một từ Dấu khôi phục theo D4, rồi Return ngay sau.** Dự đoán từ biến mất. Với reset sau phím đi thẳng (mục 4.2), từ nước ngoài có thể không được khôi phục chút nào, khi đó Return không có chữ để thay. Chọn từ mà phím ngay trước Return là phím Dấu tự gửi chữ (ví dụ một từ kết thúc bằng phím dấu), soát chuỗi với engine trước khi chạy. Quyết định Return/Tab có cần đường riêng trong JBR không.
 - **Trình soạn thảo ở nhịp 30 ms:** D20 đọc lại sau reset ở mọi nhịp (D20, "Phạm vi"), nên nếu H1' đúng thì chữ ở 30 ms dự đoán như ở nhịp 80 ms đã đo. Quyết định lỗi có lan sang chữ tiếng Việt khi gõ nhanh không, tức mức nghiêm trọng của lỗi cho người dùng thật.
 
 ## 6. Đo tự động: những điều phải xử lý
 
-Script đo: `scripts/selftest/typing/run.sh` (ô `webstorm`, `webstormterm`). Các điểm dưới đây đến từ mã nguồn ở trên.
+Script đo: `scripts/selftest/typing/run.sh` (ô `webstorm`, `webstormterm`). Các điểm dưới đây lấy từ mã nguồn ở trên.
 
 - **Focus và cửa sổ:**
   - Terminal chỉ có trong cửa sổ dự án. Chế độ LightEdit (mở một tệp không có dự án) không có terminal.

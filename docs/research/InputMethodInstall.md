@@ -7,10 +7,10 @@ Nghiên cứu cho M5 (Onboarding, cài, gỡ) và D37 (Cài bộ gõ): macOS là
 Apple không có tài liệu công khai cho các hành vi dưới đây, nên mọi kết luận có thể đổi theo bản macOS. Đo trên máy phát triển, macOS 27.2 (26B123), tài khoản đã từng cài Dấu; chưa đo macOS 14–26, bản ký Developer ID, tài khoản macOS mới.
 
 - **Bật lần đầu không cần đăng xuất** nếu làm theo D37: xoá bộ đệm danh sách nguồn của mọi app ngay trước khi đăng ký, thoát System Settings, bật mục cha, người dùng bấm "Allow" (Dấu thật, 04/11/2026; mục 1). Apple DTS (06/2026) nói không tránh được đăng xuất; điều đó đúng khi không xoá bộ đệm.
-- **Hộp thoại `Allow “Dấu” to enable “Dấu”?`** hiện khi System Settings phải dựng mới trang Keyboard và đọc được Dấu trong bộ đệm của nó. Trang Keyboard đang mở sẵn thì yêu cầu bị bỏ qua im lặng, và `TISEnableInputSource` vẫn trả 0 (mục 2).
+- **Hộp thoại `Allow “Dấu” to enable “Dấu”?`** hiện khi System Settings phải dựng mới trang Keyboard và đọc được Dấu trong bộ đệm của nó. Trang Keyboard đang mở sẵn thì yêu cầu bị bỏ qua im lặng. `TISEnableInputSource` vẫn trả 0 (mục 2).
 - **Mỗi app có sandbox giữ bộ đệm danh sách nguồn riêng** và dùng mãi, kể cả khi mở lại app. Bộ đệm dựng trước khi có Dấu làm app đó không chọn được Dấu (Telegram). Xoá trước khi đăng ký sửa được khi app đang chạy; đăng xuất rồi đăng nhập cũng sửa được (mục 3).
 - **"Đã bật"** là có mục trong `com.apple.inputsources` › `AppleEnabledThirdPartyInputSources`; cờ enabled của TIS không đáng tin (mục 4).
-- **Gỡ:** app không tự tắt được Dấu (macOS chặn ghi `com.apple.inputsources` với mọi tiến trình trừ System Settings). Chỉ nút "–" của System Settings gỡ được; nút này bấm được cả khi Dấu đang được chọn, và macOS tự chuyển sang U.S. Xoá bộ gõ trước khi bấm "–" để lại mục ẩn; cài lại cùng ID rồi bấm "–" thì dọn được (bản thử) (mục 5).
+- **Gỡ:** app không tự tắt được Dấu (macOS chặn ghi `com.apple.inputsources` với mọi tiến trình trừ System Settings). Chỉ nút "–" của System Settings gỡ được; nút này bấm được cả khi Dấu đang được chọn. macOS tự chuyển sang U.S. Xoá bộ gõ trước khi bấm "–" để lại mục ẩn; cài lại cùng ID rồi bấm "–" thì dọn được (bản thử) (mục 5).
 - **Nâng cấp:** app chủ thay bộ gõ cùng ID bằng một lần đổi chỗ, nhờ bộ gõ cũ tự thoát; không đụng tiến trình hay bộ đệm hệ thống (mục 6).
 - **App chủ không sandbox** (D37): app có sandbox không gỡ được quarantine khỏi file nó chép và không dừng được app khác (mục 7).
 - Bộ gõ tiếng Việt cũ cần phát hiện ở bước 1 của onboarding: mục 8. Bộ gõ khác cài và bật thế nào: mục 9.
@@ -42,15 +42,15 @@ Cách app làm (`SystemInputMethodInstaller.enable()`, theo D37):
 1. Xoá `com.apple.IntlDataCache.le*` trong mọi thư mục con của `$(getconf DARWIN_USER_CACHE_DIR)` (bộ đệm của System Settings và của từng app; mục 3), ngay trước khi đăng ký. Thư mục nào hệ thống không cho đọc thì bỏ qua.
 2. `TISRegisterInputSource` cho bộ gõ đã chép (luôn gọi; vô hại).
 3. Nếu `com.apple.inputsources` đã có Dấu thì xong. Nếu chưa: thoát System Settings (yêu cầu thoát, không ép), rồi `TISEnableInputSource` cho **mục cha** `com.codefastlabs.dau.inputmethod.Dau` (chỉ mục cha; macOS ghi cả mục cha lẫn mode `….Dau.vi`).
-4. Chờ mục của Dấu xuất hiện trong `com.apple.inputsources` (người dùng cần thời gian đọc hộp thoại và bấm "Allow"). Mã trả về của `TISEnableInputSource` không chứng minh gì (N5 (Chỉ hứa điều đã kiểm chứng)).
-5. Đã bật thì quét lại một lượt: bộ đệm nào vẫn không có `DauInputMethod.app` (app dựng lại trong khoảng giữa lúc xoá và lúc đăng ký) thì xoá rồi đăng ký lại một lần.
+4. Chờ mục của Dấu xuất hiện trong `com.apple.inputsources`. Người dùng cần thời gian đọc hộp thoại và bấm "Allow". Mã trả về của `TISEnableInputSource` không chứng minh gì (N5 (Chỉ hứa điều đã kiểm chứng)).
+5. Đã bật thì quét lại một lượt. Bộ đệm nào vẫn không có `DauInputMethod.app` thì xoá rồi đăng ký lại một lần, vì app dựng lại trong khoảng giữa lúc xoá và lúc đăng ký.
 
 App không chọn Dấu làm nguồn hiện hành; người dùng chuyển bằng phím tắt của hệ thống. Không có Hoàn tác vì app không tự tắt được Dấu (mục 5).
 
 ### 1.2 Giới hạn
 
 - Chỉ đo trên macOS 27.2, bản Debug, tài khoản đã từng cài Dấu. Chưa đo macOS 14–26, bản ký Developer ID đã notarize. Lần thử trên tài khoản macOS mới đã bỏ (04/11/2026).
-- Hành vi bộ đệm không có tài liệu Apple. Đường lui (D37): đọc lại không thấy Dấu thì hướng dẫn tự thêm bằng "+", và nếu "+" không có Dấu thì đăng xuất một lần.
+- Hành vi bộ đệm không có tài liệu Apple. Đường lui (D37): đọc lại không thấy Dấu thì hướng dẫn tự thêm bằng "+" và nếu "+" không có Dấu thì đăng xuất một lần.
 
 ### 1.3 Bằng chứng bằng Dấu thật [Máy/Dấu]
 
@@ -61,7 +61,7 @@ App không chọn Dấu làm nguồn hiện hành; người dùng chuyển bằn
 ### 1.4 Bằng chứng bằng bản thử [Máy/bản thử, 04/11/2026]
 
 Mỗi bản thử một bundle ID mới, chép vào `~/Library/Input Methods`, trạng thái đọc bằng TIS từ một tiến trình mới, "+" do người dùng xem.
-- Chỉ đăng ký, hoặc đăng ký rồi bật (trong một tiến trình hay ba tiến trình như Squirrel): TIS liệt kê ngay, nhưng "+" không có và `com.apple.inputsources` rỗng.
+- Chỉ đăng ký hoặc đăng ký rồi bật (trong một tiến trình hay ba tiến trình như Squirrel): TIS liệt kê ngay, nhưng "+" không có và `com.apple.inputsources` rỗng.
 - Thoát System Settings mà không xoá bộ đệm: bộ đệm không được dựng lại, "+" không có.
 - Xoá `IntlDataCache.le*` của System Settings (System Settings đang mở hay không): mở lại Keyboard thì bộ đệm dựng lại và "+" có mọi bản thử đã đăng ký.
 - Xoá bộ đệm rồi bật mục cha từ một app có tên: hộp thoại hiện, bấm "Allow" thì `com.apple.inputsources` có cả mục cha và mode.
@@ -85,7 +85,7 @@ Chưa tách được vì sao marinaMoji hiện ngay trong khi Squirrel, macSKK, 
 
 - "+" và việc dựng hộp thoại đọc danh sách nguồn từ bộ đệm `IntlDataCache` của System Settings; bộ đệm không làm mới khi có nguồn mới đăng ký, chỉ khi đăng nhập hoặc khi file bị xoá. Lời của DTS phù hợp với điều này. [Suy luận, cần kiểm chứng]
 - Quan sát phù hợp, 02/11/2026: bộ đệm của System Settings có giờ ghi 17 s sau khi `TextInputMenuAgent` khởi động lúc đăng nhập; `TextInputMenuAgent`, `TextInputSwitcher`, `imklaunchagent` là LaunchAgent của phiên. [Máy/hệ thống]
-- `HIToolbox` có nhật ký "InputSourceFSEventCallback -> TISUpdateIntlFileCache" và danh sách thư mục được theo dõi (`~/Library/Input Methods/`, `/Library/Input Methods/`…): thư viện tự dựng lại danh mục khi các thư mục này đổi. Việc đó có tới tiến trình System Settings không: không tìm thấy nguồn (DTS nói không). [Diễn giải mã máy]
+- `HIToolbox` có nhật ký "InputSourceFSEventCallback -> TISUpdateIntlFileCache" và danh sách thư mục được theo dõi (`~/Library/Input Methods/`, `/Library/Input Methods/`…): thư viện tự dựng lại danh mục khi các thư mục này đổi. Thư viện dựng lại như vậy có tới tiến trình System Settings không: không tìm thấy nguồn (DTS nói không). [Diễn giải mã máy]
 
 ### 1.7 Header và tài liệu Apple
 
@@ -104,7 +104,7 @@ Apple không có trang web cho họ hàm TIS (các URL đoán trả 404 ngày 03
 
 - `TISEnableInputSource` với nguồn không thuộc hệ thống không bật trực tiếp: nó gửi Apple event mở System Settings kèm yêu cầu, rồi trả 0. [Diễn giải mã máy]
 - System Settings hiện hộp thoại `Allow “%1$@” to enable “%2$@”?` (tiếng Việt: "Cho phép “%1$@” bật “%2$@”?"); %1 là tên app gọi, %2 là tên mục cha ("Dấu", không phải "Dấu – Tiếng Việt"). Thân: "The developer of the input source will be able to access anything you type with this input source…". Hai nút "Don’t Allow" và "Allow". [Máy/hệ thống; Máy/Dấu]
-- Yêu cầu chỉ được xử lý khi System Settings dựng mới extension Keyboard. Khi trang Keyboard đang mở sẵn, yêu cầu không để lại dòng nhật ký nào, không có hộp thoại. Vì vậy D37 thoát System Settings trước khi bật. [Máy/bản thử, 04/11/2026: bốn lần thành công đều đi cùng một tiến trình extension mới; ba lần bị bỏ qua đều lúc trang Keyboard đang mở]
+- System Settings chỉ xử lý yêu cầu khi dựng mới extension Keyboard. Khi trang Keyboard đang mở sẵn, yêu cầu không để lại dòng nhật ký nào, không có hộp thoại. Vì vậy D37 thoát System Settings trước khi bật. [Máy/bản thử, 04/11/2026: bốn lần thành công đều đi cùng một tiến trình extension mới; ba lần bị bỏ qua đều lúc trang Keyboard đang mở]
 - Bấm "Don’t Allow" không để lại dấu vết nào: app chỉ thấy "chưa bật". Gửi lại yêu cầu (sau khi thoát System Settings) thì hộp thoại hiện lại; macOS không nhớ lần từ chối. [Máy/bản thử, 04/11/2026]
 - `NSRunningApplication.terminate()` thoát được System Settings cả khi sheet Input Sources đang mở. [Máy/bản thử]
 - Hình dạng hộp thoại (đo để vẽ artboard onboarding): [`docs/research/SystemSettingsReference.md`](SystemSettingsReference.md), mục "Hộp thoại xin phép bật bộ gõ".
@@ -112,7 +112,7 @@ Apple không có trang web cho họ hàm TIS (các URL đoán trả 404 ngày 03
 ### 2.2 Phía gọi và phía nhận [Diễn giải mã máy]
 
 Phía gọi (`HIToolbox` trong dyld cache 27.2, `dyld_info -disassemble`):
-- `TISEnableInputSource` gọi `TSMEnableInputSourceWithOptions(nguồn, 0)`. Nếu tuỳ chọn có bit giá trị 2, hoặc nguồn có `kTISPropertyInputSourceIsFromSystem`, nó bật thật (`_TSMSetInputSourceEnabled`).
+- `TISEnableInputSource` gọi `TSMEnableInputSourceWithOptions(nguồn, 0)`. Nếu tuỳ chọn có bit giá trị 2 hoặc nguồn có `kTISPropertyInputSourceIsFromSystem`, nó bật thật (`_TSMSetInputSourceEnabled`).
 - Ngược lại nó dựng từ điển `tabID` (`com.apple.IntlKeyboard`), `inputSourceToBeEnabled` (nguồn đã "flatten"), `localizedSenderName` (tên app gọi), mở System Settings qua LaunchServices kèm sự kiện, rồi trả 0.
 - `IsFromSystem` có thể nghĩa "đường dẫn bundle bắt đầu bằng `/System/`". [Suy luận, cần kiểm chứng]
 
@@ -130,13 +130,13 @@ Lệnh đọc nhật ký: `/usr/bin/log show --predicate 'process == "KeyboardSe
 - McBopomofo (11/2025): "System Settings now asks the user whether to activate the IME"; vChewing (macOS 12) cũng thấy hộp thoại.
 - low-talker (macOS 15.0.1, PR #96): hộp thoại hiện lại sau khi bấm "Không".
 - Shanjie (máy ảo macOS 26.6.2): thấy hộp thoại `Allow "<caller>" to enable "Shanjie"?`.
-- msime (macOS 27.0): với mode, `TISEnableInputSource` trả noErr mà mode vẫn tắt; họ bỏ nút "Bật". marinaMoji (27.0.1): mục cha trả 0 ba lần, vẫn `enabled=0`. Cả hai phù hợp với việc yêu cầu bị System Settings bỏ qua khi nó không dựng lại được nguồn.
+- msime (macOS 27.0): với mode, `TISEnableInputSource` trả noErr mà mode vẫn tắt; họ bỏ nút "Bật". marinaMoji (27.0.1): mục cha trả 0 ba lần, vẫn `enabled=0`. Cả hai phù hợp với trường hợp System Settings bỏ qua yêu cầu khi nó không dựng lại được nguồn.
 
 ## 3. Bộ đệm `IntlDataCache` của từng app
 
 ### 3.1 Kết quả
 
-- Mỗi app có sandbox (kể cả extension Keyboard của System Settings) giữ `com.apple.IntlDataCache.le*` trong `$(getconf DARWIN_USER_CACHE_DIR)<bundle ID>/` và dùng nguyên bộ đệm có sẵn, không kiểm lại. Mở lại app hay thông báo đổi nguồn đều không làm nó dựng lại. Tiến trình không sandbox dùng bộ đệm chung ở gốc thư mục đó, và bộ đệm chung tự dựng lại. [Máy/bản thử, 04/11/2026]
+- Mỗi app có sandbox (kể cả extension Keyboard của System Settings) giữ `com.apple.IntlDataCache.le*` trong `$(getconf DARWIN_USER_CACHE_DIR)<bundle ID>/` và dùng nguyên bộ đệm có sẵn, không kiểm lại. Mở lại app hay thông báo đổi nguồn đều không làm nó dựng lại. Tiến trình không sandbox dùng bộ đệm chung ở gốc thư mục đó. Bộ đệm chung tự dựng lại. [Máy/bản thử, 04/11/2026]
 - Bộ đệm bị xoá thì app dựng lại: app đã thoát thì ở lần mở sau; app đang chạy thì ở lần `TISRegisterInputSource` kế tiếp. Vì vậy thứ tự "xoá bộ đệm của mọi app → đăng ký → bật" làm app đang chạy dùng được nguồn mới không cần mở lại. [Máy/bản thử; Máy/Dấu]
 - Sau một lần đăng nhập mới, mỗi app có sandbox dựng lại bộ đệm ở lần đầu đọc nguồn đầu vào, kể cả khi bộ đệm cũ không có Dấu. Đăng xuất không xoá các file đó. [Máy/Dấu, 05/11/2026]
 - D37 dựa vào hai điều này: xoá trước khi đăng ký là đường chính, đăng xuất là đường lui cho app còn lại.
@@ -144,7 +144,7 @@ Lệnh đọc nhật ký: `/usr/bin/log show --predicate 'process == "KeyboardSe
 ### 3.2 Bằng chứng bằng Dấu thật [Máy/Dấu]
 
 - **Triệu chứng (04/11/2026):** Telegram 13.1 (sandbox) không chọn được "Dấu – Tiếng Việt" từ menu nhập liệu, vòng ⌃⌥Space bỏ qua Dấu. Thoát rồi mở lại Telegram không đổi gì. Bộ đệm riêng của Telegram dựng lúc `~/Library/Input Methods` chỉ có bản thử, không có `DauInputMethod.app`. Chuyển hai file đó đi rồi mở lại Telegram thì Dấu chạy. Đã loại: sandbox nói chung, Secure Event Input, `allowedInputSourceLocales`.
-- **Luồng D37 (04/11/2026):** đặt lại cho Telegram bộ đệm cũ, để Telegram chạy suốt, bấm "Bật Dấu". App xoá 107 file bộ đệm; năm thư mục không liệt kê được (ba của WebKit, hai của Shortcuts; nhật ký kernel ghi `System Policy: Dau deny file-read-metadata`, không có yêu cầu TCC hay hộp thoại). Bộ đệm của Telegram dựng lại có Dấu; chọn Dấu từ menu được, gõ ra "việt".
+- **Luồng D37 (04/11/2026):** đặt lại cho Telegram bộ đệm cũ, để Telegram chạy suốt, bấm "Bật Dấu". App xoá 107 file bộ đệm; năm thư mục không liệt kê được (ba của WebKit, hai của Shortcuts). Nhật ký kernel ghi `System Policy: Dau deny file-read-metadata`, không có yêu cầu TCC hay hộp thoại. Bộ đệm của Telegram dựng lại có Dấu; chọn Dấu từ menu được, gõ ra "việt".
 - **Đăng xuất (05/11/2026):** một app thử có sandbox dùng bộ đệm cũ không có Dấu. Sau đăng xuất và đăng nhập, bộ đệm chung và của 12 tiến trình chạy lúc đăng nhập được ghi mới; bộ đệm của app thử và của Telegram (chưa chạy) còn nguyên. Mở lên thì cả hai dựng lại bộ đệm ngay và thấy Dấu. Máy chưa khởi động lại từ 29/10.
 
 ### 3.3 Bằng chứng bằng bản thử [Máy/bản thử, 04/11/2026]
@@ -184,10 +184,10 @@ Theo D16 (Bảo trì và gỡ cài đặt), `SystemInputMethodInstaller`:
 Cơ sở:
 - Nút "–" bấm được cả khi Dấu đang được chọn; sau khi bỏ, macOS tự chuyển sang U.S. [Máy/Dấu, 04/11/2026, qua trợ năng] Vì vậy app không chọn trước một bàn phím khác; sheet chỉ nhắc chọn bàn phím khác khi nút "–" bị mờ, phòng bản macOS chưa đo (D16).
 - Bundle phải còn tới khi mục cha hết khỏi `com.apple.inputsources`. Xoá bundle trước thì mục thành ẩn: không hiện ở menu, "+", danh sách bên trái hay ⌃Space, nên người dùng không bỏ được. [Máy/bản thử, 04/11/2026]
-- Mục ẩn dọn được: cài lại đúng bundle ID thì nguồn được bật ngay, không hỏi; bấm "–" thì cả mục cha và mode biến mất, không cần tiến trình bộ gõ đang chạy. [Máy/bản thử, 04/11/2026] msime thấy "–" không có tác dụng khi tiến trình bộ gõ bị chặn khởi động (PR #3775). [Ngoài]
+- Mục ẩn dọn được: cài lại đúng bundle ID thì nguồn bật ngay, không hỏi; bấm "–" thì cả mục cha và mode biến mất, không cần tiến trình bộ gõ đang chạy. [Máy/bản thử, 04/11/2026] msime thấy "–" không có tác dụng khi tiến trình bộ gõ bị chặn khởi động (PR #3775). [Ngoài]
 - Bỏ bundle rồi xoá bộ đệm của System Settings thì TIS thôi liệt kê và "+" sạch; chỉ bỏ bundle thì "+" còn một dòng không tên. [Máy/bản thử, 04/11/2026] Ở lần gỡ 02/11/2026 bằng Dấu thật (trước D37), "+" còn một dòng trống tới lần đăng xuất. [Máy/Dấu]
 - Bộ đệm riêng của các app khác vẫn nhớ bộ gõ đã gỡ; hậu quả chưa đo (mục 10.7).
-- Đã cân nhắc và loại gỡ tự động không cần "–": mọi chỗ người dùng thấy đều sạch nhưng mục "đã bật" còn ẩn, và cài lại thì macOS bật Dấu ngay không hỏi (D16).
+- Đã cân nhắc và loại gỡ tự động không cần "–": mọi chỗ người dùng thấy đều sạch nhưng mục "đã bật" còn ẩn. Cài lại thì macOS bật Dấu ngay không hỏi (D16).
 
 ### 5.2 Vì sao app không tự bỏ được mục
 
@@ -208,7 +208,7 @@ Các hướng đã xét (04/11/2026, chỉ đọc):
 | Dịch vụ XPC `com.apple.hiservices-xpcservice` | không thử | API riêng không tài liệu, vượt một lớp bảo vệ |
 | Hồ sơ cấu hình | không | phải cài trong System Settings, nhiều bước hơn "–"; không có khoá nguồn đầu vào |
 | Tự động bấm "–" bằng trợ năng | làm được | cần quyền Accessibility (Dấu không xin, N4), vỡ theo bản macOS |
-| Full Disk Access | chưa biết | quá tay cho việc dọn một mục (mục 10.6) |
+| Full Disk Access | chưa biết | quá tay khi chỉ dọn một mục (mục 10.6) |
 | **Người dùng bấm "–"** rồi app mới xoá bundle | **có** | đường hiện hành (D16) |
 | Mục đã ẩn: cài lại cùng ID, bấm "–", rồi xoá | **có** (bản thử) | đường cứu khi bundle đã bị xoá trước |
 
@@ -216,8 +216,8 @@ Các hướng đã xét (04/11/2026, chỉ đọc):
 
 Cách app làm (D7 (Cập nhật và loại bản dựng), D37; `SystemInputMethodInstaller.reconcile()`):
 - Mỗi lần mở, bản chủ so mã băm chữ ký bộ gõ đã cài với bản nhúng; khác thì thay. Không so số phiên bản.
-- Bản mới được chép vào chỗ tạm trong cùng thư mục, gỡ quarantine, kiểm chữ ký, rồi đổi chỗ bằng một lần đổi tên. Không ghi đè từng file lên bundle đang chạy: tiến trình cũ còn ánh xạ mã của nó. [Suy luận, cần kiểm chứng; vChewing cũng chép tạm rồi đổi chỗ]
-- Bộ gõ cũ được yêu cầu thoát bằng thông báo Darwin (`InputMethodLifecycle`); macOS chạy bản mới ở phím kế tiếp. Quá hạn thì app dừng tiến trình bộ gõ của chính Dấu, không đụng tiến trình nào khác.
+- Bản mới chép vào chỗ tạm trong cùng thư mục, gỡ quarantine, kiểm chữ ký, rồi đổi chỗ bằng một lần đổi tên. Không ghi đè từng file lên bundle đang chạy: tiến trình cũ còn ánh xạ mã của nó. [Suy luận, cần kiểm chứng; vChewing cũng chép tạm rồi đổi chỗ]
+- Bộ gõ cũ nhận yêu cầu thoát qua thông báo Darwin (`InputMethodLifecycle`); macOS chạy bản mới ở phím kế tiếp. Quá hạn thì app dừng tiến trình bộ gõ của chính Dấu, không đụng tiến trình nào khác.
 - Gọi lại `TISRegisterInputSource` (vô hại); không đổi trạng thái bật hay chọn: ID giữ nguyên thì lựa chọn của người dùng còn nguyên.
 - Các định danh không được đổi giữa các bản: D37. Đổi bundle ID tại chỗ (30/10/2026, Dấu thật) làm bộ đệm TIS lệch: ID nguồn mới nhưng `kTISPropertyBundleID` vẫn cũ, thêm nguồn không kích hoạt được tới khi đăng xuất. [Máy/Dấu]
 
@@ -229,10 +229,10 @@ Không làm:
 
 D37 chọn app chủ không sandbox; bộ gõ vẫn sandbox, không mạng (N2 (Bộ gõ không có quyền mạng)), App Group giữ nguyên (`scripts/selftest/app-group.sh` đạt với app chủ không sandbox, 30/10/2026).
 
-- **Quarantine:** sandbox luôn gắn quarantine lên file app tạo ra (kể cả `move`), và app có sandbox không gỡ được; một tiến trình sandbox "không thể tạo file thực thi không bị quarantine" (Quinn, DTS, thread 811450, 701687). Bộ gõ được chép sẽ mang quarantine và có thể bị App Translocation. Trình cài McBopomofo có mã chờ hết translocation, vChewing gỡ quarantine sau khi chép. [Apple; Ngoài]
+- **Quarantine:** sandbox luôn gắn quarantine lên file app tạo ra (kể cả `move`). App có sandbox không gỡ được; một tiến trình sandbox "không thể tạo file thực thi không bị quarantine" (Quinn, DTS, thread 811450, 701687). Bộ gõ chép vào sẽ mang quarantine và có thể bị App Translocation. Trình cài McBopomofo có mã chờ hết translocation, vChewing gỡ quarantine sau khi chép. [Apple; Ngoài]
 - **Dừng app khác:** `NSRunningApplication.terminate()` và `forceTerminate()`: "Sandboxed applications can't use this method to terminate other applications". [Apple]
 - Ngoại lệ thư mục `com.apple.security.temporary-exception.files.home-relative-path.read-write` cho `/Library/Input Methods/` vẫn để lại hai vướng trên. Notarize không phải App Review (yêu cầu: Developer ID, Hardened Runtime, secure timestamp, không `get-task-allow`). [Apple]
-- Bộ gõ có sandbox gọi `TISSelectInputSource` thì TIS báo nguồn đã đổi, và nhật ký sandbox có `deny mach-lookup com.apple.tsm.portname`; ô gõ có đổi bộ gõ hay không thì lượt đó không kiểm. Gọi từ tiến trình khác, ô gõ giữ bộ gõ cũ (`0bf8d3f`), nên lời từ chối đó chưa chứng minh là nguyên nhân. [Máy/Dấu, 30/10/2026; 10/11/2026]
+- Bộ gõ có sandbox gọi `TISSelectInputSource` thì TIS báo nguồn đã đổi. Nhật ký sandbox có `deny mach-lookup com.apple.tsm.portname`; ô gõ có đổi bộ gõ hay không thì lượt đó không kiểm. Gọi từ tiến trình khác, ô gõ giữ bộ gõ cũ (`0bf8d3f`), nên lời từ chối đó chưa chứng minh là nguyên nhân. [Máy/Dấu, 30/10/2026; 10/11/2026]
 
 | Phương án | Vướng |
 |---|---|
@@ -303,7 +303,7 @@ Bộ gõ đã notarize mà mang quarantine có chạy không, có bị transloca
 Mục ẩn (bundle đã xoá, mục còn trong `com.apple.inputsources`) có hiện lại ở đâu sau một lần đăng nhập không. msime và Shanjie cho thấy mục không tự mất; cần tạo một mục ẩn mới để đo.
 
 ### 10.6 Vì sao ml-ime ghi được `com.apple.inputsources`
-ml-ime (macOS 26.5.2, 26.6.2) ghi miền này bằng `defaults write` trong khi Arion (26.6.2) và máy phát triển (27.2) bị chặn. Có thể Terminal của họ có Full Disk Access, hoặc lệnh chặn mới có ở 27 [Suy luận, cần kiểm chứng]. Full Disk Access của Terminal trên máy phát triển đang bật (04/11/2026) nhưng không biết lần `defaults import` bị từ chối chạy trong app nào, nên chưa đóng được hướng này. Chỉ để chẩn đoán, không vào sản phẩm.
+ml-ime (macOS 26.5.2, 26.6.2) ghi miền này bằng `defaults write` trong khi Arion (26.6.2) và máy phát triển (27.2) bị chặn. Có thể Terminal của họ có Full Disk Access hoặc lệnh chặn mới có ở 27 [Suy luận, cần kiểm chứng]. Full Disk Access của Terminal trên máy phát triển đang bật (04/11/2026) nhưng không biết lần `defaults import` bị từ chối chạy trong app nào, nên chưa đóng được hướng này. Chỉ để chẩn đoán, không vào sản phẩm.
 
 ### 10.7 Bộ đệm riêng của từng app: phần chưa đo
 - Khởi động lại máy có làm như đăng xuất không.

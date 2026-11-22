@@ -19,22 +19,22 @@ Các hướng, xếp theo triển vọng:
 2. **Cursor trả vị trí theo từ:** mã VS Code cho một giải thích khớp quan sát. Ô nhập dạng `textarea` của VS Code trên macOS chỉ chứa **từ ngay trước con trỏ** khi trình soạn thảo tin là không có trình đọc màn hình. Ở chế độ hỗ trợ trình đọc màn hình, ô đó chứa một trang chữ; ô dùng EditContext chứa các dòng có con trỏ. Đo trước: đọc hai cài đặt `editor.editContext`, `editor.accessibilitySupport` của Cursor, rồi chạy ô `edit` 5 ms một lượt với `editor.accessibilitySupport` đặt "on" và một lượt đặt "off". Mục 4.6.
 3. **WebStorm reset sau mỗi phím:** IMK không cho biết vì sao `commitComposition` tới. Hướng khả dĩ là ở chế độ thay tại chỗ, coi `commitComposition` chỉ là gợi ý, vì phép kiểm vị trí của D11 vẫn chạy ở mọi phím thay chữ. Đo trước: phép đo log đã lên kế hoạch ([`docs/research/JetBrainsInput.md`](JetBrainsInput.md) mục 5); có kết quả mới chọn hướng. Mục 4.4.
 4. **Google Docs:** không có API công khai nào cho bộ gõ thấy hay sửa quá cửa sổ một ký tự. WebKit có một đường riêng báo cho bộ gõ "trang này cần chữ đánh dấu" với docs.google.com, nhưng `IMKTextInput` không có lời gọi đó, nên bộ gõ bên thứ ba không dùng được. Mục 4.3.
-5. **Chữ đánh dấu không gạch chân:** không làm được ở Chromium (đọc mã), làm được ở WebKit bằng thuộc tính màu chữ (đọc mã), và vẫn là chữ đánh dấu với mọi hệ quả của nó. Không phải hướng sửa. Mục 3.
+5. **Chữ đánh dấu không gạch chân:** không làm được ở Chromium (đọc mã), làm được ở WebKit bằng thuộc tính màu chữ (đọc mã) và vẫn là chữ đánh dấu với mọi hệ quả của nó. Không phải hướng sửa. Mục 3.
 
-Hai việc đã xong ngày 22/11/2026 bằng N3 (Ít lời gọi vào ứng dụng đích), nên không còn trong danh sách trên. Safari thay sai khi trang chưa nhận kịp phím được sửa bằng cách Dấu tự chèn mọi ký tự engine để nguyên, vì IMK không có cách nào khác giữ thứ tự với các phím đang chờ trong hàng của WebKit (mục 4.1). ⌫ rồi phím dấu ở Safari khi trang bận được sửa bằng ngoại lệ chờ ⌫ chưa áp của N3, còn ⌫ vẫn đi thẳng ở mọi app (D32 (Backspace); mục 4.2).
+Hai việc đã xong ngày 22/11/2026 bằng N3 (Ít lời gọi vào ứng dụng đích), nên không còn trong danh sách trên. Dấu sửa lỗi Safari thay sai khi trang chưa nhận kịp phím bằng cách tự chèn mọi ký tự engine để nguyên, vì IMK không có cách nào khác giữ thứ tự với các phím đang chờ trong hàng của WebKit (mục 4.1). Lỗi ⌫ rồi phím dấu ở Safari khi trang bận sửa bằng ngoại lệ chờ ⌫ chưa áp của N3, còn ⌫ vẫn đi thẳng ở mọi app (D32 (Backspace); mục 4.2).
 
-Điều mới so với tài liệu khác (mục 5): theo commit message của WebKit, Telex đơn giản của Apple (commit gọi theo tên, không ghi ID nguồn) gõ bằng `insertText` có vùng thay (thay tại chỗ), kiểm lại bằng `selectedRange`, và tự chuyển sang chữ đánh dấu khi app không áp đúng. Điều này khác cách nói "Telex của Apple dùng chữ đánh dấu" ở [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 6.
+Điều mới so với tài liệu khác (mục 5): theo commit message của WebKit, Telex đơn giản của Apple (commit gọi theo tên, không ghi ID nguồn) gõ bằng `insertText` có vùng thay (thay tại chỗ), kiểm lại bằng `selectedRange` và tự chuyển sang chữ đánh dấu khi app không áp đúng. Phát hiện này khác cách nói "Telex của Apple dùng chữ đánh dấu" ở [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 6.
 
 ## 1. Dấu đang dùng gì
 
 Kiểm bằng grep trong `Apps/DauInputMethod/Sources/` (22/11/2026, nhánh main):
 
-- `DauInputController` ghi đè `recognizedEvents`, `handle(_:client:)`, `activateServer`, `deactivateServer`, `commitComposition`, `inputControllerWillClose`, `setValue(_:forTag:client:)` và `menu`. Nó không ghi đè `init(server:delegate:client:)`.
+- `DauInputController` ghi đè `recognizedEvents`, `handle(_:client:)`, `activateServer`, `deactivateServer`, `commitComposition`, `inputControllerWillClose`, `setValue(_:forTag:client:)` và `menu`. Controller này không ghi đè `init(server:delegate:client:)`.
 - Mọi lời gọi vào client (`IMKTextInput`) trong lúc gõ đi qua `TimedClient` (`DauInputController.swift`). Đó là `selectedRange`, `attributedSubstring(from:)`, `insertText(_:replacementRange:)` và `setMarkedText(_:selectionRange:replacementRange:)`. `setMarkedText` chỉ dùng ở chế độ gạch chân, với chuỗi trơn và vùng thay `NSNotFound` (`MarkedComposer.showMarked`).
-- `bundleIdentifier()` được gọi một lần mỗi lần kích hoạt, trong `clientBundleID` (từ `activateServer`).
-- `selectedRange` chỉ được hỏi ở chế độ thay tại chỗ, qua `InPlaceComposer.askSelection`. Hàm này được gọi ở `replace` khi phím thay chữ trước con trỏ mà chưa hỏi vị trí ở bước trước, ở `addMarks` (lần đọc của D20), ở `checkLockedWord` (lần đọc của D11 ở từ đã hết hợp lệ) và ở `waitForBackspace` (ngoại lệ sau ⌫ chưa áp của N3, cho phím chèn tại con trỏ). Chế độ gạch chân không bao giờ hỏi `selectedRange`. Riêng bản Debug khi bật log hiệu năng, `ReplaceDiag.log` hỏi thêm một lần sau mỗi lần thay chữ, sau khi đã ghi thời gian của phím.
-- `IMKInputController.client()` được dùng ở bốn chỗ, đều để chốt hoặc bỏ từ đang gõ ngoài một phím: `quitRequested` (app chủ yêu cầu thoát), `inputSourceDidChange` (đổi nguồn đầu vào mà IMK không báo), `apply` (đổi cài đặt) và `setTypingMethod` (chọn kiểu gõ trong menu).
-- `IMKServer(name:bundleIdentifier:)` được tạo một lần trong `main.swift`.
+- Dấu gọi `bundleIdentifier()` một lần mỗi lần kích hoạt, trong `clientBundleID` (từ `activateServer`).
+- Dấu chỉ hỏi `selectedRange` ở chế độ thay tại chỗ, qua `InPlaceComposer.askSelection`. Dấu gọi hàm này ở `replace` khi phím thay chữ trước con trỏ mà chưa hỏi vị trí ở bước trước, ở `addMarks` (lần đọc của D20), ở `checkLockedWord` (lần đọc của D11 ở từ đã hết hợp lệ) và ở `waitForBackspace` (ngoại lệ sau ⌫ chưa áp của N3, cho phím chèn tại con trỏ). Chế độ gạch chân không bao giờ hỏi `selectedRange`. Riêng bản Debug khi bật log hiệu năng, `ReplaceDiag.log` hỏi thêm một lần sau mỗi lần thay chữ, sau khi đã ghi thời gian của phím.
+- Dấu dùng `IMKInputController.client()` ở bốn chỗ, đều để chốt hoặc bỏ từ đang gõ ngoài một phím: `quitRequested` (app chủ yêu cầu thoát), `inputSourceDidChange` (đổi nguồn đầu vào mà IMK không báo), `apply` (đổi cài đặt) và `setTypingMethod` (chọn kiểu gõ trong menu).
+- `main.swift` tạo `IMKServer(name:bundleIdentifier:)` một lần.
 
 ## 2. Bảng API
 
@@ -72,7 +72,7 @@ Cột "Giúp gì" ghi việc mở mà API có thể chạm tới; "—" là khô
 | `lastKeyEventWasDeadKey()` | Phím vừa rồi có phải phím chết không [Apple] | không | — |
 | `paletteWillTerminate()` | Chỉ cho bộ gõ dạng bảng [Apple] | không | — |
 
-Header không nói gì về việc app nối lại vào tiến trình bộ gõ mới sau khi tiến trình cũ thoát, hay có gọi lại `activateServer` không. Kết nối qua endpoint XPC: [`docs/research/IMKAPINotes.md`](IMKAPINotes.md) mục "Kết nối của IMKServer và sandbox".
+Header không nói app có nối lại vào tiến trình bộ gõ mới và có gọi lại `activateServer` không sau khi tiến trình cũ thoát. Kết nối qua endpoint XPC: [`docs/research/IMKAPINotes.md`](IMKAPINotes.md) mục "Kết nối của IMKServer và sandbox".
 
 ### 2.3 Lời gọi vào client: `IMKTextInput`
 
@@ -104,13 +104,13 @@ Các lời gọi của 2.3 tới app thành lời gọi `NSTextInputClient` cùn
 - `attributedSubstring(forProposedRange:actualRange:)`: có thể trả nil; vùng thật có thể bị chỉnh "theo ranh giới cụm chữ, tối ưu hiệu năng…" [Apple].
 - `doCommand(by:)`: app chạy lệnh của phím (`deleteBackward:`…). Bộ gõ không gọi được lời này qua `IMKTextInput`.
 - `attributedString()` (tuỳ chọn): toàn bộ chữ của tài liệu, nếu app làm được rẻ [Apple]. `IMKTextInput` không có lời gọi tương ứng.
-- `NSTextInputContext.discardMarkedText()`: app báo hệ thống bỏ phiên soạn [Apple]. WebKit gọi nó khi không cho bộ gõ vùng soạn tại chỗ (ô mật khẩu) [WebKit]. Nó tới bộ gõ thành `commitComposition` hay lời gọi khác: [Suy luận], header không nói.
+- `NSTextInputContext.discardMarkedText()`: app báo hệ thống bỏ phiên soạn [Apple]. WebKit gọi nó khi không cho bộ gõ vùng soạn tại chỗ (ô mật khẩu) [WebKit]. Lời báo này tới bộ gõ thành `commitComposition` hay lời gọi khác: [Suy luận], header không nói.
 - `NSTextInputContext.invalidateCharacterCoordinates()`, `textInputClientDidUpdateSelection()` (macOS 15.4): app báo vị trí, vùng chọn hay chữ đã đổi [Apple]. IMK công khai không có lời gọi nào báo các tin này cho bộ gõ; theo header, `textInputClientDidUpdateSelection` dành cho Writing Tools.
 - `NSTextInputContext.activate()`/`deactivate()`: ngữ cảnh nhập được kích hoạt [Apple]. Chúng ứng với `activateServer`/`deactivateServer` của bộ gõ: [Suy luận].
 
 ## 3. Chữ đánh dấu không gạch chân
 
-Câu hỏi: có thể gửi chữ đánh dấu mà app không vẽ gạch chân không, và nếu được thì có thay được thay tại chỗ ở các app sai không.
+Câu hỏi: có thể gửi chữ đánh dấu mà app không vẽ gạch chân không, và nếu được thì có thay được tại chỗ ở các app sai không.
 
 ### 3.1 IMK trả thuộc tính gì
 
@@ -136,20 +136,20 @@ Vậy IMK tạo được chuỗi chữ đánh dấu không mang gạch chân. C�
 
 ### 3.3 Kết luận
 
-- Không có cách nào giấu gạch chân ở Chromium (Chrome, Edge, VS Code, Cursor, mọi app Electron). Khớp với điều [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 8 đã ghi; mục này thêm hai chi tiết: màu gạch chân trong suốt cũng không giấu được, và màu chữ không được nhận.
+- Không có cách nào giấu gạch chân ở Chromium (Chrome, Edge, VS Code, Cursor, mọi app Electron). Khớp với điều [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 8 đã ghi; mục này thêm hai chi tiết: màu gạch chân trong suốt cũng không giấu được và màu chữ không được nhận.
 - Ở WebKit giấu được, bằng chuỗi chỉ mang màu chữ. Đọc mã, chưa đo.
 - Chữ không gạch chân vẫn là chữ đánh dấu: trang nhận sự kiện soạn chữ (`compositionstart`, `compositionupdate`…), D20 (Thêm dấu cho từ đã gõ) không chạy, Return ngay sau từ đang soạn bị nuốt ở Ghostty (D43 (Ô bỏ qua vùng thay chữ)). Đổi màu không đổi các điều đó.
-- **Đối chiếu:** dùng chữ đánh dấu (có hay không gạch chân) làm cách gõ mặc định ở app nào là đổi D13 (Gạch chân là đường lui cuối cùng: thay tại chỗ là cách gõ; gạch chân chỉ do người dùng bật) và D5 (Quy tắc theo ứng dụng). Hướng này không được đề xuất.
+- **Đối chiếu:** dùng chữ đánh dấu (có hay không gạch chân) làm cách gõ mặc định ở app nào là đổi D13 (Gạch chân là đường lui cuối cùng) và D5 (Quy tắc theo ứng dụng). Theo D13, thay tại chỗ là cách gõ và gạch chân chỉ do người dùng bật. Hướng này không được đề xuất.
 
 ## 4. Từng việc mở
 
 ### 4.1 Safari thay sai khi trang chưa nhận kịp phím
 
-Nguyên nhân và hướng đã chọn: [`docs/research/LateAnswerFixes.md`](LateAnswerFixes.md) mục 5 và [`docs/Compatibility.md`](../Compatibility.md) mục 5.1. Safari đưa mọi sự kiện phím vào hàng của WebKit, và chỉ phím bộ gõ trả `false` mới mang chữ tới trang; lời gọi của bộ gõ tới trang ngay. Dấu tự chèn mọi ký tự engine để nguyên bằng `insertText`, ở mọi app (N3, 22/11/2026).
+Nguyên nhân và hướng đã chọn: [`docs/research/LateAnswerFixes.md`](LateAnswerFixes.md) mục 5 và [`docs/Compatibility.md`](../Compatibility.md) mục 5.1. Safari đưa mọi sự kiện phím vào hàng của WebKit. Chỉ phím bộ gõ trả `false` mới mang chữ tới trang; lời gọi của bộ gõ tới trang ngay. Dấu tự chèn mọi ký tự engine để nguyên bằng `insertText`, ở mọi app (N3, 22/11/2026).
 
 **API nào có thể giúp:**
 
-- Không API nào của `IMKTextInput` cho bộ gõ biết còn bao nhiêu phím đang chờ, hay xin app áp hết trước khi trả lời [Apple].
+- Không API nào của `IMKTextInput` cho bộ gõ biết còn bao nhiêu phím đang chờ hay xin app áp hết trước khi trả lời [Apple].
 - Mọi lời gọi của bộ gõ (`insertText`, `setMarkedText`, `selectedRange`, đọc chữ) đi cùng một đường tới trang theo đúng thứ tự gọi (`WebViewImpl::insertText`, `selectedRangeWithCompletionHandler`, `attributedSubstringForProposedRange` → `WebPageProxy` → trang) [WebKit]. Nên cách duy nhất giữ thứ tự là để mọi thao tác chữ do bộ gõ gửi. Đó chính là hướng bộ gõ tự chèn đã chọn (N3): không có API nào rẻ hơn thay được nó.
 - Trả "đã xử lý" cho phím mà không gửi chữ không giúp: chữ của phím đó mất.
 
@@ -157,9 +157,9 @@ Nguyên nhân và hướng đã chọn: [`docs/research/LateAnswerFixes.md`](Lat
 
 - Cờ `InputMethodUsesCorrectKeyEventOrder` gom `insertText`/`setMarkedText` của bộ gõ trong lúc xử lý một phím vào hàng cùng phím đó, gửi trang kèm phím, giữ đúng thứ tự (`WebViewImpl::interpretKeyEvent`, `insertText`, `setMarkedText`). Khi cờ bật:
   - `selectedRange` và đọc chữ trong lúc xử lý phím trả vị trí và chữ **đã cộng** các `insertText` đang gom, kể cả `insertText` có vùng thay (`selectedRangeWithCompletionHandler`, `attributedSubstringForProposedRange`).
-  - Phím mà bộ gõ chỉ gửi `insertText` (không chữ đánh dấu) được chuyển thành phím thường cho trang: `keydown` mang mã phím thật và có `keypress`.
-- Cờ được bật mặc định ngày 08/04/2026 (310826@main), gây nhiều lỗi với bộ gõ (có Telex đơn giản của Apple và tiếng Hàn trong Mail), rồi bị tắt ngày 15/06/2026 (315228@main, "gây quá nhiều lỗi"). Nhánh main hiện để `status: unstable`, mặc định tắt. Hàng phím mà Dấu đã đo ở Safari 27.2 khớp với cờ tắt.
-- Nếu Safari bật lại cờ này, cách Dấu tự chèn vẫn đúng thứ tự (mọi thao tác vẫn là lời gọi của bộ gõ, đi cùng một hàng) [Suy luận]. Điều phải kiểm lại khi đó: `selectedRange` trong lúc xử lý phím trả vị trí đã cộng chữ vừa gửi, khác Safari hiện nay.
+  - Trang nhận phím mà bộ gõ chỉ gửi `insertText` (không chữ đánh dấu) như phím thường: `keydown` mang mã phím thật và có `keypress`.
+- Cờ bật mặc định ngày 08/04/2026 (310826@main), gây nhiều lỗi với bộ gõ (có Telex đơn giản của Apple và tiếng Hàn trong Mail), rồi tắt ngày 15/06/2026 (315228@main, "gây quá nhiều lỗi"). Nhánh main hiện để `status: unstable`, mặc định tắt. Hàng phím mà Dấu đã đo ở Safari 27.2 khớp với cờ tắt.
+- Nếu Safari bật lại cờ này, cách Dấu tự chèn vẫn đúng thứ tự. Mọi thao tác vẫn là lời gọi của bộ gõ và đi cùng một hàng [Suy luận]. Điều phải kiểm lại khi đó: `selectedRange` trong lúc xử lý phím trả vị trí đã cộng chữ vừa gửi, khác Safari hiện nay.
 
 **Đo:** không cần đo thêm bây giờ. Mỗi bản Safari lớn, chạy lại các ô Safari đã có (ma trận ở `docs/Compatibility.md`).
 
@@ -168,12 +168,12 @@ Nguyên nhân và hướng đã chọn: [`docs/research/LateAnswerFixes.md`](Lat
 **Chromium** ([`docs/history/CompatibilityFixed.md`](../history/CompatibilityFixed.md), mục Backspace): app gửi phím gốc cho trang sau lời gọi của bộ gõ, trừ khi có chữ đánh dấu hay chữ chờ chèn dài hơn một ký tự (`keyEvent:`) [Chromium]. Không API nào của IMK đổi được điều này:
 
 - Nhận ⌫ qua `didCommand(by:client:)` (`deleteBackward:`) thay vì `handle` không đổi gì phía Chromium: Chromium không xét bộ gõ nhận phím bằng cách nào.
-- Mẹo duy nhất theo mã là làm cho phím đó có chữ đánh dấu, tức thêm một `setMarkedText` trong cùng phím: trái N3 (Ít lời gọi vào ứng dụng đích, mỗi phím tối đa một `insertText`), và vẫn là chữ đánh dấu. Không đề xuất.
+- Mẹo duy nhất theo mã là làm cho phím đó có chữ đánh dấu, tức thêm một `setMarkedText` trong cùng phím: trái N3 (Ít lời gọi vào ứng dụng đích, mỗi phím tối đa một `insertText`) và vẫn là chữ đánh dấu. Không đề xuất.
 - Cách hiện tại (D32 (Backspace): thay kèm lại chữ cuối, để lệnh xoá của app bỏ nó) là cách đúng với mã Chromium; giữ nguyên.
 
-**Safari:** ⌫ vẫn đi thẳng như D32; lỗi "⌫ rồi phím dấu khi trang bận" đã sửa bằng cách chờ ⌫ được áp rồi mới xử lý phím kế (ngoại lệ N3, hạn 20 ms; [`docs/research/LateAnswerFixes.md`](LateAnswerFixes.md) mục 5.4). Bản thử tự xoá riêng cho Safari không gộp; trong bản thử đó Safari 27.2 bỏ qua `insertText` với chuỗi rỗng (đã đo), nên Dấu thay hai ký tự bằng ký tự đầu.
+**Safari:** ⌫ vẫn đi thẳng như D32; lỗi "⌫ rồi phím dấu khi trang bận" đã sửa bằng cách chờ ⌫ áp xong rồi mới xử lý phím kế (ngoại lệ N3, hạn 20 ms; [`docs/research/LateAnswerFixes.md`](LateAnswerFixes.md) mục 5.4). Bản thử tự xoá riêng cho Safari không gộp; trong bản thử đó Safari 27.2 bỏ qua `insertText` với chuỗi rỗng (đã đo), nên Dấu thay hai ký tự bằng ký tự đầu.
 
-- Theo mã main, `insertText` rỗng có vùng thay lẽ ra xoá được: trang chọn vùng thay rồi xoá lùi khi chuỗi rỗng và vùng chọn khác rỗng (`WebPage::insertTextAsync`) [WebKit]. Vậy chuỗi rỗng bị bỏ ở chỗ khác: ở phía IMK trong tiến trình app, ở AppKit, hoặc Safari 27.2 khác main. Chưa rõ [Suy luận].
+- Theo mã main, `insertText` rỗng có vùng thay lẽ ra xoá được: trang chọn vùng thay rồi xoá lùi khi chuỗi rỗng và vùng chọn khác rỗng (`WebPage::insertTextAsync`) [WebKit]. Vậy chuỗi rỗng bị bỏ ở chỗ khác: ở phía IMK trong tiến trình app, ở AppKit hoặc Safari 27.2 khác main. Chưa rõ [Suy luận].
 - `setMarkedText("", selectionRange: (0, 0), replacementRange: vùng cần xoá)`: trang chọn vùng thay, rồi `Editor::setComposition` với chuỗi rỗng xoá vùng chọn (`WebPage::setCompositionAsync`, `Editor::setComposition`) [WebKit]. Chuỗi rỗng qua `setMarkedText` tới được app (chế độ gạch chân của Dấu dùng nó để xoá chữ đánh dấu). Hệ quả phụ theo mã: trang nhận một sự kiện `compositionend` không có `compositionstart` đi trước [WebKit].
 - **Đo rẻ nhất:** một ô Safari, chuỗi `không⌫g` và `Hoc ⌫j` với ⌫ xoá bằng `setMarkedText` rỗng có vùng thay, trên bản Debug. Chỉ đáng làm nếu sau này Dấu tự xoá ⌫ ở Safari; cách chờ ⌫ hiện dùng đã đúng ở các ô đã đo.
 - **Đối chiếu:** vẫn một lời gọi mỗi phím (N3). Chỉ có nghĩa nếu sau này Dấu tự xoá ⌫ ở Safari; hiện ⌫ đi thẳng.
@@ -188,27 +188,27 @@ Các đường đã xét và đã đo: [`docs/research/WebEditorInput.md`](WebEd
   - Hệ quả: bộ gõ của Apple có đường để biết Google Docs cần chữ đánh dấu; Dấu thì không. Khớp với số đo Telex của Apple gõ đúng ở Google Docs (mục 5).
 - **Tín hiệu công khai để nhận ra cửa sổ một ký tự** [Suy luận]: `string(from:actualRange:)` ở Chromium trả vùng thật là phần giao với bản sao chữ, nên lộ ra bản sao chỉ dài một ký tự; `length()` có thể nhỏ bất thường. Đây chỉ là cách nhận ra, không phải cách sửa: điều Dấu làm được sau khi nhận ra là chuyển sang chữ đánh dấu, tức tự bật gạch chân, **trái D13 và D5**.
 - **Hình học** (`firstRect`, `characterIndex`): Chromium hỏi renderer đồng bộ, nhưng chỉ cho khung và chỉ số trong chữ EditContext của trang, không cho chữ (đã ghi ở [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.2). Không giúp thay quá một ký tự.
-- **Đo:** không đề xuất phép đo mới cho việc sửa. Nếu người dùng muốn xét lại D13 cho Google Docs, phép đo rẻ nhất là bản Debug ghi `actualRange` và `length()` ở một lần gõ Google Docs (Chrome, Safari), để biết tín hiệu nhận ra có ổn định không.
+- **Đo:** không đề xuất phép đo mới cho phần sửa. Nếu người dùng muốn xét lại D13 cho Google Docs, phép đo rẻ nhất là bản Debug ghi `actualRange` và `length()` ở một lần gõ Google Docs (Chrome, Safari), để biết tín hiệu nhận ra có ổn định không.
 
 ### 4.4 WebStorm reset sau mỗi phím
-Số đo và giả thuyết dưới đây có từ trước khi Dấu tự chèn ký tự (N3, 22/11/2026): nay chỉ ⌫, Return, Tab, Esc, mũi tên và phím có ⌘, ⌃, ⌥ đi thẳng, và ca WebStorm chưa đo lại (WebStorm không có trên máy đo ngày 22/11/2026).
+Số đo và giả thuyết dưới đây có từ trước khi Dấu tự chèn ký tự (N3, 22/11/2026): nay chỉ ⌫, Return, Tab, Esc, mũi tên và phím có ⌘, ⌃, ⌥ đi thẳng. Ca WebStorm chưa đo lại (WebStorm không có trên máy đo ngày 22/11/2026).
 
-Chẩn đoán và giả thuyết: [`docs/research/JetBrainsInput.md`](JetBrainsInput.md) mục 4.2 (giả thuyết khớp mọi quan sát: lời báo bỏ chữ đang soạn mà JBR gửi sau mỗi `insertText` tới Dấu thành `commitComposition`, chỉ khi Dấu không đang xử lý phím).
+Chẩn đoán và giả thuyết: [`docs/research/JetBrainsInput.md`](JetBrainsInput.md) mục 4.2. Giả thuyết khớp mọi quan sát là lời báo bỏ chữ đang soạn mà JBR gửi sau mỗi `insertText` tới Dấu thành `commitComposition`, chỉ khi Dấu không đang xử lý phím.
 
 **API nào có thể giúp:**
 
-- IMK không cho bộ gõ biết vì sao `commitComposition` tới (bấm chuột, đổi ô, hay lời báo của JBR) [Apple]. `markedRange()` không phân biệt được: ở chế độ thay tại chỗ không bao giờ có chữ đánh dấu.
+- IMK không cho bộ gõ biết vì sao `commitComposition` tới (bấm chuột, đổi ô hay lời báo của JBR) [Apple]. `markedRange()` không phân biệt được: ở chế độ thay tại chỗ không bao giờ có chữ đánh dấu.
 - Hướng khả dĩ [Suy luận]: ở chế độ thay tại chỗ, coi `commitComposition` là gợi ý, không reset. Lý do:
   - Header định nghĩa `commitComposition` là kết thúc **phiên soạn chữ đánh dấu**; ở chế độ thay tại chỗ không có phiên đó.
   - Bấm chuột tới Dấu qua `handle` (Dấu nhận chuột, `recognizedEvents`), đổi app tới qua `deactivateServer`, đổi client qua `noteClient`.
   - Con trỏ đi chỗ khác mà không có tín hiệu nào thì D11 (Kiểm tra ngữ cảnh) bắt ở phím thay chữ kế tiếp (lệch thì đọc lại hoặc reset); khôi phục D4 ở cuối từ cũng là một lần thay, nên cũng qua phép kiểm đó.
-  - Rủi ro: app chỉ báo đổi ô bằng `commitComposition` (không có `deactivateServer`, không đổi client). Khi đó phím đi thẳng ở ô mới được ghi vào từ cũ trong engine, cho tới phím thay chữ đầu tiên. Chưa biết app nào như vậy; [`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) ghi rằng đổi giữa hai phần tử soạn thảo trong VS Code không đổi client và không gọi `activateServer`, nhưng không ghi có `commitComposition` hay không.
+  - Rủi ro: app chỉ báo đổi ô bằng `commitComposition` (không có `deactivateServer`, không đổi client). Khi đó engine ghi phím đi thẳng ở ô mới vào từ cũ, cho tới phím thay chữ đầu tiên. Chưa biết app nào như vậy; [`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) ghi rằng đổi giữa hai phần tử soạn thảo trong VS Code không đổi client và không gọi `activateServer`, nhưng không ghi có `commitComposition` hay không.
   - Chế độ gạch chân vẫn phải chốt chữ khi nhận `commitComposition`.
 - **Đo, theo thứ tự:**
   1. Phép đo đã lên kế hoạch: ghi `commitComposition` và `deactivateServer` vào log Debug, chạy lại ô `webstorm` một lượt. Có kết quả mới chọn hướng.
   2. Nếu đúng là `commitComposition`: test với client giả (offline) cho hướng gợi ý, gồm ca "đổi ô chỉ báo bằng `commitComposition`" (phím đi thẳng ở ô mới rồi phím dấu, rồi kết thúc từ), so với cách hiện tại.
   3. Một lượt app thật gộp: WebStorm (chuỗi đã đo ở JetBrainsInput mục 4), cộng VS Code chuyển giữa trình soạn thảo và terminal, Safari, Chrome, để kiểm không hỏng app khác.
-- **Đối chiếu:** không trái quyết định nào trong `Decisions.md`; D4 chỉ yêu cầu reset khi đổi ô hay app, và D11 vẫn chặn thay sai chỗ. Đổi danh sách sự kiện reset ở [`docs/Architecture.md`](../Architecture.md) mục "Điều khiển và hai chế độ ghi chữ".
+- **Đối chiếu:** không trái quyết định nào trong `Decisions.md`; D4 chỉ yêu cầu reset khi đổi ô hay app. D11 vẫn chặn thay sai chỗ. Đổi danh sách sự kiện reset ở [`docs/Architecture.md`](../Architecture.md) mục "Điều khiển và hai chế độ ghi chữ".
 
 ### 4.5 App không gửi `activateServer` sau khi cài lại bộ gõ
 
@@ -216,18 +216,18 @@ Hiện tượng: [`docs/Progress.md`](../Progress.md), Việc mở về cài l�
 
 **Cơ chế trong mã Dấu** (đọc `DauInputController`):
 
-- `clientApp`, quy tắc gạch chân theo app, bộ nghe cài đặt, nguồn đầu vào và yêu cầu thoát chỉ được đặt trong `activate`, tức chỉ sau `activateServer`.
+- `clientApp`, quy tắc gạch chân theo app, bộ nghe cài đặt, nguồn đầu vào và yêu cầu thoát chỉ đặt trong `activate`, tức chỉ sau `activateServer`.
 - Cài đặt (kiểu gõ, D20) vẫn đúng: đọc khi tạo controller.
 - Controller chưa được kích hoạt nên: không biết app (`app=?`), không áp quy tắc gạch chân (D5), không nghe đổi cài đặt (đổi kiểu gõ trong app chủ không tới controller này), không nghe yêu cầu thoát.
 
 **API nào có thể giúp:**
 
-- Phím vẫn tới `handle(_:client:)` kèm client, và `client()` trả client của controller [Apple]. `bundleIdentifier()` đọc được từ client đó bất cứ lúc nào.
+- Phím vẫn tới `handle(_:client:)` kèm client. `client()` trả client của controller [Apple]. `bundleIdentifier()` đọc được từ client đó bất cứ lúc nào.
 - Hướng [Suy luận]: ở phím đầu tiên của một controller chưa từng nhận `activateServer`, chạy phần việc của `activate` một lần (đọc bundle ID, đăng ký bộ nghe, áp quy tắc theo app), rồi xử lý phím. Có thể gộp vào chỗ `noteClient` đã nhận ra client mới.
 - Ghi đè `init(server:delegate:client:)` để đọc bundle ID ngay khi IMK tạo controller cũng được, nhưng header không bảo đảm client đã sẵn sàng trả lời lúc đó [Suy luận]; phím đầu tiên là chỗ chắc hơn.
 - **Đo, theo thứ tự:**
-  1. Offline: tách phần "kích hoạt khi cần" thành hàm thuần, test với client giả: phím đến khi chưa có `activateServer` thì quy tắc gạch chân của app được áp từ phím đó; `activateServer` đến sau thì không chạy lại hai lần.
-  2. App thật: cài lại bộ gõ (`scripts/dev/install-app.sh`), gõ ngay một từ ở Safari và Chrome đang mở, đọc log (`app=` khác `?`). Gộp vào lượt có cài bộ gõ sẵn (bước 3 của kế hoạch M7 đã có ô đo việc này khi Sparkle cập nhật).
+  1. Offline: tách phần "kích hoạt khi cần" thành hàm thuần và test với client giả. Phím đến khi chưa có `activateServer` thì quy tắc gạch chân của app áp từ phím đó; `activateServer` đến sau thì không chạy lại hai lần.
+  2. App thật: cài lại bộ gõ (`scripts/dev/install-app.sh`), gõ ngay một từ ở Safari và Chrome đang mở, đọc log (`app=` khác `?`). Gộp vào lượt có cài bộ gõ sẵn. Bước 3 của kế hoạch M7 đã có ô đo việc này khi Sparkle cập nhật.
 - **Đối chiếu:** thêm một lời gọi `bundleIdentifier()` mỗi controller, không theo phím. N3 giới hạn lời gọi khi gõ (`insertText`, `selectedRange`, đọc chữ); lời gọi này một lần mỗi phiên như ở `activateServer` hiện nay. Không trái quyết định nào; đổi [`docs/Architecture.md`](../Architecture.md) mục "Input mode, quy tắc theo app, cài đặt" ("Bundle ID lấy từ client lúc `activateServer`").
 
 ### 4.6 Cursor trả vị trí theo từ
@@ -240,7 +240,7 @@ Hiện tượng: trình soạn thảo Cursor 3.30.14 có lúc tính vị trí t�
 - **Ô `textarea` ẩn** (`TextAreaEditContext`, hàm `getScreenReaderContent`):
   - Khi trình soạn thảo coi là không có trình đọc màn hình (`AccessibilitySupport.Disabled`), trên macOS, không có vùng chọn: ô chỉ chứa **từ ngay trước con trỏ** (`_getWordBeforePosition`); không có từ thì một ký tự trước con trỏ. Chú thích trong mã: để giữ phím chọn dấu và gợi ý của Bàn phím trợ năng.
   - Còn lại (chưa biết hoặc có trình đọc màn hình): một trang chữ quanh con trỏ (`SimplePagedScreenReaderStrategy`).
-- Chromium trả `selectedRange` và chữ từ bản sao của chính phần tử đó (mục 2.3), nên ở cách thứ hai, khi coi là không có trình đọc màn hình, vị trí tính từ đầu từ. Khớp cả hai quan sát của Dấu: vị trí về 0 sau mỗi dấu cách, và lần đọc chỉ thấy phần cuối ("co" ở chỗ đã gõ "ừ co", [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm").
+- Chromium trả `selectedRange` và chữ từ bản sao của chính phần tử đó (mục 2.3), nên ở cách thứ hai, khi coi là không có trình đọc màn hình, vị trí tính từ đầu từ. Khớp cả hai quan sát của Dấu: vị trí về 0 sau mỗi dấu cách và lần đọc chỉ thấy phần cuối ("co" ở chỗ đã gõ "ừ co", [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm").
 - Trạng thái trình đọc màn hình với cài đặt `editor.accessibilitySupport` "auto" đổi theo việc hệ thống báo có công cụ trợ năng đang dùng hay không. Script gõ thử dùng System Events, một client Accessibility, nên có thể làm đổi trạng thái này giữa các lượt [Suy luận]. Chưa rõ vì sao buổi sáng và buổi chiều khác nhau.
 
 **API IMK nào giúp:** không có lời gọi nào cho bộ gõ biết gốc toạ độ của app. `string(from:actualRange:)` cho thấy chỗ bắt đầu của bản sao (mục 2.3) nhưng bản sao ở đây bắt đầu đúng ở đầu từ, nên không phân biệt được với một tài liệu chỉ có một từ. Sửa trong Dấu vẫn là các hướng ở `LateAnswerFixes.md` mục 2.2 (đổi N3 và D11).
@@ -248,12 +248,12 @@ Hiện tượng: trình soạn thảo Cursor 3.30.14 có lúc tính vị trí t�
 **Đo rẻ nhất:**
 
 1. Đọc cài đặt của Cursor (`editor.editContext`, `editor.accessibilitySupport`) trên máy đo. Không cần chạy gì.
-2. Một lượt app thật, ô `edit` 5 ms ở trình soạn thảo Cursor, hai cấu hình: `editor.accessibilitySupport` "off" và "on" (cùng `editor.editContext` như đang dùng). Dự đoán theo mã: nếu Cursor dùng ô `textarea`, "off" cho vị trí theo từ (sai như đã đo), "on" cho vị trí theo trang (đúng). Nếu Cursor dùng EditContext, cả hai cấu hình như nhau, và giả thuyết sai.
+2. Một lượt app thật, ô `edit` 5 ms ở trình soạn thảo Cursor, hai cấu hình: `editor.accessibilitySupport` "off" và "on" (cùng `editor.editContext` như đang dùng). Dự đoán theo mã: nếu Cursor dùng ô `textarea`, "off" cho vị trí theo từ (sai như đã đo), "on" cho vị trí theo trang (đúng). Nếu Cursor dùng EditContext, cả hai cấu hình như nhau và giả thuyết sai.
 3. Nếu dự đoán đúng: đó là một chế độ của app. Đổi cài đặt của Cursor là việc của người dùng (N4 (Không tự đổi cài đặt hệ thống) chỉ nói cài đặt hệ thống, nhưng Dấu cũng không đổi cài đặt của app khác); hướng dẫn hay sửa trong Dấu là quyết định của người dùng.
 
 ## 5. Điều mới so với tài liệu khác
 
-- **Telex của Apple có chế độ thay tại chỗ.** Commit 313286@main của WebKit (14/05/2026) viết rằng Telex đơn giản của Apple và bàn phím tiếng Hàn 2-Set là bộ gõ "không chế độ" (modeless): gõ bằng `insertText` có vùng thay (ví dụ thay "v" bằng "vi"), trong lúc xử lý phím hỏi `selectedRange` để kiểm chữ đã vào chưa, và nếu thấy chưa thì chuyển sang chữ đánh dấu tới hết phiên. Commit 315032@main nói AppKit có đường riêng để tắt chế độ này (dùng cho Google Docs).
+- **Telex của Apple có chế độ thay tại chỗ.** Commit 313286@main của WebKit (14/05/2026) viết rằng Telex đơn giản của Apple và bàn phím tiếng Hàn 2-Set là bộ gõ "không chế độ" (modeless): gõ bằng `insertText` có vùng thay (ví dụ thay "v" bằng "vi"), trong lúc xử lý phím hỏi `selectedRange` để kiểm chữ đã vào chưa và nếu thấy chưa thì chuyển sang chữ đánh dấu tới hết phiên. Commit 315032@main nói AppKit có đường riêng để tắt chế độ này (dùng cho Google Docs).
   - Khác với [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 6 và bảng tóm tắt ở đó ("Telex của Apple: chữ đánh dấu", theo lời tác giả bộ gõ khác, Dấu chưa đo).
   - Commit nói về Telex **đơn giản**, gọi theo tên (ID nguồn có lẽ là `…VietnameseSimpleTelex`, suy luận). Bộ gõ đối chứng của Dấu là `…VietnameseTelex`; nó có cùng cơ chế không thì chưa rõ.
   - Liên quan D13: cách của Apple là thay tại chỗ, tự lùi về chữ đánh dấu khi app không áp đúng, tức tự bật gạch chân. D13 chọn để người dùng tự bật. Đây là dữ kiện cho người dùng nếu muốn xét lại, không phải đề xuất.

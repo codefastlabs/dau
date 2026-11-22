@@ -34,9 +34,9 @@ Gạch chân, sau khi bỏ D43 cũ (12/11/2026, cùng script và ba dòng; cửa
 Cơ chế (mã Chromium nhánh main ngày 12/11/2026 và xterm.js 5.5.0, bản trang thử nạp):
 
 - **Chromium** (`RenderWidgetHostViewCocoa`):
-  - `insertText` có vùng thay gửi ngay `ImeCommitText(text, range)` cho trang. `insertText` không vùng thay trong lúc xử lý phím chỉ được gom lại (`_textToBeInserted`).
+  - `insertText` có vùng thay gửi ngay `ImeCommitText(text, range)` cho trang. `insertText` không vùng thay trong lúc xử lý phím chỉ gom lại (`_textToBeInserted`).
   - Sau `interpretKeyEvents`, gom được hơn một đơn vị thì trang nhận keydown mã 229 (`VKEY_PROCESSKEY`) rồi `ImeCommitText` của phần đã gom. Gom được một đơn vị hoặc không gì: trang nhận keydown thật của phím, rồi keypress mang đơn vị đó. Phím bộ gõ để đi (Delete, Return) còn sinh lệnh soạn thảo: sau phần chữ, trang nhận thêm keydown thật của phím.
-  - `selectedRange` và `attributedSubstring` trả từ bộ đệm (`_textSelectionRange`, `_availableText`), trang chỉ cập nhật khi chữ hay vùng chọn của nó đổi. Sau mỗi `insertText` không vùng thay, Chromium tự đặt con trỏ trong bộ đệm ở `_markedRange.location` cộng độ dài chữ (cắt về `int`), và chèn chữ vào bộ đệm ở `_markedRange.location`. `_markedRange` chỉ đổi khi có marked text, nên câu trả lời phụ thuộc lịch sử của view. Đây là một nguồn của dao động 0–2 đo được ở trang thử; con số từng lần chưa dựng lại được (bên dưới).
+  - `selectedRange` và `attributedSubstring` trả từ bộ đệm (`_textSelectionRange`, `_availableText`), trang chỉ cập nhật khi chữ hay vùng chọn của nó đổi. Sau mỗi `insertText` không vùng thay, Chromium tự đặt con trỏ trong bộ đệm ở `_markedRange.location` cộng độ dài chữ (cắt về `int`) và chèn chữ vào bộ đệm ở `_markedRange.location`. `_markedRange` chỉ đổi khi có marked text, nên câu trả lời phụ thuộc lịch sử của view. Đây là một nguồn gây dao động 0–2 đo được ở trang thử; con số từng lần chưa dựng lại được (bên dưới).
 - **Blink:**
   - Chữ có vùng thay đi `ReplaceTextAndKeepSelection`: chọn vùng, chèn, rồi đặt lại con trỏ cũ. Con trỏ cũ đứng trước cuối vùng thì giữ nguyên chỗ, nên chữ vừa thay nằm **sau** con trỏ. Vùng bắt đầu sau hết chữ thì bỏ (textarea rỗng có một `<br>` giữ chỗ).
   - Chữ không vùng thay đi `InsertTextAndMoveCaret`: chèn ở con trỏ, con trỏ ra sau.
@@ -45,7 +45,7 @@ Cơ chế (mã Chromium nhánh main ngày 12/11/2026 và xterm.js 5.5.0, bản t
   - `_keyDown` gửi ngay chữ thường, số, dấu câu (mã phím từ 48, một ký tự) rồi chặn mặc định, nên textarea gần như rỗng. Chữ hoa A–Z và phím cách không có `result.key` ở đây, đi tiếp sang `_keyPress`; `_keyPress` gửi chữ mà không chặn mặc định (`cancelEvents` mặc định tắt), nên chữ đó cũng vào textarea.
   - `_inputEvent` chỉ gửi chữ tới giữa keyup và keydown kế (`!ev.composed || !this._keyDownSeen`): chữ có vùng thay tới trước keydown của chính phím đó, nên tới shell, rồi keydown thật gửi thêm phím gốc. Đây là "phím gốc và chữ thay đều tới shell" của cách cũ.
   - Keydown 229 khi không soạn chữ đi `CompositionHelper._handleAnyTextareaChanges`: nhớ giá trị textarea, sau `setTimeout(0)` gửi `newValue.replace(oldValue, '')`. Phép trừ này chỉ đúng khi chữ mới chèn ở cuối (hoặc đầu) giá trị cũ. Chèn ở giữa thì giá trị cũ không còn là một đoạn liền của giá trị mới, và xterm.js gửi **cả textarea**.
-  - Textarea chỉ được làm rỗng khi Return, ⌃C, hay mất focus.
+  - Textarea chỉ được làm rỗng khi Return, ⌃C hay mất focus.
 
 Thay tại chỗ sai ở trang thử (xterm.js 5.5.0 trong Chrome) và ở terminal tích hợp của VS Code: phím gốc và chữ thay đều tới shell ("toôoiís vieêetj dđd "; 12/11/2026, 120 ms, một lượt mỗi ô, Telex của Apple ra đúng). Số đo này có từ trước khi Dấu tự chèn ký tự (N3, 22/11/2026) và chưa đo lại; D43 không đổi theo nó, vì gạch chân là cách gõ đúng ở các ô này. Các cách gửi ký tự xoá đã thử, bảng giả thuyết và các lượt đo của chúng ở [`docs/history/ResearchLog.md`](../history/ResearchLog.md) mục 4.
 
@@ -116,8 +116,8 @@ Ghostty và xterm.js theo mã nguồn (kết quả đo ở mục 1, 2); Terminal
 | Khả năng | Ghostty 1.4.0 | xterm.js trong Chromium | Terminal của Apple |
 |---|---|---|---|
 | Thay theo `replacementRange` | không | không: Blink thay trong textarea ẩn, xterm.js gửi shell chữ mới rồi thêm phím gốc | có, khi phím cách nhau từ 20 ms |
-| Vị trí con trỏ | luôn `{0,0}` khi không bôi đen | từ bộ đệm của Chromium (textarea ẩn, và phần Chromium tự đặt sau mỗi `insertText`): 0–2 | có, là ảnh chụp cũ khi phím dồn |
+| Vị trí con trỏ | luôn `{0,0}` khi không bôi đen | từ bộ đệm của Chromium (textarea ẩn và phần Chromium tự đặt sau mỗi `insertText`): 0–2 | có, là ảnh chụp cũ khi phím dồn |
 | Đọc chữ trước con trỏ | chỉ chữ đang bôi đen | chữ trong textarea, thường rỗng | có (D20 chạy, trừ sau ⌫) |
 | ⌫ tới bộ gõ | có (`keyDown` luôn gọi `interpretKeyEvents`) | có | không |
 | Phím không tới bộ gõ | phím tắt menu của Ghostty; bấm chuột (`mouseDown` không gọi `handleEvent`, kết luận về Dấu: suy luận, cần kiểm chứng) | phím có ⌘ | ⌫ |
-| Marked text | có, vẽ đè tại con trỏ; `setMarkedText` bỏ qua vùng thay; nuốt Return, Tab, Esc sau khi chốt | có, qua `compositionstart/update/end`; Return sau khi chốt được gửi lại sau phần chữ | có; ở 0 ms còn vẽ marked text cũ |
+| Marked text | có, vẽ đè tại con trỏ; `setMarkedText` bỏ qua vùng thay; nuốt Return, Tab, Esc sau khi chốt | có, qua `compositionstart/update/end`; Return sau khi chốt gửi lại sau phần chữ | có; ở 0 ms còn vẽ marked text cũ |

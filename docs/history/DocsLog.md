@@ -1,6 +1,6 @@
 # Nhật ký tài liệu
 
-Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống khi chúng được viết lại để đọc hiện trạng cho nhanh (09/11/2026, người dùng duyệt cách làm): ngày, người chốt, số phiên bản canvas, cách nói và mã nội bộ của các vòng làm việc trước. Tài liệu này ghi lại quá khứ, không sửa cho khớp hiện trạng; hiện trạng chỉ đọc ở tài liệu gốc. Mỗi mục "## <file>" gồm các đoạn chuyển nguyên văn từ file đó, kèm mục nguồn.
+Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống khi viết lại chúng để đọc hiện trạng cho nhanh (09/11/2026, người dùng duyệt cách làm): ngày, người chốt, số phiên bản canvas, cách nói và mã nội bộ của các vòng làm việc trước. Tài liệu này ghi lại quá khứ, không sửa cho khớp hiện trạng; hiện trạng chỉ đọc ở tài liệu gốc. Mỗi mục "## <file>" gồm các đoạn chuyển nguyên văn từ file đó, kèm mục nguồn.
 
 ## docs/Architecture.md
 
@@ -33,7 +33,7 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 ## docs/UIChecks.md
 
 - Mục "Lệnh", lần mở 6: "Giao diện hệ thống đang không dùng (`--appearance light|dark`; `-AppleInterfaceStyle` truyền như đối số không đổi được giao diện cửa sổ, đo 02/11/2026)" (ngày đo 02/11/2026 giữ ở đây; file chỉ còn câu giải thích).
-- Mục "Lệnh", cuối phần cửa sổ thật: "Bài học 02/11/2026: một `layoutProbe` đặt ngoài `listRowInsets` làm ảnh chụp ngoài màn hình lệch so với cửa sổ thật mà các kiểm vẫn đạt. Từ 03/11/2026 cửa sổ Cài đặt chỉ được đo trên cửa sổ thật; `layoutProbe` chỉ còn cho ảnh chụp onboarding và bảng so mockup, luôn cùng một cấu trúc view dù có probe hay không, và chỉ đặt trên nội dung hàng hoặc cả control, không bọc ngoài modifier của hàng list."
+- Mục "Lệnh", cuối phần cửa sổ thật: "Bài học 02/11/2026: một `layoutProbe` đặt ngoài `listRowInsets` làm ảnh chụp ngoài màn hình lệch so với cửa sổ thật mà các kiểm vẫn đạt. Từ 03/11/2026 cửa sổ Cài đặt chỉ được đo trên cửa sổ thật; `layoutProbe` chỉ còn cho ảnh chụp onboarding và bảng so mockup, luôn cùng một cấu trúc view dù có probe hay không và chỉ đặt trên nội dung hàng hoặc cả control, không bọc ngoài modifier của hàng list."
 - Danh sách, mục 16: "(đo 05/11/2026: trước khi sửa, ⌘[ đổi trang và làm sheet tự đóng)".
 - Danh sách, mục 18: "(đo 06/11/2026 trên bản sidebar cố định đầu tiên)".
 - Tiêu đề mục cuối: "Quy tắc thanh cuộn (chốt 29/10/2026)".
@@ -54,7 +54,7 @@ Lưu trữ phần lịch sử đã chuyển ra khỏi các tài liệu sống kh
 ## docs/Progress.md
 
 - Trạng thái hiện tại: "Giữa M5 và M6: M5 đóng 05/11/2026; M6 (hiệu năng dưới tải) chưa bắt đầu, lập kế hoạch ở đầu mốc. Từ 05/11 làm ngoài mốc: phần nền đa ngôn ngữ của M9 (D41; mã xong 06/11, hàng "Ngôn ngữ" xong 08/11, nhật ký ở `docs/history/LOG-M5-M6.md`), rút gọn script và test (09/11, nhật ký dưới đây)." (Nội dung hiện hành giữ trong bản viết lại; dòng này ghi để thấy cách nói cũ.)
-- Mốc, bảng cũ, cột "Ghi chú" của M9 và M10: "thêm 04/11; phần nền (D41) xong 06–08/11, còn duyệt câu chữ tiếng Anh" và "thêm 04/11" (hai mốc M9, M10 được thêm ngày 04/11).
+- Mốc, bảng cũ, cột "Ghi chú" của M9 và M10: "thêm 04/11; phần nền (D41) xong 06–08/11, còn duyệt câu chữ tiếng Anh" và "thêm 04/11" (hai mốc M9, M10 thêm ngày 04/11).
 - Mốc, hàng M2, cột "Ghi chú" cũ: "cách A" (cách A: hỏi `selectedRange` ở mỗi phím có thay chữ, theo `docs/Decisions.md`).
 - Mốc, hàng M5, cột "Ghi chú" cũ: "T4 bỏ" (T4: lượt đo trên tài khoản macOS mới; bỏ theo `docs/history/DecisionsLog.md`, 04/11/2026).
 - Ghi nhớ cho M7: "(hoãn từ kiểm toán M3)" ở gợi ý "Báo lại để bản sau xử lý đúng cho ứng dụng đó"; "(hoãn từ M3, Architecture.md)" ở `temporary-exception.mach-register.global-name`; "M7: đưa phép đếm cấp phát (`malloc_logger`) vào CI (người dùng giữ cho M7, 09/11/2026; chưa làm CI trước đó)."

@@ -42,11 +42,11 @@ Ngưỡng của CrUX: tốt ≤ 200 ms, cần cải thiện 200–500 ms, kém >
 
 ## 2. Giới hạn (N5 (Chỉ hứa điều đã kiểm chứng))
 
-- INP rộng hơn việc gõ: gồm cả thời gian xử lý và độ trễ hiển thị, mọi loại tương tác (nhiều nhất là nhấp chuột), và chỉ lấy tương tác dài nhất của lượt xem. Một lượt "INP > 200 ms" chỉ nói ít nhất một tương tác chậm.
+- INP rộng hơn việc gõ: gồm cả thời gian xử lý và độ trễ hiển thị, mọi loại tương tác (nhiều nhất là nhấp chuột) và chỉ lấy tương tác dài nhất của lượt xem. Một lượt "INP > 200 ms" chỉ nói ít nhất một tương tác chậm.
 - INP cũng hẹp hơn: không có mốc dưới 200 ms (CrUX chỉ có ba nhóm và p75), và luồng chính bận mà không có tương tác nào rơi trúng thì không được ghi.
 - Chưa rõ Chrome có tính phím đi qua bộ gõ (sự kiện soạn thảo: `keydown` mã 229, `compositionupdate`, `input`) là tương tác cho INP không; chưa tìm được nguồn chính thức (suy luận, cần kiểm chứng).
 - Chỉ Chrome. Không có số cho Safari, Firefox, app Electron (dựa trên Chromium nhưng không vào CrUX) hay WebView. Không có phân phối theo tương tác, không có phần phụ của INP theo origin.
-- Được nói: ở 9 trong 17 origin có dữ liệu, ít nhất 27% lượt truy cập có một tương tác trên 200 ms, tập trung ở ứng dụng web nặng. Không được nói: "x% chữ sẽ sai", hay "luồng chính bận lâu hơn khoảng cách hai phím ở y% lượt gõ".
+- Được nói: ở 9 trong 17 origin có dữ liệu, ít nhất 27% lượt truy cập có một tương tác trên 200 ms, tập trung ở ứng dụng web nặng. Không được nói: "x% chữ sẽ sai" hay "luồng chính bận lâu hơn khoảng cách hai phím ở y% lượt gõ".
 
 ## 3. INP đo gì (web.dev, đọc 09/11/2026)
 
@@ -63,7 +63,7 @@ Ngưỡng của CrUX: tốt ≤ 200 ms, cần cải thiện 200–500 ms, kém >
 - Kiểm chéo bộ lọc: github.com với mọi thiết bị 91,9% tốt, p75 75 ms; với desktop 95,6% tốt, p75 50 ms. Hai số khác nhau, nên bộ lọc desktop có tác dụng.
 - **Không dùng được:** PageSpeed Insights API v5 không khoá (HTTP 429 cho cả 18 origin, hạn mức ngày của dự án dùng chung bằng 0); CrUX API (HTTP 403 khi không có khoá, cần tài khoản Google Cloud).
 - **Web Almanac 2025, chương Hiệu năng:** phân bố INP toàn web theo origin, dữ liệu tháng 7/2025; không có phần phụ của INP.
-- Không tìm thấy nguồn công khai không cần tài khoản cho phân phối độ trễ đầu vào riêng, phân phối theo tương tác, hay mốc 100 ms.
+- Không tìm thấy nguồn công khai không cần tài khoản cho phân phối độ trễ đầu vào riêng, phân phối theo tương tác hay mốc 100 ms.
 
 ## 5. Nguồn
 

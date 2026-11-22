@@ -29,7 +29,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 
 ## Trước khi chạy (không chiếm màn hình)
 
-1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản dùng hằng ngày, bản Release của commit mới nhất trên `main` (CLAUDE.md "Dọn sau mỗi lần chạy"); script báo chưa phải bản mới nhất thì cài bản đó trước (`scripts/dev/install-app.sh --ref main`). Lượt này cần bản khác (bản Debug, bản thử) thì gộp vào cùng lượt chạy, và cài lại bản dùng hằng ngày khi dọn.
+1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản dùng hằng ngày, bản Release của commit mới nhất trên `main` (CLAUDE.md "Dọn sau mỗi lần chạy"); script báo chưa phải bản mới nhất thì cài bản đó trước (`scripts/dev/install-app.sh --ref main`). Lượt này cần bản khác (bản Debug, bản thử) thì gộp vào cùng lượt chạy và cài lại bản dùng hằng ngày khi dọn.
 2. Soạn sẵn văn bản sẽ gõ (mục "Văn bản") và kế hoạch app, ghi vào `build/dogfood/<ngày>/plan.md`. Mỗi đoạn có: chữ muốn ra, chuỗi phím Telex sẽ gõ (kể cả lỗi cố ý và chỗ sửa), app và ô gõ.
 3. Báo người dùng một dòng: "bắt đầu, khoảng N phút, dùng các app …", rồi chạy ngay; có hỏi trước hay không là do chế độ quyền của Claude Code (CLAUDE.md, mục "Điều phối").
 
@@ -66,7 +66,7 @@ Công cụ: phím gửi bằng `osascript` (System Events `keystroke`, `key code
 ## Quan sát
 
 - Chụp cửa sổ app (`screencapture -l <window id>`) sau mỗi câu và ngay sau mỗi thao tác sửa, xem ảnh bằng Read: chữ có đúng không, gạch chân có hiện không, con trỏ ở đâu, gợi ý tự động hay sửa chính tả của macOS có chen vào không.
-- Bong bóng gợi ý sửa của macOS (chữ đề xuất kèm ×) hiện dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận gợi ý. Người thật nhìn thấy nó, script thì không: chụp màn hình trước dấu cách ở chỗ dừng sau từ, ghi gợi ý như một quan sát, và soạn bước tiếp theo như người đã thấy nó (gõ tiếp, bấm ×, hay chấp nhận rồi sửa).
+- Bong bóng gợi ý sửa của macOS (chữ đề xuất kèm ×) hiện dưới từ khi người gõ dừng sau từ; dấu cách chấp nhận gợi ý. Người thật nhìn thấy nó, script thì không: chụp màn hình trước dấu cách ở chỗ dừng sau từ, ghi gợi ý như một quan sát và soạn bước tiếp theo như người đã thấy nó (gõ tiếp, bấm ×, hay chấp nhận rồi sửa).
 - Cuối mỗi ô đọc lại toàn bộ chữ (⌘A ⌘C, khôi phục clipboard như `typing/run.sh`) và so từng từ với chữ muốn ra.
 - Ghi cả chỗ "đúng nhưng khó chịu": phải gõ lại, phải nghĩ cách gõ, gạch chân ở chỗ không cần, chữ nhảy, chậm thấy được, hành vi khác Telex của Apple mà người quen Telex của Apple sẽ bất ngờ.
 - Chỗ nghi ngờ: gõ lại đúng đoạn đó một lần nữa bằng Dấu (có lặp lại không), rồi bằng Telex của Apple trong cùng ô, chuyển bằng phím tắt chuyển nguồn của hệ thống khi ô đã có focus (`scripts/CLAUDE.md`, "Đo độ đúng khi gõ"). Telex của Apple ra cùng kết quả thì ghi là hành vi của app hay macOS, không phải lỗi Dấu. Telex của Apple cũng hiện chữ bằng gạch chân, nên nó là đối chứng sát nhất cho chế độ gạch chân của Dấu.
@@ -75,7 +75,7 @@ Biết giới hạn của cách làm: phím từ System Events không hẳn là 
 
 ## Dọn
 
-Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (Notes: xoá ghi chú; Mail: "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi đã chép phần cần giữ, và cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
+Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (ở Notes thì xoá ghi chú, ở Mail thì chọn "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi chép phần cần giữ và cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
 
 ## Sau lượt gõ
 

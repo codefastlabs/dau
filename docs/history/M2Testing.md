@@ -7,7 +7,7 @@ Danh sách việc người dùng làm trên máy để kiểm chứng mốc M2. 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả trong Mục đăng nhập.
 2. Trong Terminal, ở thư mục repo: `scripts/install-debug.sh`. Script build bản Debug, chép `DauInputMethod.app` vào `~/Library/Input Methods`, dừng tiến trình bộ gõ cũ và in các bước bật nguồn nhập liệu.
 3. Làm theo các bước script in ra: Cài đặt hệ thống › Bàn phím › Nguồn đầu vào › Sửa… › "+" › Tiếng Việt › "Dấu – Tiếng Việt" › Thêm. Dấu chỉ có nguồn này (D2); gõ tiếng Anh bằng ABC/U.S. của macOS, nên giữ ABC (hoặc U.S.) trong danh sách. Nếu còn "Dấu – Tiếng Anh" từ bản cũ thì bỏ nó. Không thấy "Dấu" thì đăng xuất, đăng nhập lại rồi làm lại.
-4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu. Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng/cửa sổ nhớ nguồn riêng: phải chọn lại "Dấu – Tiếng Việt" **sau khi** chuyển sang từng ứng dụng thử, và nhìn biểu tượng V trên thanh menu trước khi gõ.
+4. Chọn "Dấu – Tiếng Việt" ở menu nguồn nhập liệu trên thanh menu. Nếu máy bật "Tự động chuyển sang nguồn đầu vào của tài liệu" (Cài đặt hệ thống › Bàn phím › Nguồn đầu vào), mỗi ứng dụng/cửa sổ nhớ nguồn riêng: phải chọn lại "Dấu – Tiếng Việt" **sau khi** chuyển sang từng ứng dụng thử và nhìn biểu tượng V trên thanh menu trước khi gõ.
 5. (Tuỳ chọn, để xem lỗi nếu bộ gõ không chạy) mở một cửa sổ Terminal riêng:
    `/usr/bin/log stream --predicate 'process == "DauInputMethod"'` (trong zsh, `log` là lệnh có sẵn khác, phải gõ đường dẫn đầy đủ)
 6. Bật nhật ký từng phím **trước khi gõ** (chỉ bản Debug; bản Release không có nhật ký này, D8): `defaults write -g DauPerfLog -bool true`. Không bật thì không có dòng nào để `perf-report.sh` đọc. Nhớ tắt sau khi đo (mục 3).
@@ -36,7 +36,7 @@ tôi yêu tiếng Việt, windows Sunrise car␣
 Mỗi ứng dụng: mở một ô soạn thảo trống, gõ câu mẫu, ghi lại. Sau đó trong Terminal chạy lệnh perf của ứng dụng đó (mục 3) và dán p50/p99 của `selectedRange_us`.
 
 - **Gạch chân:** chữ đang gõ có bị gạch chân không. Dấu không dùng marked text ở M2, nên gạch chân (nếu có) là điều bất thường cần ghi lại.
-- **Nhảy chữ:** có ký tự bị lặp, mất, đảo thứ tự, con trỏ nhảy, hoặc chữ bị thay sai chỗ không.
+- **Nhảy chữ:** có ký tự bị lặp, mất, đảo thứ tự, con trỏ nhảy hoặc chữ bị thay sai chỗ không.
 
 Kết quả (30/10/2026): agent tự gõ câu mẫu qua System Events, 30 ms/phím, bản Debug. Số đo là phím có thay (n=12 mỗi app ở 5 app đầu), chép từ `docs/Progress.md` mục "Số đo". "—" ở cột `count_unsupported`: lượt đo 29/10 không ghi riêng số này.
 
@@ -55,7 +55,7 @@ Bundle ID thật mà bộ gõ nhận được có thể khác cột trên (ví d
 - `replace`: hỏi `selectedRange` rồi thay chữ tại chỗ bằng một lần `insertText` (cách A).
 - `insert`: chèn tại con trỏ, không cần hỏi vị trí (ví dụ "w" → "ư").
 - `unsupported`: ứng dụng trả `NSNotFound` cho `selectedRange` (không hỗ trợ truy cập văn bản). Bộ gõ bỏ từ đang gõ và để phím đi thẳng; chữ ra gần như không dấu. Đây là dấu hiệu ứng dụng cần gạch chân (D13) — ghi lại số lần.
-- `mismatch`: vị trí con trỏ khác vị trí bộ gõ dự đoán (D11), hoặc đang có vùng chọn. Bộ gõ bỏ từ đang gõ để không thay sai chỗ.
+- `mismatch`: vị trí con trỏ khác vị trí bộ gõ dự đoán (D11) hoặc đang có vùng chọn. Bộ gõ bỏ từ đang gõ để không thay sai chỗ.
 - `reset`: phím tắt ⌘/⌃/⌥, mũi tên, Esc hoặc click chuột.
 - `event_client-changed`: số lần client đổi dưới cùng một controller. Nếu số này tăng theo từng phím thì là lỗi (bộ gõ sẽ không bỏ dấu được) — báo lại ngay.
 - `event_client-not-text-input`: client không trả lời được giao thức nhập văn bản — báo lại ngay.
@@ -68,7 +68,7 @@ Ngay sau khi gõ xong ở một ứng dụng (khoá `DauPerfLog` phải đã b�
 scripts/perf-report.sh --last 5m --app com.apple.TextEdit
 ```
 
-Các dòng cần chép vào bảng: `selectedRange_us` (chi phí của cách A), `handle_replace_us` (tổng thời gian xử lý một phím có thay chữ), `insertText_us`, và các dòng `count_…`. Muốn có p99 đáng tin hơn, gõ thêm vài đoạn văn tiếng Việt dài (tối thiểu vài trăm phím có dấu) trong cùng ứng dụng rồi chạy lại.
+Các dòng cần chép vào bảng: `selectedRange_us` (chi phí của cách A), `handle_replace_us` (tổng thời gian xử lý một phím có thay chữ), `insertText_us` và các dòng `count_…`. Muốn có p99 đáng tin hơn, gõ thêm vài đoạn văn tiếng Việt dài (tối thiểu vài trăm phím có dấu) trong cùng ứng dụng rồi chạy lại.
 
 Đo xong thì tắt nhật ký từng phím: `defaults delete -g DauPerfLog` (nhật ký có giờ và app của từng phím, D8).
 
@@ -104,5 +104,5 @@ Kết quả (30/10/2026): agent tự gõ qua System Events. 9, 10 ĐẠT sau khi
 ## 5. Gửi lại
 
 Gửi lại bảng ở mục 2 và 4 (có thể chép nguyên văn kết quả `perf-report.sh`). Phiên chính dùng số liệu này để:
-- quyết định giữ cách A hay chuyển sang cách B (câu hỏi mở A/B), và ghi số đo vào `Decisions.md` / `Progress.md`;
+- quyết định giữ cách A hay chuyển sang cách B (câu hỏi mở A/B) và ghi số đo vào `Decisions.md` / `Progress.md`;
 - quyết định ứng dụng nào cần gạch chân (D13) và trả lời câu hỏi Chrome/Terminal (không xin quyền Accessibility, N4).

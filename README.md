@@ -19,11 +19,11 @@
 
 ### Một lựa chọn không cần thoả hiệp.
 
-Người gõ tiếng Việt trên Mac thường phải chọn một trong hai đường. Đường thứ nhất là dùng bộ gõ có sẵn của macOS và chịu những chỗ nó gõ chưa đúng. Đường thứ hai là cài bộ gõ của bên thứ ba, cấp cho nó quyền can thiệp vào hệ thống, và chấp nhận việc nó xoá rồi gõ lại chữ bằng phím giả. Dấu được làm ra để người gõ không phải chọn như vậy: Dấu đặt dấu đúng chính tả, và Dấu là một nguồn đầu vào của macOS như mọi bàn phím của hệ thống.
+Người gõ tiếng Việt trên Mac thường phải chọn một trong hai đường. Đường thứ nhất là dùng bộ gõ có sẵn của macOS và chịu những chỗ nó gõ chưa đúng. Đường thứ hai là cài bộ gõ của bên thứ ba, cấp cho nó quyền can thiệp vào hệ thống và chấp nhận việc nó xoá rồi gõ lại chữ bằng phím giả. Dấu được làm ra để người gõ không phải chọn như vậy: Dấu đặt dấu đúng chính tả, và Dấu là một nguồn đầu vào của macOS như mọi bàn phím của hệ thống.
 
 ### Chính tả chuẩn xác, dù kiểu mới hay kiểu cũ.
 
-Dấu có ba kiểu gõ: Telex, VNI và Telex đơn giản. Dấu thanh luôn tự vào đúng nguyên âm theo chính tả, và bạn chọn được kiểu đặt dấu mới (hoà, thuý) hay kiểu cũ (hòa, thúy). Khi một từ đã sai chính tả, Dấu ngừng biến đổi từ đó chứ không đoán thay bạn.[^1] Trong một lượt gõ thử 60 câu tiếng Việt thông dụng trên Safari và Chrome, Dấu gõ đúng 677 trên 678 từ.[^2]
+Dấu có ba kiểu gõ: Telex, VNI và Telex đơn giản. Dấu thanh luôn tự vào đúng nguyên âm theo chính tả. Bạn chọn được kiểu đặt dấu mới (hoà, thuý) hay kiểu cũ (hòa, thúy). Khi một từ đã sai chính tả, Dấu ngừng biến đổi từ đó chứ không đoán thay bạn.[^1] Trong một lượt gõ thử 60 câu tiếng Việt thông dụng trên Safari và Chrome, Dấu gõ đúng 677 trên 678 từ.[^2]
 
 ### Tự do bỏ dấu ở bất kỳ vị trí nào.
 
@@ -39,7 +39,7 @@ Bạn có thể gõ một câu có xen tiếng Anh như "Sếp vừa gửi email
 
 ### Hoạt động như bàn phím hệ thống.
 
-Dấu là một nguồn đầu vào như mọi bàn phím khác trên Mac, không phải một ứng dụng chạy bên ngoài để chặn phím. Bạn chuyển giữa tiếng Việt và tiếng Anh bằng phím tắt và menu nguồn đầu vào của chính macOS, và không phải cấp quyền Trợ năng (Accessibility).[^6] Dấu thay chữ tại chỗ qua API nhập liệu của Apple, không giả lập phím Backspace.
+Dấu là một nguồn đầu vào như mọi bàn phím khác trên Mac, không phải một ứng dụng chạy bên ngoài để chặn phím. Bạn chuyển giữa tiếng Việt và tiếng Anh bằng phím tắt và menu nguồn đầu vào của chính macOS và không phải cấp quyền Trợ năng (Accessibility).[^6] Dấu thay chữ tại chỗ qua API nhập liệu của Apple, không giả lập phím Backspace.
 
 ### Những gì bạn gõ ở lại trên máy bạn.
 
@@ -53,7 +53,7 @@ Dấu không làm lại việc macOS đã làm. Gõ tắt cả cụm từ đã c
 
 ## Sắp ra mắt
 
-Dấu chưa có bản cài để tải về. Dấu được làm cho macOS 14 trở lên (D1 (Nền tảng)), nhưng tới nay mới được kiểm trên macOS 27.2 và máy Apple silicon. Bản beta đầu tiên chỉ hứa những điều đã kiểm chứng.[^8] Các mốc phát triển ghi ở [`docs/Roadmap.md`](docs/Roadmap.md). Các ứng dụng đã thử và các giới hạn còn lại ghi ở [`docs/Compatibility.md`](docs/Compatibility.md).
+Dấu chưa có bản cài để tải về. Dấu làm cho macOS 14 trở lên (D1 (Nền tảng)), nhưng tới nay mới kiểm trên macOS 27.2 và máy Apple silicon. Bản beta đầu tiên chỉ hứa những điều đã kiểm chứng.[^8] Các mốc phát triển ghi ở [`docs/Roadmap.md`](docs/Roadmap.md). Các ứng dụng đã thử và các giới hạn còn lại ghi ở [`docs/Compatibility.md`](docs/Compatibility.md).
 
 ## Dành cho nhà phát triển
 
@@ -64,7 +64,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test --package-pa
 ```
 
 Các tài liệu sau giúp bạn tìm hiểu thêm về dự án:
-- Kiến trúc, cấu trúc thư mục và luồng xử lý một phím được mô tả ở [`docs/Architecture.md`](docs/Architecture.md).
+- Kiến trúc, cấu trúc thư mục và luồng xử lý một phím mô tả ở [`docs/Architecture.md`](docs/Architecture.md).
 - Bản thiết kế của mọi màn hình nằm ở [`docs/canvas/README.md`](docs/canvas/README.md).
 - Mục lục mọi tài liệu kỹ thuật và nghiên cứu nằm ở [`docs/README.md`](docs/README.md).
 - Luật làm việc cho công cụ phát triển (Claude Code) nằm ở [CLAUDE.md](CLAUDE.md).
@@ -82,4 +82,4 @@ Dấu phát hành theo giấy phép GNU General Public License v3.0 (GPLv3). To�
 [^5]: Theo quyết định D4 (Từ nước ngoài). Trong cùng lượt đo với chú thích [^2], ở các câu trộn lẫn tiếng Việt và tiếng Anh, Dấu xử lý chính xác 184 trên 188 từ. Với danh sách 105 từ tiếng Anh và từ khóa lập trình có chứa các phím dấu Telex, Dấu giữ nguyên được 88 từ, xử lý sai 7 từ và có 10 từ trùng với một âm tiết tiếng Việt hợp lệ. Trên các ứng dụng bật tính năng tự động sửa chính tả của macOS, hệ thống có thể tự điều chỉnh từ vừa gõ sau khi bấm dấu cách đối với mọi bộ gõ; người dùng có thể hoàn tác bằng tổ hợp phím ⌘Z. Nguồn số liệu nằm tại [`docs/research/CompetitorComparison.md`](https://github.com/codefastlabs/dau/blob/main/docs/research/CompetitorComparison.md), mục 1.
 [^6]: Theo quyết định D2 (Chuyển Việt/Anh). Dấu đã được kiểm nghiệm thực tế và hoạt động bình thường mà không cần cấp quyền Trợ năng trên Chrome, VS Code và Terminal. Nguồn dữ liệu nằm tại [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md), nguyên tắc N4 (Không tự đổi cài đặt hệ thống).
 [^7]: Theo các nguyên tắc N2 (Bộ gõ không có quyền mạng) và D8 (Không telemetry). Nguồn dữ liệu nằm tại [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md).
-[^8]: Theo quyết định D1 (Nền tảng). Nguồn dữ liệu nằm tại [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md); các mốc phát triển đã thử nghiệm được ghi nhận tại [`docs/Roadmap.md`](https://github.com/codefastlabs/dau/blob/main/docs/Roadmap.md), mốc M7.
+[^8]: Theo quyết định D1 (Nền tảng). Nguồn dữ liệu nằm tại [`docs/Decisions.md`](https://github.com/codefastlabs/dau/blob/main/docs/Decisions.md); các mốc phát triển đã thử nghiệm ghi tại [`docs/Roadmap.md`](https://github.com/codefastlabs/dau/blob/main/docs/Roadmap.md), mốc M7.

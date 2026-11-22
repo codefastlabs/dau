@@ -6,11 +6,11 @@ Người gõ tiếng Việt sửa chữ theo nhiều cách: đổi dấu trong t
 
 Trong file này, "engine để nguyên" một phím nghĩa là engine trả `.passThrough` cho phím đó. Từ 22/11/2026, bộ gõ tự chèn ký tự của phím như vậy bằng `insertText` (N3), nên ký tự không còn đi thẳng tới app; các đo và dự đoán dưới đây về lỗi của engine không đổi.
 
-- **Trong từ đang gõ, Dấu sửa tốt.** Đổi dấu, xoá dấu, đặt dấu ở cuối hay giữa từ (D28 (Đặt dấu tự do)), gõ nhầm chữ rồi ⌫, chữ thừa làm sai chính tả rồi ⌫ trước dấu cách: đúng ở 17/21 ca. Bốn ca hỏng do hai luật: từ quá 7 chữ không quay lại (D33 (Độ dài từ)), và ⌫ xoá chữ, mốc khôi phục sau ⌫ là chữ đang hiện (D32 (Backspace)).
+- **Trong từ đang gõ, Dấu sửa tốt.** Đổi dấu, xoá dấu, đặt dấu ở cuối hay giữa từ (D28 (Đặt dấu tự do)), gõ nhầm chữ rồi ⌫, chữ thừa làm sai chính tả rồi ⌫ trước dấu cách: đúng ở 17/21 ca. Bốn ca hỏng do hai luật: từ quá 7 chữ không quay lại (D33 (Độ dài từ)) và ⌫ xoá chữ, mốc khôi phục sau ⌫ là chữ đang hiện (D32 (Backspace)).
 - **Khoá gõ đúp sau ⌫ (K4) đã sửa: phương án d là luật D26 (Gõ đúp phím dấu) từ 12/11/2026.** ⌫ xoá chữ của phím gõ đúp thì mở khoá: người lỡ gõ đúp phím dấu ("carr" ra "car"), ⌫ chữ thừa rồi gõ lại dấu, nay ra "cả". Trước đó K4 là nguyên nhân ngõ cụt lớn nhất trong mô phỏng: 60% số ngõ cụt ở cấu hình gốc, đứng đầu ở 42/45 cấu hình (mục 4.3). Độ lớn phụ thuộc tỉ lệ lỡ gõ đúp phím dấu, số giả định không có nguồn (mục 4.4).
-- **Từ đã bị khôi phục thì không sửa lại được (K1).** Khi kết thúc từ, D4 (Từ nước ngoài) trả từ không hợp lệ về đúng phím đã gõ ("ddungsg"); mọi cách sửa sau đó đọc chữ đó như chữ cái (D20 (Thêm dấu cho từ đã gõ)), nên engine để nguyên phím dấu ("ddungss"). Hay gặp nhất là **từ vần tắc quên dấu thanh** ("đep", "viêt", "tôt", "đươc"): D31 (Âm tiết tiếng Việt hợp lệ) cho là không hợp lệ, D4 khôi phục thành "ddep", rồi ⌫ thêm `j` ra "ddepj". Chiếm 21% số ngõ cụt (engine trước D26); đứng đầu khi mọi lỗi được sửa sau dấu cách. Ở ứng dụng bật tự sửa chính tả của macOS, K1 phần lớn không tới tay người gõ: hệ thống sửa từ đã khôi phục thành từ đúng, nhưng có ca sửa sai (Notes đổi "ddep" thành "đé"); ở ứng dụng không có tự sửa thì vẫn còn ([`docs/Compatibility.md`](../Compatibility.md) mục 6.1).
+- **Từ đã bị khôi phục thì không sửa lại được (K1).** Khi kết thúc từ, D4 (Từ nước ngoài) trả từ không hợp lệ về đúng phím đã gõ ("ddungsg"); mọi cách sửa sau đó đọc chữ đó như chữ cái (D20 (Thêm dấu cho từ đã gõ)), nên engine để nguyên phím dấu ("ddungss"). Hay gặp nhất là **từ vần tắc quên dấu thanh** ("đep", "viêt", "tôt", "đươc"): D31 (Âm tiết tiếng Việt hợp lệ) cho là không hợp lệ, D4 khôi phục thành "ddep", rồi ⌫ thêm `j` ra "ddepj". Chiếm 21% số ngõ cụt (engine trước D26); đứng đầu khi mọi lỗi sửa sau dấu cách. Ở ứng dụng bật tự sửa chính tả của macOS, K1 phần lớn không tới tay người gõ: hệ thống sửa từ đã khôi phục thành từ đúng, nhưng có ca sửa sai (Notes đổi "ddep" thành "đé"); ở ứng dụng không có tự sửa thì vẫn còn ([`docs/Compatibility.md`](../Compatibility.md) mục 6.1).
   - Ma trận và mô phỏng không mâu thuẫn: sửa sau dấu cách **theo chữ trên màn hình** (xoá tới chỗ còn đúng rồi gõ tiếp) đúng ngay lần đầu 1116/1117 lần; sửa **theo phím đã nhớ** (⌫ qua dấu cách rồi gõ phím dấu còn thiếu, như ma trận) đúng 913/1086 (Telex). Bản mô phỏng trước chỉ có cách thứ nhất nên ra 99,4–100%.
-- **Từ tiếng Anh gõ nhầm một chữ rồi ⌫ trong từ bị hỏng (K3).** D32 đặt mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở ("ưindows"). Đo trên 380 từ tiếng Anh mà Dấu giữ nguyên khi gõ thẳng: thêm một chữ thừa cuối từ rồi ⌫ thì 93 từ hỏng ("with" → "ưith", "deep" → "dêp", "server" → "sẻver"). Hệ quả này là câu hỏi mở trong sổ quyết định, chưa ghi ở D32. D4 không hứa giữ từ tiếng Anh (tiếng Việt thắng, và D26 đã chấp nhận làm hỏng một số từ), nên đây là chỗ cần chọn, không phải lỗi so với sổ. Trong mô phỏng, K3 không quá 3% số ngõ cụt (engine trước D26).
+- **Từ tiếng Anh gõ nhầm một chữ rồi ⌫ trong từ bị hỏng (K3).** D32 đặt mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở ("ưindows"). Đo trên 380 từ tiếng Anh mà Dấu giữ nguyên khi gõ thẳng: thêm một chữ thừa cuối từ rồi ⌫ thì 93 từ hỏng ("with" → "ưith", "deep" → "dêp", "server" → "sẻver"). Hệ quả này là câu hỏi mở trong sổ quyết định, chưa ghi ở D32. D4 không hứa giữ từ tiếng Anh (tiếng Việt thắng; D26 đã chấp nhận làm hỏng một số từ), nên đây là chỗ cần chọn, không phải lỗi so với sổ. Trong mô phỏng, K3 không quá 3% số ngõ cụt (engine trước D26).
 - **Chế độ gạch chân không có cách sửa nào sau khi từ đã chốt (K7).** Trong từ, gạch chân sửa như thay tại chỗ (đặt dấu tự do vẫn chạy). Mọi cách sửa sau dấu cách hay sau mũi tên mà thay tại chỗ làm được (31 ca) đều hỏng ở gạch chân, vì D20 không chạy ở chế độ đó (D13 (Gạch chân là đường lui cuối cùng)). Telex của Apple cũng vậy (đã đo ở Sublime Text và Notes). Đây là điều người dùng gạch chân gặp khi nói "không đặt dấu tự do được".
 - **Phương án đo được** (ngõ cụt mỗi 1000 từ: bảng mục 4.2):
   - (d) ⌫ xoá chữ của phím đúp thì mở khoá D26: đã chọn, nay là luật của Dấu; ngõ cụt giảm ở mọi hồ sơ. Không thêm lời gọi vào app (test bộ gõ `InPlaceComposerTests.backspaceReleasesDoubleLock`).
@@ -31,7 +31,7 @@ Bốn hồ sơ dùng để gắn nhãn kịch bản và cho mô phỏng sau. S�
 
 - **Ngược với giả định ban đầu:** bài báo cho thấy người gõ nhanh có **ít** lỗi thừa và bỏ sót chữ hơn người gõ chậm, tính theo ký tự. Số lỗi mỗi phút không có trong bài.
 - **Không có trong bài:** tỉ lệ cặp phím cách nhau dưới 10 ms. Cách đo trong trình duyệt chỉ chính xác khoảng 10–15 ms ([`docs/research/CompetitorComparison.md`](CompetitorComparison.md) mục 3). Khoảng cách từ ⌫ tới phím kế tiếp cũng không có. Hai số này là giả định.
-- **Phím xoá là phím thường dùng:** 3–9% số phím tuỳ nhóm. Bài báo ghi thêm rằng người gõ có thể chọn bằng chuột hay mũi tên để xoá nhiều chữ một lần, và nhật ký không cho biết điều đó xảy ra bao nhiêu.
+- **Phím xoá là phím thường dùng:** 3–9% số phím tuỳ nhóm. Bài báo ghi thêm rằng người gõ có thể chọn bằng chuột hay mũi tên để xoá nhiều chữ một lần. Nhật ký không cho biết điều đó xảy ra bao nhiêu.
 - **Số trong mô phỏng (mục 4) đều là giả định:** tỉ lệ lỗi, loại lỗi, cách phản ứng, thói quen sửa của từng hồ sơ nằm ở `SimProfile` (`Packages/DauEngine/Tests/DauEngineTests/TypistSim/SimProfiles.swift`), không lấy từ bài báo, vì bài báo không đo Telex hay cách sửa. Mục 4.3 đo xem kết luận nào đứng vững khi các số đó đổi.
 
 ## 2. Ma trận kịch bản
@@ -41,7 +41,7 @@ Cấu hình mặc định D15 (Cài đặt mặc định): Telex, kiểu mới, 
 Ký hiệu:
 - `␣` dấu cách, `⌫` xoá lùi, `←` `→` mũi tên (con trỏ dời một chữ), `⌥⌫` xoá cả từ, `⏎` Return. Phím cách nhau 200 ms trừ khi ghi khác.
 - `‸` là vị trí con trỏ khi nó không ở cuối.
-- Cột "Gạch chân" là chữ sau khi từ được chốt.
+- Cột "Gạch chân" là chữ sau khi chốt từ.
 - Hồ sơ: M, T, Đ, N theo mục 1.
 - Nguyên nhân: mã K ở mục 3; ✓ là đúng mong muốn.
 
@@ -233,7 +233,7 @@ Ngõ cụt mỗi 1000 từ, theo hồ sơ M / T / Đ / N (mục 1; trong `SimPro
 | b+c+d | 1,32 / 1,01 / 0,34 / 1,20 | 0,89 / 0,43 / 0,18 / 0,98 | 206 / 0; 1 | 11 | 6 | b, c và d | không thêm |
 | b′+c+d | 0,80 / 0,80 / 0,28 / 0,98 | 0,49 / 0,31 / 0,12 / 0,74 | 226 / 1; 1 | 10, làm hỏng 2 | 6 | b′, c và d | như b′ |
 
-- "Từ được sửa / mới hỏng" đếm trên khoảng 260.000 từ (hai kiểu gõ, bốn hồ sơ): từ cuối cùng sai hôm nay mà đúng với phương án, và ngược lại. Từ Việt mới hỏng ở b′: "Owng␣⌫⌫…" (muốn "Ông"), ⌫ thứ hai viết lại thành "Ơn" ngay dưới tay người gõ. Từ Anh mới hỏng ở d: một lần "office" (từ D26 vốn làm mất một chữ "f"): người gõ rất nhanh đảo hai chữ, gõ `ofif`, ⌫⌫, rồi `ffice.`. Trước khi đổi, `ofif` hiện "oif" và khoá; ⌫⌫ để lại "o" mà khoá còn, nên `ffice` được engine để nguyên và ra "office" do tình cờ. Với d, ⌫ đầu xoá chữ của phím đúp và mở khoá; `ff` sau đó là gõ đúp như khi gõ "office" liền một lần, ra "ofice", đúng hệ quả D26 đã chấp nhận ("coffee" → "cofee"; D4 không hứa giữ từ tiếng Anh). Chấp nhận.
+- "Từ được sửa / mới hỏng" đếm trên khoảng 260.000 từ (hai kiểu gõ, bốn hồ sơ): từ cuối cùng sai hôm nay mà đúng với phương án và ngược lại. Từ Việt mới hỏng ở b′: "Owng␣⌫⌫…" (muốn "Ông"), ⌫ thứ hai viết lại thành "Ơn" ngay dưới tay người gõ. Từ Anh mới hỏng ở d: một lần "office" (từ D26 vốn làm mất một chữ "f"). Người gõ rất nhanh đảo hai chữ, gõ `ofif`, ⌫⌫, rồi `ffice.`. Trước khi đổi, `ofif` hiện "oif" và khoá; ⌫⌫ để lại "o" mà khoá còn, nên engine để nguyên `ffice` và ra "office" do tình cờ. Với d, ⌫ đầu xoá chữ của phím đúp và mở khoá; `ff` sau đó là gõ đúp như khi gõ "office" liền một lần, ra "ofice", đúng hệ quả D26 đã chấp nhận ("coffee" → "cofee"; D4 không hứa giữ từ tiếng Anh). Chấp nhận.
 - Test engine đỏ: chạy mọi `Case` và `expectTyped` có ⌫ trong test engine (54 ca) qua engine có phương án. Test bộ gõ: theo grep, không test nào gõ từ D4 vừa khôi phục rồi ⌫ rồi phím, nên b không làm đỏ test nào; b cần test mới.
 
 Danh sách từ (Telex; [`TypistSimOptionsTests`](../../Packages/DauEngine/Tests/DauEngineTests/TypistSimOptionsTests.swift) `wordLists`), số từ ra đúng:
@@ -283,10 +283,10 @@ Kiểm chéo: các đầu vào mà phương án và luật đang có cho kết q
 
 Tự phản biện, mỗi phương án: kết quả nào chứng tỏ nó sai.
 
-- **b:** lợi ích chỉ đến từ người sửa theo phím sau dấu cách (giả định 50%); ai cũng sửa theo màn hình thì b không đổi ngõ cụt nào (mục 4.3, K1 = 0%). Sai nếu nhật ký phím thật cho thấy ⌫ qua dấu cách rồi phím dấu trên từ vừa khôi phục hiếm, hoặc phần lớn là từ Anh muốn thêm "s". App tự sửa từ vừa khôi phục thì chữ đọc khác chữ đã nhớ, b lùi về D20 như hôm nay.
+- **b:** lợi ích chỉ có ở người sửa theo phím sau dấu cách (giả định 50%); ai cũng sửa theo màn hình thì b không đổi ngõ cụt nào (mục 4.3, K1 = 0%). Sai nếu nhật ký phím thật cho thấy ⌫ qua dấu cách rồi phím dấu trên từ vừa khôi phục hiếm hoặc phần lớn là từ Anh muốn thêm "s". App tự sửa từ vừa khôi phục thì chữ đọc khác chữ đã nhớ, b lùi về D20 như hôm nay.
 - **b′:** sửa B29 nhưng làm hỏng B31 và X4 ở mục 2, vì chữ đổi ngay dưới tay người đang đếm ⌫; thêm lời gọi ở ⌫. Đo đã nói nó sai ở đúng những ca đó.
 - **c:** trong mô phỏng gần như không đổi gì (3 từ), vì cần từ Anh gõ ở chế độ tiếng Việt, gõ nhầm trong từ, rồi ⌫ theo phím. Vô ích nếu người dùng gõ tiếng Anh bằng U.S. như D2 (Chuyển Việt/Anh) gợi ý; đứng riêng thì làm hỏng `ddeq⌫p␣⌫j␣`.
-- **d:** lợi ích dựa vào tỉ lệ lỡ gõ đúp phím dấu (giả định 5–10% số lỗi, không có nguồn). Sai nếu nhật ký phím cho thấy lỡ gõ đúp hiếm, hoặc sau phím đúp rồi ⌫ người gõ thường muốn chữ gốc ("aa", "dd") hơn chữ có dấu.
+- **d:** lợi ích dựa vào tỉ lệ lỡ gõ đúp phím dấu (giả định 5–10% số lỗi, không có nguồn). Sai nếu nhật ký phím cho thấy lỡ gõ đúp hiếm hoặc sau phím đúp rồi ⌫ người gõ thường muốn chữ gốc ("aa", "dd") hơn chữ có dấu.
 
 ### 4.3 Độ nhạy
 
@@ -303,9 +303,9 @@ Tự phản biện, mỗi phương án: kết quả nào chứng tỏ nó sai.
 | Chỉ sửa sau dấu cách | 5,88; 5,94 | 0% | 77% | 0% | 23% |
 | Không ai lỡ gõ đúp phím dấu | 2,34; 1,50 | 4% | 55% | 3% | 38% |
 
-- **K4 đứng đầu ở 42/45 cấu hình**, ở cả Telex lẫn VNI, kể cả khi mọi người gõ một thứ tự phím. K1 đứng đầu ở 2: chỉ sửa sau dấu cách, và không ai lỡ gõ đúp. Một cấu hình (chỉ xoá cả từ gõ lại) không có ngõ cụt.
-- **Thứ hạng không phải do số giả định, độ lớn thì có.** Mọi số đổi trong ×0,5…×2 vẫn giữ K4 rồi K1. Ngoài hai cấu hình K1 đứng đầu, phần của K4 đi từ 43% tới 87%, và gần như toàn bộ nằm ở một số chưa có nguồn: tỉ lệ lỡ gõ đúp. Con số 80–90% nói trước đây chỉ tính ngõ cụt trong từ, với người gõ chỉ sửa theo màn hình.
-- K3 không quá 3% ở cấu hình nào: kho câu ít từ Anh, và lỗi K3 cần gõ nhầm trong từ Anh rồi sửa theo phím.
+- **K4 đứng đầu ở 42/45 cấu hình**, ở cả Telex lẫn VNI, kể cả khi mọi người gõ một thứ tự phím. K1 đứng đầu ở 2: chỉ sửa sau dấu cách và không ai lỡ gõ đúp. Một cấu hình (chỉ xoá cả từ gõ lại) không có ngõ cụt.
+- **Thứ hạng không phải do số giả định, độ lớn thì có.** Mọi số đổi trong ×0,5…×2 vẫn giữ K4 rồi K1. Ngoài hai cấu hình K1 đứng đầu, phần của K4 đi từ 43% tới 87% và gần như toàn bộ nằm ở một số chưa có nguồn: tỉ lệ lỡ gõ đúp. Con số 80–90% nói trước đây chỉ tính ngõ cụt trong từ, với người gõ chỉ sửa theo màn hình.
+- K3 không quá 3% ở cấu hình nào: kho câu ít từ Anh. Lỗi K3 cần gõ nhầm trong từ Anh rồi sửa theo phím.
 
 ### 4.4 Đề xuất và tự phản biện
 
@@ -317,8 +317,8 @@ Tự phản biện, mỗi phương án: kết quả nào chứng tỏ nó sai.
 
 Tự phản biện:
 
-- Cả hai phần lợi đến từ hai số không có nguồn: tỉ lệ lỡ gõ đúp (cho d) và tỉ lệ sửa theo phím (cho b). Nếu cả hai gần 0, b+d gần như không đổi gì; khi đó cũng không hỏng gì ngoài các ca ở bảng kiểm chéo.
-- d đảo một câu D26 viết có chủ ý. Câu đó không ghi lý do riêng cho ⌫; lý do của D26 là giữ được chữ gốc, và d vẫn giữ khi ⌫ không xoá chữ của phím đúp. Nếu có người gõ "aaa⌫a" để được "aa", d làm hỏng họ.
+- Cả hai phần lợi đều dựa vào hai số không có nguồn: tỉ lệ lỡ gõ đúp (cho d) và tỉ lệ sửa theo phím (cho b). Nếu cả hai gần 0, b+d gần như không đổi gì; khi đó cũng không hỏng gì ngoài các ca ở bảng kiểm chéo.
+- d đảo một câu D26 viết có chủ ý. Câu đó không ghi lý do riêng cho ⌫; lý do của D26 là giữ được chữ gốc. Phương án d vẫn giữ chữ gốc khi ⌫ không xoá chữ của phím đúp. Nếu có người gõ "aaa⌫a" để được "aa", d làm hỏng họ.
 - Mô phỏng là ô đồng bộ. b thay chữ ở đúng lần đọc của D20, đi qua phép kiểm D11, nên rủi ro app trả lời chậm như D20 hôm nay; chưa đo trên app thật.
 - Kết quả chứng tỏ đề xuất sai: nhật ký phím (bản Debug, khoá `DauPerfLog`, người dùng tự bật, D8 (Không telemetry)) cho thấy sau một phím đúp rồi ⌫, phím kế tiếp hiếm khi là chính phím đó; hoặc ⌫ qua dấu cách rồi "s" trên từ vừa khôi phục chủ yếu là số nhiều tiếng Anh.
 
@@ -343,7 +343,7 @@ Tự phản biện:
   - X5: bấm đúp chọn từ rồi gõ lại, ở Notes và Chrome.
   - H7: thay một vùng có cả phần sau con trỏ thì con trỏ về đâu, ở Notes, Chrome, VS Code. Chỉ cần nếu chọn H7.
   - Telex của Apple ở các ca chữ thừa (B29–B31, `ddungsg␣⌫⌫`), để có đối chứng cho nhóm K1. Telex của Apple không khôi phục từ, nên dự đoán nó giữ "đúngg"; chưa đo.
-- **Không đo được bằng lượt chạy ngắn:** tỉ lệ lỡ gõ đúp phím dấu, và người gõ sửa theo phím hay theo màn hình (mục 4.4). Cần nhật ký phím của người gõ thật; D8 (Không telemetry) chỉ cho ở bản Debug với khoá `DauPerfLog`, trên máy người dùng tự bật.
+- **Không đo được bằng lượt chạy ngắn:** tỉ lệ lỡ gõ đúp phím dấu và người gõ sửa theo phím hay theo màn hình (mục 4.4). Cần nhật ký phím của người gõ thật; D8 (Không telemetry) chỉ cho ở bản Debug với khoá `DauPerfLog`, trên máy người dùng tự bật.
 - **Ngoài phạm vi:** phím dấu không ăn khi gõ nhanh trong trình soạn thảo web. Đo riêng trên TipTap/ProseMirror trong Chrome (12/11/2026, Dấu Release, câu mẫu 41 phím, 5/10/20 ms, 3 lượt mỗi mức, đối chứng Telex của Apple): không tái hiện, Dấu đúng 9/9 ([`docs/Compatibility.md`](../Compatibility.md) mục 5.2). Mọi ca nhóm A ở đây đúng cả khi phím cách nhau 8 ms trong ô giả.
 
 ## 6. Phương pháp
@@ -356,10 +356,10 @@ Tự phản biện:
   - `DAU_SIM_SENS=1 swift test --package-path Packages/DauEngine --filter TypistSimOptionsTests/sensitivity`: mục 4.3.
   - `DAU_SIM_SENTENCES`, `DAU_SIM_SEED` đổi số câu và seed. Phương án nằm ở `SimVariant`, hồ sơ ở `SimProfile`.
 - **Mã nguồn đã đọc:** `VietEngine` (`backspace`, `seed(displayed:)`, `finishWord`, `startOverflow`), `InPlaceComposer` (`handleKey`, `addMarks`, `seedWord`, `checkLockedWord`, `continueForeignWord`), `MarkedComposer.handle`.
-- **Mỗi số ở mục 2–4 lấy lại được** bằng chuỗi phím trong bảng, cấu hình D15 (Cài đặt mặc định), danh sách ở phụ lục, và các lệnh trên với seed 20261111.
+- **Mỗi số ở mục 2–4 lấy lại được** bằng chuỗi phím trong bảng, cấu hình D15 (Cài đặt mặc định), danh sách ở phụ lục và các lệnh trên với seed 20261111.
 - **Các phép đo trên danh sách:**
   - "Giữ nguyên khi gõ thẳng": kết quả của `W␣` là `W␣`.
-  - K3: `W` + `q⌫` + `␣`, `W` có `q⌫` chèn giữa, và `W` bỏ chữ cuối + `q⌫` + chữ cuối + `␣`.
+  - K3: `W` + `q⌫` + `␣`, `W` có `q⌫` chèn giữa và `W` bỏ chữ cuối + `q⌫` + chữ cuối + `␣`.
   - H2: từ giữ nguyên mà chữ giữa từ khác `W` và thêm s hay j cho chữ khác.
   - H3: từ có chữ cuối là phím dấu thanh/biến đổi mà gõ thẳng `W␣` không ra `W`.
 - **Nguồn ngoài:** V. Dhakal, A. M. Feit, P. O. Kristensson, A. Oulasvirta. Observations on Typing from 136 Million Keystrokes. CHI 2018. https://www.pokristensson.com/pubs/DhakalEtAlCHI2018.pdf ; trang dữ liệu https://userinterfaces.aalto.fi/136Mkeystrokes/

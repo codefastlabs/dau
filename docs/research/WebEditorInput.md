@@ -22,7 +22,7 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
 
 ### Kết luận
 
-- **Không bộ gõ IMK nào đã đọc gõ Google Docs bằng thay tại chỗ.** VietTelex ép chữ đánh dấu cho cả từ riêng ở Google Docs; XKeyIM khi không có quyền Trợ năng, fcitx5-macos và các bộ gõ ở mục 5 dùng chữ đánh dấu ở mọi app; Phím Việt dùng chữ đánh dấu tới khi app chứng minh đọc lại đúng. Tác giả VietTelex ghi rằng chữ đánh dấu là cách duy nhất chạy đúng với trình soạn thảo của Google Docs (mục 1). Khớp với số đo của Dấu: Telex của Apple gõ đúng ở đó, và theo hai tác giả khác thì nó cũng dùng chữ đánh dấu (mục 6; Dấu chưa đo điều này).
+- **Không bộ gõ IMK nào đã đọc gõ Google Docs bằng thay tại chỗ.** VietTelex ép chữ đánh dấu cho cả từ riêng ở Google Docs; XKeyIM khi không có quyền Trợ năng, fcitx5-macos và các bộ gõ ở mục 5 dùng chữ đánh dấu ở mọi app; Phím Việt dùng chữ đánh dấu tới khi app chứng minh đọc lại đúng. Tác giả VietTelex ghi rằng chữ đánh dấu là cách duy nhất chạy đúng với trình soạn thảo của Google Docs (mục 1). Khớp với số đo của Dấu: Telex của Apple gõ đúng ở đó. Theo hai tác giả khác thì nó cũng dùng chữ đánh dấu (mục 6; Dấu chưa đo điều này).
 - **Nhận ra ô Google Docs:**
   - VietTelex đọc URL của vùng web đang có con trỏ bằng Accessibility, nên cần quyền Trợ năng. Dấu không xin quyền đó (N4 (Không tự đổi cài đặt hệ thống), ý cuối).
   - Chỉ dùng IMK thì có Phím Việt: một app được tin khi đọc lại đúng ở **hai vị trí khác nhau**. Tác giả ghi lý do: app báo một vị trí sai cố định chỉ có thể trùng đúng ở một vị trí. Đây chính là ca `(1, 0)` của Google Docs. Nhưng Phím Việt tin hay không theo cả app (bundle id), nên một tab Google Docs làm cả Chrome về chữ đánh dấu tới hết phiên (mục 3).
@@ -30,12 +30,12 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
 - **Vì sao bộ gõ chỉ thấy một ký tự (đọc mã Chromium, mục 8 và 10).**
   - Ở Chrome cho macOS, `selectedRange` và `attributedSubstring(forProposedRange:actualRange:)` trả từ một bản sao chữ quanh vùng chọn mà trang gửi lên, không hỏi trang ngay lúc gọi.
   - Khi ô dùng EditContext, bản sao đó cắt từ chính chuỗi `editContext.text` mà trang tự đặt, tối đa 100 ký tự mỗi bên vùng chọn.
-  - Một kỹ sư Mozilla viết (W3C edit-context issue #151, 10/2026) rằng Google Docs dùng một phần tử EditContext vô hình, không phải canvas, và vẽ canvas đè lên. Không có nguồn nào nói Google Docs đặt bao nhiêu chữ vào đó.
+  - Một kỹ sư Mozilla viết (W3C edit-context issue #151, 10/2026) rằng Google Docs dùng một phần tử EditContext vô hình (không phải canvas) và vẽ canvas đè lên. Không có nguồn nào nói Google Docs đặt bao nhiêu chữ vào đó.
   - Dấu đã đo (17/11/2026, mục 10.6): ở Chrome, cửa sổ `(1, 0)` chứa đúng chữ cái cuối của từ trước con trỏ (1/1 lần nhìn đầu); ở Safari, nó chứa một ký tự vô hình (zero-width) Google Docs đặt sẵn, không bao giờ là chữ thật (7/7).
 - **Thay tại chỗ trong Google Docs (mục 10):** không có đường nào chỉ dùng API chính thức để thay quá một ký tự. Sửa nhiều bước qua cửa sổ đã đo và không được (mục 10.6 A).
   - Vùng thay vượt ra ngoài chữ trang đưa bị Chrome cắt vào trong chữ đó (đọc mã EditContext). Ngoài chuỗi đó, bộ gõ không có cách nào chạm tới chữ.
   - Đọc lại trong lúc đang xử lý một phím không thấy thay đổi: Dấu đã đo ở Chrome ([`docs/Compatibility.md`](../Compatibility.md) mục 6.2).
-  - Sửa nhiều bước theo cửa sổ một ký tự, chạy sau khi phím đã xử lý xong: không được. Ở Chrome, xoá ký tự trong cửa sổ xong thì cửa sổ không trượt về chữ trước mà hiện một dấu cách, và tab đó thôi nhận mọi lần thay chữ cho tới khi tải lại trang; ở Safari cửa sổ không có chữ thật để bắt đầu (mục 10.6 A).
+  - Sửa nhiều bước theo cửa sổ một ký tự, chạy sau khi phím đã xử lý xong: không được. Ở Chrome, xoá ký tự trong cửa sổ xong thì cửa sổ không trượt về chữ trước mà hiện một dấu cách. Tab đó thôi nhận mọi lần thay chữ cho tới khi tải lại trang; ở Safari cửa sổ không có chữ thật để bắt đầu (mục 10.6 A).
   - Còn một thí nghiệm: đo xem các tuỳ chọn hỗ trợ tiếp cận của Google Docs có cho bộ gõ thấy nhiều chữ hơn không. Safari đã đo (17/11/2026): cũng `(1, 0)` ở mọi phím, như Chrome ([`docs/Compatibility.md`](../Compatibility.md) mục 5.10).
   - Một đề xuất đang ở giai đoạn prototype trong Chromium (`contextrequest`, 10/2026) sẽ cho bộ gõ xin thêm chữ quanh con trỏ, nếu Google Docs dùng nó.
 - **Bộ gõ IMK cho tiếng khác (mục 11):** không bộ nào thay tại chỗ được trong Google Docs chỉ bằng API chính thức.
@@ -53,10 +53,10 @@ Các phương án đang bàn, đối chiếu với điều bộ gõ khác làm v
 
 - **Tự bật chữ đánh dấu cho từng ô khi con trỏ đứng yên.**
   - Bộ gõ khác: Phím Việt và VietTelex làm gần như vậy, chỉ bằng IMK.
-  - Tín hiệu Dấu đã có: ở phím có thay chữ, `selectedRange` vẫn là `(1, 0)` sau khi Dấu đã gõ vài chữ vào đó. Đây là tín hiệu "vị trí sai cố định" của Phím Việt, và cùng loại với "app báo con trỏ sai" mà VietTelex dùng.
-  - Giới hạn chung của hai bộ gõ đó: từ đang gõ khi phát hiện thì không cứu được, vì các chữ trước đã nằm trong tài liệu, và Google Docs không cho thay chúng. Phím Việt tránh từ hỏng đó bằng cách gõ chữ đánh dấu cho hai từ đầu của mọi app.
+  - Tín hiệu Dấu đã có: ở phím có thay chữ, `selectedRange` vẫn là `(1, 0)` sau khi Dấu đã gõ vài chữ vào đó. Đây là tín hiệu "vị trí sai cố định" của Phím Việt và cùng loại với "app báo con trỏ sai" mà VietTelex dùng.
+  - Giới hạn chung của hai bộ gõ đó: từ đang gõ khi phát hiện thì không cứu được, vì các chữ trước đã nằm trong tài liệu và Google Docs không cho thay chúng. Phím Việt tránh từ hỏng đó bằng cách gõ chữ đánh dấu cho hai từ đầu của mọi app.
   - Đơn vị nhớ: Chrome báo cả cửa sổ là một client (tác giả VietTelex ghi), nên nhớ theo client cũng là nhớ theo tab. VietTelex quên khi có click, phím tắt hay kích hoạt lại.
-  - Trái với D13 (Gạch chân là đường lui cuối cùng: gạch chân chỉ do người dùng bật, mặc định mọi app không gạch chân) và D5 (Quy tắc theo ứng dụng). Muốn làm thì phải sửa quyết định trước.
+  - Trái với D13 (Gạch chân là đường lui cuối cùng) và D5 (Quy tắc theo ứng dụng). Theo D13, gạch chân chỉ do người dùng bật và mặc định mọi app không gạch chân. Muốn làm thì phải sửa quyết định trước.
 - **Cài đặt phía người dùng trong Google Docs** (chế độ chữ nổi, hỗ trợ trình đọc màn hình, hỗ trợ kính lúp): không có nguồn nói nó sửa được. Cần một lượt đo; bật cài đặt trong tài khoản Google của người dùng thì cần họ đồng ý.
 - **Nhận ra Google Docs theo URL hay tiêu đề cửa sổ** (VietTelex, XKey): cần quyền Trợ năng, trái N4. Tiêu đề cửa sổ còn đổi theo ngôn ngữ giao diện ("Google Tài liệu").
 - **Bật gạch chân theo app như hiện nay** (D13, D5): người dùng bật cho Chrome thì mọi ô của Chrome mất D20 (Thêm dấu cho từ đã gõ), để chữa một trang. Cùng lý do D43 (Ô bỏ qua vùng thay chữ) không gắn nhãn cho app mà terminal chỉ là một ô.
@@ -67,26 +67,26 @@ Các phương án đang bàn, đối chiếu với điều bộ gõ khác làm v
 
 - Mã nguồn: https://github.com/ptrinh/VietTelex (MIT), đọc ở commit `74b0fa7` (17/11/2026). Bộ gõ IMK cài vào `~/Library/Input Methods`, kèm một event tap trong cùng tiến trình khi có quyền Trợ năng.
 - **Cách sửa chữ đã gõ (tác giả ghi trong `docs/MACOS_IME_NOTES.md` và `typing-modes.yml`):**
-  - Mặc định thay tại chỗ: mỗi phím đổi chữ được tính thành "xoá n ký tự, chèn chuỗi mới", gửi bằng một `insertText` có vùng thay. Vị trí đầu từ đọc một lần ở phím đầu của từ, sau đó tự theo dõi, không hỏi `selectedRange` sau mỗi lần chèn.
+  - Mặc định thay tại chỗ: mỗi phím đổi chữ quy thành "xoá n ký tự, chèn chuỗi mới", gửi bằng một `insertText` có vùng thay. Vị trí đầu từ đọc một lần ở phím đầu của từ, sau đó tự theo dõi, không hỏi `selectedRange` sau mỗi lần chèn.
   - Mỗi app có một chế độ trong bảng `typing-modes.yml`: thay tại chỗ, event tap, chữ đánh dấu, chọn rồi gõ đè, hoặc "dò theo ô bằng Accessibility" (Chrome, Brave, Edge, Safari dùng chế độ này).
   - App chưa có trong bảng thì được thử một lần sau lần thay đầu. Bỏ qua vùng thay thì chuyển sang chữ đánh dấu và nhớ lại.
 - **Trong trình duyệt (đọc mã, chú thích trong `App/Sources/TerminalTap.swift` và `App/Sources/AppState.swift`):**
   - Thanh địa chỉ: chọn rồi gõ đè.
-  - Nội dung trang Chromium: event tap (Backspace giả). Tác giả ghi lý do: `insertText` với vùng thay không có hợp đồng nào với trình soạn thảo JavaScript. Google Docs, Discord, Zalo từng hỏng theo ba kiểu khác nhau trong một tuần, và ca Discord không thể phát hiện từ bên trong: mọi lần tự báo đều nói đã thay đúng trong khi chữ trên màn hình bị nối thêm.
+  - Nội dung trang Chromium: event tap (Backspace giả). Tác giả ghi lý do: `insertText` với vùng thay không có hợp đồng nào với trình soạn thảo JavaScript. Google Docs, Discord, Zalo từng hỏng theo ba kiểu khác nhau trong một tuần. Ca Discord không thể phát hiện từ bên trong: mọi lần tự báo đều nói đã thay đúng trong khi chữ trên màn hình bị nối thêm.
   - Nội dung trang Safari/WebKit: thay tại chỗ. Theo tác giả, Safari trên macOS 26 bỏ các phím giả của event tap trong trang.
   - Ô có URL `docs.google.com/document` (cả `antigravity.google.com` và TikTok): **chữ đánh dấu**. Nhận ra bằng cách đi ngược cây Accessibility từ phần tử đang có con trỏ, đọc thuộc tính URL của các vùng web; ô nhập ẩn nằm trong iframe lồng, nên đi tiếp lên vùng web bên ngoài.
   - Google Sheets: chèn U+202F để huỷ gợi ý, xoá, rồi gõ lại.
   - Không có quyền Trợ năng: mọi ô của trình duyệt về chữ đánh dấu.
 - **Vì sao Google Docs phải dùng chữ đánh dấu (tác giả ghi):**
-  - Google Docs vẽ theo luồng sự kiện riêng và bỏ qua vùng thay. Thay tại chỗ thì chữ bị nối thêm, và ⌫ do bộ gõ theo dõi không còn tác dụng ("Quoocs" ra "Quoôcốc", báo lỗi ngày 30/07/2026).
+  - Google Docs vẽ theo luồng sự kiện riêng và bỏ qua vùng thay. Thay tại chỗ thì chữ bị nối thêm và ⌫ do bộ gõ theo dõi không còn tác dụng ("Quoocs" ra "Quoôcốc", báo lỗi ngày 30/07/2026).
   - Google Docs xử lý sự kiện soạn chữ (composition) bình thường.
   - Ô nhập ẩn của Google Docs tự báo một vị trí con trỏ nhất quán, nên phép thử từng ô không bao giờ phát hiện ra nó; chỉ nhận ra theo URL mới được.
 - **Phép thử từng ô chỉ dùng IMK (đọc mã, `App/Sources/TelexInputController.swift`):**
   - Theo tác giả, Chromium báo cả cửa sổ là một client IMK, nên "ô" được tính lại mỗi lần bộ gõ được kích hoạt và mỗi lần có click hay phím tắt ⌘.
-  - Sau một lần thay, vị trí con trỏ được so với vị trí lẽ ra có nếu app thay đúng và nếu app nối thêm. Hai lần "nối thêm" thì ô đó dùng chữ đánh dấu tới lần tính lại sau. Vị trí nằm trước đầu từ thì coi là "chưa biết"; bốn lần chưa biết liên tiếp cũng về chữ đánh dấu.
+  - Sau một lần thay, VietTelex so vị trí con trỏ với vị trí lẽ ra có nếu app thay đúng và nếu app nối thêm. Hai lần "nối thêm" thì ô đó dùng chữ đánh dấu tới lần tính lại sau. Vị trí nằm trước đầu từ thì coi là "chưa biết"; bốn lần chưa biết liên tiếp cũng về chữ đánh dấu.
   - Bài học tác giả ghi: Chrome có thể trả chữ cũ ngay sau `insertText`, nên một tín hiệu tự báo trái với tín hiệu khác chỉ là "chưa biết", không phải "hỏng".
 - **Báo lỗi liên quan:**
-  - Issue #37 (Google Docs trên Safari): ⌫ và dấu cách thôi tác dụng giữa từ ở chế độ chữ đánh dấu. Nguyên nhân là lỗi của chính VietTelex, đã sửa ở 1.5.10. Tác giả trả lời rằng gạch chân trong Google Docs là cố ý, vì chữ đánh dấu là cách duy nhất đúng với trình soạn thảo của Google Docs, và bàn phím tiếng Việt có sẵn của macOS cũng gạch chân như vậy ở đó.
+  - Issue #37 (Google Docs trên Safari): ⌫ và dấu cách thôi tác dụng giữa từ ở chế độ chữ đánh dấu. Nguyên nhân là lỗi của chính VietTelex, đã sửa ở 1.5.10. Tác giả trả lời rằng gạch chân trong Google Docs là cố ý, vì chữ đánh dấu là cách duy nhất đúng với trình soạn thảo của Google Docs. Bàn phím tiếng Việt có sẵn của macOS cũng gạch chân như vậy ở đó.
   - `docs/MACOS_IME_NOTES.md`, mục về trình soạn thảo web loại chữ đánh dấu: ở ô bình luận TikTok trên Safari, từ cuối đang soạn không vào tài liệu nếu sau đó không có một phím thật. Một cách vá (nhấn Enter hai lần) đã bỏ vì làm Google Docs tệ hơn: phải nhấn Enter hai lần mới xuống dòng.
 
 ## 2. XKey (XKeyIM)
@@ -109,7 +109,7 @@ Các phương án đang bàn, đối chiếu với điều bộ gõ khác làm v
   - Mỗi app bắt đầu bằng chữ đánh dấu. Sau khi chốt một từ, bộ gõ đọc chữ ngay trước con trỏ; khớp đúng chữ vừa chốt là một lần chứng minh.
   - App được tin khi có hai lần chứng minh ở **hai vị trí khác nhau**. Lý do tác giả ghi: app báo vị trí sai cố định chỉ có thể trùng đúng ở một vị trí.
   - App được tin thì thay tại chỗ, chỉ thay phần đuôi khác. Trước khi thay phải đọc lại chữ trước con trỏ và thấy khớp; sau khi thay thì kiểm vị trí con trỏ (cho phép báo trễ một phím).
-  - Đọc không khớp thì không ghi gì, bỏ từ đó, và **thôi tin cả app tới hết phiên**: app đó về chữ đánh dấu.
+  - Đọc không khớp thì không ghi gì, bỏ từ đó và **thôi tin cả app tới hết phiên**: app đó về chữ đánh dấu.
   - Tin theo bundle id, nên một ô hỏng làm cả app về chữ đánh dấu (vấn đề S2 trong `docs/KNOWN_ISSUES.md`).
 - **Google Docs:**
   - Không có xử lý riêng. `docs/MANUAL_TEST.md` có mục "Chrome — Google Docs", ghi rằng Google Docs dùng ô nhập ẩn và nếu đọc lại không khớp sẽ tự về chữ đánh dấu. Mọi ô kết quả của mục đó còn trống.
@@ -150,7 +150,7 @@ Không thấy xử lý riêng cho Google Docs hay trình duyệt trong các bộ
 
 - Bộ gõ IMK của macOS (`com.apple.inputmethod.VietnameseIM.VietnameseTelex`). Dấu đo: gõ đúng chữ gõ liền trong Google Docs, nơi Dấu sai ([`docs/Compatibility.md`](../Compatibility.md) mục 5.10).
 - Dấu chưa đo việc nó dùng chữ đánh dấu ở Google Docs. Hai tác giả khác ghi điều này: VietTelex (issue #37: bàn phím tiếng Việt có sẵn của macOS gạch chân trong Google Docs) và Phím Việt (`docs/DECISIONS.md` D12: bộ gõ tiếng Việt mặc định của Apple gạch chân). [`docs/research/TerminalAndUnderline.md`](TerminalAndUnderline.md) cũng gọi nó là gạch chân ở terminal.
-- Theo commit 313286@main của WebKit, Telex đơn giản của Apple (commit gọi theo tên) là bộ gõ "không chế độ": gõ bằng `insertText` có vùng thay, hỏi `selectedRange` trong lúc xử lý phím để kiểm chữ đã vào chưa, và chuyển sang chữ đánh dấu tới hết phiên nếu chưa. Nên gạch chân mà hai tác giả trên thấy có thể là chế độ lùi đó, không phải cách gõ mặc định. Bộ gõ Telex (không đơn giản) có cùng cơ chế không: chưa rõ. Chi tiết: [`docs/research/IMKCapabilities.md`](IMKCapabilities.md) mục 5.
+- Theo commit 313286@main của WebKit, Telex đơn giản của Apple (commit gọi theo tên) là bộ gõ "không chế độ": gõ bằng `insertText` có vùng thay, hỏi `selectedRange` trong lúc xử lý phím để kiểm chữ đã vào chưa và chuyển sang chữ đánh dấu tới hết phiên nếu chưa. Nên gạch chân mà hai tác giả trên thấy có thể là chế độ lùi đó, không phải cách gõ mặc định. Bộ gõ Telex (không đơn giản) có cùng cơ chế không: chưa rõ. Chi tiết: [`docs/research/IMKCapabilities.md`](IMKCapabilities.md) mục 5.
 
 ## 7. Bộ gõ event tap (đối chiếu)
 
@@ -163,7 +163,7 @@ Các bộ gõ này chặn phím toàn hệ thống, xoá chữ cũ bằng Backsp
 - **Gõ Nhanh** (https://github.com/khaphanspace/gonhanh.org, commit `542a679`):
   - `platforms/macos/RustBridge.swift`: nội dung trang Safari, kể cả Google Docs, gửi từng ký tự với độ trễ; trình duyệt khác dùng Backspace thường.
   - `docs/system-architecture.md` ghi Google Docs là "canvas", dùng Backspace.
-  - `docs/common-issues.md` mục 3.1 ghi Google Docs có thể lặp chữ ("trường" ra "TTrường") hoặc mất dấu khi gõ nhanh, và khuyên dùng bộ gõ có tuỳ chọn sửa lỗi Google Docs riêng.
+  - `docs/common-issues.md` mục 3.1 ghi Google Docs có thể lặp chữ ("trường" ra "TTrường") hoặc mất dấu khi gõ nhanh và khuyên dùng bộ gõ có tuỳ chọn sửa lỗi Google Docs riêng.
   - Issue #235: thêm chế độ gửi từng phím cho Google Docs trên Safari (bản 1.0.108).
 - **PHTV** (https://github.com/phamhungtien/PHTV, commit `0a42ef4`): `CHANGELOG.md` ghi nhận ra Google Docs, Sheets, Slides, Forms qua URL hoặc tiêu đề cửa sổ (Accessibility) để giữ cách gửi ký tự rỗng trước, tránh mất ký tự. Issue #134: lặp chữ trong Google Sheets ("Dương" ra "Duương"), sửa ở bản 2.5.5.
 - **XKey.app**: quy tắc Google Docs ở mục 2.
@@ -180,14 +180,14 @@ Mã: `content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm` và `third
 - Sau `insertText` không có vùng thay, view tự dời vùng chọn và chèn tạm chữ vừa gõ vào bản sao, chờ trang cập nhật. Chú thích trong mã nói API của macOS là đồng bộ còn Chrome bất đồng bộ (crbug 40165347).
 - `insertText` có vùng thay và `setMarkedText` có vùng thay đều chuyển vùng đó cho trang. Trang (Blink, hoặc mã JavaScript của trình soạn thảo khi dùng EditContext) quyết định áp vùng đó thế nào.
 - **Gạch chân của chữ đánh dấu:**
-  - Chromium chỉ tạo gạch chân cho đoạn có thuộc tính gạch chân, và với mọi giá trị của thuộc tính đó (kể cả "không") đều là gạch chân mảnh hoặc dày.
+  - Chromium chỉ tạo gạch chân cho đoạn có thuộc tính gạch chân và với mọi giá trị của thuộc tính đó (kể cả "không") đều là gạch chân mảnh hoặc dày.
   - Chuỗi trơn: gạch chân mảnh mặc định.
   - Không có đoạn gạch chân nào: Blink thêm gạch chân mảnh và màu nền mặc định cho chữ đang soạn.
   - Trang tự vẽ như Google Docs thì vẽ theo cách của nó.
 - **Google Docs nhận chữ thế nào:**
   - Ghi chú giải thích EditContext của W3C viết rằng Google Docs dùng một phần tử contenteditable nằm ngoài màn hình để nhận chữ.
-  - Thư "Intent to Ship: EditContext API" (blink-dev, 31/10/2023, Chrome 121) viết rằng trong origin trial, nhóm Google Docs đã dùng EditContext để nhận chữ từ bộ gõ, thay cho phần tử contenteditable ẩn được dời theo con trỏ, và rằng Google Docs sẽ dùng nó khi Chrome phát hành.
-  - W3C edit-context issue #151 (mở 05/10/2026, một kỹ sư Mozilla viết) nói Google Docs dùng một phần tử EditContext vô hình, không phải canvas, và vẽ canvas đè lên. Đây là nguồn mới nhất tìm được về cách Google Docs nhận chữ; không có nguồn của chính Google.
+  - Thư "Intent to Ship: EditContext API" (blink-dev, 31/10/2023, Chrome 121) viết rằng trong origin trial, nhóm Google Docs đã dùng EditContext để nhận chữ từ bộ gõ, thay cho phần tử contenteditable ẩn được dời theo con trỏ và rằng Google Docs sẽ dùng nó khi Chrome phát hành.
+  - W3C edit-context issue #151 (mở 05/10/2026, một kỹ sư Mozilla viết) nói Google Docs dùng một phần tử EditContext vô hình (không phải canvas) và vẽ canvas đè lên. Đây là nguồn mới nhất tìm được về cách Google Docs nhận chữ; không có nguồn của chính Google.
   - Chú thích của VietTelex (mục 1) nói ô nhập ẩn nằm trong một iframe lồng; đó là lời tác giả, chưa kiểm. Hai nguồn này không trái nhau: phần tử gắn EditContext có thể nằm trong iframe.
 
 ## 9. Đối chiếu: ô nhập nhỏ và cài đặt hỗ trợ tiếp cận của Google Docs
@@ -196,7 +196,7 @@ Mã: `content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm` và `third
 - **Nguồn gần nhất về ô nhập ẩn:**
   - Squirrel issue #345 (2019, đóng "wontfix", trùng #975): trong Google Docs, khung chọn chữ không theo con trỏ mà nằm ở đầu màn hình. Một người dùng nói bộ gõ của Sogou và bính âm của macOS cũng bị. Người bảo trì nói cần Google sửa.
   - Trong cùng issue, người dùng chỉ cách vá: bật "Turn on screen magnifier support" trong Tools › Accessibility settings của Google Docs. Một người báo vẫn không được trên Edge (2021), một người báo được (2024).
-  - Khung chọn chữ đặt theo vị trí mà ô nhập trả cho `firstRect(forCharacterRange:actualRange:)`. Ô nhập ẩn trả vị trí sai, và tuỳ chọn kính lúp đổi vị trí đó (suy luận, cần kiểm chứng).
+  - Khung chọn chữ đặt theo vị trí mà ô nhập trả cho `firstRect(forCharacterRange:actualRange:)`. Ô nhập ẩn trả vị trí sai. Tuỳ chọn kính lúp đổi vị trí đó (suy luận, cần kiểm chứng).
 - **Chế độ chữ nổi (⌘⌥H):**
   - Trang trợ giúp của Google ("Use Google Docs Editors with a screen reader") tả: màn hình chữ nổi hiện nội dung, các nút định tuyến con trỏ dời được con trỏ, trình đọc màn hình đọc theo cài đặt đọc từng ký tự và từng từ của nó. Trang khuyên tắt chữ nổi nếu không dùng màn hình chữ nổi hoặc thấy Sheets, Slides chậm. Không nói gì về bộ gõ.
   - Bài Google Workspace Updates (31/08/2020) về chữ nổi cũng không nói gì về bộ gõ.
@@ -209,7 +209,7 @@ Mục này xét các cách giữ thay tại chỗ trong Google Docs chỉ bằng
 
 Mốc là quan sát của Dấu ([`docs/Compatibility.md`](../Compatibility.md) mục 5.10, Chrome 157):
 - Vị trí con trỏ là `(1, 0)` ở mọi phím.
-- Mọi lần thay một ký tự ngay trước con trỏ đều được áp.
+- Google Docs áp mọi lần thay một ký tự ngay trước con trỏ.
 - Sau mỗi phím, lần đọc trả về ký tự đang nằm ngay trước con trỏ (sau "buôi" đọc được "i").
 
 Tức là bộ gõ chỉ thấy một **cửa sổ một ký tự** trượt theo con trỏ (suy luận từ số đo).
@@ -218,10 +218,10 @@ Tức là bộ gõ chỉ thấy một **cửa sổ một ký tự** trượt the
 
 - **Có dùng EditContext không:**
   - blink-dev "Intent to Ship: EditContext API" (31/10/2023): nhóm Google Docs đã dùng EditContext trong origin trial và sẽ dùng khi Chrome phát hành (Chrome 121).
-  - W3C edit-context issue #151 (05/10/2026, một kỹ sư Mozilla viết): Google Docs dùng một phần tử EditContext vô hình, không phải canvas, và vẽ canvas đè lên.
+  - W3C edit-context issue #151 (05/10/2026, một kỹ sư Mozilla viết): Google Docs dùng một phần tử EditContext vô hình (không phải canvas) và vẽ canvas đè lên.
   - Không tìm được nguồn của chính Google, từ 2024 tới 2026, xác nhận cách làm hiện tại.
 - **Đặt chữ gì vào EditContext:** không có nguồn. Các nguồn gần nhất nói về chi phí, không nói về Google Docs:
-  - blink-dev "Intent to Prototype: EditContext On-Demand Text & Selection Updates" (20/10/2026): nêu Google Docs và Slides là trình soạn thảo tài liệu lớn, và đề xuất `invalidate()` cùng sự kiện `contextrequest`.
+  - blink-dev "Intent to Prototype: EditContext On-Demand Text & Selection Updates" (20/10/2026): nêu Google Docs và Slides là trình soạn thảo tài liệu lớn và đề xuất `invalidate()` cùng sự kiện `contextrequest`.
   - W3C edit-context issue #156 (14/10/2026), lý do của đề xuất đó:
     - Hiện nay trang phải đẩy chữ và vùng chọn (`updateText`, `updateSelection`) ở mọi thay đổi.
     - Chép vài đoạn văn từ mô hình riêng ra một chuỗi ở mỗi phím tốn CPU và bộ nhớ.
@@ -229,7 +229,7 @@ Tức là bộ gõ chỉ thấy một **cửa sổ một ký tự** trượt the
     - `updateSelection` bị kẹp trong độ dài của `editContext.text`.
     - Issue #107 (09/2024) cũng nêu chi phí giữ `editContext.text`.
   - Suy ra Google Docs chỉ đặt một ký tự để khỏi chép chữ ở mỗi phím: khớp số đo của Dấu và đúng loại chi phí #156 tả (suy luận, cần kiểm chứng).
-- **Báo lỗi về việc bộ gõ nhận quá ít chữ:** không tìm thấy crbug hay issue W3C nào nói thẳng về Google Docs với bộ gõ tiếng Việt, tiếng Nhật, tiếng Hàn, tự sửa hay thay thế chữ của macOS. #156 là bản tổng quát của vấn đề này.
+- **Báo lỗi bộ gõ nhận quá ít chữ:** không tìm thấy crbug hay issue W3C nào nói thẳng về Google Docs với bộ gõ tiếng Việt, tiếng Nhật, tiếng Hàn, tự sửa hay thay thế chữ của macOS. #156 là bản tổng quát của vấn đề này.
 
 ### 10.2 Chrome xử lý vùng thay và cập nhật bản sao thế nào (đọc mã)
 
@@ -240,8 +240,8 @@ Mã: `render_widget_host_view_cocoa.mm`, `render_widget_host_view_mac.mm`, `rend
   - EditContext đặt vùng chọn bằng vùng thay, kẹp trong `[0, độ dài editContext.text]`.
   - Rồi nó phát `beforeinput` (trang có thể đổi đích bằng `updateText`, `updateSelection`), chèn chữ vào vùng chọn và phát `textupdate`, kèm chữ mới, đầu và cuối đoạn bị thay, vùng chọn mới.
   - Vậy vùng vượt ra ngoài cửa sổ không bị từ chối mà bị cắt bớt. `NSRange` không có vị trí âm, nên khi Chrome báo `(1, 0)` thì bộ gõ chỉ chạm được đúng một ký tự. Trang có thể tự hiểu sự kiện theo cách khác: Google Docs đóng mã, không biết.
-- **Xoá một ký tự:** `insertText("", replacementRange: (0, 1))` thành một `textupdate` với chữ rỗng thay đoạn 0–1 (đọc mã). Google Docs có xoá ký tự đó trong mô hình của nó không thì không có nguồn. Nó đã áp đúng mọi lần thay một ký tự, nên nhiều khả năng là có (suy luận, cần kiểm chứng).
-- **Bản sao được cập nhật bất đồng bộ:**
+- **Xoá một ký tự:** `insertText("", replacementRange: (0, 1))` thành một `textupdate` với chữ rỗng thay đoạn 0–1 (đọc mã). Google Docs có xoá ký tự đó trong mô hình của nó không thì không có nguồn. Google Docs đã áp đúng mọi lần thay một ký tự, nên nhiều khả năng là có (suy luận, cần kiểm chứng).
+- **Bản sao cập nhật bất đồng bộ:**
   - Trang gọi `updateText` hay `updateSelection`. Khi vùng chọn đổi, EditContext báo cho frame.
   - Renderer lấy chữ quanh vùng chọn (tối đa 100 ký tự mỗi bên) từ EditContext và gửi lên tiến trình trình duyệt qua IPC.
   - `TextInputManager` báo cho view, view thay bản sao.
@@ -285,7 +285,7 @@ Cả hai làm trên bản Debug và ghi riêng nhãn "bản thử" (ý "Bản th
   - Đo: máy M3 Max, Chrome 157.0.8103.79, Safari 27.2, câu không có ⌫ của mục 5.10 trong Compatibility, 80 ± 30 ms một phím.
   - Chrome (1 lượt có thí nghiệm chạy): lần nhìn đầu, cửa sổ chứa đúng chữ cuối của từ. Xoá xong, cửa sổ vẫn hiện chữ cũ rồi chuyển thành một dấu cách, không thành chữ kế trước, trong khoảng 100 ms trước khi phím kế tiếp (không phải chữ cái) làm thí nghiệm dừng và trả lại chữ đã xoá. Từ đó tab ấy không áp lần thay chữ nào nữa (hai lượt sau: 12 và 13 lần thay gửi đi, chữ không đổi: "hoc", "Viet", "voi"); tải lại trang thì về như cũ (một lượt đối chứng không bật thí nghiệm).
   - Safari (3 lượt, 19 lần thử): lần nào cũng dừng trước khi xoá gì vì cửa sổ không hiện chữ cuối của từ; 7 lần có ghi lớp ký tự, cả 7 là một ký tự vô hình (zero-width) Google Docs đặt sẵn. Chữ trong tài liệu không đổi.
-  - Kết luận: không dùng được ở cả hai trình duyệt, và ở Chrome còn làm hỏng ô nhập của Google Docs tới khi tải lại trang.
+  - Kết luận: không dùng được ở cả hai trình duyệt và ở Chrome còn làm hỏng ô nhập của Google Docs tới khi tải lại trang.
 - **B. Đo chữ bộ gõ thấy, không đổi cách gõ.**
   - Ghi `selectedRange` và độ dài chữ đọc được ở mỗi phím, như lượt chẩn đoán ở mục 5.10, trong hai nơi:
     - Google Docs trên Safari: đã đo 17/11/2026, cũng `(1, 0)` (mục 10.3).
@@ -301,18 +301,18 @@ Câu hỏi: có bộ gõ IMK nào cho tiếng khác làm như Dấu (sửa chữ
 
 - Mã nguồn: https://github.com/keymanapp/keyman (MIT), thư mục `mac/Keyman4MacIM`, commit `e5b4e13`. Bộ gõ IMK cho hàng nghìn bàn phím: Amharic, Khmer, Myanmar, Thái, các tiếng châu Phi, tiếng Việt… Luật của bàn phím viết lại chữ ngay trước con trỏ, nên Keyman thường phải xoá và thay chữ đã xuất. Đây là cùng bài toán với Dấu.
 - **Đọc và sửa chữ đã xuất (đọc mã `TextApiCompliance.m`, `KMInputMethodEventHandler.m`, `KeySender.m`):**
-  - Mỗi client được xếp "tuân thủ" hay "không tuân thủ".
+  - Keyman xếp mỗi client vào loại "tuân thủ" hay "không tuân thủ".
     - Phép kiểm: hỏi `selectedRange`. Sau lần chèn đầu, xem vị trí có dời đúng như dự kiến không: chèn khác độ dài chữ bị xoá thì vị trí phải đổi. Rồi đọc lại tối đa 80 ký tự trước con trỏ bằng `attributedSubstring` và xem có kết thúc bằng chữ vừa chèn không.
     - Chú thích trong mã ghi: nhiều app trả một vùng chọn hợp lệ nhưng sai, như `{0, 0}`, bất kể con trỏ ở đâu.
   - App tuân thủ: thay bằng một `insertText` có vùng thay tính từ `selectedRange` hiện tại. Xoá mà không chèn thì thay hai ký tự bằng một. Chú thích trong mã nói `insertText` với chuỗi rỗng kèm vùng thay bị coi là lời gọi không hợp lệ và bị bỏ qua.
   - App không tuân thủ:
     - Keyman chỉ dùng ngữ cảnh nó tự nhớ.
-    - Nó xoá bằng phím ⌫ giả gửi qua `CGEventPost`, rồi gửi một mã phím riêng tới đúng tiến trình đó để biết các phím ⌫ đã được xử lý xong, rồi mới chèn chữ mới.
-    - Việc này cần quyền Trợ năng hoặc quyền gửi sự kiện (`Privacy/PrivacyConsent.m`). Trang trợ giúp nói thiếu quyền thì có thể có chữ lặp hoặc chữ không bị xoá.
-  - Có một danh sách app không tuân thủ ghi cứng, và một danh sách người dùng tự thêm (khoá `KMLegacyApps`, có thể viết bằng biểu thức chính quy). Nhiều app (như của Adobe) được tự phát hiện, không cần ghi cứng.
+    - Keyman xoá bằng phím ⌫ giả gửi qua `CGEventPost`, rồi gửi một mã phím riêng tới đúng tiến trình đó để biết các phím ⌫ đã được xử lý xong, rồi mới chèn chữ mới.
+    - Cách này cần quyền Trợ năng hoặc quyền gửi sự kiện (`Privacy/PrivacyConsent.m`). Trang trợ giúp nói thiếu quyền thì có thể có chữ lặp hoặc chữ không bị xoá.
+  - Có một danh sách app không tuân thủ ghi cứng và một danh sách người dùng tự thêm (khoá `KMLegacyApps`, có thể viết bằng biểu thức chính quy). Keyman tự phát hiện nhiều app (như của Adobe), không cần ghi cứng.
 - **Google Docs và trình duyệt:**
   - `com.google.Chrome` nằm trong danh sách ghi cứng, kèm chú thích ngày 13/12/2023: phải ghi cứng Chrome vì Google Docs trả một vị trí tương đối nhưng sai, nên không cách nào tự phát hiện. Vậy **cả Chrome**, mọi trang, đi đường ⌫ giả. VS Code và Slack cũng bị ghi cứng (2026): xoá thừa một ký tự khi chèn có vùng thay.
-  - KB0118 ("Compliant and Non-compliant Applications"): app không hỗ trợ API thay hay xoá chữ thì Keyman sinh phím ⌫, và cách này có thể ra chữ sai khi app xoá nhiều hơn Keyman định. Trên macOS, app không tuân thủ thường trả 0 hay một hằng số bất kể người dùng gõ ở đâu.
+  - KB0118 ("Compliant and Non-compliant Applications"): app không hỗ trợ API thay hay xoá chữ thì Keyman sinh phím ⌫. Cách này có thể ra chữ sai khi app xoá nhiều hơn Keyman định. Trên macOS, app không tuân thủ thường trả 0 hay một hằng số bất kể người dùng gõ ở đâu.
   - Issue #10246 (12/2023, Google Docs trên Chrome): ⌫ qua chữ có dấu tổ hợp xoá luôn chữ trước. Người bảo trì ghi rằng hành vi đó không thể phát hiện trong lúc nó xảy ra. Đóng năm 2026 với ghi chú "chạy đúng ở Keyman 19 beta", có thể do Google sửa.
   - Issue #11942 (2024, Amharic, Google Docs trên Safari): sau khi dời con trỏ bằng mũi tên, bàn phím bỏ qua ngữ cảnh. Người bảo trì trả lời Safari không phải app tuân thủ, nên Keyman không đọc được ngữ cảnh khi con trỏ dời. Safari không có trong danh sách ghi cứng, nên đây là kết quả tự phát hiện (suy luận).
   - Issue #14879 (2025, macOS 26): Google Sheets trên Safari lặp chữ, Google Docs trên Safari chỉ ra chữ Latin; hết ở macOS 26.2 và Safari 26.2. Chrome chạy đúng.
@@ -346,7 +346,7 @@ Câu hỏi: có bộ gõ IMK nào cho tiếng khác làm như Dấu (sửa chữ
 - **Công cụ nhập liệu dựng sẵn của Google Docs:** trang trợ giúp "Translate documents or write in a different language" viết rằng menu Input tools hiện trên thanh công cụ khi chọn một ngôn ngữ không dùng chữ Latin (ví dụ tiếng Hindi, tiếng Trung). Menu có gõ theo âm, bàn phím ảo hoặc phím thật, viết tay; mở bằng ⌘⌥⇧K. Trang không nói gì về tiếng Việt hay bộ gõ của hệ điều hành.
 - **Google Input Tools** (trang danh sách ngôn ngữ): tiếng Việt có "IME", bàn phím Telex, TCVN, VIQR và viết tay. Trang không nói công cụ nào có trong Google Docs. Trang dịch vụ liệt kê Search, Gmail, Drive, Translate, YouTube, không có Docs.
 - Tiện ích Chrome AVIM (gõ tiếng Việt bên trong trang, không phải bộ gõ của hệ điều hành) ghi Google Docs trong mục "WHERE IT WORKS" (cập nhật 08/09/2026). Đây là mã chạy trong trang, Dấu không dùng được cách này (suy luận).
-- **Hỗ trợ bộ gõ cần chữ quanh con trỏ:** không tìm thấy trang nào của Google Docs nói về việc này. Phía Chromium và W3C chỉ có đề xuất `contextrequest` (mục 10.1), đang ở giai đoạn prototype.
+- **Hỗ trợ bộ gõ cần chữ quanh con trỏ:** không tìm thấy trang nào của Google Docs nói về vấn đề này. Phía Chromium và W3C chỉ có đề xuất `contextrequest` (mục 10.1), đang ở giai đoạn prototype.
 
 ## Nguồn
 

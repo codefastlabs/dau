@@ -1,6 +1,6 @@
 # Lịch sử các tài liệu nghiên cứu
 
-Ghi lại quá khứ: kế hoạch đã bỏ hay đã xong, các vòng thử theo giờ, danh sách đã duyệt và các bước chốt quyết định, chuyển khỏi ba tài liệu nghiên cứu khi chúng được viết lại chỉ còn hiện trạng (11/11/2026). Chép nguyên văn từ bản ngay trước đó (commit `01bce82`), chỉ hạ một bậc tiêu đề; số mục dẫn trong từng phần là số mục **cũ** của file gốc, đọc bản cũ bằng `git show 01bce82:<đường dẫn>`. Kết luận còn đúng nằm ở tài liệu hiện hành, không ở đây.
+Ghi lại quá khứ: kế hoạch đã bỏ hay đã xong, các vòng thử theo giờ, danh sách đã duyệt và các bước chốt quyết định, chuyển khỏi ba tài liệu nghiên cứu khi viết lại chúng chỉ còn hiện trạng (11/11/2026). Chép nguyên văn từ bản ngay trước đó (commit `01bce82`), chỉ hạ một bậc tiêu đề; số mục dẫn trong từng phần là số mục **cũ** của file gốc, đọc bản cũ bằng `git show 01bce82:<đường dẫn>`. Kết luận còn đúng nằm ở tài liệu hiện hành, không ở đây.
 
 ## 1. `docs/research/InputMethodInstall.md`
 
@@ -19,7 +19,7 @@ Bản sao mã nguồn tham khảo (ngoài repo, không chép mã nào vào Dấu
 2. Cài lại rồi bấm "–" làm đường cứu khi bundle đã bị xoá trước ("cài lại Dấu rồi gỡ bằng nút trong app"); phép hồi sinh mục ẩn đã đạt (kết quả cuối mục).
 3. Không làm tám hướng còn lại (từ tắt bằng `TISDisableInputSource` tới Full Disk Access: mọi hướng trong bảng trừ hai hướng trên). Full Disk Access chỉ đo khi cần trả lời trọn câu hỏi đọc được thì có xoá được không, không đưa vào sản phẩm.
 
-**Kế hoạch đo** (cho phiên chính hỏi người dùng rồi chạy; công cụ `scripts/probe/` nhắc dưới đây đã xoá ngày 09/11/2026, lấy lại bằng `git show` như mục 0, điểm 17). Mục tiêu là **mục ẩn của `DauProbeC1`** (bundle đã bỏ; `build/probe.noindex/C/DauProbeC1.app` còn trong thư mục build). Không đụng mục của Dấu thật.
+**Kế hoạch đo** (cho phiên chính hỏi người dùng rồi chạy). Công cụ `scripts/probe/` nhắc dưới đây đã xoá ngày 09/11/2026, lấy lại bằng `git show` như mục 0, điểm 17. Mục tiêu là **mục ẩn của `DauProbeC1`** (bundle đã bỏ; `build/probe.noindex/C/DauProbeC1.app` còn trong thư mục build). Không đụng mục của Dấu thật.
 Hai phép đã chạy (xem xét Full Disk Access của Terminal, hồi sinh mục ẩn); các phép còn lại chưa chạy.
 Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế hoạch gốc (K1 là phép hồi sinh mục ẩn, K2 là phép chẩn đoán Full Disk Access).
 
@@ -33,7 +33,7 @@ Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế ho�
   6. `scripts/probe/cleanup.sh --yes` (script tự dừng nếu mục còn trong khi bundle còn cài). Có thể dọn luôn `DauProbeC2` cùng lượt: bấm "–" cho "Dấu thử C2" trước bước này.
   - Đọc kết quả: `DauProbeC1` hiện lại và "–" bỏ được cả hai mục khi tiến trình không chạy → hướng cài lại rồi "–" dùng được, và "–" không cần tiến trình bộ gõ đang chạy. `DauProbeC1` không hiện → mục ẩn chỉ hết khi có cách khác (chưa biết); ghi lại, không thử thêm.
   - Trả lại: nếu không bỏ được thì `cleanup.sh --yes` đưa máy về đúng trạng thái trước phép này (mục ẩn, không bundle). Không `defaults import` bản sao lưu (miền này từ chối ghi; bản sao lưu chỉ để so).
-- **Phép chẩn đoán Full Disk Access** (chỉ khi phép xem cho thấy Terminal chưa có Full Disk Access và người dùng muốn; đổi một cài đặt bảo mật trong vài phút). Dùng một **khoá giả**, không đụng danh sách nguồn: chính sách chặn theo cả miền (`user-preference-write com.apple.inputsources`), nên một khoá giả kiểm đúng quyền đó.
+- **Phép chẩn đoán Full Disk Access**. Chỉ chạy khi phép xem cho thấy Terminal chưa có Full Disk Access và người dùng muốn, vì phải đổi một cài đặt bảo mật trong vài phút. Dùng một **khoá giả**, không đụng danh sách nguồn: chính sách chặn theo cả miền (`user-preference-write com.apple.inputsources`), nên một khoá giả kiểm đúng quyền đó.
   1. Sao lưu: `cp -p ~/Library/Preferences/com.apple.inputsources.plist ~/Desktop/dau-K2-backup.plist`.
   2. Đối chứng, Terminal chưa có Full Disk Access: `defaults write com.apple.inputsources DauK2Probe -bool YES; echo $?`, rồi `defaults read com.apple.inputsources DauK2Probe` (tiến trình mới) và `/usr/bin/log show --last 2m --predicate 'eventMessage CONTAINS "inputsources"'`. Mong đợi: từ chối như 02/11.
   3. Người dùng bật Full Disk Access cho Terminal, mở lại Terminal, lặp bước 2.
@@ -44,13 +44,13 @@ Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế ho�
 - **Ghi thẳng file**: không khuyến nghị trên tài khoản này (file chứa mục thật của Dấu; cfprefsd có thể ghi đè). Nếu cần, chỉ trên tài khoản thử của kế hoạch thử trên máy sạch (mục 7.2), cũng với khoá giả, sao lưu như phép chẩn đoán Full Disk Access.
 
 **Kết quả (04/11/2026)** [Máy/bản thử]:
-- **Phép xem Full Disk Access của Terminal:** Full Disk Access của Terminal.app **bật**; Ghostty.app có trong danh sách, **tắt** (ảnh chụp màn hình). Không biết `clean-dau.sh --yes` ngày 02/11 chạy trong ứng dụng nào, và `log show` không còn dòng từ chối của ngày đó, nên hướng Full Disk Access chưa đóng được bằng phép này.
+- **Phép xem Full Disk Access của Terminal:** Full Disk Access của Terminal.app **bật**; Ghostty.app có trong danh sách, **tắt** (ảnh chụp màn hình). Không biết `clean-dau.sh --yes` ngày 02/11 chạy trong ứng dụng nào. `log show` không còn dòng từ chối của ngày đó, nên hướng Full Disk Access chưa đóng được bằng phép này.
 - **Phép hồi sinh mục ẩn** (bỏ bước sao lưu 1 và phần nhìn menu của bước 4):
   - 13:58:12 chép lại `DauProbeC1`, `register` (0), xoá bộ đệm, mở Keyboard.
   - TIS tiến trình mới báo ngay cha và mode `enabled`, mode chọn được (mục ẩn làm `DauProbeC1` "đang bật" lại, không có hộp thoại xin phép); không có tiến trình `DauProbeC1`.
   - Người dùng bấm "–" ở "Dấu thử C1": `com.apple.inputsources` ghi lúc 14:02, không còn mục nào của `DauProbeC1` (cả cha và mode). → **hướng cài lại rồi "–" dùng được**, và "–" không cần tiến trình bộ gõ đang chạy.
   - Sau đó người dùng bỏ `DauProbeC2` bằng "–", `scripts/probe/cleanup.sh --yes` dọn mọi bản thử (A2–A4, B1, B2, C1, C2) khỏi `~/Library/Input Methods`, bộ đệm xoá; `cleanup.sh` báo "Không còn biến thể nào", miền chỉ còn mục của Dấu.
-- Hệ quả: mục ẩn để lại vẫn dọn được về sau bằng cài lại cùng ID rồi "–"; cài lại cùng ID khi còn mục ẩn thì nguồn được bật ngay, không hỏi.
+- Hệ quả: mục ẩn để lại vẫn dọn được về sau bằng cài lại cùng ID rồi "–"; cài lại cùng ID khi còn mục ẩn thì nguồn bật ngay, không hỏi.
 - **Đọc lại sau lần đăng xuất kế tiếp** (không tốn gì): nếu phép hồi sinh chưa chạy trước lần đăng xuất tự nhiên kế tiếp, sau khi đăng nhập lại đọc `defaults export com.apple.inputsources -` xem mục `DauProbeC1` còn không (msime và Shanjie cho thấy mục không tự mất, chưa đo trên máy này). Phép hồi sinh đã chạy và dọn `DauProbeC1`, nên phép này chỉ làm được nếu tạo lại một mục ẩn (mục 10.8).
 
 ### 1.3 Mục 6.2 cũ: tình trạng các đề xuất cho Decisions (đọc 03/11/2026)
@@ -66,7 +66,7 @@ Tên file và khoá giả trong lệnh giữ nguyên chữ K1, K2 của kế ho�
   - D14 bước 1 chỉ coi bộ gõ chặn phím đang chạy là xung đột, bộ gõ IMK tiếng Việt khác chỉ nhắc nhẹ (mục 5);
   - D7 thay bộ gõ bằng chép tạm rồi đổi chỗ cả khối, dừng bằng thông báo Darwin, không đụng `imklaunchagent` và bộ đệm hệ thống, chấp nhận biểu tượng cũ còn tới khi đăng xuất (mục 3);
   - Cần người dùng chốt.
-- Hướng dẫn trên giao diện (N5): câu về đăng xuất, hộp thoại "Cho phép", và "Bàn phím đang dùng trước đó được giữ nguyên" để dạng ô trống cho tới khi kiểm xong bằng Dấu thật (lần thử trên máy sạch ở mục 7 đã bỏ).
+- Hướng dẫn trên giao diện (N5): câu về đăng xuất, hộp thoại "Cho phép" và "Bàn phím đang dùng trước đó được giữ nguyên" để dạng ô trống cho tới khi kiểm xong bằng Dấu thật (lần thử trên máy sạch ở mục 7 đã bỏ).
 
 ### 7. Kế hoạch thử lại bằng Dấu thật trên máy sạch (một lần đăng xuất)
 
@@ -84,7 +84,7 @@ Xếp hạng là ước lượng của người nghiên cứu từ bằng chứn
 | Hướng | Khả năng | Bằng chứng | Va chạm sổ quyết định |
 |---|---|---|---|
 | **Cài vào `/Library/Input Methods`** (cần quyền quản trị: `.pkg` hoặc `osascript … with administrator privileges`) rồi đăng ký | Trung bình (đáng thử nhất vì có một bằng chứng dương duy nhất) | marinaMoji (mục 2.3); nhưng Squirrel, macSKK, fcitx5, Gureum cũng cài ở đó mà vẫn bảo đăng xuất. Rủi ro: hộp thoại mật khẩu quản trị, gỡ cũng cần quản trị, Homebrew/Sparkle phải xử lý quyền | **D16** (`~/Library/Input Methods`), **D6** (DMG, không `.pkg`), **D37**; cần người dùng chốt nếu thành công |
-| **Làm mới tiến trình/bộ đệm giao diện** sau khi đăng ký và bật: dừng `TextInputMenuAgent` (chờ 0,5 s), `TextInputSwitcher`, `CursorUIViewService`, thoát Cài đặt, dừng extension Bàn phím, xoá `com.apple.IntlDataCache.le*` | Thấp tới trung bình cho **menu**; thấp cho "+" với ID mới | vChewing (mã, không số đo); msime đo trên 27.0/27.0.1: không giúp ID mới, giúp mode mới của ID đã biết. LaunchAgent tự dựng lại tiến trình bị dừng. Đụng tiến trình và bộ đệm hệ thống, thoát Cài đặt có thể làm mất trạng thái đang mở, không có API chính thức, có thể vỡ ở bản macOS sau | **N4** (chỉ chạy khi người dùng bấm một nút rõ ràng, "Làm mới danh sách", có xác nhận); mục 3 ("Không làm") và D37 tránh việc này (đọc 03/11/2026; từ 04/11/2026 D37 xoá bộ đệm của System Settings khi "Bật Dấu", mục 9.9) |
+| **Làm mới tiến trình/bộ đệm giao diện** sau khi đăng ký và bật: dừng `TextInputMenuAgent` (chờ 0,5 s), `TextInputSwitcher`, `CursorUIViewService`, thoát Cài đặt, dừng extension Bàn phím, xoá `com.apple.IntlDataCache.le*` | Thấp tới trung bình cho **menu**; thấp cho "+" với ID mới | vChewing (mã, không số đo); msime đo trên 27.0/27.0.1: không giúp ID mới, giúp mode mới của ID đã biết. LaunchAgent tự dựng lại tiến trình bị dừng. Đụng tiến trình và bộ đệm hệ thống, thoát Cài đặt có thể làm mất trạng thái đang mở, không có API chính thức, có thể vỡ ở bản macOS sau | **N4** (chỉ chạy khi người dùng bấm một nút rõ ràng, "Làm mới danh sách", có xác nhận); mục 3 ("Không làm") và D37 tránh cách này (đọc 03/11/2026; từ 04/11/2026 D37 xoá bộ đệm của System Settings khi "Bật Dấu", mục 9.9) |
 | **Dựng lại ảnh chụp trong tiến trình**: sau `Register`, tra bằng tiến trình con mới (kiểu Squirrel: mỗi lệnh một tiến trình) và thăm dò đến 20 giây (kiểu tabulador); bật cha, đợi mode xuất hiện, bật mode, đọc lại bằng tiến trình mới | Thấp để làm hiện giao diện, nhưng nên làm để đọc đúng trạng thái | tabulador sửa lỗi tương tự bằng thử lại; Squirrel mỗi lệnh một tiến trình. Không đụng hệ thống | Không |
 | **"Đã bật, chờ đăng xuất" làm đường chính** (đề xuất 03/11/2026, không chọn; D37 chốt cách bật không đăng xuất): ghi nhớ trạng thái; mở lại Dấu sau đăng nhập; nút hoặc hướng dẫn đăng xuất | Đúng nếu Apple DTS đúng; không tránh được đăng xuất (câu hỏi mở về đăng xuất còn mở lúc đó, D37 ghi "có thể") | Mục 2.3 | **N4**; artboard `OnboardingLogout` (trên canvas, không có trong `docs/UI.md`) chờ duyệt, vẽ theo kết luận "bắt buộc đăng xuất" đã bỏ |
 | **Chọn nguồn bằng TIS** (`TISSelectInputSource`) sau khi bật, để `imklaunchagent` dựng tiến trình bộ gõ | Rất thấp | marinaMoji: `-50` (paramErr) dù mode đã bật | **N4** không có câu cấm riêng việc chọn nguồn (mục 6.1 điểm 3); chọn Dấu sau khi bật không gắn với nút nào hiện có, nên chỉ đo như chẩn đoán |
@@ -145,7 +145,7 @@ Nhật ký từng lệnh: `build/probe.noindex/logs/A-steps.log` (không vào re
 | 09:41, chỉ đăng ký | A1 | `Register` (0) | cha và mode có, liệt kê ngay | rỗng | không có (người dùng xem) |
 | 09:46, đăng ký rồi bật cha và mode trong một tiến trình | A2 | `Register`, cha liệt kê ở lần hỏi đầu, `Enable` cha (0), mode (0); 0,3 s | có | rỗng | không có A1, A2 |
 | 09:46, ba tiến trình | A3 | ba tiến trình: `Register` (0), `Enable` cha (0), mode (0); `KeyboardSettings` ghi "Invalid value on inputSourceToBeEnabled" 1,5 s sau | có | rỗng | không có A1–A3 |
-| 10:14, làm mới bộ đệm của System Settings | A4 | `Register` (0), `Enable` cha (0); thoát System Settings; xoá `IntlDataCache.le*` (giờ ghi trước đó 08:47); `pkill` extension (lúc đó chỉ `KeyboardSettingsIntents` chạy); mở lại Keyboard. Bộ đệm được dựng lại 10:14:38.969 | có | rỗng | **có A1, A2, A3, A4** (ảnh của người dùng) |
+| 10:14, làm mới bộ đệm của System Settings | A4 | `Register` (0), `Enable` cha (0); thoát System Settings; xoá `IntlDataCache.le*` (giờ ghi trước đó 08:47); `pkill` extension (lúc đó chỉ `KeyboardSettingsIntents` chạy); mở lại Keyboard. Bộ đệm dựng lại 10:14:38.969 | có | rỗng | **có A1, A2, A3, A4** (ảnh của người dùng) |
 | 10:20, bật từ app có tên ngay sau lần làm mới | A4 | `Enable` cha từ `TisAct.app` (tên "Dấu thử") (0); `KeyboardSettings` ghi `handleOpenParameter`, `TCCAccessLaunchDisclosurePromptIfNeeded`, **không** có "Invalid value"; hộp thoại xin phép hiện, người dùng bấm "Allow" | cha và mode `enabled` | **có cả hai mục A4** (cha và mode `….A4.vi`) | — |
 
 **Vòng tách từng thao tác làm mới bộ đệm** (04/11/2026): tách lần làm mới 10:14 của vòng trên thành từng thao tác (các lần thử của `scripts/probe/step.sh`, mỗi lần một ID mới, System Settings đang mở ở Keyboard trước mỗi lần):
@@ -225,9 +225,9 @@ Cách đo:
 
 Thêm:
 - **E2:** lượt đầu không hiện hộp thoại vì System Settings còn mở từ E1 (cách bật của vòng bật ngay không thoát nó). Thoát rồi gửi lại thì hiện.
-- **Sai sót thiết kế ở lượt E3:** app thử tự đọc TIS mỗi 2 s nên dựng lại bộ đệm (vẫn cũ) ngay sau khi bị xoá, trước khi E3 được cài. Một app thật gọi TIS vào lúc bất kỳ, nên khoảng giữa lúc xoá bộ đệm và lúc đăng ký cần ngắn nhất có thể.
+- **Sai sót thiết kế ở lượt E3:** app thử tự đọc TIS mỗi 2 s nên dựng lại bộ đệm (vẫn cũ) ngay sau khi bị xoá, trước khi cài E3. Một app thật gọi TIS vào lúc bất kỳ, nên khoảng giữa lúc xoá bộ đệm và lúc đăng ký cần ngắn nhất có thể.
 - **Thông báo đổi nguồn lạ:** lúc 17:03:21 và 17:03:26 có hai thông báo đổi nguồn đang chọn không do lệnh nào của vòng thử.
-- **Bấm "–" qua trợ năng:** trong một lần mở trang Input Sources, chỉ lần "–" đầu tiên được ghi vào `com.apple.inputsources`. Các lần sau làm dòng biến mất nhưng không ghi. Mở lại System Settings cho từng mục thì ghi đủ. Chưa biết có xảy ra khi người dùng tự bấm hay không.
+- **Bấm "–" qua trợ năng:** trong một lần mở trang Input Sources, chỉ lần "–" đầu tiên ghi vào `com.apple.inputsources`. Các lần sau làm dòng biến mất nhưng không ghi. Mở lại System Settings cho từng mục thì ghi đủ. Chưa biết có xảy ra khi người dùng tự bấm hay không.
 - **Gõ nhanh khi chưa ổn định:** lần gõ nhanh đầu tiên ở app có ô nhập (chuỗi System Events) ra ô trống; gõ từng phím thì đúng.
 
 Chưa chạy: lần thử chỉ dừng extension của System Settings (lần chỉ xoá bộ đệm đã đủ và nhẹ hơn).
@@ -245,7 +245,7 @@ Các quan sát này không trả lời câu hỏi lần cài đầu có phải �
 
 Công cụ `scripts/probe/` nhắc trong mục này đã xoá ngày 09/11/2026 khi vòng thử xong; lấy lại bằng `git show` như mục 0, điểm 17.
 
-Không thuộc lần thử trên máy sạch (mục 7) và chạy **trước** nó (người dùng chốt 04/11/2026: mục tiêu là tìm cách để lần cài đầu không phải đăng xuất; ba hướng đầu và hướng chọn nguồn bằng TIS ở mục 7.1).
+Không thuộc lần thử trên máy sạch (mục 7) và chạy **trước** nó. Người dùng chốt 04/11/2026 mục tiêu là tìm cách để lần cài đầu không phải đăng xuất. Các hướng gồm ba hướng đầu và hướng chọn nguồn bằng TIS ở mục 7.1.
 Chạy trên tài khoản đang dùng, vì mỗi bước dùng một ID mới (nguyên lý dưới).
 Kết quả là quan sát về bản thử, không phải về Dấu; hướng nào có vẻ được thì phải thử lại bằng Dấu thật trên tài khoản mới (mục 7) trước khi đưa vào sản phẩm.
 Các bước chỉ đăng ký, thăm dò, kiểu Squirrel, làm mới bộ đệm và bật từ app có tên có kết quả ở vòng đầu (mục 8.1b); các bước còn lại không có kết quả trong file này.
@@ -255,11 +255,11 @@ Nguyên lý:
   - Mỗi ID chỉ dùng được **một lần** cho mỗi tài khoản: sau khi đăng xuất và đăng nhập, ID đó đã "bị cháy". Dấu thật là một ID.
   - Để thử thêm hướng nào trong **cùng** phiên đăng nhập, mỗi hướng dùng **một biến thể bộ gõ có ID riêng**.
 - Mỗi vòng dựng một bộ biến thể mới từ bản Release của `DauInputMethod.app`.
-  - Mỗi biến thể đổi: tên file `.app`, `CFBundleIdentifier`, `TISInputSourceID` ở mức bundle, khoá mode và `TISInputSourceID` của mode (`….DauProbeA1.vi`), `InputMethodConnectionName`, tên hiển thị (để phân biệt trong menu), và `mach-register` trong entitlement, rồi ký lại bằng cùng danh tính Apple Development như bản Release (như bản thử 03/11, mục 8.1).
+  - Mỗi biến thể đổi: tên file `.app`, `CFBundleIdentifier`, `TISInputSourceID` ở mức bundle, khoá mode và `TISInputSourceID` của mode (`….DauProbeA1.vi`), `InputMethodConnectionName`, tên hiển thị (để phân biệt trong menu) và `mach-register` trong entitlement, rồi ký lại bằng cùng danh tính Apple Development như bản Release (như bản thử 03/11, mục 8.1).
   - ID giữ dạng của Dấu, `com.codefastlabs.dau.inputmethod.<Tên>`, để chỉ đổi một biến số (luật `.inputmethod.` còn mở, mục 2.7).
   - Script ném đi trong `scripts/probe/` (không đưa vào bản phát hành), không sửa mã app; nó ghi lại mọi ID đã tạo và từ chối dùng lại.
 - Cần một **công cụ đọc** `tis-probe` (`scripts/probe/tis-probe.swift`, chạy bằng tiến trình mới mỗi lần):
-  - in một dòng JSON gồm giờ, danh sách mọi nguồn có `TISInputSourceID` chứa `dau.inputmethod` (id, bundle, loại, enabled, enableCapable, selectCapable, selected), kết quả `defaults export com.apple.inputsources -` và `com.apple.HIToolbox` (`AppleEnabledInputSources`, `AppleInputSourceUpdateTime`), và `pgrep -fl DauProbe`;
+  - in một dòng JSON gồm giờ, danh sách mọi nguồn có `TISInputSourceID` chứa `dau.inputmethod` (id, bundle, loại, enabled, enableCapable, selectCapable, selected), kết quả `defaults export com.apple.inputsources -` và `com.apple.HIToolbox` (`AppleEnabledInputSources`, `AppleInputSourceUpdateTime`) và `pgrep -fl DauProbe`;
   - có thêm chế độ `--watch` đăng ký `kTISNotifyEnabledKeyboardInputSourcesChanged` và in mỗi lần nhận;
   - công cụ dòng lệnh `probe-tis` đã dùng ở 02–03/11 nằm ngoài repo; chưa kiểm có trùng không.
 - **Thứ tự: từ ít xâm lấn đến nhiều**, và **chép biến thể vào `~/Library/Input Methods` ngay trước khi thử nó, không chép trước**.
@@ -284,7 +284,7 @@ Các bước (bảng kiểm như mục 7.4 cũ, nay ở `docs/history/Plans.md`,
 | **Dừng ba tiến trình giao diện cùng lúc** | `Register`, bật cha, rồi dừng **cùng lúc** `TextInputSwitcher`, `CursorUIViewService`, `TextInputMenuAgent` (ba lần cách nhau 0,5 s) | Làm mới tối đa, không đụng `imklaunchagent` | Vừa |
 | **Cài vào `/Library/Input Methods`** | `sudo` chép vào **`/Library/Input Methods/`** (chủ sở hữu root), `Register` từ tiến trình người dùng, bật cha, bật mode. Đo thêm cho câu hỏi mở "cài cho riêng mình hay cho cả máy" (`docs/Decisions.md`): có tài khoản thứ hai thì đăng nhập vào đó xem "+" có biến thể này ngay không; nếu người dùng thêm biến thể này bằng "+" rồi chép thêm cùng biến thể vào `~/Library/Input Methods`, tiến trình chạy từ đường dẫn nào | Hướng cài vào `/Library/Input Methods`; cài cho cả máy | Cần mật khẩu quản trị (người dùng tự gõ); bản ở `/Library` gỡ cũng cần mật khẩu |
 | **Chọn nguồn bằng TIS** | Như bước đối chứng ở mục 7.3 cũ (`docs/history/Plans.md`) rồi, **sau cùng**, `TISSelectInputSource` cho mode: ghi mã trả về, xem biến thể có chạy không (`pgrep`), `TISCopyCurrentKeyboardInputSource` đổi không | Hướng chọn nguồn bằng TIS, chẩn đoán | Nhẹ; chỉ để đo, không đưa vào Dấu (N4) |
-| **Trần trên** (không có biến thể riêng) | **Chỉ chẩn đoán, không bao giờ vào Dấu**: sau khi mọi bước trên đã đo, dừng `imklaunchagent` và `keyboardservicesd` rồi nhìn lại mọi ID | Biết có cách làm hiện mà không đăng xuất hay không, và xem tiến trình nào là chủ | Cao: có thể làm hỏng gõ phím trong tài khoản thử; làm cuối cùng |
+| **Trần trên** (không có biến thể riêng) | **Chỉ chẩn đoán, không bao giờ vào Dấu**: sau khi mọi bước trên đã đo, dừng `imklaunchagent` và `keyboardservicesd` rồi nhìn lại mọi ID | Biết có cách làm hiện mà không đăng xuất hay không và xem tiến trình nào là chủ | Cao: có thể làm hỏng gõ phím trong tài khoản thử; làm cuối cùng |
 
 Cách đọc:
 - **Bước chỉ đăng ký mà HIỆN:** `Register` là đủ trên bản macOS đó; các bước sau chỉ còn để xem bật có được không. Ca 03/11 (app không gọi `Register`, `docs/Progress.md`) khi đó là lỗi của app, không phải giới hạn của macOS.
@@ -363,7 +363,7 @@ Telegram: `ru.keepcoder.Telegram` 13.1, có sandbox.
 [Máy/Dấu] Mục 10.10.
 
 #### 9.11 04/11, 17:35–17:38: luồng bật theo D37 đã sửa, ca Telegram
-Dựng lại đúng ca lỗi của mục 9.10, và lần này luồng bật sửa được (bản Debug).
+Dựng lại đúng ca lỗi của mục 9.10. Lần này luồng bật sửa được (bản Debug).
 - **Chuẩn bị:**
   - Bỏ Dấu bằng "–" qua trợ năng.
   - Đặt lại cho Telegram bộ đệm cũ lúc 10:16 (không có `DauInputMethod.app`), mở Telegram. Telegram chạy suốt, không mở lại (cùng pid).
@@ -373,7 +373,7 @@ Dựng lại đúng ca lỗi của mục 9.10, và lần này luồng bật sử
   - Hộp thoại `Allow “Dấu” to enable “Dấu”?` hiện; bấm Allow. macOS ghi mục sau 3 s.
   - Lượt quét lại đọc 20 bộ đệm đã dựng lại, không bộ đệm nào thiếu Dấu.
 - **Kết quả ở Telegram (vẫn chạy suốt):**
-  - Bộ đệm của Telegram được dựng lại lúc 17:37:47 và có `DauInputMethod.app`.
+  - Bộ đệm của Telegram dựng lại lúc 17:37:47 và có `DauInputMethod.app`.
   - Chọn "Dấu – Tiếng Việt" từ menu nhập liệu được.
   - Dấu nhận 6/6 phím ở ô tìm kiếm, ra "việt".
   - ⌃⌥Space đi qua cả Dấu.
@@ -387,7 +387,7 @@ Dấu thật đã bật; app thử có sandbox `local.probe.cacheL1`, ký ad-hoc
   - Thay bộ đệm của app thử bằng một bộ đệm cũ (04/11 08:47, không có `DauInputMethod.app`). Chạy app thử: nó dùng bộ đệm đó, giờ ghi giữ nguyên, **không thấy Dấu** (09:45:08).
   - Chụp 26 bộ đệm (bộ đệm chung và từng app; giờ ghi, inode, có Dấu không): 25 có Dấu, chỉ bộ đệm của app thử không có. Bộ đệm của Telegram ghi lúc 04/11 17:56:37. Telegram đang chạy.
 - **Người dùng đăng xuất và đăng nhập lại (09:46).** Chụp lại lúc 09:47:26, trước khi mở app nào:
-  - Bộ đệm chung và bộ đệm của 12 tiến trình chạy lúc đăng nhập (MenuBarAgent, notificationcenterui, PressAndHold…) được ghi mới (09:46:41–09:46:52, inode mới), đều có Dấu.
+  - Bộ đệm chung và bộ đệm của 12 tiến trình chạy lúc đăng nhập (MenuBarAgent, notificationcenterui, PressAndHold…) ghi mới (09:46:41–09:46:52, inode mới), đều có Dấu.
   - Bộ đệm của app thử và của Telegram (chưa chạy) **còn nguyên**: cùng inode, cùng giờ ghi. Đăng xuất không xoá bộ đệm.
 - **Mở app sau khi đăng nhập:**
   - App thử: lần chạy đầu (09:47:35) dựng lại bộ đệm (inode mới) và **thấy Dấu**. Lần chạy sau (09:48:12) dùng lại bộ đệm 09:47:35.
@@ -450,7 +450,7 @@ Cấu hình mặc định theo D15: Telex, kiểu mới, bỏ dấu tự do bậ
 
 Cột "So với OpenKey" có hai giá trị:
 - **Khác (cố ý)**: Dấu cố ý khác OpenKey.
-- Bỏ trống: kết quả được dự đoán là giống OpenKey.
+- Bỏ trống: dự đoán kết quả giống OpenKey.
 
 Không còn ca nào chờ chốt (`dD` theo D34, `duo7c59` theo D28, chốt 29/10/2026). Ca do phiên chính thêm theo các quyết định mới gom ở 6.9 (đã duyệt 29/10/2026).
 
@@ -592,7 +592,7 @@ Cột "Ghi chú" dẫn số quyết định khi kết quả do quyết định �
 | `ask␣`, `task␣`, `desk␣`, `hawk␣` | giữ nguyên | D31: âm cuối k không nhận sau a/e; "ăk" không dấu không hợp lệ | |
 | `karma␣`, `hawks␣`, `awkward␣` | `kẩm␣`, `hắk␣`, `akward␣` | hệ quả đã chấp nhận của D31 phương án d | |
 | `ghus␣` | `ghus␣` | gh chỉ đứng trước i, e, ê | **Khác (cố ý)** |
-| `aw␣` | `ă␣` | chữ ă đứng một mình được giữ (D31 (Âm tiết tiếng Việt hợp lệ), ý "Chữ cái đứng một mình"); `traw␣` vẫn khôi phục vì ă không đứng cuối âm tiết | Giống OpenKey |
+| `aw␣` | `ă␣` | chữ ă đứng một mình giữ nguyên (D31 (Âm tiết tiếng Việt hợp lệ), ý "Chữ cái đứng một mình"); `traw␣` vẫn khôi phục vì ă không đứng cuối âm tiết | Giống OpenKey |
 | `pin␣` / `pins␣` | `pin␣` / `pín␣` | "p" đơn là phụ âm đầu hợp lệ (D31) | |
 
 #### 6.8 "Thêm dấu cho từ đã gõ" (D20; bộ đệm rỗng, chữ đọc từ ứng dụng)
@@ -658,7 +658,7 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - **Đã chốt: D30.** Kiểm tra chính tả luôn chạy; công tắc chỉ điều khiển khôi phục.
 - **"Âm tiết tiếng Việt hợp lệ" chưa được định nghĩa**, trong khi D4, D20 và D21 đều dựa vào nó. Cần chốt:
   - (a) có áp phân bố c/k/q, g/gh, ng/ngh không;
-  - (b) vần tắc p, t, c, ch: chỉ cho sắc/nặng, và có chấp nhận khi chưa có dấu thanh không (ảnh hưởng `bak␣` → `bach␣`);
+  - (b) vần tắc p, t, c, ch: chỉ cho sắc/nặng và có chấp nhận khi chưa có dấu thanh không (ảnh hưởng `bak␣` → `bach␣`);
   - (c) ă/â có bắt buộc phụ âm cuối không (`aw␣`);
   - (d) phụ âm đầu "p" đơn (pin, pa-tê) có hợp lệ không;
   - (e) danh sách vần hợp lệ. Đề xuất engine-dev lập bảng vần riêng theo chính tả, không chép bảng OpenKey (bảng đó có mục lạ như "ôô", "uao").
@@ -680,7 +680,7 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - Ngoài ra D21 không nói gì về **trạng thái trong lúc gõ**: khi bật gõ tắt, f/j/(w ở VNI) đầu từ và g/h/k cuối từ phải được coi là phụ âm tạm hợp lệ, thì phím dấu gõ sau đó mới có tác dụng ("fanf" hiện "fàn" trước khi nhấn Space). Đề xuất ghi rõ.
   - **Đã chốt: D21.** "fix" → "phĩ" chấp nhận, ghi trong test; f, j đầu và g, h, k cuối là phụ âm tạm hợp lệ trong lúc gõ.
 - **Câu chữ của D23.**
-  - D23 viết "w ở đầu từ luôn là ư/ơ". Nhưng w đứng riêng chỉ cho ra "ư"; "ơ" chỉ có từ "ow", hoặc từ `[` ở OpenKey.
+  - D23 viết "w ở đầu từ luôn là ư/ơ". Nhưng w đứng riêng chỉ cho ra "ư"; "ơ" chỉ có từ "ow" hoặc từ `[` ở OpenKey.
   - Đề xuất sửa thành "luôn là ư".
   - **Đã chốt: D23 (sửa câu chữ thành "luôn là ư").**
 - **"Cho phép w" không có tác dụng ở Telex.**
@@ -694,11 +694,11 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - **Đã chốt: D4 (phần "Ranh giới từ").** Mũi tên chỉ reset, không khôi phục.
 - **Backspace chưa được đặc tả.**
   - Architecture không nói Backspace tác động lên bộ đệm và phím gốc thế nào.
-  - Đề xuất: Backspace bỏ chữ cuối hiển thị, đặt lại dấu, và đổi mốc khôi phục của từ thành "chữ đang hiển thị". Tránh lệch kiểu OpenKey (3.17, B12).
+  - Đề xuất: Backspace bỏ chữ cuối hiển thị, đặt lại dấu và đổi mốc khôi phục của từ thành "chữ đang hiển thị". Tránh lệch kiểu OpenKey (3.17, B12).
   - **Đã chốt: D32.** Backspace bỏ chữ cuối, đặt lại dấu, mốc khôi phục là chữ đang hiển thị.
 - **"Thêm dấu cho từ đã gõ" (D20) cần chốt chi tiết:**
-  - (a) chỉ phím dấu thanh, hay cả phím biến đổi (aa, w, dd);
-  - (b) "viet" + `j`: "viẹt" không hợp lệ nên phím đi thẳng ("vietj"), hay engine được tự thêm mũ thành "việt";
+  - (a) chỉ phím dấu thanh hay cả phím biến đổi (aa, w, dd);
+  - (b) "viet" + `j`: "viẹt" không hợp lệ nên phím đi thẳng ("vietj") hay engine được tự thêm mũ thành "việt";
   - (c) mốc khôi phục khi từ trở nên không hợp lệ (đề xuất: chữ hiển thị + phím mới);
   - (d) có làm "lịch sử từ" qua Backspace như OpenKey không (3.17). Nếu có thì tránh B12.
   - **Đã chốt: D20 (chi tiết 29/10/2026).** (a) cả phím dấu thanh và phím biến đổi; (b) không tự thêm biến đổi, "viet" + j → "vietj"; (d) không làm lịch sử từ. (c) mốc khôi phục chưa ghi trực tiếp, suy ra từ D32 (xem 6.8).
@@ -706,7 +706,7 @@ Mỗi mục giữ nội dung gốc để truy vết, kèm dòng "Đã chốt".
   - **Đã chốt: D33.** Dài hơn 7 chữ cái thì khôi phục ngay về chuỗi phím đã gõ, phím còn lại đi thẳng (tắt công tắc tự khôi phục thì chỉ ngừng biến đổi); bộ đệm cố định.
 - **Quick Telex (cc → ch…)** không có trong DECISIONS. Đề xuất ghi vào "Đã cân nhắc và loại bỏ": phá từ tiếng Anh có phụ âm đôi, trùng mục đích với gõ tắt phụ âm.
   - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (Quick Telex); từ 04/11/2026 nằm ở mục "Đã biết nhưng không làm".**
-- **Phím `[` `]` ở Telex** không có trong DECISIONS. Đề xuất không làm hoặc chốt rõ: xung đột với gõ code/markdown, và "Telex đơn giản" theo đề xuất đã bỏ chúng.
+- **Phím `[` `]` ở Telex** không có trong DECISIONS. Đề xuất không làm hoặc chốt rõ: xung đột với gõ code/markdown và "Telex đơn giản" theo đề xuất đã bỏ chúng.
   - **Đã chốt: D27.** `[ ]` luôn là dấu câu.
 - **Tạm tắt chính tả/bộ gõ bằng nhấn-nhả ⌃/⌘** (OpenKey). Đề xuất ghi vào "Đã cân nhắc và loại bỏ" cho rõ, cùng tinh thần D2 (không phím riêng; mục loại bỏ đã có "phím chuyển nhấn-nhả ⌃ hoặc ⇧").
   - **Đã chốt: mục "Đã cân nhắc và loại bỏ" (tạm tắt bằng nhấn-nhả ⌃/⌘), cùng D30; từ 04/11/2026 nằm ở mục "Đã biết nhưng không làm".**
@@ -738,17 +738,17 @@ Quy trình dự kiến, các lần sửa `extract.sh`, đếm sơ bộ, diễn b
 1. Engine-dev chỉ đọc `docs/research/external-test-inputs/*.tsv` và file này, viết kết quả mong đợi theo chính tả tiếng Việt và `docs/Decisions.md` (D10 (Engine tự viết): không lấy kết quả của bộ gõ khác làm đáp án).
 2. Chạy engine của Dấu trên các ca đó; ca nào Dấu khác đáp án của chính Dấu là lỗi của Dấu. (Đã làm bằng bất biến thay cho đáp án từng ca, xem Hiện trạng.)
 3. Chỉ sau bước 2, người so sánh mới mở `build/external-answers/` và đánh dấu các ca Dấu khác họ.
-   - Mỗi ca khác nhau được xét theo Decisions.md. Kết quả là một trong ba:
+   - Xét mỗi ca khác nhau theo Decisions.md. Kết quả là một trong ba:
      - Dấu cố ý khác (ghi vào `docs/research/OpenKeyNotes.md` hoặc ghi chú test);
      - đáp án của Dấu sai;
      - cần quyết định mới (hỏi người dùng).
-   - Đáp án của họ không bao giờ được chép thẳng vào test.
+   - Không bao giờ chép thẳng đáp án của họ vào test.
 
-Lưu ý: engine của XKey ghi trong mã là bản chuyển trực tiếp từ engine OpenKey (`XKey/Core/Engine/VNEngine.swift` của họ), nên đáp án của XKey gần với hành vi OpenKey; theo D10 nó chỉ được dùng để tìm ca đáng xem lại, như mọi nguồn khác.
+Lưu ý: engine của XKey ghi trong mã là bản chuyển trực tiếp từ engine OpenKey (`XKey/Core/Engine/VNEngine.swift` của họ), nên đáp án của XKey gần với hành vi OpenKey; theo D10 nó chỉ dùng để tìm ca đáng xem lại, như mọi nguồn khác.
 
 ### 6. Đếm sơ bộ trên đáp án của họ (không trích đáp án)
 
-Người trích chạy một bộ kiểm âm tiết tạm (luật D31 rút gọn, viết riêng cho việc đếm này, không dùng trong engine): `scripts/research/external-tests/answer_stats.py`, đọc `build/external-answers/`, chỉ in số đếm.
+Người trích chạy một bộ kiểm âm tiết tạm (luật D31 rút gọn, viết riêng cho phép đếm này, không dùng trong engine): `scripts/research/external-tests/answer_stats.py`, đọc `build/external-answers/`, chỉ in số đếm.
 Chỉ xét ca kết thúc bằng ranh giới từ (hoặc ca ibus-teni, vốn là từ trọn vẹn).
 Đây là số đếm heuristic trước khi xem từng ca; kết quả xem từng ca ở mục 9.
 
@@ -932,7 +932,7 @@ Chuyển ô trong cùng view (mô hình: test `SharedViewTests`, đã bỏ cùng
 | a. xterm.js đã nhận ra, đã qua Return, rồi click sang ô soạn thảo | "ho␡ôm nay to␡ôi d␡đi hoc␡␡ọc vui ve␡ẻ ⏎cam␡␡ảm o␡ơn ban␡␡ạn ": DEL ở mọi phím thay chữ |
 | b. xterm.js đã nhận ra, chưa có Return | dòng đầu đúng; Return gõ trong ô soạn thảo bật cách gửi DEL, nên dòng sau sai như ca a |
 | c. Ô kiểu Ghostty cùng view (giả định, chưa thấy app nào như vậy) | DEL sau mọi phím thay chữ |
-| d. Ô soạn thảo rồi click sang terminal | ô soạn thảo đúng; terminal tới dòng thứ ba mới được nhận ra, nên cả ba dòng sai như trước D43 cũ. Nguyên nhân là trạng thái của composer còn từ ô soạn thảo; coi click như reset thì nhận ra như lần kích hoạt mới |
+| d. Ô soạn thảo rồi click sang terminal | ô soạn thảo đúng; tới dòng thứ ba Dấu mới nhận ra terminal, nên cả ba dòng sai như trước D43 cũ. Nguyên nhân là trạng thái của composer còn từ ô soạn thảo; coi click như reset thì nhận ra như lần kích hoạt mới |
 
 Cách đã xét để vẫn gửi trong phím (không chọn ở D43 cũ: còn lọt ký tự xoá):
 
@@ -946,7 +946,7 @@ Cách đã xét để vẫn gửi trong phím (không chọn ở D43 cũ: còn l
 
 Đo trên VS Code (12/11/2026, bộ gõ Debug 3325750, 120 ms, một lượt mỗi ô; `scripts/research/terminal-underline/run.sh 't5-*'`):
 
-- Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 cũ nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4, và ở ⌫).
+- Terminal tích hợp, `toois vieetj ddi hocj nhaf nguwowif hoaf⌫ windows ↩uwa uwowcs `: D43 cũ nhận ra ô (`in-key`), không gửi ký tự xoá; chữ ra "toois vieêetj dđdi hocọcj nhaàf nguưwoơwif hoaà windowswindows ↩uwa uưwoơwcs ", sai như cách cũ. Telex của Apple cùng ô: "tối việt đi học nhà người ho ưindows ↩ưa ước " (đúng tiếng Việt; khác ở từ tiếng Anh, D4 và ở ⌫).
 - Chuyển ô: terminal `tooi vieetj ddi hocj ↩`, click sang tài liệu trống cùng cửa sổ, gõ `hoom nay tooi ddi hocj vui ver `: trình soạn thảo ra đúng "hôm nay tôi đi học vui vẻ ", 0 ký tự xoá; không có `activate` giữa lúc click và lúc gõ xong.
 - Lượt này xếp ô vào `in-key`, không gặp ca bị xếp nhầm vào kiểu Ghostty. Bản sau đó chặn ca này bằng `WebHost` (app có nhân web không nhận ký tự xoá); cả hai đã bỏ cùng D43 cũ.
 

@@ -1,22 +1,22 @@
 # Đóng góp cho Dấu
 
-Cảm ơn bạn muốn góp sức cho Dấu. Dấu là phần mềm tự do theo giấy phép GPLv3 ([LICENSE](LICENSE)), và mọi đóng góp gửi vào repo cũng theo giấy phép này.
+Cảm ơn bạn muốn góp sức cho Dấu. Dấu là phần mềm tự do theo giấy phép GPLv3 ([LICENSE](LICENSE)). Mọi đóng góp gửi vào repo cũng theo giấy phép này.
 
 ## Trước khi bắt đầu
 
 - Bạn hãy đọc [`docs/Decisions.md`](docs/Decisions.md) trước. Đây là sổ quyết định và là nguồn chuẩn duy nhất của dự án. Thay đổi nào trái với một nguyên tắc (N) hay một quyết định (D) sẽ không được nhận. Nếu muốn đổi một quyết định, bạn hãy mở issue nêu lý do trước khi viết mã.
 - Với việc lớn, như thêm tính năng mới, đổi hành vi gõ hay đổi giao diện, bạn hãy mở issue trước để thống nhất hướng làm. Với lỗi nhỏ, bạn có thể gửi PR thẳng.
-- Kiến trúc và đường đi của một phím được tả ở [`docs/Architecture.md`](docs/Architecture.md). Lộ trình của dự án nằm ở [`docs/Roadmap.md`](docs/Roadmap.md).
+- Kiến trúc và đường đi của một phím tả ở [`docs/Architecture.md`](docs/Architecture.md). Lộ trình của dự án nằm ở [`docs/Roadmap.md`](docs/Roadmap.md).
 
 ## Chuẩn bị máy
 
 - Bạn cần Xcode (dự án đã thử với Xcode 27.2 và Swift 6.4) và XcodeGen (cài bằng `brew install xcodegen`). Chỉ có Command Line Tools thì không đủ, vì `swift test` hỏng khi build sạch do thiếu plugin `TestingMacros`.
 - Nếu `xcode-select -p` đang trỏ tới Command Line Tools, bạn hãy đặt `export DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer` trước khi chạy các lệnh bên dưới. Các script trong `scripts/` tự chọn Xcode.
-- Bạn nên chạy `scripts/dev/doctor.sh` trước tiên. Lệnh này không cài hay đổi gì trên hệ thống; nó chỉ ghi vào `build/` và `.build/`. Nó liệt kê những gì máy bạn còn thiếu (Xcode, XcodeGen, chứng chỉ ký khớp Team, bản đã cài, nguồn đầu vào) và in lệnh sửa cho từng mục.
+- Bạn nên chạy `scripts/dev/doctor.sh` trước tiên. Lệnh này không cài hay đổi gì trên hệ thống; nó chỉ ghi vào `build/` và `.build/`. Lệnh này liệt kê những gì máy bạn còn thiếu (Xcode, XcodeGen, chứng chỉ ký khớp Team, bản đã cài, nguồn đầu vào) và in lệnh sửa cho từng mục.
 
 ## Chạy test
 
-Các lệnh `swift test` dưới đây cần Xcode được chọn, qua `xcode-select` hoặc `DEVELOPER_DIR` (xem mục "Chuẩn bị máy"). Nếu chỉ có Command Line Tools thì bước build sẽ hỏng.
+Các lệnh `swift test` dưới đây cần chọn Xcode qua `xcode-select` hoặc `DEVELOPER_DIR` (xem mục "Chuẩn bị máy"). Nếu chỉ có Command Line Tools thì bước build sẽ hỏng.
 
 | Phần | Cần Apple ID? | Lệnh |
 |---|---|---|
@@ -32,7 +32,7 @@ Mọi khẳng định về hiệu năng của engine đều cần số đo. Test
 Bộ gõ và app chủ dùng chung phần cài đặt qua một App Group. macOS chỉ chấp nhận App Group khi bản dựng được ký bằng một Team ID thật, nên bản ký ad-hoc không chạy được phần này. Vì vậy bạn cần một Team. Personal Team miễn phí là đủ: bạn không cần chương trình Apple Developer trả phí và không cần provisioning profile.
 
 1. Bạn mở Xcode, vào Settings › Accounts và đăng nhập Apple ID của mình. Xcode tạo Personal Team và chứng chỉ "Apple Development" khi cần.
-2. Bạn chép file mẫu rồi điền Team ID của mình vào. Team ID có ở Settings › Accounts, hoặc ở trường `OU=` của chứng chỉ "Apple Development" trong Keychain Access.
+2. Bạn chép file mẫu rồi điền Team ID của mình vào. Team ID có ở Settings › Accounts hoặc ở trường `OU=` của chứng chỉ "Apple Development" trong Keychain Access.
 
    ```sh
    cp Config/Local.xcconfig.example Config/Local.xcconfig
@@ -45,9 +45,9 @@ Bộ gõ và app chủ dùng chung phần cài đặt qua một App Group. macOS
    scripts/dev/install-app.sh
    ```
 
-   Script sinh project, build bản Release của Dấu.app (bộ gõ nằm trong app), kiểm bản build rồi đặt app vào `/Applications`. Bản Dấu.app cũ ở đó được chuyển vào Thùng rác. Chỉ bản Dấu.app trong thư mục Applications mới cài và thay bộ gõ (D37 (Cài bộ gõ)), nên bản mở từ thư mục build không cài được.
+   Script sinh project, build bản Release của Dấu.app (bộ gõ nằm trong app), kiểm bản build rồi đặt app vào `/Applications`. Bản Dấu.app cũ ở đó chuyển vào Thùng rác. Chỉ bản Dấu.app trong thư mục Applications mới cài và thay bộ gõ (D37 (Cài bộ gõ)), nên bản mở từ thư mục build không cài được.
 4. Lần đầu trên một máy, bạn mở Dấu trong `/Applications`, bấm "Bật Dấu", rồi bấm Allow trong hộp thoại của macOS. Bạn không cần đăng xuất. Nếu không bật được, bạn hãy làm theo màn "Chưa bật được Dấu" của app. Script không cài bộ gõ lần đầu và không bật gì (N4 (Không tự đổi cài đặt hệ thống)).
-5. Những lần sau, bạn chỉ cần chạy lại `scripts/dev/install-app.sh`. Dấu.app vừa cài tự thay bộ gõ đã cài bằng bản nằm trong nó, và không đổi danh sách nguồn đầu vào bạn đã bật.
+5. Những lần sau, bạn chỉ cần chạy lại `scripts/dev/install-app.sh`. Dấu.app vừa cài tự thay bộ gõ đã cài bằng bản nằm trong nó và không đổi danh sách nguồn đầu vào bạn đã bật.
 
 Để gõ hằng ngày, bạn hãy dùng bản Release. Lệnh `scripts/dev/install-app.sh --debug` cài bản Debug. Đây là bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry)); cách đo nằm ở [`docs/Compatibility.md`](docs/Compatibility.md), mục 4.
 
@@ -74,7 +74,7 @@ Quy ước đầy đủ nằm trong [CLAUDE.md](CLAUDE.md) và trong `CLAUDE.md`
 Người đóng góp cần nhớ thêm mấy điều sau:
 
 - Commit viết theo [Conventional Commits](https://www.conventionalcommits.org/), ví dụ `feat:`, `fix:`, `docs:`.
-- `Dau.xcodeproj` được sinh từ `project.yml`. Bạn hãy sửa `project.yml`, và không sửa hay commit `.xcodeproj`.
+- `Dau.xcodeproj` được sinh từ `project.yml`. Bạn hãy sửa `project.yml` và không sửa hay commit `.xcodeproj`.
 - Giao diện dùng thành phần của macOS và bố cục theo System Settings (D9 (Giao diện)). Nội dung từng màn hình nằm ở [`docs/UI.md`](docs/UI.md). Nếu muốn đổi giao diện, bạn hãy mở issue kèm ảnh chụp hoặc bản phác thảo trước khi viết mã.
 - Chuỗi giao diện có khoá là câu tiếng Anh và có bản tiếng Việt (D41 (Ngôn ngữ giao diện)). Thuật ngữ nằm ở [`docs/Glossary.md`](docs/Glossary.md). Chuỗi giao diện không được ghi lời hứa chưa kiểm chứng (N5 (Chỉ hứa điều đã kiểm chứng)). Bạn kiểm các chuỗi này bằng `scripts/check-l10n/check.sh`.
 - Khi sửa tài liệu, bạn hãy đọc lại phần đã sửa và grep `docs/` để tìm đường dẫn, tên hay số mục mà thay đổi làm lỗi thời (CLAUDE.md, mục "Viết tài liệu").

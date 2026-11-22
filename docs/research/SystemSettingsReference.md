@@ -1,6 +1,6 @@
 # Số đo System Settings làm chuẩn cho cửa sổ Cài đặt
 
-Khi mockup và macOS khác nhau về bố cục, khoảng cách, cỡ chữ hay hình dáng control thì cửa sổ Cài đặt của Dấu theo System Settings; mockup chỉ quy định nội dung (D9 (Giao diện)). File này giữ số đo của System Settings, chỗ SwiftUI mặc định khác số đó, và chỗ Dấu cố ý khác. Số mà `scripts/selftest/settings-window/run.sh` kiểm trên cửa sổ thật nằm trong [`scripts/selftest/settings-window/Reference.swift`](../../scripts/selftest/settings-window/Reference.swift).
+Khi mockup và macOS khác nhau về bố cục, khoảng cách, cỡ chữ hay hình dáng control thì cửa sổ Cài đặt của Dấu theo System Settings; mockup chỉ quy định nội dung (D9 (Giao diện)). File này giữ số đo của System Settings, chỗ SwiftUI mặc định khác số đó và chỗ Dấu cố ý khác. Số mà `scripts/selftest/settings-window/run.sh` kiểm trên cửa sổ thật nằm trong [`scripts/selftest/settings-window/Reference.swift`](../../scripts/selftest/settings-window/Reference.swift).
 
 ## Hiện trạng (11/11/2026)
 
@@ -146,7 +146,7 @@ Mọi số ở mục trên mà không có trong danh sách này thì SwiftUI m�
   - `searchable` luôn tạo thanh riêng ở đầu sheet: ô tìm trên phải 183 × 24, cách mép trên và phải 20; Form bắt đầu dưới thanh tìm (y 44).
   - `navigationTitle` không hiện (không có NavigationStack); có NavigationStack thì tiêu đề nằm hàng riêng dưới ô tìm. `ToolbarItem(.navigation / .principal)` không hiện trong sheet.
   - `List` đặt trong `Form(.grouped)` bị tắt cuộn: không thanh cuộn, lăn chuột không đổi hàng; `scrollDisabled(false)` và `\.isScrollEnabled` không bật lại.
-- **`DisclosureGroup` trong Form** (thử 02/11/2026, cửa sổ 740 × 560): hàng con không thụt lề, nhưng không có vạch ngăn dưới hàng mở (nhãn hàng con sát 4 pt), và `AXDisclosureTriangle` không có action nào, `AXDisclosing` không ghi được, nên không mở được qua Accessibility API (chưa thử VoiceOver thật).
+- **`DisclosureGroup` trong Form** (thử 02/11/2026, cửa sổ 740 × 560): hàng con không thụt lề, nhưng không có vạch ngăn dưới hàng mở (nhãn hàng con sát 4 pt). `AXDisclosureTriangle` không có action nào và `AXDisclosing` không ghi được, nên không mở được qua Accessibility API (chưa thử VoiceOver thật).
 
 ## Dấu so với chuẩn
 

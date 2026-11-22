@@ -5,9 +5,9 @@ Tài liệu này ghi biểu tượng, logo chữ, màu, phông và các file nh�
 ## Hiện trạng
 
 - Biểu tượng app và biểu tượng bản phát triển là hai file Icon Composer: `Apps/Dau/Resources/AppIcon.icon` và `AppIconDev.icon`. Cả hai target dùng chung hai file này. Nguồn của chúng là `scripts/assets/make-app-icon.sh`, script dựng file từ hình học của artboard. Muốn sửa biểu tượng thì sửa script rồi chạy lại, không sửa tay các file `.icon`. Khi build, Xcode (`actool`) biên dịch file mà `DAU_APPICON` chọn (D25) thành `Assets.car`, gồm các kiểu Mặc định, Tối, Trong suốt và Phủ màu, cùng `AppIcon.icns` hoặc `AppIconDev.icns` làm bản dự phòng cho macOS 14–15 (`actool` tự sinh). Để xem kết quả mà không mở Icon Composer, chạy `scripts/assets/preview-app-icon.sh`.
-- Mỗi file `.icon` có bốn lớp: nền, chữ "a", dấu mũ và dấu sắc. Màu nền là màu nền của file, và kiểu Tối dùng màu thứ hai. Bản phát triển có thêm lớp dải Hổ phách, kiểu Tối cũng dùng màu thứ hai. Hai kiểu Trong suốt và Phủ màu do macOS dẫn ra từ các lớp. Chữ "a" là đường nét chuyển từ Be Vietnam Pro Bold (700), theo ghi chú ở đầu script; logo chữ thì dùng ExtraBold (mục "Logo chữ").
+- Mỗi file `.icon` có bốn lớp: nền, chữ "a", dấu mũ và dấu sắc. Màu nền là màu nền của file. Kiểu Tối dùng màu thứ hai. Bản phát triển có thêm lớp dải Hổ phách, kiểu Tối cũng dùng màu thứ hai. Hai kiểu Trong suốt và Phủ màu do macOS dẫn ra từ các lớp. Chữ "a" là đường nét chuyển từ Be Vietnam Pro Bold (700), theo ghi chú ở đầu script; logo chữ thì dùng ExtraBold (mục "Logo chữ").
 - Bản sao phẳng cho README và web là `Resources/Brand/AppIcon.svg` và `AppIconDev.svg`, do cùng script sinh ra.
-- Ảnh xem trước GitHub là `Resources/Brand/github-preview.png`, cỡ 1280 × 640, xuất từ artboard bằng `scripts/assets/export-github-preview.sh`. Script không dùng bản chụp trong `docs/canvas/`, vì canvas đặt `@import` phông sau các luật CSS khác nên bản chụp dùng phông thay thế chứ không phải Be Vietnam Pro. Ảnh được tải lên ở Settings › Social preview của repo.
+- Ảnh xem trước GitHub là `Resources/Brand/github-preview.png`, cỡ 1280 × 640, xuất từ artboard bằng `scripts/assets/export-github-preview.sh`. Script không dùng bản chụp trong `docs/canvas/`, vì canvas đặt `@import` phông sau các luật CSS khác nên bản chụp dùng phông thay thế chứ không phải Be Vietnam Pro. Ảnh tải lên ở Settings › Social preview của repo.
 - Ảnh template thanh menu hiện là bản tạm `Apps/DauInputMethod/Resources/ModeVietnamese.tiff`, sinh bằng `scripts/assets/make-mode-icons.sh`.
 - Nền cửa sổ DMG gồm `Resources/Brand/DmgBackground.png` (640 × 400) và `DmgBackground@2x.png` (1280 × 800). `scripts/assets/make-dmg-background.sh` vẽ hai ảnh này theo artboard "Cửa sổ ảnh đĩa DMG". Ảnh chỉ có màu Giấy và một mũi tên Mực mờ, không có biểu tượng và không có chữ, vì Finder tự vẽ những thứ đó. Cỡ cửa sổ, cỡ biểu tượng và toạ độ hai biểu tượng ghi ở đầu script. `scripts/release/build-release.sh` ghép hai ảnh thành một file TIFF nhiều độ phân giải bằng `tiffutil -cathidpicheck`, nên repo không giữ file TIFF.
 - Favicon, `apple-touch-icon.png` và ảnh Open Graph chưa được xuất; chúng đi cùng website (M8).
@@ -37,7 +37,7 @@ Các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh x
 - Chữ "ấ" giữ nguyên như biểu tượng chuẩn (màu Giấy, dấu sắc màu Son), đặt trên nền **Chì**.
 - Một dải chéo màu **Hổ phách** cắt góc dưới bên phải và nằm ngoài chữ "a".
 - Ở kiểu Tối, nền và dải tối hơn một bậc.
-- Ở kiểu Trong suốt và Phủ màu, macOS bỏ màu, và dải còn lại như một hình sáng hơn nền.
+- Ở kiểu Trong suốt và Phủ màu, macOS bỏ màu. Dải còn lại như một hình sáng hơn nền.
 - Mockup nằm ở artboard [biểu tượng bản phát triển](canvas/AppIconDev.png).
 - Khi xem bằng mắt ảnh xuất từ file `.icon` (`scripts/assets/preview-app-icon.sh`), dải vẫn nhận ra ở 16 pt và ở mọi kiểu; ở Trong suốt và Phủ màu, dải là một hình sáng hơn nền. Artboard chỉ mô phỏng hai kiểu Trong suốt và Phủ màu.
 
@@ -78,7 +78,7 @@ App dùng màu và phông của hệ thống (D9). Bảng màu này dành cho bi
 | Biểu tượng bản phát triển: `Apps/Dau/Resources/AppIconDev.icon` (cũng sinh `.icns`) | 16–1024 pt | Như dòng trên, ở mọi bản không phải bản phát hành (D25) |
 | Ảnh template thanh menu V | 22×16 pt @1x/@2x (TIFF; PDF vector khi có bản phát hành) | Menu nguồn đầu vào |
 | `favicon.ico` + `favicon.svg` | 16, 32 | Tab trình duyệt, kết quả tìm kiếm |
-| `apple-touch-icon.png` | 180×180 | Trang được ghim trên iPhone, iPad |
+| `apple-touch-icon.png` | 180×180 | Ghim trang trên iPhone, iPad |
 | `og-image.png` | 1200×630 | `og:image`, `twitter:image` cho link chia sẻ trên Zalo, Messenger, Slack, iMessage, X |
 | GitHub social preview: `Resources/Brand/github-preview.png` | 1280×640 | Settings › Social preview của repo |
 | Nền DMG: `Resources/Brand/DmgBackground.png`, `DmgBackground@2x.png` | 640×400 và 1280×800 | File DMG phát hành |

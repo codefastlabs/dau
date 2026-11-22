@@ -32,18 +32,18 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | Từ | Nghĩa |
 |---|---|
 | `none` | chỉ đọc; không ghi gì ngoài file tạm |
-| `builds` | ghi vào `build/` hoặc thư mục tạm (biên dịch bằng xcodegen, xcodebuild, swiftc; xuất ảnh; tải file), không đổi file được theo dõi bởi git |
-| `writes repo files` | ghi đè file được theo dõi bởi git trong repo (xem bằng `git diff`) |
+| `builds` | ghi vào `build/` hoặc thư mục tạm (biên dịch bằng xcodegen, xcodebuild, swiftc; xuất ảnh; tải file), không đổi file git theo dõi |
+| `writes repo files` | ghi đè file git theo dõi trong repo (xem bằng `git diff`) |
 | `installs input method` | thay bộ gõ trong `~/Library/Input Methods` (script không tự chép: Dấu.app vừa cài thay nó, D37 (Cài bộ gõ)) |
 | `installs app` | chép Dấu.app vào `/Applications` và đăng ký với LaunchServices |
 | `kills processes` | dừng tiến trình đang chạy (bộ gõ, Dấu.app, app do script tự mở) |
 | `takes the screen` | mở app, gõ phím hoặc bấm chuột tự động: người dùng không dùng máy được trong lúc chạy |
-| `changes input source` | chọn lại nguồn đầu vào, hoặc bỏ Dấu khỏi nguồn đầu vào |
-| `changes user settings` | ghi `defaults`, cài đặt App Group của người dùng, hoặc tệp cài đặt của app khác (script tự trả lại khi xong, trừ khi ghi khác; ví dụ `typing/run.sh` với `webstorm`: `trusted-paths.xml` và `recentProjects.xml` của WebStorm, chỉ trả lại khi script tự mở WebStorm) |
+| `changes input source` | chọn lại nguồn đầu vào hoặc bỏ Dấu khỏi nguồn đầu vào |
+| `changes user settings` | ghi `defaults`, cài đặt App Group của người dùng hoặc tệp cài đặt của app khác (script tự trả lại khi xong, trừ khi ghi khác; ví dụ `typing/run.sh` với `webstorm`: `trusted-paths.xml` và `recentProjects.xml` của WebStorm, chỉ trả lại khi script tự mở WebStorm) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
 | `changes GitHub` | tạo hoặc đổi thứ trên GitHub (bản nháp phát hành) bằng tài khoản đang đăng nhập `gh` |
 
-Hook `.claude/hooks/guard-scripts.sh` canh các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào): subagent gọi thì bị chặn; phiên chính chạy được, và có hỏi người dùng trước hay không là do chế độ quyền của Claude Code (`CLAUDE.md`, mục "Điều phối"). Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.
+Hook `.claude/hooks/guard-scripts.sh` canh các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào): subagent gọi thì bị chặn; phiên chính chạy được. Có hỏi người dùng trước hay không là do chế độ quyền của Claude Code (`CLAUDE.md`, mục "Điều phối"). Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.
 
 ## Ngôn ngữ
 
@@ -51,14 +51,14 @@ Dấu viết bằng Swift, nên script chỉ dùng thứ có sẵn khi đã cài
 
 - **zsh** cho phần điều phối: gọi lệnh, đọc tham số, in kết quả.
 - **Swift** cho phần cần API của Apple (Accessibility, nguồn đầu vào, pasteboard, vẽ ảnh) hoặc có logic đáng kể (đọc JSON, plist, so văn bản tiếng Việt). Script gọi bản đã biên dịch qua `dau_swift_tool` (`scripts/lib/swift-tool.sh`), không chạy `swift file.swift`: chạy kiểu thông dịch thì mỗi lần mất khoảng một giây để biên dịch lại.
-- **Công cụ có sẵn của macOS**: `defaults`, `plutil`, `PlistBuddy`, `awk`, `sed`, `osascript` (AppleScript là cách duy nhất để điều khiển app khác).
+- **Công cụ có sẵn của macOS**: `defaults`, `plutil`, `PlistBuddy`, `awk`, `sed`, `osascript`. AppleScript là cách duy nhất để điều khiển app khác.
 
 Không dùng Python, Perl hay Ruby: bản `python3` trên máy là của Command Line Tools, cũ và không được hứa giữ lâu dài, còn người đóng góp cho một dự án Swift không cần đọc thêm ngôn ngữ khác. Ngoại lệ duy nhất là `scripts/research/external-tests/`: công cụ đọc file test của dự án khác cho tài liệu nghiên cứu, không chạm vào máy hay sản phẩm, giữ nguyên bằng Python.
 
 ## Viết script zsh
 
 - Dòng đầu `#!/bin/zsh` (bash có sẵn trên macOS là bản 3.2).
-- Mỗi script chạy riêng (không phải file nạp bằng `source` trong `scripts/lib/`) có dòng `set` với `-u` (biến chưa đặt là lỗi) và `-o pipefail` (một lệnh hỏng giữa pipeline làm cả pipeline hỏng).
+- Mỗi script chạy riêng, tức không phải file nạp bằng `source` trong `scripts/lib/`, có dòng `set` với `-u` và `-o pipefail`. Cờ `-u` coi biến chưa đặt là lỗi. Cờ `-o pipefail` làm cả pipeline hỏng khi một lệnh giữa pipeline hỏng.
 - `-e` chỉ bật ở script dừng ngay khi có lỗi. Script gom lỗi rồi báo một lượt (ví dụ `clean-dau.sh`, `typing/run.sh`) để `-e` tắt và tự kiểm mã thoát.
 - Dưới `pipefail`, `grep -q` ở cuối pipeline có thể làm lệnh trước nó hỏng vì SIGPIPE: so trong shell (`[[ $(lệnh) == *mẫu* ]]`) hoặc dùng `grep -c`.
 - Thư mục Xcode lấy qua `dau_developer_dir` (`scripts/lib/xcode.sh`), không viết cứng. Riêng `dev/doctor.sh` tự tìm, vì chính việc tìm Xcode là thứ nó kiểm.
@@ -94,4 +94,4 @@ Mọi script in ra terminal bằng tiếng Việt, qua các hàm của `scripts/
 - Màu chỉ có khi luồng đó là terminal; `NO_COLOR=1` tắt màu. Ghi ra file thì còn dấu, không có mã màu, nên vẫn grep được.
 - Tên kỹ thuật (đường dẫn, lệnh, cờ, khoá, bundle ID, số D/N) giữ nguyên trong câu tiếng Việt.
 - Không đi qua `log.sh`: dữ liệu cho máy đọc hay để so (TSV, JSON, bảng số, các dòng in theo cột); đầu ra của công cụ Swift mà script đọc lại; đầu ra của lệnh khác (`xcodebuild`, `git`, `codesign`).
-- Chỉ `log.sh` được viết mã màu ANSI và dấu `==>`.
+- Chỉ `log.sh` in mã màu ANSI và dấu `==>`.

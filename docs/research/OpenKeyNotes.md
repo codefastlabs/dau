@@ -4,7 +4,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 
 ## Hiện trạng (12/11/2026)
 
-- **Đã đọc:** OpenKey https://github.com/tuyenvm/OpenKey, commit `89c2fd3` (15/06/2026), clone ra ngoài repo; `Sources/OpenKey/engine/` (`Engine.cpp`, `Engine.h`, `Vietnamese.cpp`, `DataType.h`, `Macro.cpp`, `SmartSwitchKey.cpp`, `ConvertTool.cpp`, `platforms/mac.h`) và `macOS/ModernKey/OpenKey.mm` để biết engine được gọi thế nào.
+- **Đã đọc:** OpenKey https://github.com/tuyenvm/OpenKey, commit `89c2fd3` (15/06/2026), clone ra ngoài repo; `Sources/OpenKey/engine/` (`Engine.cpp`, `Engine.h`, `Vietnamese.cpp`, `DataType.h`, `Macro.cpp`, `SmartSwitchKey.cpp`, `ConvertTool.cpp`, `platforms/mac.h`) và `macOS/ModernKey/OpenKey.mm` để biết OpenKey gọi engine thế nào.
 - **Không chạy.** Mọi hành vi dưới đây có từ lần theo mã; chỗ chưa chắc ghi "(suy luận)". D10 cấm dùng OpenKey làm đáp án, nên không chạy để kiểm chứng. Test của XKey (engine chuyển từ OpenKey) cho một phần đối chiếu (mục 4).
 - **Kiến trúc khác hẳn:** OpenKey chặn phím bằng event tap, gửi Backspace giả, giữ một bộ đệm toàn cục theo mã phím vật lý. Dấu là bộ gõ InputMethodKit, mỗi ô nhập một engine, nhận ký tự (mục 1).
 - **Dấu làm phần lớn tính năng gõ của OpenKey**, theo D15 (Cài đặt mặc định) và các quyết định ở mục 2. Không làm: macro, viết hoa đầu câu, bảng mã cũ, chuyển mã, smart switch, phím chuyển và tạm tắt riêng, Quick Telex, `[ ]` thành ơ ư (D27 (Không có phím gõ nhanh ơ, ư)).
@@ -18,7 +18,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | Gõ tắt phụ âm | mở rộng rồi giữ, kể cả ra chữ không hợp lệ ("big" → "bing", B9) | mở rộng rồi kiểm lại, không hợp lệ thì khôi phục (D21) |
 | "uơ"/"ươ" | luôn "ươ", trừ sau "th", "q"; phân biệt hoa thường (B4) | theo vị trí cặp trong từ (D35 ("uơ" và "ươ")) |
 | Telex đơn giản | Simple Telex 1 có w → qu | không có w → qu (D29 (Telex đơn giản), D23 (w → qu chỉ ở VNI)) |
-| "Đặt dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu", và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu thanh ở đâu cũng được, dấu tự dời (D28 (Đặt dấu tự do)) |
+| "Đặt dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu" và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu thanh ở đâu cũng được, dấu tự dời (D28 (Đặt dấu tự do)) |
 | Kiểm tra chính tả | có công tắc | luôn chạy (D30 (Kiểm tra chính tả)) |
 | Từ dài | bộ đệm 32 phần tử, dịch trái (B15) | quá 7 chữ cái thì khôi phục ngay, phím sau engine để nguyên (bộ gõ tự chèn ký tự, N3; D33 (Độ dài từ)) |
 | Backspace | bỏ một chữ hiển thị và một phím gốc, hai bộ đệm có thể lệch; có lịch sử từ qua dấu cách (B12) | bỏ chữ cuối, mốc khôi phục là chữ đang hiển thị (D32 (Backspace)); không có lịch sử từ |
@@ -59,7 +59,7 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | 17–18 | Smart switch, nhớ bảng mã theo ứng dụng | không làm (D5 (Quy tắc theo ứng dụng), D2 (Chuyển Việt/Anh), D3) |
 | 19–21 | Phím chuyển Việt/Anh riêng, tạm tắt chính tả bằng ⌃, tạm tắt bộ gõ bằng ⌘ | không làm (D2, D30) |
 | 22 | Tắt tiếng Việt khi bàn phím hệ thống không phải tiếng Anh (`vOtherLanguage`) | không cần: Dấu tự là một nguồn đầu vào (suy luận) |
-| 23 | Sửa gợi ý tự hoàn thành của trình duyệt, gửi từng phím | không làm mẹo của event tap; gợi ý bôi đen sau con trỏ được thay cùng từ trong một `insertText` (D11 (Kiểm tra ngữ cảnh)) |
+| 23 | Sửa gợi ý tự hoàn thành của trình duyệt, gửi từng phím | không làm mẹo của event tap; thay gợi ý bôi đen sau con trỏ cùng từ trong một `insertText` (D11 (Kiểm tra ngữ cảnh)) |
 | 24 | `[` → ơ, `]` → ư | không làm (D27 (Không có phím gõ nhanh ơ, ư)) |
 | 25 | Lịch sử từ qua Backspace | không làm; D20 phủ ca này |
 | 26 | Thêm dấu cho từ đã gõ | OpenKey không có; D20 |
@@ -70,11 +70,11 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 
 Phím được xử lý (`IS_SPECIALKEY`): `a e o w d s f r x j z` và, chỉ ở Telex, `[ ]`.
 
-- **aa → â, ee → ê, oo → ô** (`insertAOE`): phím không cần sát nguyên âm, engine tìm ngược chữ cùng loại gần nhất nếu đuôi từ khớp một mẫu vần (`_vowel`): "viet" + `e` → "viêt". Nguyên âm đang có móc/trăng thì đổi sang mũ ("ă" + `a` → "â").
+- **aa → â, ee → ê, oo → ô** (`insertAOE`): phím không cần sát nguyên âm, engine tìm ngược chữ cùng loại gần nhất nếu đuôi từ khớp một mẫu vần (`_vowel`). Ví dụ: "viet" + `e` → "viêt". Nguyên âm đang có móc/trăng thì đổi sang mũ ("ă" + `a` → "â").
 - **aw → ă, ow → ơ, uw → ư** (`insertW`). Cụm hai nguyên âm: "uo" → "ươ" (sau "th" chỉ móc "o", để có "thuở", trừ khi theo sau là "n"; sau "q" chỉ móc "o"); "ua", "ui", "uu", "oi" móc chữ đầu; "io", "oa" móc chữ sau; cụm khác thì w không làm gì và tạm tắt cả từ. w cũng bỏ mũ ("â" + `w` → "ă").
 - **Tự sửa "ưo"/"uơ" thành "ươ"** (`checkGrammar`) khi sau "uo" có n, c, i, m, p, t.
 - **w đứng riêng → ư** (`checkForStandaloneChar`, không có ở Simple Telex 1): w đầu từ; sau đúng một phụ âm, trừ w, e, y, f, j, k, z (`_standaloneWbad`, có lẫn e, y); sau tr, th, ch, nh, ng, kh, gi, ph, gh. Gõ w lần nữa thì về chữ "w".
-- **dd → đ** (`insertD`): d thứ hai có thể sau nguyên âm và phụ âm cuối ("did" → "đi"). Luật lạ: d sau một phụ âm khác luôn được nhận và gỡ cờ tạm tắt (B19).
+- **dd → đ** (`insertD`): d thứ hai có thể sau nguyên âm và phụ âm cuối ("did" → "đi"). Luật lạ: d sau một phụ âm khác luôn nhận và gỡ cờ tạm tắt (B19).
 - **`[` → ơ, `]` → ư**: gõ đúp ra ngoặc, ngoặc là ranh giới từ.
 - **w → qu không bao giờ chạy ở Telex**: w đầu từ đã thành "ư" trước khi xét gõ tắt; gõ `ww` thì bật cờ tạm tắt, mà gõ tắt cần cờ này tắt. Ở Simple Telex 1 thì có (mục 2.5).
 
@@ -127,19 +127,19 @@ Dấu: D29 theo Simple Telex 1 nhưng bỏ w → qu (D23 chỉ VNI). Telex đơn
 `handleModernMark`, `handleOldMark`. Engine bỏ "u" sau "q" và "i" sau "g" khỏi cụm nguyên âm (`findAndCalculateVowel`); "gì" đi qua một nhánh riêng.
 
 Kiểu mới:
-- một nguyên âm: dấu trên nó; oai, oeo, uyu, uya: ở giữa; oi, ai, ui, ay và cụm có chữ thứ hai là o/u: chữ đầu;
-- cụm bắt đầu bằng o/u (oa, oe, uy, uê…): chữ sau, tức **hoà, hoè, thuý**;
-- iê, yê, uô, ươ: chữ thứ hai nếu sau đó còn phụ âm hoặc nguyên âm;
-- ia, iu, io: chữ đầu; ua không có q và không có phụ âm cuối: chữ đầu ("mùa"); có q: chữ sau ("quá"); oo: chữ cuối ("xoòng").
+- Một nguyên âm thì đặt dấu trên chính nó. Cụm oai, oeo, uyu, uya đặt dấu ở giữa. Cụm oi, ai, ui, ay và cụm có chữ thứ hai là o/u đặt dấu ở chữ đầu.
+- Cụm bắt đầu bằng o/u (oa, oe, uy, uê…) đặt dấu ở chữ sau, tức **hoà, hoè, thuý**.
+- Cụm iê, yê, uô, ươ đặt dấu ở chữ thứ hai nếu sau đó còn phụ âm hoặc nguyên âm.
+- Cụm ia, iu, io đặt dấu ở chữ đầu. Cụm ua không có q và không có phụ âm cuối đặt dấu ở chữ đầu ("mùa"), còn có q thì đặt ở chữ sau ("quá"). Cụm oo đặt dấu ở chữ cuối ("xoòng").
 
-Kiểu cũ: mặc định nguyên âm đầu; cụm ba nguyên âm hoặc cụm có phụ âm cuối hợp lệ: chữ thứ hai; cụm có ê, ơ: chữ đó. Kết quả **hòa, hòe, thúy**. Hai kiểu chỉ khác ở oa, oe, uy không có phụ âm cuối.
+Với kiểu cũ, dấu mặc định đặt ở nguyên âm đầu. Cụm ba nguyên âm và cụm có phụ âm cuối hợp lệ đặt dấu ở chữ thứ hai. Cụm có ê hay ơ đặt dấu ở chính chữ đó. Kết quả **hòa, hòe, thúy**. Hai kiểu chỉ khác ở oa, oe, uy không có phụ âm cuối.
 
 Điểm lạ trong mã: B2, B3, B4. Dấu: D15.
 
 ### 2.7 Đặt dấu tự do
 
 - Sau mỗi phím, nếu từ có dấu thanh, engine gỡ ra và đặt lại theo cụm nguyên âm hiện tại (`checkGrammar`): "ho" + `f` → "hò", thêm `a` → "hoà".
-- Biến `vFreeMark` nghĩa ngược với tên: bật thì **không** đặt lại dấu. Bản macOS luôn gán 0 khi khởi động (`OpenKey.mm`), nên trên thực tế dấu luôn được đặt lại và nút "FreeMark" chỉ có tác dụng tới lần mở app sau (B18).
+- Biến `vFreeMark` nghĩa ngược với tên: bật thì **không** đặt lại dấu. Bản macOS luôn gán 0 khi khởi động (`OpenKey.mm`), nên trên thực tế dấu luôn đặt lại và nút "FreeMark" chỉ có tác dụng tới lần mở app sau (B18).
 
 Dấu: D28, nghĩa khác `vFreeMark` (phím dấu thanh gõ ở đâu cũng được; tắt thì phải gõ sát nguyên âm).
 
@@ -170,8 +170,8 @@ Gõ hai lần c, g, k, n, q, p, t thì ra ch, gi, kh, ng, qu, ph, th (`handleQui
 
 - `checkQuickConsonant`, chỉ khi từ có từ 2 chữ: đầu từ f → ph, j → gi, w → qu; cuối từ g → ng, h → nh, k → ch sau nguyên âm. Chữ thứ hai của phụ âm mở rộng chỉ hoa khi cả chữ gốc lẫn chữ kế tiếp hoa ("Fan" → "Phan", "FAN" → "PHAN").
 - Chạy ở Space và Return , . / ; ' \ - = (`_macroBreakCode`); không ở Tab, Esc, mũi tên.
-- Thứ tự ở Space: macro, rồi gõ tắt, rồi khôi phục, theo kiểu "nếu không thì": gõ tắt chạy được thì không khôi phục.
-- Khi bật, kiểm tra chính tả được nới (f, j, w là phụ âm đầu, g, h, k là phụ âm cuối), nên "big␣" → "bing␣" và không kiểm lại (B9). Trong lúc gõ chữ hiện chưa mở rộng ("fán"), chỉ thay ở Space.
+- Thứ tự ở Space là macro, rồi gõ tắt, rồi khôi phục, theo kiểu "nếu không thì". Gõ tắt chạy được thì không khôi phục.
+- Khi bật, kiểm tra chính tả nới ra (f, j, w là phụ âm đầu, g, h, k là phụ âm cuối), nên "big␣" → "bing␣" và không kiểm lại (B9). Trong lúc gõ chữ hiện chưa mở rộng ("fán"), chỉ thay ở Space.
 - Telex không có w → qu (mục 2.1); Simple Telex 1 và VNI có.
 
 Dấu: D21 (mở rộng rồi kiểm lại, không hợp lệ thì khôi phục; chạy ở mọi ranh giới từ của D4; cùng luật chữ hoa), D23.
@@ -206,12 +206,12 @@ Từ `_breakCode` và nhánh đầu của `vKeyHandleEvent`:
 - Space không reset ngay mà đếm số dấu cách để Backspace quay lại (mục 2.17).
 - Khôi phục bởi phím không in ra (Tab, mũi tên): tầng macOS gõ chuỗi khôi phục rồi gửi lại chính phím đó.
 
-Dấu: D4 (ý "Ranh giới từ"), D21: mọi ký tự kết thúc từ có in ra khôi phục và chạy gõ tắt; mũi tên, Esc, chuột, tổ hợp ⌘/⌃/⌥ chỉ reset, vì con trỏ có thể đã đi chỗ khác.
+Dấu theo D4 (ý "Ranh giới từ") và D21. Mọi ký tự kết thúc từ có in ra khôi phục và chạy gõ tắt; mũi tên, Esc, chuột, tổ hợp ⌘/⌃/⌥ chỉ reset, vì con trỏ có thể đã đi chỗ khác.
 
 ### 2.17 Backspace và lịch sử từ
 
 - Backspace bỏ một chữ hiển thị và một phím gốc, rồi kiểm chính tả và đặt lại dấu ("hoà" ⌫ → "hò"). Chữ tạo từ nhiều phím ("ệ" = e, e, j) làm hai bộ đệm lệch (suy luận).
-- Bộ đệm rỗng, hoặc Backspace xoá dấu cách vừa gõ, thì engine lấy từ trước ra khỏi lịch sử để sửa tiếp ("viet␣" ⌫ `j` → "việt"). Lịch sử bị xoá ở Enter, Tab, mũi tên, Esc, chuột, tổ hợp phím. Lấy ra thì chỉ có bộ đệm chữ, không có phím gốc (B12).
+- Bộ đệm rỗng hoặc Backspace xoá dấu cách vừa gõ, thì engine lấy từ trước ra khỏi lịch sử để sửa tiếp ("viet␣" ⌫ `j` → "việt"). Lịch sử bị xoá ở Enter, Tab, mũi tên, Esc, chuột, tổ hợp phím. Lấy ra thì chỉ có bộ đệm chữ, không có phím gốc (B12).
 - Không có "Thêm dấu cho từ đã gõ": bộ đệm rỗng (sau khi click vào chữ có sẵn) thì phím dấu là chữ ("hoc" + `j` → "hocj").
 
 Dấu: D32 (mốc khôi phục là chữ đang hiển thị), D20 (không lịch sử từ; phím đầu tiên khi bộ đệm trống đọc lại chữ trước con trỏ).
@@ -224,7 +224,7 @@ Dấu: D32 (mốc khôi phục là chữ đang hiển thị), D20 (không lịch
 
 Lưu Việt/Anh (cùng bảng mã) theo bundle ID; app gặp lần đầu ghi theo chế độ hiện tại, đổi chế độ thì cập nhật cho app đang dùng (`SmartSwitchKey.cpp`, `OpenKey.mm`). Độ dài bundle ID lưu trong 1 byte, ID dài hơn 255 bị cắt.
 
-Dấu không làm (D5, D2): Dấu chỉ có một input mode tiếng Việt, gõ tiếng Anh bằng U.S.; nhớ nguồn theo cửa sổ là việc của tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" (N1 (Không làm lại việc hệ thống đã có)).
+Dấu không làm (D5, D2): Dấu chỉ có một input mode tiếng Việt, gõ tiếng Anh bằng U.S.; nhớ nguồn theo cửa sổ do tuỳ chọn macOS "Tự động chuyển sang nguồn đầu vào của tài liệu" đảm nhận (N1 (Không làm lại việc hệ thống đã có)).
 
 ### 2.20 Macro, viết hoa đầu câu, bảng mã, chuyển mã
 
@@ -237,13 +237,13 @@ Từ đọc mã; "(suy luận)" là chưa chạy để xác nhận. Đây là da
 - **B1.** `checkForStandaloneChar`: khi w, `[` hoặc `]` là phím đầu từ, hàm đọc phần tử ngay trước đầu mảng bộ đệm (hành vi không xác định trong C++); kết quả thường đúng nhờ nhánh bộ đệm rỗng chạy sau.
 - **B2.** `handleModernMark`, nhánh iê/yê: dùng AND bit thay cho so bằng, nên khớp cả chữ có mã trùng bit với e; hậu quả bị các luật sau che (suy luận).
 - **B3.** `handleModernMark`: hai nhóm điều kiện luôn sai vì so cùng một vị trí với hai chữ khác nhau ("ch/nh/ng sau iê", nhóm "ia/ya/ua"); mã chết.
-- **B4.** `insertW`: kiểm "th" và "q" trước "uo" bằng giá trị kèm cờ hoa, nên "thuowr" → "thuở" nhưng "THUOWR" → "THƯỞ"; và chỉ "th" được ngoại lệ, nên "huow" → "hươ" thay vì "huơ". Dấu theo D35.
+- **B4.** `insertW`: kiểm "th" và "q" trước "uo" bằng giá trị kèm cờ hoa, nên "thuowr" → "thuở" nhưng "THUOWR" → "THƯỞ". Chỉ "th" được ngoại lệ, nên "huow" → "hươ" thay vì "huơ". Dấu theo D35.
 - **B5.** Ràng buộc dấu với âm cuối tắc không nhất quán: lúc gõ phím dấu thanh chặn f/r/x với c, t, ch nhưng không với p ("capf" → "càp"); phím dấu thanh gõ trước phụ âm cuối thì chỉ `checkSpelling` kiểm, mà hàm này chỉ chặn t và ch ("carc" → "cảc", suy luận). Chính tả đúng: vần p, t, c, ch chỉ mang sắc hoặc nặng.
-- **B6.** Không kiểm phân bố c/k/q, g/gh, ng/ngh, và ă/â đứng cuối (mục 2.8).
+- **B6.** Không kiểm phân bố c/k/q, g/gh, ng/ngh và ă/â đứng cuối (mục 2.8).
 - **B7.** Chỉ khôi phục khi có nguyên âm mang dấu/mũ/móc: "pdd␣" → "pđ␣" (suy luận), "connect␣" → "congect␣".
 - **B8.** Khi bật gõ tắt phụ âm, nhánh dấu câu gọi gõ tắt thay vì kiểm chính tả chế độ ép: từ có tổ hợp nguyên âm sai theo sau là dấu phẩy không được khôi phục, theo sau là Space thì có (suy luận).
 - **B9.** Gõ tắt phụ âm chạy trước và chặn khôi phục; chính tả bị nới nên "big" → "bing".
-- **B10.** Tập phím kết thúc từ không nhất quán: "Sunrise," được khôi phục, "Sunrise!" thì không.
+- **B10.** Tập phím kết thúc từ không nhất quán: "Sunrise," khôi phục, "Sunrise!" thì không.
 - **B11.** ⌘ với phím dấu câu (⌘, ⌘. ⌘/) sau một từ sai chính tả vẫn khôi phục và gõ thêm dấu câu, phím tắt gốc có thể bị nuốt (suy luận từ `vKeyHandleEvent`, `OpenKeyCallback`).
 - **B12.** Lấy từ khỏi lịch sử (Backspace qua dấu cách) không khôi phục bộ đệm phím gốc: "nhaf␣x" ⌫ ⌫ rồi `k␣` xoá "nhàk" mà chỉ ghi lại "k" (suy luận). Bài học cho D20: mốc khôi phục là chữ đang hiển thị cộng phím mới gõ.
 - **B13.** VNI: 7 sau "a", 8 sau "o"/"u" làm bộ đệm lệch màn hình; "a71" có thể mất ký tự (suy luận).

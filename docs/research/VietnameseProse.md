@@ -6,12 +6,12 @@ Tài liệu này tìm nguồn cho các thói quen câu tiếng Anh ("văn dịch
 
 Cập nhật ngày 22/11/2026.
 
-- **Lỗi rõ nhất là dấu phẩy trước "và", "hoặc", "hay".** Hướng dẫn bản địa hoá tiếng Việt của Microsoft cấm dấu phẩy trước "và" và "hoặc". Hướng dẫn của Proton cũng cấm, còn *Ngữ pháp tiếng Việt* (2002) nói khi đã có kết từ thì thường bỏ dấu phẩy giữa các thành phần ngang hàng. Tài liệu chính của repo có 426 chỗ dấu phẩy đứng trước ba từ này. Riêng `docs/Decisions.md` có 126 chỗ.
-- **Không phải chỗ nào cũng sai như nhau.** Dấu phẩy trong chuỗi liệt kê từ ba mục trở lên ("A, B, và C") là lỗi chắc chắn. Dấu phẩy trước "và" nối hai vị ngữ chung một chủ ngữ cũng là lỗi; ví dụ người dùng đã chỉ ra ("Dấu tự đặt dấu vào đúng chỗ theo chính tả, và dời dấu khi từ dài thêm") thuộc loại này. Dấu phẩy trước "và" nối hai vế có chủ ngữ riêng thì *Ngữ pháp tiếng Việt* cho phép, nên chỉ sửa khi câu dài hoặc hai vế là hai ý ngang hàng theo D44.
-- **Thói quen phổ biến thứ hai là bị động thừa.** Kiểu câu "X được đặt là…", "Nhật ký đã được chuyển…" có khoảng 335 chỗ trong tài liệu chính. Khoảng 7 trên 10 mẫu bỏ được "được" mà câu vẫn đủ nghĩa. Cơ sở là tiếng Việt thiên về cấu trúc đề–thuyết (Cao Xuân Hạo), nên tân ngữ có thể đứng đầu câu làm đề mà không cần dấu hiệu bị động. Mozilla và Gengo cũng khuyên đổi câu bị động tiếng Anh thành câu chủ động.
-- **Nhiều thói quen trong danh sách ứng viên gần như không có trong repo.** Repo không có "được/bị … bởi" (trừ một chỗ trong `docs/history/`), "một cách" + tính từ, "tiến hành", "bởi vì… nên", thì chồng ("đã đang"), cũng không có tiêu đề viết hoa kiểu Title Case. Luật vẫn nên ghi các mục này để chúng không xuất hiện về sau.
+- **Repo đã quét toàn bộ theo D44 ngày 22/11/2026.** Lượt quét sửa tài liệu chính, `docs/research/`, `docs/history/`, `.claude/`, các `CLAUDE.md`, chuỗi giao diện tiếng Việt và chữ trên canvas. Dấu phẩy trước "và/hoặc/hay" giảm từ 738 xuống 79 chỗ khớp. Phần còn lại là câu ví dụ cố ý trong tài liệu này và trong `docs/CLAUDE.md`, đoạn trích nguyên văn trong `docs/history/` và dấu phẩy giữ để câu khỏi đọc nhầm. Số trước và sau theo từng nhóm nằm ở mục 4.
+- **Lỗi rõ nhất là dấu phẩy trước "và", "hoặc", "hay".** Hướng dẫn bản địa hoá tiếng Việt của Microsoft cấm dấu phẩy trước "và" và "hoặc". Hướng dẫn của Proton cũng cấm, còn *Ngữ pháp tiếng Việt* (2002) nói khi đã có kết từ thì thường bỏ dấu phẩy giữa các thành phần ngang hàng. Trước lượt quét, tài liệu chính của repo có 426 chỗ dấu phẩy đứng trước ba từ này. Riêng `docs/Decisions.md` có 126 chỗ.
+- **Không phải chỗ nào cũng sai như nhau.** Dấu phẩy trong chuỗi liệt kê từ ba mục trở lên ("A, B, và C") là lỗi chắc chắn. Dấu phẩy trước "và" nối hai vị ngữ chung một chủ ngữ cũng là lỗi; ví dụ người dùng đã chỉ ra ("Dấu tự đặt dấu vào đúng chỗ theo chính tả, và dời dấu khi từ dài thêm") thuộc loại này. Dấu phẩy trước "và" nối hai vế có chủ ngữ riêng thì *Ngữ pháp tiếng Việt* cho phép. D44 vẫn chọn tách hai vế đó thành hai câu (luật 3 ở `docs/CLAUDE.md`).
+- **Thói quen phổ biến thứ hai là bị động thừa.** Trước lượt quét, kiểu câu "X được đặt là…", "Nhật ký đã được chuyển…" có khoảng 335 chỗ trong tài liệu chính. Khoảng 7 trên 10 mẫu bỏ được "được" mà câu vẫn đủ nghĩa. Cơ sở là tiếng Việt thiên về cấu trúc đề–thuyết (Cao Xuân Hạo), nên tân ngữ có thể đứng đầu câu làm đề mà không cần dấu hiệu bị động. Mozilla và Gengo cũng khuyên đổi câu bị động tiếng Anh thành câu chủ động.
+- **Nhiều thói quen trong danh sách ứng viên gần như không có trong repo.** Repo không có "được/bị … bởi" (chỗ duy nhất trong `docs/history/` đã sửa), "một cách" + tính từ, "tiến hành", "bởi vì… nên", thì chồng ("đã đang"), cũng không có tiêu đề viết hoa kiểu Title Case. Luật vẫn nên ghi các mục này để chúng không xuất hiện về sau.
 - **Ba chỗ chưa có nguồn chính thức.** Đó là "một cách", "của" chồng nhiều tầng và "là một" thừa. Các mục này chỉ dựa trên đối chiếu ngữ pháp, nên được xếp vào mức (c).
-- **Hai mâu thuẫn cần phiên chính xử lý trước khi giao việc sửa.** [`docs/README.md`](../README.md) nói `docs/history/` giữ "đúng như lúc chúng được ghi", trong khi D44 nói luật viết áp cho cả `docs/history/`. Ngoài ra, sửa văn của `docs/Decisions.md` là thay đổi sổ quyết định, nên cần hỏi người dùng theo mục "Điều phối" của [`CLAUDE.md`](../../CLAUDE.md), trừ khi D44 đã được coi là lời giao việc đó.
 
 ## 1. Nguồn đã dùng
 
@@ -169,7 +169,7 @@ Mỗi mục ghi lý do, ngoại lệ, cách sửa và một cặp trước/sau l
 
 ## 4. Số đo theo nhóm tài liệu
 
-Số đếm chạy ngày 22/11/2026 trên commit `970e581`. Bảng đếm số chỗ khớp, không phải số lỗi. Muốn ước số lỗi thì nhân với tỉ lệ "Đúng" ở phần 2.
+Số đếm chạy ngày 22/11/2026 trên commit `0e70fb3`. Bảng đếm số chỗ khớp, không phải số lỗi. Muốn ước số lỗi thì nhân với tỉ lệ "Đúng" ở phần 2.
 
 | Mục | Tài liệu chính | `docs/research/` | `docs/history/` | Canvas | Chuỗi giao diện tiếng Việt | `.claude/` | Các `CLAUDE.md` |
 |---|---|---|---|---|---|---|---|
@@ -194,6 +194,30 @@ Số đếm chạy ngày 22/11/2026 trên commit `970e581`. Bảng đếm số c
 Các mẫu có số 0 ở mọi nhóm không nằm trong bảng: "tiến hành", "thực hiện việc", "một cách" + tính từ, "bởi vì", thì chồng, "là được/là bị/là sẽ" (một chỗ khớp trong `docs/history/` là "biết là bị từ chối", câu đúng) và tiêu đề Title Case.
 
 Trong tài liệu chính, `docs/Decisions.md` có 126 chỗ dấu phẩy trước "và/hoặc/hay", nhiều nhất các file. Tiếp theo là `docs/Architecture.md` với 72 chỗ và `docs/Compatibility.md` với 48 chỗ.
+
+### Sau lượt quét
+
+Lượt quét ngày 22/11/2026 đếm lại bằng cùng lệnh ở mục "Cách đo lại", trước trên commit `2e99d77` và sau trên chính commit đưa bảng này vào, commit "docs: apply D44 Vietnamese-prose rules across the repo". Mỗi ô ghi "trước → sau". Số "trước" lệch vài chỗ so với bảng trên vì nhóm `docs/research/` lúc đó đã có chính tài liệu này. Bảng chỉ ghi các mục của mức (a) và (b), vì mức (c) chỉ sửa khi đang viết lại câu.
+
+| Mục | Tài liệu chính | `docs/research/` | `docs/history/` | Canvas | Chuỗi giao diện tiếng Việt | `.claude/` | Các `CLAUDE.md` |
+|---|---|---|---|---|---|---|---|
+| Mọi dấu phẩy trước "và/hoặc/hay" | 427 → 10 | 142 → 30 | 105 → 28 | 20 → 0 | 7 → 0 | 19 → 8 | 18 → 3 |
+| A1. Chuỗi liệt kê | 43 → 1 | 12 → 3 | 4 → 0 | 1 → 0 | 0 → 0 | 2 → 0 | 2 → 1 |
+| A2. Hai vị ngữ hoặc bổ ngữ | 93 → 0 | 21 → 5 | 21 → 3 | 7 → 0 | 4 → 0 | 2 → 0 | 7 → 2 |
+| A3. "được/bị … bởi" | 1 → 1 | 5 → 6 | 1 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 1 → 1 |
+| A5. Thì chồng | 2 → 2 | 9 → 9 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 2 → 2 |
+| B1. "được + V" | 338 → 130 | 194 → 144 | 131 → 84 | 32 → 20 | 7 → 5 | 42 → 40 | 11 → 8 |
+| B2. "việc", "sự" danh hoá | 45 → 24 | 28 → 16 | 13 → 7 | 0 → 0 | 0 → 0 | 3 → 3 | 8 → 7 |
+| B3. "Nó", "Điều này" mở câu | 24 → 0 | 9 → 1 | 0 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 2 → 0 |
+| B4. Ngoặc dài | 180 → 148 | 222 → 210 | 499 → 405 | 0 → 0 | 0 → 0 | 17 → 9 | 24 → 23 |
+| B5. Nhiều dấu hai chấm | 7 → 7 | 58 → 49 | 194 → 171 | 19 → 19 | 4 → 4 | 1 → 0 | 0 → 0 |
+| B6. "đến từ" | 3 → 1 | 13 → 9 | 3 → 0 | 0 → 0 | 0 → 0 | 0 → 0 | 1 → 1 |
+
+Các chỗ còn khớp thuộc bốn loại:
+- Câu ví dụ cố ý minh hoạ lỗi nằm trong tài liệu này và trong `docs/CLAUDE.md`. Toàn bộ số còn lại của A3, A5 và B6 thuộc loại này.
+- Đoạn trích nguyên văn ("Bản trước", blockquote) và dòng nhật ký giữ khuôn trong `docs/history/`.
+- "Được" mang nghĩa "có thể", "được phép" hay làm tính từ, và "việc" mang nghĩa công việc.
+- Ngoặc ghi điều kiện đo (máy, ngày, commit, số lượt) và dấu hai chấm trong nhãn, giờ hay chữ giao diện mà biểu thức không tách được. Canvas còn 19 chỗ khớp B5 vì biểu thức nối các nhãn ngắn sau khi bỏ thẻ HTML.
 
 ### Cách đo lại
 
