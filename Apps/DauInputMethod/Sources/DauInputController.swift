@@ -128,11 +128,15 @@ final class DauInputController: IMKInputController {
             result.diag = outcome.attempt.map(ReplaceDiag.init)
             result.d20 = outcome.d20
             result.seedDiffers = outcome.seedDiffers
+            result.backspaceWait = outcome.backspaceWait
             #endif
         }
         result.selectedRangeNs = timed.selectedRangeNs
         result.insertTextNs = timed.callNs
         result.readNs = timed.readNs
+        #if DEBUG
+        result.waitNs = timed.waitNs
+        #endif
         record(result, start: start, eventTime: event.timestamp)
         #if DEBUG
         // After the timing is recorded, so the extra selectedRange is not measured.
@@ -154,6 +158,9 @@ final class DauInputController: IMKInputController {
         /// D20 read of this key (Debug perf log).
         var d20: InPlaceComposer.D20Trace?
         var seedDiffers: Bool?
+        /// N3 "Ngoại lệ sau ⌫ chưa áp": what the wait did, and its time (Debug perf log).
+        var backspaceWait: InPlaceComposer.BackspaceWait?
+        var waitNs: Int64 = -1
         #endif
     }
 
@@ -188,6 +195,11 @@ final class DauInputController: IMKInputController {
             }
             // Seeded word differs from the unseeded one (any key while that word lasts).
             extra += " diff=\(result.seedDiffers.map { $0 ? "1" : "0" } ?? "-")"
+            // A key that waited for the ⌫ before it: handle_ns includes wait_ns, so the
+            // time without the wait is their difference (scripts/perf/perf-report.sh).
+            if let wait = result.backspaceWait {
+                extra += " bksp=\(wait.applied ? "applied" : "timeout") bksp_asks=\(wait.asks) bksp_wait_ns=\(result.waitNs)"
+            }
         }
         #endif
         perf.record(result.kind,
@@ -545,6 +557,10 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
     private(set) var selectedRangeNs: Int64 = -1
     /// Duration of the `attributedSubstring` call (D20), -1 if none.
     private(set) var readNs: Int64 = -1
+    /// N3 "Ngoại lệ sau ⌫ chưa áp": from the first pause to the end of the last
+    /// `selectedRange` asked after it, -1 if the key did not wait.
+    private(set) var waitNs: Int64 = -1
+    private var waitStart: UInt64?
 
     init(_ client: IMKTextInput) {
         self.client = client
@@ -556,6 +572,7 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
         let range = client.selectedRange()
         PerfLog.signposter.endInterval("selectedRange", signpost)
         selectedRangeNs = Int64(PerfLog.now() &- start)
+        if let waitStart { waitNs = Int64(PerfLog.now() &- waitStart) }
         return range
     }
 
@@ -583,6 +600,11 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
         client.insertText(text, replacementRange: replacementRange)
         PerfLog.signposter.endInterval("insertText", signpost)
         callNs = Int64(PerfLog.now() &- start)
+    }
+
+    func pause(_ seconds: TimeInterval) {
+        if waitStart == nil { waitStart = PerfLog.now() }
+        Thread.sleep(forTimeInterval: seconds)
     }
 }
 

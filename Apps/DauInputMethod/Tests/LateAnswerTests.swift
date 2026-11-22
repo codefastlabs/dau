@@ -26,7 +26,7 @@ private struct LateSession {
         doc.lag = lag
         doc.selections = 0; doc.reads = 0; doc.inserts = 0
         let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-        if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
+        if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         kinds.append(outcome.kind)
         if !outcome.consumed { doc.typed(route) }
     }

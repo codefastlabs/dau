@@ -11,6 +11,10 @@
 # kind, durations in ns and the client app's bundle ID. Never the text typed (D8).
 # D20 reads are also counted as d20_<mark|letter>_seeded<0|1>, and diff_<0|1> counts the
 # keys of a seeded word whose result differs from an engine that never read the text.
+# N3 "Ngoại lệ sau ⌫ chưa áp": a key that waited for the ⌫ before it carries bksp=applied|timeout,
+# bksp_asks and bksp_wait_ns (included in handle_ns). Rows: bksp_<applied|timeout> (counts),
+# bksp_asks, bksp_wait_us, and handle_nowait_us (handle_ns minus bksp_wait_ns, every key: D42
+# with and without the wait).
 #
 # Gaps between keys (M6, app under load). Each key line carries t_ns (CLOCK_UPTIME_RAW when
 # the input method's handle started: the key reached the input method) and ev_ns (the
@@ -90,6 +94,11 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
     print app, "count_" kind, 1
     h = field("handle_ns"); s = field("sel_ns"); i = field("ins_ns"); r = field("read_ns")
     if (h != "") print app, "handle_us", h / 1000
+    # N3 "Ngoại lệ sau ⌫ chưa áp": the wait, and the time of the key without it (D42).
+    b = field("bksp"); bw = field("bksp_wait_ns")
+    if (b != "") { print app, "bksp_" b, 1; print app, "bksp_asks", field("bksp_asks") + 0 }
+    if (bw != "" && bw + 0 >= 0) print app, "bksp_wait_us", bw / 1000
+    if (h != "") print app, "handle_nowait_us", (h - ((bw != "" && bw + 0 >= 0) ? bw : 0)) / 1000
     if (kind == "replace" || kind == "mismatch" || kind == "unsupported") {
       if (h != "") print app, "handle_replace_us", h / 1000
     }
@@ -167,7 +176,7 @@ echo "Đơn vị: µs. p50/p99 theo hạng gần nhất (nearest rank). n = số
 awk '
   function flush(   i50, i99) {
     if (n == 0) return
-    if (metric ~ /^(count_|event_|d20_|diff_|gap_|evgap_)/) {
+    if (metric ~ /^(count_|event_|d20_|diff_|gap_|evgap_)/ || metric == "bksp_applied" || metric == "bksp_timeout") {
       printf "  %-22s %8d\n", metric, sum
     } else {
       i50 = int((50 * n + 99) / 100); if (i50 < 1) i50 = 1

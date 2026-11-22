@@ -70,6 +70,19 @@ struct CursorTracker: Equatable {
     /// the start of the word, Cursor) the bound stays `lateLimit` + `burst`.
     private(set) var sinceOnTime: Int?
 
+    /// Edits recorded so far (wraps): tells whether a key recorded one.
+    private(set) var recorded = 0
+
+    /// The latest edit deleted text this tracker knows, at `known`, with nothing after
+    /// it: the units it deleted, or nil (N3 "Ngoại lệ sau ⌫ chưa áp",
+    /// `InPlaceComposer.askSelection`).
+    var knownDeletionAtCaret: Int? {
+        guard let known, let last = edits.last, last.inserted.isEmpty, last.deleted > 0,
+              last.deletedText?.count == last.deleted, last.location == known,
+              last.cursor == known.addingSaturated(last.deleted) else { return nil }
+        return last.deleted
+    }
+
     /// The app answered at `known`: it has every edit so far.
     mutating func answeredOnTime() { sinceOnTime = 0 }
 
@@ -227,6 +240,7 @@ struct CursorTracker: Equatable {
             tail = back == deleted ? inserted : []
         }
         if tail.count > Self.tailLimit { tail.removeFirst(tail.count - Self.tailLimit) }
+        recorded &+= 1
         edits.append(Edit(cursor: cursor, location: location, deleted: deleted,
                           deletedText: deletedText, inserted: inserted, atCaret: atCaret))
         if edits.count > Self.editLimit { edits.removeFirst(edits.count - Self.editLimit) }

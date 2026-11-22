@@ -114,8 +114,10 @@ struct PerfLog {
     ///   - insertTextNs: duration of the `insertText` call (or, for `mark`, of the
     ///     `setMarkedText` call), or -1 if not called.
     ///   - readNs: duration of the `attributedSubstring` call (D20), or -1 if not called.
-    ///   - extra: D20 fields, each with a leading space (` d20=letter seeded=1 diff=0`);
-    ///     only numbers and fixed words, never text (D8).
+    ///   - extra: D20 fields, each with a leading space (` d20=letter seeded=1 diff=0`), and
+    ///     for a key that waited for the ⌫ before it (N3) ` bksp=applied|timeout bksp_asks=N
+    ///     bksp_wait_ns=N` (the wait is part of `handleNs`); only numbers and fixed words,
+    ///     never text (D8).
     func record(_ kind: Kind, startNs: UInt64, eventNs: UInt64, handleNs: UInt64,
                 selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, extra: String = "", app: String) {

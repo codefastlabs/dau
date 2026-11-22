@@ -50,6 +50,8 @@ struct RapidSession {
     var reads = 0
     /// The longest `composer.handle` took, in seconds (this test build, not the app).
     var slowest: Duration = .zero
+    /// Keys that waited for the ⌫ before them (N3 "Ngoại lệ sau ⌫ chưa áp").
+    var waits: [InPlaceComposer.BackspaceWait] = []
     private var free: TimeInterval = 0
     private let timed: Bool
 
@@ -82,20 +84,21 @@ struct RapidSession {
         let start = max(arrival, free)
         if timed { doc.clock = start }
         doc.sentAt = start
-        doc.selections = 0; doc.reads = 0; doc.inserts = 0
+        doc.selections = 0; doc.reads = 0; doc.inserts = 0; doc.paused = 0
         var outcome = InPlaceComposer.Outcome()
         let took = ContinuousClock().measure {
             outcome = composer.handle(route, time: arrival, engine: &engine, client: doc)
         }
         slowest = max(slowest, took)
-        if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
+        if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         reads += doc.reads
         kinds.append(outcome.kind)
+        if let wait = outcome.backspaceWait { waits.append(wait) }
         // Costs of the calls, medians measured in M2/M3 (Debug; docs/history/DecisionsLog.md,
         // section D20): selectedRange 0.3 ms, attributedSubstring 0.8 ms (Chrome,
         // VS Code), insertText 0.6 ms; the rest of a key 0.3 ms.
         let end = start + 0.0003 + Double(doc.selections) * 0.0003 + Double(doc.reads) * 0.0008
-            + Double(doc.inserts) * 0.0006
+            + Double(doc.inserts) * 0.0006 + doc.paused
         if !outcome.consumed {
             doc.sentAt = end
             doc.typed(route)
@@ -146,19 +149,24 @@ struct RapidKeysTests {
         var kinds: [PerfLog.Kind]
         var reads: Int
         var slowest: Duration
+        var waits: [InPlaceComposer.BackspaceWait] = []
     }
 
+    /// `noWait`: the composer never waits for a ⌫ (`InPlaceComposer.skipsBackspaceWait`).
     static func simulate(_ keys: String, _ model: AppModel, ms: Double, seed: UInt64,
-                         startStall: TimeInterval = 0) -> Run {
+                         startStall: TimeInterval = 0, noWait: Bool = false) -> Run {
         let keyRoutes = routes(keys)
         let times = arrivals(keyRoutes.count, ms: ms, jitter: ms == 0 ? 0.3 : 1, seed: seed)
         var reference = RapidSession(nil)
         reference.type(keyRoutes, at: times)
         var s = RapidSession(model, seed: seed, startStall: startStall)
+        #if DEBUG
+        s.composer.skipsBackspaceWait = noWait
+        #endif
         s.type(keyRoutes, at: times)
         return Run(ok: s.doc.text == reference.doc.text, behind: s.doc.maxBehind, overCalls: s.overCalls,
                    badRanges: s.doc.badRanges, dropped: s.doc.dropped, text: s.doc.text, reference: reference.doc.text,
-                   kinds: s.kinds, reads: s.reads, slowest: s.slowest)
+                   kinds: s.kinds, reads: s.reads, slowest: s.slowest, waits: s.waits)
     }
 
     /// Every app model × speed × string over `seeds` seeds, against an app that is always
@@ -177,6 +185,7 @@ struct RapidKeysTests {
                     var wrong = 0, behind = 0, over = 0, bad = 0, late = 0, guess = 0, mismatch = 0, reads = 0, keyCount = 0
                     var slowest: Duration = .zero
                     var example: Run?
+                    var waits = 0, applied = 0, maxWait = 0.0
                     for seed in 1...UInt64(Self.seeds) {
                         let run = Self.simulate(keys, model, ms: ms, seed: seed)
                         if !run.ok { wrong += 1; if example == nil { example = run } }
@@ -189,6 +198,9 @@ struct RapidKeysTests {
                         reads += run.reads
                         keyCount += run.kinds.count
                         slowest = max(slowest, run.slowest)
+                        waits += run.waits.count
+                        applied += run.waits.filter(\.applied).count
+                        maxWait = max(maxWait, run.waits.map(\.waited).max() ?? 0)
                     }
                     // Pass criterion (D13: typing speed of a person, M6): the calibrated models
                     // at 5, 10, 20 ms. 0 ms (a machine sending the whole string) and the
@@ -198,7 +210,8 @@ struct RapidKeysTests {
                     let slowMs = Double(slowest.components.attoseconds) / 1e15 + Double(slowest.components.seconds) * 1000
                     cells.append("\(name) \(wrong)/\(n) wrong, behind ≤ \(behind), late \(late / n), guess \(guess / n), "
                         + "mismatch \(mismatch / n), reads/key \(String(format: "%.2f", Double(reads) / Double(keyCount))), "
-                        + "slowest \(String(format: "%.2f", slowMs)) ms, over \(over), bad \(bad)")
+                        + "slowest \(String(format: "%.2f", slowMs)) ms, over \(over), bad \(bad), "
+                        + "⌫ waits \(waits) (applied \(applied)), longest \(Int(maxWait * 1000)) ms")
                     if let example {
                         lines.append("  e.g. \(model) \(Int(ms)) ms \(name): \(example.text.suffix(60)) ≠ \(example.reference.suffix(60))")
                     }
@@ -231,7 +244,7 @@ struct RapidKeysTests {
                 doc.lag = lag
                 doc.selections = 0; doc.reads = 0; doc.inserts = 0
                 let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-                if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { over += 1 }
+                if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { over += 1 }
                 if !outcome.consumed { doc.typed(route) }
             }
             #expect(doc.text == "người bạn gửi email hỏi về deadline. ", "lag \(lag)")
@@ -296,7 +309,7 @@ struct RapidKeysTests {
                 doc.lag = lag
                 doc.selections = 0; doc.reads = 0; doc.inserts = 0
                 let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-                if doc.selections > 1 || doc.reads > 1 || doc.inserts > 1 { over += 1 }
+                if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { over += 1 }
                 outcomes.append(outcome)
                 if !outcome.consumed { doc.typed(route) }
             }

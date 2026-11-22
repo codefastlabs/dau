@@ -128,7 +128,9 @@ final class LateDocument: InPlaceClient {
         if let override { let units = Array(override.utf16); return State(text: units, cursor: units.count) }
         let last = states.count - 1
         let index: Int
-        if let clock {
+        if keyQueue {
+            index = last   // WebKit answers from the page's own text
+        } else if let clock {
             index = states.lastIndex { $0.reportAt <= clock } ?? 0
             maxBehind = max(maxBehind, last - index)
         } else {
@@ -156,11 +158,15 @@ final class LateDocument: InPlaceClient {
 
     func selectedRange() -> NSRange {
         selections += 1
+        waitForPage()
+        catchUp()
         return NSRange(location: answer.cursor, length: 0)
     }
 
     func text(in range: NSRange) -> String? {
         reads += 1
+        waitForPage()
+        catchUp()
         let units = answer.text
         lastRead = nil
         guard range.location >= 0, range.length >= 0, range.location + range.length <= units.count else { return nil }
@@ -170,6 +176,7 @@ final class LateDocument: InPlaceClient {
 
     func insertText(_ string: String, replacementRange: NSRange) {
         inserts += 1
+        catchUp()
         var state = states[states.count - 1]
         var range = replacementRange.location == NSNotFound
             ? NSRange(location: state.cursor, length: 0) : replacementRange
@@ -215,7 +222,7 @@ final class LateDocument: InPlaceClient {
             while start > 0, Self.isWordUnit(state.text[start - 1]) { start -= 1 }
             state.window = start
         }
-        if clock != nil {
+        if clock != nil, !keyQueue {
             let applied = max(sentAt, lastApplied) + work()
             lastApplied = applied
             state.reportAt = applied + reportDelay
@@ -265,8 +272,10 @@ final class LateDocument: InPlaceClient {
     /// is applied when sent. The events behind it wait until the page handles the head
     /// (`pageHandlesKeyEvent`). Key-ups are not modelled as events of their own: they
     /// only make the queue longer, which the test's schedule of `pageHandlesKeyEvent`
-    /// stands for. On: set `keyQueue`, keep `lag` 0, `clock` nil, `cache` `.snapshot`
-    /// (no cache: answers from the latest state).
+    /// stands for. On: set `keyQueue`, keep `lag` 0 and `cache` `.snapshot` (no cache: answers
+    /// from the latest state). With `clock` nil the test hands events to the page
+    /// (`pageHandlesKeyEvent`); with `clock` set the page is done with each event `work()`
+    /// after it is free (`pageFree`), and the input method's waits (`pause`) move the clock.
     var keyQueue = false
     /// The key events in WebKit's queue, head first (sent, not handled yet). nil: an
     /// event the input method handled (no key for the page to type).
@@ -275,8 +284,77 @@ final class LateDocument: InPlaceClient {
     /// One key event reaches WebKit's queue, after the input method's `handle` returned
     /// (`handled`: it returned true). Sent to the page at once if the queue was empty.
     func keyEvent(_ route: KeyRoute, handled: Bool) {
+        catchUp()
         queuedKeys.append(handled ? nil : route)
-        if queuedKeys.count == 1, let key = queuedKeys[0] { apply(key) }
+        guard queuedKeys.count == 1 else { return }
+        send(at: clock)
+    }
+
+    /// Sends the event at the head of the queue at `time` (nil: untimed): its key, if
+    /// any, is typed; with `clock` set, the page is done with it `work()` after it is
+    /// free (`pageFree`).
+    private func send(at time: TimeInterval?) {
+        guard let head = queuedKeys.first else { return }
+        if let key = head { applying(key) }
+        headDoneAt = time.map { pageFree($0) + work() }
+    }
+
+    /// Timed queue (`clock` set): when the page, busy until then, can start on an event
+    /// sent at a time (a page blocked by a script: the end of the block). Untimed: unused.
+    var pageFree: (TimeInterval) -> TimeInterval = { $0 }
+    /// Timed queue: when the page is done with the event at the head of the queue.
+    private var headDoneAt: TimeInterval?
+    private var inApply = false
+
+    /// Timed queue: the page handles every event it is done with by `clock`, in order,
+    /// each next one sent when the one before is done.
+    private func catchUp() {
+        guard keyQueue, !inApply, let clock else { return }
+        while let done = headDoneAt, done <= clock {
+            queuedKeys.removeFirst()
+            headDoneAt = nil
+            send(at: done)
+        }
+    }
+
+    private func applying(_ key: KeyRoute) {
+        inApply = true
+        apply(key)
+        inApply = false
+    }
+
+    /// Seconds the input method waited during the current key (`pause`, and WebKit's
+    /// blocked answers).
+    var paused: TimeInterval = 0
+    /// Time that passed in the input method's waits (`InPlaceClient.waitClock`).
+    private(set) var waitClock: TimeInterval = 0
+
+    /// The input method waits (N3, "Ngoại lệ sau ⌫ chưa áp").
+    /// - WebKit's queue (`keyQueue`): model time goes on and the page goes on handling
+    ///   events; Safari answers the input method from the page, apart from its own
+    ///   main thread.
+    /// - The other models: the answers do not move. Chrome answers from a cache in the
+    ///   browser process that is not updated while the input method blocks it (measured
+    ///   22/11/2026: every wait in Chrome with a busy page ran out); Firefox, whose cache
+    ///   is in its parent process, is taken to do the same (not measured). The time still
+    ///   counts for the next key (`paused`).
+    func pause(_ seconds: TimeInterval) {
+        paused += seconds
+        waitClock += seconds
+        if keyQueue, let clock { self.clock = clock + seconds }
+    }
+
+    /// WebKit's queue in time: `selectedRange` and the read are synchronous for the input
+    /// method and answered by the page when it is free (`pageFree`), after the event it
+    /// was sent last; the input method waits that long (measured 22/11/2026: the first ask
+    /// blocked until the page was free).
+    private func waitForPage() {
+        guard keyQueue, let clock else { return }
+        let ready = pageFree(clock)
+        guard ready > clock else { return }
+        paused += ready - clock
+        waitClock += ready - clock
+        self.clock = ready
     }
 
     /// The page is done with the event at the head of the queue: the next one is sent
@@ -285,7 +363,7 @@ final class LateDocument: InPlaceClient {
     func pageHandlesKeyEvent() -> Bool {
         guard !queuedKeys.isEmpty else { return false }
         queuedKeys.removeFirst()
-        if let next = queuedKeys.first, let key = next { apply(key) }
+        if let next = queuedKeys.first, let key = next { applying(key) }
         return true
     }
 

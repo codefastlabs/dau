@@ -69,3 +69,11 @@ Ghi ngày 30/10/2026, đã sửa cùng ngày.
   - Có khoá ở mode: hiện V. Bỏ khoá (đối chứng, cùng cách khởi động lại dịch vụ): trống. Thanh menu hai màn hình vẫn đúng.
   - `CursorUIViewService` giữ ảnh cũ trong bộ nhớ đệm và bỏ qua SIGTERM: máy đã cài bản cũ thấy V sau khi đăng xuất, hoặc `killall -9 CursorUIViewService` (dịch vụ tự chạy lại).
 - Không thử (không cần sau khi tìm ra nguyên nhân): ảnh PDF, `TISIconLabels` cấp bundle, nhãn bản địa hoá. Chuyển sang IMK extension (`.appex`) có lẽ cũng không cho nhãn chữ, vì bảng nhãn khoá theo ID của Apple (suy luận, chưa thử).
+
+## Safari: ⌫ rồi phím dấu ngay sau khi trang bận (mục cũ 6.9)
+
+Ghi ngày 22/11/2026, đã sửa cùng ngày.
+
+- Triệu chứng: sau khi Dấu tự chèn mọi ký tự (N3), ở Safari khi trang bận, ⌫ (vẫn đi thẳng) có thể chờ trong hàng phím của WebKit và bị lời gọi kế của bộ gõ vượt, nên phím dấu gõ ngay sau ⌫ không được thêm cho từ trước (D20 không áp): "Hoc ⌫j" ra "Hocj" (1/3 lượt ở nhịp người gõ nhanh), "khoong⌫g" ra "khôngg kó" hoặc "khôngg khó" (2/3 lượt ở trang bận 10 ms). Chữ không bị xáo.
+- Nguyên nhân: mọi sự kiện phím vào hàng của WebKit, còn lời gọi của bộ gõ tới trang ngay (`docs/research/LateAnswerFixes.md` mục 5.1).
+- Kết quả: ngoại lệ "Ngoại lệ sau ⌫ chưa áp" của N3 (chờ ⌫ được áp, hạn 20 ms, cho mọi app) đúng 3/3 ở cả hai ô; số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.1.

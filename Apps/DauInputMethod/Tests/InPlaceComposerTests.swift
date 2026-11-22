@@ -48,6 +48,10 @@ private final class FakeDocument: InPlaceClient {
 
     private var stale: Bool { now - lastEdit < lag }
 
+    /// The input method waits (N3 "Ngoại lệ sau ⌫ chưa áp"): the session clock moves on.
+    func pause(_ seconds: TimeInterval) { now += seconds }
+    var waitClock: TimeInterval { now }
+
     private func edit(_ body: () -> Void) {
         if !stale { previous = (text, cursor) }
         body()
@@ -137,6 +141,10 @@ private struct Session {
     let doc: FakeDocument
     var kinds: [PerfLog.Kind] = []
     var consumed: [Bool] = []
+    /// What waiting for the ⌫ before each key did (N3 "Ngoại lệ sau ⌫ chưa áp"), nil: no wait.
+    var waits: [InPlaceComposer.BackspaceWait?] = []
+    /// `selectedRange` calls of each key.
+    var selectionCounts: [Int] = []
     #if DEBUG
     var traces: [InPlaceComposer.D20Trace?] = []
     var diffs: [Bool?] = []
@@ -161,9 +169,11 @@ private struct Session {
         let inserts = made.filter { if case .insert = $0 { true } else { false } }.count
         let selections = made.filter { $0 == .selectedRange }.count
         let reads = made.filter { if case .read = $0 { true } else { false } }.count
-        if inserts > 1 || selections > 1 || reads > 1 { overCalls += 1 }
+        if inserts > 1 || selections > 1 + (outcome.backspaceWait?.asks ?? 0) || reads > 1 { overCalls += 1 }
         kinds.append(outcome.kind)
         consumed.append(outcome.consumed)
+        waits.append(outcome.backspaceWait)
+        selectionCounts.append(selections)
         #if DEBUG
         traces.append(outcome.d20)
         diffs.append(outcome.seedDiffers)
@@ -671,21 +681,63 @@ struct InPlaceComposerTests {
         }
     }
 
-    @Test("stale snapshot right after a ⌫ the app deleted: the text read shows a late answer, same text as on time")
+    @Test("stale snapshot right after a ⌫ the app deleted: the next ⌫ waits until the app has it (N3), same text as on time")
     func backspaceStale() {
         for var s in Self.sessions() {
             s.type("vieetj")
             #expect(s.doc.text == "việt")
-            // The app answers from a snapshot 50 ms old; the next two ⌫ come 10 ms apart.
-            s.doc.lag = 0.05
+            // The app answers from a snapshot 25 ms old; the next two ⌫ come 10 ms apart.
+            s.doc.lag = 0.025
             s.interval = 0.01
             s.type("⌫⌫")
-            // The second ⌫ sees the cursor before the first deletion. The text read there
-            // ("việt") with that deletion is the engine's word, so the app is only late
-            // (M6, keys in a burst): D32 replaces at the followed position, as on time.
-            #expect(s.kinds.suffix(2) == [.pass, .late])
+            // The second ⌫ sees the cursor before the first deletion: it asks again until
+            // the answer has it (15 ms more of the snapshot), then D32 replaces as on time.
+            #expect(s.kinds.suffix(2) == [.pass, .replace])
+            #expect(s.waits.last??.applied == true)
+            #expect(s.waits.last??.asks == 8)
             #expect(s.doc.text == "vị")
             #expect(s.overCalls == 0)
+        }
+    }
+
+    /// N3 "Ngoại lệ sau ⌫ chưa áp", the limit runs out: the key goes on as it did without
+    /// the wait. Here the text read with the deletion is the engine's word, so the app is
+    /// only late (M6, keys in a burst): D32 replaces at the followed position.
+    @Test("stale snapshot right after a ⌫, older than the wait limit: as without the wait (late answer)")
+    func backspaceStaleTimeout() {
+        for var s in Self.sessions() {
+            s.type("vieetj")
+            s.doc.lag = 1.0
+            s.interval = 0.01
+            s.type("⌫⌫")
+            #expect(s.kinds.suffix(2) == [.pass, .late])
+            #expect(s.waits.last??.applied == false)
+            #expect((s.waits.last??.waited ?? 0) >= InPlaceComposer.backspaceWaitLimit)
+            #expect((s.waits.last??.waited ?? 1) < InPlaceComposer.backspaceWaitLimit + InPlaceComposer.backspaceWaitStep * 1.5)
+            #expect(s.doc.text == "vị")
+            #expect(s.overCalls == 0)
+        }
+    }
+
+    @Test("an app on time: no key waits, whatever the pace; a character right after ⌫ asks one selectedRange (N3)")
+    func noWaitOnTime() {
+        let keys = "Hoc ⌫j tieesng Anh khoong⌫g khos, hoaf⌫ ⌫⌫ "
+        for interval in [0.005, 0.03, 0.12, 0.5] {
+            for var s in Self.sessions() {
+                s.interval = interval
+                s.type(keys)
+                #expect(s.waits.allSatisfy { $0 == nil })
+                #expect(s.overCalls == 0)
+                // A character key right after a ⌫ asks once (to see the ⌫ applied) when it
+                // comes within the wait limit, the reads of its path included; later, as any
+                // character typed at the caret, not at all ("g" of khoong⌫g).
+                let scalars = Array(keys.unicodeScalars)
+                for index in 1..<scalars.count where scalars[index - 1] == "⌫" && scalars[index] != "⌫" {
+                    #expect(s.selectionCounts[index] <= 1, "key \(index), \(interval) s")
+                }
+                let afterDelete = scalars.indices.first { $0 > 0 && scalars[$0 - 1] == "⌫" && scalars[$0] == "g" }!
+                #expect(s.selectionCounts[afterDelete] == (interval < InPlaceComposer.backspaceWaitWindow ? 1 : 0))
+            }
         }
     }
 
