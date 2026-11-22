@@ -574,7 +574,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn %@ để chuyển giữa Dấu và bàn phím tiếng Anh."
+            "value" : "Chọn Dấu trên menu nguồn đầu vào hoặc nhấn %@ để chuyển giữa Dấu và bàn phím tiếng Anh."
           }
         }
       }
@@ -591,7 +591,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn %@ để chuyển giữa Dấu và “%@”."
+            "value" : "Chọn Dấu trên menu nguồn đầu vào hoặc nhấn %@ để chuyển giữa Dấu và “%@”."
           }
         }
       }
@@ -795,7 +795,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bấm Thử lại rồi %@, hoặc tự thêm: %@ › %@ › + › %@ › Dấu."
+            "value" : "Bấm Thử lại rồi %@ hoặc tự thêm: %@ › %@ › + › %@ › Dấu."
           }
         }
       }
@@ -1033,7 +1033,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Không thấy hộp thoại, hoặc đã chọn %@? Bấm Thử lại."
+            "value" : "Không thấy hộp thoại hoặc đã chọn %@? Bấm Thử lại."
           }
         }
       }
@@ -1237,7 +1237,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bộ gõ Dấu trên máy chưa dùng được: chưa chép được vào máy, hoặc đã bị thay sau khi cài."
+            "value" : "Bộ gõ Dấu trên máy chưa dùng được: chưa chép được vào máy hoặc đã bị thay sau khi cài."
           }
         }
       }
@@ -2920,7 +2920,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Chữ ký của bộ gõ không hợp lệ, hoặc không cùng nhà phát triển với ứng dụng."
+            "value" : "Chữ ký của bộ gõ không hợp lệ hoặc không cùng nhà phát triển với ứng dụng."
           }
         }
       }
@@ -3464,7 +3464,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải tiếng Việt được giữ nguyên như bạn gõ"
+            "value" : "Khi gõ xong một từ (Space, dấu câu, Enter), từ không phải tiếng Việt giữ nguyên như bạn gõ"
           }
         }
       }
@@ -3617,7 +3617,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn xem lại trước khi gửi. Báo lỗi trên GitHub được đăng công khai."
+            "value" : "Bạn xem lại trước khi gửi. Báo lỗi trên GitHub là công khai."
           }
         }
       }
@@ -3702,7 +3702,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "macOS chưa thêm Dấu vào nguồn đầu vào. Có thể hộp thoại không hiện, hoặc yêu cầu đã bị từ chối."
+            "value" : "macOS chưa thêm Dấu vào nguồn đầu vào. Có thể hộp thoại không hiện hoặc yêu cầu đã bị từ chối."
           }
         }
       }

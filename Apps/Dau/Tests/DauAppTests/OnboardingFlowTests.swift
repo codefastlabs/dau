@@ -617,7 +617,7 @@ struct ShortcutSentenceTests {
         let key = "Choose Dấu from the Input menu, or press %@ to switch between Dấu and “%@”."
         let vietnamese = String(format: Catalog.text(key, "vi"), marker, "U.S.")
         let vi = try #require(ShortcutSentence.parts(of: vietnamese))
-        #expect(vi.before == "Chọn Dấu trên menu nguồn đầu vào, hoặc nhấn")
+        #expect(vi.before == "Chọn Dấu trên menu nguồn đầu vào hoặc nhấn")
         #expect(vi.after == "để chuyển giữa Dấu và “U.S.”.")
         // No English layout name: the other sentence, same split.
         let general = try #require(ShortcutSentence.parts(of: ChooseDauLine.sentence(englishLayout: nil)))

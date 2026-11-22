@@ -11,7 +11,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Báo lỗi trên GitHub được đăng công khai. Đừng ghi thông tin riêng tư.
+        Báo lỗi trên GitHub là công khai. Đừng ghi thông tin riêng tư.
         Reports on GitHub are public. Don't include private information.
   - type: input
     id: app
