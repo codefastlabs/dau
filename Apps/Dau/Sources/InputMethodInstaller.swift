@@ -180,8 +180,19 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     /// How long the input method has to quit on request before it is ended.
     var quitTimeout: Duration = .seconds(2)
     /// How often uninstall looks for the user to have removed Dấu from the input sources.
+    /// Polls the stored list instead of observing `kTISNotifyEnabledKeyboardInputSourcesChanged`:
+    /// whether that notification arrives after the stored list is readable is not measured
+    /// (the selection case in `InputMethodActions` measured that its notification does not);
+    /// 500 ms is not backed by a measurement.
     var removalPollInterval: Duration = .milliseconds(500)
+    /// Interval of the `isRunning` polls in `quitSystemSettings` and `stopInputMethod`. It
+    /// polls instead of observing the app's termination; no reason or measurement is
+    /// recorded for the choice or for 100 ms.
     private let pollInterval: Duration = .milliseconds(100)
+    /// Interval of the stored-entry poll in `enable()`. It polls instead of observing
+    /// `kTISNotifyEnabledKeyboardInputSourcesChanged`: not measured whether the notification
+    /// arrives after the stored entry is readable (the selection case in `InputMethodActions`
+    /// measured that it does not); 250 ms is not backed by a measurement.
     private let enablePollInterval: Duration = .milliseconds(250)
 
     init(files: InputMethodFiles, owner: OwnerCopyCheck, sources: TextInputSources, processes: InputMethodProcesses,

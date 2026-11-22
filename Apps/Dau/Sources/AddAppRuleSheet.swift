@@ -240,19 +240,32 @@ struct SheetSearchField: NSViewRepresentable {
 
     func makeCoordinator() -> Coordinator { Coordinator(text: $text) }
 
+    /// Takes the keyboard focus once it joins the sheet's window (`viewDidMoveToWindow`,
+    /// https://developer.apple.com/documentation/appkit/nsview/viewdidmovetowindow()).
+    final class FocusedSearchField: NSSearchField {
+        override func viewDidMoveToWindow() {
+            super.viewDidMoveToWindow()
+            window?.makeFirstResponder(self)
+        }
+    }
+
     func makeNSView(context: Context) -> NSSearchField {
-        let field = NSSearchField()
+        let field = FocusedSearchField()
         field.placeholderString = prompt
         field.delegate = context.coordinator
+        // The field's action is what its cancel (✕) button sends, as in `SidebarSearchField`.
+        field.target = context.coordinator
+        field.action = #selector(Coordinator.searched(_:))
         field.setAccessibilityLabel(prompt)
-        DispatchQueue.main.async { field.window?.makeFirstResponder(field) }
         return field
     }
 
     func updateNSView(_ field: NSSearchField, context: Context) {
+        context.coordinator.text = $text
         if field.stringValue != text { field.stringValue = text }
     }
 
+    @MainActor
     final class Coordinator: NSObject, NSSearchFieldDelegate {
         var text: Binding<String>
         init(text: Binding<String>) { self.text = text }
@@ -260,6 +273,10 @@ struct SheetSearchField: NSViewRepresentable {
         func controlTextDidChange(_ notification: Notification) {
             guard let field = notification.object as? NSSearchField else { return }
             text.wrappedValue = field.stringValue
+        }
+
+        @objc func searched(_ field: NSSearchField) {
+            if text.wrappedValue != field.stringValue { text.wrappedValue = field.stringValue }
         }
     }
 }

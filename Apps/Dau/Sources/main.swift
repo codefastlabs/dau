@@ -21,22 +21,6 @@ if CommandLine.arguments.contains("--print-input-source-name") {
     print(SystemUINames.system().dauInputSource)
     exit(0)
 }
-if CommandLine.arguments.contains("--print-input-source-status") {
-    switch InputSourceStatus.query() {
-    case true?: print("enabled")
-    case false?: print("disabled")
-    case nil: print("unknown (input method bundle not found)")
-    }
-    exit(0)
-}
-if CommandLine.arguments.contains("--print-input-shortcut") {
-    if let shortcut = InputSourceShortcut.current() {
-        print(shortcut.keys.joined(separator: " "), shortcut.globeKey ? "+ globe key" : "")
-    } else {
-        print("unreadable")
-    }
-    exit(0)
-}
 #endif
 
 DauApp.main()

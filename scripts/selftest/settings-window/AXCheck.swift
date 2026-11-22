@@ -11,7 +11,8 @@
 //                  Settings (toolbar, system title, sidebar, Form). On the primary display only: the sidebar search with a query
 //                  nothing matches; the add-rule sheet ("+" on Ứng dụng): the app list
 //                  (settles, overflows, scroll bar, wheel, always-installed apps, end of
-//                  list), search and selection wiring, Huỷ. Then the window's size limits
+//                  list), search focus at open, search, its ✕ button and selection wiring,
+//                  Huỷ. Then the window's size limits
 //                  (by resizing it; the width is fixed, only the height changes).
 //                  Last, the shell: the sidebar's width at the widest and narrowest
 //                  window. What a test can hold without a real window (the
@@ -806,6 +807,10 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
     if let field {
         let prompt = string(field, "AXPlaceholderValue") ?? label(field)
         record(d, p, "search prompt", expected: "Tìm trong Ứng dụng", got: prompt, ok: prompt == "Tìm trong Ứng dụng")
+        // The field takes the keyboard focus when the sheet opens (`SheetSearchField`).
+        waitUntil(timeout: 2, interval: 0.05) { searchHasFocus(field) }
+        record(d, p, "search field focused when the sheet opens", expected: "focused",
+               got: searchHasFocus(field) ? "focused" : "not focused", ok: searchHasFocus(field))
     }
     if let heading = require(d, p, "header", find: {
         intended(all(sheet) { role($0) == "AXHeading" }, text: "Thêm quy tắc cho ứng dụng", label) }) {
@@ -944,6 +949,28 @@ func inspectSheet(_ d: String, _ tag: String, _ sheet: AXUIElement) {
         if drive(d, p, "clear the query", set(field, kAXValueAttribute, "" as CFString)) {
             waitUntil(timeout: 5, interval: 0.05) { rows().count == total }
             check(d, p, "search cleared", CGFloat(rows().count), CGFloat(total), tolerance: Reference.exact)
+        }
+        // The field's own cancel (✕) button clears the query and the filter with it.
+        if drive(d, p, "type a query again", set(field, kAXValueAttribute, "zzzz-no-such-app" as CFString)) {
+            waitUntil(timeout: 5, interval: 0.05) { rows().isEmpty }
+            // NSSearchField names its ✕ in AXCancelButton; else it is the rightmost child
+            // button (the leftmost is the magnifier, the search button).
+            let cancel = attr(field, "AXCancelButton").flatMap { CFGetTypeID($0) == AXUIElementGetTypeID() ? ($0 as! AXUIElement) : nil }
+                ?? children(field).filter { role($0) == "AXButton" }.max { frame($0).minX < frame($1).minX }
+            if cancel == nil {
+                var names: CFArray?
+                AXUIElementCopyAttributeNames(field, &names)
+                let found = ((names as? [String]) ?? []).joined(separator: ",")
+                let kids = children(field).map { "\(role($0))/\(subrole($0))" }.joined(separator: ",")
+                record(d, p, "search cancel button", expected: "present", got: "missing; attributes \(found); children \(kids)", ok: false)
+            }
+            if let cancel,
+               drive(d, p, "press the search cancel button", press(cancel)) {
+                waitUntil(timeout: 5, interval: 0.05) { rows().count == total }
+                check(d, p, "search cancel button clears the filter", CGFloat(rows().count), CGFloat(total), tolerance: Reference.exact)
+                let after = string(field, kAXValueAttribute) ?? ""
+                record(d, p, "search cancel button clears the text", expected: "", got: after, ok: after.isEmpty)
+            }
         }
     }
 

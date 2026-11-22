@@ -217,7 +217,7 @@ Artboard: [SettingsTampered](canvas/SettingsTampered.png).
 
 - Điều kiện như trường hợp bộ gõ bị thay ở màn "Lỗi cài" của onboarding; kiểm lúc mở app và mỗi lần app được đưa lên trước.
 - Banner đỏ, nút "Cài lại" chép bản gốc trong app (đã kiểm chữ ký) đè lên.
-- Cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải về.
+- Cài lại không được thì banner nói vậy và hướng dẫn gỡ rồi cài lại từ bản tải mới.
 
 ## Gỡ cài đặt
 

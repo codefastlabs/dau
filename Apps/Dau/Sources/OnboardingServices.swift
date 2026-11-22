@@ -397,24 +397,6 @@ enum OwnerCopyGuide {
 // MARK: - Text Input Sources, read only
 
 extension InputSourceStatus {
-    /// Whether the input method is installed (registered with Text Input Sources,
-    /// enabled or not). `nil` when the bundle is not found inside the app.
-    nonisolated static func queryInstalled() -> Bool? {
-        guard let bundleID = inputMethodBundleID else { return nil }
-        let filter = [kTISPropertyBundleID as String: bundleID] as CFDictionary
-        guard let list = TISCreateInputSourceList(filter, true)?.takeRetainedValue() else { return false }
-        return CFArrayGetCount(list) > 0
-    }
-
-    /// Whether Dấu is the current input source. `nil` when unknown.
-    nonisolated static func querySelected() -> Bool? {
-        guard let bundleID = inputMethodBundleID,
-              let source = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
-              let raw = TISGetInputSourceProperty(source, kTISPropertyBundleID) else { return nil }
-        let current = Unmanaged<CFString>.fromOpaque(raw).takeUnretainedValue() as String
-        return current == bundleID
-    }
-
     /// Localized name of an enabled keyboard layout other than Dấu, e.g. "U.S.": the one
     /// the user switches to for English (D2). `nil` when there is none to name.
     nonisolated static func englishLayoutName() -> String? {
