@@ -53,7 +53,7 @@
     },
     "Landing.dc.html": {
       "expand": "fill",
-      "h": 7702,
+      "h": 8620,
       "title": "Trang tải về – máy tính",
       "w": 1280,
       "x": 0,
@@ -61,7 +61,7 @@
     },
     "LandingMobile.dc.html": {
       "expand": "fill",
-      "h": 11819,
+      "h": 14159,
       "title": "Trang tải về – điện thoại",
       "w": 390,
       "x": 1360,
@@ -299,7 +299,7 @@
       "x": 1830,
       "y": 14900,
       "w": 1200,
-      "h": 726,
+      "h": 703,
       "title": "Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)"
     },
     "ModelKeyFlow.dc.html": {
@@ -307,7 +307,7 @@
       "y": 14900,
       "w": 1200,
       "h": 720,
-      "title": "Mô hình – Đường đi của một phím (N3, N2; Website mục 3)"
+      "title": "Mô hình – Đường đi của một phím (N3, N2; trang M10)"
     },
     "ModelTonePlacement.dc.html": {
       "x": 4390,
@@ -355,7 +355,7 @@
       "x": 4390,
       "y": 16584,
       "w": 1200,
-      "h": 628,
+      "h": 528,
       "title": "Mô hình – VNI: chữ số thành dấu (D36, D26; Website mục 5 và Hỏi đáp)"
     },
     "SettingsAboutSupporters.dc.html": {

@@ -84,7 +84,7 @@
 ## Mô hình
 
 - [Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)](ModelThreeWays.png) · [nguồn](src/ModelThreeWays.dc.html)
-- [Mô hình – Đường đi của một phím (N3, N2; Website mục 3)](ModelKeyFlow.png) · [nguồn](src/ModelKeyFlow.dc.html)
+- [Mô hình – Đường đi của một phím (N3, N2; trang M10)](ModelKeyFlow.png) · [nguồn](src/ModelKeyFlow.dc.html)
 - [Mô hình – Gõ phím dấu ở đâu cũng được (D28, D15; Website mục 2)](ModelTonePlacement.png) · [nguồn](src/ModelTonePlacement.dc.html)
 - [Mô hình – Giữ nguyên từ nước ngoài (D4, D26; Website mục 4)](ModelForeignWords.png) · [nguồn](src/ModelForeignWords.dc.html)
 - [Mô hình – Thêm dấu cho từ đã gõ (D20, D32, D13; Website mục 4)](ModelAddMarks.png) · [nguồn](src/ModelAddMarks.dc.html)
