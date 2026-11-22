@@ -7,6 +7,8 @@ Viết script: [`scripts/README.md`](README.md) (mục "Ngôn ngữ", "Đầu ra
 Áp cho mọi lượt gõ thử (`scripts/selftest/typing/run.sh`, `scripts/research/`, `/dogfood`) và cho câu thử trong test.
 
 - Đối chứng là bộ gõ tiếng Việt khác trong cùng điều kiện (Telex của Apple), không phải bàn phím U.S.
+  - Telex của Apple trả lời hai câu: ô đo có hợp lệ không, và một lỗi có xảy ra với một bộ gõ IMK khác ở tính năng mà nó cũng có không. Nó không có D20 (Thêm dấu cho từ đã gõ) và không khôi phục từ (D4); chữ nó ra ở các phím đó không phải chuẩn để so với Dấu.
+  - Với tính năng Telex của Apple không có, đối chứng là chính Dấu ở cùng ô mà không có điều kiện đang thử (trang rảnh thay cho trang bận, nhịp chậm thay cho phím dồn). Không viết "giống Telex của Apple" để giảm nhẹ một lỗi của Dấu ở tính năng đó.
 - Câu thử là câu tiếng Việt có nghĩa, mang ý tích cực, mà vẫn chứa đúng ca cần đo; không dùng từ vô nghĩa hay chuỗi ghép cho đủ ca.
 - Đáp án là chữ người gõ muốn ra, khớp từng phím đã gõ (soát chuỗi phím trước khi chạy).
 - Chuỗi thử gõ như người dùng thật: đặt dấu tự do, đổi và xoá dấu, ⌫ giữa từ, thêm dấu cho từ đã gõ, từ tiếng Anh; không chỉ Telex thứ tự chuẩn.
