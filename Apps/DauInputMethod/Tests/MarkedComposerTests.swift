@@ -55,6 +55,9 @@ private struct Session {
     var overCalls = 0
     /// Keys the app received while marked text was still shown (must stay 0).
     var passedWithMarked = 0
+    /// Character keys left to the app (must stay 0: every character goes in through the
+    /// input method's call, N3, D13).
+    var charactersToApp = 0
 
     mutating func key(_ route: KeyRoute) {
         let before = app.calls.count
@@ -64,6 +67,7 @@ private struct Session {
         #expect(made == (outcome.call == .none ? 0 : 1))
         if !outcome.consumed {
             if !app.marked.isEmpty { passedWithMarked += 1 }
+            if case .character = route { charactersToApp += 1 }
             app.defaultAction(route)
         }
     }
@@ -98,6 +102,7 @@ struct MarkedComposerTests {
         #expect(s.app.marked == "")
         #expect(s.app.onlyNotFound)
         #expect(s.overCalls == 0)
+        #expect(s.charactersToApp == 0)
         #expect(s.passedWithMarked == 0)
     }
 
@@ -111,12 +116,31 @@ struct MarkedComposerTests {
         #expect(s.app.document == "Sunrise! (windows) á?")
     }
 
-    @Test("punctuation or Space with no word goes to the app, no call")
+    @Test("punctuation or Space with no word: one insertText of the character, not left to the app (N3)")
     func noWord() {
         var s = Session()
         s.type(" ,.")
         #expect(s.app.document == " ,.")
-        #expect(s.app.calls.isEmpty)
+        #expect(s.app.calls == [.insert(" "), .insert(","), .insert(".")])
+        #expect(s.charactersToApp == 0)
+    }
+
+    /// D13: the character that ends a word goes in the same `insertText` as the word, on
+    /// every branch (nothing to restore, a D4 restore, a word that ends with punctuation),
+    /// never on its own after it: Safari with keys in a burst moved such a space after
+    /// the next word.
+    @Test("the word-ending character goes in the same insertText as the word, restored or not",
+          arguments: [("tooi ", ["tôi "]), ("windows ", ["windows "]), ("carr.", ["car."]),
+                      // The space after the comma: no word shown, a character of its own.
+                      ("Vieetj, ", ["Việt,", " "])])
+    func endingCharacterWithWord(_ keys: String, _ commits: [String]) {
+        var s = Session()
+        s.type(keys)
+        #expect(s.app.document == commits.joined())
+        let inserted = s.app.calls.compactMap { if case .insert(let t) = $0 { t } else { nil } }
+        #expect(inserted == commits)
+        #expect(s.charactersToApp == 0)
+        #expect(s.overCalls == 0)
     }
 
     @Test("D32: Backspace edits the marked word; the last letter clears the marked text")
@@ -231,6 +255,8 @@ struct MarkedComposerTests {
         #expect(s.app.document == run + " nghiễng ")
         #expect(s.overCalls == 0)
         #expect(s.passedWithMarked == 0)
+        // The rest of the long run, past the marked text, went in through insertText too.
+        #expect(s.charactersToApp == 0)
     }
 
     @Test("same text as in-place replacement for random key sequences (D18: no crash)")

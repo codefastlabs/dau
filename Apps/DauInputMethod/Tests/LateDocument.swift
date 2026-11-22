@@ -7,7 +7,8 @@ import Testing
 /// ranges) but answers `selectedRange` and `attributedSubstring` from an earlier state
 /// of its text: Chrome with a busy page (M6 step 1, log of 09/11/2026), and apps that
 /// apply keys asynchronously when keys come in a burst (Chromium, Electron, Firefox;
-/// `docs/Compatibility.md` 6.2).
+/// `docs/Compatibility.md` 6.2). With `keyQueue`, WebKit instead: the input method's
+/// calls overtake the keys it left to the app (see "WebKit's key queue" below).
 ///
 /// Which earlier state: `lag` edits ago (set per key, so each word of a log can be
 /// replayed exactly), or, with `clock` set, the latest state the app has reported by
@@ -243,8 +244,68 @@ final class LateDocument: InPlaceClient {
         append(state)
     }
 
-    /// What the app does with a key the input method left to it.
+    // MARK: WebKit's key queue
+
+    /// WebKit (Safari), from its source (main, read 18/11 and 22/11/2026;
+    /// `docs/research/LateAnswerFixes.md` section 5.1): the view sends every key event it
+    /// gets, key-down and key-up, whether the input method handled it or not, to
+    /// `WebPageProxy::handleKeyboardEvent` (`WebViewImpl::keyDown`, `keyUp`), which puts it
+    /// in `keyEventQueue`. The queue sends the page one event at a time; the next goes
+    /// only when the page says it is done with the one before (`keyEventHandlingCompleted`).
+    /// An event the input method did not handle carries its key to the page (the page
+    /// types it); one it handled carries nothing, its text came through the input
+    /// method's call. The input method's calls (`insertTextAsync`,
+    /// `getSelectedRangeAsync`, `attributedSubstringForCharacterRangeAsync`) go to the
+    /// page at once, not through that queue, and the page answers them from its own
+    /// text, applying a `replacementRange` to the text it has then, the caret going to the
+    /// end of the inserted text (`Replace.caretAfterText`).
+    ///
+    /// The event at the head of the queue was already sent: it reaches the page before
+    /// any later call of the input method (both on the one connection to the page), so it
+    /// is applied when sent. The events behind it wait until the page handles the head
+    /// (`pageHandlesKeyEvent`). Key-ups are not modelled as events of their own: they
+    /// only make the queue longer, which the test's schedule of `pageHandlesKeyEvent`
+    /// stands for. On: set `keyQueue`, keep `lag` 0, `clock` nil, `cache` `.snapshot`
+    /// (no cache: answers from the latest state).
+    var keyQueue = false
+    /// The key events in WebKit's queue, head first (sent, not handled yet). nil: an
+    /// event the input method handled (no key for the page to type).
+    private(set) var queuedKeys: [KeyRoute?] = []
+
+    /// One key event reaches WebKit's queue, after the input method's `handle` returned
+    /// (`handled`: it returned true). Sent to the page at once if the queue was empty.
+    func keyEvent(_ route: KeyRoute, handled: Bool) {
+        queuedKeys.append(handled ? nil : route)
+        if queuedKeys.count == 1, let key = queuedKeys[0] { apply(key) }
+    }
+
+    /// The page is done with the event at the head of the queue: the next one is sent
+    /// (and its key, if any, typed). False when the queue is empty.
+    @discardableResult
+    func pageHandlesKeyEvent() -> Bool {
+        guard !queuedKeys.isEmpty else { return false }
+        queuedKeys.removeFirst()
+        if let next = queuedKeys.first, let key = next { apply(key) }
+        return true
+    }
+
+    /// The page is free: it handles every event in the queue.
+    func pageIdle() {
+        while pageHandlesKeyEvent() {}
+    }
+
+    /// What the app does with a key the input method left to it (WebKit's key queue:
+    /// `keyEvent`).
     func typed(_ route: KeyRoute) {
+        if keyQueue {
+            keyEvent(route, handled: false)
+            return
+        }
+        apply(route)
+    }
+
+    /// The app types a key the input method left to it, now.
+    private func apply(_ route: KeyRoute) {
         switch route {
         case .character(let c):
             let n = inserts

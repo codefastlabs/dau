@@ -24,7 +24,9 @@ struct PerfLog {
 
     /// Event kinds. Raw values are parsed by scripts/perf/perf-report.sh.
     enum Kind: String {
-        /// Key went to the app unchanged, no client call.
+        /// In-place mode: a character the engine left unchanged, inserted at the caret by
+        /// the input method (one insertText, replacementRange NSNotFound, no selectedRange;
+        /// N3). Other keys (⌫, Return, Tab with nothing to restore): went to the app, no call.
         case pass
         /// selectedRange + insertText(replacementRange:).
         case replace
@@ -38,14 +40,15 @@ struct PerfLog {
         case reset
         /// Underline mode (D13): setMarkedText with the word, no selectedRange.
         case mark
-        /// Underline mode (D13): insertText of the marked word (word end or reset event),
-        /// replacementRange NSNotFound, no selectedRange.
+        /// Underline mode (D13): insertText of the marked word (word end or reset event), or
+        /// of a character typed with no word shown (N3); replacementRange NSNotFound, no
+        /// selectedRange.
         case commit
         /// D20: selectedRange + attributedSubstring read a word before the cursor, the
         /// engine was seeded with it and the key replaced it (one insertText).
         case seed
         /// D20: a word was read and seeded, but the key does not apply to it
-        /// ("viet" + j): the key went to the app unchanged.
+        /// ("viet" + j): the key went in unchanged, inserted at the caret (as `pass`).
         case seedPass = "seed_pass"
         /// D20: selectedRange (and attributedSubstring if there was text before the
         /// cursor) found no word to seed, or a plain letter did not join the word read
@@ -59,7 +62,7 @@ struct PerfLog {
         /// key replaced it (one more attributedSubstring than a plain mismatch).
         case resync
         /// D11: re-synced as above, but the key does not apply to the word read: it went
-        /// to the app unchanged.
+        /// in unchanged, inserted at the caret (as `pass`).
         case resyncPass = "resync_pass"
         /// selectedRange answered from before the input method's latest edits (the app
         /// had not applied them yet: Chrome with a busy page, M6); one attributedSubstring

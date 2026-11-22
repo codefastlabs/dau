@@ -96,8 +96,8 @@ struct ClientRangeTests {
         var t = CursorTracker()
         t.anchor(at: Int.max - 1)
         #expect(t.known == nil)
-        t.passedThrough("a")
-        t.passedThrough("b")
+        t.typedAtCaret("a")
+        t.typedAtCaret("b")
         #expect(t.known == nil && t.expected == nil)
     }
 
@@ -120,7 +120,7 @@ struct ClientRangeTests {
     func rebuildHuge() {
         var t = CursorTracker()
         t.anchor(at: 3)
-        t.passedThrough("a")
+        t.typedAtCaret("a")
         #expect(t.rebuild(Array("to".utf16), at: NSRange(location: Int.max - 1, length: 0), accept: { _ in true }) == nil)
         #expect(t.rebuild(Array("to".utf16), at: NSRange(location: Int.min, length: 0), accept: { _ in true }) == nil)
     }
@@ -160,7 +160,9 @@ struct InPlaceOddRangeTests {
         #expect(client.reads.isEmpty)
         #expect(client.rangedInserts.isEmpty)
         #expect(composer.tracker.known == nil)
-        #expect(!outcome.consumed)
+        // The key goes in as typed, at the caret (N3).
+        #expect(outcome.consumed)
+        #expect(client.inserts.map(\.0) == ["s"])
         // Later keys in the session keep working without a trap.
         for (i, c) in "aas ".unicodeScalars.enumerated() {
             _ = composer.handle(.character(c), time: 1.2 + Double(i) * 0.2, engine: &engine, client: client)
@@ -487,7 +489,7 @@ final class PlainDocument: InPlaceClient {
         units.replaceSubrange(range.location..<(range.location + range.length), with: Array(string.utf16))
     }
 
-    /// The app types a key the input method let through.
+    /// The app types a key the input method left to it.
     func type(_ scalar: Unicode.Scalar) {
         insertText(String(Character(scalar)), replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
     }
@@ -495,8 +497,8 @@ final class PlainDocument: InPlaceClient {
 
 @Suite("D20 on a decomposed (NFD) foreign word before the cursor (exception b)")
 struct DecomposedForeignWordTests {
-    /// (text before the cursor, key): the key goes to the app unchanged and the text
-    /// before it is not rewritten.
+    /// (text before the cursor, key): the key goes in unchanged, typed at the caret by the
+    /// input method (N3), and the text before it is not rewritten.
     static let cases: [(String, Unicode.Scalar)] = [
         ("mai\u{302}tre", "s"),
         ("i\u{302}le", "s"),
@@ -505,7 +507,7 @@ struct DecomposedForeignWordTests {
         ("u\u{306}", "s"),
     ]
 
-    @Test("the key passes through and the word read is left as it is", arguments: cases)
+    @Test("the key goes in as typed and the word read is left as it is", arguments: cases)
     func passes(_ text: String, _ key: Unicode.Scalar) {
         var engine = VietEngine(options: DauSettings.defaults.engineOptions)
         var composer = InPlaceComposer()
@@ -514,7 +516,7 @@ struct DecomposedForeignWordTests {
         let doc = PlainDocument(text)
         let outcome = composer.handle(.character(key), time: 1.0, engine: &engine, client: doc)
         if !outcome.consumed { doc.type(key) }
-        #expect(!outcome.consumed)
+        #expect(outcome.consumed)
         #expect(outcome.kind == .seedPass)  // read, then D20 (b): the key joins the foreign word
         #expect(doc.reads == 1)
         #expect(doc.rangedInserts == 0)

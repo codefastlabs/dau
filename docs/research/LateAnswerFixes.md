@@ -2,12 +2,12 @@
 
 Kịch bản A chưa app thật nào đo ra; kịch bản B có ở trình soạn thảo của Cursor 3.30.14 (mục "Hiện trạng"). File này giữ cơ chế và hướng sửa ngắn gọn. Cơ chế của `CursorTracker` ở [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm"; số đo Cursor ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
-## Hiện trạng (18/11/2026)
+## Hiện trạng (22/11/2026)
 
 - **Kịch bản A: D20 sau ⌫ khi app chậm 3–4 thao tác** (mô hình bộ đệm Chromium, `LateDocument.Cache.chromium`). Chrome thật, trang bận, nhịp người, chuỗi `edit`: đúng 3/3, và ở lần đọc của D20 sau ⌫ Chrome trả vị trí đúng giờ (mục 3). Chậm 1–2 thao tác thì phép chứng minh hiện có đã xử lý (`LateBackspaceMarkTests`). Hướng 2A là phương án áp khi gặp ca thật (mục 1.2).
 - **Kịch bản B: app tính vị trí theo từ** (`LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Ở Cursor 3.30.14, khung agent (⌘L) và ô nhập Agents tính vị trí từ đầu văn bản và gõ đúng. Trình soạn thảo có lúc tính từ đầu văn bản (đúng), có lúc tính từ đầu từ; ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai vài từ mỗi lượt, không do D20 (D20 chờ hay không chờ phím dồn đều sai như vậy). Chưa rõ vì sao trình soạn thảo đổi kiểu (số đo: [`docs/Compatibility.md`](../Compatibility.md) mục 5.4). Mô hình còn trong test (`WordOriginTests`) cho các ca đạt. Hướng 1B và 4A cần đổi N3 và D11 (mục 2.2).
 - **Kịch bản C: trang bận, app chậm qua chỗ ngắt từ** (đo 18/11/2026, mục 3): Chrome và Safari sai khi trang bận, cả ở nhịp người gõ nhanh. Nguyên nhân ở Chrome: hạn mức độ chậm của phép chứng minh về 0 ở mỗi chỗ ngắt từ. Đã sửa phần lớn (commit `d171ab9`, mục 3.3): ở phím thay chữ trong từ, app được chậm mọi thao tác kể từ lần cuối nó trả lời đúng lúc. Còn vài ca ở từ có chuỗi thay phức tạp ("được"); Safari là kịch bản D.
-- **Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng** (đo 18/11/2026, mục 5): khi trang chưa nhận kịp phím (phím dồn, trang bận), lần thay của bộ gõ tới trang trước các phím đi thẳng còn chờ, nên chữ của các phím đó dời chỗ. Bản thử sửa 18/11/2026 theo hướng bộ gõ tự chèn ký tự lẽ ra đi thẳng và tự xoá ⌫ (mục 5.3, 5.4) đúng ở các ô đã đo; chưa gộp vào `main`, chưa chọn hướng.
+- **Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng** (đo 18/11/2026, mục 5): khi trang chưa nhận kịp phím (phím dồn, trang bận), lần thay của bộ gõ tới trang trước các ký tự đi thẳng còn chờ, nên chữ của các phím đó dời chỗ. Đã sửa ngày 22/11/2026 bằng cách bộ gõ tự chèn mọi ký tự engine để nguyên, ở mọi app (mục 5.3, N3): Safari đúng khi gửi cả chuỗi một lần (3/3), trang bận nhịp người gõ nhanh (2/3) và ô mũi tên (3/3). ⌫ giữ đi thẳng; giới hạn còn lại là ⌫ rồi phím dấu ngay sau ở Safari khi trang bận có thể mất dấu (mục 5.4).
 - Cursor không có nhãn "Đề xuất" (D13 (Gạch chân là đường lui cuối cùng)); số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
 Không có quyết định nào chờ người dùng ở file này. Phần đo được và phần giả định của mô hình theo từ ghi trong comment của `LateDocument.Origin`; mô hình vị trí tính từ đầu văn bản là `Origin.document`.
@@ -117,37 +117,53 @@ Mỗi hướng thử trên mô hình (`LateAnswerTests`, `RapidKeysTests`, `InPl
 
 ## 5. Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng
 
-Đo 18/11/2026 trên máy M1 Pro (Safari 27.2), số đo và các quan sát nó giải thích ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.1, ý "Nguyên nhân".
+Đo 18/11/2026 (lỗi) và 22/11/2026 (sau khi sửa) trên máy M1 Pro (Safari 27.2), số đo và các quan sát nó giải thích ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.1.
 
 ### 5.1 Cơ chế
 
-Đọc trong mã WebKit (nhánh main, 18/11/2026; chưa biết Safari 27.2 khác tới đâu):
+Đọc trong mã WebKit (nhánh main, 18/11/2026, đọc lại 22/11/2026 ở `WebViewImpl::keyDown/keyUp` và `WebPageProxy::handleKeyboardEvent`; chưa biết Safari 27.2 khác tới đâu):
 
-- Phím bộ gõ trả NO đi vào `keyEventQueue` của tiến trình giao diện (`WebPageProxy::handleKeyboardEvent`). Hàng này gửi trang mỗi lần một phím, phím sau chỉ gửi khi trang đã xử lý xong phím trước (`keyEventHandlingCompleted`).
+- Mọi sự kiện phím (nhấn và nhả, bộ gõ đã xử lý hay chưa) đều vào `keyEventQueue` của tiến trình giao diện. Hàng này gửi trang mỗi lần một sự kiện, sự kiện sau chỉ gửi khi trang đã xử lý xong sự kiện trước (`keyEventHandlingCompleted`). Chỉ phím mà bộ gõ trả NO mới mang chữ tới trang.
 - `insertText` của bộ gõ (`insertTextAsync`), `selectedRange` (`getSelectedRangeAsync`) và lần đọc chữ (`attributedSubstringForCharacterRangeAsync`) gửi tới trang ngay, không qua hàng đó. Trang trả vị trí và chữ của chính nó lúc nhận tin, không từ bộ đệm.
 - Trang áp `replacementRange` lên chữ nó đang có lúc nhận tin, không có số phiên bản để nhận ra lời gọi cũ (`WebPage::insertTextAsync`).
 - Cờ `InputMethodUsesCorrectKeyEventOrder` (gửi lời gọi của bộ gõ kèm sự kiện phím, giữ thứ tự) có trong mã nhưng tắt mặc định (`status: unstable`).
 
-Nên một phím đi thẳng đang tới trang vẫn được áp trước lời gọi sau của bộ gõ (cùng một đường tới trang), còn từ phím thứ hai trở đi thì không. Phép chứng minh app chậm của D11 coi app áp mọi thứ theo thứ tự (đúng với Chromium và Firefox theo mã nguồn của chúng, `LateDocument`); ở Safari nó vẫn qua, Dấu thay ở vị trí theo dõi, nhưng vùng thay tới trang khi các phím đi thẳng chưa có ở đó. Các phím ấy rơi ra sau chữ vừa thay; mỗi lần thay sau đặt con trỏ ở cuối vùng thay, trước chúng, nên chúng bị đẩy dần về cuối văn bản.
+Nên khi bộ gõ để một ký tự đi thẳng, ký tự đó chờ trong hàng khi trang chưa nhận kịp, còn lời gọi sau của bộ gõ tới trang trước nó. Phép chứng minh app chậm của D11 coi app áp mọi thứ theo thứ tự (đúng với Chromium và Firefox theo mã nguồn của chúng, `LateDocument`); ở Safari nó vẫn qua, Dấu thay ở vị trí theo dõi, nhưng vùng thay tới trang khi các ký tự đi thẳng chưa có ở đó. Các ký tự ấy rơi ra sau chữ vừa thay; mỗi lần thay sau đặt con trỏ ở cuối vùng thay, trước chúng, nên chúng bị đẩy dần về cuối văn bản.
 
 ### 5.2 Khác Chrome ở đâu
 
-Chrome khi trang bận trả vị trí cũ nhưng áp phím và lời gọi của bộ gõ theo đúng thứ tự, nên thay ở vị trí theo dõi là đúng (mục 3). Ở Safari cùng hành động đó sai. Từ một câu trả lời, bộ gõ không biết phần nào trong các thao tác app chưa áp là phím đi thẳng còn chờ trong hàng của WebKit, phần nào đã tới trang.
+Chrome khi trang bận trả vị trí cũ nhưng áp phím và lời gọi của bộ gõ theo đúng thứ tự, nên thay ở vị trí theo dõi là đúng (mục 3). Ở Safari cùng hành động đó sai khi còn ký tự đi thẳng. Từ một câu trả lời, bộ gõ không biết phần nào trong các thao tác app chưa áp là phím đi thẳng còn chờ trong hàng của WebKit, phần nào đã tới trang.
 
-### 5.3 Hướng sửa
+### 5.3 Hướng đã chọn: bộ gõ tự chèn ký tự, cho mọi app
 
-| Hướng | Cách làm | Cái giá |
+Chọn ngày 22/11/2026 và ghi ở [`docs/Decisions.md`](../Decisions.md) N3 (ý 2 và đoạn "Vì sao Dấu tự chèn ký tự"). Ký tự mà engine để nguyên (chữ, số, dấu câu, dấu cách, phím không kèm ⌘, ⌃, ⌥) được bộ gõ chèn bằng `insertText` tại con trỏ (NSNotFound), như phím chỉ thêm chữ ở cuối từ. Mọi thao tác chữ đi cùng một đường, theo thứ tự, và `selectedRange` trả vị trí đã có mọi lời gọi trước nó. Ở chế độ gạch chân, ký tự chốt chữ đi cùng chữ chốt trong một `insertText`. Áp cho mọi app, không theo bundle ID, vì Dấu không xử lý riêng theo app.
+
+Cái giá: thêm một `insertText` cho mỗi ký tự đó (N3 vẫn tối đa một lần cho mỗi phím, nhưng bảng "phím nào gọi gì" ở [`docs/Architecture.md`](../Architecture.md) đổi). Trang web nhận ký tự đó như phím bộ gõ đã xử lý (theo mã WebKit: `keydown` có `keyCode` 229, `key` vẫn là chữ thật, không có `keypress`, chữ tới trước `keydown`, nên `preventDefault` ở `keydown` không chặn được chữ; chưa đo trên trang thật).
+
+Số đo sau khi sửa (22/11/2026): [`docs/Compatibility.md`](../Compatibility.md) mục 5.1, ý "Hiện trạng sau khi Dấu tự chèn ký tự".
+
+Các hướng khác không chọn:
+
+| Hướng | Cách làm | Vì sao không chọn |
 |---|---|---|
-| Bộ gõ tự chèn ký tự lẽ ra đi thẳng, ở app dùng WebKit (đã thử, chưa gộp) | Phím chữ cái, dấu cách, dấu câu mà engine để đi thẳng thì bộ gõ chèn bằng `insertText` tại con trỏ (NSNotFound), như phím chỉ thêm chữ ở cuối từ. Mọi thao tác chữ đi cùng một đường, theo thứ tự; `selectedRange` trả vị trí đã có mọi lời gọi trước nó. | Thêm một `insertText` cho mỗi phím đó (N3 vẫn tối đa một lần, nhưng bảng "phím nào gọi gì" đổi). Phải nhận ra app dùng WebKit (Safari theo bundle ID; app khác nhúng WKWebView như Mail thì chưa có cách). Trang web nhận phím đó như phím bộ gõ đã xử lý (theo mã WebKit: `keydown` có `keyCode` 229, `key` vẫn là chữ thật, không có `keypress`, chữ tới trước `keydown`, nên `preventDefault` ở `keydown` không chặn được chữ; chưa đo trên trang thật). Không sửa ⌫ (vẫn đi thẳng, vẫn có thể chờ; sửa riêng sau đó, mục 5.4). |
+| Tự chèn chỉ ở Safari theo bundle ID (bản thử 18/11/2026, không gộp) | Như hướng đã chọn nhưng chỉ khi nhận ra Safari. | Đúng ở các ô đã đo, nhưng phải nhận ra app theo bundle ID (app khác nhúng WKWebView như Mail không có cách) và tạo một ngoại lệ theo app, trong khi Dấu không xử lý riêng theo app. |
 | Không thay ở vị trí theo dõi trong Safari khi app chậm từ hai phím đi thẳng trở lên | Coi như không chứng minh được (lệch, D11): reset, phím tự bắt đầu từ mới. | Chữ không bị xáo, nhưng từ đó mất dấu ("viết" ra chữ không dấu hay dở dang). Thêm một ngoại lệ theo app vào D11. |
 | Chờ Safari bắt kịp | Hỏi lại `selectedRange` tới khi bằng vị trí theo dõi, có giới hạn thời gian. | Thêm lời gọi (trái N3), bộ gõ đứng chờ trong lúc trang bị chặn (tới 300 ms trong ô đo), là cách vá vòng có hẹn giờ. |
-| Giữ nguyên | Chỉ xảy ra khi trang Safari không nhận kịp phím; người dùng gặp lỗi tự bật gạch chân (D13), ở đó chữ cái đúng, chỉ dấu cách có thể dời như với Telex của Apple. | Safari trang bận ở nhịp người gõ nhanh sai 3/3 lượt, mỗi lượt một từ (mục 5.1 của `docs/Compatibility.md`). |
-
-Bản thử theo hướng đầu (18/11/2026), áp cho Safari theo bundle ID; chưa gộp vào `main`, chưa chọn hướng. Số đo trước và sau: [`docs/Compatibility.md`](../Compatibility.md) mục 5.1 (ý "Sửa").
+| Giữ nguyên | Chỉ xảy ra khi trang Safari không nhận kịp phím; người dùng gặp lỗi tự bật gạch chân (D13). | Safari trang bận ở nhịp người gõ nhanh sai 3/3 lượt, mỗi lượt một từ (đo 18/11/2026, mục 5.1 của `docs/Compatibility.md`). |
 
 ### 5.4 ⌫
 
-Sau bản thử tự chèn, ⌫ vẫn đi thẳng (D32: lệnh xoá của chính app bỏ chữ cuối), nên khi trang chưa nhận kịp nó vẫn chờ trong hàng: "Hoc ⌫j" ra "Hocj" ở Safari trang bận 3/6 lượt. Ở lượt sai có ghi vị trí, lúc j đọc chữ cho D20 Safari trả vị trí hơn vị trí Dấu theo dõi 1 (⌫ chưa áp), rồi lần đọc không cho chữ dùng được. Bản thử sửa nốt (18/11/2026, chưa gộp vào `main`): ở Safari, Dấu tự xoá khi Safari trả đúng vị trí Dấu theo dõi và hai ký tự trước con trỏ là chữ chính Dấu gõ. Safari bỏ qua `insertText` với chuỗi rỗng (bản đầu: "không" ⌫ g ra "khôngg" 4/4 lượt), nên thao tác xoá thay hai ký tự bằng ký tự đầu. ⌫ của D32 (dời dấu) thay phần chữ cần đổi mà không kèm lại chữ cuối. Số đo: [`docs/Compatibility.md`](../Compatibility.md) mục 5.1, ý "Sửa ⌫".
+⌫ giữ đi thẳng (D32: lệnh xoá của chính app bỏ chữ cuối) ở mọi app. Lý do: Chromium tự chạy lệnh xoá cho ⌫ dù bộ gõ đã nhận phím, kể cả khi `insertText` có vùng thay (gửi ngay, không phải "chữ chờ chèn"), còn Safari thì không; nên tự xoá cho mọi app sẽ xoá hai lần ở Chromium.
+
+Bản thử tự xoá riêng cho Safari (18/11/2026) không gộp vì không xử lý riêng theo app. Trong bản thử đó, Safari bỏ qua `insertText` với chuỗi rỗng ("không" ⌫ g ra "khôngg" 4/4 lượt), nên thao tác xoá phải thay hai ký tự cuối bằng ký tự đầu.
+
+Giới hạn còn lại: ở Safari khi trang bận, ⌫ có thể chờ trong hàng và bị lời gọi kế vượt, nên ⌫ rồi phím dấu ngay sau có thể mất dấu ("Hoc ⌫j" ra "Hocj", 1/3 lượt ở nhịp người gõ nhanh, 22/11/2026). Ở lượt đo 18/11 có ghi vị trí, lúc j đọc chữ cho D20 Safari trả vị trí hơn vị trí Dấu theo dõi 1 (⌫ chưa áp), rồi lần đọc không cho chữ dùng được, nên j bắt đầu từ mới. Chữ không bị xáo, nhưng D20 không áp: đây là lỗi của Dấu. Telex của Apple không dùng để so, vì nó không có D20 nên luôn ra "Hocj", kể cả khi trang rảnh. Ghi ở [`docs/Compatibility.md`](../Compatibility.md) mục 6.9.
+
+Các cách sửa đã xét, chưa cách nào áp được cho mọi app:
+
+- Dấu tự xoá ⌫ ở mọi app: ứng dụng Chromium vẫn chạy lệnh xoá của nó sau `insertText` có vùng thay (vùng thay được gửi trang ngay, nên không phải "chữ chờ chèn" khiến Chromium bỏ phím gốc), nên xoá hai lần.
+- Dấu tự xoá ⌫ chỉ ở Safari (bản thử 18/11): cần nhận ra app, trái N3 (không có ngoại lệ theo app).
+- Coi lần đọc của D20 thấy ⌫ chưa áp là app chậm và thay ở vị trí Dấu theo dõi: ở Chromium, ⌫ được áp trước lần thay nên đúng; ở WebKit, ⌫ đang chờ được áp sau lần thay, xoá ký tự cuối của vùng vừa thay ("Họ "). Hai app cần hai vùng thay khác nhau cho cùng một câu trả lời, nên bộ gõ không chọn được nếu không biết app.
 
 ## 6. Cách dựng lại thí nghiệm
 

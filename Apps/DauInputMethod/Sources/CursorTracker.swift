@@ -8,7 +8,7 @@ import Foundation
 /// (D11: a position different from the predicted one).
 ///
 /// It also follows the cursor across word boundaries (`known`), with the edits this
-/// composer made or let through (`edits`), so an app that answers from before its latest
+/// composer made or let through (⌫; `edits`), so an app that answers from before its latest
 /// edits (Chrome with a busy page, M6: the page applies keys late, `selectedRange` and
 /// `attributedSubstring` answer from the text as it was) can be told from an app whose
 /// text really changed: the text the app gives, plus the edits it has not applied yet,
@@ -73,7 +73,7 @@ struct CursorTracker: Equatable {
     /// The app answered at `known`: it has every edit so far.
     mutating func answeredOnTime() { sinceOnTime = 0 }
 
-    /// One edit of the document made by this composer or by a key it let through.
+    /// One edit of the document made by this composer or by a key it let through (⌫).
     struct Edit: Equatable {
         /// The cursor before the edit.
         var cursor: Int
@@ -84,7 +84,7 @@ struct CursorTracker: Equatable {
         var deletedText: [UInt16]?
         var inserted: [UInt16]
         /// Inserted at the app's caret without a range (`insertText` with NSNotFound: a
-        /// key let through, or this composer's insertion at the cursor). Chromium writes
+        /// character typed by this composer, or its insertion at the cursor). Chromium writes
         /// such text into the cache it answers from at once (`rebuild`).
         var atCaret = false
     }
@@ -122,7 +122,7 @@ struct CursorTracker: Equatable {
     /// The input method replaced `range` with `text`, the cursor being at the end of
     /// `range` (or `cursor`, when the range ends before it: keys the app applies after).
     /// `atCaret`: the text was in fact inserted at the app's caret without a range (a
-    /// key let through at a position read from the app, D20).
+    /// character typed at the caret at a position read from the app, D20).
     ///
     /// Positions this tracker keeps stay in 0...`ClientRange.limit`: a range or cursor
     /// outside it (D18: a client that answered anything) forgets the position instead.
@@ -148,8 +148,9 @@ struct CursorTracker: Equatable {
         if let k = known { record(cursor: k, location: k, deleted: 0, inserted: Array(text.utf16), atCaret: true) }
     }
 
-    /// The key went to the app unchanged and the app inserts `text`.
-    mutating func passedThrough(_ text: String) {
+    /// The input method typed a character the engine left unchanged, at the caret
+    /// without asking where it is (`InPlaceComposer.typeCharacter`, N3).
+    mutating func typedAtCaret(_ text: String) {
         didInsertAtCursor(text)
     }
 

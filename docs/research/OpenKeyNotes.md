@@ -20,10 +20,10 @@ Tài liệu tham khảo cho engine (M1 (Engine) trở đi): OpenKey làm gì, �
 | Telex đơn giản | Simple Telex 1 có w → qu | không có w → qu (D29 (Telex đơn giản), D23 (w → qu chỉ ở VNI)) |
 | "Đặt dấu tự do" | biến `vFreeMark` nghĩa là "không dời dấu", và bị ghi đè 0 khi khởi động (B18) | gõ phím dấu thanh ở đâu cũng được, dấu tự dời (D28 (Đặt dấu tự do)) |
 | Kiểm tra chính tả | có công tắc | luôn chạy (D30 (Kiểm tra chính tả)) |
-| Từ dài | bộ đệm 32 phần tử, dịch trái (B15) | quá 7 chữ cái thì khôi phục ngay, phím sau đi thẳng (D33 (Độ dài từ)) |
+| Từ dài | bộ đệm 32 phần tử, dịch trái (B15) | quá 7 chữ cái thì khôi phục ngay, phím sau engine để nguyên (bộ gõ tự chèn ký tự, N3; D33 (Độ dài từ)) |
 | Backspace | bỏ một chữ hiển thị và một phím gốc, hai bộ đệm có thể lệch; có lịch sử từ qua dấu cách (B12) | bỏ chữ cuối, mốc khôi phục là chữ đang hiển thị (D32 (Backspace)); không có lịch sử từ |
 | Thêm dấu cho từ đã gõ | không có | có, cho cả phím dấu thanh và phím biến đổi (D20 (Thêm dấu cho từ đã gõ)) |
-| VNI | 7 sau "a", 8 sau "o"/"u" làm bộ đệm lệch màn hình (B13) | chữ số không áp được thì đi thẳng; chữ số sau âm tiết hợp lệ thành dấu (D36 (VNI: chữ số thành dấu)) |
+| VNI | 7 sau "a", 8 sau "o"/"u" làm bộ đệm lệch màn hình (B13) | chữ số không áp được thì engine để nguyên chữ số (bộ gõ tự chèn, N3); chữ số sau âm tiết hợp lệ thành dấu (D36 (VNI: chữ số thành dấu)) |
 | Chữ hoa | một số luật so cả cờ hoa nên chữ hoa ra khác chữ thường (B4, B14) | phím biến đổi không đổi kiểu hoa (D34 (Chữ hoa với phím biến đổi)) |
 
 - Ca thử cho từng điểm khác, kèm tên test: mục 5. Lỗi và điểm lạ của OpenKey để Dấu tránh: mục 3 (B1–B19; mã engine của Dấu dẫn theo các mã này).

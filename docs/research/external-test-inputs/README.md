@@ -54,7 +54,7 @@ Ca khác, theo lớp:
 | D31, nới cho địa danh | 33 | k đứng trước mọi nguyên âm ("kò", "ká", "Kẩ", "kô" hợp lệ); âm cuối k chỉ sau ă và phải có sắc/nặng, nên "Busk", "Ddawk" được khôi phục |
 | D4, tiếng Việt thắng | 21 | từ vừa là tiếng Anh vừa là âm tiết hợp lệ ra chữ Việt (sims → sím, per → pẻ, wrong → ưởng) |
 | D32 (Backspace) | 20 | ⌫ xoá chữ cuối đang hiển thị và đặt lại dấu ("tiế" ⌫ → "tí"; "thật" ⌫⌫ → "th"); nguồn khác xoá theo phím ("thật" ⌫⌫ → "thạ") |
-| D30 | 19 | từ đã sai chính tả thì phím sau đi thẳng như chữ cái, không biến đổi và không bị nuốt |
+| D30 | 19 | từ đã sai chính tả thì engine để nguyên phím sau như chữ cái, không biến đổi và không bị nuốt |
 | D30, D20, không tự thêm dấu phụ | 15 | không tự thêm mũ hay móc người gõ chưa gõ ("thuocs" giữa từ hiện "thuóc", kết thúc từ khôi phục; uvie-rs ra "thuốc") |
 | D26, giới hạn đã biết | 13 | từ tiếng Anh có chữ lặp trùng phím dấu thanh hay phím biến đổi mất cả dấu lẫn chữ ("worry" → "ưory", "express" → "êps", "versus" → "veus") |
 | D4, chỉ khôi phục khi kết thúc từ | 10 | giữa từ Dấu còn hiện chữ đã biến đổi; uvie-rs bỏ biến đổi ngay khi vần sai; kết thúc từ hai bên ra cùng chữ |
@@ -121,7 +121,7 @@ Chín câu hỏi lớp E của lần xét đầu (mã E1–E9) và hai câu củ
 - D26: từ tiếng Anh mất hơn một chữ do mốc khôi phục sau gõ đúp là giới hạn đã biết (E4).
 - D40: z khi từ chưa có dấu thanh là chữ (E6).
 - D20: chữ cái gõ sát chữ có sẵn cũng đọc từ trước con trỏ, chỉ nối khi từ ghép còn là tiền tố hợp lệ (E8; `⟦q⟧uer⏎` nay ra "quẻ⏎"), cùng ba ngoại lệ (mục 3.4).
-- D33 (Độ dài từ): xoá hết một từ dài quá 7 chữ bằng ⌫ thì hết trạng thái đi thẳng (E9; `permission` + 10 ⌫ + `vieetj` nay ra "việt").
+- D33 (Độ dài từ): xoá hết một từ dài quá 7 chữ bằng ⌫ thì hết trạng thái engine để nguyên phím (E9; `permission` + 10 ⌫ + `vieetj` nay ra "việt").
 
 ## 3. Cách làm
 

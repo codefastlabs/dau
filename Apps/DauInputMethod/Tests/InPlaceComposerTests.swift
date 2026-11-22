@@ -314,14 +314,15 @@ struct InPlaceComposerTests {
 
     // MARK: D20 examples (Decisions.md)
 
-    @Test("D20: viet + j → vietj (not a valid syllable: the key goes straight)")
+    @Test("D20: viet + j → vietj (not a valid syllable: the key goes in as typed)")
     func vietJ() {
         var s = Session("viet")
         s.type("j")
         #expect(s.doc.text == "vietj")
         // D20 (c): "vietj" is not a prefix, so the j starts a new word (same text).
         #expect(s.kinds == [.seedNone])
-        #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 4))])
+        // The key is typed at the caret by the input method (N3).
+        #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 4)), .insert("j", nil)])
     }
 
     @Test("D20: viet + e + j → việt")
@@ -441,7 +442,7 @@ struct InPlaceComposerTests {
         var s = Session("hoc", settings: settings)
         s.type("j")
         #expect(s.doc.text == "hocj")
-        #expect(s.doc.calls.isEmpty)
+        #expect(s.doc.calls == [.insert("j", nil)])
     }
 
     @Test("D15: on by default")
@@ -489,11 +490,11 @@ struct InPlaceComposerTests {
     func startOfDocument() {
         var s = Session()
         s.type("a")
-        #expect(s.doc.calls == [.selectedRange])
+        #expect(s.doc.calls == [.selectedRange, .insert("a", nil)])
         #expect(s.kinds == [.seedNone])
     }
 
-    @Test("a word longer than the read is not Vietnamese: the key and the rest pass (D20 b)")
+    @Test("a word longer than the read is not Vietnamese: the key and the rest go in as typed (D20 b)")
     func longWord() {
         var s = Session("abcdefghijklmnopqrstu")
         s.type("s")
@@ -510,7 +511,7 @@ struct InPlaceComposerTests {
         var s = Session("hoc")
         s.doc.selectionLength = 3
         s.type("j")
-        #expect(s.doc.calls == [.selectedRange])
+        #expect(s.doc.calls == [.selectedRange, .insert("j", nil)])
         #expect(s.kinds == [.seedNone])
     }
 
@@ -522,17 +523,18 @@ struct InPlaceComposerTests {
         s.doc.noAccess = true
         s.type("j")
         #expect(s.doc.text == "hocj")
-        #expect(s.doc.calls == [.selectedRange])
+        // Each key is typed at the caret (N3); only the reads stop.
+        #expect(s.doc.calls == [.selectedRange, .insert("j", nil)])
         s.type("←s")
-        #expect(s.doc.calls == [.selectedRange, .selectedRange])
+        #expect(s.doc.calls == [.selectedRange, .insert("j", nil), .selectedRange, .insert("s", nil)])
         s.type("←s")
-        #expect(s.doc.calls.count == 2)
+        #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 2)
         s.composer.activate()
         s.type("←s")
-        #expect(s.doc.calls.count == 3)
+        #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 3)
     }
 
-    @Test("D18, D20: nil text → no seed, key passes; after two in a row, no read again until activation")
+    @Test("D18, D20: nil text → no seed, key typed as it is; after two in a row, no read again until activation")
     func nilText() {
         var s = Session("hoc")
         s.doc.noText = true
@@ -801,12 +803,12 @@ struct InPlaceComposerLetterTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("a letter that does not join sends nothing beyond the read: the app types it")
+    @Test("a letter that does not join makes nothing beyond the read but typing it at the caret")
     func rejectedLetterCalls() {
         var s = Self.telex("tôi")
         s.type("l")
-        #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 3))])
-        #expect(s.consumed == [false])
+        #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 3)), .insert("l", nil)])
+        #expect(s.consumed == [true])
         #expect(s.doc.text == "tôil")
         // The new word is tracked from the letter alone: the next mark key does not read.
         s.type("af")
@@ -882,9 +884,11 @@ struct InPlaceComposerLetterTests {
         let before = s.doc.calls.count
         s.type("b")             // unknown again: reads "xin", "xinb" is not a prefix
         #expect(s.reads == 1)
-        s.type("cn")            // mid-word: no more calls
+        s.type("cn")            // mid-word: no more reads
         #expect(s.reads == 1)
-        #expect(s.doc.calls.count == before + 2)   // selectedRange + read of that key only
+        // selectedRange + read of that key only, then each letter typed at the caret (N3).
+        #expect(s.doc.calls.count == before + 2 + 3)
+        #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 2)
         #expect(s.doc.text == "xinbcn")
     }
 
@@ -894,7 +898,7 @@ struct InPlaceComposerLetterTests {
         s.type("hoc ")
         let before = s.doc.calls.count
         s.type("q")
-        #expect(s.doc.calls.count == before)
+        #expect(Array(s.doc.calls[before...]) == [.insert("q", nil)])
     }
 
     @Test("D20 off: a letter reads nothing")
@@ -948,7 +952,7 @@ struct InPlaceComposerLetterTests {
         var s = Session("q")
         s.doc.selectionLength = 1
         s.type("u")
-        #expect(s.doc.calls == [.selectedRange])
+        #expect(s.doc.calls == [.selectedRange, .insert("u", nil)])
         #expect(s.kinds == [.seedNone])
     }
 
@@ -1023,8 +1027,9 @@ struct InPlaceComposerExceptionTests {
         return Session(text, settings: settings)
     }
 
-    private static func inserts(_ s: Session) -> Int {
-        s.doc.calls.filter { if case .insert = $0 { true } else { false } }.count
+    /// `insertText` calls with a replacement range (text rewritten, not typed at the caret).
+    private static func rewrites(_ s: Session) -> Int {
+        s.doc.calls.filter { if case .insert(_, let range) = $0 { range != nil } else { false } }.count
     }
 
     // MARK: (a) upper case after lower case
@@ -1105,7 +1110,7 @@ struct InPlaceComposerExceptionTests {
         s.type(keys)
         #expect(s.doc.text == expected)
         #expect(s.kinds.first == .seedPass)
-        #expect(Self.inserts(s) == 0)       // every key went to the app as typed
+        #expect(Self.rewrites(s) == 0)      // every key typed at the caret as it is (N3)
         #expect(s.reads == 1)               // no D11 re-read of a word just read
         #expect(s.overCalls == 0)
     }

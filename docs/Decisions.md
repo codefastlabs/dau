@@ -76,10 +76,13 @@ Tiến trình bộ gõ không có quyền mạng. Mọi kết nối nằm ở ap
 Tối thiểu lời gọi vào ứng dụng đích khi đang gõ.
 
 - Mỗi phím tối đa một lần gọi `insertText`.
-- Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc; trừ chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)). Phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
+- Ở mọi app, ký tự mà engine để nguyên (chữ, số, dấu câu, dấu cách, phím không kèm ⌘, ⌃, ⌥) do Dấu chèn bằng `insertText` tại con trỏ (`NSNotFound`), không để phím đi thẳng: mọi thao tác chữ tới app qua cùng một đường. Phím đi thẳng chỉ còn ⌫ (D32 (Backspace)), Return, Tab, Esc, mũi tên, phím chức năng và phím có ⌘, ⌃, ⌥. Không có ngoại lệ theo app (D5 (Quy tắc theo ứng dụng)).
+- Hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc; trừ chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)). Phím Dấu tự chèn và phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
 - Đọc chữ trước con trỏ chỉ ở các trường hợp một quyết định cho phép, mỗi trường hợp một lần đọc: lệch vị trí và từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)), phím đầu khi chưa biết chữ trước con trỏ (D20).
 
 **Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Chỉ cộng dồn từ một vị trí gốc thì không biết lúc app tự sửa chữ hay con trỏ đi chỗ khác, và VS Code đổi gốc toạ độ. Vị trí Dấu tự theo dõi chỉ dùng khi chữ đọc được chứng minh app trả lời chậm (D11, ý "App trả lời chậm").
+
+**Vì sao Dấu tự chèn ký tự:** Safari (WebKit) giữ phím bộ gõ để đi thẳng trong một hàng riêng, chỉ gửi trang phím sau khi trang xử lý xong phím trước, còn mọi lời gọi của bộ gõ tới trang ngay (đọc mã WebKit). Khi trang bận hay phím dồn, lần thay chữ của Dấu tới trang trước các phím đang chờ và chữ bị xáo (Safari 27.2 trang bận, nhịp người gõ nhanh, sai 3/3 lượt; 18/11/2026). Mọi lời gọi của bộ gõ đi cùng một đường theo đúng thứ tự gọi, nên khi mọi ký tự đều do bộ gõ gửi thì thứ tự đúng ở mọi app mà không cần biết app là gì. IMK không có API nào khác giữ được thứ tự này. ⌫ vẫn đi thẳng: ứng dụng Chromium tự chạy lệnh xoá cho ⌫ dù bộ gõ đã nhận phím (D32), còn Safari thì không, nên tự xoá cho mọi app sẽ xoá hai lần ở Chromium.
 
 **Xem thêm:** bảng phím nào hỏi gì ở [`docs/Architecture.md`](Architecture.md) mục "Vị trí thay chữ"; chi phí đo được của `selectedRange` ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục "Vị trí thay chữ".
 
@@ -251,6 +254,7 @@ Engine tự viết bằng Swift thuần (struct, hàm thuần, không Foundation
 - Từ đã hết hợp lệ: ⌘A trong thanh địa chỉ Chrome là phím tắt menu, không tới bộ gõ; "tốt", ⌘A, "toots" từng ra "toots" và hỏng tới dấu cách.
 - App trả lời chậm: Chrome khi trang bận trả vị trí và chữ từ bộ đệm của trình duyệt, thường thiếu phím vừa gõ. Thay theo vị trí đó thì sai, thay theo vị trí Dấu tự theo dõi thì đúng; Telex của Apple khi trang bận ra cùng chữ như khi trang rảnh (trang rảnh 1/1; trang bận 2 ô hợp lệ trên 3, ô còn lại ra nguyên chuỗi phím nên là đo hỏng).
 - Vùng thay kết thúc ở vị trí Dấu theo dõi: theo mã nguồn, VS Code (EditContext) và Firefox đưa con trỏ về cuối vùng vừa thay, nên vùng kết thúc trước con trỏ làm phím sau rơi vào giữa từ. Log VS Code ngày 10/11/2026 khớp mô hình giữ con trỏ sau chữ hơn; luật này đúng với cả hai mô hình.
+- Phép chứng minh app chậm coi app áp mọi thao tác theo thứ tự Dấu gửi. Điều đó đúng với Chromium và Firefox theo mã nguồn. Ở Safari, nó chỉ đúng khi mọi ký tự đều do Dấu chèn (N3 (Ít lời gọi vào ứng dụng đích), ý "Vì sao Dấu tự chèn ký tự"), vì WebKit cho lời gọi của bộ gõ vượt các phím đi thẳng đang chờ.
 - Đầu văn bản: ở từ đầu tiên của tài liệu mới trong VS Code, "Chieeuf" từng ra "êhieuf" khi VS Code chưa báo phím nào của loạt phím dồn.
 
 **Xem thêm:** cơ chế và giới hạn ở [`docs/Architecture.md`](Architecture.md) mục "App trả lời chậm"; số lượt đo ở [`docs/history/DecisionsLog.md`](history/DecisionsLog.md) mục D11.
@@ -269,6 +273,7 @@ Không bật `.latencyCritical` hay `beginActivity` mặc định. Chỉ thêm k
 - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được, người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
 - Nhãn "Đề xuất" trong danh sách tương thích chỉ gắn cho app mà số đo cho thấy thay tại chỗ còn sai ở tốc độ gõ thật; sửa được ở app nào thì bỏ nhãn của app đó. Không gắn nhãn theo công nghệ giao diện khi chưa đo.
 - Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, không là tiêu chí.
+- Ở chế độ gạch chân, ký tự chốt chữ (dấu cách, dấu câu) được gửi cùng chữ chốt trong một `insertText`, không đi thẳng (cùng lý do với N3 (Ít lời gọi vào ứng dụng đích)): Safari khi phím dồn từng dời dấu cách sang sau chữ kế.
 - Ghostty và Terminal của macOS là các app có nhãn.
 
 **Vì sao:**

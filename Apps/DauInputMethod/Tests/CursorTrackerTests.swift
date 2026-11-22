@@ -36,15 +36,15 @@ struct CursorTrackerTests {
     func followsTheWord() {
         // Document "x " then the word starts at 2.
         var t = CursorTracker()
-        t.passedThrough("t") // nothing known yet
-        t.passedThrough("o")
+        t.typedAtCaret("t") // nothing known yet
+        t.typedAtCaret("o")
         #expect(t.expected == nil)
         guard case .replace(let r) = t.plan(selection: at(4), deleteCount: 1) else {
             Issue.record("expected a replacement"); return
         }
         t.didReplace(r, text: "ô")
         #expect(t.expected == 4)
-        t.passedThrough("i")
+        t.typedAtCaret("i")
         #expect(t.expected == 5)
         #expect(t.plan(selection: at(5), deleteCount: 2) == .replace(at(3, 2)))
     }
@@ -99,14 +99,14 @@ struct CursorTrackerTests {
     func knownAcrossWords() {
         var t = CursorTracker()
         t.anchor(at: 0)
-        t.passedThrough("b"); t.passedThrough("a")
+        t.typedAtCaret("b"); t.typedAtCaret("a")
         t.didReplace(at(1, 1), text: "á")
-        t.passedThrough(" ")
+        t.typedAtCaret(" ")
         t.endWord()
         #expect(t.expected == nil)
         #expect(t.known == 3)
         #expect(t.tail == Array("bá ".utf16))
-        t.passedThrough("n")
+        t.typedAtCaret("n")
         #expect(t.known == 4)
         #expect(t.edits.last == CursorTracker.Edit(cursor: 3, location: 3, deleted: 0, deletedText: [], inserted: Array("n".utf16),
                                                    atCaret: true))
@@ -116,7 +116,7 @@ struct CursorTrackerTests {
     func rebuildOneLate() {
         var t = CursorTracker()
         t.anchor(at: 4)
-        for c in ["b", "a", "n"] { t.passedThrough(c) }
+        for c in ["b", "a", "n"] { t.typedAtCaret(c) }
         // The app answers 6 with "xx, ba" while "ban" is typed (known 7).
         let snapshot = Array("xx, ba".utf16)
         #expect(t.rebuild(snapshot, at: at(6), accept: { _ in true }) == Array("xx, ban".utf16))
@@ -132,7 +132,7 @@ struct CursorTrackerTests {
     func rebuildChecksRemovedText() {
         var t = CursorTracker()
         t.anchor(at: 0)
-        for c in ["H", "o", "c", " "] { t.passedThrough(c) }
+        for c in ["H", "o", "c", " "] { t.typedAtCaret(c) }
         t.backspaceOutsideWord()
         #expect(t.known == 3)
         // Answer from before the ⌫: "Hoc " at 4.
@@ -148,12 +148,12 @@ struct CursorTrackerTests {
         t.backspaceOutsideWord()          // nothing typed here: unknown
         #expect(t.known == nil)
         t.anchor(at: 5)
-        t.passedThrough(" ")
+        t.typedAtCaret(" ")
         t.backspaceOutsideWord()
         #expect(t.known == 5)
         #expect(t.edits.last?.deletedText == Array(" ".utf16))
         // A combining mark could join the character before it: unknown.
-        t.passedThrough("\u{0301}")
+        t.typedAtCaret("\u{0301}")
         t.backspaceOutsideWord()
         #expect(t.known == nil)
     }
@@ -162,7 +162,7 @@ struct CursorTrackerTests {
     func reanchor() {
         var t = CursorTracker()
         t.anchor(at: 10)
-        t.passedThrough("a")
+        t.typedAtCaret("a")
         t.didReplace(at(20, 1), text: "á")
         #expect(t.known == 21)
         #expect(t.edits.count == 1)

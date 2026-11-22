@@ -21,13 +21,18 @@ protocol MarkedTextClient {
 /// Calls per key (at most one, N3):
 /// - letter or digit inside a word, Backspace inside a word: one `setMarkedText`;
 /// - word-ending character after a word: one `insertText` (the word, restored if D4 says
-///   so, plus the character), key consumed;
+///   so, plus the character), key consumed; the character never goes to the app on its
+///   own (D13: Safari with keys in a burst moved such a space after the next word);
+/// - any other character with no word shown (punctuation, a space between words, the
+///   rest of a word past `maxMarkedLength`): one `insertText` of it at the caret, key
+///   consumed (N3);
 /// - Return, Tab, keypad Enter after a word: one `insertText` (the word), then the key
 ///   goes to the app (a chat app still sends on Return);
 /// - reset keys (arrows, Esc, ⌘/⌃/⌥ combos) and reset events (click, deactivate, source,
 ///   client or settings change, `commitComposition`) with a word: one `insertText` of
 ///   what is shown, never dropped; the key then goes to the app;
-/// - any key with no word: no call, the key goes to the app.
+/// - Backspace, Return, Tab, keypad Enter, reset keys with no word: no call, the key goes
+///   to the app.
 ///
 /// `text` mirrors what the engine believes is on screen for the word (its `screen`), so
 /// every engine `Action` applies to it exactly as it would to the document in place
@@ -117,16 +122,16 @@ struct MarkedComposer {
     private mutating func character(_ scalar: Unicode.Scalar, engine: inout VietEngine,
                                     client: some MarkedTextClient) -> Outcome {
         if detached {
-            // D33: the rest of an over-long word passes through until the word ends.
+            // D33: the rest of an over-long word goes in as typed until the word ends.
             let action = engine.handle(scalar)
             if !engine.isComposing { detached = false }
             if case .replace = action {
                 // The engine never replaces in overflow; if it ever did, the text it
-                // would edit was committed already: start over and let the key through.
+                // would edit was committed already: start over, the key as typed.
                 engine.reset()
                 detached = false
             }
-            return Outcome(consumed: false, call: .none)
+            return typeCharacter(scalar, client: client)
         }
 
         let action = engine.handle(scalar)
@@ -135,8 +140,9 @@ struct MarkedComposer {
             if engine.isComposing {
                 text.append(scalar)
             } else if text.isEmpty {
-                // Not in a word (punctuation, space between words): the app types it.
-                return Outcome(consumed: false, call: .none)
+                // Not in a word (punctuation, space between words): typed at the caret
+                // by the input method, as every character (N3).
+                return typeCharacter(scalar, client: client)
             } else {
                 // The word ended with nothing to restore: commit it with the key, one call.
                 text.append(scalar)
@@ -144,10 +150,11 @@ struct MarkedComposer {
         case .replace(let deleteCount, let insert):
             if !apply(deleteCount: deleteCount, insert: insert) {
                 // The engine wants to edit text that is not marked (cannot happen while
-                // `text` mirrors the engine's screen). Keep what is shown, let the key
-                // go to the app as typed.
+                // `text` mirrors the engine's screen). Keep what is shown and add the key
+                // as typed, in one call (D13: the character goes with the word).
+                text.append(scalar)
                 let call = commit(engine: &engine, client: client)
-                return Outcome(consumed: false, call: call)
+                return Outcome(consumed: call == .insertText, call: call)
             }
         }
 
@@ -204,6 +211,14 @@ struct MarkedComposer {
     }
 
     // MARK: - Helpers
+
+    /// A character outside any marked word (none shown, or the rest of an over-long word,
+    /// D33): one `insertText` of it at the caret, key consumed (N3, "Vì sao Dấu tự chèn
+    /// ký tự").
+    private func typeCharacter(_ scalar: Unicode.Scalar, client: some MarkedTextClient) -> Outcome {
+        client.insertText(String(Character(scalar)), replacementRange: Self.notFound)
+        return Outcome(consumed: true, call: .insertText)
+    }
 
     /// Applies an engine replacement to the marked text. False if it would delete more
     /// than is marked (text left unchanged).

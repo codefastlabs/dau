@@ -13,6 +13,8 @@ Phiên bản đã đọc:
 
 ## Hiện trạng (17/11/2026)
 
+**Đổi từ 22/11/2026:** các số đo dưới đây là của bản Dấu trước khi Dấu tự chèn ký tự (N3): khi đó ký tự engine để nguyên đi thẳng tới app và AppKit tự chèn. Nay Dấu tự chèn mọi ký tự đó bằng `insertText`; chỉ ⌫, Return, Tab, Esc, mũi tên và phím có ⌘, ⌃, ⌥ còn đi thẳng. Giả thuyết H1' (mục 4.2) có thể bị ảnh hưởng, vì không còn chữ nào do AppKit chèn ngoài `handle`; chưa đo lại, WebStorm không có trên máy đo ngày 22/11/2026. Chữ "phím đi thẳng" trong file này, trừ chỗ nói khác, có nghĩa phím đó khi ấy do app xử lý.
+
 Đã đo (một lượt mỗi ô, mục 4):
 
 - **Trình soạn thảo, Dấu thay tại chỗ: chữ tiếng Việt đúng, nhưng mất khôi phục từ nước ngoài (D4 (Từ nước ngoài)).** Chuỗi `windows carr tooi yeeu tieengs Vieetj, Sunrise ` ra "ưindows car tôi yêu tiếng Việt, Sủnise".
@@ -236,7 +238,7 @@ Chuỗi phím `windows carr tooi yeeu tieengs Vieetj, Sunrise `, đáp án "wind
 
 Log theo phím của ô trình soạn thảo (`webstorm.perf.log` do `--save` ghi), 47 dòng phím cho 47 phím của chuỗi (khớp từng phím):
 
-- **Phím ngay sau một phím đi thẳng** (`pass` hay `seed_pass`, Dấu để app tự chèn chữ) luôn gặp engine rỗng và chưa biết chữ trước con trỏ. Phím đó đi đường đọc của D20 (`seed_none`, `seed_pass`, `seed`), kể cả chữ cái đầu mỗi từ sau dấu cách, nơi lẽ ra không cần đọc.
+- **Phím ngay sau một phím đi thẳng** (bản trước 22/11/2026; `pass` hay `seed_pass`, Dấu để app tự chèn chữ, nay Dấu tự chèn) luôn gặp engine rỗng và chưa biết chữ trước con trỏ. Phím đó đi đường đọc của D20 (`seed_none`, `seed_pass`, `seed`), kể cả chữ cái đầu mỗi từ sau dấu cách, nơi lẽ ra không cần đọc.
 - **Phím ngay sau một phím Dấu tự gửi chữ** (`seed`, `replace`, hay `seed_none` có `insertText`) luôn còn từ trong engine (`d20=none`, `diff=1`). Ví dụ: "o" thứ hai của `tooi` thay thành "ô", rồi "i" đi thẳng không đọc; hai chữ "r" của `carr` liền nhau, nên D26 (Gõ đúp phím dấu) ra "car" đúng.
 - Không có dòng `activate` nào trong lúc gõ (một dòng trước phím đầu). Không có `client-changed`, `source-changed-reset`, phím `reset` hay `commit` do chuột.
 
@@ -245,7 +247,7 @@ Giả thuyết và dự đoán của từng giả thuyết:
 | Giả thuyết | Dự đoán | Khớp log? |
 |---|---|---|
 | H1. `markedTextAbandoned:` ở cuối **mọi** `insertText` của JBR (mục 1.2) tới Dấu thành `commitComposition`, engine reset | Reset sau cả phím đi thẳng lẫn phím Dấu tự gửi chữ | Không: phím sau phím Dấu tự gửi chữ còn từ |
-| H1'. Như H1, nhưng chỉ lời gọi đến khi Dấu không còn trong `handle` mới có tác dụng: chữ AppKit tự chèn cho phím đi thẳng. Lời gọi sinh ra từ chính `insertText` của Dấu, trong lúc IMK chờ Dấu trả lời, không tới hoặc bị bỏ | Reset sau mọi phím đi thẳng, không bao giờ sau phím Dấu tự gửi chữ | Khớp mọi dòng. Phần "chỉ khi không trong `handle`" chưa có nguồn |
+| H1'. Như H1, nhưng chỉ lời gọi đến khi Dấu không còn trong `handle` mới có tác dụng: chữ AppKit tự chèn cho phím đi thẳng (hành vi trước 22/11/2026; nay Dấu tự chèn các ký tự đó, nên H1' có thể không còn áp dụng, chưa đo). Lời gọi sinh ra từ chính `insertText` của Dấu, trong lúc IMK chờ Dấu trả lời, không tới hoặc bị bỏ | Reset sau mọi phím đi thẳng, không bao giờ sau phím Dấu tự gửi chữ | Khớp mọi dòng. Phần "chỉ khi không trong `handle`" chưa có nguồn |
 | H2. IntelliJ gọi `InputContext.endComposition` khi tài liệu hay con trỏ đổi; JBR chuyển thành `abandonInput:` trên luồng chính (`nativeEndComposition`, không chờ) | Reset sau mọi phím làm đổi chữ, gồm cả phím Dấu tự gửi chữ | Không |
 | H3. Nguồn reset riêng của Dấu: kích hoạt lại, đổi client, chuột, đổi nguồn đầu vào, phím đến lúc đang bận (D18) | Có dòng `activate`, `client-changed`, `reset`, `source-changed-reset`, hoặc thiếu dòng phím | Không: không có dòng nào như vậy, đủ 47 dòng |
 | H4. macOS reset bộ gõ sau mọi phím đi thẳng, ở mọi app | Mất khôi phục D4 ở mọi app | Không: cùng chuỗi phím ra đúng "windows … Sunrise" trong TextEdit ngày 03/11/2026 ([`docs/history/LogM5.md`](../history/LogM5.md)) |

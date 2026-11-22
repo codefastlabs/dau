@@ -15,7 +15,14 @@ protocol InPlaceClient {
 /// one `insertText(_:replacementRange:)` per key, at the position `selectedRange` gives.
 ///
 /// Calls per key (N3):
-/// - key that passes through: none;
+/// - character the engine leaves as typed (letter, digit, punctuation, space; D4, D20,
+///   D30, D33 and the D11 fallbacks included): one `insertText` of that character at the
+///   caret (replacementRange NSNotFound), no `selectedRange`, key consumed
+///   (`typeCharacter`). Every edit of the text then reaches the app through the input
+///   method's own calls, in the order they are made (N3, "Vì sao Dấu tự chèn ký tự":
+///   WebKit holds keys an input method lets through in a queue that its calls overtake);
+/// - Backspace (D32), Return, Tab, keypad Enter, and keys routed `.ignore` (arrows, Esc,
+///   ⌘/⌃/⌥ combos, function keys, dead keys): still left to the app (N3);
 /// - key whose result only appends at the cursor: one `insertText` (replacementRange
 ///   NSNotFound), no `selectedRange`;
 /// - key that replaces text before the cursor: one `selectedRange`, one `insertText`;
@@ -37,6 +44,13 @@ struct InPlaceComposer {
     /// D20 on (`DauSettings.addMarksToTypedWords`, D15 default on). Set from the shared
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
+
+    #if DEBUG
+    /// Tests only: leave the characters the engine does not change to the app, as before
+    /// the input method inserted them itself (`typeCharacter`). Shows the old order bug
+    /// in WebKit's key queue (`LateDocument.keyQueue`). Never set in the input method.
+    var passesCharactersThrough = false
+    #endif
 
     /// What the cursor is known to follow while the engine has no word (D20 needs a word
     /// right before the cursor; reading costs two client calls, so it is skipped when
@@ -408,8 +422,9 @@ struct InPlaceComposer {
         let action = engine.handle(scalar)
         switch action {
         case .passThrough:
-            tracker.passedThrough(String(Character(scalar)))
-            result = Outcome()
+            // N3: the character goes in through the input method, at the caret.
+            result = Outcome(consumed: typeCharacter(scalar, client: client))
+            tracker.typedAtCaret(String(Character(scalar)))
         case .replace(let deleteCount, let insert):
             result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client,
                              word: wordBefore)
@@ -436,16 +451,18 @@ struct InPlaceComposer {
             if result.kind == .mismatch || result.kind == .unsupported {
                 // D11: the app's text is not what the engine thinks. Start over from
                 // this key alone, so it still does the most it can on its own.
+                // Nothing was sent for this key yet; the position is forgotten, so the
+                // tracker records nothing for a character typed at the caret (N3).
                 reset(engine: &engine)
                 switch engine.handle(scalar) {
                 case .passThrough:
-                    result.consumed = false
+                    result.consumed = typeCharacter(scalar, client: client)
                 case .replace(0, let insert):
                     insertAtCursor(insert, client: client)
                     result.consumed = true
                 case .replace:
                     reset(engine: &engine)
-                    result.consumed = false
+                    result.consumed = typeCharacter(scalar, client: client)
                 }
             }
         }
@@ -535,14 +552,14 @@ struct InPlaceComposer {
 
     // MARK: - D11: a word that stopped being Vietnamese
 
-    /// The engine's word is no longer a valid prefix (D30), so its keys pass through and
-    /// nothing asks where the cursor is. That is also what a word looks like when the app
-    /// replaced the text without telling the input method (⌘A in Chrome's address bar is
-    /// a menu shortcut the input method never sees; a click it does not report): "tốt",
-    /// ⌘A, "toots" grew "tốttoo…" and stayed "toots". On the first mark key of such a
-    /// word, read the word before the cursor once: if it is not the engine's word, start
-    /// over from the real text (as D20 seeds it) and apply the key. nil: the word is what
-    /// the engine thinks, handle the key as usual.
+    /// The engine's word is no longer a valid prefix (D30), so its keys go in as typed
+    /// (at the caret) and nothing asks where the cursor is. That is also what a word
+    /// looks like when the app replaced the text without telling the input method (⌘A in
+    /// Chrome's address bar is a menu shortcut the input method never sees; a click it
+    /// does not report): "tốt", ⌘A, "toots" grew "tốttoo…" and stayed "toots". On the
+    /// first mark key of such a word, read the word before the cursor once: if it is not
+    /// the engine's word, start over from the real text (as D20 seeds it) and apply the
+    /// key. nil: the word is what the engine thinks, handle the key as usual.
     private mutating func checkLockedWord(_ scalar: Unicode.Scalar, engine: inout VietEngine,
                                           client: some InPlaceClient) -> Outcome? {
         checkedLockedWord = true
@@ -599,9 +616,9 @@ struct InPlaceComposer {
 
     /// Reads the word right before the cursor, seeds the engine with it as displayed
     /// (`VietEngine.seed`), and lets the engine decide (D20): the key either changes the
-    /// word in place (one `insertText`) or goes to the app unchanged. Reads nothing more
-    /// than `readLength` UTF-16 units; any odd answer from the client means no seed and
-    /// the key is handled as the first key of a new word (D18).
+    /// word in place (one `insertText`) or goes in unchanged, typed at the caret. Reads
+    /// nothing more than `readLength` UTF-16 units; any odd answer from the client means
+    /// no seed and the key is handled as the first key of a new word (D18).
     ///
     /// `letter`: the key is a plain letter, not a mark key (D20 plain letter). Whether the key joins the
     /// word read follows D20 and its three exceptions (`SeedRule`), decided from the text
@@ -645,6 +662,12 @@ struct InPlaceComposer {
         var outcome = didRead && read == nil ? nil
             : seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: read,
                        rule: letter ? .letter : .mark)
+        if var failed = outcome, failed.kind == .mismatch || failed.kind == .unsupported {
+            // The seeded word could not be replaced (nothing was sent; the engine and the
+            // position were reset): the key goes in as typed, by the input method (N3).
+            failed.consumed = typeCharacter(scalar, client: client)
+            outcome = failed
+        }
         if outcome == nil {
             // Not seeded (or a key that does not join, D20): the key starts a word as
             // usual (never asks selectedRange again: with an empty engine a key never
@@ -693,8 +716,8 @@ struct InPlaceComposer {
     ///   "học"). "VI" + E, "V" + i still join.
     /// - A letter on a Vietnamese word joins only if the word stays a valid prefix (D20 plain letter):
     ///   "q" + u → "qu", "tôi" + l starts a new word "l".
-    /// - Exception (c): a mark key that is not applied to a Vietnamese word (the key
-    ///   passes through and leaves the word locked or past 7 letters) starts a new word:
+    /// - Exception (c): a mark key that is not applied to a Vietnamese word (the engine
+    ///   leaves the key as typed and the word locked or past 7 letters) starts a new word:
     ///   "anh" + e → "anhe…" as a new "e", "tôi" + d → new "d". A double key (D26) is
     ///   applied: "cả" + r → "car".
     private mutating func seedWord(_ scalar: Unicode.Scalar, selection: NSRange, engine: inout VietEngine,
@@ -737,12 +760,12 @@ struct InPlaceComposer {
         let d20 = rule != .resync
         // The word may go on before what was read: too long to be one the engine tracks.
         if word.count == text.unicodeScalars.count && location > count {
-            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine) : nil
+            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine, client: client) : nil
         }
         // Every scalar the engine accepts is in the BMP, so its scalar counts are UTF-16
         // counts (deleteCount below); anything else is refused by `seed` anyway.
         guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else {
-            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine) : nil
+            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine, client: client) : nil
         }
         keySeededWord = word
         // D20 "Từ hệ thống vừa sửa": the system already made the word what this key
@@ -796,10 +819,12 @@ struct InPlaceComposer {
         #endif
         switch action {
         case .passThrough:
-            // D20 does not apply ("viet" + j → "vietj"): the app types the key. The
-            // engine keeps the word, so the next keys continue it (D4 baseline = seed).
+            // D20 does not apply ("viet" + j → "vietj"): the key goes in as typed, at the
+            // caret (N3). The engine keeps the word, so the next keys continue it (D4
+            // baseline = seed).
+            let consumed = typeCharacter(scalar, client: client)
             tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)), atCaret: true)
-            return Outcome(consumed: false, kind: .seedPass)
+            return Outcome(consumed: consumed, kind: .seedPass)
         case .replace(let deleteCount, let insert):
             guard deleteCount <= word.count else {
                 reset(engine: &engine)
@@ -833,11 +858,11 @@ struct InPlaceComposer {
 
     /// D20 exception (b) for a word `seed` cannot take: if it is all letters (not
     /// Vietnamese: longer than 7 letters, D33, or letters the engine does not know), the
-    /// key and the rest of the word pass through unchanged (D33's state,
-    /// `VietEngine.seedOverflow`) until the word ends. nil: not letters ("abc123"), the
-    /// key starts a new word as before.
+    /// key and the rest of the word go in unchanged (D33's state,
+    /// `VietEngine.seedOverflow`) until the word ends, typed at the caret by the input
+    /// method (N3). nil: not letters ("abc123"), the key starts a new word as before.
     private mutating func continueForeignWord(_ word: [Unicode.Scalar], _ scalar: Unicode.Scalar, location: Int,
-                                              engine: inout VietEngine) -> Outcome? {
+                                              engine: inout VietEngine, client: some InPlaceClient) -> Outcome? {
         guard word.allSatisfy({ CharacterSet.letters.contains($0) }) else {
             engine.reset()
             return nil
@@ -855,8 +880,9 @@ struct InPlaceComposer {
         #if DEBUG
         lastSeededWord = word
         #endif
+        let consumed = typeCharacter(scalar, client: client)
         tracker.didReplace(NSRange(location: location, length: 0), text: String(Character(scalar)), atCaret: true)
-        return Outcome(consumed: false, kind: .seedPass)
+        return Outcome(consumed: consumed, kind: .seedPass)
     }
 
     /// The letters (with combining marks, digits) at the end of `text`.
@@ -1005,6 +1031,20 @@ struct InPlaceComposer {
     /// in precomposed form (how `checkLockedWord` compares text with the engine).
     static func word(in units: [UInt16]) -> [Unicode.Scalar] {
         trailingWord(String(decoding: units, as: UTF16.self).precomposedStringWithCanonicalMapping)
+    }
+
+    /// A character the engine leaves as typed: inserted at the caret by the input method
+    /// (`insertText`, replacementRange NSNotFound), never left to the app (N3, "Vì sao Dấu
+    /// tự chèn ký tự"). Returns whether the key is consumed. The caller records the edit
+    /// in `tracker` as it records a character typed at the caret (`atCaret`).
+    private func typeCharacter(_ scalar: Unicode.Scalar, client: some InPlaceClient) -> Bool {
+        #if DEBUG
+        // Tests only: the old behaviour, the key left to the app, to reproduce what
+        // WebKit's key queue did with it (`LateDocument.keyQueue`).
+        if passesCharactersThrough { return false }
+        #endif
+        client.insertText(String(Character(scalar)), replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
+        return true
     }
 
     /// Inserts at the current selection without asking where it is (deleteCount 0).

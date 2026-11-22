@@ -50,10 +50,12 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 2. Phím điều khiển (mũi tên, tổ hợp ⌘/⌃/⌥, Esc…): reset engine, trả `false` cho hệ thống xử lý. Không khôi phục từ (D4 (Từ nước ngoài)).
 3. Backspace: engine bỏ chữ cuối đang hiển thị và đặt lại dấu (D32 (Backspace)). Phím luôn đi tiếp tới app để app tự xoá chữ cuối; khi dấu phải dời, bộ gõ thay phần trước nó trong cùng phím (mục "Backspace thay tại chỗ").
 4. Ký tự: `engine.handle(scalar)`.
-   - `passThrough`: trả `false`.
+   - `passThrough`: bộ gõ tự chèn ký tự đó bằng `client.insertText(ký tự, replacementRange: NSNotFound)` tại con trỏ và trả `true`, không hỏi `selectedRange`. Mọi thao tác chữ vì vậy tới app qua cùng một đường, theo đúng thứ tự bộ gõ gọi (N3, ý "Vì sao Dấu tự chèn ký tự"). Điều này áp cho mọi app và cho mọi nhánh mà phím cuối cùng được để nguyên: D4, D20, D30, D33, và các nhánh dựng lại hay reset của D11.
    - `replace(n, s)`: `client.insertText(s, replacementRange: vùng n ký tự trước con trỏ)`, trả `true`.
    - Engine rỗng mà chưa biết chữ trước con trỏ: có thể đọc chữ của app trước (D20 (Thêm dấu cho từ đã gõ), mục "Thêm dấu cho từ đã gõ").
 5. Ký tự kết thúc từ (Space, dấu câu, Enter, Tab): từ không phải âm tiết tiếng Việt hợp lệ thì khôi phục phím gốc (D4), rồi chốt và reset.
+
+Phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3), Return, Tab, Enter bàn phím số (bước 5 với `endWord()`, sau lần khôi phục nếu có) và các phím ở bước 2.
 
 Ở chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)), bước 3–5 ghi chữ bằng marked text thay cho thay chữ tại chỗ (mục "Chế độ gạch chân").
 
@@ -67,9 +69,9 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
   - `backspace()` (D32): IMK gọi hàm này cho phím xoá, **không** đưa 0x7F vào `handle`.
   - `endWord()`: kết thúc từ không chèn ký tự, cho Return/Tab/Enter bàn phím số (0x03) khi IMK để app tự xử lý phím.
   - `seed(displayed:) -> Bool` (D20): nạp từ đọc được từ ứng dụng; nhận NFC hoặc NFD.
-  - `seedOverflow(shown:)` (D20 ngoại lệ (b), D33 (Độ dài từ)): với từ có sẵn mà `seed` không nhận, vào trạng thái đi thẳng của D33 cho phần còn lại của từ.
+  - `seedOverflow(shown:)` (D20 ngoại lệ (b), D33 (Độ dài từ)): với từ có sẵn mà `seed` không nhận, vào trạng thái của D33 cho phần còn lại của từ, trong đó engine để nguyên mọi phím.
   - `reset()`, `isComposing`.
-- `Action` là `.passThrough` (IMK trả `false`) hoặc `.replace(deleteCount:insert: TextBuffer)`.
+- `Action` là `.passThrough` (engine để nguyên phím) hoặc `.replace(deleteCount:insert: TextBuffer)`. Với một ký tự, `.passThrough` không có nghĩa là phím đi thẳng: bộ gõ tự chèn ký tự đó (N3 (Ít lời gọi vào ứng dụng đích), mục "Luồng một phím").
   - `.replace` xoá `deleteCount` **scalar** trước con trỏ và chèn `insert` trong một lần `insertText` (N3 (Ít lời gọi vào ứng dụng đích)).
   - Chữ Việt dựng sẵn đều nằm trong BMP nên số scalar bằng độ dài UTF-16. Ngoại lệ: từ được seed từ NFD, khi đó IMK tự đo chuỗi đã seed.
 - `EngineOptions`: kiểu gõ (`telex`, `simpleTelex`, `vni`); vị trí dấu (`modern`/`classic`); đặt dấu tự do (D28 (Đặt dấu tự do)); tự khôi phục (D4, D30 (Kiểm tra chính tả), D33); `advanced: .off | .consonantShortcuts | .allowZFWJ`, một enum nên hai mục loại trừ nhau (D22 (Gõ tắt loại trừ z, f, w, j)).
@@ -103,20 +105,21 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 
 - Lớp con `IMKInputController`, mỗi client một instance và một `VietEngine` riêng. Không có trạng thái toàn cục (khác OpenKey).
 - `handle(_:client:)` đưa phím vào engine qua `InPlaceComposer` (thay tại chỗ) hoặc `MarkedComposer` (gạch chân). Cả hai là kiểu giá trị thuần, test bằng client giả.
-- Thay tại chỗ: nếu engine trả `replace`, hỏi `selectedRange` một lần để có vị trí tuyệt đối rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Bản Debug, khi khoá `DauPerfLog` bật, hỏi thêm một `selectedRange` sau khi thay để chẩn đoán (`ReplaceDiag.swift`); lời gọi này chạy sau khi đã ghi thời gian của phím nên không nằm trong số đo (D42 (Ngưỡng hiệu năng)).
+- Thay tại chỗ: nếu engine trả `replace`, hỏi `selectedRange` một lần để có vị trí tuyệt đối rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Nếu engine để nguyên một ký tự, gọi một `insertText` của ký tự đó tại con trỏ (`NSNotFound`) và không hỏi `selectedRange`. Bản Debug, khi khoá `DauPerfLog` bật, hỏi thêm một `selectedRange` sau khi thay để chẩn đoán (`ReplaceDiag.swift`); lời gọi này chạy sau khi đã ghi thời gian của phím nên không nằm trong số đo (D42 (Ngưỡng hiệu năng)).
 - Engine reset khi: click chuột; `activateServer`/`deactivateServer`, `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); nguồn đầu vào đổi mà IMK không báo, nếu có đường như vậy (mục "Đổi nguồn đầu vào không qua `activateServer`").
 
 ### Vị trí thay chữ
 
-Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọi lần đọc chữ là một `attributedSubstring` trước con trỏ; client trả `NSNotFound` hay `nil` thì phím đó xử lý như phím đầu của từ mới; hai lần đọc liền nhau đều như vậy thì thôi đọc tới lần `activateServer` sau, một lần đọc được ở giữa thì đếm lại (`InPlaceComposer.failedReadLimit`; D18, D20).
+Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọi ký tự (chữ, số, dấu câu, dấu cách, phím không kèm ⌘, ⌃, ⌥) tới app qua một `insertText` của bộ gõ, kể cả khi engine để nguyên nó; chỉ ⌫, Return, Tab, Esc, mũi tên, phím chức năng và phím có ⌘, ⌃, ⌥ còn đi thẳng (N3). Mọi lần đọc chữ là một `attributedSubstring` trước con trỏ; client trả `NSNotFound` hay `nil` thì phím đó xử lý như phím đầu của từ mới; hai lần đọc liền nhau đều như vậy thì thôi đọc tới lần `activateServer` sau, một lần đọc được ở giữa thì đếm lại (`InPlaceComposer.failedReadLimit`; D18, D20).
 
 | Phím | Hỏi `selectedRange` | Đọc chữ trước con trỏ | Quyết định |
 |---|---|---|---|
-| Đi thẳng, đang có từ | không | không | N3 |
+| Ký tự engine để nguyên, đang có từ hoặc sau ký tự kết thúc từ gõ ở đây: Dấu tự chèn tại con trỏ (một `insertText`, `NSNotFound`) | không | không | N3 |
+| Phím đi thẳng: ⌫ không phải dời dấu, Return và Tab không phải khôi phục, Esc, mũi tên, phím chức năng, phím có ⌘, ⌃, ⌥ | không | không | N3 |
 | Có thay chữ, vị trí trùng vị trí Dấu theo dõi | một lần | không | N3, D11 |
 | Có thay chữ, vị trí khác vị trí Dấu theo dõi | một lần | một lần: chứng minh app chậm; dựng lại từ chữ đó chỉ khi phím trước cách đủ `settleInterval` | D11 |
 | Dấu/biến đổi đầu tiên trong từ đã hết hợp lệ, phím trước cách đủ `settleInterval` | một lần | tối đa một lần mỗi từ | D11 |
-| Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, ở mọi nhịp gõ | một lần, kể cả khi phím đi thẳng | một lần | D20 |
+| Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng, chưa biết chữ trước con trỏ, ở mọi nhịp gõ | một lần, kể cả khi engine để nguyên phím | một lần | D20 |
 | Mọi phím ở chế độ gạch chân | không | không | D13 |
 
 Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js, terminal của WebStorm) không được xử lý riêng: thay tại chỗ như mọi ô (D43 (Ô bỏ qua vùng thay chữ)).
@@ -131,9 +134,10 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
   - Chrome khi trang bận: app áp phím theo thứ tự nhưng trả `selectedRange` và `attributedSubstring` từ chữ cũ, chưa có vài phím gần nhất. Lần thay đầu của một từ dùng vị trí cũ đó nên thay nhầm chữ đứng trước ("bạn" ra "ạnn"); vị trí dự đoán của composer (`expected`) chỉ có trong một từ nên không bắt được.
   - Phím dồn ở Chrome, VS Code, Firefox (`docs/Compatibility.md` mục 6.2): app chậm cả loạt phím vừa gõ.
   - App tính `selectedRange` và vùng thay từ đầu từ đang gõ, về 0 sau mỗi dấu cách (mô hình `LateDocument.Origin.word` trong test, dựng từ log trình soạn thảo Cursor 3.29.15 đo 10/11/2026; chưa biết app nào hoạt động như vậy): vị trí app trả luôn khác vị trí Dấu theo dõi dù app không chậm. Vùng thay bắt đầu ngoài chữ app đang giữ thì bị bỏ.
+  - Safari (WebKit) khi trang bận hay phím dồn: trang trả vị trí và chữ của chính nó, nhưng phím bộ gõ để đi thẳng phải chờ trong hàng phím của WebKit, còn lời gọi của bộ gõ tới trang ngay. Vì vậy Dấu tự chèn mọi ký tự (N3, ý "Vì sao Dấu tự chèn ký tự"), và phép chứng minh bên dưới chỉ đúng ở Safari nhờ điều đó (D11). ⌫ vẫn đi thẳng nên vẫn có thể chờ trong hàng ([`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) mục 5.4).
 - **Trạng thái của `CursorTracker`:**
   - `known`: vị trí con trỏ Dấu theo dõi qua ranh giới từ. Mất khi reset (click, mũi tên, phím tắt, Return/Tab, đổi client) và khi ⌫ đi thẳng mà không biết chữ bị xoá. `known` không thay cho `expected`: ở đầu từ, vị trí khác `known` vẫn có thể là app tự sửa chữ (tự sửa chính tả, gạch ngang thông minh).
-  - `edits`: các thao tác gần nhất bộ gõ đã làm hoặc để đi thẳng; thao tác chèn tại con trỏ được đánh dấu `atCaret`.
+  - `edits`: các thao tác gần nhất bộ gõ đã làm, cùng thao tác xoá của các phím ⌫ nó để đi thẳng; thao tác chèn tại con trỏ (ký tự bộ gõ tự chèn, chữ chỉ thêm ở cuối từ) được đánh dấu `atCaret`.
   - `tail`: chữ chính bộ gõ đã gõ ngay trước con trỏ.
   - `burst`: số thao tác gần nhất do các phím đến liền nhau dưới `settleInterval` tạo ra; composer báo ở mỗi phím (`keyInBurst`).
   - `sinceOnTime`: số thao tác kể từ lần cuối app trả lời đúng `known` (chưa có thì không biết); composer báo mỗi lần app trả lời đúng (`answeredOnTime`).
@@ -150,19 +154,20 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
   - Vị trí lấy từ một `selectedRange` có thể cũ không ghi đè `known` (ghi đè làm lần trả lời chậm sau trùng với `known` sai, ví dụ "kóo").
 - Cùng cách chứng minh dùng ở phép kiểm từ đã hết hợp lệ (`checkLockedWord`) và ở lần đọc của D20 sau ⌫ (`addMarks`, thao tác chưa áp phải là xoá đã biết chữ).
 - **Khi không chứng minh được:** app chậm hơn số thao tác trên thì Dấu xử lý như với câu trả lời đúng giờ (lệch thì dựng lại hoặc reset, D11). Các kịch bản app trả lời chậm mà chỉ mô hình cho ra, cùng hướng sửa dự phòng khi gặp ở app thật: [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
-- **Kiểm:** client giả trong `LateAnswerTests`, `RapidKeysTests` và `WordOriginTests` (mô hình Chrome, VS Code, Firefox theo mã nguồn, mô hình tính vị trí theo từ dựng từ log Cursor 3.29.15; thời gian của app là số chọn, không phải số đo).
+- **Kiểm:** client giả trong `LateAnswerTests`, `RapidKeysTests`, `WordOriginTests` và `WebKitQueueTests` (mô hình Chrome, VS Code, Firefox và hàng phím của WebKit theo mã nguồn, mô hình tính vị trí theo từ dựng từ log Cursor 3.29.15; thời gian của app và lịch trang xử lý phím là số chọn, không phải số đo).
 
-**Chromium và Firefox theo mã nguồn** (chưa đo trên bản đã cài; cơ sở cho mô hình trong test):
+**Chromium, Firefox và WebKit theo mã nguồn** (chưa đo trên bản đã cài; cơ sở cho mô hình trong test):
 
 - Chromium: thay với `replacementRange` trong ô thường giữ con trỏ và dời nó theo độ dài đổi (`ReplaceTextAndKeepSelection`); với EditContext (VS Code dùng mặc định) con trỏ về cuối vùng vừa thay. Lời gọi của bộ gõ và phím vào cùng hàng đợi của trang. `selectedRange` và `attributedSubstring` trả từ bộ đệm phía trình duyệt, không hỏi trang; mỗi `insertText` không vùng thay được ghi ngay vào bộ đệm đó ở vị trí con trỏ trang báo lần trước, `insertText` có vùng thay thì không.
 - Firefox: vị trí và chữ trả từ bộ đệm của tiến trình cha, chỉ cập nhật khi tiến trình nội dung báo; thay với vùng thay là chọn vùng rồi chèn, con trỏ về cuối vùng vừa thay.
+- WebKit: mọi sự kiện phím (nhấn và nhả, bộ gõ đã xử lý hay chưa) vào `keyEventQueue` của tiến trình giao diện; hàng này gửi trang từng sự kiện một, sự kiện sau chỉ gửi khi trang xử lý xong sự kiện trước. Chỉ sự kiện bộ gõ để đi thẳng mang chữ tới trang. `insertText`, `selectedRange` và lần đọc chữ của bộ gõ tới trang ngay, trang trả lời từ chữ của chính nó và áp vùng thay lên chữ nó có lúc đó, con trỏ về cuối vùng vừa thay (mô hình `LateDocument.keyQueue`; [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) mục 5.1).
 
 #### Thêm dấu cho từ đã gõ
 
 `InPlaceComposer.addMarks` (D20). Điều kiện đọc ở bảng trên; thêm: công tắc `addMarksToTypedWords` bật (đọc lúc `activateServer` và khi cài đặt đổi, không theo phím); phím là phím dấu thanh/biến đổi của kiểu gõ (`isMarkKey`: Telex `s f r x j z a e o w d` hoa hay thường, VNI chữ số) hoặc chữ cái ASCII khác (`isLetter`). "Chưa biết chữ trước con trỏ" là đầu phiên, sau reset, click, ⌫ hay Return/Tab; sau một ký tự kết thúc từ gõ ở đây thì đã biết, không đọc.
 
 - **Đọc:** một `selectedRange` (phải là con trỏ, không vùng chọn); một `attributedSubstring` tối đa `InPlaceComposer.readLength` đơn vị UTF-16 ngay trước con trỏ, lấy dãy chữ cái/dấu kết hợp/chữ số cuối cùng; `seed(displayed:)`; rồi đưa phím vào engine.
-- **Sau đó:** `replace` thì một `insertText` thay đúng vùng chữ đã đọc (đếm UTF-16; mọi ký tự engine nhận thuộc BMP, kể cả NFD); `passThrough` thì phím đi thẳng và engine giữ từ để gõ tiếp (mốc khôi phục D4 là chữ đã đọc).
+- **Sau đó:** `replace` thì một `insertText` thay đúng vùng chữ đã đọc (đếm UTF-16; mọi ký tự engine nhận thuộc BMP, kể cả NFD); `passThrough` thì bộ gõ chèn nguyên phím tại con trỏ (một `insertText`, `NSNotFound`) và engine giữ từ để gõ tiếp (mốc khôi phục D4 là chữ đã đọc).
 - **Nối hay không** (`seedWord`), quyết định chỉ từ chữ đã đọc và trạng thái engine, trước khi gửi gì, nên phím không nối chỉ tốn đúng lần đọc:
   - Từ không phải tiếng Việt: phím được nhận nguyên văn tới hết từ. Từ đã khoá chính tả D30 thì giữ seed; từ toàn chữ cái mà `seed` không nhận thì `continueForeignWord` gọi `seedOverflow`.
   - Trên từ tiếng Việt, chữ hoa sau chữ thường (`startsNewWord`) bắt đầu từ mới, trừ phím dấu thanh/biến đổi có thay chữ trong từ.
@@ -173,7 +178,7 @@ Bảng dưới là toàn bộ lời gọi hỏi app trong thay tại chỗ. Mọ
   - Từ nhớ sống qua đúng một phím, cộng một ⌫ ở giữa; phím khác, ⌫ thứ hai, `reset` và `activate` xoá nó.
   - Phím dấu thanh/biến đổi ngay sau ⌫ đó: nếu từ đọc được khác từ nhớ mà engine thử (`isSystemFix`) ra đúng từ đọc được, không phân biệt hoa thường, thì engine giữ từ đọc được, không gửi gì, phím bị nuốt (kind `seed_kept`). Không thêm lời gọi nào ngoài lần đọc của D20.
 - **Lỗi đọc** (D18): chuỗi sai độ dài, không có chữ, từ có chữ số mà `seed` không nhận, có vùng chọn thì không seed, phím xử lý như phím đầu của từ mới.
-- **Log perf:** kind `seed` (đã thay), `seed_pass` (đọc, seed, phím đi thẳng), `seed_kept`, `seed_none` (đọc, không có từ, hoặc chữ cái không nối được), trường `read_ns`; bản Debug thêm `d20=mark|letter|none`, `seeded=0|1`, `diff=0|1|-`. `scripts/perf/perf-report.sh` đếm các trường này.
+- **Log perf:** kind `seed` (đã thay), `seed_pass` (đọc, seed, phím được chèn nguyên văn tại con trỏ), `seed_kept`, `seed_none` (đọc, không có từ, hoặc chữ cái không nối được), trường `read_ns`; bản Debug thêm `d20=mark|letter|none`, `seeded=0|1`, `diff=0|1|-`. `scripts/perf/perf-report.sh` đếm các trường này.
 - Gõ liền qua dấu cách không đọc thêm lần nào; tối đa một lần ở phím đầu của phiên (test `sample`, `InPlaceComposerLetterTests.sentence`).
 - Terminal không chuyển phím ⌫ cho bộ gõ (`docs/Compatibility.md` mục 6.5), nên ở Terminal D20 sau ⌫ không bao giờ chạy và ⌫ giữa từ không qua D32: "hoaf⌫␣" ra "ho " thay vì "hò "; "tooi⌫s" ra "tôs" (`CursorTracker` bắt lệch).
 
@@ -195,9 +200,12 @@ Lời gọi mỗi phím (tối đa một, N3):
 - ký tự kết thúc từ: một `insertText` gồm từ (đã khôi phục nếu D4 bảo vậy) và ký tự đó, phím được nuốt;
 - Return, Tab, Enter bàn phím số: một `insertText` của từ rồi để app xử lý phím (ứng dụng chat vẫn gửi tin);
 - mũi tên, Esc, tổ hợp ⌘/⌃/⌥ và các sự kiện reset (click, `deactivateServer`, `commitComposition`, đổi nguồn/mode, đổi client, đổi cài đặt): một `insertText` của **đúng chữ đang hiện**, không khôi phục, rồi phím đi tiếp tới app; chốt vào client đã nhận marked text nếu nó còn, không thì client của sự kiện; không còn client nào thì bỏ trạng thái (D18);
-- không có từ đang gõ: không gọi gì, phím đi thẳng.
+- ký tự gõ khi không có từ đang gạch chân (dấu câu, dấu cách giữa hai từ, phần còn lại của chuỗi chữ đã chốt sớm): một `insertText` của ký tự đó tại con trỏ, phím được nuốt (N3);
+- Backspace, Return, Tab, Enter bàn phím số và các phím reset khi không có từ: không gọi gì, phím đi thẳng.
 
-Gõ đúp, khôi phục, độ dài từ giống hệt thay tại chỗ: `MarkedComposer` giữ bản sao chữ engine đang hiển thị và áp nguyên `Action` lên đó (test so khớp ngẫu nhiên với thay tại chỗ). Chuỗi chữ dài hơn 32 ký tự không dấu cách (chỉ sau D33) được chốt sớm, phần còn lại của từ đi thẳng. Gõ thử bằng `scripts/selftest/typing/run.sh --underline`.
+Ký tự kết thúc từ không bao giờ đi riêng sau chữ chốt: nó nằm trong cùng `insertText` với chữ chốt, kể cả khi D4 khôi phục từ (D13 (Gạch chân là đường lui cuối cùng)).
+
+Gõ đúp, khôi phục, độ dài từ giống hệt thay tại chỗ: `MarkedComposer` giữ bản sao chữ engine đang hiển thị và áp nguyên `Action` lên đó (test so khớp ngẫu nhiên với thay tại chỗ). Chuỗi chữ dài hơn 32 ký tự không dấu cách (chỉ sau D33) được chốt sớm; phần còn lại của từ được chèn từng ký tự bằng `insertText` như ký tự ngoài từ. Gõ thử bằng `scripts/selftest/typing/run.sh --underline`.
 
 ### Đầu vào từ IMK
 
