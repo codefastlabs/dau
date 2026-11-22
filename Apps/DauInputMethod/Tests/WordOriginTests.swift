@@ -30,7 +30,7 @@ private struct EditorSession {
         let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
         if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         outcomes.append(outcome)
-        if !outcome.consumed { doc.typed(route) }
+        if leftToApp(route, outcome) { doc.typed(route) }
     }
 
     /// `lag`: edits the app's answers are behind by.
@@ -196,7 +196,7 @@ struct WordOriginTests {
                 now += 0.02
                 doc.lag = behind ? doc.states.count - 1 : 0
                 last = composer.handle(route, time: now, engine: &engine, client: doc)
-                if !last.consumed { doc.typed(route) }
+                if leftToApp(route, last) { doc.typed(route) }
             }
         }
         type("anh dd", behind: true)

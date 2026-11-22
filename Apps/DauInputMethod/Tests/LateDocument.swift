@@ -422,3 +422,18 @@ struct SplitMix {
         low + (high - low) * Double(next() >> 11) / Double(1 << 53)
     }
 }
+
+/// Whether the app handles `route` itself after in-place mode handled it (`outcome`): the
+/// harnesses type only such keys (⌫, Return, Tab, reset keys). A `.character` route is
+/// always consumed in in-place mode (N3: the input method types every character itself);
+/// one left to the app is recorded as an issue, not typed.
+func leftToApp(_ route: KeyRoute, _ outcome: InPlaceComposer.Outcome,
+               sourceLocation: SourceLocation = #_sourceLocation) -> Bool {
+    guard !outcome.consumed else { return false }
+    if case .character(let c) = route {
+        Issue.record("N3: character \(String(Character(c)).debugDescription) left to the app in in-place mode",
+                     sourceLocation: sourceLocation)
+        return false
+    }
+    return true
+}

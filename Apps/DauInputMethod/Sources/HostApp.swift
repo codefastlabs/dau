@@ -260,6 +260,8 @@ enum HostApp {
 /// with no `host-app-signature-invalid`; `docs/history/LogM6.md`, `docs/Architecture.md`,
 /// "Khởi chạy bộ gõ").
 enum HostAppSignature {
+    /// Same subsystem and category as `settingsLogger`; a separate one because the test
+    /// target compiles this file without SharedSettings.swift (project.yml).
     private static let logger = Logger(subsystem: Bundle.main.bundleIdentifier ?? "DauInputMethod",
                                        category: "settings")
 

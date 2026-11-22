@@ -40,9 +40,10 @@ protocol MarkedTextClient {
 struct MarkedComposer {
     /// The marked text shown in the app (empty: none).
     private(set) var text: [Unicode.Scalar] = []
-    /// The word grew past `maxMarkedLength` (only possible after D33 made the rest of the
-    /// word pass through): its start was committed and the rest of the word goes to the
-    /// app as plain keys until the engine ends the word.
+    /// The word grew past `maxMarkedLength` (only possible after D33 left the rest of the
+    /// word as typed): its start was committed and the rest of the word is typed at the
+    /// caret by the input method, one `insertText` per key at NSNotFound (`typeCharacter`,
+    /// N3), until the engine ends the word.
     private(set) var detached = false
 
     /// Longer than any Vietnamese word the engine tracks (7 letters, D33) plus the keys
@@ -122,7 +123,8 @@ struct MarkedComposer {
     private mutating func character(_ scalar: Unicode.Scalar, engine: inout VietEngine,
                                     client: some MarkedTextClient) -> Outcome {
         if detached {
-            // D33: the rest of an over-long word goes in as typed until the word ends.
+            // D33: the rest of an over-long word goes in as typed until the word ends,
+            // typed at the caret by the input method (`typeCharacter`, N3).
             let action = engine.handle(scalar)
             if !engine.isComposing { detached = false }
             if case .replace = action {
@@ -167,7 +169,8 @@ struct MarkedComposer {
             return Outcome(consumed: true, call: .insertText)
         }
         if text.count > Self.maxMarkedLength {
-            // Commit the long run now; the rest of the word passes through (D33).
+            // Commit the long run now; the rest of the word is typed at the caret by the
+            // input method, one insertText at NSNotFound per key (D33, N3; `detached`).
             let string = Self.string(text)
             text.removeAll()
             detached = true

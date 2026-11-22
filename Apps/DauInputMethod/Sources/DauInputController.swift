@@ -78,8 +78,9 @@ final class DauInputController: IMKInputController {
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
         guard let consumed = reentry.key({ handleOutsideReentry(event, client: sender) }) else {
             // D18: a key sent from inside a client call made while a key, reset or reload
-            // runs. The engine is borrowed: this key goes to the app untouched, and the
-            // word ends once the running body is done (the text no longer matches it).
+            // runs. The engine is borrowed: this key goes to the app untouched (N3, list
+            // of pass-through keys), and the word ends once the running body is done (the
+            // text no longer matches it).
             reentry.run { [weak self] in _ = self?.resetComposition(client: sender) }
             return false
         }
@@ -516,6 +517,8 @@ final class DauInputController: IMKInputController {
 
     /// Menu actions run on the main thread only (D18); anywhere else they do nothing.
     private func selectOnMain(_ method: DauSettings.TypingMethod) {
+        // The non-Sendable controller enters the @MainActor closure; safe because `onMain`
+        // runs the closure only when already on the main thread, never elsewhere.
         nonisolated(unsafe) let controller = self
         _ = onMain { controller.setTypingMethod(method) }
     }
@@ -606,6 +609,8 @@ private final class TimedClient: MarkedTextClient, InPlaceClient {
         if waitStart == nil { waitStart = PerfLog.now() }
         Thread.sleep(forTimeInterval: seconds)
     }
+
+    var waitClock: TimeInterval { ProcessInfo.processInfo.systemUptime }
 }
 
 /// Observes the distributed notification for a change of the selected keyboard input

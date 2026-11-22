@@ -317,8 +317,8 @@ struct WebKitQueueTests {
 
     /// A key `backspaceWaitWindow` or more after the ⌫ does not wait, whatever the app
     /// answers (here a page blocked for a second): no extra `selectedRange` (N3).
-    @Test("⌫, then a pause longer than the wait limit, then j: no wait")
-    func pauseLongerThanLimit() {
+    @Test("⌫, then a pause past the wait window, then j: no wait")
+    func pausePastWaitWindow() {
         var s = TimedWebKitSession(pageFree: { t in t < 1.0 ? 1.0 : t }, work: { 0.001 })
         let afterDelete = 0.20 + InPlaceComposer.backspaceWaitWindow + 0.01
         for (route, time) in zip(routes("Hoc ⌫j"), [0.04, 0.08, 0.12, 0.16, 0.20, afterDelete]) {

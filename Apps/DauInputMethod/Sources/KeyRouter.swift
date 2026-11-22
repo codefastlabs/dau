@@ -52,6 +52,8 @@ enum KeyRouter {
         default:
             break
         }
+        // A dead key (no or empty `characters`) and an event of more than one character
+        // reset the word and the key goes to the app (N3, list of pass-through keys).
         guard let characters else { return .ignore }
         var scalars = characters.unicodeScalars.makeIterator()
         guard let scalar = scalars.next(), scalars.next() == nil else { return .ignore }

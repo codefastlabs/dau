@@ -99,7 +99,7 @@ struct RapidSession {
         // VS Code), insertText 0.6 ms; the rest of a key 0.3 ms.
         let end = start + 0.0003 + Double(doc.selections) * 0.0003 + Double(doc.reads) * 0.0008
             + Double(doc.inserts) * 0.0006 + doc.paused
-        if !outcome.consumed {
+        if leftToApp(route, outcome) {
             doc.sentAt = end
             doc.typed(route)
         }
@@ -245,7 +245,7 @@ struct RapidKeysTests {
                 doc.selections = 0; doc.reads = 0; doc.inserts = 0
                 let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
                 if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { over += 1 }
-                if !outcome.consumed { doc.typed(route) }
+                if leftToApp(route, outcome) { doc.typed(route) }
             }
             #expect(doc.text == "người bạn gửi email hỏi về deadline. ", "lag \(lag)")
             #expect(doc.badRanges == 0)
@@ -271,7 +271,7 @@ struct RapidKeysTests {
                 now += 0.1
                 doc.lag = lag
                 let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-                if !outcome.consumed { doc.typed(route) }
+                if leftToApp(route, outcome) { doc.typed(route) }
             }
         }
         type("nguoiwf ban", lag: 0)
@@ -311,7 +311,7 @@ struct RapidKeysTests {
                 let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
                 if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { over += 1 }
                 outcomes.append(outcome)
-                if !outcome.consumed { doc.typed(route) }
+                if leftToApp(route, outcome) { doc.typed(route) }
             }
         }
         type("Chie", lag: 0)
@@ -339,7 +339,7 @@ struct RapidKeysTests {
             now += 0.01
             doc.lag = doc.states.count - 1
             let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-            if !outcome.consumed { doc.typed(route) }
+            if leftToApp(route, outcome) { doc.typed(route) }
         }
         #expect(doc.text == "Chiều ")
         #expect(doc.badRanges == 0)
@@ -361,7 +361,7 @@ struct RapidKeysTests {
             now += seconds
             let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
             kinds.append(outcome.kind)
-            if !outcome.consumed { doc.typed(route) }
+            if leftToApp(route, outcome) { doc.typed(route) }
         }
         for route in routes("Chie") { key(route, after: 0.01) }
         doc.moveCaret(to: 0)
@@ -381,7 +381,7 @@ struct RapidKeysTests {
         for route in routes("Chie") {
             now += 0.01
             let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-            if !outcome.consumed { doc.typed(route) }
+            if leftToApp(route, outcome) { doc.typed(route) }
         }
         // Caret 1 as in the run, but not the latest key before it.
         doc.override = "x"
@@ -403,7 +403,7 @@ struct RapidKeysTests {
             now += 0.1
             doc.lag = index == 4 ? 4 : 0
             last = composer.handle(route, time: now, engine: &engine, client: doc)
-            if !last.consumed { doc.typed(route) }
+            if leftToApp(route, last) { doc.typed(route) }
         }
         #expect(last.kind == .replace)
     }
@@ -461,7 +461,7 @@ struct RapidKeysTests {
                 now += 0.005
                 let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
                 kinds.append(outcome.kind)
-                if !outcome.consumed { doc.typed(route) }
+                if leftToApp(route, outcome) { doc.typed(route) }
             }
         }
         type("a -- ")
@@ -485,7 +485,7 @@ struct RapidKeysTests {
         for route in routes("xin chao ban") {
             now += 0.005
             let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
-            if !outcome.consumed { doc.typed(route) }
+            if leftToApp(route, outcome) { doc.typed(route) }
         }
         // Caret 9 (before "ban", three edits ago), but not "xin chao " before it.
         doc.override = "abc defg "
@@ -501,7 +501,7 @@ struct RapidKeysTests {
         for route in routes("xin chao ban") {
             now += 0.005
             let outcome = composer2.handle(route, time: now, engine: &engine2, client: doc2)
-            if !outcome.consumed { doc2.typed(route) }
+            if leftToApp(route, outcome) { doc2.typed(route) }
         }
         doc2.lag = 3
         now += 0.005

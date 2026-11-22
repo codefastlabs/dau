@@ -35,6 +35,10 @@ final class OddClient: InPlaceClient {
         onInsert?()
     }
 
+    /// A wait (N3 "Ngoại lệ sau ⌫ chưa áp") moves this clock; nothing really sleeps.
+    private(set) var waitClock: TimeInterval = 0
+    func pause(_ seconds: TimeInterval) { waitClock += seconds }
+
     /// Insertions with a replacement range (anything but NSNotFound).
     var rangedInserts: [NSRange] { inserts.map(\.1).filter { $0.location != NSNotFound } }
 }
@@ -462,7 +466,7 @@ struct HostAppTrustTests {
 }
 
 /// A plain text document, cursor at the end: `selectedRange`, `text(in:)` and
-/// `insertText` act on it; a key the composer does not consume is typed at the cursor.
+/// `insertText` act on it.
 final class PlainDocument: InPlaceClient {
     private(set) var units: [UInt16]
     private(set) var rangedInserts = 0
@@ -489,10 +493,9 @@ final class PlainDocument: InPlaceClient {
         units.replaceSubrange(range.location..<(range.location + range.length), with: Array(string.utf16))
     }
 
-    /// The app types a key the input method left to it.
-    func type(_ scalar: Unicode.Scalar) {
-        insertText(String(Character(scalar)), replacementRange: NSRange(location: NSNotFound, length: NSNotFound))
-    }
+    /// A wait (N3 "Ngoại lệ sau ⌫ chưa áp") moves this clock; nothing really sleeps.
+    private(set) var waitClock: TimeInterval = 0
+    func pause(_ seconds: TimeInterval) { waitClock += seconds }
 }
 
 @Suite("D20 on a decomposed (NFD) foreign word before the cursor (exception b)")
@@ -515,7 +518,6 @@ struct DecomposedForeignWordTests {
         #expect(composer.addMarksEnabled)  // D20 on (D15 default)
         let doc = PlainDocument(text)
         let outcome = composer.handle(.character(key), time: 1.0, engine: &engine, client: doc)
-        if !outcome.consumed { doc.type(key) }
         #expect(outcome.consumed)
         #expect(outcome.kind == .seedPass)  // read, then D20 (b): the key joins the foreign word
         #expect(doc.reads == 1)

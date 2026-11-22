@@ -178,7 +178,7 @@ private struct Session {
         traces.append(outcome.d20)
         diffs.append(outcome.seedDiffers)
         #endif
-        if !outcome.consumed || (route == .backspace && doc.deletesConsumedBackspace) {
+        if leftToApp(route, outcome) || (route == .backspace && doc.deletesConsumedBackspace) {
             doc.defaultAction(route)
         }
     }
@@ -614,10 +614,11 @@ struct InPlaceComposerTests {
         }
     }
 
-    @Test("old behaviour reproduced: a consumed ⌫ loses one more letter in Chromium")
-    func consumedBackspaceInChromium() {
-        // What 0ac50c3 did: replace "oà" with "ò" and consume the key. Chromium still
-        // deletes, giving the "h" measured in Chrome, Edge and VS Code.
+    @Test("model of FakeDocument.deletesConsumedBackspace: after a consumed ⌫ the app still deletes one letter")
+    func fakeDeletesConsumedBackspace() {
+        // Checks the fake, not the composer: replace "oà" with "ò" and consume the key, as
+        // 0ac50c3 did. The fake still deletes, giving the "h" measured in Chrome, Edge and
+        // VS Code.
         let doc = FakeDocument("hoà")
         doc.deletesConsumedBackspace = true
         doc.insertText("ò", replacementRange: NSRange(location: 1, length: 2))

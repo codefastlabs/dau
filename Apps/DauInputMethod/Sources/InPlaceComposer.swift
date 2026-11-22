@@ -13,15 +13,8 @@ protocol InPlaceClient {
     /// method sleeps, the fakes of the tests move their clock).
     func pause(_ seconds: TimeInterval)
     /// Seconds on a clock that runs while the input method waits (`backspaceWaitLimit`).
+    /// No default: a fake that kept the real clock would really sleep in a test.
     var waitClock: TimeInterval { get }
-}
-
-extension InPlaceClient {
-    func pause(_ seconds: TimeInterval) {
-        Thread.sleep(forTimeInterval: seconds)
-    }
-
-    var waitClock: TimeInterval { ProcessInfo.processInfo.systemUptime }
 }
 
 /// In-place mode (method A, D11): the word being typed is replaced in the document with
@@ -66,8 +59,10 @@ struct InPlaceComposer {
 
     #if DEBUG
     /// Tests only: leave the characters the engine does not change to the app, as before
-    /// the input method inserted them itself (`typeCharacter`). Shows the old order bug
-    /// in WebKit's key queue (`LateDocument.keyQueue`). Never set in the input method.
+    /// the input method inserted them itself (`typeCharacter`). Kept as the control that
+    /// shows why N3 changed ("Vì sao Dấu tự chèn ký tự"): with it, WebKit's key queue
+    /// (`LateDocument.keyQueue`) gets the old order bug back (WebKitQueueTests). Never set
+    /// in the input method.
     var passesCharactersThrough = false
     /// Tests only: never wait for a ⌫ (N3 "Ngoại lệ sau ⌫ chưa áp"), to compare with.
     var skipsBackspaceWait = false
@@ -111,7 +106,12 @@ struct InPlaceComposer {
     private var lateRead: (location: Int, text: String?)?
 
     /// N3 "Ngoại lệ sau ⌫ chưa áp": a key that comes less than this after a ⌫ may wait for
-    /// the app to apply it (`askSelection`).
+    /// the app to apply it (`askSelection`). The value is not measured: no run compared
+    /// other values. It only bounds which keys after a ⌫ are armed. An armed key that types
+    /// at the caret asks one `selectedRange` more (`waitForBackspace`); one that replaces
+    /// uses the ask it makes anyway. An answer with the ⌫ already applied is used as any
+    /// answer, so the text does not change; only an answer still before the ⌫ makes the
+    /// key wait, at most `backspaceWaitLimit`.
     static let backspaceWaitWindow: TimeInterval = 0.3
     /// The longest a key waits, the calls made while waiting included (D42: p99 of a key
     /// at most 20 ms). A timed workaround: IMK has no API that tells the input method a
@@ -123,7 +123,10 @@ struct InPlaceComposer {
     /// about 410 ms, then words went wrong), and the D11 late-answer proof already handles
     /// the order of its edits.
     static let backspaceWaitLimit: TimeInterval = 0.02
-    /// Pause between two `selectedRange` asks while waiting.
+    /// Pause between two `selectedRange` asks while waiting. Short next to the 3 ms
+    /// Safari took to apply the ⌫ after the first answer (measured above), so an applied
+    /// ⌫ is seen at most about 2 ms late; a wait that runs out (`backspaceWaitLimit`)
+    /// makes about 10 asks. Not tuned by measurement.
     static let backspaceWaitStep: TimeInterval = 0.002
 
     /// The previous key on this client was a ⌫ the app deletes itself, and the tracker
@@ -133,7 +136,7 @@ struct InPlaceComposer {
     /// caret is once the ⌫ is applied (`known`), and before (`known` + units deleted).
     private var waitFor: (applied: Int, pending: Int)?
 
-    /// What waiting for a ⌫ did on this key (perf log).
+    /// What waiting for a ⌫ did on this key (Debug perf log, tests).
     struct BackspaceWait: Equatable {
         /// `selectedRange` asks after the first.
         var asks: Int
@@ -143,6 +146,8 @@ struct InPlaceComposer {
         /// some other position, taken as is).
         var applied: Bool
     }
+    /// This key's wait, for `Outcome.backspaceWait` (read only by the Debug perf log and
+    /// the tests).
     private var keyWait: BackspaceWait?
 
     /// D20 "Từ hệ thống vừa sửa": the last word this composer produced, as it was when a
@@ -211,7 +216,8 @@ struct InPlaceComposer {
         var consumed = false
         var kind = PerfLog.Kind.pass
         var attempt: Attempt?
-        /// Set when this key waited for the ⌫ before it (N3, `askSelection`).
+        /// Set when this key waited for the ⌫ before it (N3, `askSelection`). The input
+        /// method reads it only for the Debug perf log; the tests read it too.
         var backspaceWait: BackspaceWait?
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).

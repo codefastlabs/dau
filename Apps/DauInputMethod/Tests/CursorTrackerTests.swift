@@ -32,7 +32,7 @@ struct CursorTrackerTests {
         #expect(t.plan(selection: at(5), deleteCount: -1) == .mismatch)
     }
 
-    @Test("tooi: t o pass, o replaces, i passes; the next replacement must match")
+    @Test("tooi: t o typed at the caret, o replaces, i typed at the caret; the next replacement must match")
     func followsTheWord() {
         // Document "x " then the word starts at 2.
         var t = CursorTracker()
