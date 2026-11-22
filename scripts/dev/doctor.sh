@@ -29,12 +29,14 @@ log_step "Công cụ build"
 # The scripts and manual commands use the Xcode that xcode-select picks; nothing overrides it.
 # `xcode-select -p` prints $DEVELOPER_DIR when that is set, the same folder the tools then use.
 selected=$(xcode-select -p 2>/dev/null)
+have_xcode=0
 if [[ -n ${DEVELOPER_DIR-} ]]; then
   log_warn "DEVELOPER_DIR đang đặt là $DEVELOPER_DIR và ghi đè lựa chọn của xcode-select."
   log_hint "Repo không dùng biến này. Bỏ nó (unset DEVELOPER_DIR) để mọi lệnh dùng Xcode mà xcode-select chọn."
 fi
 if [[ -n $selected && -x $selected/usr/bin/xcodebuild ]]; then
   xv=$(xcodebuild -version 2>/dev/null | tr '\n' ' ')
+  [[ -n $xv ]] && have_xcode=1
   if [[ -n $xv ]]; then
     log_ok "Xcode: ${xv% }  ($selected)"
   else
@@ -136,7 +138,7 @@ fi
 log_step "Nguồn đầu vào Dấu (chỉ đọc)"
 if [[ ! -f $im/Contents/Info.plist ]]; then
   log_detail "Bỏ qua: bộ gõ chưa cài."
-elif [[ -z $dev_dir ]]; then
+elif (( ! have_xcode )); then
   log_detail "Bỏ qua: cần Xcode để biên dịch công cụ đọc nguồn đầu vào."
 else
   source "$root/scripts/lib/swift-tool.sh"
