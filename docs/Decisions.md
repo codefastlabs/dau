@@ -57,7 +57,7 @@ Sổ này là nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết
 | [D41](#d41-ngôn-ngữ-giao-diện) | Ngôn ngữ giao diện | Giao diện có tiếng Việt và tiếng Anh, chọn theo ngôn ngữ ưu tiên của macOS. |
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Trước mỗi bản phát hành phải chạy bài tải nặng, và vượt ngưỡng thì không phát hành. |
 | [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Dấu không xử lý riêng ô bỏ qua vùng thay chữ. Người dùng tự bật gạch chân để gõ đúng ở đó, và Ghostty mang nhãn "Đề xuất". |
-| [D44](#d44-văn-xuôi-tiếng-việt) | Văn xuôi tiếng Việt | Tài liệu viết thành câu tự nhiên, rõ ràng, đủ ý, và giữ tối đa ý nghĩa gốc. |
+| [D44](#d44-văn-xuôi-tiếng-việt) | Văn xuôi tiếng Việt | Tài liệu viết thành câu tiếng Việt tự nhiên, rõ ràng, đủ ý và giữ tối đa ý nghĩa gốc, không theo khuôn câu tiếng Anh. |
 
 Cuối sổ: [Đã biết nhưng không làm](#đã-biết-nhưng-không-làm), [Đã cân nhắc và loại bỏ](#đã-cân-nhắc-và-loại-bỏ), [Câu hỏi mở](#câu-hỏi-mở).
 
@@ -740,11 +740,14 @@ Tài liệu tiếng Việt trong dự án viết thành câu đủ ý, tự nhi�
 - Khi có nhiều ý ngang hàng thì mỗi ý viết thành một câu riêng. Các ý đó xuống dòng hoặc đứng sau gạch đầu dòng. Mỗi gạch đầu dòng là một câu đủ ý, không phải một cụm danh từ cộc.
 - Các câu nối tiếp nhau viết thành đoạn văn. Không nhồi nhiều việc vào một câu bằng dấu hai chấm, dấu gạch chéo hay ngoặc đơn chỉ để lấy ngắn.
 - Khi viết lại hoặc viết mới, người viết giữ tối đa ý nghĩa gốc. Không thêm sự kiện, không bỏ số đo, không làm lệch dữ liệu kiểm chứng, và không đổi các thuật ngữ đã chốt trong [`docs/Glossary.md`](Glossary.md). Số N/D, mã lệnh và đường dẫn giữ nguyên.
-- Luật này áp cho mọi tài liệu markdown, kể cả sổ quyết định và tài liệu trong [`docs/history/`](history/), để người đọc không bị vấp khi tra cứu. Tài liệu hiện có được viết lại từng bước, có đối chiếu với bản cũ.
+- Luật này áp cho mọi tài liệu markdown, kể cả sổ quyết định và tài liệu trong [`docs/history/`](history/), để người đọc không bị vấp khi tra cứu. Tài liệu trong `docs/history/` được viết lại câu chữ nhưng giữ nguyên sự kiện, số đo và ngày như lúc ghi. Tài liệu hiện có được viết lại từng bước, có đối chiếu với bản cũ.
+- **Văn tiếng Việt, không văn dịch.** Câu theo cú pháp tiếng Việt, không theo khuôn câu tiếng Anh. Luật này áp cho cả tài liệu lẫn chuỗi giao diện tiếng Việt. Danh mục các thói quen câu tiếng Anh phải tránh, kèm cách sửa, nằm ở [`docs/CLAUDE.md`](CLAUDE.md) mục "Văn tiếng Việt, không văn dịch". Nguồn và số đo nằm ở [`docs/research/VietnameseProse.md`](research/VietnameseProse.md).
 - Tiêu đề mục và cột nhãn (như cột "Tên" trong bảng mục lục) được dùng cụm danh từ rõ nghĩa, không viết tắt khó hiểu. Phần diễn giải, tóm tắt luật (như cột "Luật") và ghi chú phân tích là văn xuôi và phải viết thành câu đủ ý.
-- Chuỗi giao diện theo quy chuẩn thiết kế của macOS, nhưng phần mô tả và hướng dẫn đi kèm trong tài liệu phải là câu văn xuôi đủ ý.
+- Chuỗi giao diện theo quy chuẩn thiết kế của macOS về độ dài và cách gọi tên, nhưng dấu câu và cú pháp theo luật "Văn tiếng Việt, không văn dịch". Phần mô tả và hướng dẫn đi kèm trong tài liệu phải là câu văn xuôi đủ ý.
 
 **Vì sao:** quy định cũ về viết câu ngắn ở [`docs/CLAUDE.md`](CLAUDE.md) từng bị hiểu máy móc thành bỏ động từ và nối các vế bằng dấu câu, làm câu cụt và buộc người đọc tự dịch lại trong đầu. Miễn trừ cho một số tài liệu (như giữ văn phong cũ trong tài liệu lịch sử hay sổ quyết định) không có lý do chính đáng, vì người đọc các tài liệu đó vẫn vấp như vậy. Tài liệu cần vừa giữ đúng chi tiết kỹ thuật, vừa đọc tự nhiên. Người dùng giao phiên chính chốt ngày 20/11/2026.
+
+**Vì sao có luật văn dịch:** các lượt viết lại đầu tiên theo D44 vẫn mang thói quen câu tiếng Anh, rõ nhất là dấu phẩy trước "và" (426 chỗ trong tài liệu chính, đếm ngày 22/11/2026). Người dùng chỉ ra lỗi này và duyệt danh mục luật cùng ngày.
 
 **Hệ quả đã chấp nhận:** phần diễn giải sẽ dài hơn. Tài liệu hiện có được rà và viết lại từng bước mà không đổi số đo hay dữ kiện thực nghiệm.
 

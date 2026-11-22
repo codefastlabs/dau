@@ -50,10 +50,11 @@ Mỗi tài liệu nghiên cứu bàn một chủ đề kỹ thuật. Kết luậ
 | [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md) | Tài liệu phân tích và đề xuất hướng sửa cho bốn kịch bản ứng dụng trả lời chậm (chậm sau ⌫, tính vị trí theo từ, trang bận qua chỗ ngắt từ, và WebKit dồn phím). |
 | [`docs/research/EditingTypedText.md`](research/EditingTypedText.md) | Tài liệu khảo sát cách người dùng sửa chữ khi đang gõ, nguyên nhân Dấu sai và hướng sửa. |
 | [`docs/research/WebEditorInput.md`](research/WebEditorInput.md) | Tài liệu khảo sát cách các bộ gõ trên macOS nhập chữ vào Google Docs, dữ liệu Chrome gửi cho bộ gõ và chế độ hỗ trợ tiếp cận của Google Docs. |
+| [`docs/research/VietnameseProse.md`](research/VietnameseProse.md) | Tài liệu tìm nguồn cho các thói quen câu tiếng Anh trong văn tiếng Việt của repo (dấu phẩy trước "và", bị động thừa, danh hoá…), đo số lần xuất hiện và xếp theo mức chắc chắn. |
 
 ## Tài liệu lưu trữ lịch sử
 
-Thư mục `docs/history/` giữ các bản ghi lịch sử của dự án, đúng như lúc chúng được ghi. Riêng tên file và liên kết vẫn được sửa khi file đổi tên, để liên kết và tìm kiếm còn đúng.
+Thư mục `docs/history/` giữ các bản ghi lịch sử của dự án. Sự kiện, số đo và ngày giữ đúng như lúc ghi. Câu chữ được viết lại theo D44, còn tên file và liên kết được sửa khi file đổi tên để liên kết và tìm kiếm còn đúng.
 
 | Tệp tài liệu | Nội dung lưu trữ |
 |---|---|

@@ -412,6 +412,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
   >
   > **Xem thêm:** cơ chế đọc từ mã ở [`docs/research/TerminalAndUnderline.md`](../research/TerminalAndUnderline.md); [`docs/Compatibility.md`](../Compatibility.md) mục 6.8; cách nhận ra ở [`docs/Architecture.md`](../Architecture.md) mục "Ô bỏ qua vùng thay chữ"; số đo ở [`docs/history/DecisionsLog.md`](DecisionsLog.md) mục D43.
 
+### D44. Văn xuôi tiếng Việt
+
+- 22/11/2026: thêm luật "Văn tiếng Việt, không văn dịch" (danh mục ở `docs/CLAUDE.md`, nguồn ở `docs/research/VietnameseProse.md`) và nói rõ `docs/history/` được viết lại câu chữ nhưng giữ nguyên sự kiện, số đo, ngày. Người dùng chỉ ra lỗi dấu phẩy trước "và" và duyệt danh mục.
+
 ## Đã biết nhưng không làm
 
 - 04/11/2026: "Tách thành mục riêng ngày 04/11/2026, người dùng chốt".
