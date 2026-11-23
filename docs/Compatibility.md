@@ -240,6 +240,17 @@ Cursor là một app với một bundle ID, nhưng có hai kiểu cửa sổ. C�
 - Trình soạn thảo (`cursor`, Cursor 3.31.15), câu `edit` 10 ms (23/11/2026, 12:58–13:10, máy M1 Pro, macOS 27.2.1, bản Release của bản sửa "Hocj"; câu `edit` có "Hoc ⌫j"): sai 4/4 (1 lượt Release, 3 lượt Debug), lượt nào cũng ra "Hocj"; lượt Release còn ra "meting". Cursor trả vị trí tính từ đầu từ (`selectedRange` 1–3 khi Dấu theo dõi 14), nên phép chứng minh app chậm không so được (`typed_read_reject=limit`) và Dấu không gieo từ. Đây là kiểu vị trí đã ghi ở trên, có từ trước bản sửa. Lượt đầu dừng trước khi gõ vì cửa sổ Cursor Agents lên trước cửa sổ thử (mã thoát 3); chạy lại thì gõ được.
 - Sau bản sửa cho app tính vị trí từ đầu từ (23/11/2026, 13:29–13:47, máy M1 Pro, Cursor 3.31.15, trình soạn thảo, câu `edit` 10 ms, bản Debug của cây làm việc): "Hoc ⌫j" ra "Học" 8/10 lượt (lượt đầu của vòng thứ hai Cursor trả vị trí từ đầu văn bản). Bảy lượt trả vị trí 3, đọc được "Hoc" và được gieo (`typed_read_word_start=1`). Hai lượt còn "Hocj": một lượt trả vị trí 4, đọc được 4 đơn vị không khớp chữ đã gõ, trước khi bản sửa nhận câu trả lời thiếu ⌫ (mô hình cho thấy đó là "Hoc␣" chưa áp ⌫; ca này chưa gặp lại trên app thật sau khi sửa); một lượt trả vị trí 1, đọc được 1 đơn vị không khớp chữ đã gõ. Đối chứng là bản Release trước bản sửa: "Hocj" 1/1 (lượt kia dừng trước khi gõ vì cửa sổ Cursor Agents lên trước). 4/10 lượt của bản sửa vẫn sai 1–2 từ khác ("keế", "àyay", "dđược", "nguoiwf", "moột"): câu trả lời cũ qua ranh giới từ, như ý trên. Cùng bản sửa, Chrome trang bận 10 ms đúng 3/3, Edge, Firefox, Safari trang bận 10 ms và VS Code 5 ms đúng mọi lượt.
 - Khung agent (`cursorchat`) và ô nhập Agents (`cursoragents`), câu `edit` 10 ms (23/11/2026, 13:50–13:52, máy M1 Pro, Cursor 3.31.15, bản Release `179b3b6`): đúng cả câu 2/2 mỗi ô.
+- Đường nhập của trình soạn thảo theo cài đặt Cursor (cơ chế ở [`docs/research/MonacoInput.md`](research/MonacoInput.md)):
+
+  Đo ngày 23/11/2026, 14:36–14:42, máy M1 Pro, Cursor 3.31.15, ô `cursor`, câu `edit` 10 ms, bản Debug của Dấu ở `a8015af` có log `selectedRange`. Cài đặt của Cursor trên máy lúc đầu không đặt `editor.accessibilitySupport` (tức `auto`) và không bật EditContext; VoiceOver không chạy. Mỗi cài đặt ghi vào `settings.json` của Cursor, thoát Cursor bình thường để nó nạp lại, chạy ba lượt; sau lượt đo file cài đặt được trả về nguyên bản. Lượt đầu của mỗi cài đặt dừng trước khi gõ vì cửa sổ Cursor Agents lên trước cửa sổ thử khi Cursor vừa mở (mã thoát 3), nên mỗi cài đặt có hai lượt gõ được.
+
+  | Cài đặt | `selectedRange` lớn nhất trong 60–61 lần thay | Chữ |
+  |---|---|---|
+  | `"editor.accessibilitySupport": "off"` | 6 (tính từ đầu từ) | sai 2/2: "dđược", "àyay"; "pảai", "vêetjs" |
+  | `"editor.accessibilitySupport": "on"` | 219 (tính từ đầu văn bản) | đúng 2/2, cả "Học" |
+  | `"off"` kèm `"editor.experimentalEditContextEnabled": true` | 219 (câu thử một dòng, nên đầu dòng trùng đầu văn bản) | đúng 2/2, cả "Học" |
+
+  Điều gì bật chế độ trình đọc màn hình ở các lượt buổi sáng 17/11 (cài đặt `auto`) chưa rõ.
 
 ### 5.5 Terminal
 
