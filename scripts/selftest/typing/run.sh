@@ -453,7 +453,7 @@ PAGE_TITLE="Dấu self test"
 # address bar (and its read-back passed, because ⌘A ⌘C copied the same text from there).
 FOCUS_TITLE="$PAGE_TITLE [focus]"
 cat > "$PAGE" <<HTML
-<!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
+<!doctype html><meta charset="utf-8"><meta name="color-scheme" content="light dark"><title>$PAGE_TITLE</title>
 <textarea autofocus spellcheck="false" autocomplete="off" style="width:96vw;height:90vh"></textarea>
 <script>
 var t = document.querySelector("textarea");
@@ -2536,7 +2536,7 @@ shot_window() { # process name
 # is set only while xterm.js's own text area has the focus.
 XTERM_PAGE="$WORK/dau-xterm.html"
 cat > "$XTERM_PAGE" <<HTML
-<!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
+<!doctype html><meta charset="utf-8"><meta name="color-scheme" content="light dark"><title>$PAGE_TITLE</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/css/xterm.css">
 <script src="https://cdn.jsdelivr.net/npm/@xterm/xterm@5.5.0/lib/xterm.js"></script>
 <div id="t" style="width:96vw;height:90vh"></div>
@@ -2594,7 +2594,7 @@ run_xterm() {
 # while the editor itself has the focus. Return is never typed (↩ is an error here).
 TIPTAP_PAGE="$WORK/dau-tiptap.html"
 cat > "$TIPTAP_PAGE" <<HTML
-<!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
+<!doctype html><meta charset="utf-8"><meta name="color-scheme" content="light dark"><title>$PAGE_TITLE</title>
 <style>
   body { margin: 8px; font: 18px -apple-system, sans-serif; }
   #e { width: 96vw; height: 80vh; border: 1px solid #888; padding: 8px; overflow: auto; }
