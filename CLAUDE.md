@@ -58,6 +58,10 @@ Luật viết đầy đủ ở [`docs/CLAUDE.md`](docs/CLAUDE.md). Hai luật d�
 - Dự án Xcode sinh từ `project.yml` bằng XcodeGen, không commit thủ công thay đổi trong `.xcodeproj`.
 - Test bằng Swift Testing. Tên định danh, comment và commit message bằng tiếng Anh; chuỗi giao diện trong String Catalog, khoá là câu tiếng Anh, có bản tiếng Việt (D41 (Ngôn ngữ giao diện); thuật ngữ ở `docs/Glossary.md`).
 - **API của Apple trước, vá vòng sau.** Đọc tài liệu Apple và HIG trước, ghi API mà Apple thiết kế cho việc đó. Cách vá vòng (duyệt cây view, thử lại có hẹn giờ, số cố định bù bố cục) chỉ dùng khi tài liệu cho thấy không có API và ghi lý do.
+- **Mã tự nói trước, comment sau.** Trước khi viết comment, đưa ý vào mã. Tên nói điều nó giữ hay làm, kèm đơn vị khi có. Một khái niệm có kiểu riêng thay vì nhiều `Int?` cùng một đoạn giải thích. Comment chia đoạn trong hàm được thay bằng hàm con có tên. Ví dụ hành vi nằm trong test có tên tả hành vi đó, không nằm trong comment. Comment chỉ giữ điều mã không nói được: ràng buộc từ bên ngoài (macOS hay một app làm cách hiển nhiên sai), lý do của một lựa chọn không hiển nhiên, số D/N.
+  - Comment tài liệu (`///`) mở bằng một câu tóm tắt. Đoạn sau chỉ thêm khi người gọi cần nó để dùng đúng.
+  - Không chép số đo, bảng ca theo từng app hay diễn giải nghiên cứu vào comment; dẫn mục tài liệu thay vào đó. Tên app chỉ nêu khi chính app đó là ràng buộc, một ví dụ là đủ.
+  - Comment dài hơn đoạn mã nó tả là dấu hiệu mã cần đặt tên hay tách lại, không phải dấu hiệu cần thêm comment.
 - **Comment tả mã đang có và vì sao, không kể lịch sử.** Phép thử: người lần đầu đọc file, không có lịch sử commit, có hiểu mã tốt hơn nhờ comment không.
   - Không viết bản trước làm gì ("used to", "as before", "old behaviour", "after the fix"); diễn biến ở commit message. Bản trước sai thế nào thì viết thành hệ quả ở hiện tại ("otherwise …").
   - Không mang ngữ cảnh của phiên làm việc: ngày, tên lượt đo, mốc (M#, "step 2"), mã commit, đường dẫn `build/`, "canvas version N", ý kiến của người dùng. Số đo cần nguồn thì dẫn mục tài liệu và ghi phiên bản macOS hay app; ca thật minh hoạ thì giữ một ví dụ chữ.

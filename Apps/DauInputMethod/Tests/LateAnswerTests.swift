@@ -76,7 +76,7 @@ struct LateAnswerTests {
     }
 
     /// Chrome with a busy page (`docs/history/LogM6.md` step 1d): at each wrong word the
-    /// answer is one behind `known` and the read does not prove a late answer. Replayed
+    /// answer is one behind `followed.caret` and the read does not prove a late answer. Replayed
     /// with Chrome's cache as its source shows it: the page two
     /// edits behind, plus the latest key written into the cache at the page's caret
     /// (`LateDocument.Cache.chromium`). `late` is typed so; then `rest` on time.
@@ -243,7 +243,7 @@ struct LateAnswerTests {
 
     /// Chrome, busy page, human fast pace ("dduwowjc" gives "đụơc"). The answer at "o" is
     /// one edit late, without the "u" → "ư" replacement, which leaves the caret where it
-    /// was: the answer is at `known` and, taken as on time, `rebuild` at "j" (three edits
+    /// was: the answer is at `followed.caret` and, taken as on time, `rebuild` at "j" (three edits
     /// late) could replay only two. Every lag the page can
     /// build up (at most one more per key) from 0 to 3 up to "j", then on time; both caches, in a
     /// burst and not.
@@ -273,7 +273,7 @@ struct LateAnswerTests {
     /// The strings of `scripts/selftest/load/run.sh` (`--text edit`, and
     /// `--text std`; `--print keys`, `--print expect`) with every key answered 0, 1 or 2
     /// edits late, at random: after every key the text must be what the same keys give
-    /// on time. (Three edits late is past `CursorTracker.lateLimit`: the answer is then
+    /// on time. (Three edits late is past `CursorTracker.LatenessBudget.humanPaceEdits`: the answer is then
     /// taken as it is, and words come out wrong.)
     static let editKeys = "Sasng nay mojot nguoiwf banj guiwr email hoir veef deadline cuar project. Minhf phari vieetjs laji kees hoajch truwocs meeting chieeuf nay. Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf dduwowjc luyeenj ddeeuf mooix ngayf. Chaofzf banj, xem video treen YouTube huowsng daanx nhes. "
 
@@ -318,7 +318,7 @@ struct LateAnswerTests {
 
     /// Busy page (`--busy 300:1000`, docs/Compatibility.md 5.2): Chrome answers up to 12 edits
     /// late across word ends. In a word `rebuild` now allows every edit since the app's last
-    /// answer on time (`CursorTracker.sinceOnTime`); the real Chrome runs come out right
+    /// answer on time (`CursorTracker.LatenessBudget.editsSinceOnTimeAnswer`); the real Chrome runs come out right
     /// (`docs/Compatibility.md` 5.2). The model is harsher (lag from the start of the
     /// text, before any answer on time), so some cases still fail: a known issue of the model
     /// (docs/research/LateAnswerFixes.md 3.3). The page is blocked
@@ -395,7 +395,7 @@ struct LateAnswerTests {
 }
 
 /// The D20 read after ⌫ (see `BackspaceThenMarkTests`) in Chrome's
-/// cache model, with the answer within `lateLimit` edits late (`CursorTracker.rebuild`).
+/// cache model, with the answer within `LatenessBudget.humanPaceEdits` edits late (`CursorTracker.rebuild`).
 @Suite("In-place mode: D20 after ⌫ with a late answer")
 struct LateBackspaceMarkTests {
     @Test("same keys, answer 1 or 2 edits late: proved, the mark applies", arguments: [1, 2])

@@ -90,19 +90,19 @@ struct ClientRangeTests {
         var t = CursorTracker()
         t.anchor(at: 5)
         t.didReplace(NSRange(location: 5, length: Int.max - 3), text: "â")
-        #expect(t.known == nil && t.expected == nil && t.edits.isEmpty)
+        #expect(t.followed.caret == nil && t.predictedCaret == nil && t.followed.edits.isEmpty)
         t.didReplace(NSRange(location: 2, length: 1), text: "a", cursor: Int.max)
-        #expect(t.known == nil)
+        #expect(t.followed.caret == nil)
     }
 
     @Test("anchor at {Int.max-1} then two units typed: no trap, no position")
     func anchorHuge() {
         var t = CursorTracker()
         t.anchor(at: Int.max - 1)
-        #expect(t.known == nil)
+        #expect(t.followed.caret == nil)
         t.typedAtCaret("a")
         t.typedAtCaret("b")
-        #expect(t.known == nil && t.expected == nil)
+        #expect(t.followed.caret == nil && t.predictedCaret == nil)
     }
 
     @Test("a position pushed past the limit by an insertion is forgotten")
@@ -114,10 +114,10 @@ struct ClientRangeTests {
             return
         }
         t.didReplace(range, text: "ôô")
-        #expect(t.known == nil)
-        #expect(t.expected == nil)
+        #expect(t.followed.caret == nil)
+        #expect(t.predictedCaret == nil)
         t.didInsertAtCursor("abc")
-        #expect(t.expected == nil && t.known == nil)
+        #expect(t.predictedCaret == nil && t.followed.caret == nil)
     }
 
     @Test("rebuild with a huge answer proves nothing")
@@ -150,7 +150,7 @@ struct InPlaceOddRangeTests {
         #expect(client.selectedRangeCalls == 1)
         #expect(client.rangedInserts.isEmpty)
         #expect(client.reads.isEmpty)
-        #expect(composer.tracker.known == nil)
+        #expect(composer.tracker.followed.caret == nil)
     }
 
     @Test("D20 path: a mark key with no word asks once, reads nothing, does not trap",
@@ -163,7 +163,7 @@ struct InPlaceOddRangeTests {
         #expect(client.selectedRangeCalls == 1)
         #expect(client.reads.isEmpty)
         #expect(client.rangedInserts.isEmpty)
-        #expect(composer.tracker.known == nil)
+        #expect(composer.tracker.followed.caret == nil)
         // The key goes in as typed, at the caret (N3).
         #expect(outcome.consumed)
         #expect(client.inserts.map(\.0) == ["s"])

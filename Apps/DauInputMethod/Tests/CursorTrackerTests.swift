@@ -38,14 +38,14 @@ struct CursorTrackerTests {
         var t = CursorTracker()
         t.typedAtCaret("t") // nothing known yet
         t.typedAtCaret("o")
-        #expect(t.expected == nil)
+        #expect(t.predictedCaret == nil)
         guard case .replace(let r) = t.plan(selection: at(4), deleteCount: 1) else {
             Issue.record("expected a replacement"); return
         }
         t.didReplace(r, text: "ô")
-        #expect(t.expected == 4)
+        #expect(t.predictedCaret == 4)
         t.typedAtCaret("i")
-        #expect(t.expected == 5)
+        #expect(t.predictedCaret == 5)
         #expect(t.plan(selection: at(5), deleteCount: 2) == .replace(at(3, 2)))
     }
 
@@ -73,23 +73,23 @@ struct CursorTrackerTests {
         var t = CursorTracker()
         t.didReplace(at(9, 1), text: "xy")
         t.backspacePassedThrough()
-        #expect(t.expected == 10)
+        #expect(t.predictedCaret == 10)
         var z = CursorTracker()
         z.didReplace(at(0, 0), text: "")
         z.backspacePassedThrough()
-        #expect(z.expected == nil)
+        #expect(z.predictedCaret == nil)
     }
 
     @Test("insertion at the cursor and invalidation")
     func insertAndInvalidate() {
         var t = CursorTracker()
         t.didInsertAtCursor("x")
-        #expect(t.expected == nil)
+        #expect(t.predictedCaret == nil)
         t.didReplace(at(4, 1), text: "x")
         t.didInsertAtCursor("yz")
-        #expect(t.expected == 7)
+        #expect(t.predictedCaret == 7)
         t.invalidate()
-        #expect(t.expected == nil)
+        #expect(t.predictedCaret == nil)
         #expect(t.plan(selection: at(100), deleteCount: 1) == .replace(at(99, 1)))
     }
 
@@ -103,12 +103,12 @@ struct CursorTrackerTests {
         t.didReplace(at(1, 1), text: "á")
         t.typedAtCaret(" ")
         t.endWord()
-        #expect(t.expected == nil)
-        #expect(t.known == 3)
-        #expect(t.tail == Array("bá ".utf16))
+        #expect(t.predictedCaret == nil)
+        #expect(t.followed.caret == 3)
+        #expect(t.followed.typedBeforeCaret == Array("bá ".utf16))
         t.typedAtCaret("n")
-        #expect(t.known == 4)
-        #expect(t.edits.last == CursorTracker.Edit(cursor: 3, location: 3, deleted: 0, deletedText: [], inserted: Array("n".utf16),
+        #expect(t.followed.caret == 4)
+        #expect(t.followed.edits.last == CursorTracker.Edit(cursor: 3, location: 3, deleted: 0, deletedText: [], inserted: Array("n".utf16),
                                                    atCaret: true))
     }
 
@@ -117,12 +117,12 @@ struct CursorTrackerTests {
         var t = CursorTracker()
         t.anchor(at: 4)
         for c in ["b", "a", "n"] { t.typedAtCaret(c) }
-        // The app answers 6 with "xx, ba" while "ban" is typed (known 7).
+        // The app answers 6 with "xx, ba" while "ban" is typed (followed caret 7).
         let snapshot = Array("xx, ba".utf16)
         #expect(t.rebuild(snapshot, at: at(6), accept: { _ in true }) == Array("xx, ban".utf16))
         // The caller refuses it (not the engine's word): nothing.
         #expect(t.rebuild(snapshot, at: at(6), accept: { _ in false }) == nil)
-        // On time, a selection, or more than `lateLimit` edits behind: nothing.
+        // On time, a selection, or more than `LatenessBudget.humanPaceEdits` edits behind: nothing.
         #expect(t.rebuild(Array("xx, ban".utf16), at: at(7), accept: { _ in true }) == nil)
         #expect(t.rebuild(snapshot, at: at(6, 1), accept: { _ in true }) == nil)
         #expect(t.rebuild(Array("xx, ".utf16), at: at(4), accept: { _ in true }) == nil)
@@ -134,7 +134,7 @@ struct CursorTrackerTests {
         t.anchor(at: 0)
         for c in ["H", "o", "c", " "] { t.typedAtCaret(c) }
         t.backspaceOutsideWord()
-        #expect(t.known == 3)
+        #expect(t.followed.caret == 3)
         // Answer from before the ⌫: "Hoc " at 4.
         #expect(t.rebuild(Array("Hoc ".utf16), at: at(4), requireDeletedText: true, accept: { _ in true }) == Array("Hoc".utf16))
         // Something else before the cursor at 4: not a late answer.
@@ -146,16 +146,16 @@ struct CursorTrackerTests {
         var t = CursorTracker()
         t.anchor(at: 5)
         t.backspaceOutsideWord()          // nothing typed here: unknown
-        #expect(t.known == nil)
+        #expect(t.followed.caret == nil)
         t.anchor(at: 5)
         t.typedAtCaret(" ")
         t.backspaceOutsideWord()
-        #expect(t.known == 5)
-        #expect(t.edits.last?.deletedText == Array(" ".utf16))
+        #expect(t.followed.caret == 5)
+        #expect(t.followed.edits.last?.deletedText == Array(" ".utf16))
         // A combining mark could join the character before it: unknown.
         t.typedAtCaret("\u{0301}")
         t.backspaceOutsideWord()
-        #expect(t.known == nil)
+        #expect(t.followed.caret == nil)
     }
 
     @Test("an answer elsewhere starts following again from it")
@@ -164,10 +164,10 @@ struct CursorTrackerTests {
         t.anchor(at: 10)
         t.typedAtCaret("a")
         t.didReplace(at(20, 1), text: "á")
-        #expect(t.known == 21)
-        #expect(t.edits.count == 1)
-        #expect(t.tail == Array("á".utf16))
+        #expect(t.followed.caret == 21)
+        #expect(t.followed.edits.count == 1)
+        #expect(t.followed.typedBeforeCaret == Array("á".utf16))
         t.invalidate()
-        #expect(t.known == nil && t.edits.isEmpty && t.tail.isEmpty)
+        #expect(t.followed.caret == nil && t.followed.edits.isEmpty && t.followed.typedBeforeCaret.isEmpty)
     }
 }

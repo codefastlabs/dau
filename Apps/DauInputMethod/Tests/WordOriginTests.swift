@@ -107,7 +107,7 @@ struct WordOriginTests {
         s.type(word.key, every: interval)
         let attempt = s.outcomes.last?.attempt
         #expect(attempt?.selection.location == word.sel)
-        #expect(attempt?.known == word.known)
+        #expect(attempt?.followedCaret == word.known)
         #expect(s.outcomes.last?.kind == .replace)
         s.type(word.rest, every: interval)
         #expect(s.doc.text == word.expected)
@@ -120,7 +120,7 @@ struct WordOriginTests {
     /// Cursor 3.29.15, 100 ms between keys: "owr ddaau, uwf cos. anh ddi " must give
     /// "ở dâu, ừ có. anh đi " (the app's answer is right at both keys below, but could be
     /// taken for `late`). After a replaced word of one letter the followed position is
-    /// two past it, within `CursorTracker.lateLimit`, where the text of the app must be
+    /// two past it, within `CursorTracker.LatenessBudget.humanPaceEdits`, where the text of the app must be
     /// compared with the text typed:
     /// - "d" + d (sel 1, known 3, range 2,1): the text read, "d", with the last two edits
     ///   replayed gives "d d", whose word is the engine's, though "ở d" was typed there.
@@ -145,7 +145,7 @@ struct WordOriginTests {
         for (key, sel, known) in [(6, 1, 3), (13, 1, 6), (18, 2, 4), (26, 1, 9)] {
             let attempt = s.outcomes[key - 1].attempt
             #expect(attempt?.selection.location == sel, "key \(key)")
-            #expect(attempt?.known == known, "key \(key)")
+            #expect(attempt?.followedCaret == known, "key \(key)")
         }
         #expect(s.doc.dropped == 0)
         #expect(s.overCalls == 0)
@@ -160,7 +160,7 @@ struct WordOriginTests {
         s.type("anh ddi ", every: 0.1)
         s.type("owr dd", every: 0.02)
         #expect(s.outcomes.last?.attempt?.selection.location == 1)
-        #expect(s.outcomes.last?.attempt?.known == 3)
+        #expect(s.outcomes.last?.attempt?.followedCaret == 3)
         #expect(s.outcomes.last?.kind == .replace)
         s.type("aau ", every: 0.02)
         #expect(s.doc.text == "anh đi ở đâu ")
@@ -200,7 +200,7 @@ struct WordOriginTests {
 
         let here = cursor.outcomes[5]
         #expect(here.attempt?.selection == last.attempt?.selection)
-        #expect(here.attempt?.known == last.attempt?.known)
+        #expect(here.attempt?.followedCaret == last.attempt?.followedCaret)
         #expect(cursor.doc.lastRead == doc.lastRead)
         #expect(cursor.doc.lastRead == "d")
         #expect(here.kind == .late && last.kind == .late)

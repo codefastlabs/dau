@@ -29,8 +29,8 @@ struct ReplaceDiag {
     init(_ attempt: InPlaceComposer.Attempt) {
         deleteCount = attempt.deleteCount
         selection = attempt.selection
-        expected = attempt.expected
-        known = attempt.known
+        expected = attempt.predictedCaret
+        known = attempt.followedCaret
         insertedLength = attempt.insertedLength
         replacement = attempt.replacement
         proof = "read=\(attempt.proofRead) tail=\(attempt.proofTail) edits=\(attempt.proofEdits) burst=\(attempt.proofBurst) rebuilt=\(attempt.proofRebuilt) word_at_answer=\(attempt.proofWordAtAnswer)"

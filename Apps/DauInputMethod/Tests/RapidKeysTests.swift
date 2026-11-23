@@ -318,7 +318,7 @@ struct RapidKeysTests {
         type("Chie", lag: 0)
         type("e", lag: 4)
         #expect(outcomes[4].attempt?.selection.location == (cache == .chromium ? 1 : 0))
-        #expect(outcomes[4].attempt?.known == 4)
+        #expect(outcomes[4].attempt?.followedCaret == 4)
         #expect(outcomes[4].kind == .late)
         type("uf nay ", lag: 0)
         #expect(doc.text == "Chiều nay ")
@@ -472,7 +472,7 @@ struct RapidKeysTests {
         #expect(doc.badRanges == 0)
     }
 
-    /// Past `CursorTracker.lateLimit`, a late answer must also show the text this
+    /// Past `CursorTracker.LatenessBudget.humanPaceEdits`, a late answer must also show the text this
     /// composer typed before the edits the app is missing. An app whose caret is where
     /// this composer was some edits ago, but with other text before it, is not taken for
     /// late, however long the burst.

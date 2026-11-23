@@ -230,6 +230,8 @@ targets:
       - path: Apps/DauInputMethod/Tests
       - path: Apps/DauInputMethod/Sources/KeyRouter.swift
       - path: Apps/DauInputMethod/Sources/CursorTracker.swift
+      - path: Apps/DauInputMethod/Sources/CursorTrackerRebuild.swift
+      - path: Apps/DauInputMethod/Sources/ClientRange.swift
       - path: Apps/DauInputMethod/Sources/MarkedComposer.swift
       - path: Apps/DauInputMethod/Sources/InPlaceComposer.swift
       - path: Apps/DauInputMethod/Sources/PerfLog.swift

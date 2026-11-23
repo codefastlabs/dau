@@ -1475,7 +1475,7 @@ struct ProducedWordTests {
 
 /// A word typed without its tone, Space, ⌫ back over the Space, then the mark key: the
 /// mark reaches the word ("học", not "hocj") at any pace and after a read that got
-/// nothing. An answer within `lateLimit` edits late is in `LateBackspaceMarkTests`.
+/// nothing. An answer within `LatenessBudget.humanPaceEdits` edits late is in `LateBackspaceMarkTests`.
 @Suite("InPlaceComposer: ⌫ over Space, then a mark key")
 struct BackspaceThenMarkTests {
     @Test("1: ⌫ then the mark key under 50 ms: the mark applies (D20 does not wait)", arguments: [0.005, 0.03])
