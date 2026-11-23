@@ -158,9 +158,9 @@ struct InPlaceComposer {
         var backspaceWait: BackspaceWait?
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
-        var d20: D20Trace?
+        var typedWordRead: TypedWordRead?
         /// How that read's answer was checked against the followed caret (`answerForRead`).
-        var d20Check: D20Check?
+        var typedWordReadProof: TypedWordReadProof?
         /// While a word seeded by a D20 read is being typed: whether the word shown differs
         /// from what an engine that never read the text would show. nil: no seeded word, or
         /// the key ended it.
@@ -170,7 +170,7 @@ struct InPlaceComposer {
 
     #if DEBUG
     /// What a D20 read did (Debug perf log only).
-    struct D20Trace: Equatable {
+    struct TypedWordRead: Equatable {
         /// What triggered the read (D20, "Chữ cái gõ sát chữ có sẵn" for a letter).
         enum Trigger: String { case mark, letter }
         var trigger: Trigger
@@ -179,7 +179,7 @@ struct InPlaceComposer {
     }
 
     /// The numbers of the late-answer proof at a D20 read (D8: numbers only).
-    struct D20Check: Equatable {
+    struct TypedWordReadProof: Equatable {
         /// The app's answer to `selectedRange`.
         var selection = NSRange(location: NSNotFound, length: 0)
         var followedCaret: Int?
@@ -196,15 +196,15 @@ struct InPlaceComposer {
         /// Perf log fields, each with a leading space; -1 or `-` when unknown or not reached.
         var logFields: String {
             let sel = selection.location == NSNotFound ? "notfound" : "\(selection.location),\(selection.length)"
-            var fields = " d20_sel=\(sel) d20_known=\(followedCaret ?? -1) d20_since=\(editsSinceOnTimeAnswer ?? -1)"
-                + " d20_burst=\(editsInBurst) d20_inburst=\(keyInBurst ? 1 : 0) d20_after_bksp=\(afterBackspace ? 1 : 0)"
+            var fields = " typed_read_sel=\(sel) typed_read_known=\(followedCaret ?? -1) typed_read_since=\(editsSinceOnTimeAnswer ?? -1)"
+                + " typed_read_burst=\(editsInBurst) typed_read_inburst=\(keyInBurst ? 1 : 0) typed_read_after_bksp=\(afterBackspace ? 1 : 0)"
             if let proof {
-                fields += " d20_limit=\(proof.limit) d20_limit_b=\(proof.cacheLimit) d20_lag=\(proof.edits ?? -1) d20_form=\(proof.form?.rawValue ?? "-")"
-                    + " d20_proved=\(proof.text == nil ? 0 : 1) d20_reject=\(proof.rejected?.rawValue ?? "-")"
+                fields += " typed_read_limit=\(proof.limit) typed_read_limit_b=\(proof.cacheLimit) typed_read_lag=\(proof.edits ?? -1) typed_read_form=\(proof.form?.rawValue ?? "-")"
+                    + " typed_read_proved=\(proof.text == nil ? 0 : 1) typed_read_reject=\(proof.rejected?.rawValue ?? "-")"
             } else {
-                fields += " d20_limit=-1 d20_limit_b=-1 d20_lag=-1 d20_form=- d20_proved=- d20_reject=-"
+                fields += " typed_read_limit=-1 typed_read_limit_b=-1 typed_read_lag=-1 typed_read_form=- typed_read_proved=- typed_read_reject=-"
             }
-            return fields + " d20_stale=\(staleInBurst ? 1 : 0)"
+            return fields + " typed_read_stale=\(staleInBurst ? 1 : 0)"
         }
     }
     /// The word the last `seedWord` seeded.
@@ -254,7 +254,7 @@ struct InPlaceComposer {
             if case .character(let c) = route, engine.isComposing { _ = shadow?.handle(c) } else { shadow = nil }
         }
         var outcome = handleTracked(route, time: time, engine: &engine, client: client)
-        if outcome.d20?.seeded == true, let plain = pendingShadow {
+        if outcome.typedWordRead?.seeded == true, let plain = pendingShadow {
             shadow = plain
             shadowPrefix = lastSeededWord
         }
@@ -682,7 +682,7 @@ struct InPlaceComposer {
         /// nor seeded from.
         var staleInBurst = false
         #if DEBUG
-        var check = D20Check()
+        var check = TypedWordReadProof()
         #endif
 
         /// A read that gave nothing usable is not made again for this key (N3).
@@ -730,8 +730,8 @@ struct InPlaceComposer {
         var check = answer.check
         check.afterBackspace = afterBackspace
         check.staleInBurst = answer.staleInBurst
-        traced.d20 = D20Trace(trigger: letter ? .letter : .mark, seeded: seeded)
-        traced.d20Check = check
+        traced.typedWordRead = TypedWordRead(trigger: letter ? .letter : .mark, seeded: seeded)
+        traced.typedWordReadProof = check
         #endif
         return traced
     }
@@ -746,7 +746,7 @@ struct InPlaceComposer {
     private mutating func answerForRead(_ selection: NSRange, client: some InPlaceClient) -> ReadAnswer {
         var answer = ReadAnswer(selection: selection)
         #if DEBUG
-        answer.check = D20Check(selection: selection, followedCaret: tracker.followed.caret,
+        answer.check = TypedWordReadProof(selection: selection, followedCaret: tracker.followed.caret,
                                 editsSinceOnTimeAnswer: tracker.lateness.editsSinceOnTimeAnswer,
                                 editsInBurst: tracker.lateness.editsInBurst, keyInBurst: tracker.lateness.keyInBurst)
         #endif
@@ -823,14 +823,14 @@ struct InPlaceComposer {
             before = .noWord
             return nil
         }
-        let d20 = rule != .resync
+        let addsMarksToTypedWord = rule != .resync
         // The word may go on before what was read: too long to be one the engine tracks.
         if word.count == text.unicodeScalars.count && location > text.utf16.count {
-            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine, client: client) : nil
+            return addsMarksToTypedWord ? continueForeignWord(word, scalar, location: location, engine: &engine, client: client) : nil
         }
         // Every scalar the engine accepts is in the BMP, so scalar counts are UTF-16 counts.
         guard word.allSatisfy({ $0.utf16.count == 1 }), engine.seed(displayed: word) else {
-            return d20 ? continueForeignWord(word, scalar, location: location, engine: &engine, client: client) : nil
+            return addsMarksToTypedWord ? continueForeignWord(word, scalar, location: location, engine: &engine, client: client) : nil
         }
         keySeededWord = word
         // D20 "Từ hệ thống vừa sửa": keep the text; the engine goes on from the word shown.

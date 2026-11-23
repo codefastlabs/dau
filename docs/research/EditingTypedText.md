@@ -200,7 +200,7 @@ Không có ca nào hỏng vì reset khi dời con trỏ hay vì ⌫ qua nhiều 
 ### 4.1 Mô phỏng và độ tin
 
 - **Mô phỏng người gõ** (`TypistSimTests`, `TypistSimOptionsTests`): bốn hồ sơ gõ kho câu tiếng Việt có lẫn từ tiếng Anh, bằng Telex và VNI, theo thứ tự phím riêng, gây lỗi rồi sửa như người nhìn màn hình. Mọi tỉ lệ là giả định (mục 1).
-- **Bộ gõ trong mô phỏng là bản chép** (`ImkField`): engine thật, cộng lần đọc D20 chép từ `InPlaceComposer` (`ExternalCasesTests.d20Seed`), trên ô nhập đồng bộ, con trỏ luôn ở cuối. Test `matrixRows` chạy lại 54 dòng của ma trận mục 2 (đo bằng `InPlaceComposer` thật) và 7 đầu vào ở bảng 4.2: ra đúng cả 61.
+- **Bộ gõ trong mô phỏng là bản chép** (`ImkField`): engine thật, cộng lần đọc D20 chép từ `InPlaceComposer` (`ExternalCasesTests.seedTypedWord`), trên ô nhập đồng bộ, con trỏ luôn ở cuối. Test `matrixRows` chạy lại 54 dòng của ma trận mục 2 (đo bằng `InPlaceComposer` thật) và 7 đầu vào ở bảng 4.2: ra đúng cả 61.
   - Còn gần đúng: app trả lời chậm hay không cho đọc, lần dựng lại của D11 (Kiểm tra ngữ cảnh) khi lệch vị trí, tự sửa chính tả ("Từ hệ thống vừa sửa"), gạch chân, ô D43 (Ô bỏ qua vùng thay chữ), mũi tên và click giữa từ.
 - **Hai thói quen sửa**, chia theo `byKeysPercent` (giả định 50%):
   - Theo màn hình: xoá tới chỗ chữ trên màn hình còn đúng, rồi gõ tiếp.

@@ -239,7 +239,7 @@ Chuỗi phím `windows carr tooi yeeu tieengs Vieetj, Sunrise `, đáp án "wind
 Log theo phím của ô trình soạn thảo (`webstorm.perf.log` do `--save` ghi), 47 dòng phím cho 47 phím của chuỗi (khớp từng phím):
 
 - **Phím ngay sau một phím đi thẳng** (bản trước 22/11/2026; `pass` hay `seed_pass`, Dấu để app tự chèn chữ, nay Dấu tự chèn) luôn gặp engine rỗng và chưa biết chữ trước con trỏ. Phím đó đi đường đọc của D20 (`seed_none`, `seed_pass`, `seed`), kể cả chữ cái đầu mỗi từ sau dấu cách, nơi lẽ ra không cần đọc.
-- **Phím ngay sau một phím Dấu tự gửi chữ** (`seed`, `replace` hay `seed_none` có `insertText`) luôn còn từ trong engine (`d20=none`, `diff=1`). Ví dụ: "o" thứ hai của `tooi` thay thành "ô", rồi "i" đi thẳng không đọc; hai chữ "r" của `carr` liền nhau, nên D26 (Gõ đúp phím dấu) ra "car" đúng.
+- **Phím ngay sau một phím Dấu tự gửi chữ** (`seed`, `replace` hay `seed_none` có `insertText`) luôn còn từ trong engine (`typed_read=none`, `diff=1`). Ví dụ: "o" thứ hai của `tooi` thay thành "ô", rồi "i" đi thẳng không đọc; hai chữ "r" của `carr` liền nhau, nên D26 (Gõ đúp phím dấu) ra "car" đúng.
 - Không có dòng `activate` nào trong lúc gõ (một dòng trước phím đầu). Không có `client-changed`, `source-changed-reset`, phím `reset` hay `commit` do chuột.
 
 Giả thuyết và dự đoán của từng giả thuyết:

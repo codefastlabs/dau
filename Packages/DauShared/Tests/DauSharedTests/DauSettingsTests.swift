@@ -5,8 +5,8 @@ import DauEngine
 
 @Suite("DauSettings")
 struct DauSettingsTests {
-    @Test("defaults follow D15")
-    func defaultsFollowD15() {
+    @Test("the shipped defaults (D15)")
+    func defaultsAreTheShippedOnes() {
         let s = DauSettings.defaults
         #expect(s.typingMethod == .telex)
         #expect(s.tonePlacement == .modern)
@@ -36,7 +36,7 @@ struct DauSettingsTests {
         #expect(DauSettings(advanced: .consonantShortcuts).engineOptions.advanced == .consonantShortcuts)
     }
 
-    @Test("D22: turning one advanced option on turns the other off")
+    @Test("turning one advanced option on turns the other off (D22)")
     func advancedOptionsExclude() {
         var s = DauSettings.defaults
         s.consonantShortcuts = true
@@ -48,7 +48,7 @@ struct DauSettingsTests {
         #expect(s.consonantShortcuts && !s.allowZFWJ)
     }
 
-    @Test("D22: turning off the option that is not on changes nothing")
+    @Test("turning off the option that is not on changes nothing (D22)")
     func turningOffTheOtherOptionKeepsState() {
         var s = DauSettings(advanced: .consonantShortcuts)
         s.allowZFWJ = false
@@ -119,7 +119,7 @@ struct DauSettingsCodingTests {
         ])
     }
 
-    @Test("D5/D18: settings with legacy keys still load")
+    @Test("settings with legacy keys still load (D5, D18)")
     func legacyModeKeys() throws {
         // Legacy keys: a start mode per rule ("mode") and "rememberModePerApp".
         let s = try decode("""

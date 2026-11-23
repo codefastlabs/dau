@@ -49,7 +49,7 @@ struct CursorTrackerTests {
         #expect(t.plan(selection: at(5), deleteCount: 2) == .replace(at(3, 2)))
     }
 
-    @Test("D11: inline autocomplete — 'go' + selected 'ogle.com', x replaces word and suggestion")
+    @Test("inline autocomplete — 'go' + selected 'ogle.com', x replaces word and suggestion (D11)")
     func inlineAutocomplete() {
         // First replacement of the word: nothing expected yet, the suggestion is selected.
         var t = CursorTracker()
@@ -60,7 +60,7 @@ struct CursorTrackerTests {
         #expect(t.plan(selection: at(5, 6), deleteCount: 2) == .mismatch)
     }
 
-    @Test("D11: the cursor moved without a reported click → mismatch")
+    @Test("the cursor moved without a reported click → mismatch (D11)")
     func drift() {
         var t = CursorTracker()
         t.didReplace(at(9, 1), text: "x")

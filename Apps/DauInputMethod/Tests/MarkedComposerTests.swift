@@ -106,7 +106,7 @@ struct MarkedComposerTests {
         #expect(s.passedWithMarked == 0)
     }
 
-    @Test("D4: every printable word end restores the same way")
+    @Test("every printable word end restores the same way (D4)")
     func punctuation() {
         var s = Session()
         s.type("Sunrise! (windows) as")
@@ -143,7 +143,7 @@ struct MarkedComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D32: Backspace edits the marked word; the last letter clears the marked text")
+    @Test("Backspace edits the marked word; the last letter clears the marked text (D32)")
     func backspace() {
         var s = Session()
         s.type("hoaf")
@@ -163,7 +163,7 @@ struct MarkedComposerTests {
         #expect(s.app.calls.count == calls)
     }
 
-    @Test("D26 lock holds after Backspace in the marked word")
+    @Test("the double-key lock holds after Backspace in the marked word (D26)")
     func doubledThenBackspace() {
         var s = Session()
         s.type("tesst")
@@ -173,7 +173,7 @@ struct MarkedComposerTests {
         #expect(s.app.document == "tess ")
     }
 
-    @Test("D26 lock ends when ⌫ deletes the double key's letter in the marked word")
+    @Test("the double-key lock ends when ⌫ deletes the double key's letter in the marked word (D26)")
     func doubledLetterDeleted() {
         var s = Session()
         s.type("carr")
@@ -213,8 +213,8 @@ struct MarkedComposerTests {
         #expect(s.passedWithMarked == 0)
     }
 
-    @Test("D20 (plain letter next to existing text too) not in underline mode: text already in the app is never read, the letter starts a word")
-    func noD20() {
+    @Test("not in underline mode (also for a plain letter next to existing text): text already in the app is never read, the letter starts a word (D20)")
+    func noReadInUnderlineMode() {
         var s = Session()
         s.app.document = "q"   // ⟦q⟧uer: in-place mode would join it into "quẻ"
         s.type("uer ")
@@ -242,7 +242,7 @@ struct MarkedComposerTests {
         #expect(!s.engine.isComposing)
     }
 
-    @Test("D33 and very long runs: never lost, marked text stays bounded")
+    @Test("very long runs: never lost, marked text stays bounded (D33)")
     func longRun() {
         var s = Session()
         let run = String(repeating: "abcdefghijklmnopqrstuvwxyz", count: 3)

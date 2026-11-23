@@ -53,7 +53,7 @@ struct KeyRouterTests {
         #expect(route(0x60, "\u{F708}", .function) == .ignore)
     }
 
-    @Test("D18: dead keys, empty or multi-character events never reach the engine")
+    @Test("dead keys, empty or multi-character events never reach the engine (D18)")
     func malformed() {
         #expect(route(0x00, nil) == .ignore)
         #expect(route(0x00, "") == .ignore)

@@ -146,7 +146,7 @@ private struct Session {
     /// `selectedRange` calls of each key.
     var selectionCounts: [Int] = []
     #if DEBUG
-    var traces: [InPlaceComposer.D20Trace?] = []
+    var traces: [InPlaceComposer.TypedWordRead?] = []
     var diffs: [Bool?] = []
     #endif
     /// Keys that made more than one `insertText` or `selectedRange`, or more than one read
@@ -175,7 +175,7 @@ private struct Session {
         waits.append(outcome.backspaceWait)
         selectionCounts.append(selections)
         #if DEBUG
-        traces.append(outcome.d20)
+        traces.append(outcome.typedWordRead)
         diffs.append(outcome.seedDiffers)
         #endif
         if leftToApp(route, outcome) || (route == .backspace && doc.deletesConsumedBackspace) {
@@ -231,7 +231,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D11: a click the app did not report — the word is re-read and the key applies")
+    @Test("a click the app did not report — the word is re-read and the key applies (D11)")
     func resyncAfterUnreportedClick() {
         var s = Session()
         s.type("oo")
@@ -248,7 +248,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D11: a re-synced word the key only adds to (d + w → dư) is written once")
+    @Test("a re-synced word the key only adds to (d + w → dư) is written once (D11)")
     func resyncAppends() {
         var s = Session()
         s.type("oo")
@@ -261,7 +261,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D11: ⌘A the input method never sees — tốt, select all, toots → tốt")
+    @Test("⌘A the input method never sees — tốt, select all, toots → tốt (D11)")
     func selectAllUnseen() {
         var s = Session()
         s.type("toots")
@@ -275,7 +275,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D11: ⌘A unseen, then the app autocompletes after t — toots → tốt")
+    @Test("⌘A unseen, then the app autocompletes after t — toots → tốt (D11)")
     func selectAllThenAutocomplete() {
         var s = Session()
         s.type("toots")
@@ -298,7 +298,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D11: a real English word is checked once and left as typed")
+    @Test("a real English word is checked once and left as typed (D11)")
     func englishWordCheckedOnce() {
         var s = Session()
         s.type("windows ")
@@ -307,7 +307,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D11: keys faster than settleInterval do not re-sync (stale snapshot)")
+    @Test("keys faster than settleInterval do not re-sync (stale snapshot) (D11)")
     func noResyncWhenFast() {
         // Not at the start of a document: there, keys in one burst and an answer from
         // before all of them are an app that is slow to start
@@ -324,7 +324,7 @@ struct InPlaceComposerTests {
 
     // MARK: D20 examples (Decisions.md)
 
-    @Test("D20: viet + j → vietj (not a valid syllable: the key goes in as typed)")
+    @Test("viet + j → vietj (not a valid syllable: the key goes in as typed) (D20)")
     func vietJ() {
         var s = Session("viet")
         s.type("j")
@@ -335,7 +335,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.calls == [.selectedRange, .read(NSRange(location: 0, length: 4)), .insert("j", nil)])
     }
 
-    @Test("D20: viet + e + j → việt")
+    @Test("viet + e + j → việt (D20)")
     func vietEJ() {
         var s = Session("viet")
         s.type("ej")
@@ -346,7 +346,7 @@ struct InPlaceComposerTests {
         #expect(s.reads == 1)
     }
 
-    @Test("D20 + D26: cả + r → car; the word then restores and locks as typed")
+    @Test("cả + r → car; the word then restores and locks as typed (D20 + D26)")
     func doubleUndo() {
         var s = Session("cả")
         s.type("r")
@@ -355,7 +355,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.text == "cars ")
     }
 
-    @Test("D26: the ⌫ that deletes the double key's letter goes to the app with no call (N3); the next key marks again",
+    @Test("the ⌫ that deletes the double key's letter goes to the app with no call (N3); the next key marks again (D26)",
           arguments: [
             ("carr", "car", "ca", "r", "cả"), ("aaa", "aa", "a", "a", "â"), ("ddd", "dd", "d", "d", "đ"),
             ("nhaamff", "nhâmf", "nhâm", "f", "nhầm"), ("bass", "bas", "ba", "f", "bà"),
@@ -382,7 +382,7 @@ struct InPlaceComposerTests {
         }
     }
 
-    @Test("D26: while the double key's letter is shown, ⌫ keeps the lock — tesst⌫s → tess")
+    @Test("while the double key's letter is shown, ⌫ keeps the lock — tesst⌫s → tess (D26)")
     func backspaceKeepsDoubleLock() {
         for var s in Self.sessions() {
             s.type("tesst⌫s ")
@@ -391,7 +391,7 @@ struct InPlaceComposerTests {
         }
     }
 
-    @Test("D20 + D26 + D32: cả + r → car, ⌫ → ca, r → cả")
+    @Test("cả + r → car, ⌫ → ca, r → cả (D20 + D26 + D32)")
     func seededDoubleThenBackspace() {
         var s = Session("cả")
         s.type("r⌫r ")
@@ -399,7 +399,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D20 + D30/D31: hoc + f → hòc, the word end restores hocf")
+    @Test("hoc + f → hòc, the word end restores hocf (D20 + D30/D31)")
     func hocF() {
         var s = Session("hoc")
         s.type("f")
@@ -408,7 +408,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.text == "hocf ")
     }
 
-    @Test("D20: hoc, Space, ⌫, j → học")
+    @Test("hoc, Space, ⌫, j → học (D20)")
     func k7() {
         var s = Session()
         s.type("hoc ⌫j")
@@ -419,7 +419,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("D20: the word is read only up to the cursor, with text before it")
+    @Test("the word is read only up to the cursor, with text before it (D20)")
     func wordAfterText() {
         var s = Session("xin chao")
         s.type("f")
@@ -427,7 +427,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.calls.contains(.read(NSRange(location: 0, length: 8))))
     }
 
-    @Test("D20: VNI digits are mark keys (D36)")
+    @Test("VNI digits are mark keys (D20, D36)")
     func vni() {
         var settings = DauSettings.defaults
         settings.typingMethod = .vni
@@ -436,7 +436,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.text == "Việt")
     }
 
-    @Test("D20: decomposed (NFD) text is replaced over its decomposed length")
+    @Test("decomposed (NFD) text is replaced over its decomposed length (D20)")
     func decomposed() {
         var s = Session("vie\u{0302}t")
         s.type("j")
@@ -445,7 +445,7 @@ struct InPlaceComposerTests {
 
     // MARK: D20, when not to read (N3)
 
-    @Test("D20 off: no read, the key starts a new word")
+    @Test("with adding marks off: no read, the key starts a new word (D20)")
     func off() {
         var settings = DauSettings.defaults
         settings.addMarksToTypedWords = false
@@ -455,13 +455,13 @@ struct InPlaceComposerTests {
         #expect(s.doc.calls == [.insert("j", nil)])
     }
 
-    @Test("D15: on by default")
+    @Test("adding marks to typed words is on by default (D15)")
     func defaultOn() {
         #expect(DauSettings.defaults.addMarksToTypedWords)
         #expect(InPlaceComposer().addMarksEnabled)
     }
 
-    @Test("D20: a plain letter reads too and joins a valid prefix; no read inside a word")
+    @Test("a plain letter reads too and joins a valid prefix; no read inside a word (D20)")
     func letterReadsOnce() {
         var s = Session("ho")
         s.type("c")      // not a mark key: reads "ho", "hoc" is a valid prefix (D20, plain letter)
@@ -527,7 +527,7 @@ struct InPlaceComposerTests {
 
     // MARK: D18, odd clients
 
-    @Test("D18, D20: no document access → no read; after two such keys in a row, no read again until activation")
+    @Test("no document access → no read; after two such keys in a row, no read again until activation (D18, D20)")
     func noAccess() {
         var s = Session("hoc")
         s.doc.noAccess = true
@@ -544,7 +544,7 @@ struct InPlaceComposerTests {
         #expect(s.doc.calls.filter { $0 == .selectedRange }.count == 3)
     }
 
-    @Test("D18, D20: nil text → no seed, key typed as it is; after two in a row, no read again until activation")
+    @Test("nil text → no seed, key typed as it is; after two in a row, no read again until activation (D18, D20)")
     func nilText() {
         var s = Session("hoc")
         s.doc.noText = true
@@ -556,7 +556,7 @@ struct InPlaceComposerTests {
         #expect(s.reads == 2)
     }
 
-    @Test("D20: a read that gives text starts the count over — fail, text, fail still reads")
+    @Test("a read that gives text starts the count over — fail, text, fail still reads (D20)")
     func failedReadsStartOver() {
         var s = Session("hoc")
         s.doc.noText = true
@@ -572,7 +572,7 @@ struct InPlaceComposerTests {
         #expect(s.reads == 4)
     }
 
-    @Test("D18: text of the wrong length, or not letters, is not seeded")
+    @Test("text of the wrong length, or not letters, is not seeded (D18)")
     func oddText() {
         var s = Session("hoc")
         s.doc.oddText = "ho"
@@ -954,7 +954,7 @@ struct InPlaceComposerLetterTests {
         #expect(Array(s.doc.calls[before...]) == [.insert("q", nil)])
     }
 
-    @Test("D20 off: a letter reads nothing")
+    @Test("with adding marks off: a letter reads nothing (D20)")
     func off() {
         var settings = DauSettings.defaults
         settings.addMarksToTypedWords = false
@@ -1009,7 +1009,7 @@ struct InPlaceComposerLetterTests {
         #expect(s.kinds == [.seedNone])
     }
 
-    @Test("D18, D20: no document access → no read; two keys in a row without it, then no read until activation")
+    @Test("no document access → no read; two keys in a row without it, then no read until activation (D18, D20)")
     func noAccess() {
         var s = Session("q")
         s.doc.noAccess = true
@@ -1045,13 +1045,13 @@ struct InPlaceComposerLetterTests {
         s.type("uer")
         #expect(s.doc.text == "quẻ")
         #expect(s.diffs == [false, false, true])
-        #expect(s.traces.first == InPlaceComposer.D20Trace(trigger: .letter, seeded: true))
+        #expect(s.traces.first == InPlaceComposer.TypedWordRead(trigger: .letter, seeded: true))
         #expect(s.traces.dropFirst().allSatisfy { $0 == nil })
 
         // tôi + l: read, not joined: not seeded, no diff.
         var l = Session("tôi")
         l.type("la")
-        #expect(l.traces == [InPlaceComposer.D20Trace(trigger: .letter, seeded: false), nil])
+        #expect(l.traces == [InPlaceComposer.TypedWordRead(trigger: .letter, seeded: false), nil])
         #expect(l.diffs == [nil, nil])
 
         // hoc + j: the seed is what makes "học" instead of "hocj".
@@ -1063,7 +1063,7 @@ struct InPlaceComposerLetterTests {
         // A read that finds no word is not seeded and has no diff; the next key has no trace.
         var n = Session("xin, ")
         n.type("as")
-        #expect(n.traces == [InPlaceComposer.D20Trace(trigger: .mark, seeded: false), nil])
+        #expect(n.traces == [InPlaceComposer.TypedWordRead(trigger: .mark, seeded: false), nil])
         #expect(n.diffs == [nil, nil])
     }
     #endif
@@ -1441,8 +1441,8 @@ struct InPlaceComposerSystemFixTests {
         #expect(s.kinds.last == .seed)
     }
 
-    @Test("D20 off: nothing read, the key goes on as typed")
-    func d20Off() {
+    @Test("with adding marks off: nothing read, the key goes on as typed (D20)")
+    func addMarksOff() {
         var s = Self.session { $0.addMarksToTypedWords = false }
         s.type("hoc ")
         s.doc.autocorrect(to: "học")

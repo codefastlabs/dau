@@ -156,7 +156,7 @@ Script không tự xếp lớp. Ca khác giữ lớp cũ nếu phím, đầu ra 
 
 ### 3.4 Mô phỏng D20 trong khung test
 
-Khung test chạy việc đọc chữ trước con trỏ của D20 như lớp IMK (`ExternalCasesTests.d20Seed`, mô hình theo `InPlaceComposer`; mô phỏng, chưa chạy trên Dấu thật): đọc ở phím dấu thanh/biến đổi và ở chữ cái đầu tiên khi bộ đệm trống, chữ cái chỉ nối khi từ ghép còn là tiền tố hợp lệ, cùng ba ngoại lệ: (a) chữ hoa sau chữ thường bắt đầu từ mới, (b) từ có sẵn không phải tiếng Việt nhận chữ gõ tiếp nguyên văn tới hết từ, (c) phím dấu thanh/biến đổi đầu tiên không áp được lên từ tiếng Việt có sẵn thì bắt đầu từ mới. Từ dài hơn 7 chữ vào trạng thái đi thẳng của D33 bằng `VietEngine.seedOverflow`.
+Khung test chạy việc đọc chữ trước con trỏ của D20 như lớp IMK (`ExternalCasesTests.seedTypedWord`, mô hình theo `InPlaceComposer`; mô phỏng, chưa chạy trên Dấu thật): đọc ở phím dấu thanh/biến đổi và ở chữ cái đầu tiên khi bộ đệm trống, chữ cái chỉ nối khi từ ghép còn là tiền tố hợp lệ, cùng ba ngoại lệ: (a) chữ hoa sau chữ thường bắt đầu từ mới, (b) từ có sẵn không phải tiếng Việt nhận chữ gõ tiếp nguyên văn tới hết từ, (c) phím dấu thanh/biến đổi đầu tiên không áp được lên từ tiếng Việt có sẵn thì bắt đầu từ mới. Từ dài hơn 7 chữ vào trạng thái đi thẳng của D33 bằng `VietEngine.seedOverflow`.
 
 Cách chọn (mô phỏng trên 10.303 ca và các tình huống sửa chữ, 05/11/2026):
 - so với chỉ đọc ở phím dấu thanh/biến đổi, **luôn nối** chữ cái vào từ đọc được ra khác ở 38 ca và làm hỏng 34, vì dính từ mới vào từ trước con trỏ ("ddi␣⌫hocj" ra "đihocj" thay vì "đihọc");

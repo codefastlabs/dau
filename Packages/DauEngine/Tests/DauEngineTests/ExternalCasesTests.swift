@@ -32,8 +32,8 @@ struct ExternalCasesTests {
         var failures: [Failure]
         var boundaryChecks = 0
         /// D20 reads the harness simulated, and how many of them seeded the engine.
-        var d20Reads = 0
-        var d20Seeded = 0
+        var typedWordReads = 0
+        var typedWordSeeds = 0
         var kinds: [String] { Array(Set(failures.map(\.kind))).sorted() }
     }
 
@@ -94,8 +94,8 @@ struct ExternalCasesTests {
         var failures: [Failure] = []
         var combiningAllowed = false
         var boundaryChecks = 0
-        var d20Reads = 0
-        var d20Seeded = 0
+        var typedWordReads = 0
+        var typedWordSeeds = 0
         /// Mirror of `InPlaceComposer.Before`: false = `.unknown` (the cursor may follow a
         /// word the engine does not know), true = `.noWord`.
         var knownNoWord = false
@@ -171,8 +171,8 @@ struct ExternalCasesTests {
     /// seeded: the engine is reset and the caller handles the key as the first key of a
     /// word).
     /// Not mirrored: apps that answer late or give no text.
-    static func d20Seed(_ f: inout Field, key: Unicode.Scalar, letter: Bool) -> Action? {
-        f.d20Reads += 1
+    static func seedTypedWord(_ f: inout Field, key: Unicode.Scalar, letter: Bool) -> Action? {
+        f.typedWordReads += 1
         let count = min(f.text.count, 16)
         let text = Array(f.text.suffix(count))
         let word = trailingWord(text)
@@ -182,7 +182,7 @@ struct ExternalCasesTests {
             f.engine.reset()
             guard word.allSatisfy({ CharacterSet.letters.contains($0) }) else { return nil }
             f.engine.seedOverflow(shown: String(String.UnicodeScalarView(word)).count)
-            f.d20Seeded += 1
+            f.typedWordSeeds += 1
             return f.engine.handle(key)
         }
         if word.count == text.count && f.text.count > count { return foreign() }
@@ -211,7 +211,7 @@ struct ExternalCasesTests {
                 return nil
             }
         }
-        f.d20Seeded += 1
+        f.typedWordSeeds += 1
         return action
     }
 
@@ -295,7 +295,7 @@ struct ExternalCasesTests {
                 var action: Action?
                 let mark = isMarkKey(plainKey, method: options.inputMethod)
                 if !f.engine.isComposing, !f.knownNoWord, mark || isLetter(plainKey) {
-                    action = d20Seed(&f, key: plainKey, letter: !mark)
+                    action = seedTypedWord(&f, key: plainKey, letter: !mark)
                     if action == nil { f.engine.reset() }
                 }
                 f.apply(action ?? f.engine.handle(plainKey), passing: plainKey)
@@ -375,7 +375,7 @@ struct ExternalCasesTests {
             .replacingOccurrences(of: "\n", with: "⏎")
             .replacingOccurrences(of: "\t", with: "⇥")
         return Result(output: shown, failures: f.failures, boundaryChecks: f.boundaryChecks,
-                      d20Reads: f.d20Reads, d20Seeded: f.d20Seeded)
+                      typedWordReads: f.typedWordReads, typedWordSeeds: f.typedWordSeeds)
     }
 
     // MARK: - Checker self-test
@@ -395,25 +395,25 @@ struct ExternalCasesTests {
         #expect(run("tesst␣").output == "test␣" && run("tesst␣").failures.isEmpty)
         #expect(run("⟦cả⟧r␣").output == "car␣")
         // D20 after ⌫ over a space, Return, a reset-only key; only the last word is read.
-        #expect(run("du␣⌫j").output == "dụ" && run("du␣⌫j").d20Seeded == 1)
+        #expect(run("du␣⌫j").output == "dụ" && run("du␣⌫j").typedWordSeeds == 1)
         #expect(run("tooi←s").output == "tối")
-        #expect(run("du⏎j").output == "du⏎j" && run("du⏎j").d20Reads == 2)
+        #expect(run("du⏎j").output == "du⏎j" && run("du⏎j").typedWordReads == 2)
         #expect(run("⟦ngả nghieng⟧e").output == "ngả␣nghiêng")
         #expect(run("viet␣⌫j").output == "vietj")
         // Only the first key of the field reads (D20 plain letter: a letter too); a mark key after a
         // word end typed here does not.
-        #expect(run("hoc,a").d20Reads == 1)
+        #expect(run("hoc,a").typedWordReads == 1)
         // D20 plain letter: a plain letter reads too, and joins only a valid prefix.
-        #expect(run("⟦q⟧uer␣").output == "quẻ␣" && run("⟦q⟧uer␣").d20Seeded == 1)
+        #expect(run("⟦q⟧uer␣").output == "quẻ␣" && run("⟦q⟧uer␣").typedWordSeeds == 1)
         #expect(run("ba␣⌫nj␣").output == "bạn␣")
-        #expect(run("⟦tôi⟧laf␣").output == "tôilà␣" && run("⟦tôi⟧laf␣").d20Seeded == 0)
+        #expect(run("⟦tôi⟧laf␣").output == "tôilà␣" && run("⟦tôi⟧laf␣").typedWordSeeds == 0)
         #expect(run("ddi␣⌫hocj␣").output == "đihọc␣")
         #expect(run("⟦nghiêng⟧bans␣").output == "nghiêngbán␣")
         // D20's three exceptions: (a) upper case after lower case starts a new word…
-        #expect(run("⟦#Hà⟧Nooij␣").output == "#HàNội␣" && run("⟦#Hà⟧Nooij␣").d20Seeded == 0)
+        #expect(run("⟦#Hà⟧Nooij␣").output == "#HàNội␣" && run("⟦#Hà⟧Nooij␣").typedWordSeeds == 0)
         #expect(run("⟦VI⟧EEJT␣").output == "VIỆT␣" && run("⟦V⟧ieejt␣").output == "Việt␣")
         // …unless a mark key changes the word, and not after a foreign word (b wins).
-        #expect(run("⟦hoc⟧J␣").output == "học␣" && run("⟦hoc⟧J␣").d20Seeded == 1)
+        #expect(run("⟦hoc⟧J␣").output == "học␣" && run("⟦hoc⟧J␣").typedWordSeeds == 1)
         #expect(run("⟦foo⟧Bar␣").output == "fooBar␣" && run("⟦keyboard⟧Bar␣").output == "keyboardBar␣")
         // …(b) a foreign word takes the letters unchanged until it ends…
         #expect(run("⟦foo⟧bar␣").output == "foobar␣" && run("⟦foo⟧bar␣").failures.isEmpty)
@@ -448,9 +448,9 @@ struct ExternalCasesTests {
         var examples: [String: [(String, String, String, String)]] = [:]
         var newFailures: [String] = []
         var boundaryChecks = 0
-        var d20Reads = 0
-        var d20Seeded = 0
-        var d20Cases = 0
+        var typedWordReads = 0
+        var typedWordSeeds = 0
+        var casesWithSeed = 0
         var found = Set<String>()
 
         for file in files {
@@ -461,9 +461,9 @@ struct ExternalCasesTests {
                 total += 1
                 let result = Self.replay(c)
                 boundaryChecks += result.boundaryChecks
-                d20Reads += result.d20Reads
-                d20Seeded += result.d20Seeded
-                if result.d20Seeded > 0 { d20Cases += 1 }
+                typedWordReads += result.typedWordReads
+                typedWordSeeds += result.typedWordSeeds
+                if result.typedWordSeeds > 0 { casesWithSeed += 1 }
                 let srcOptions = c.options.filter { $0.hasPrefix("src:") }
                 let kinds = result.kinds
                 var status = kinds.isEmpty ? "ok" : "fail:" + kinds.joined(separator: ",")
@@ -492,7 +492,7 @@ struct ExternalCasesTests {
         var report = "EXTERNAL CASES: \(total) read, \(asserted) asserted, \(skippedCases) skipped (src: option; run, not asserted)\n"
         for (o, n) in skippedBySrc.sorted(by: { $0.key < $1.key }) { report += "  skipped by \(o): \(n)\n" }
         report += "  word-boundary checks executed (all cases): \(boundaryChecks)\n"
-        report += "  D20 reads simulated: \(d20Reads), seeded: \(d20Seeded), cases with a seed: \(d20Cases)\n"
+        report += "  D20 reads simulated: \(typedWordReads), seeded: \(typedWordSeeds), cases with a seed: \(casesWithSeed)\n"
         report += "  failures by kind (asserted cases): \(failuresByKind.sorted { $0.key < $1.key })\n"
         for (s, m) in failuresBySource.sorted(by: { $0.key < $1.key }) { report += "  \(s): \(m.sorted { $0.key < $1.key })\n" }
         for (k, list) in examples.sorted(by: { $0.key < $1.key }) {

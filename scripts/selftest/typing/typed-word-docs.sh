@@ -5,7 +5,7 @@
 # document, then the macOS Vietnamese Telex once as the control (same keys, same document).
 # Side effects: builds, takes the screen, changes input source, changes user settings
 #
-# Usage: scripts/selftest/typing/d20-docs.sh [--runs N] [--gdocs URL] [--gdocssafari URL] [--wordweb URL]
+# Usage: scripts/selftest/typing/typed-word-docs.sh [--runs N] [--gdocs URL] [--gdocssafari URL] [--wordweb URL]
 #   --gdocs URL     an empty Google Docs document of your own, signed in in Chrome
 #   --gdocssafari URL  the same in Safari (signed in in Safari)
 #   --wordweb URL   an empty Word for the web document of your own, signed in in Chrome
@@ -13,7 +13,7 @@
 # At least one document. The links are private: give them on the command line, never commit
 # them. Each cell goes through scripts/selftest/typing/run.sh (cells gdocs, gdocssafari, wordweb: its
 # safety rules apply, the document is left empty). Both input sources must be enabled
-# already (N4). Text read back: build/d20-docs/<time>/ (git-ignored).
+# already (N4). Text read back: build/typed-word-docs/<time>/ (git-ignored).
 set -uo pipefail
 ROOT="${0:A:h:h:h:h}"
 HERE="${0:A:h}"
@@ -41,7 +41,7 @@ done
 (( ${#URLS} )) || { log_usage "${0:A}"; exit 2; }
 [[ "$RUNS" =~ ^[1-9][0-9]*$ ]] || log_die 2 "--runs phải là số nguyên dương"
 
-OUT="$ROOT/build/d20-docs/$(date +%Y%m%d-%H%M%S)"
+OUT="$ROOT/build/typed-word-docs/$(date +%Y%m%d-%H%M%S)"
 mkdir -p "$OUT"
 typeset -a SUMMARY
 cell() { # app run-label [run.sh options]

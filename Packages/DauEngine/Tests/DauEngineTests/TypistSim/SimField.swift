@@ -64,7 +64,7 @@ struct EngineField: SimField {
 }
 
 /// The engine plus the test model of the input method's D20 reads that
-/// `ExternalCasesTests` already uses (`ExternalCasesTests.d20Seed`, a port of
+/// `ExternalCasesTests` already uses (`ExternalCasesTests.seedTypedWord`, a port of
 /// `InPlaceComposer.addMarks`/`seedWord`/`continueForeignWord`): after ⌫ empties the
 /// engine, the next letter or mark key reads the word before the caret. The field is
 /// synchronous (position and text always current), the caret always at the end.
@@ -141,7 +141,7 @@ struct ImkField: SimField {
         if !done {
             var action: Action?
             if reads, !field.engine.isComposing, !field.knownNoWord, mark || ExternalCasesTests.isLetter(key) {
-                action = ExternalCasesTests.d20Seed(&field, key: key, letter: !mark)
+                action = ExternalCasesTests.seedTypedWord(&field, key: key, letter: !mark)
                 if action == nil { field.engine.reset() }
             }
             field.apply(action ?? field.engine.handle(key), passing: key)

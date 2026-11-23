@@ -237,7 +237,7 @@ Cursor là một app với một bundle ID, nhưng có hai kiểu cửa sổ. C�
 - Gạch chân chưa được đo trên 3.30.14.
 - Cursor không có nhãn "Đề xuất".
 - Mô hình `LateDocument.Origin.word` (trong test) tả app tính `selectedRange` và vùng thay từ đầu từ đang gõ. Mô hình dựng từ log trình soạn thảo Cursor 3.29.15 (đo 10/11/2026). Trình soạn thảo của 3.30.14 có lúc cũng như vậy (ý trên). Hướng xử lý nằm ở [`docs/research/LateAnswerFixes.md`](research/LateAnswerFixes.md).
-- Trình soạn thảo (`cursor`, Cursor 3.31.15), câu `edit` 10 ms (23/11/2026, 12:58–13:10, máy M1 Pro, macOS 27.2.1, bản Release của bản sửa "Hocj"; câu `edit` có "Hoc ⌫j"): sai 4/4 (1 lượt Release, 3 lượt Debug), lượt nào cũng ra "Hocj"; lượt Release còn ra "meting". Cursor trả vị trí tính từ đầu từ (`selectedRange` 1–3 khi Dấu theo dõi 14), nên phép chứng minh app chậm không so được (`d20_reject=limit`) và Dấu không gieo từ. Đây là kiểu vị trí đã ghi ở trên, có từ trước bản sửa. Lượt đầu dừng trước khi gõ vì cửa sổ Cursor Agents lên trước cửa sổ thử (mã thoát 3); chạy lại thì gõ được.
+- Trình soạn thảo (`cursor`, Cursor 3.31.15), câu `edit` 10 ms (23/11/2026, 12:58–13:10, máy M1 Pro, macOS 27.2.1, bản Release của bản sửa "Hocj"; câu `edit` có "Hoc ⌫j"): sai 4/4 (1 lượt Release, 3 lượt Debug), lượt nào cũng ra "Hocj"; lượt Release còn ra "meting". Cursor trả vị trí tính từ đầu từ (`selectedRange` 1–3 khi Dấu theo dõi 14), nên phép chứng minh app chậm không so được (`typed_read_reject=limit`) và Dấu không gieo từ. Đây là kiểu vị trí đã ghi ở trên, có từ trước bản sửa. Lượt đầu dừng trước khi gõ vì cửa sổ Cursor Agents lên trước cửa sổ thử (mã thoát 3); chạy lại thì gõ được.
 
 ### 5.5 Terminal
 

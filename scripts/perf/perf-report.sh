@@ -9,7 +9,7 @@
 # is set (`defaults write -g DauPerfLog -bool true`, then `defaults delete -g DauPerfLog`
 # when done; it applies to text fields opened after it is set), category "perf": event
 # kind, durations in ns and the client app's bundle ID. Never the text typed (D8).
-# D20 reads are also counted as d20_<mark|letter>_seeded<0|1>, and diff_<0|1> counts the
+# D20 reads are also counted as typed_read_<mark|letter>_seeded<0|1>, and diff_<0|1> counts the
 # keys of a seeded word whose result differs from an engine that never read the text.
 # N3 "Ngoại lệ sau ⌫ chưa áp": a key that waited for the ⌫ before it carries bksp=applied|timeout,
 # bksp_asks and bksp_wait_ns (included in handle_ns). Rows: bksp_<applied|timeout> (counts),
@@ -88,8 +88,8 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
     app = field("app"); kind = field("kind")
     if (app == "" || kind == "") next
     if (want != "" && index(tolower(app), want) == 0) next
-    d20 = field("d20"); seeded = field("seeded"); diff = field("diff")
-    if (d20 != "" && d20 != "none") print app, "d20_" d20 "_seeded" seeded, 1
+    typedRead = field("typed_read"); seeded = field("seeded"); diff = field("diff")
+    if (typedRead != "" && typedRead != "none") print app, "typed_read_" typedRead "_seeded" seeded, 1
     if (diff == "0" || diff == "1") print app, "diff_" diff, 1
     print app, "count_" kind, 1
     h = field("handle_ns"); s = field("sel_ns"); i = field("ins_ns"); r = field("read_ns")
@@ -176,7 +176,7 @@ echo "Đơn vị: µs. p50/p99 theo hạng gần nhất (nearest rank). n = số
 awk '
   function flush(   i50, i99) {
     if (n == 0) return
-    if (metric ~ /^(count_|event_|d20_|diff_|gap_|evgap_)/ || metric == "bksp_applied" || metric == "bksp_timeout") {
+    if (metric ~ /^(count_|event_|typed_read_|diff_|gap_|evgap_)/ || metric == "bksp_applied" || metric == "bksp_timeout") {
       printf "  %-22s %8d\n", metric, sum
     } else {
       i50 = int((50 * n + 99) / 100); if (i50 < 1) i50 = 1

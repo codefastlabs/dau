@@ -153,7 +153,7 @@ struct InPlaceOddRangeTests {
         #expect(composer.tracker.followed.caret == nil)
     }
 
-    @Test("D20 path: a mark key with no word asks once, reads nothing, does not trap",
+    @Test("reading the word before the caret: a mark key with no word asks once, reads nothing, does not trap (D20)",
           arguments: odd)
     func addMarks(_ selection: NSRange) {
         var engine = VietEngine()
@@ -498,7 +498,7 @@ final class PlainDocument: InPlaceClient {
     func pause(_ seconds: TimeInterval) { waitClock += seconds }
 }
 
-@Suite("D20 on a decomposed (NFD) foreign word before the cursor (exception b)")
+@Suite("Adding marks on a decomposed (NFD) foreign word before the cursor (D20, exception b)")
 struct DecomposedForeignWordTests {
     /// (text before the cursor, key): the key goes in unchanged, typed at the caret by the
     /// input method (N3), and the text before it is not rewritten.

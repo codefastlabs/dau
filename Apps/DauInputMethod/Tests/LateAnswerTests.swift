@@ -208,7 +208,7 @@ struct LateAnswerTests {
     /// proved late and comes out right; D20 does not apply to "Hoc" (the read gives no
     /// usable word).
     @Test("busy page, 10 ms: a D20 read in a burst far behind does not move the followed position")
-    func staleD20ReadInBurst() {
+    func staleTypedWordReadInBurst() {
         let before = "chiều nay. "
         var s = LateSession(before)
         s.interval = 0.017
@@ -433,7 +433,7 @@ struct LateBackspaceMarkTests {
         s.interval = 0.017
         s.type("⌫")
         s.type("j", lag: lag)
-        let check = s.lastOutcome.d20Check
+        let check = s.lastOutcome.typedWordReadProof
         #expect(check?.proof?.text != nil)
         #expect(check?.proof?.edits == lag)
         #expect(check?.proof?.form == .cache)
@@ -452,7 +452,7 @@ struct LateBackspaceMarkTests {
         s.interval = 0.017
         s.type("⌫j")
         #expect(s.doc.text == "Hoc.j")
-        #expect(s.lastOutcome.d20Check?.proof?.text == nil)
+        #expect(s.lastOutcome.typedWordReadProof?.proof?.text == nil)
         #expect(s.doc.badRanges == 0)
         #expect(s.overCalls == 0)
     }
@@ -468,8 +468,8 @@ struct LateBackspaceMarkTests {
         s.doc.appEdit("Chiều nay cả ")
         s.type("⌫r")
         #expect(s.doc.text == "Chiều nay car")
-        #expect((s.lastOutcome.d20Check?.editsSinceOnTimeAnswer ?? 0) > CursorTracker.LatenessBudget.humanPaceEdits)
-        #expect(s.lastOutcome.d20Check?.proof?.text == nil)
+        #expect((s.lastOutcome.typedWordReadProof?.editsSinceOnTimeAnswer ?? 0) > CursorTracker.LatenessBudget.humanPaceEdits)
+        #expect(s.lastOutcome.typedWordReadProof?.proof?.text == nil)
         #expect(s.doc.badRanges == 0)
     }
 
@@ -484,7 +484,7 @@ struct LateBackspaceMarkTests {
         s.doc.appEdit("")
         s.type("hoc ⌫j")
         #expect(s.doc.text == "học")
-        #expect(s.lastOutcome.d20Check?.proof?.text == nil)
+        #expect(s.lastOutcome.typedWordReadProof?.proof?.text == nil)
         #expect(s.doc.badRanges == 0)
         #expect(s.overCalls == 0)
     }

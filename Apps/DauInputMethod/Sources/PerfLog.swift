@@ -113,8 +113,8 @@ struct PerfLog {
     ///   - insertTextNs: duration of the `insertText` call (or, for `mark`, of the
     ///     `setMarkedText` call), or -1 if not called.
     ///   - readNs: duration of the `attributedSubstring` call (D20), or -1 if not called.
-    ///   - extra: D20 fields, each with a leading space (` d20=letter seeded=1 diff=0`, and at
-    ///     a D20 read the numbers of its late-answer check, `InPlaceComposer.D20Check.logFields`), and
+    ///   - extra: D20 fields, each with a leading space (` typed_read=letter seeded=1 diff=0`, and at
+    ///     a D20 read the numbers of its late-answer check, `InPlaceComposer.TypedWordReadProof.logFields`), and
     ///     for a key that waited for the ⌫ before it (N3) ` bksp=applied|timeout bksp_asks=N
     ///     bksp_wait_ns=N` (the wait is part of `handleNs`); only numbers and fixed words,
     ///     never text (D8).

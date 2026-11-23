@@ -32,7 +32,7 @@ struct CompatibilityListTests {
         #expect(list.suggestion(for: "b") == nil)
     }
 
-    @Test("D18: malformed entries are dropped, unknown keys ignored")
+    @Test("malformed entries are dropped, unknown keys ignored (D18)")
     func lenient() {
         let list = Self.list("""
         {"version": "x", "future": {"k": 1}, "apps": [
@@ -50,7 +50,7 @@ struct CompatibilityListTests {
         #expect(list.suggestedBundleIDs == ["good"])
     }
 
-    @Test("D18: an unreadable or missing file gives the empty list")
+    @Test("an unreadable or missing file gives the empty list (D18)")
     func unreadable() {
         #expect(Self.list("not json") == .empty)
         #expect(Self.list("[]") == .empty)
@@ -66,7 +66,7 @@ struct CompatibilityListTests {
         #expect(CompatibilityList.decode(data) == list)
     }
 
-    @Test("D13, D43: shipped list suggests only Ghostty and Terminal")
+    @Test("shipped list suggests only Ghostty and Terminal (D13, D43)")
     func shippedList() throws {
         let data = try Data(contentsOf: Self.shippedURL)
         // Strict decode too, so a typo cannot silently drop an entry.
@@ -119,7 +119,7 @@ struct SuggestionsTests {
         #expect(!DauSettings().suggestions(from: list, isInstalled: installed).map(\.bundleID).contains("firefox"))
     }
 
-    @Test("D13: accepting stores an underline rule from the list and leaves Suggested")
+    @Test("accepting stores an underline rule from the list and leaves Suggested (D13)")
     func accept() {
         var s = DauSettings(appRules: [AppRule(bundleID: "word")])
         let chrome = s.suggestions(from: list, isInstalled: installed)[3]
