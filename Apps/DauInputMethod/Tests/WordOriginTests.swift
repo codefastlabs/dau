@@ -37,6 +37,19 @@ private struct EditorSession {
     mutating func type(_ keys: String, every interval: TimeInterval, lag: Int = 0) {
         for route in routes(keys) { key(route, after: interval, lag: lag) }
     }
+
+    /// Keys `interval` apart, except a character that ends a word, which comes
+    /// `wordEnd` after the key before it, as the keys of `scripts/selftest/typing/run.sh`
+    /// reach the input method (`docs/research/LateAnswerFixes.md` 3.1). Only the keys of a
+    /// word and a ⌫ right after its end are then in a burst. `lags`: the edits the answers
+    /// are behind by at a key, by its index (0 for the others).
+    mutating func type(_ keys: String, every interval: TimeInterval, wordEnd: TimeInterval, lags: [Int: Int] = [:]) {
+        for (i, route) in routes(keys).enumerated() {
+            var endsWord = false
+            if case .character(let c) = route { endsWord = !CharacterSet.alphanumerics.contains(c) }
+            key(route, after: endsWord ? wordEnd : interval, lag: lags[i] ?? 0)
+        }
+    }
 }
 
 /// The word-origin model (from Cursor 3.29.15 logs): the app answers `selectedRange` from
@@ -164,6 +177,62 @@ struct WordOriginTests {
         #expect(s.outcomes.last?.kind == .replace)
         s.type("aau ", every: 0.02)
         #expect(s.doc.text == "anh đi ở đâu ")
+        #expect(s.doc.dropped == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    // MARK: Adding marks to a typed word after ⌫
+
+    /// Cursor 3.31.15, editor, the `edit` sentence 10 ms apart (`docs/Compatibility.md` 5.4).
+    /// At "j" the D20 read is answered from the start of the word: position 3, text "Hoc",
+    /// every edit applied. The followed caret is 14, counted from the start of "chiều",
+    /// which was replaced where the app answered. No state of the text the input method
+    /// followed has its caret at 3, so the answer is not proved late, and in a burst an
+    /// unproved answer behind the followed caret is taken for a stale one. Here the text
+    /// read is the word typed last, from where the app counts: the word is seeded there
+    /// and replaced at 1,2 ("oc" to "ọc"), which ends at the followed caret in the app's
+    /// coordinates.
+    ///
+    /// In one of four runs the answer was 4 with four units read, none of them the end of
+    /// the typed text: "Hoc " from the start of the word, in Chromium's cache form, the page
+    /// two edits behind (it reported after "c"; the cache adds the space; the ⌫ is not
+    /// applied). That text is also the text before the ⌫ alone, the fewest edits that fit
+    /// (`lacking` 1). The word plus the ⌫ is "Hoc", so the same range 1,2 is taken. The
+    /// page applies the space and the ⌫ before the replacement, as it applies every edit in
+    /// order (D11), and holds "Hoc" from the start of the word again then.
+    @Test("the edit sentence in a burst: Hoc ⌫j gives Học from the word the app holds, on time or without the space and the ⌫",
+          arguments: [(0.005, 0), (0.01, 0), (0.005, 2), (0.01, 2)])
+    func addMarksAfterBackspaceInBurst(_ interval: TimeInterval, _ lagAtJ: Int) {
+        let keys = Array(LateAnswerTests.editKeys.unicodeScalars)
+        let j = keys.indices.first { String(String.UnicodeScalarView(keys[..<$0])).hasSuffix("Hoc ⌫") }!
+        var s = EditorSession()
+        s.type(LateAnswerTests.editKeys, every: interval, wordEnd: 0.058, lags: [j: lagAtJ])
+        #expect(s.doc.text == LateAnswerTests.strings[0].1)
+        #if DEBUG
+        let check = s.outcomes[j].typedWordReadProof
+        #expect(check?.selection == NSRange(location: lagAtJ == 0 ? 3 : 4, length: 0))
+        #expect(check?.readUnits == (lagAtJ == 0 ? 3 : 4))
+        #expect(check?.unitsAsTyped == (lagAtJ == 0 ? 3 : 0))
+        #expect(check?.followedCaret == 14)
+        #expect(check?.proof?.limit == 3)
+        #expect(check?.proof?.rejected == .limit && check?.proof?.edits == nil)
+        #expect(check?.fromWordStart?.word == Array("Hoc".utf16))
+        #expect(check?.fromWordStart?.lacking == min(lagAtJ, 1))
+        #endif
+        #expect(s.outcomes[j].kind == .seed)
+        #expect(s.outcomes[j].attempt?.replacement == NSRange(location: 1, length: 2))  // "oc" → "ọc"
+        #expect(s.doc.dropped == 0)
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    /// The same at the start of a new document: the followed caret counts from its start,
+    /// so a state of the text had its caret at 3 ("chi"), which replaying does not fit.
+    @Test("a new document, the app on time: chiều nay. Hoc ⌫j gives Học")
+    func addMarksAfterBackspaceInNewDocument() {
+        var s = EditorSession()
+        s.type("chieeuf nay. Hoc ⌫j tieesng ", every: 0.01, wordEnd: 0.058)
+        #expect(s.doc.text == "chiều nay. Học tiếng ")
         #expect(s.doc.dropped == 0)
         #expect(s.overCalls == 0)
     }

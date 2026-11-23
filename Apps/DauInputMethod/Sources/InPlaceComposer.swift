@@ -192,6 +192,14 @@ struct InPlaceComposer {
         var proof: CursorTracker.LateProof?
         /// Not proved, behind the followed caret, in a burst (`ReadAnswer.staleInBurst`).
         var staleInBurst = false
+        /// UTF-16 units the read gave; -1: no read.
+        var readUnits = -1
+        /// How many of the last units read are the last units this composer typed before the
+        /// followed caret; -1: no read.
+        var unitsAsTyped = -1
+        /// Behind the followed caret in a burst, taken as the word typed last in an app that
+        /// counts from the start of the word (`CursorTracker.wordFromWordStart`).
+        var fromWordStart: CursorTracker.WordStartAnswer?
 
         /// Perf log fields, each with a leading space; -1 or `-` when unknown or not reached.
         var logFields: String {
@@ -204,7 +212,10 @@ struct InPlaceComposer {
             } else {
                 fields += " typed_read_limit=-1 typed_read_limit_b=-1 typed_read_lag=-1 typed_read_form=- typed_read_proved=- typed_read_reject=-"
             }
-            return fields + " typed_read_stale=\(staleInBurst ? 1 : 0)"
+            return fields + " typed_read_stale=\(staleInBurst ? 1 : 0) typed_read_len=\(readUnits)"
+                + " typed_read_as_typed=\(unitsAsTyped) typed_read_word_start=\(fromWordStart == nil ? 0 : 1)"
+                + " typed_read_word_start_lag=\(fromWordStart?.lacking ?? -1)"
+                + " typed_read_word_start_form=\(fromWordStart?.form?.rawValue ?? "-")"
         }
     }
     /// The word the last `seedWord` seeded.
@@ -762,6 +773,11 @@ struct InPlaceComposer {
         }
         #if DEBUG
         answer.check.proof = proof
+        if let read = answer.read.map({ Array($0.utf16) }) {
+            let typed = tracker.followed.typedBeforeCaret
+            answer.check.readUnits = read.count
+            answer.check.unitsAsTyped = zip(read.reversed(), typed.reversed()).prefix { $0 == $1 }.count
+        }
         #endif
         if let rebuilt = proof?.text {
             let count = min(caret, Self.readLength, rebuilt.count)
@@ -773,7 +789,23 @@ struct InPlaceComposer {
             // the app is further behind than `rebuild` replays. Anchoring at the answer would
             // move the followed caret back to a stale one, and the next word's first
             // replacement would land in this word (`docs/research/LateAnswerFixes.md` 3.3).
-            answer.staleInBurst = true
+            // Unless the answer shows the word typed last in an app that counts from the start
+            // of the word, maybe without the latest edits after it: anchoring at the end of
+            // that word puts the followed caret in the app's coordinates, and the word is
+            // replaced where the app holds it once it has applied those edits.
+            var fromWordStart: CursorTracker.WordStartAnswer?
+            if let read = answer.read, let proof {
+                fromWordStart = tracker.wordFromWordStart(Array(read.utf16), at: selection, proof: proof)
+            }
+            if let word = fromWordStart?.word {
+                answer.read = String(decoding: word, as: UTF16.self)
+                answer.selection = NSRange(location: word.count, length: 0)
+            } else {
+                answer.staleInBurst = true
+            }
+            #if DEBUG
+            answer.check.fromWordStart = fromWordStart
+            #endif
         }
         return answer
     }

@@ -231,6 +231,35 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
+    /// A new document whose first word is the word typed last ("Hoc nay. Hoc"), the page
+    /// stuck after that first word. At "j" the answer is 3 with "Hoc", the whole document
+    /// before it: what an app counting from the start of the word gives on time. Here it is
+    /// the state from before the last eleven edits, which replaying them fits, past what may
+    /// be replayed: not proved, so neither seeded nor anchored, and the first "Hoc" stays.
+    @Test("busy page: a document that starts with the word typed last, far behind, is not taken for an app counting from the word start")
+    func staleAnswerAtDocumentStartLooksLikeWordStart() {
+        var s = LateSession()
+        for key in "Hoc nay. Hoc ".unicodeScalars {
+            s.interval = CharacterSet.alphanumerics.contains(key) ? 0.017 : 0.058
+            s.type(String(Character(key)))
+        }
+        s.interval = 0.01
+        s.type("⌫")
+        s.doc.override = "Hoc"
+        s.type("j")
+        #expect(s.lastOutcome.kind == .seedNone)
+        #if DEBUG
+        #expect(s.lastOutcome.typedWordReadProof?.proof?.fitsPastLimits == true)
+        #expect(s.lastOutcome.typedWordReadProof?.staleInBurst == true)
+        #endif
+        s.doc.override = nil
+        s.interval = 0.017
+        s.type(" tieesng ")
+        #expect(s.doc.text == "Hoc nay. Hocj tiếng ")
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
     @Test("dau-busy-2: được — the answer is behind the input method's own replacement")
     func ownReplacementLate() {
         var s = LateSession()

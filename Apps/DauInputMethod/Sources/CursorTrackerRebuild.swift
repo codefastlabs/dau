@@ -28,8 +28,8 @@ extension CursorTracker {
             /// No followed caret, a selection or an unusable answer, or the answer is the
             /// followed caret where no form may be.
             case answer
-            /// No count of edits within the limit proves the answer; `edits`, when set (Debug
-            /// only), is the fewest past it that would.
+            /// No count of edits within the limit proves the answer; `edits`, when set (a D20
+            /// read, `cacheForm`), is the fewest past it that would.
             case limit
             /// Replaying the edits does not fit the text read, or ends elsewhere.
             case fit
@@ -53,6 +53,10 @@ extension CursorTracker {
         var limit = 0
         /// Edits `prove` could replay in form (b).
         var cacheLimit = 0
+
+        /// Some count of edits past the limits proves the answer: it may be a state of the
+        /// text from before them (`rejected` is `limit` and `edits` that count).
+        var fitsPastLimits: Bool { text == nil && rejected == .limit && edits != nil }
     }
 
     /// `rebuild`, with the numbers of its decision (Debug diagnostics, D8: numbers only).
@@ -95,14 +99,10 @@ extension CursorTracker {
             if m <= humanPace, !agrees(text) { return (nil, .agrees) }
             return accept(text) ? (text, nil) : (nil, .accept)
         }
-        // At a D20 read, Debug also checks counts past the limits, to log how far behind the
-        // answer is; the replacements D42 measures run as in Release.
-        #if DEBUG
+        // At a D20 read, counts past the limits are checked too, never to prove: an answer
+        // that fits one may be a state from before those edits (`LateProof.fitsPastLimits`,
+        // `wordFromWordStart`), and the Debug log tells how far behind it is.
         let scanned = cacheForm ? edits.count : limit
-        #else
-        let scanned = limit
-        #endif
-        let pastLimits = scanned > limit
         var latestAtCaret: [UInt16]?
         var provedPastLimit: (m: Int, form: LateProof.Form)?
         for m in stride(from: 1, through: scanned, by: 1) {
@@ -121,7 +121,7 @@ extension CursorTracker {
             }
             for (form, before) in forms {
                 let withinLimit = m <= (form == .cache ? limitCache : limitBefore)
-                guard withinLimit || pastLimits else { continue }
+                guard withinLimit || cacheForm else { continue }
                 let result = check(m, form, before, first)
                 if !withinLimit {
                     if result.text != nil, provedPastLimit == nil { provedPastLimit = (m, form) }
@@ -149,6 +149,77 @@ extension CursorTracker {
         }
         if proof.rejected == nil { proof.rejected = end == caret ? .answer : .limit }
         return proof
+    }
+
+    /// What `wordFromWordStart` found: the word and how many edits the app lacked.
+    struct WordStartAnswer: Equatable {
+        /// The word this composer typed last, as the app shows it from position 0. The
+        /// followed caret is at `word.count` in the app's coordinates.
+        var word: [UInt16]
+        /// The latest edits the answer lacks (0: on time).
+        var lacking: Int
+        var form: LateProof.Form?
+    }
+
+    /// The word before the caret when `snapshot`, read before `selection` at a D20 read whose
+    /// `proof` failed, comes from an app that counts positions from the start of the word
+    /// being typed (`docs/Architecture.md`, "App trả lời chậm"); nil if it does not.
+    ///
+    /// The text read is the whole of what the app holds before its answer (the read reaches
+    /// position 0). It may lack the latest edits, within the limits of `prove` and in the same
+    /// two forms, every edit it lacks removing text this composer knows. That text plus those
+    /// edits is one word, the end of `typedBeforeCaret`, and what this composer typed right
+    /// before it is not part of a word. The app shows the whole word: the edits it lacks
+    /// only change what follows it ("Hoc " lacking the ⌫ that deleted the space), so the word
+    /// is the app's text, never this composer's alone.
+    ///
+    /// An answer that fits a state of the text from before some edits, past the limits too,
+    /// may be a late one and is not taken (`LateProof.fitsPastLimits`): an app that counts
+    /// from the start of the document gives such an answer only when the whole document
+    /// before its caret is that word.
+    func wordFromWordStart(_ snapshot: [UInt16], at selection: NSRange, proof: LateProof) -> WordStartAnswer? {
+        let selection = ClientRange.sanitized(selection)
+        let end = selection.location
+        guard let caret = followed.caret, selection.length == 0, end != NSNotFound, end > 0, end < caret,
+              proof.text == nil, !proof.fitsPastLimits, snapshot.count == end else { return nil }
+        let edits = followed.edits
+        let limitBefore = min(lateness.replayLimit(inWord: false), edits.count)
+        let limitCache = min(lateness.cacheReplayLimit, edits.count)
+        let typed = followed.typedBeforeCaret
+        // The word the app shows (`before`, ending at the followed `cursor`) with the last `m`
+        // edits applied.
+        func word(_ before: [UInt16], endingAt cursor: Int, last m: Int) -> [UInt16]? {
+            guard case .text(let text) = replay(before, endingAt: cursor, last: m, requireDeletedText: true),
+                  cursor - before.count + text.count == caret, !text.isEmpty, text.count <= before.count,
+                  before.prefix(text.count).elementsEqual(text), text.allSatisfy(Self.isWordUnit),
+                  typed.count > text.count, !Self.isWordUnit(typed[typed.count - text.count - 1]),
+                  typed.suffix(text.count).elementsEqual(text) else { return nil }
+            return text
+        }
+        if let text = word(snapshot, endingAt: caret, last: 0) {
+            return WordStartAnswer(word: text, lacking: 0, form: nil)
+        }
+        var latestAtCaret: [UInt16]?
+        for m in stride(from: 1, through: max(limitBefore, limitCache), by: 1) {
+            let first = edits[edits.count - m]
+            if latestAtCaret == nil, first.atCaret, !first.inserted.isEmpty { latestAtCaret = first.inserted }
+            if m <= limitBefore, let text = word(snapshot, endingAt: first.cursor, last: m) {
+                return WordStartAnswer(word: text, lacking: m, form: .before)
+            }
+            if m <= limitCache, let units = latestAtCaret, snapshot.count >= units.count,
+               snapshot.suffix(units.count).elementsEqual(units),
+               let text = word(Array(snapshot.dropLast(units.count)), endingAt: first.cursor, last: m) {
+                return WordStartAnswer(word: text, lacking: m, form: .cache)
+            }
+        }
+        return nil
+    }
+
+    /// A unit of a word as `InPlaceComposer.trailingWord` takes it: a letter, a combining
+    /// mark or a digit.
+    private static func isWordUnit(_ unit: UInt16) -> Bool {
+        guard let scalar = Unicode.Scalar(unit) else { return false }
+        return CharacterSet.alphanumerics.contains(scalar)
     }
 
     private enum Replay: Equatable {
