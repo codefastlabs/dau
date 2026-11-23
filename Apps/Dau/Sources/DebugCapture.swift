@@ -14,28 +14,11 @@ import SwiftUI
                   width: size.width, height: size.height)
 }
 
-/// Puts a capture window in the middle of the primary display over a plain backdrop. The
-/// sidebar and toolbar materials blend what lies behind the window; the backdrop, one
-/// system color right below it, keeps that the same whatever the user has on screen.
-/// A precaution, not measured on its own.
+/// Puts a capture window in the middle of the primary display. The shot holds that window
+/// alone (`DebugCapture.compositedImage`), so what lies behind it on screen does not show
+/// in the shot.
 @MainActor func placeForCapture(_ window: NSWindow, size: NSSize) {
-    let frame = centeredFrame(size: size)
-    window.setFrame(frame, display: false)
-    let backdrop = CaptureBackdrop.window
-    backdrop.setFrame(frame.insetBy(dx: -40, dy: -40), display: true)
-    backdrop.order(.below, relativeTo: window.windowNumber)
-}
-
-@MainActor enum CaptureBackdrop {
-    static let window: NSWindow = {
-        let w = NSWindow(contentRect: .zero, styleMask: .borderless, backing: .buffered, defer: false)
-        w.backgroundColor = .windowBackgroundColor
-        w.isOpaque = true
-        w.hasShadow = false
-        w.ignoresMouseEvents = true
-        w.isReleasedWhenClosed = false
-        return w
-    }()
+    window.setFrame(centeredFrame(size: size), display: false)
 }
 
 /// Debug only: in-app captures that need fake services, run by
@@ -273,8 +256,8 @@ enum DebugCapture {
                     panel.appearance = NSAppearance(named: name)
                     panel.orderFront(nil)
                     placeForCapture(panel, size: panel.frame.size)
-                    // The alert's glass shows whatever is behind it (the backdrop): put it
-                    // on the window background, roughly what it covers over the Settings window.
+                    // The shot holds the alert alone, so its glass has nothing behind it: put
+                    // it on the window background, roughly what it covers over the Settings window.
                     await captureSettled(panel, to: directory.appendingPathComponent("uninstall-\(key)-\(mode).png"),
                                          background: .windowBackgroundColor, "alert \(key) \(mode)")
                     report["uninstall-\(key)-\(mode)"] = ["sheet": [0, 0, Double(panel.frame.width), Double(panel.frame.height)]]
