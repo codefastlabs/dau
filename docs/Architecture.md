@@ -403,6 +403,8 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 2. `waitUntilRemovedFromInputSources` thăm dò mục lưu của Dấu (`storedEnabledIDs`) cho tới khi nó rỗng và có thể huỷ được. Trong lúc đó `UninstallRemoveSheet` hiện trên cửa sổ Cài đặt.
 3. `finishUninstall` chỉ chạy khi mục lưu đã rỗng; nếu không, kết quả là `stillListed`. Bước này chuyển `~/Library/Input Methods/DauInputMethod.app` vào Thùng rác rồi dừng bộ gõ. Nếu người dùng đã tick ô, nó xoá suite App Group (`removePersistentDomain`) và phát thông báo đổi cài đặt. Bước này xoá bộ đệm của System Settings (`SystemSettingsControl.clearKeyboardCache`) nhưng không đụng tới bộ đệm của các app khác, rồi đọc lại hệ thống để báo kết quả.
 
+Sau ba bước đó, `InputMethodActions.uninstall` chuyển chính Dấu.app (`Bundle.main.bundleURL`) vào Thùng rác bằng `FileManager.trashItem`. Hàm dựng sẵn cả hai dạng alert kết quả (`UninstallAlert.done`) trước khi chuyển, vì app đã vào Thùng rác thì `Bundle.main` không còn tìm thấy bảng chuỗi. Nếu không chuyển được, nút của alert mở Finder chọn sẵn app (`NSWorkspace.activateFileViewerSelecting`). Cả hai trường hợp đều kết thúc bằng việc app thoát.
+
 ### Cập nhật và báo lỗi
 
 Phần này là trang Cập nhật & hỗ trợ (`UpdatesSupportView`); hành vi của trang tả ở `docs/UI.md`.

@@ -225,23 +225,24 @@ Artboard: [SettingsTampered](canvas/SettingsTampered.png).
 
 ## Gỡ cài đặt
 
-Artboard: [ConfirmDialogs](canvas/ConfirmDialogs.png), [UninstallRemoveSource](canvas/UninstallRemoveSource.png).
+Artboard: [ConfirmDialogs](canvas/ConfirmDialogs.png), [UninstallRemoveSource](canvas/UninstallRemoveSource.png), [UninstallDone](canvas/UninstallDone.png).
 
 Luồng gỡ theo D16 (Bảo trì và gỡ cài đặt). macOS chỉ cho người dùng tự bỏ một nguồn đầu vào, nên việc gỡ có ba bước. Nếu Dấu không có trong nguồn đầu vào, app gỡ luôn sau alert xác nhận, không mở System Settings và không hiện sheet.
 
 - Bước đầu là alert xác nhận của hệ thống:
   - Alert có tuỳ chọn xoá cả cài đặt và quy tắc.
   - Nút xác nhận là "Tiếp tục gỡ". Bấm nút này chưa xoá gì.
-  - Nội dung alert chỉ nói rằng người dùng bỏ Dấu khỏi nguồn đầu vào trong System Settings, rồi Dấu chuyển vào Thùng rác.
+  - Nội dung alert chỉ nói rằng người dùng bỏ Dấu khỏi nguồn đầu vào trong System Settings, rồi bộ gõ và ứng dụng Dấu chuyển vào Thùng rác.
 - Bước tiếp theo là sheet "Bỏ Dấu khỏi nguồn đầu vào" trên cửa sổ Cài đặt:
   - App mở thẳng danh sách Input Sources của System Settings, với sheet Edit… đã mở sẵn và không chuyển nguồn đầu vào nào.
   - Sheet nêu một bước (chọn Dấu, bấm "–", bấm Done) và chờ mục lưu của Dấu biến mất, không có hạn chờ.
   - Câu nhắc "nếu nút – bị mờ, chọn bàn phím khác" chỉ hiện khi Dấu đang là nguồn được chọn. Sheet đọc lại điều này khi sheet hiện, khi cửa sổ thành key lại và khi nguồn đang chọn đổi, nên câu nhắc biến mất khi người dùng chuyển bàn phím.
   - "Huỷ gỡ cài đặt" (hoặc phím Esc, đóng sheet hay một lỗi gỡ giữa chừng) đóng sheet mà không xoá hay đổi gì.
   - Nút "Mở System Settings" chỉ mở trang đó.
-- Khi mục lưu biến mất, app dừng bộ gõ, chuyển nó vào Thùng rác, xoá dữ liệu nếu người dùng đã tick, rồi hiện alert nêu những gì đã làm; nội dung alert đọc lại từ hệ thống.
+- Khi mục lưu biến mất, app dừng bộ gõ, chuyển nó vào Thùng rác, xoá dữ liệu nếu người dùng đã tick, rồi chuyển chính nó vào Thùng rác. Sau đó app hiện alert nêu những gì đã làm; nội dung alert đọc lại từ hệ thống.
+  - Khi chuyển được cả app, alert có tiêu đề "Đã gỡ Dấu" và một nút "Thoát Dấu".
+  - Khi không chuyển được app, alert có tiêu đề "Đã gỡ bộ gõ Dấu" và một nút "Hiển thị trong Finder". Nút này mở Finder, chọn sẵn app để người dùng kéo vào Thùng rác, rồi app thoát.
 - Bộ gõ không bao giờ bị xoá khi mục lưu còn, vì nếu bundle mất trước thì mục còn lại không gỡ được.
-- App không tự xoá chính nó, mà chỉ hướng dẫn người dùng kéo nó vào Thùng rác.
 
 Quay về bản trước theo D19 (Quay về bản trước) và chưa có ở beta đầu tiên.
 

@@ -1155,6 +1155,36 @@ struct UninstallFlowTests {
 }
 
 @MainActor
+@Suite("Uninstall result alert (D16)")
+struct UninstallResultAlertTests {
+    private let report = UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: true)
+
+    @Test("With the app in the Trash, the alert says Dấu was removed and only quits")
+    func appMovedToTrash() {
+        let alert = UninstallAlert.done(report, appMovedToTrash: true)
+        #expect(alert.messageText == String(localized: "Dấu was removed"))
+        #expect(alert.buttons.map(\.title) == [String(localized: "Quit Dấu")])
+        #expect(alert.informativeText.contains(String(localized: "Settings and app rules were deleted.")))
+        #expect(!alert.informativeText.contains("Finder"))
+    }
+
+    @Test("Without an input method to remove, the alert names only the app")
+    func onlyTheAppMoved() {
+        let alert = UninstallAlert.done(UninstallReport(), appMovedToTrash: true)
+        let trash = SystemUINames.system().trash
+        #expect(alert.informativeText == String(localized: "The Dấu app was moved to \(trash)."))
+    }
+
+    @Test("When the app could not move itself, the alert offers Finder to drag it to the Trash")
+    func appLeftBehind() {
+        let alert = UninstallAlert.done(report, appMovedToTrash: false)
+        #expect(alert.messageText == String(localized: "Dấu’s input method was removed"))
+        #expect(alert.buttons.map(\.title) == [String(localized: "Show in Finder")])
+        #expect(alert.informativeText.contains("Finder"))
+    }
+}
+
+@MainActor
 @Suite("Banner enable (N4)")
 struct BannerEnableTests {
     final class Opened { var count = 0 }

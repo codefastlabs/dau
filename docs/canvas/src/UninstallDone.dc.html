@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>Gỡ cài đặt xong</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
+body{margin:0}
+.btn{all:unset;box-sizing:border-box;height:30px;padding:0 16px;border-radius:999px;font-size:13px;font-weight:500;display:inline-flex;align-items:center;justify-content:center;background:rgba(0,0,0,.06);color:#1d1d1f;cursor:default;white-space:nowrap;text-decoration:none}
+.btn.pri{background:var(--acc);color:#fff}
+</style>
+</helmet>
+<div style="width: 900px; height: 560px; position: relative; overflow: hidden; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Helvetica Neue', sans-serif; --acc: {{accent}}"><div aria-hidden="true" style="position: absolute; inset: 0; background: #1c2f4a; overflow: hidden">
+<div style="position: absolute; width: 620px; height: 620px; border-radius: 50%; background: #2d6cb5; left: -160px; top: -220px"></div>
+<div style="position: absolute; width: 520px; height: 520px; border-radius: 50%; background: #e08a3c; right: -140px; bottom: -200px"></div>
+<div style="position: absolute; width: 380px; height: 380px; border-radius: 50%; background: #6a4fa3; right: 120px; top: -120px"></div>
+<div style="position: absolute; width: 300px; height: 300px; border-radius: 50%; background: #2f8f7a; left: 180px; bottom: -150px"></div>
+</div>
+<div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 48px">
+<div role="alertdialog" aria-labelledby="da-t" aria-describedby="da-d" style="width: 283px; box-sizing: border-box; padding: 0 0 16px; border-radius: 22px; display: flex; flex-direction: column; align-items: stretch; text-align: left; background: #ffffff; border: 1px solid rgba(255,255,255,0.45); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.12), 0 24px 64px rgba(0,0,0,0.4)"><svg width="52" height="52" viewBox="0 0 100 100" aria-hidden="true" style="flex: none; display: block; margin: 26px 0 0 26px"><rect x="0" y="0" width="100" height="100" rx="22.4" fill="#10285A"></rect><text x="48" y="80" text-anchor="middle" font-family="'Be Vietnam Pro', -apple-system, 'Helvetica Neue', sans-serif" font-weight="700" font-size="64" fill="#F6F1E7">a</text><path d="M34 35 L47 25 L60 35" fill="none" stroke="#F6F1E7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M63 24 L73 13" fill="none" stroke="#E0533D" stroke-width="7.5" stroke-linecap="round"></path></svg><h2 id="da-t" style="margin: 21px 22px 0; font-size: 13px; line-height: 16px; font-weight: 700; color: #1d1d1f">Đã gỡ Dấu</h2><p id="da-d" style="margin: 11px 22px 0; font-size: 13px; line-height: 18px; color: #1d1d1f">Bộ gõ và ứng dụng Dấu đã chuyển vào Thùng rác. Cài đặt và quy tắc ứng dụng đã bị xoá.</p><div style="margin: 18px 16px 0; display: flex; gap: 8.5px"><button class="btn pri" style="flex: 1; height: 28px; padding: 0 12px; font-weight: 400">Thoát Dấu</button></div></div>
+<div role="alertdialog" aria-labelledby="fa-t" aria-describedby="fa-d" style="width: 283px; box-sizing: border-box; padding: 0 0 16px; border-radius: 22px; display: flex; flex-direction: column; align-items: stretch; text-align: left; background: #ffffff; border: 1px solid rgba(255,255,255,0.45); box-shadow: 0 0 0 0.5px rgba(0,0,0,0.12), 0 24px 64px rgba(0,0,0,0.4)"><svg width="52" height="52" viewBox="0 0 100 100" aria-hidden="true" style="flex: none; display: block; margin: 26px 0 0 26px"><rect x="0" y="0" width="100" height="100" rx="22.4" fill="#10285A"></rect><text x="48" y="80" text-anchor="middle" font-family="'Be Vietnam Pro', -apple-system, 'Helvetica Neue', sans-serif" font-weight="700" font-size="64" fill="#F6F1E7">a</text><path d="M34 35 L47 25 L60 35" fill="none" stroke="#F6F1E7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"></path><path d="M63 24 L73 13" fill="none" stroke="#E0533D" stroke-width="7.5" stroke-linecap="round"></path></svg><h2 id="fa-t" style="margin: 21px 22px 0; font-size: 13px; line-height: 16px; font-weight: 700; color: #1d1d1f">Đã gỡ bộ gõ Dấu</h2><p id="fa-d" style="margin: 11px 22px 0; font-size: 13px; line-height: 18px; color: #1d1d1f">Bộ gõ đã chuyển vào Thùng rác. Dấu không chuyển được chính ứng dụng, nên bạn kéo Dấu vào Thùng rác trong cửa sổ Finder sắp mở.</p><div style="margin: 18px 16px 0; display: flex; gap: 8.5px"><button class="btn pri" style="flex: 1; height: 28px; padding: 0 12px; font-weight: 400">Hiển thị trong Finder</button></div></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#0A64D8","options":["#0A64D8","#7A3FD1","#C2410C","#1F7A4D"]},"$preview":{"width":900,"height":560}}'>
+class Component extends DCLogic {
+renderVals() {
+return { accent: this.props.accent ?? '#0A64D8' };
+}
+}
+</script>
+</body>
+</html>

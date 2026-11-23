@@ -263,7 +263,8 @@ enum DebugCapture {
                 let sample = UninstallReport(movedToTrash: true, stillEnabled: false, dataDeleted: true)
                 let alerts: [(String, NSAlert)] = [
                     ("confirm", UninstallAlert.confirmation().0),
-                    ("done", UninstallAlert.done(sample)),
+                    ("done", UninstallAlert.done(sample, appMovedToTrash: true)),
+                    ("done-left-behind", UninstallAlert.done(sample, appMovedToTrash: false)),
                 ]
                 for (key, alert) in alerts {
                     // The window `runModal` would show, without the modal loop.

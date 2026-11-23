@@ -284,7 +284,7 @@ for dirName in ["onboarding", "onboarding-no-shortcut"] {
 
 let uninstallDir = root.appendingPathComponent("uninstall")
 let uninstallShots = loadFrames(uninstallDir)?.shots
-for key in ["confirm", "done", "remove", "remove-hint"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
+for key in ["confirm", "done", "done-left-behind", "remove", "remove-hint"].flatMap({ k in ["light", "dark"].map { "uninstall-\(k)-\($0)" } }) {
     let at = "uninstall/\(key)"
     guard let sheet = uninstallShots?[key]?["sheet"], image(uninstallDir.appendingPathComponent("\(key).png")) != nil else {
         harness(at, "(g)", "no capture (see the capture step in run.sh's output)")

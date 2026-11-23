@@ -29,7 +29,7 @@ Sổ này là nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết
 | [D13](#d13-gạch-chân-là-đường-lui-cuối-cùng) | Gạch chân là đường lui cuối cùng | Dấu thay chữ tại chỗ. Gạch chân chỉ có khi người dùng tự bật. Nhãn "Đề xuất" gắn theo số đo. |
 | [D14](#d14-onboarding) | Onboarding | Onboarding có ba bước. Bước 1 chỉ hiện khi một bộ gõ chặn phím đang chạy. |
 | [D15](#d15-cài-đặt-mặc-định) | Cài đặt mặc định | Mặc định là Telex và đặt dấu kiểu mới, với đặt dấu tự do, tự khôi phục và thêm dấu cho từ đã gõ đều bật. |
-| [D16](#d16-bảo-trì-và-gỡ-cài-đặt) | Bảo trì và gỡ cài đặt | App chỉ gỡ bộ gõ sau khi người dùng bỏ Dấu khỏi nguồn đầu vào bằng nút "–". |
+| [D16](#d16-bảo-trì-và-gỡ-cài-đặt) | Bảo trì và gỡ cài đặt | App chỉ gỡ bộ gõ sau khi người dùng bỏ Dấu khỏi nguồn đầu vào bằng nút "–", rồi tự chuyển chính nó vào Thùng rác. |
 | [D17](#d17-trợ-năng) | Trợ năng | Hệ thống để VoiceOver đọc tên nguồn. Dấu không thông báo thêm. |
 | [D18](#d18-phòng-thủ-với-imk) | Phòng thủ với IMK | Dấu coi mọi đầu vào là có thể bất thường và không crash vì chúng. |
 | [D19](#d19-quay-về-bản-trước) | Quay về bản trước | Khi quay về bản trước, tự cập nhật tạm tắt tới khi có bản mới hơn bản lỗi. |
@@ -321,7 +321,7 @@ Kiểu gõ mặc định là Telex. Vị trí dấu thanh mặc định là ki�
 - **Dấu đã cài nhưng không có trong nguồn đầu vào:** khi đó không có mục nào để bỏ, nên app gỡ luôn sau alert xác nhận. App không mở System Settings và không hiện sheet bấm "–".
 - Huỷ hoặc lỗi thì app không xoá gì và không đổi nguồn đầu vào nào.
 - App không đụng container riêng của bộ gõ (`~/Library/Containers/com.codefastlabs.dau.inputmethod.Dau`).
-- App không tự xoá chính nó, chỉ hướng dẫn rồi thoát.
+- **Gỡ trọn cả app:** sau khi bộ gõ đã ra khỏi máy, app chuyển chính nó (bản đang chạy) vào Thùng rác rồi thoát. Nếu app không chuyển được chính nó, chẳng hạn khi thiếu quyền ghi hay khi chạy từ ảnh đĩa, alert cuối có nút "Hiển thị trong Finder". Nút này mở Finder, chọn sẵn app để người dùng tự kéo vào Thùng rác, rồi app thoát.
 
 **Vì sao:**
 
@@ -329,6 +329,7 @@ Kiểu gõ mặc định là Telex. Vị trí dấu thanh mặc định là ki�
 - App không tự chuyển bàn phím vì trên macOS 27.2 nút "–" bấm được cả khi Dấu đang được chọn. Khi đó macOS tự chuyển sang nguồn khác (đo bằng Dấu thật).
 - App không đụng container riêng của bộ gõ vì một app khác đụng vào container có thể làm macOS hỏi quyền.
 - Phương án gỡ tự động không cần "–" (xoá bộ gõ và bộ đệm, đo bằng bản thử) đã được cân nhắc và loại. Với phương án đó, mọi chỗ người dùng thấy đều sạch, nhưng mục "đã bật" của Dấu còn ẩn trong `com.apple.inputsources`. Khi cài lại thì macOS bật Dấu ngay mà không hỏi. Dấu chọn để máy sạch và để việc gỡ do chính người dùng xác nhận bằng "–".
+- App tự chuyển chính nó vào Thùng rác vì alert xác nhận hỏi "Gỡ Dấu khỏi máy?". Người bấm "Gỡ cài đặt" chờ Dấu biến khỏi máy, không chờ phải tự tìm app trong Finder sau đó. Đồ trong Thùng rác vẫn lấy lại được, nên bấm nhầm không làm mất gì.
 
 **Xem thêm:** [`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 5.
 

@@ -1106,6 +1106,23 @@
         }
       }
     },
+    "Dấu couldn’t move the app itself, so drag Dấu to %@ in the Finder window that opens." : {
+      "comment" : "Uninstall result when the app could not move itself to the Trash. %@ = Trash, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu couldn’t move the app itself, so drag Dấu to %@ in the Finder window that opens."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu không chuyển được chính ứng dụng, nên bạn kéo Dấu vào %@ trong cửa sổ Finder sắp mở."
+          }
+        }
+      }
+    },
     "Dấu doesn’t need permission to control your Mac." : {
       "comment" : "Onboarding sidebar note.",
       "localizations" : {
@@ -1208,6 +1225,23 @@
         }
       }
     },
+    "Dấu was removed" : {
+      "comment" : "Alert title after the uninstall, when the app itself went to the Trash too.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu was removed"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Đã gỡ Dấu"
+          }
+        }
+      }
+    },
     "Dấu will be added to your macOS input sources, next to the keyboard you use now." : {
       "comment" : "Onboarding step 2 subtitle.",
       "localizations" : {
@@ -1221,6 +1255,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Dấu sẽ được thêm vào nguồn đầu vào của macOS, cạnh bàn phím bạn đang dùng."
+          }
+        }
+      }
+    },
+    "Dấu’s input method and app were moved to %@." : {
+      "comment" : "Uninstall result. %@ = Trash, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dấu’s input method and app were moved to %@."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Bộ gõ và ứng dụng Dấu đã chuyển vào %@."
           }
         }
       }
@@ -2461,7 +2512,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đã xoá cài đặt và quy tắc ứng dụng."
+            "value" : "Cài đặt và quy tắc ứng dụng đã bị xoá."
           }
         }
       }
@@ -2513,6 +2564,23 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Các bước thiết lập"
+          }
+        }
+      }
+    },
+    "Show in Finder" : {
+      "comment" : "Button of the uninstall result alert when the app could not move itself to the Trash: reveals Dấu.app in Finder, then quits.",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show in Finder"
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hiển thị trong Finder"
           }
         }
       }
@@ -2806,6 +2874,23 @@
         }
       }
     },
+    "The Dấu app was moved to %@." : {
+      "comment" : "Uninstall result when no input method was installed. %@ = Trash, macOS's own name (D38).",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The Dấu app was moved to %@."
+          }
+        },
+        "vi" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ứng dụng Dấu đã chuyển vào %@."
+          }
+        }
+      }
+    },
     "The dialog is in the %@ window. Click %@ to turn on Dấu." : {
       "comment" : "Banner subtitle. First %@ = System Settings, second %@ = Allow, both macOS's own names (D38).",
       "localizations" : {
@@ -2869,7 +2954,7 @@
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bộ gõ đã được chuyển vào %@."
+            "value" : "Bộ gõ đã chuyển vào %@."
           }
         }
       }
@@ -2972,23 +3057,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Chưa có phím tắt để chuyển nhanh sang bàn phím tiếng Anh."
-          }
-        }
-      }
-    },
-    "To remove the app too, drag Dấu from the %@ folder to %@." : {
-      "comment" : "Uninstall result. First %@ = Applications, second %@ = Trash (D38).",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "To remove the app too, drag Dấu from the %@ folder to %@."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Muốn xoá cả ứng dụng, kéo Dấu trong thư mục %@ vào %@."
           }
         }
       }
@@ -3622,19 +3690,19 @@
         }
       }
     },
-    "You’ll remove Dấu from %@ in %@. Then the input method is moved to %@." : {
+    "You’ll remove Dấu from %@ in %@. Then the input method and the Dấu app are moved to %@." : {
       "comment" : "Alert text. %@ in order: Input Sources, System Settings, Trash — macOS's own names (D38).",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "You’ll remove Dấu from %@ in %@. Then the input method is moved to %@."
+            "value" : "You’ll remove Dấu from %@ in %@. Then the input method and the Dấu app are moved to %@."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@. Sau đó bộ gõ được chuyển vào %@."
+            "value" : "Bạn sẽ bỏ Dấu khỏi %@ trong %@. Sau đó bộ gõ và ứng dụng Dấu chuyển vào %@."
           }
         }
       }

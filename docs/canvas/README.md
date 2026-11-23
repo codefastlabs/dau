@@ -66,6 +66,7 @@
 ## Gỡ cài đặt
 
 - [Gỡ cài đặt – bỏ Dấu khỏi nguồn đầu vào](UninstallRemoveSource.png) · [nguồn](src/UninstallRemoveSource.dc.html)
+- [Gỡ cài đặt – xong (trái: gỡ trọn; phải: không chuyển được ứng dụng)](UninstallDone.png) · [nguồn](src/UninstallDone.dc.html)
 
 ## Nhận diện
 

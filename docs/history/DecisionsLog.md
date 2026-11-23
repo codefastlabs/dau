@@ -196,6 +196,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): ba ý "Quy tắc kèm theo khi gỡ" (huỷ hay lỗi không xoá gì; không đụng container riêng của bộ gõ; app không tự xoá chính nó) chuyển từ `docs/Architecture.md` vào sổ; luật không đổi.
 - 16/11/2026 (người dùng duyệt, sau kiểm toán M6): dòng mục lục "Gỡ chỉ chạy sau khi người dùng bỏ Dấu bằng "–"." viết đủ "bỏ Dấu khỏi nguồn đầu vào". Luật không đổi.
+- 23/11/2026 (người dùng chọn, sau một lượt phản biện): gỡ trọn cả app. Người dùng gỡ Dấu trên một máy Intel rồi thấy Dấu.app vẫn còn trong Applications, dù alert xác nhận hỏi "Gỡ Dấu khỏi máy?". Bản trước, nguyên văn: "App không tự xoá chính nó, chỉ hướng dẫn rồi thoát." Dòng mục lục trước: "App chỉ gỡ bộ gõ sau khi người dùng bỏ Dấu khỏi nguồn đầu vào bằng nút "–"." Artboard mới: UninstallDone.
 
 ### D17. Trợ năng
 

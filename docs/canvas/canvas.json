@@ -364,6 +364,13 @@
       "w": 900,
       "h": 760,
       "title": "Cập nhật & hỗ trợ – cuộn xuống: Người ủng hộ"
+    },
+    "UninstallDone.dc.html": {
+      "x": 3920,
+      "y": 8660,
+      "w": 900,
+      "h": 560,
+      "title": "Gỡ cài đặt – xong (trái: gỡ trọn; phải: không chuyển được ứng dụng)"
     }
   },
   "createdOnFiles": {
@@ -453,6 +460,7 @@
     "SettingsAboutSupporters.dc.html",
     "ConfirmDialogs.dc.html",
     "UninstallRemoveSource.dc.html",
+    "UninstallDone.dc.html",
     "Report.dc.html",
     "Main.dc.html",
     "TypingStates.dc.html",

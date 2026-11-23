@@ -239,15 +239,36 @@ final class InputMethodActions {
         }
     }
 
+    /// Moves Dấu.app itself to the Trash once its input method is gone (D16). False when
+    /// macOS refuses it, such as without write access to its folder or from a disk image.
+    private static func moveAppToTrash(_ app: URL) -> Bool {
+        do {
+            try FileManager.default.trashItem(at: app, resultingItemURL: nil)
+            installLogger.notice("event=uninstall-app-trashed")
+            return true
+        } catch {
+            installLogger.error("event=uninstall-app-not-trashed error=\(String(describing: error), privacy: .public)")
+            return false
+        }
+    }
+
     /// The whole removal with its alerts: prepare, wait for the user, finish.
     func uninstall(deleteSettings: Bool, window: NSWindow?) async {
         switch await performUninstall(deleteSettings: deleteSettings) {
         case .cancelled:
             break
         case .done(let report):
-            UninstallAlert.present(UninstallAlert.done(report), in: window) { _ in
-                // The input method is gone; this app would only offer to install it
-                // again. It quits; the user removes Dấu.app from Applications.
+            // Both alerts are built before the app leaves its folder: once it is in the
+            // Trash, Bundle.main no longer finds its string tables and the text falls
+            // back to the English keys.
+            let app = Bundle.main.bundleURL
+            let removed = UninstallAlert.done(report, appMovedToTrash: true)
+            let leftBehind = UninstallAlert.done(report, appMovedToTrash: false)
+            let appMovedToTrash = Self.moveAppToTrash(app)
+            UninstallAlert.present(appMovedToTrash ? removed : leftBehind, in: window) { _ in
+                if !appMovedToTrash {
+                    NSWorkspace.shared.activateFileViewerSelecting([app])
+                }
                 NSApp.terminate(nil)
             }
         case .failed:
@@ -342,7 +363,7 @@ enum UninstallAlert {
         // macOS lets only the user remove an input source, so the alert says what happens
         // in order (docs/research/InputMethodInstall.md section 5.1).
         let ui = SystemUINames.system()   // macOS's own names (D38)
-        alert.informativeText = String(localized: "You’ll remove Dấu from \(ui.inputSources) in \(ui.systemSettings). Then the input method is moved to \(ui.trash).")
+        alert.informativeText = String(localized: "You’ll remove Dấu from \(ui.inputSources) in \(ui.systemSettings). Then the input method and the Dấu app are moved to \(ui.trash).")
         let remove = alert.addButton(withTitle: String(localized: "Uninstall"))
         remove.hasDestructiveAction = true
         // Return must not remove Dấu: no default button; Esc cancels.
@@ -356,13 +377,22 @@ enum UninstallAlert {
         return (alert, checkbox)
     }
 
-    static func done(_ report: UninstallReport) -> NSAlert {
+    /// The result (mockup "UninstallDone"). Without `appMovedToTrash` its one button reveals
+    /// the app in Finder, where the user drags it to the Trash.
+    static func done(_ report: UninstallReport, appMovedToTrash: Bool) -> NSAlert {
         let alert = NSAlert()
-        alert.messageText = String(localized: "Dấu’s input method was removed")
         let ui = SystemUINames.system()   // macOS's own names (D38)
         var lines: [String] = []
-        if report.movedToTrash {
-            lines.append(String(localized: "The input method was moved to \(ui.trash)."))
+        if appMovedToTrash {
+            alert.messageText = String(localized: "Dấu was removed")
+            lines.append(report.movedToTrash
+                ? String(localized: "Dấu’s input method and app were moved to \(ui.trash).")
+                : String(localized: "The Dấu app was moved to \(ui.trash)."))
+        } else {
+            alert.messageText = String(localized: "Dấu’s input method was removed")
+            if report.movedToTrash {
+                lines.append(String(localized: "The input method was moved to \(ui.trash)."))
+            }
         }
         if report.stillEnabled {
             lines.append(String(localized: "macOS still lists Dấu among the input sources; you can remove it in \(ui.inputSourcesPath)."))
@@ -370,9 +400,13 @@ enum UninstallAlert {
         if report.dataDeleted {
             lines.append(String(localized: "Settings and app rules were deleted."))
         }
-        lines.append(String(localized: "To remove the app too, drag Dấu from the \(ui.applications) folder to \(ui.trash)."))
+        if appMovedToTrash {
+            alert.addButton(withTitle: String(localized: "Quit Dấu"))
+        } else {
+            lines.append(String(localized: "Dấu couldn’t move the app itself, so drag Dấu to \(ui.trash) in the Finder window that opens."))
+            alert.addButton(withTitle: String(localized: "Show in Finder"))
+        }
         alert.informativeText = lines.joined(separator: " ")
-        alert.addButton(withTitle: String(localized: "Quit Dấu"))
         return alert
     }
 
