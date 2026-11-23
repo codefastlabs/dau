@@ -128,6 +128,7 @@ final class DauInputController: IMKInputController {
             #if DEBUG
             result.diag = outcome.attempt.map(ReplaceDiag.init)
             result.d20 = outcome.d20
+            result.d20Check = outcome.d20Check
             result.seedDiffers = outcome.seedDiffers
             result.backspaceWait = outcome.backspaceWait
             #endif
@@ -158,6 +159,7 @@ final class DauInputController: IMKInputController {
         var diag: ReplaceDiag?
         /// D20 read of this key (Debug perf log).
         var d20: InPlaceComposer.D20Trace?
+        var d20Check: InPlaceComposer.D20Check?
         var seedDiffers: Bool?
         /// N3 "Ngoại lệ sau ⌫ chưa áp": what the wait did, and its time (Debug perf log).
         var backspaceWait: InPlaceComposer.BackspaceWait?
@@ -190,7 +192,7 @@ final class DauInputController: IMKInputController {
         if perf.enabled {
             // What a D20 read did on this key. Words and numbers only, never text (D8).
             if let t = result.d20 {
-                extra = " d20=\(t.trigger.rawValue) seeded=\(t.seeded ? 1 : 0)"
+                extra = " d20=\(t.trigger.rawValue) seeded=\(t.seeded ? 1 : 0)" + (result.d20Check?.logFields ?? "")
             } else {
                 extra = " d20=none"
             }

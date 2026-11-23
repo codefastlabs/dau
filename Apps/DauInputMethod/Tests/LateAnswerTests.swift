@@ -14,6 +14,7 @@ private struct LateSession {
     var kinds: [PerfLog.Kind] = []
     /// Keys with more than one call of a kind (must stay 0, N3).
     var overCalls = 0
+    var lastOutcome = InPlaceComposer.Outcome()
 
     init(_ text: String = "", settings: DauSettings = .defaults) {
         engine = VietEngine(options: settings.engineOptions)
@@ -28,6 +29,7 @@ private struct LateSession {
         let outcome = composer.handle(route, time: now, engine: &engine, client: doc)
         if doc.selections > 1 + (outcome.backspaceWait?.asks ?? 0) || doc.reads > 1 || doc.inserts > 1 { overCalls += 1 }
         kinds.append(outcome.kind)
+        lastOutcome = outcome
         if leftToApp(route, outcome) { doc.typed(route) }
     }
 
@@ -199,10 +201,12 @@ struct LateAnswerTests {
     }
 
     /// Chrome, busy page, 10 ms between keys: at "j" after "Hoc ⌫" the D20 read answers
-    /// after "Ho", further behind than `rebuild` can prove, and the next word's answers
-    /// stay there. Anchoring at that answer would make "tieesng" replace the "o" of "Hoc"
-    /// ("Hếcj tieng"). Not anchored, the next word is proved late and comes out right; D20
-    /// does not apply to "Hoc" (the read gives no usable word).
+    /// after "Ho", and the next word's answers stay there. The text before "Hoc" was not
+    /// typed here, so the read holds one unit this composer typed ("H"), short of the two
+    /// `CursorTracker.prove` compares: not proved. Anchoring at that answer would make
+    /// "tieesng" replace the "o" of "Hoc" ("Hếcj tieng"). Not anchored, the next word is
+    /// proved late and comes out right; D20 does not apply to "Hoc" (the read gives no
+    /// usable word).
     @Test("busy page, 10 ms: a D20 read in a burst far behind does not move the followed position")
     func staleD20ReadInBurst() {
         let before = "chiều nay. "
@@ -317,17 +321,20 @@ struct LateAnswerTests {
     }
 
     /// Busy page (`--busy 300:1000`, docs/Compatibility.md 5.2): Chrome answers up to 12 edits
-    /// late across word ends. In a word `rebuild` now allows every edit since the app's last
-    /// answer on time (`CursorTracker.LatenessBudget.editsSinceOnTimeAnswer`); the real Chrome runs come out right
-    /// (`docs/Compatibility.md` 5.2). The model is harsher (lag from the start of the
-    /// text, before any answer on time), so some cases still fail: a known issue of the model
-    /// (docs/research/LateAnswerFixes.md 3.3). The page is blocked
+    /// late across word ends. In a word, and at a D20 read in Chromium's cache form, `rebuild`
+    /// allows every edit since the app's last answer on time
+    /// (`CursorTracker.LatenessBudget.editsSinceOnTimeAnswer`): with Chromium's cache (`which`
+    /// 2, 3) every seed comes out right. In the snapshot form (0, 1) a D20 read after ⌫
+    /// keeps the paced limit, as text the app changed into one this composer had looks the
+    /// same, so "Hoc ⌫j" may give "Hocj": a known issue of the model, which is harsher than
+    /// the real runs (docs/research/LateAnswerFixes.md 3.3). The page is blocked
     /// 300 ms of every second; the lag grows by one per key while blocked (an app cannot
     /// drop edits it has applied) and is caught up after.
     @Test("the load-test strings in a burst, answers up to twelve keys late at random: same text as on time",
           arguments: [0, 1, 2, 3], Array(UInt64(1)...24))
     func wholeStringLateBurst(_ which: Int, _ seed: UInt64) {
-        withKnownIssue("busy page, answers late across word ends (model harsher than the real runs)", isIntermittent: true) {
+        guard which < 2 else { return Self.lateBurst(which, seed) }
+        withKnownIssue("snapshot form: a D20 read after ⌫ further behind than the paced limit", isIntermittent: true) {
             Self.lateBurst(which, seed)
         }
     }
@@ -394,8 +401,8 @@ struct LateAnswerTests {
     }
 }
 
-/// The D20 read after ⌫ (see `BackspaceThenMarkTests`) in Chrome's
-/// cache model, with the answer within `LatenessBudget.humanPaceEdits` edits late (`CursorTracker.rebuild`).
+/// The D20 read after ⌫ (see `BackspaceThenMarkTests`) with a late answer
+/// (`CursorTracker.prove`, D11 "App trả lời chậm").
 @Suite("In-place mode: D20 after ⌫ with a late answer")
 struct LateBackspaceMarkTests {
     @Test("same keys, answer 1 or 2 edits late: proved, the mark applies", arguments: [1, 2])
@@ -405,6 +412,80 @@ struct LateBackspaceMarkTests {
         s.type("Toi hoc ⌫")
         s.type("j", lag: lag)
         #expect(s.doc.text == "Toi học")
+        #expect(s.overCalls == 0)
+    }
+
+    /// Chrome, busy page, 10 ms between keys (word ends about 55 ms after the key before):
+    /// the page stops around the ⌫, and Chromium's cache answers the D20 read at "j" with
+    /// the page's caret plus the space, the latest unit typed at the caret. Three edits
+    /// late, that is the followed caret itself; more, it is behind it. Either way the read
+    /// is proved back to the last answer on time ("Chiều", `editsSinceOnTimeAnswer`), and the
+    /// page stays blocked through the next word.
+    @Test("busy page, keys in a burst: a D20 read after ⌫ in Chromium's cache form, 3 to 12 edits late, is proved — Hoc ⌫j → Học",
+          arguments: 3...12)
+    func farBehindInCacheForm(_ lag: Int) {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        s.interval = 0.017
+        s.type("Chieeuf nay. Hoc")
+        s.interval = 0.055
+        s.type(" ")
+        s.interval = 0.017
+        s.type("⌫")
+        s.type("j", lag: lag)
+        let check = s.lastOutcome.d20Check
+        #expect(check?.proof?.text != nil)
+        #expect(check?.proof?.edits == lag)
+        #expect(check?.proof?.form == .cache)
+        for (i, key) in " tieesng ".unicodeScalars.enumerated() { s.type(String(Character(key)), lag: lag + 1 + i) }
+        #expect(s.doc.text == "Chiều nay. Học tiếng ")
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("an app that changed the text at the followed caret (double space to a period): the D20 read takes its text as it is")
+    func appTextChangedAtFollowedCaret() {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        s.type("Hoc  ")
+        s.doc.appEdit("Hoc. ")
+        s.interval = 0.017
+        s.type("⌫j")
+        #expect(s.doc.text == "Hoc.j")
+        #expect(s.lastOutcome.d20Check?.proof?.text == nil)
+        #expect(s.doc.badRanges == 0)
+        #expect(s.overCalls == 0)
+    }
+
+    /// "car" kept by a double key (D26), then autocorrected to "cả": the app's text is a
+    /// text this composer had three edits ago (form (a)), which a D20 read must not take for
+    /// a late answer however long since the last answer on time (D20 "Từ hệ thống vừa sửa").
+    @Test("car autocorrected to cả, ⌫ r: not taken for a late answer, cả + r → car")
+    func autocorrectNotTakenForLate() {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        s.type("Chieeuf nay carr ")
+        s.doc.appEdit("Chiều nay cả ")
+        s.type("⌫r")
+        #expect(s.doc.text == "Chiều nay car")
+        #expect((s.lastOutcome.d20Check?.editsSinceOnTimeAnswer ?? 0) > CursorTracker.LatenessBudget.humanPaceEdits)
+        #expect(s.lastOutcome.d20Check?.proof?.text == nil)
+        #expect(s.doc.badRanges == 0)
+    }
+
+    /// ⌘A the input method never sees (Chrome's address bar), then the same word typed again:
+    /// the app's text is the retyped word alone, which the edits since the last answer on
+    /// time would also explain. Re-read, not taken for late (D11).
+    @Test("text replaced unseen, the word typed again, ⌫ j: the app's answer stands — học")
+    func retypedAfterUnseenSelectAll() {
+        var s = LateSession()
+        s.doc.cache = .chromium
+        s.type("Toi hoc ")
+        s.doc.appEdit("")
+        s.type("hoc ⌫j")
+        #expect(s.doc.text == "học")
+        #expect(s.lastOutcome.d20Check?.proof?.text == nil)
+        #expect(s.doc.badRanges == 0)
         #expect(s.overCalls == 0)
     }
 }

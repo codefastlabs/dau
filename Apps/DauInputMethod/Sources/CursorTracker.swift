@@ -289,6 +289,14 @@ extension CursorTracker {
             return inWord ? max(paced, editsSinceOnTimeAnswer ?? 0) : paced
         }
 
+        /// How many edits a D20 read in Chromium's cache form may replay: back to the last
+        /// answer on time, across word ends too. Form (a) keeps `replayLimit(inWord: false)`,
+        /// as autocorrect can turn the text into one this composer had a few edits ago ("car"
+        /// to "cả"). The cache form ends with the unit this composer inserted at the caret
+        /// last, written after an older state of the text, which such a change does not leave
+        /// (`CursorTracker.prove`).
+        var cacheReplayLimit: Int { replayLimit(inWord: true) }
+
         fileprivate mutating func countEdit() {
             editsInBurst = keyInBurst ? min(editsInBurst + 1, FollowedText.editLimit) : 0
             if let since = editsSinceOnTimeAnswer {

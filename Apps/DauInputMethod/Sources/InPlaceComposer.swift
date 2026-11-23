@@ -63,6 +63,9 @@ struct InPlaceComposer {
     /// The read `replace` made at the app's answer this key, reused by the D11 re-sync so a
     /// key reads at most once (N3). `text` is nil when the client gave none.
     private var lateRead: (location: Int, text: String?)?
+    /// This key's D20 read proved the app late (`answerForRead`): its selection is the
+    /// followed caret, not the app's answer, and no answer on time (`replace`).
+    private var readProvedLate = false
 
     /// A key less than this after a ⌫ may wait for the app to apply it (N3 "Ngoại lệ sau ⌫
     /// chưa áp"). Not tuned by measurement: it only bounds which keys after a ⌫ are armed,
@@ -156,6 +159,8 @@ struct InPlaceComposer {
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
         var d20: D20Trace?
+        /// How that read's answer was checked against the followed caret (`answerForRead`).
+        var d20Check: D20Check?
         /// While a word seeded by a D20 read is being typed: whether the word shown differs
         /// from what an engine that never read the text would show. nil: no seeded word, or
         /// the key ended it.
@@ -171,6 +176,36 @@ struct InPlaceComposer {
         var trigger: Trigger
         /// The engine was seeded with the word read and kept it.
         var seeded: Bool
+    }
+
+    /// The numbers of the late-answer proof at a D20 read (D8: numbers only).
+    struct D20Check: Equatable {
+        /// The app's answer to `selectedRange`.
+        var selection = NSRange(location: NSNotFound, length: 0)
+        var followedCaret: Int?
+        var editsSinceOnTimeAnswer: Int?
+        var editsInBurst = 0
+        var keyInBurst = false
+        /// The key came right after a ⌫ whose deleted text the tracker holds (`armBackspaceWait`).
+        var afterBackspace = false
+        /// nil: the proof did not run.
+        var proof: CursorTracker.LateProof?
+        /// Not proved, behind the followed caret, in a burst (`ReadAnswer.staleInBurst`).
+        var staleInBurst = false
+
+        /// Perf log fields, each with a leading space; -1 or `-` when unknown or not reached.
+        var logFields: String {
+            let sel = selection.location == NSNotFound ? "notfound" : "\(selection.location),\(selection.length)"
+            var fields = " d20_sel=\(sel) d20_known=\(followedCaret ?? -1) d20_since=\(editsSinceOnTimeAnswer ?? -1)"
+                + " d20_burst=\(editsInBurst) d20_inburst=\(keyInBurst ? 1 : 0) d20_after_bksp=\(afterBackspace ? 1 : 0)"
+            if let proof {
+                fields += " d20_limit=\(proof.limit) d20_limit_b=\(proof.cacheLimit) d20_lag=\(proof.edits ?? -1) d20_form=\(proof.form?.rawValue ?? "-")"
+                    + " d20_proved=\(proof.text == nil ? 0 : 1) d20_reject=\(proof.rejected?.rawValue ?? "-")"
+            } else {
+                fields += " d20_limit=-1 d20_limit_b=-1 d20_lag=-1 d20_form=- d20_proved=- d20_reject=-"
+            }
+            return fields + " d20_stale=\(staleInBurst ? 1 : 0)"
+        }
     }
     /// The word the last `seedWord` seeded.
     private var lastSeededWord: [Unicode.Scalar] = []
@@ -263,6 +298,7 @@ struct InPlaceComposer {
         let sinceLast: TimeInterval? = time.flatMap { t in lastEventTime.map { t - $0 } }
         if let time { lastEventTime = time }
         lateRead = nil
+        readProvedLate = false
         tracker.lateness.keyInBurst = !settled
         armBackspaceWait(sinceLast: sinceLast)
         let lastProduced = takeProducedWord(for: route)
@@ -645,6 +681,9 @@ struct InPlaceComposer {
         /// Behind the followed caret, not proved late, and in a burst: neither anchored at
         /// nor seeded from.
         var staleInBurst = false
+        #if DEBUG
+        var check = D20Check()
+        #endif
 
         /// A read that gave nothing usable is not made again for this key (N3).
         var allowsSeed: Bool { !(didRead && read == nil || staleInBurst) }
@@ -661,6 +700,7 @@ struct InPlaceComposer {
                                    client: some InPlaceClient) -> Outcome {
         #if DEBUG
         prepareShadow(for: scalar, engine: engine)
+        let afterBackspace = armedBackspaceWait != nil
         #endif
         let answer = answerForRead(askSelection(client: client), client: client)
         let selection = answer.selection
@@ -687,29 +727,47 @@ struct InPlaceComposer {
         var traced = outcome ?? Outcome()
         #if DEBUG
         let seeded = traced.kind == .seed || traced.kind == .seedPass || traced.kind == .seedKept
+        var check = answer.check
+        check.afterBackspace = afterBackspace
+        check.staleInBurst = answer.staleInBurst
         traced.d20 = D20Trace(trigger: letter ? .letter : .mark, seeded: seeded)
+        traced.d20Check = check
         #endif
         return traced
     }
 
-    /// When `selection` is not the followed caret, the app may answer from before the last
-    /// Delete: one read at its answer, and if that text plus the edits it lacks (each one's
-    /// removed text checked) ends at the followed caret, the read is that text there
-    /// (D11 "App trả lời chậm").
+    /// The app may answer from before the last Delete: one read at its answer (the D20 read
+    /// itself, N3), and if that text plus the edits it lacks (each one's removed text
+    /// checked) ends at the followed caret, the read is that text there (D11 "App trả lời
+    /// chậm"). An answer at the followed caret is checked too, in Chromium's cache form
+    /// only: that cache puts the caret after the unit typed last, the one the Delete
+    /// removed, so an app three edits behind answers at the followed caret
+    /// (`CursorTracker.prove`, `cacheForm`).
     private mutating func answerForRead(_ selection: NSRange, client: some InPlaceClient) -> ReadAnswer {
         var answer = ReadAnswer(selection: selection)
+        #if DEBUG
+        answer.check = D20Check(selection: selection, followedCaret: tracker.followed.caret,
+                                editsSinceOnTimeAnswer: tracker.lateness.editsSinceOnTimeAnswer,
+                                editsInBurst: tracker.lateness.editsInBurst, keyInBurst: tracker.lateness.keyInBurst)
+        #endif
         guard let caret = tracker.followed.caret, selection.length == 0, selection.location != NSNotFound,
-              selection.location >= 0, selection.location != caret, !tracker.followed.edits.isEmpty else {
+              selection.location >= 0, !tracker.followed.edits.isEmpty else {
             return answer
         }
         answer.didRead = true
         answer.read = readBefore(selection.location, client: client)
-        if let text = answer.read,
-           let rebuilt = tracker.rebuild(Array(text.utf16), at: selection,
-                                         requireDeletedText: true, accept: { _ in true }) {
+        let proof = answer.read.map {
+            tracker.prove(Array($0.utf16), at: selection, cacheForm: true, requireDeletedText: true,
+                          accept: { _ in true })
+        }
+        #if DEBUG
+        answer.check.proof = proof
+        #endif
+        if let rebuilt = proof?.text {
             let count = min(caret, Self.readLength, rebuilt.count)
             answer.read = String(decoding: rebuilt.suffix(count), as: UTF16.self)
             answer.selection = NSRange(location: caret, length: 0)
+            readProvedLate = true
         } else if selection.location < caret, tracker.lateness.keyInBurst {
             // Not proved, yet keys in a burst leave no time for a click IMK does not report:
             // the app is further behind than `rebuild` replays. Anchoring at the answer would
@@ -968,7 +1026,7 @@ struct InPlaceComposer {
         // Engine letters are BMP scalars, so deleteCount scalars are deleteCount UTF-16
         // units, also for a word seeded from decomposed text.
         let selection = known ?? askSelection(client: client)
-        if let followed = tracker.followed.caret, selection == NSRange(location: followed, length: 0) {
+        if !readProvedLate, let followed = tracker.followed.caret, selection == NSRange(location: followed, length: 0) {
             tracker.answeredOnTime()
         }
         var text = insert.description

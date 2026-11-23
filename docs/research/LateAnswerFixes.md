@@ -1,10 +1,10 @@
 # Bốn kịch bản "app trả lời chậm": cơ chế và hướng sửa
 
-Kịch bản A chưa app thật nào đo ra; kịch bản B có ở trình soạn thảo của Cursor 3.30.14 (mục "Hiện trạng"). File này giữ cơ chế và hướng sửa ngắn gọn. Cơ chế của `CursorTracker` ở [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm"; số đo Cursor ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
+Kịch bản A có ở Chrome thật khi trang bận và phím dồn; kịch bản B có ở trình soạn thảo của Cursor 3.30.14 (mục "Hiện trạng"). File này giữ cơ chế và hướng sửa ngắn gọn. Cơ chế của `CursorTracker` ở [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm"; số đo Cursor ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
-## Hiện trạng (22/11/2026, tối)
+## Hiện trạng (23/11/2026)
 
-- **Kịch bản A: D20 sau ⌫ khi app chậm 3–4 thao tác** (mô hình bộ đệm Chromium, `LateDocument.Cache.chromium`). Chrome thật, trang bận, nhịp người, chuỗi `edit`: đúng 3/3. Ở lần đọc của D20 sau ⌫, Chrome trả vị trí đúng giờ (mục 3). Chậm 1–2 thao tác thì phép chứng minh hiện có đã xử lý (`LateBackspaceMarkTests`). Hướng 2A là phương án áp khi gặp ca thật (mục 1.2).
+- **Kịch bản A: D20 sau ⌫ khi app chậm từ 3 thao tác trở lên** (mô hình bộ đệm Chromium, `LateDocument.Cache.chromium`). Ở nhịp người, Chrome thật khi trang bận trả lời lần đọc này đúng giờ (mục 4). Ở 10 ms, Chrome thật khi trang bận có lượt ra "Hocj" ở "Hoc ⌫j", không hỏng chữ. Trên mô hình, nguyên nhân là giới hạn số thao tác được chậm của lần đọc này (mục 1.1). Hướng đã chọn: dạng bộ đệm Chromium được dựng lại tới lần cuối app trả lời đúng lúc, kể cả khi vị trí trùng vị trí theo dõi (mục 1.2). Log Debug của lần đọc có các trường `d20_*` để xác nhận nguyên nhân ở app thật ([`docs/Architecture.md`](../Architecture.md) mục "Thêm dấu cho từ đã gõ", ý "Log perf").
 - **Kịch bản B: app tính vị trí theo từ** (`LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Ở Cursor 3.30.14, khung agent (⌘L) và ô nhập Agents tính vị trí từ đầu văn bản và gõ đúng. Trình soạn thảo có lúc tính từ đầu văn bản (đúng), có lúc tính từ đầu từ; ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai vài từ mỗi lượt, không do D20 (D20 chờ hay không chờ phím dồn đều sai như vậy). Chưa rõ vì sao trình soạn thảo đổi kiểu (số đo: [`docs/Compatibility.md`](../Compatibility.md) mục 5.4). Mô hình còn trong test (`WordOriginTests`) cho các ca đạt. Hướng 1B và 4A cần đổi N3 và D11 (mục 2.2).
 - **Kịch bản C: trang bận, app chậm qua chỗ ngắt từ** (đo 18/11/2026, mục 3): Chrome và Safari sai khi trang bận, cả ở nhịp người gõ nhanh. Nguyên nhân ở Chrome: hạn mức độ chậm của phép chứng minh về 0 ở mỗi chỗ ngắt từ. Đã sửa (mục 3.3): ở phím thay chữ trong từ, app được chậm mọi thao tác kể từ lần cuối nó trả lời đúng lúc (`d171ab9`). Câu trả lời trùng vị trí theo dõi không còn được coi là đúng lúc khi các thao tác cuối không dời con trỏ (lỗi "được"), lần đọc của D20 chậm quá phép chứng minh trong loạt phím dồn không còn neo vị trí theo dõi vào câu trả lời cũ, và vị trí neo đầu tiên là một mốc như câu trả lời đúng lúc (lỗi "mọot" ở đầu văn bản). Chrome trang bận đúng 9/9 ở 10 ms và 9/9 ở nhịp người gõ nhanh. Safari là kịch bản D.
 - **Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng** (đo 18/11/2026, mục 5): khi trang chưa nhận kịp phím (phím dồn, trang bận), lần thay của bộ gõ tới trang trước các ký tự đi thẳng còn chờ, nên chữ của các phím đó dời chỗ. Đã sửa ngày 22/11/2026 bằng cách bộ gõ tự chèn mọi ký tự engine để nguyên, ở mọi app (mục 5.3, N3): Safari đúng khi gửi cả chuỗi một lần (3/3) và ở ô mũi tên (3/3). ⌫ giữ đi thẳng; ca ⌫ rồi phím dấu ngay sau khi trang bận đã sửa bằng ngoại lệ chờ ⌫ chưa áp của N3, hạn 20 ms, cho mọi app (mục 5.4): Safari trang bận đúng 3/3 ở hai ô.
@@ -12,39 +12,36 @@ Kịch bản A chưa app thật nào đo ra; kịch bản B có ở trình soạ
 
 Không có quyết định nào chờ người dùng ở file này. Phần đo được và phần giả định của mô hình theo từ ghi trong comment của `LateDocument.Origin`; mô hình vị trí tính từ đầu văn bản là `Origin.document`.
 
-## 1. Kịch bản A: D20 sau ⌫, app chậm 3–4 thao tác
+## 1. Kịch bản A: D20 sau ⌫, app chậm từ 3 thao tác trở lên
 
 ### 1.1 Cơ chế
 
-Chuỗi phím `Toi hoc ⌫` gõ đúng giờ, rồi `j` với câu trả lời chậm 3 hoặc 4 thao tác, theo mô hình bộ đệm Chromium. Lần đọc của D20 ở `InPlaceComposer.addMarks`:
+Chuỗi phím `Hoc ⌫` gõ dồn, trang bận, rồi `j`. Lần đọc của D20 ở `InPlaceComposer.addMarks` nhận câu trả lời từ bộ đệm Chromium (`LateDocument.Cache.chromium`): vị trí trang báo lần cuối cộng với dấu cách, là chữ chèn tại con trỏ mới nhất mà ⌫ vừa xoá.
 
-- **Chậm 3:** trang mới áp tới "Toi ho". Bộ đệm ghi hai chữ chèn tại con trỏ ("c", rồi dấu cách) cùng vào con trỏ 6, nên ra "Toi ho c" và con trỏ 7. Vị trí 7 trùng `CursorTracker.followed.caret` (7), nên `addMarks` không thử chứng minh app chậm. Chữ đọc được là "Toi ho ", tận cùng là dấu cách, nên không có từ. Phím `j` đi thẳng và ra "Toi hocj".
-- **Chậm 4:** vị trí 6 khác `followed.caret`, nên Dấu gọi `CursorTracker.rebuild`. Ở nhịp người `editsInBurst` = 0, nên rebuild chỉ thử tối đa `humanPaceEdits` = 2 thao tác; muốn khớp thì phải thử 4. Rebuild thất bại. Chữ đọc được "Toi h " tận cùng là dấu cách và kết quả cũng ra "Toi hocj".
+- **Chậm 3:** trang mới áp tới "Ho". Bộ đệm ghi "c" rồi dấu cách cùng vào con trỏ của trang, nên chữ trước vị trí trả là "Ho " và vị trí đó trùng `CursorTracker.followed.caret`. Nếu chỉ chứng minh khi vị trí khác `followed.caret`, phép chứng minh không chạy. Chữ đọc được tận cùng là dấu cách nên không có từ, và kết quả là "Hocj".
+- **Chậm 4 trở lên:** vị trí lùi sau `followed.caret`. Dấu cách đến sau phím trước 50–60 ms nên `editsInBurst` về 0 ở đó, còn ⌫ thuộc loạt phím dồn. Vì vậy giới hạn `humanPaceEdits` cộng `editsInBurst` chỉ là 3. Trên mô hình trang bận (test "the load-test strings in a burst…"), lần đọc ở "j" chậm 7–18 thao tác; dựng lại đúng số thao tác đó thì mọi phép kiểm khác đều qua (log Debug: `d20_reject=limit`, `d20_lag` bằng độ chậm). Không chứng minh được thì `addMarks` không gieo từ (mục 3.3), nên kết quả là "Hocj".
 
-Không giả thuyết nào một mình giải thích được cả hai ca: vị trí bộ đệm trả trùng `followed.caret` nên không ai kiểm chữ giải thích chậm 3; `rebuild` bị giới hạn ở `humanPaceEdits` giải thích chậm 4. Chỉ sửa một phần thì ca kia vẫn sai; sửa cả hai thì cả hai đúng. Lần đọc hỏng (`readUnavailable`, D20 "Phạm vi") không phải nguyên nhân: cả hai lần đọc đều trả chữ.
+Ba giả thuyết khác đã loại trên mô hình. Thứ nhất, thao tác xoá của ⌫ không dựng lại được vì không biết chữ bị xoá: ⌫ xoá dấu cách do bộ gõ chèn, nên chữ đó đã biết. Thứ hai, `editsSinceOnTimeAnswer` chưa có: ở mọi seed hỏng giá trị này là 14–25, không nhỏ hơn độ chậm. Thứ ba, `typedHere` từ chối: phép kiểm này chỉ từ chối khi chữ trước từ không do bộ gõ gõ (test `staleD20ReadInBurst`), còn ở chuỗi `edit` thì bộ gõ gõ mọi chữ. Lần đọc hỏng (`readUnavailable`, D20 "Phạm vi") cũng không phải nguyên nhân: mọi lần đọc đều trả chữ.
 
 Lỗi người dùng báo ngày 17/11 ở app Claude ("Hocj") do cơ chế khác ("một lần đọc hỏng trước đó", `failedReadLimit`).
 
-### 1.2 Hướng sửa
+### 1.2 Hướng đã chọn: dạng bộ đệm Chromium được dựng lại tới mốc đúng lúc
 
-**2A (áp khi gặp ca thật).** Chỉ áp ở lần đọc của D20 sau ⌫ (`addMarks`), gồm hai phần:
+Ở lần đọc của D20 (`InPlaceComposer.answerForRead`, `CursorTracker.prove` với `cacheForm`), phép chứng minh có ba thay đổi:
 
-1. Vị trí trả trùng `followed.caret` mà phần cuối chữ đọc được khác `typedBeforeCaret` (chữ Dấu đã gõ ở đó): vẫn chạy `rebuild`, cho phép câu trả lời nằm ở `followed.caret`.
-2. Nới số thao tác được chậm thêm 4 (tức `humanPaceEdits` + 4), nhưng phần nới chỉ nhận dạng (b) của rebuild. Dạng (b) là dạng của bộ đệm Chromium: chữ đọc được kết thúc bằng chữ chèn tại con trỏ mới nhất. Phần nới vẫn qua phép kiểm chặt như phím dồn: mọi thao tác xoá phải biết chữ nó xoá. `typedHere` cũng phải đạt.
+1. Dạng (b) của phép chứng minh (chữ đọc được kết thúc bằng chữ chèn tại con trỏ mới nhất, như bộ đệm Chromium) được dựng lại tới `editsSinceOnTimeAnswer` (`LatenessBudget.cacheReplayLimit`), qua cả chỗ ngắt từ. Dạng (a) giữ giới hạn `humanPaceEdits` cộng `editsInBurst`. Mọi phép kiểm chặt vẫn áp: khi vượt `humanPaceEdits`, mọi thao tác xoá phải biết chữ nó xoá và `typedHere` phải đạt.
+2. Câu trả lời trùng `followed.caret` cũng qua phép chứng minh, chỉ ở dạng (b). Lần đọc này chính là lần đọc vốn có của D20, nên không thêm lời gọi nào.
+3. Lần thay sau khi chứng minh được không tính là câu trả lời đúng lúc (`readProvedLate`). Vị trí của lần thay đó là `followed.caret` chứ không phải câu trả lời của app. Nếu tính như vậy thì `editsSinceOnTimeAnswer` về 0 trong khi app vẫn chậm, và lần thay đầu của từ sau sẽ rơi vào chữ trước ("Hêc tie", "nayê Học" trên mô hình).
 
 Đánh giá:
 
-- **Quyết định:** không trái N1–N5 hay D nào. D11 cho phép "số thao tác được chậm có giới hạn". Giới hạn vẫn còn. D11 cũng đã nói phép chứng minh dùng cho lần đọc của D20. Không thêm lời gọi nào: lần đọc ở phần 1 chính là lần đọc D20 vốn có, chuyển cho `seedWord`. Khi áp phải sửa [`docs/Architecture.md`](../Architecture.md) mục "App trả lời chậm" (số thao tác được chậm; trường hợp vị trí trùng `followed.caret`).
-- **Ràng buộc phải giữ:** test "carr → car, hệ thống sửa thành cả, ⌫r → car" (D20 "Từ hệ thống vừa sửa") phải vẫn đúng. Tự sửa chính tả biến "car" thành "cả", trùng đúng chữ trước 3 thao tác, nên nếu phần nới nhận cả dạng (a), phép dựng lại qua 3 thao tác khớp và Dấu tưởng app chậm. Vì vậy phần nới chỉ nhận dạng (b): chữ đọc được kết thúc bằng chính ký tự Dấu vừa chèn tại con trỏ, ở đây là dấu cách mà ⌫ vừa xoá. App đúng giờ chỉ trả như vậy khi trước con trỏ cũng là dấu cách; khi đó D20 không tìm thấy từ và phím đi thẳng.
-- **Rủi ro với app đang đúng:** Chrome, VS Code, Firefox, Safari không đổi trên mô hình (bảng `RapidKeysTests.burstTable`, `stalledStartTable`, `LateAnswerTests.wholeStringLate`).
-- **Test khi áp:** ca "Hoc ⌫ j" chậm 3 và 4 trên bộ đệm Chromium ra "Toi học"; giữ `doubleKeyWord` (ràng buộc "carr") và cả bộ "Từ hệ thống vừa sửa"; thêm ca ảnh chụp "Toi hoc␣⌫j" chậm 3–4 (đúng) và hai ca ảnh chụp có lần thay chữ chưa áp ở trên (sai, ghi như giới hạn của mô hình ảnh chụp).
-- **Chỉ kiểm được bằng gõ thật ở mức hồi quy:** không gây được chậm 3–4 theo ý muốn (mục 3).
+- **Quyết định:** không trái N1–N5 hay D nào. D11 cho phép "số thao tác được chậm có giới hạn". Giới hạn ở đây là số thao tác kể từ lần cuối app trả lời đúng lúc, cũng là giới hạn của phím thay chữ trong từ. D11 cũng đã nói phép chứng minh dùng cho lần đọc của D20. D20 vẫn chỉ đặt dấu khi tin được chữ: Dấu không gieo từ chữ của chính nó khi chữ app trả không khớp.
+- **Ràng buộc phải giữ:** khi tự sửa chính tả biến "car" thành "cả" ("carr", D20 "Từ hệ thống vừa sửa"), chữ app trả trùng đúng chữ bộ gõ có ba thao tác trước, ở dạng (a). Vì vậy dạng (a) giữ giới hạn cũ. Chữ do hệ thống sửa không kết thúc bằng chữ bộ gõ vừa chèn tại con trỏ đặt sau một trạng thái cũ của chữ. Chỉ bộ đệm Chromium trả như vậy. Ca ⌘A bộ gõ không thấy rồi gõ lại đúng từ cũ cũng ở dạng (a). Test: `autocorrectNotTakenForLate`, `retypedAfterUnseenSelectAll`, `appTextChangedAtFollowedCaret` và bộ "Từ hệ thống vừa sửa".
+- **Còn lại:** ở mô hình ảnh chụp (`LateDocument.Cache.snapshot`, kiểu Firefox), lần đọc của D20 chậm quá giới hạn của dạng (a) vẫn ra "Hocj". Chữ không hỏng. Số đo Firefox thật khi trang bận nằm ở [`docs/Compatibility.md`](../Compatibility.md), bảng ở mục đầu.
 
-**2B: tin `typedBeforeCaret` thay cho chữ đọc được (không đề xuất).** Bỏ qua chữ app trả và dùng chữ Dấu đã gõ. Hướng này trái D20: D20 đọc chữ đang hiển thị. Ý "Từ hệ thống vừa sửa" cũng cần chữ thật. Ví dụ "cat" bị tự sửa thành "cắt", rồi ⌫ s: theo D20 phải tính trên "cắt", nhưng tin `typedBeforeCaret` thì tính trên "cat". Khi vị trí trùng `followed.caret`, chữ cũ của bộ đệm và chữ hệ thống vừa sửa không phân biệt được bằng vị trí.
+**2B: tin `typedBeforeCaret` thay cho chữ đọc được (không chọn).** Bỏ qua chữ app trả và dùng chữ Dấu đã gõ. Hướng này trái D20: D20 đọc chữ đang hiển thị. Ý "Từ hệ thống vừa sửa" cũng cần chữ thật. Ví dụ "cat" bị tự sửa thành "cắt", rồi ⌫ s: theo D20 phải tính trên "cắt", nhưng tin `typedBeforeCaret` thì tính trên "cat". Khi vị trí trùng `followed.caret`, chữ cũ của bộ đệm và chữ hệ thống vừa sửa không phân biệt được bằng vị trí.
 
-**2C: nâng `humanPaceEdits` cho mọi lần đọc (không đề xuất).** Ở phạm vi hẹp của 2A, nhận cả dạng (a) làm hỏng ca "carr", nên nâng cho mọi lần đọc càng rủi ro hơn. Comment của `humanPaceEdits` nêu thêm lý do: ⌘A rồi gõ lại đúng các chữ cũ ở cùng chỗ.
-
-**2D: giữ nguyên (đang áp dụng).** Ở Chrome thật, trang bận, nhịp người, lần đọc này không chậm (mục 3). 2A thêm nhánh vào phép chứng minh của D11 cho một ca chưa thấy ngoài đời, nên chỉ áp khi có ca thật.
+**2C: nâng giới hạn cho mọi dạng (không chọn).** Nhận cả dạng (a) làm hỏng ca "carr" và ca ⌘A rồi gõ lại đúng các chữ cũ ở cùng chỗ (comment của `humanPaceEdits`).
 
 ## 2. Kịch bản B: app tính vị trí theo từ
 
@@ -93,7 +90,7 @@ Mỗi hướng thử trên mô hình (`LateAnswerTests`, `RapidKeysTests`, `InPl
 ### 3.3 Hướng đã chọn: mốc "app trả lời đúng lúc"
 
 - Hai ca mơ hồ cho thấy chữ không đủ để phân biệt: sau ⌘A rồi gõ lại đúng mấy chữ cũ hay sau khi hệ thống sửa "car" thành "cả", chữ app đang có trùng một trạng thái cũ của chính bộ gõ. Cái phân biệt được là lần cuối app trả lời đúng `followed.caret`: lúc đó app đã có mọi thao tác, nên sau đó nó không thể thiếu xa hơn mốc ấy.
-- `CursorTracker.LatenessBudget.editsSinceOnTimeAnswer` đếm số thao tác kể từ mốc đó. Ở phím thay chữ trong từ, `rebuild` cho thử tới số đó (nếu lớn hơn `humanPaceEdits` cộng `editsInBurst`), ở mọi nhịp. Lần đọc của D20 và ở từ đã hết hợp lệ giữ hạn mức cũ, vì sau chỗ ngắt từ, ca "car" thành "cả" và ca app chậm ba thao tác để lại cùng một chữ ở cùng vị trí. Không chờ, không thêm lời gọi vào app.
+- `CursorTracker.LatenessBudget.editsSinceOnTimeAnswer` đếm số thao tác kể từ mốc đó. Ở phím thay chữ trong từ, `rebuild` cho thử tới số đó (nếu lớn hơn `humanPaceEdits` cộng `editsInBurst`), ở mọi nhịp. Phép kiểm từ đã hết hợp lệ giữ hạn mức cũ, lần đọc của D20 cũng giữ nó cho dạng (a), vì sau chỗ ngắt từ, ca "car" thành "cả" và ca app chậm ba thao tác để lại cùng một chữ ở cùng vị trí. Dạng (b) của lần đọc D20 được dựng lại tới mốc này (mục 1.2). Không chờ, không thêm lời gọi vào app.
 - Chrome trang bận, máy M3 Max, cùng chuỗi `edit`:
 
 | Điều kiện | Bản trước (`0b1a42d`) | Bản sửa (`d171ab9`) |
@@ -107,17 +104,17 @@ Mỗi hướng thử trên mô hình (`LateAnswerTests`, `RapidKeysTests`, `InPl
   - **Câu trả lời trùng `followed.caret` chưa chắc là đúng lúc.** Phép thay không dời con trỏ (dấu trên một chữ, "u" thành "ư") cho cùng một vị trí dù app đã áp nó hay chưa. Bộ đệm Chromium cũng trả vị trí trang báo cộng chữ chèn tại con trỏ mới nhất, nên chữ đó cũng có thể còn thiếu. Trước đây mọi câu trả lời trùng `followed.caret` đặt `editsSinceOnTimeAnswer` về 0, nên ở "dduwowjc", câu trả lời ở "o" chậm một thao tác (thiếu "ư") được coi là đúng lúc, rồi ở "j" app chậm ba thao tác mà `rebuild` chỉ cho dựng lại hai. Kết quả là "đụơc". Nay `answeredOnTime` để `editsSinceOnTimeAnswer` bằng số thao tác cuối mà câu trả lời đó không phân biệt được: các phép thay không dời con trỏ, cộng tối đa một chữ chèn tại con trỏ theo dạng bộ đệm Chromium. Trên mô hình, mọi chuỗi độ chậm từ 0 tới 3 của "dduwowjc" (mỗi phím chậm thêm tối đa một thao tác, hai dạng bộ đệm, nhịp 17 và 60 ms) đều ra "được"; trước bản sửa có 533 và 1 573 chuỗi sai ở hai dạng. Mô hình trang bận khắc nghiệt (test "the load-test strings in a burst…") giảm từ 124 xuống 76 lần ghi lỗi đã biết.
   - **Lần đọc của D20 chậm quá phép chứng minh không neo vị trí.** Ở Chrome trang bận 10 ms (1/3 lượt), lần đọc của D20 ở "j" sau "Hoc ⌫" trả vị trí sau "Ho", chậm hơn mức `rebuild` dựng lại được. `addMarks` neo `followed.caret` vào vị trí cũ đó, nên `typedBeforeCaret` bắt đầu lại và lần thay đầu của từ sau không chứng minh được app chậm, rồi thay vào chữ "o" của "Hoc" ("Hếcj tieng"). Nay khi câu trả lời lùi sau `followed.caret`, phép chứng minh không qua và phím thuộc loạt phím dồn, `addMarks` giữ `followed.caret` và không gieo từ (D11, bất biến "vị trí có thể là vị trí cũ thì không ghi đè"; D20 "nếu không tin được chữ đó"). Phím bắt đầu từ mới, nên chữ ra "Hocj tiếng": D20 không áp ở lần đó nhưng chữ không hỏng. Sau một quãng nghỉ, Dấu vẫn neo như trước, vì người dùng có thể đã bấm chuột mà IMK không báo.
   - **Vị trí neo đầu tiên là một mốc** (23/11/2026). Ở Chrome thật, 1/3 lượt ở nhịp người gõ nhanh, "mojot" ra "mọot". Trang bị chặn sau "Sáng nay ", nên ở "o" thứ hai app chậm 3 thao tác. Từ đầu văn bản app chưa trả lời đúng lúc lần nào, nên `editsSinceOnTimeAnswer` chưa có và giới hạn chỉ là `humanPaceEdits` + `editsInBurst` = 2. Nay khi `CursorTracker.anchor` nhận một vị trí mới (lần đọc của D20 hay phép kiểm từ đã hết hợp lệ khi chưa có `followed.caret`), `editsSinceOnTimeAnswer` bắt đầu từ 0: app vừa cho biết vị trí đó và chưa có thao tác nào của bộ gõ sau nó, như một câu trả lời đúng lúc. Phép dựng lại vượt `humanPaceEdits` vẫn phải qua `typedHere` và phải biết chữ bị xoá. Mô hình trang bận khắc nghiệt hỏng 22 trên 96 seed (trước ba bản sửa 62, sau hai bản đầu 38), không seed nào trước đó đúng bị hỏng.
-- Còn lại: mô hình trang bận trong `LateAnswerTests` khắc nghiệt hơn ô đo thật (chậm ngay từ đầu văn bản, trước mọi mốc) và còn đánh dấu lỗi đã biết, chủ yếu ở đầu văn bản và ở "Hoc ⌫j" khi lần đọc của D20 chậm quá phép chứng minh. Lỗi riêng của Safari ở mục 5.
+- Còn lại: mô hình trang bận trong `LateAnswerTests` khắc nghiệt hơn ô đo thật (chậm ngay từ đầu văn bản, trước mọi mốc). Với bộ đệm Chromium, mọi seed của mô hình này đều đúng. Với mô hình ảnh chụp, 10 trên 48 seed còn đánh dấu lỗi đã biết, đều là "Hocj" ở "Hoc ⌫j" khi lần đọc của D20 chậm quá giới hạn của dạng (a) (mục 1.2), không hỏng chữ. Lỗi riêng của Safari ở mục 5.
 
 ### 3.4 Cách dựng lại
 
-- Mô hình: `LateAnswerTests`, test "the load-test strings in a burst…" (đánh dấu lỗi đã biết).
-- Chạy thật: `scripts/selftest/typing/run.sh --busy 300:1000 --delay 10 --keys "$(scripts/selftest/load/run.sh --text edit --print keys)" --expect "$(scripts/selftest/load/run.sh --text edit --print expect)" --save <dir> chrome`, bản Debug; dòng `replace` trong `<dir>/chrome.perf.log` có các con số của phép chứng minh. Nhịp người: `--delay 40 --jitter 20 --word-pause 150`.
+- Mô hình: `LateAnswerTests`, test "the load-test strings in a burst…" (đánh dấu lỗi đã biết ở mô hình ảnh chụp) và `LateBackspaceMarkTests`.
+- Chạy thật: `scripts/selftest/typing/run.sh --busy 300:1000 --delay 10 --keys "$(scripts/selftest/load/run.sh --text edit --print keys)" --expect "$(scripts/selftest/load/run.sh --text edit --print expect)" --save <dir> chrome`, bản Debug; dòng `replace` trong `<dir>/chrome.perf.log` có các con số của phép chứng minh, còn dòng `key` của phím có lần đọc D20 có các trường `d20_*`. Nhịp người: `--delay 40 --jitter 20 --word-pause 150`.
 
 ## 4. Số đo ngoài đời
 
 - Chrome, trang bận (`scripts/selftest/load/run.sh --apps chrome --loads busy --text edit --reps 3`), 100 ± 30 ms một phím, bản Debug của mã hiện tại (17/11/2026, máy M1): thay tại chỗ đúng 3/3. Ở "Hoc ⌫j", lần đọc của D20 có vị trí app trả bằng vị trí Dấu theo dõi ở cả 3 lượt (không chậm thao tác nào) và D20 ra "Học". Gạch chân ra "Hocj" 3/3: gạch chân không thêm dấu được cho từ đã chốt ([`docs/Compatibility.md`](../Compatibility.md) mục 6.8).
-- Khi áp 2A: chạy lại lệnh trên với `--reps 1` và `scripts/selftest/typing/run.sh --delay 5 vscodefile` để kiểm hồi quy.
+- Kiểm hồi quy cho mục 1.2: chạy lại lệnh trên với `--reps 1`, lệnh chạy thật ở mục 3.4 (10 ms, trang bận) và `scripts/selftest/typing/run.sh --delay 5 vscodefile`.
 
 ## 5. Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng
 
@@ -174,8 +171,8 @@ Các cách khác không chọn:
 
 ## 6. Cách dựng lại thí nghiệm
 
-Bản vá 2A nằm ngoài repo, ở `build/patches/late-answer-2A.patch` (git bỏ qua `build/`; mất thì dựng lại theo dưới đây). Thí nghiệm chạy trên bản sao của repo trong `build/`. Lệnh test theo [`CONTRIBUTING.md`](../../CONTRIBUTING.md) mục "Chạy test". Bật từng hướng bằng biến môi trường `TEST_RUNNER_EXP_A`/`TEST_RUNNER_EXP_B`. Phần đổi mã:
+Bản vá thí nghiệm nằm ngoài repo, ở `build/patches/late-answer-2A.patch` (git bỏ qua `build/`; mất thì dựng lại theo dưới đây). Thí nghiệm chạy trên bản sao của repo trong `build/`. Lệnh test theo [`CONTRIBUTING.md`](../../CONTRIBUTING.md) mục "Chạy test". Bật từng hướng bằng biến môi trường `TEST_RUNNER_EXP_A`/`TEST_RUNNER_EXP_B`. Phần đổi mã:
 
-- 2A: `CursorTracker.rebuild` nhận thêm số thao tác nới thêm và cờ cho phép câu trả lời ở `followed.caret`. Phần nới chỉ nhận dạng (b). `InPlaceComposer.addMarks` có thêm nhánh vị trí trùng `followed.caret`, chữ khác `typedBeforeCaret`.
+- 2A, bản thí nghiệm: `CursorTracker.rebuild` nhận thêm số thao tác nới thêm (4) và cờ cho phép câu trả lời ở `followed.caret`. Phần nới chỉ nhận dạng (b). Hướng đang dùng (mục 1.2) nới tới `editsSinceOnTimeAnswer` thay cho 4.
 - 1B: `InPlaceComposer.replaceIfLate` có thêm phần đếm bằng chứng (dùng chung lần đọc D11 của phím đó, `lateRead`) và phần thay theo vị trí trong từ. Đếm lại từ đầu ở `activate`. Bằng chứng: phím trước cách ít nhất `settleInterval`, `selectedRange` bằng số chữ của từ, `followed.caret` lớn hơn, chữ đọc được chỉ có từ đó; hai từ khác nhau; thoát khi vị trí vượt `readLength`.
 - Test thêm: các ca qua ranh giới từ có "Mai minhf ddi " phía trước; bảng nhịp hỗn hợp (câu đầu 120 ms, `RapidSession` với từng mô hình, 40 seed) cho chuỗi `std` và `edit`.
