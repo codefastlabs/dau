@@ -13,7 +13,7 @@ import Foundation
 import Testing
 import DauEngine
 
-@Suite("Mô phỏng người gõ: các phương án sửa chữ")
+@Suite("Typist simulation: correction options")
 struct TypistSimOptionsTests {
     static let env = ProcessInfo.processInfo.environment
     static let telex = EngineOptions()

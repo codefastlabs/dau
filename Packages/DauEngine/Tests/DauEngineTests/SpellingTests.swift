@@ -2,7 +2,7 @@ import Testing
 import DauEngine
 
 /// Group 4 — syllable spelling (D31) and stopping transforms on misspelled words (D30).
-@Suite("4. Chính tả âm tiết (D30, D31)")
+@Suite("4. Syllable spelling (D30, D31)")
 struct SpellingTests {
     /// D31 c/k/q, g/gh, ng/ngh distribution: misspelled words stop transforming (D30)
     /// and are restored as typed (D4).

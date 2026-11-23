@@ -119,7 +119,7 @@ struct SuggestionsTests {
         #expect(!DauSettings().suggestions(from: list, isInstalled: installed).map(\.bundleID).contains("firefox"))
     }
 
-    @Test("D13: accepting stores an underline rule from the list and leaves Đề xuất")
+    @Test("D13: accepting stores an underline rule from the list and leaves Suggested")
     func accept() {
         var s = DauSettings(appRules: [AppRule(bundleID: "word")])
         let chrome = s.suggestions(from: list, isInstalled: installed)[3]
@@ -133,7 +133,7 @@ struct SuggestionsTests {
         #expect(s.rule(for: "vscode") == AppRule(bundleID: "vscode", underline: true, source: .suggested))
     }
 
-    @Test("an accepted rule set back to Không gạch chân stays a rule; removing it suggests again")
+    @Test("an accepted rule set back to No Underline stays a rule; removing it suggests again")
     func backToDefault() {
         var s = DauSettings()
         s.acceptSuggestion(s.suggestions(from: list, isInstalled: installed)[0])

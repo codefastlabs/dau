@@ -144,7 +144,7 @@ struct OnboardingFlowTests {
         #expect(opened.count == 0)
     }
 
-    @Test("Thử lại cancels the wait that is running and asks again")
+    @Test("Try Again cancels the wait that is running and asks again")
     func retryCancelsTheOldWait() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.enableWaits = true
@@ -192,7 +192,7 @@ struct OnboardingFlowTests {
 
     // MARK: "Reinstall" on the install error: one rule for every cause (D37, docs/UI.md "Lỗi cài")
 
-    @Test("copy failed: Cài lại copies the input method again and enables nothing; Bật Dấu then enables")
+    @Test("copy failed: Reinstall copies the input method again and enables nothing; Turn On Dấu then enables")
     func reinstallAfterCopyFailed() async {
         let (flow, _, installer) = flow(status: .notInstalled, failure: .failed("swap errno 13"))
         flow.start()
@@ -210,7 +210,7 @@ struct OnboardingFlowTests {
         #expect(flow.enableScreen == .done)
     }
 
-    @Test("registration failed with the input method on disk: Cài lại copies it again (no plain re-register) and enables nothing")
+    @Test("registration failed with the input method on disk: Reinstall copies it again (no plain re-register) and enables nothing")
     func reinstallAfterRegistrationFailed() async {
         let (flow, _, installer) = flow(status: .installed(version: nil), failure: .failed("TISRegisterInputSource -50"))
         flow.start()
@@ -226,7 +226,7 @@ struct OnboardingFlowTests {
         #expect(flow.enableScreen == .done)
     }
 
-    @Test("Cài lại that fails again keeps the install error with the new detail")
+    @Test("Reinstall that fails again keeps the install error with the new detail")
     func reinstallFailsAgain() async {
         let (flow, _, installer) = flow(status: .notInstalled, failure: .failed("swap errno 13"))
         flow.start()
@@ -238,7 +238,7 @@ struct OnboardingFlowTests {
         #expect(flow.errorDetail == InputMethodInstallerError.unavailable.detail)
     }
 
-    @Test("Cài lại does nothing outside the install error (before Bật Dấu, waiting, not enabled, done)")
+    @Test("Reinstall does nothing outside the install error (before Turn On Dấu, waiting, not enabled, done)")
     func reinstallOnlyFromError() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         flow.start()
@@ -250,7 +250,7 @@ struct OnboardingFlowTests {
         #expect(installer.calls == ["enable"])
     }
 
-    @Test("not the owner copy: Cài lại copies nothing (D37), it registers and enables the installed input method again")
+    @Test("not the owner copy: Reinstall copies nothing (D37), it registers and enables the installed input method again")
     func reinstallNotOwnerCopy() async {
         let (flow, _, installer) = flow(status: .installed(version: nil), failure: .failed("TISRegisterInputSource -50"))
         installer.ownerCopy = false
@@ -432,7 +432,7 @@ struct OnboardingFlowTests {
 
     // MARK: Installed with a wrong signature (D37 × D14; artboard OnboardingEnableError)
 
-    @Test("wrong signature, owner copy: step 2 shows the install error with the signature detail; Bật Dấu replaces nothing; Cài lại installs and enables nothing, then Bật Dấu shows and enables")
+    @Test("wrong signature, owner copy: step 2 shows the install error with the signature detail; Turn On Dấu replaces nothing; Reinstall installs and enables nothing, then Turn On Dấu shows and enables")
     func tamperedAsksToReinstall() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.genuine = false
@@ -473,7 +473,7 @@ struct OnboardingFlowTests {
         #expect(installer.calls.isEmpty)
     }
 
-    @Test("Bật Dấu never enables a copy with a wrong signature: one replaced after the last check, or while waiting for Allow, leads to the install error")
+    @Test("Turn On Dấu never enables a copy with a wrong signature: one replaced after the last check, or while waiting for Allow, leads to the install error")
     func tamperedNeverEnabled() async {
         // Replaced after the screen was read: the installer refuses, the screen follows.
         let (flow, _, installer) = flow(status: .installed(version: nil))
@@ -501,7 +501,7 @@ struct OnboardingFlowTests {
         #expect(waitingInstaller.status() == .installed(version: nil))
     }
 
-    @Test("a failed Cài lại keeps the install error with the failure's detail; Cài lại again reinstalls, never enables")
+    @Test("a failed Reinstall keeps the install error with the failure's detail; Reinstall again reinstalls, never enables")
     func tamperedReinstallFails() async {
         let (flow, _, installer) = flow(status: .installed(version: nil), failure: .invalidSignature)
         installer.genuine = false
@@ -520,7 +520,7 @@ struct OnboardingFlowTests {
         #expect(flow.errorDetail == nil)
     }
 
-    @Test("a copy that is not the owner copy does not check the signature: Bật Dấu enables; an enabled Dấu never shows the signature error in onboarding (D37)")
+    @Test("a copy that is not the owner copy does not check the signature: Turn On Dấu enables; an enabled Dấu never shows the signature error in onboarding (D37)")
     func tamperedNotOwnerOrEnabled() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.genuine = false

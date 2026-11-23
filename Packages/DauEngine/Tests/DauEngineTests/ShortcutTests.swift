@@ -3,7 +3,7 @@ import DauEngine
 
 /// Consonant shortcuts (D21) and "Cho phép phụ âm z, f, w, j" (D22), mutually exclusive by
 /// construction (`EngineOptions.Advanced`).
-@Suite("Gõ tắt phụ âm (D21), cho phép z f w j (D22)")
+@Suite("Consonant shortcuts (D21), z f w j allowed (D22)")
 struct ShortcutTests {
     @Test(arguments: [
         Case("fan ", "phan "), Case("Fan ", "Phan "), Case("FAN ", "PHAN "),

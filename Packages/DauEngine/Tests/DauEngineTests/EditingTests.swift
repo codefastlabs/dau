@@ -2,7 +2,7 @@ import Testing
 @testable import DauEngine
 
 /// Group 5 — Backspace (D32), word length (D33), letter case (D34), digits.
-@Suite("5. Backspace, độ dài từ, chữ hoa, chữ số")
+@Suite("5. Backspace, word length, capitals, digits")
 struct EditingTests {
     /// D32: Backspace drops the last letter shown and re-places the tone.
     @Test(arguments: [

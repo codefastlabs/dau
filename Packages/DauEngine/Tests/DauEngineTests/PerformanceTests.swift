@@ -4,7 +4,7 @@ import DauEngine
 /// Group 7 — cost of `handle` per key on a long mixed Vietnamese/English text.
 /// Run `swift test -c release --filter Performance` for release numbers; the bound
 /// below is loose so debug builds pass too.
-@Suite("7. Hiệu năng", .serialized)
+@Suite("7. Performance", .serialized)
 struct PerformanceTests {
     static let paragraph = """
         Trong khi ddos, nhuwngx nguwowif daan toocj Vieetj Nam vaanx giuwx gifn truyeenf thoongs \

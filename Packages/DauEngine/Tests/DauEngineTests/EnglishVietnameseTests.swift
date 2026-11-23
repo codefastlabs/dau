@@ -3,7 +3,7 @@ import DauEngine
 
 /// Group 1 — English/Vietnamese overlaps, doubled keys and word boundaries
 /// (D4, D26, D28, D31).
-@Suite("1. Từ trùng Anh–Việt, gõ đúp, ranh giới từ")
+@Suite("1. English–Vietnamese words, double keys, word boundaries")
 struct EnglishVietnameseTests {
     /// D4: a valid Vietnamese syllable wins over the English word.
     @Test(arguments: [

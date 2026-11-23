@@ -78,7 +78,7 @@ struct NotEnabledBannerTests {
                            shortcut: { .unknown }, englishLayout: { nil })
     }
 
-    @Test("after Bật lại: waiting for Allow, then still first")
+    @Test("after Turn On Again: waiting for Allow, then still first")
     func waiting() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         installer.enableWaits = true
@@ -91,7 +91,7 @@ struct NotEnabledBannerTests {
         _ = await run.value
     }
 
-    @Test("after Bật lại: macOS kept Dấu off, then still first")
+    @Test("after Turn On Again: macOS kept Dấu off, then still first")
     func keptOff() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         installer.enableOutcome = .notEnabled
@@ -103,7 +103,7 @@ struct NotEnabledBannerTests {
         }
     }
 
-    @Test("after Bật lại: enabled, the confirmation first until Ẩn")
+    @Test("after Turn On Again: enabled, the confirmation first until Hide")
     func enabled() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         let actions = actions(installer)

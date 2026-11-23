@@ -2,7 +2,7 @@ import Testing
 import DauEngine
 
 /// The `Action` contract and NFC output (D3).
-@Suite("Đầu ra: Action và NFC")
+@Suite("Output: Action and NFC")
 struct OutputTests {
     @Test func plainLettersGoInUnchanged() {
         var engine = VietEngine()

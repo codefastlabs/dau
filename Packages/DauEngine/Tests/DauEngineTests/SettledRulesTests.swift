@@ -5,7 +5,7 @@ import DauEngine
 /// methods' test inputs (docs/research/external-test-inputs/README.md section 2: the
 /// former classes D and E). Expected values follow Vietnamese orthography and Decisions.md, never
 /// another input method's output (D10).
-@Suite("8. Luật đã chốt")
+@Suite("8. Settled rules")
 struct SettledRulesTests {
     /// D23, D31: in Telex a lone w after the initial "gi" is ư (gi + ư is a valid
     /// syllable: giữ, giữa), like "tw" → "tư".
@@ -158,7 +158,7 @@ struct SettledRulesTests {
 
 /// D32 × D31: ⌫ re-places the tone on the rhyme that is left; a bare "qu" has none,
 /// so the tone goes ("qú" from "qus" is only a mid-word step).
-@Suite("8b. Backspace sau qu")
+@Suite("8b. Backspace after qu")
 struct BackspaceAfterQuTests {
     @Test(arguments: [
         Case("quas⌫", "qu"), Case("quas⌫ ", "qu "), Case("qusa⌫", "qu"),
@@ -171,7 +171,7 @@ struct BackspaceAfterQuTests {
 /// lone-w "ư" followed by a plain o is not that cluster ("ưô" is no syllable), so the
 /// key is a letter (then D35 hooks the pair before it) and the word is restored at
 /// the boundary (D4).
-@Suite("8c. ươ + o chỉ trên cụm ươ")
+@Suite("8c. ươ + o only on the ươ cluster")
 struct HatOnHornedClusterTests {
     @Test(arguments: [
         Case("woo", "ươo"), Case("woo ", "woo "), Case("ngwoo", "ngươo"), Case("chwoon ", "chwoon "),

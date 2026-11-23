@@ -2,7 +2,7 @@ import Testing
 import DauEngine
 
 /// Group 2 — Telex transform keys (aa ee oo aw ow uw w dd, "uo" + w) and doubles.
-@Suite("2. Phím biến đổi Telex")
+@Suite("2. Telex transform keys")
 struct TransformTests {
     @Test(arguments: [
         Case("dd", "đ"), Case("ddd", "dd"), Case("ddi", "đi"), Case("did", "đi"),

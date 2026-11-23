@@ -426,7 +426,7 @@ struct InputMethodInstallerTests {
         #expect(rig.caches.log.isEmpty)
     }
 
-    @Test("enable: cancelling during the wait throws CancellationError and reports nothing (Thử lại)")
+    @Test("enable: cancelling during the wait throws CancellationError and reports nothing (Try Again)")
     func enableCancelled() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.tis.enableTakesEffect = false
@@ -511,7 +511,7 @@ struct InputMethodInstallerTests {
         #expect(rig.files.isInstalled)
     }
 
-    @Test("enable: the owner copy never turns on an installed input method with a wrong signature: needsReinstall, nothing cleared, registered or enabled; after Cài lại it enables (D37)")
+    @Test("enable: the owner copy never turns on an installed input method with a wrong signature: needsReinstall, nothing cleared, registered or enabled; after Reinstall it enables (D37)")
     func enableRefusesBadSignature() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.files.genuine = false
@@ -625,7 +625,7 @@ struct InputMethodInstallerTests {
         #expect(rig.pauses.value == 3)
     }
 
-    @Test("wait: cancelling ends the wait and removes nothing (Huỷ gỡ cài đặt)")
+    @Test("wait: cancelling ends the wait and removes nothing (Cancel Uninstall)")
     func waitCancelled() async {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau(enabled: true))
         let task = Task { try await rig.installer.waitUntilRemovedFromInputSources() }
@@ -897,7 +897,7 @@ struct InputMethodInstallerTests {
 @MainActor
 @Suite("Tampered input method (D37)")
 struct TamperedInputMethodTests {
-    @Test("a copy without this app's signature shows the banner; Cài lại installs ours")
+    @Test("a copy without this app's signature shows the banner; Reinstall installs ours")
     func reinstall() async {
         let installer = FakeInputMethodInstaller(.enabled)
         installer.genuine = false
@@ -955,7 +955,7 @@ struct TamperedInputMethodTests {
         #expect(failingActions.installedTampered)
     }
 
-    @Test("a copy that is not the owner copy does not check the installed input method: no banner, and Cài lại installs nothing (D37)")
+    @Test("a copy that is not the owner copy does not check the installed input method: no banner, and Reinstall installs nothing (D37)")
     func notOwnerChecksNothing() async {
         let installer = FakeInputMethodInstaller(.enabled)
         installer.genuine = false
@@ -988,7 +988,7 @@ struct TamperedInputMethodTests {
         #expect(actions.installedTampered)
     }
 
-    @Test("Bật lại on an installed copy with a wrong signature enables nothing: the Cài lại banner shows; after Cài lại, Bật lại enables (D37)")
+    @Test("Turn On Again on an installed copy with a wrong signature enables nothing: the Reinstall banner shows; after Reinstall, Turn On Again enables (D37)")
     func bannerEnableRefused() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         let actions = InputMethodActions(installer: installer, openKeyboardSettings: {},
@@ -1046,7 +1046,7 @@ struct UninstallFlowTests {
         #expect(!actions.isUninstalling)
     }
 
-    @Test("Huỷ gỡ cài đặt: the sheet closes and nothing is removed or switched")
+    @Test("Cancel Uninstall: the sheet closes and nothing is removed or switched")
     func cancel() async {
         let installer = FakeInputMethodInstaller(.enabled)
         installer.stillListed = true
@@ -1171,7 +1171,7 @@ struct BannerEnableTests {
                                   englishLayout: { "U.S." })
     }
 
-    @Test("Bật lại enables and reads back; the confirmation names the real shortcut and has no undo")
+    @Test("Turn On Again enables and reads back; the confirmation names the real shortcut and has no undo")
     func enable() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         let actions = actions(installer)
@@ -1182,7 +1182,7 @@ struct BannerEnableTests {
         #expect(installer.calls == ["enable"])
     }
 
-    @Test("Ẩn hides the confirmation for this session")
+    @Test("Hide closes the confirmation for this session")
     func dismiss() async {
         let actions = actions(FakeInputMethodInstaller(.installed(version: nil)))
         actions.dismissBanner()   // nothing to hide yet
@@ -1193,7 +1193,7 @@ struct BannerEnableTests {
         #expect(actions.banner == .idle)
     }
 
-    @Test("waits for the user's Allow; Thử lại cancels the old wait and asks again")
+    @Test("waits for the user's Allow; Try Again cancels the old wait and asks again")
     func waitAndRetry() async {
         let installer = FakeInputMethodInstaller(.installed(version: nil))
         installer.enableWaits = true

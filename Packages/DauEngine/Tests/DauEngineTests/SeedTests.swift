@@ -4,7 +4,7 @@ import Testing
 
 /// Group 6 — "Thêm dấu cho từ đã gõ" (D20): the engine is seeded from the text shown
 /// in the app (read as letters), then the key is handled.
-@Suite("6. Thêm dấu cho từ đã gõ (D20)")
+@Suite("6. Marks on a word already typed (D20)")
 struct SeedTests {
     struct SeedCase: Sendable, CustomTestStringConvertible {
         let displayed: String

@@ -15,7 +15,7 @@ import Testing
 ///   simulated document;
 /// - after a successful `seed`, the engine's reading of the text renders to a text
 ///   canonically equivalent to it (D20: nothing the user did not touch is rewritten).
-@Suite("8. Độ bền (D18)")
+@Suite("8. Robustness (D18)")
 struct FuzzTests {
     static let defaultCases = 15_000
     static let defaultSeed: UInt64 = 20_261_111

@@ -15,7 +15,7 @@ import Foundation
 import Testing
 import DauEngine
 
-@Suite("Mô phỏng người gõ")
+@Suite("Typist simulation")
 struct TypistSimTests {
     static let defaultSeed: UInt64 = 20_261_111
     static let tokens: [[SimToken]] = SimCorpus.sentences.map(SimToken.tokenize)
