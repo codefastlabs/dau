@@ -45,6 +45,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): ba ngoại lệ đọc chữ (D11, D20, D43) gộp thành một ý dẫn số, chi tiết ở từng quyết định; thêm luật đã chốt trong "Câu hỏi đã trả lời" (vị trí thay chữ) là hỏi `selectedRange` ở mỗi phím có thay chữ, không tự cộng dồn vị trí. Lý do cũ dẫn tới mục "Câu hỏi đã trả lời" nay dẫn tới file này.
 
+- 23/11/2026 (người dùng duyệt, cùng thay đổi của D11 "Ô chỉ giữ từ trước con trỏ"): ý hỏi vị trí thêm câu về ô chỉ giữ từ trước con trỏ; ý "Ngoại lệ sau ⌫ chưa áp" tính vị trí chờ theo hệ vị trí đang dùng; "Vì sao" nói vị trí trong chữ ô nhận đang giữ thay cho vị trí tuyệt đối. Bản trước, nguyên văn: "Nếu `selectedRange` đầu tiên trả đúng vị trí Dấu theo dõi cộng số đơn vị ⌫ xoá, nghĩa là app chưa áp ⌫,"; "**Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Chỉ cộng dồn từ một vị trí gốc thì không biết lúc app tự sửa chữ hay con trỏ đi chỗ khác. VS Code đổi gốc toạ độ. Vị trí Dấu tự theo dõi chỉ dùng khi chữ đọc được chứng minh app trả lời chậm (D11, ý "App trả lời chậm")." Bằng chứng: `docs/research/MonacoInput.md` mục 5 và 6, `docs/Compatibility.md` mục 5.4.
+
 ### N4. Không tự đổi cài đặt hệ thống
 
 - Tên cũ: "Không tự ý đổi cài đặt hệ thống của người dùng."
@@ -142,6 +144,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 17/11/2026 (người dùng duyệt, sau kiểm toán các lượt đo trước `0bf8d3f`): số ô đối chứng Telex của Apple ghi đủ. Bản trước: "(2 ô đo hợp lệ)".
 
 - 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): "Vì sao" thêm câu log VS Code 10/11 khớp mô hình giữ con trỏ sau chữ hơn, luật đúng với cả hai mô hình.
+
+- 23/11/2026 (người dùng duyệt, chọn sửa từ gốc cho trình soạn thảo Cursor): thêm ý "Ô chỉ giữ từ trước con trỏ" và dòng "Vì sao" của nó; ý đầu nói vị trí con trỏ trong chữ ô nhận đang giữ; bất biến vùng thay tính theo hệ vị trí đang dùng; mục lục thêm câu về ô chỉ giữ từ trước con trỏ. Bản trước, nguyên văn: "Ở mỗi phím có thay chữ, Dấu hỏi `selectedRange` một lần để lấy vị trí tuyệt đối (N3 (Ít lời gọi vào ứng dụng đích))."; "Vùng thay luôn kết thúc ở vị trí Dấu theo dõi." Lý do: trình soạn thảo Cursor 3.31.15 nhận chữ qua ô textarea ẩn của Monaco, ô chỉ giữ từ trước con trỏ khi chế độ hỗ trợ trình đọc màn hình tắt (mặc định), và câu trả lời cũ của Chromium tính trong một từ đã không còn ("Hocj", "dđược", "meting"). Bản vá trước đó cho riêng lần đọc của D20 (`CursorTracker.wordFromWordStart`, commit `0208bdd`) bị bỏ. Bằng chứng: `docs/research/MonacoInput.md` mục 5 và 6, `docs/Compatibility.md` mục 5.4.
 
 ### D12. Ưu tiên tiến trình
 

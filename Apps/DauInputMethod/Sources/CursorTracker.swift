@@ -6,9 +6,23 @@ import Foundation
 /// input method noticing (a click IMK did not report, an app edit) is caught before anything
 /// is replaced. Across words it follows the caret with the edits leading to it, so an app
 /// that answers from before its latest edits can be told from one whose text changed
-/// (`rebuild`). Nothing here talks to the client; positions are UTF-16 offsets from the
-/// start of the document (NSRange).
+/// (`rebuild`). Nothing here talks to the client; positions are UTF-16 offsets in the text
+/// the client holds (NSRange), counted as `coordinates` says.
 struct CursorTracker: Equatable {
+    /// What the client's positions count from (D11 "Ô chỉ giữ từ trước con trỏ").
+    enum Coordinates: Equatable {
+        /// The start of the document or of the line: positions move by what is inserted
+        /// and deleted.
+        case document
+        /// The text the client holds is only the word before the caret (`HeldText`): a
+        /// position is the length of that text, worked out from the text this composer knows.
+        case heldText
+    }
+
+    /// Kept across resets: it belongs to the client, which changes it only when its own
+    /// mode changes (`useDocumentCoordinates`).
+    private(set) var coordinates = Coordinates.document
+
     /// Where the caret should be after the latest key of the word being typed; nil at the
     /// start of a word. Not kept across a word boundary, where apps legitimately edit text
     /// (autocorrect, smart quotes).
@@ -61,6 +75,14 @@ struct CursorTracker: Equatable {
 
     /// The input method inserted `text` at the caret without asking where it is.
     mutating func didInsertAtCursor(_ text: String) {
+        if coordinates == .heldText {
+            let inWord = predictedCaret != nil
+            if let caret = followed.caret {
+                record(cursor: caret, location: caret, deleted: 0, inserted: Array(text.utf16), atCaret: true)
+            }
+            predictedCaret = inWord ? followed.caret : nil
+            return
+        }
         let length = text.utf16.count
         if let predicted = predictedCaret {
             let moved = predicted.addingSaturated(length)
@@ -79,6 +101,7 @@ struct CursorTracker: Equatable {
     /// Delete went to the app inside a word: it removes one letter, one UTF-16 unit
     /// (Vietnamese precomposed letters are in the BMP).
     mutating func backspacePassedThrough() {
+        let inWord = predictedCaret != nil
         if let predicted = predictedCaret { predictedCaret = predicted > 0 ? predicted - 1 : nil }
         if let caret = followed.caret {
             if caret > 0 {
@@ -87,6 +110,7 @@ struct CursorTracker: Equatable {
                 forgetFollowedCaret()
             }
         }
+        if coordinates == .heldText { predictedCaret = inWord ? followed.caret : nil }
     }
 
     /// Delete went to the app with no word: what it removes is known only if this composer
@@ -107,28 +131,75 @@ struct CursorTracker: Equatable {
     }
 
     /// The app told where the caret is (a D20 read): follow from there. A location outside
-    /// `ClientRange.limit` is forgotten (D18).
+    /// `ClientRange.limit` is forgotten (D18). With `HeldText`, what is before it is known
+    /// once the text there is read (`learnHeldText`), or at 0: the start of a line.
     mutating func anchor(at location: Int) {
         guard followed.caret != location else { return }
         forgetFollowedCaret()
         guard ClientRange.isUsable(position: location) else { return }
         followed.caret = location
+        if coordinates == .heldText, location == 0 { followed.head = .lineStart }
         // No edit came after the app told this position: it counts as an answer on time,
         // otherwise an app late from the start of a document stays capped at
         // `LatenessBudget.humanPaceEdits` (`docs/research/LateAnswerFixes.md` 3.3).
         lateness.startOnTime(missing: 0)
     }
 
-    /// The app answered at the followed caret: it has every edit except those such an
-    /// answer cannot show (`FollowedText.editsAnAnswerAtCaretMayLack`).
-    mutating func answeredOnTime() {
-        lateness.startOnTime(missing: followed.editsAnAnswerAtCaretMayLack)
+    /// `read`, the text the client gave before `location`, right after the caret was
+    /// anchored there: with `HeldText` it tells what the client holds (`HeldText.anchored`).
+    mutating func learnHeldText(_ read: [UInt16], at location: Int) {
+        guard coordinates == .heldText, followed.caret == location, followed.edits.isEmpty,
+              followed.typedBeforeCaret.isEmpty, let anchored = HeldText.anchored(read: read, at: location) else { return }
+        followed.typedBeforeCaret = anchored.known
+        followed.head = anchored.head
     }
 
-    /// Forget every position: engine reset, focus or client changed.
+    /// The app answered at the followed caret: it has every edit except those such an
+    /// answer cannot show (`FollowedText.editsAnAnswerAtCaretMayLack`). Held text is
+    /// rewritten at every word, so no such count applies there.
+    mutating func answeredOnTime() {
+        lateness.startOnTime(missing: coordinates == .heldText ? 0 : followed.editsAnAnswerAtCaretMayLack)
+    }
+
+    /// The client holds only the word before the caret (`InPlaceComposer`, from its
+    /// answers): positions are the length of that text from now on. The edits recorded
+    /// keep the held text after each, which is all `heldTextMatch` compares.
+    mutating func useHeldText() {
+        coordinates = .heldText
+        guard let held = followed.held else {
+            invalidate()
+            return
+        }
+        followed.caret = held.length
+        if predictedCaret != nil { predictedCaret = held.length }
+    }
+
+    /// The client's answers show text past the word before the caret: positions count from
+    /// the start of the document again, from the next answer.
+    mutating func useDocumentCoordinates() {
+        coordinates = .document
+        invalidate()
+    }
+
+    /// Forget every position: engine reset, focus or client changed. `coordinates` stays.
     mutating func invalidate() {
         predictedCaret = nil
         forgetFollowedCaret()
+    }
+
+    /// Where the caret was before the latest edit, when that edit deleted text this
+    /// composer knows and nothing after it: the answer of an app that has not applied a
+    /// ⌫ yet (N3 "Ngoại lệ sau ⌫ chưa áp"). In either coordinates.
+    var caretBeforeDeletion: Int? {
+        guard let caret = followed.caret, let last = followed.edits.last, last.inserted.isEmpty, last.deleted > 0,
+              last.deletedText?.count == last.deleted else { return nil }
+        switch coordinates {
+        case .document:
+            guard last.location == caret, last.cursor == caret.addingSaturated(last.deleted) else { return nil }
+        case .heldText:
+            guard last.heldAfter?.length == caret else { return nil }
+        }
+        return last.cursor
     }
 
     private mutating func forgetFollowedCaret() {
@@ -141,9 +212,17 @@ struct CursorTracker: Equatable {
         // Not where this composer thought: follow from the app's answer.
         if followed.caret != cursor { forgetFollowedCaret() }
         lateness.countEdit()
-        followed.append(cursor: cursor, location: location, deleted: deleted, inserted: inserted, atCaret: atCaret)
-        let next = cursor.addingSaturated(inserted.count).subtractingSaturated(deleted)
-        if ClientRange.isUsable(position: next) { followed.caret = next } else { forgetFollowedCaret() }
+        // Following from a held-text answer: what the range starts after is that many
+        // units of the word (the range replaces letters of it).
+        let head: HeldText.Head = coordinates == .heldText && cursor - location == deleted ? .wordUnits(location) : .unknown
+        followed.append(cursor: cursor, location: location, deleted: deleted, inserted: inserted, atCaret: atCaret,
+                        headIfRestarted: head)
+        let next: Int?
+        switch coordinates {
+        case .document: next = cursor.addingSaturated(inserted.count).subtractingSaturated(deleted)
+        case .heldText: next = followed.edits.last?.heldAfter?.length
+        }
+        if let next, ClientRange.isUsable(position: next) { followed.caret = next } else { forgetFollowedCaret() }
     }
 
     /// One UTF-16 unit that the app's Delete removes alone: not half of a surrogate pair,
@@ -173,6 +252,9 @@ extension CursorTracker {
         /// Inserted at the app's caret without a range (`insertText` with NSNotFound).
         /// Chromium writes such text into the cache it answers from at once (`rebuild`).
         var atCaret = false
+        /// The text a client holding only the word before the caret holds after this edit
+        /// (`HeldText`); nil when it depends on text this composer does not know.
+        var heldAfter: HeldText?
 
         var caretAfter: Int {
             cursor.addingSaturated(inserted.count).subtractingSaturated(deleted)
@@ -188,6 +270,9 @@ extension CursorTracker {
         /// The text right before `caret` that this composer typed or inserted, oldest first;
         /// may be shorter than the text there.
         fileprivate(set) var typedBeforeCaret: [UInt16] = []
+        /// What precedes `typedBeforeCaret`, as far as a client that holds only the word
+        /// before the caret is concerned (`HeldText`).
+        fileprivate(set) var head = HeldText.Head.unknown
         /// The latest edits, oldest first.
         fileprivate(set) var edits: [Edit] = []
         /// Edits recorded so far, wrapping: tells the caller whether a key recorded one.
@@ -201,14 +286,9 @@ extension CursorTracker {
         /// them (`rebuild`).
         static let typedLimit = 512
 
-        /// The latest edit deleted text this composer typed, at `caret`, with nothing after
-        /// it: the UTF-16 units it deleted, or nil (N3 "Ngoại lệ sau ⌫ chưa áp").
-        var unitsDeletedAtCaret: Int? {
-            guard let caret, let last = edits.last, last.inserted.isEmpty, last.deleted > 0,
-                  last.deletedText?.count == last.deleted, last.location == caret,
-                  last.cursor == caret.addingSaturated(last.deleted) else { return nil }
-            return last.deleted
-        }
+        /// The text a client holding only the word before the caret holds now; nil when it
+        /// depends on text this composer does not know.
+        var held: HeldText? { HeldText.held(after: typedBeforeCaret, head: head) }
 
         /// How many of the latest edits an answer at `caret` cannot show were applied: those
         /// that left the caret where it was (a mark on a letter), and before them at most one
@@ -235,11 +315,12 @@ extension CursorTracker {
         fileprivate mutating func forget() {
             caret = nil
             typedBeforeCaret = []
+            head = .unknown
             edits = []
         }
 
         fileprivate mutating func append(cursor: Int, location: Int, deleted: Int, inserted: [UInt16],
-                                         atCaret: Bool) {
+                                         atCaret: Bool, headIfRestarted: HeldText.Head) {
             let back = cursor - location      // units from the start of the range to the cursor
             var deletedText: [UInt16]?
             if back >= 0, deleted >= 0, deleted <= back, back <= typedBeforeCaret.count {
@@ -248,13 +329,15 @@ extension CursorTracker {
                 typedBeforeCaret.replaceSubrange(start..<(start + deleted), with: inserted)
             } else {
                 typedBeforeCaret = back == deleted ? inserted : []
+                head = back == deleted ? headIfRestarted : .unknown
             }
             if typedBeforeCaret.count > Self.typedLimit {
                 typedBeforeCaret.removeFirst(typedBeforeCaret.count - Self.typedLimit)
+                head = .unknown
             }
             editsRecorded &+= 1
             edits.append(Edit(cursor: cursor, location: location, deleted: deleted,
-                              deletedText: deletedText, inserted: inserted, atCaret: atCaret))
+                              deletedText: deletedText, inserted: inserted, atCaret: atCaret, heldAfter: held))
             if edits.count > Self.editLimit { edits.removeFirst(edits.count - Self.editLimit) }
         }
     }

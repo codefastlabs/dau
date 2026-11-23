@@ -11,7 +11,7 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
 - **Chromium trả lời bộ gõ theo toạ độ của ô textarea** (mục 3). Vì vậy ở chế độ tắt, `selectedRange` và vùng thay tính từ đầu từ. Câu trả lời lấy từ bản sao bất đồng bộ đã tả ở [`WebEditorInput.md`](WebEditorInput.md) mục 8 và 10.2. Blink áp vùng thay theo nội dung ô lúc nó xử lý lời gọi. Vùng bắt đầu sau cuối ô bị bỏ, vùng chỉ có phần cuối vượt ô bị cắt.
 - **Giả thuyết H1 giải thích mọi quan sát của trình soạn thảo Cursor, trừ điều gì bật chế độ hỗ trợ trình đọc màn hình, và phép đo đã xác nhận nó** (mục 4, 5). H1: Cursor dùng ô textarea, kiểu vị trí đi theo chế độ đó, và chế độ được chốt khi mở cửa sổ. Nó giải thích ba câu trả lời ở "j" của "Hoc␣⌫j" (3 với "Hoc", 4 với "Hoc␣", 1 với một dấu cách) và các từ sai qua ranh giới từ. Điều gì làm Electron bật chế độ đó trên máy đo thì chưa rõ. Script gõ thử hỏi Cursor qua System Events, nhưng theo mã Electron, chỉ hỏi như vậy thì chưa đủ để bật.
 - **Phép đo xác nhận** (mục 5, 23/11/2026): với `accessibilitySupport` `off`, vị trí tính từ đầu từ và chữ sai; với `on`, hoặc với `off` kèm EditContext, vị trí tính từ đầu văn bản và chữ đúng cả câu.
-- **Thiết kế sửa** (mục 6, chưa có mã): Dấu nhận ra ô chỉ giữ từ trước con trỏ qua câu trả lời mà lần đọc vốn có của D11 và D20 đã lấy. Ở ô đó, Dấu tính vùng thay trong chữ ô giữ lúc trang áp lời gọi, từ chữ chính nó đã gõ; câu trả lời của app chỉ dùng để kiểm. Thiết kế cần đổi N3 và D11, bỏ `CursorTracker.wordFromWordStart` và các test dựa trên mô hình `LateDocument.Origin.word`. Bằng chứng là phép đo trên app thật ở mục 6.11.
+- **Bản sửa** (mục 6, đã có mã, chờ phép đo trên app thật ở mục 6.11): Dấu nhận ra ô chỉ giữ từ trước con trỏ qua câu trả lời mà lần đọc vốn có của D11 và D20 đã lấy. Ở ô đó, Dấu tính vùng thay trong chữ ô giữ lúc trang áp lời gọi, từ chữ chính nó đã gõ; câu trả lời của app chỉ dùng để kiểm. N3 và D11 đã đổi theo đó. `CursorTracker.wordFromWordStart` và mô hình `LateDocument.Origin.word` đã bỏ. Bằng chứng là phép đo trên app thật ở mục 6.11.
 
 ## 1. Hai đường nhập của Monaco và bản Cursor dùng
 
@@ -74,7 +74,7 @@ Phần chung đã tả ở [`WebEditorInput.md`](WebEditorInput.md) mục 8 và 
   - Nếu điểm đầu bằng cuối ô, vùng là điểm cuối ô và chữ được chèn ở đó.
   - Nếu chỉ điểm cuối vượt ô, vùng bị cắt tới cuối ô.
   - Con trỏ đứng sau vùng vừa thay thì vẫn ở sau chữ theo sau vùng đó.
-- **Đối chiếu mô hình.** Comment của `LateDocument.Origin.word` ghi các điều đo được từ log Cursor 3.29.15. Thứ nhất, vùng bắt đầu sau cuối chữ app giữ bị bỏ. Thứ hai, vùng bắt đầu đúng ở cuối chèn tại đó. Thứ ba, trang áp vùng theo toạ độ nó có lúc xử lý. Thứ tư, con trỏ ở lại sau chữ theo sau vùng thay. Bốn điều này khớp từng nhánh của mã Blink ở trên. Mô hình vì vậy tả đúng đường textarea, không phải đường EditContext.
+- **Đối chiếu log.** Log trình soạn thảo Cursor 3.29.15 (10/11/2026) cho thấy bốn điều. Thứ nhất, vùng bắt đầu sau cuối chữ app giữ bị bỏ. Thứ hai, vùng bắt đầu đúng ở cuối chèn tại đó. Thứ ba, trang áp vùng theo toạ độ nó có lúc xử lý. Thứ tư, con trỏ ở lại sau chữ theo sau vùng thay. Bốn điều này khớp từng nhánh của mã Blink ở trên, tức đường textarea, không phải đường EditContext.
 - **Theo Apple, đây không phải lỗi giao thức.** Tài liệu `selectedRange()` của `NSTextInputClient` nói vùng trả về tính từ đầu kho chữ (text storage) của đối tượng nhận, từ 0 tới độ dài tài liệu. Tài liệu `insertText(_:replacementRange:)` nói vùng thay là vùng trong kho chữ của đối tượng nhận. Với Chromium, đối tượng nhận là phần tử đang focus, tức ô textarea. Monaco đổi nội dung ô ở mỗi chữ, nên "tài liệu" mà bộ gõ thấy chỉ là một từ.
 
 ## 4. Dự đoán cho "chiều nay. Hoc␣⌫j" ở 10 ms/phím
@@ -116,7 +116,7 @@ Phép đo ngày 23/11/2026 (máy M1 Pro, Cursor 3.31.15, câu `edit` 10 ms; số
 
 ## 6. Thiết kế sửa: ô chỉ giữ từ trước con trỏ
 
-Mục này là thiết kế của hướng B, chưa có mã. Thiết kế cần đổi N3 và D11 (lời đề xuất nằm ở báo cáo giao việc, chưa ghi vào [`docs/Decisions.md`](../Decisions.md)). Bằng chứng là phép đo trên app thật ở cuối mục; test đơn vị chỉ kiểm logic của chính Dấu, không dựng mô hình ô textarea hay bộ đệm của Chromium.
+Mục này là thiết kế của hướng B, đã làm trong mã (`HeldText`, `CursorTracker.Coordinates.heldText`; cấu trúc ở [`docs/Architecture.md`](../Architecture.md), ý "Ô chỉ giữ từ trước con trỏ"). Luật nằm ở [`docs/Decisions.md`](../Decisions.md) N3 và D11. Bằng chứng là phép đo trên app thật ở cuối mục; test đơn vị chỉ kiểm logic của chính Dấu, không dựng mô hình ô textarea hay bộ đệm của Chromium.
 
 ### 6.1 Ý chính
 
@@ -162,7 +162,7 @@ Mỗi client bắt đầu ở hệ toạ độ văn bản, tức hành vi hiện
 1. a ≤ 16 và R dài đúng a, tức Dấu thấy toàn bộ chữ app giữ, từ vị trí 0.
 2. (a, R) trùng chữ ô giữ của một trạng thái trong `followed.edits`, ở dạng (a) hoặc dạng (b) của mục 6.5, trong giới hạn chậm của D11.
 3. Chữ ô giữ của trạng thái đó dài ít nhất 2 và toàn đơn vị thuộc từ mà Dấu biết rõ.
-4. (a, R) không trùng trạng thái nào của chữ Dấu theo dõi theo hệ văn bản, ở cả hai dạng và không giới hạn số thao tác. Đây là phép kiểm `LateProof.fitsPastLimits`, mở rộng cho cả hai dạng.
+4. (a, R) không trùng trạng thái nào của chữ Dấu theo dõi theo hệ văn bản mà cũng trùng chữ Dấu đã gõ, ở cả hai dạng và không giới hạn số thao tác (`CursorTracker.fitsDocumentState`). Nếu không đòi trùng chữ Dấu đã gõ, "Hoc" ở vị trí 3 khớp về hình học với trạng thái sau "chi" của "chiều nay. Hoc".
 
 Đạt thì Dấu sang hệ mới ngay ở phím đó và thay ở (L − k, k). Lần xét này không thêm lời gọi nào.
 
@@ -213,7 +213,7 @@ Chờ ⌫ chưa áp (N3): vị trí "trước khi ⌫ áp" là L của trạng t
 
 Dấu chỉ xét việc đổi hệ khi câu trả lời khác vị trí Dấu theo dõi. Vì vậy app trả lời đúng giờ (AppKit, Notes, Safari, mọi app khi rảnh) không bao giờ được xét. Với câu trả lời khác vị trí:
 
-- **App tính từ đầu văn bản, trả lời chậm** (Chrome, Edge khi trang bận hay phím dồn; VS Code; Firefox): điều kiện 1 và 2 cùng đạt chỉ khi cả văn bản trước con trỏ cũ đúng bằng chữ ô giữ ở một trạng thái nào đó. Chữ đó do chính Dấu gõ ở đầu văn bản, nên trạng thái đó có trong `followed.edits` và điều kiện 4 loại nó. Lịch sử dài 256 thao tác, còn Chrome trang bận đã đo chậm tối đa 12. Ca "Hoc nay. Hoc" (test `staleAnswerAtDocumentStartLooksLikeWordStart`) rơi vào đúng trường hợp này.
+- **App tính từ đầu văn bản, trả lời chậm** (Chrome, Edge khi trang bận hay phím dồn; VS Code; Firefox): điều kiện 1 và 2 cùng đạt chỉ khi cả văn bản trước con trỏ cũ đúng bằng chữ ô giữ ở một trạng thái nào đó. Chữ đó do chính Dấu gõ ở đầu văn bản, nên trạng thái đó có trong `followed.edits` và điều kiện 4 loại nó. Lịch sử dài 256 thao tác, còn Chrome trang bận đã đo chậm tối đa 12. Ca "Hoc nay. Hoc" (test `HeldTextTests.detection`) rơi vào đúng trường hợp này.
 - **VS Code 1.147 (EditContext):** vị trí tính từ đầu dòng. Sau Return, Dấu reset và neo lại ở lần đọc của D20, nên lịch sử cũng tính từ đầu dòng và điều kiện 4 vẫn áp.
 - **Google Docs:** app luôn trả 1 với một ký tự (`docs/Compatibility.md` mục 5.10). Câu trả lời đó không bao giờ khớp chữ ô giữ dài từ 2 trở lên (điều kiện 3), nên Google Docs giữ hành vi hiện nay.
 - **Word trên web, TipTap, Notes, Telegram:** vị trí tính từ đầu văn bản và đã đo là đúng giờ hoặc chậm theo dạng bộ đệm. Lý do như ý đầu.
@@ -222,32 +222,28 @@ Dấu chỉ xét việc đổi hệ khi câu trả lời khác vị trí Dấu t
 
 ### 6.9 Điều thay cho `wordFromWordStart`
 
-Bản sửa ở commit `0208bdd` (`CursorTracker.wordFromWordStart`, [`LateAnswerFixes.md`](LateAnswerFixes.md) mục 2.3) bị bỏ, cùng `WordStartAnswer` và các trường log `typed_read_word_start*`. Hệ mới phủ cả ba câu trả lời ở "j", gồm cả câu trả lời 1 mà bản sửa đó không nhận. Ràng buộc duy nhất cần giữ của bản sửa đó, câu trả lời khớp một trạng thái cũ của hệ văn bản thì không hiểu là tính từ đầu từ, trở thành điều kiện 4 của mục 6.4.
+Bản sửa ở commit `0208bdd` (`CursorTracker.wordFromWordStart`) đã bỏ, cùng `WordStartAnswer` và các trường log `typed_read_word_start*`. Hệ mới phủ cả ba câu trả lời ở "j", gồm cả câu trả lời 1 mà bản sửa đó không nhận. Ràng buộc duy nhất cần giữ của bản sửa đó, câu trả lời khớp một trạng thái cũ của hệ văn bản thì không hiểu là tính từ đầu từ, trở thành điều kiện 4 của mục 6.4.
 
 Các luật của phép chứng minh app chậm mà lý do ghi là "app tính theo từ" vẫn giữ: hai đơn vị so ở `typedHere`, `agrees`, và luật đơn vị thiếu đứng sau đơn vị đã so ở `withMissingUnits`. Trước khi Dấu nhận ra kiểu ô, Cursor vẫn đi đường của hệ văn bản, và các luật đó giữ cho câu trả lời đúng giờ của Cursor không bị coi là chậm. Nếu phép đo ở mục 6.11 cho thấy Dấu luôn nhận ra kiểu ô trước lần thay thứ hai của phiên, ba luật đó được xem lại.
 
-### 6.10 Test đơn vị cần có
+### 6.10 Test đơn vị
 
-Các test dưới đây là hàm thuần của trạng thái Dấu, hoặc dùng đồ giả chỉ ghi lời gọi và trả câu trả lời đã viết sẵn lấy từ log app thật. Không test nào dựng ô textarea hay bộ đệm Chromium.
+Các test dưới đây (`HeldTextTests`, `HeldTextComposerTests`) là hàm thuần của trạng thái Dấu, hoặc dùng đồ giả chỉ ghi lời gọi và trả câu trả lời đã viết sẵn lấy từ log app thật. Không test nào dựng ô textarea hay bộ đệm Chromium.
 
 1. **Chữ ô giữ** (mục 6.2), từ chữ Dấu biết và phần đứng trước: "nay. Hoc" ra 3 "Hoc"; "nay. Hoc␣" ra 1 "␣"; "x.y" ra 1; "“Hoc" sau dấu cách ra 4; "foo_hoc" ra 7; 60 chữ cái ra 51; Tab ra 1; chữ rỗng ở đầu dòng ra 0; "Hoc" mà phần trước chưa biết ra chưa biết; neo a = 20 với 16 đơn vị đọc được thì cộng 4.
 2. **L sau từng thao tác** (bảng mục 6.3): chèn "␣" sau "Hoc" ra 1; ⌫ xoá dấu cách đã biết ra 3 "Hoc"; ⌫ xoá chữ chưa biết ra chưa biết; khôi phục D4 có ký tự kết thúc "," ra 1; khôi phục kết thúc bằng "…" thì cộng dồn.
-3. **Vùng thay:** dấu thanh trên "tie" + e ra (2, 1); gieo "Hoc" + j ra (1, 2); D4 "mẻt" + dấu cách ra (0, 3) với chữ "metr␣"; D32 "hoà" ⌫ ra (1, 2) với "òà"; D26 "cả" + r ra (1, 1); từ 55 đơn vị + dấu thanh ra (51 − k, k); k > L thì không gửi.
+3. **Vùng thay:** dấu thanh trên "tie" + e ra (2, 1); gieo "Hoc" + j ra (1, 2); D4 "mẻt" + dấu cách ra (1, 2) với chữ "etr␣"; D32 "hoà" ⌫ ra (1, 2) với "òà"; D26 "cả" + r ra (1, 1) với "ar"; từ 55 đơn vị + dấu thanh ra (51 − k, k); k > L thì không gửi.
 4. **Câu trả lời ở hệ mới** (mục 6.5), với lịch sử của "chiều nay. Hoc␣⌫": (3, "Hoc") là đúng giờ; (4, "Hoc␣") là dạng (b) thiếu 2; (1, "␣") là dạng (a) thiếu 1; (2, "Ho") không khớp; trạng thái quá giới hạn thì không khớp.
 5. **Sang hệ mới** (mục 6.4): lịch sử "chiều nay. Hoc␣⌫" theo hệ văn bản với vị trí 14, câu trả lời (3, "Hoc") thì sang; tài liệu mới "Hoc nay. Hoc␣⌫" với (3, "Hoc") thì không sang (điều kiện 4); (1, "h") kiểu Google Docs thì không sang; câu trả lời chậm của Chrome trong giới hạn thì phép chứng minh app chậm thắng; câu trả lời bằng vị trí theo dõi thì không xét.
-6. **Về hệ văn bản:** ở hệ mới, (219, "…nay. Hoc") thì về; (60, …) thì về; (2, "ab") không khớp thì không về mà xử lý như lệch.
+6. **Về hệ văn bản:** ở hệ mới, (219, "…nay. Hoc") thì về; (53, …) thì về; (14, "ay. Hoc") khi chữ đó trùng chữ Dấu đã gõ thì về; (4, "Hoc␣"), (2, "␣H") và (2, "ab") thì không về.
 7. **Chờ ⌫ ở hệ mới:** sau "Hoc␣⌫", vị trí chờ là 1.
-8. **Composer với đồ giả ghi lời gọi:** câu `edit` với câu trả lời viết sẵn theo log Cursor 3.31.15 chế độ tắt (vị trí đúng giờ ở mỗi phím; ở "j" lần lượt 3, 4, 1). Test kiểm vùng thay đã gửi và số lời gọi mỗi phím, không kiểm chữ của app.
+8. **Composer với đồ giả ghi lời gọi:** "chieeuf nayf. Hoc␣⌫j" trong tệp mới, câu trả lời viết sẵn ở các phím có hỏi (0 ở "c", rồi 4, 5 và 3 với "nay", là vị trí đúng giờ của trình soạn thảo Cursor chế độ tắt); ở "j" lần lượt 3 "Hoc", 4 "Hoc␣" và 1 "␣" như log Cursor 3.31.15. Dấu nhận ra kiểu ô ở "nayf" và cả ba câu trả lời cho vùng (1, 2). Cũng vậy cho D4, D26, D32 và cho câu trả lời 219 cho thấy văn bản. Test kiểm vùng thay đã gửi và số lời gọi mỗi phím, không kiểm chữ của app.
 
-Khi có các test này, các test dựa trên mô hình `LateDocument.Origin.word` bị bỏ:
-- cả `WordOriginTests` (7 test); các ca của nó được thay bằng test 4, 5 và 8;
-- `CursorTrackerTests.answerFromWordStart` (hàm bị bỏ), được thay bằng test 4 và 5;
-- `LateAnswerTests.staleAnswerAtDocumentStartLooksLikeWordStart`, được thay bằng ca thứ hai của test 5;
-- `AppModel.origin`, `RapidKeysTests.Run.dropped`, và trong `LateDocument` thì `Origin`, `State.window`, `dropped` cùng các nhánh `.word`.
+Mô hình `LateDocument.Origin.word` và các test dựa trên nó đã bỏ; các ca của chúng nay là test 4, 5 và 8.
 
 ### 6.11 Phép đo trên app thật
 
-App thật là bằng chứng. Bản Debug có thêm các trường log chỉ có số (D8): `held=0|1` (hệ đang dùng), `held_len` (L), `held_match=now|a|b|none`, `held_lag` (số thao tác app thiếu), `held_switch=held|doc|-`. Các trường `typed_read_*` hiện có giữ nguyên, trừ `typed_read_word_start*`.
+App thật là bằng chứng. Bản Debug có thêm các trường log chỉ có số (D8): `held=0|1` (hệ đang dùng), `held_len` (L), `held_match=now|a|b|anchor|none`, `held_lag` (số thao tác app thiếu), `held_switch=held|doc|-`. Các trường `typed_read_*` hiện có giữ nguyên, trừ `typed_read_word_start*`.
 
 | Ô | Điều kiện | Lượt | Đạt khi |
 |---|---|---|---|

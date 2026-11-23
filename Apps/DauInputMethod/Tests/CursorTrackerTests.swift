@@ -109,7 +109,7 @@ struct CursorTrackerTests {
         t.typedAtCaret("n")
         #expect(t.followed.caret == 4)
         #expect(t.followed.edits.last == CursorTracker.Edit(cursor: 3, location: 3, deleted: 0, deletedText: [], inserted: Array("n".utf16),
-                                                   atCaret: true))
+                                                   atCaret: true, heldAfter: HeldText(length: 1, known: Array("n".utf16))))
     }
 
     @Test("an answer one edit late: the text read plus that edit, checked by the caller")
@@ -156,33 +156,6 @@ struct CursorTrackerTests {
         t.typedAtCaret("\u{0301}")
         t.backspaceOutsideWord()
         #expect(t.followed.caret == nil)
-    }
-
-    @Test("an answer from the start of the word: the whole text read is the word typed last, after a non-letter")
-    func answerFromWordStart() {
-        var t = CursorTracker()
-        t.anchor(at: 20)
-        for c in ["n", "a", "y", ".", " ", "H", "o", "c", " "] { t.typedAtCaret(c) }
-        t.backspaceOutsideWord()
-        #expect(t.followed.caret == 28)
-        let none = CursorTracker.LateProof()
-        let word = Array("Hoc".utf16)
-        #expect(t.wordFromWordStart(word, at: at(3), proof: none) == .init(word: word, lacking: 0, form: nil))
-        // Without the ⌫ that deleted the space, as it was before it.
-        #expect(t.wordFromWordStart(Array("Hoc ".utf16), at: at(4), proof: none) == .init(word: word, lacking: 1, form: .before))
-        // Not from the start of the word, or not the word typed.
-        #expect(t.wordFromWordStart(Array("oc".utf16), at: at(2), proof: none) == nil)
-        #expect(t.wordFromWordStart(Array("Hoa".utf16), at: at(3), proof: none) == nil)
-        // The word not whole in the app's text: only this composer's edits would make it.
-        #expect(t.wordFromWordStart(Array("Ho".utf16), at: at(2), proof: none) == nil)
-        // Not all of the text before the answer, a selection, or not one word.
-        #expect(t.wordFromWordStart(Array("oc".utf16), at: at(3), proof: none) == nil)
-        #expect(t.wordFromWordStart(word, at: at(3, 1), proof: none) == nil)
-        #expect(t.wordFromWordStart(Array(" nay. Hoc".utf16), at: at(9), proof: none) == nil)
-        // An answer that fits a state from before some edits may be a late one.
-        var late = none
-        (late.rejected, late.edits) = (.limit, 11)
-        #expect(t.wordFromWordStart(word, at: at(3), proof: late) == nil)
     }
 
     @Test("an answer elsewhere starts following again from it")

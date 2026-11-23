@@ -5,12 +5,12 @@ Kịch bản A có ở Chrome thật khi trang bận và phím dồn; kịch b�
 ## Hiện trạng (23/11/2026)
 
 - **Kịch bản A: D20 sau ⌫ khi app chậm từ 3 thao tác trở lên** (mô hình bộ đệm Chromium, `LateDocument.Cache.chromium`). Ở nhịp người, Chrome thật khi trang bận trả lời lần đọc này đúng giờ (mục 4). Ở 10 ms, Chrome thật khi trang bận có lượt ra "Hocj" ở "Hoc ⌫j", không hỏng chữ. Trên mô hình, nguyên nhân là giới hạn số thao tác được chậm của lần đọc này (mục 1.1). Hướng đã chọn: dạng bộ đệm Chromium được dựng lại tới lần cuối app trả lời đúng lúc, kể cả khi vị trí trùng vị trí theo dõi (mục 1.2). Log Debug của lần đọc có các trường `typed_read_*` để xác nhận nguyên nhân ở app thật ([`docs/Architecture.md`](../Architecture.md) mục "Thêm dấu cho từ đã gõ", ý "Log perf").
-- **Kịch bản B: app tính vị trí theo từ** (`LateDocument.Origin.word`, dựng từ log trình soạn thảo Cursor 3.29.15, đo 10/11/2026). Ở Cursor 3.30.14, khung agent (⌘L) và ô nhập Agents tính vị trí từ đầu văn bản và gõ đúng. Trình soạn thảo có lúc tính từ đầu văn bản (đúng), có lúc tính từ đầu từ; ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai vài từ mỗi lượt, không do D20 (D20 chờ hay không chờ phím dồn đều sai như vậy). Theo mã, trình soạn thảo Cursor nhận chữ qua một ô textarea ẩn. Khi chế độ hỗ trợ trình đọc màn hình của trình soạn thảo tắt, ô đó chỉ chứa từ trước con trỏ. Điều gì bật hay tắt chế độ đó trên máy đo thì chưa rõ (cơ chế và phép đo: [`MonacoInput.md`](MonacoInput.md); số đo: [`docs/Compatibility.md`](../Compatibility.md) mục 5.4). Mô hình còn trong test (`WordOriginTests`) cho các ca đạt. Ở Cursor 3.31.15 (máy M1 Pro, câu `edit` 10 ms), "Hoc ⌫j" ra "Hocj" 4/4 lượt: lần đọc của D20 nhận câu trả lời tính từ đầu từ, không chứng minh được app chậm và bị coi là câu trả lời cũ trong loạt phím dồn. Mô hình tái hiện đúng các trường `typed_read_*` của log Debug. Hướng sửa nằm ở mục 2.3: nhận câu trả lời tính từ đầu từ ở lần đọc của D20 khi chữ của app, cộng các thao tác app chưa áp, trùng chữ Dấu vừa gõ. Trên mô hình, câu `edit` gõ dồn 5 và 10 ms ra đúng cả câu, cả khi app đúng giờ lẫn khi app chưa áp dấu cách và ⌫. Số đo trên Cursor ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4. Hướng 1B và 4A cho các dạng còn lại cần đổi N3 và D11 (mục 2.2). Thiết kế sửa từ gốc, thay cả mục 2.3 và hướng 1B, nằm ở [`MonacoInput.md`](MonacoInput.md) mục 6 (chưa có mã).
+- **Kịch bản B: ô chỉ giữ từ trước con trỏ** (trình soạn thảo Cursor khi chế độ hỗ trợ trình đọc màn hình của Monaco tắt): đã sửa từ gốc bằng hệ vị trí riêng cho loại ô này (D11, ý "Ô chỉ giữ từ trước con trỏ"; cơ chế và thiết kế ở [`MonacoInput.md`](MonacoInput.md), số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4). Mục 2 chỉ còn dẫn tới đó.
 - **Kịch bản C: trang bận, app chậm qua chỗ ngắt từ** (đo 18/11/2026, mục 3): Chrome và Safari sai khi trang bận, cả ở nhịp người gõ nhanh. Nguyên nhân ở Chrome: hạn mức độ chậm của phép chứng minh về 0 ở mỗi chỗ ngắt từ. Đã sửa (mục 3.3): ở phím thay chữ trong từ, app được chậm mọi thao tác kể từ lần cuối nó trả lời đúng lúc (`d171ab9`). Câu trả lời trùng vị trí theo dõi không còn được coi là đúng lúc khi các thao tác cuối không dời con trỏ (lỗi "được"), lần đọc của D20 chậm quá phép chứng minh trong loạt phím dồn không còn neo vị trí theo dõi vào câu trả lời cũ, và vị trí neo đầu tiên là một mốc như câu trả lời đúng lúc (lỗi "mọot" ở đầu văn bản). Chrome trang bận đúng 9/9 ở 10 ms và 9/9 ở nhịp người gõ nhanh. Safari là kịch bản D.
 - **Kịch bản D: Safari (WebKit) để phím đi thẳng chờ trong hàng** (đo 18/11/2026, mục 5): khi trang chưa nhận kịp phím (phím dồn, trang bận), lần thay của bộ gõ tới trang trước các ký tự đi thẳng còn chờ, nên chữ của các phím đó dời chỗ. Đã sửa ngày 22/11/2026 bằng cách bộ gõ tự chèn mọi ký tự engine để nguyên, ở mọi app (mục 5.3, N3): Safari đúng khi gửi cả chuỗi một lần (3/3) và ở ô mũi tên (3/3). ⌫ giữ đi thẳng; ca ⌫ rồi phím dấu ngay sau khi trang bận đã sửa bằng ngoại lệ chờ ⌫ chưa áp của N3, hạn 20 ms, cho mọi app (mục 5.4): Safari trang bận đúng 3/3 ở hai ô.
 - Cursor không có nhãn "Đề xuất" (D13 (Gạch chân là đường lui cuối cùng)); số đo ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4.
 
-Không có quyết định nào chờ người dùng ở file này. Phần đo được và phần giả định của mô hình theo từ ghi trong comment của `LateDocument.Origin`; mô hình vị trí tính từ đầu văn bản là `Origin.document`.
+Không có quyết định nào chờ người dùng ở file này.
 
 ## 1. Kịch bản A: D20 sau ⌫, app chậm từ 3 thao tác trở lên
 
@@ -43,41 +43,9 @@ Lỗi người dùng báo ngày 17/11 ở app Claude ("Hocj") do cơ chế khác
 
 **2C: nâng giới hạn cho mọi dạng (không chọn).** Nhận cả dạng (a) làm hỏng ca "carr" và ca ⌘A rồi gõ lại đúng các chữ cũ ở cùng chỗ (comment của `humanPaceEdits`).
 
-## 2. Kịch bản B: app tính vị trí theo từ
+## 2. Kịch bản B: ô chỉ giữ từ trước con trỏ
 
-### 2.1 Cơ chế
-
-Mô hình app tính `selectedRange` và vùng thay từ đầu từ đang gõ, về 0 sau mỗi dấu cách. Khi phím dồn, câu trả lời có thể còn ở từ trước hay ở từ mới chưa có chữ nào: vị trí tính theo toạ độ của một từ khác, còn `followed.caret` tính theo toạ độ tài liệu, nên cả hai đều sai. Bốn dạng trên mô hình:
-
-- **Câu trả lời cũ qua ranh giới từ** (phím dồn 5 ms, trang chậm): vùng thay bị bỏ, thay nhầm chữ hoặc `mismatch` vì vị trí nhỏ hơn số chữ cần xoá. Câu trả lời cũ theo toạ độ của từ khác, nên không vị trí nào Dấu có là đúng; phép chứng minh app chậm nhận nhầm chỉ giải thích một phần các ca.
-- **Phím dồn từ đầu từ trong tài liệu mới** ("anh ddi owr ddaau" ở 20 ms): mọi phím từ lúc neo vị trí ở 0 đều dồn, nên `CursorTracker.typedHere` coi câu trả lời đúng giờ là chậm; Dấu thay ở `followed.caret` và app bỏ vùng. `sameAnswerAsLateNewDocument` chứng minh ca này không phân biệt được với tài liệu mới chưa áp phím của app tính vị trí tuyệt đối dùng bộ đệm Chromium.
-- **Từ bắt đầu bằng chữ đầu của chuỗi đã gõ** ("chieeuf nay anh cos " ở 20 ms, vị trí neo ở 0): câu trả lời đúng giờ kiểu bộ đệm Chromium thiếu một chữ, đọc được "c" đúng ở chỗ chữ Dấu đã gõ bắt đầu (đầu tài liệu), nên `typedHere` chấp nhận là câu trả lời chậm.
-- **Lần đọc của D20 sau ⌫ khi phím dồn** ("chiều nay. Hoc ⌫j" ở 10 ms, có ở Cursor 3.31.15): app đã áp mọi phím và trả vị trí 3 với chữ "Hoc", còn `followed.caret` là 14. Vị trí 14 tính từ đầu từ "chiều", vì từ đó được thay ở vị trí app trả. Không trạng thái nào của chữ Dấu theo dõi có con trỏ ở 3, nên phép chứng minh không tìm được ứng viên nào (`typed_read_lag=-1`, `typed_read_form=-`, `typed_read_reject=limit`). Câu trả lời lùi sau `followed.caret` trong loạt phím dồn, nên Dấu coi nó là câu trả lời cũ (mục 3.3), không gieo từ và "j" bắt đầu từ mới. Khi app chưa áp ⌫, câu trả lời là 4 với chữ "Hoc " (dạng bộ đệm Chromium) và kết quả cũng vậy.
-
-### 2.2 Hướng sửa cho loại app này
-
-Các hướng dưới đây chưa làm. Chúng nhắm ba dạng đầu của mục 2.1; dạng thứ tư đã sửa theo mục 2.3. Dưới đây là phương án và cái giá, dựng lại theo mục 4 khi cần.
-
-- **1B: nhận ra app tính vị trí từ đầu từ rồi tự tính vùng thay trong từ.** Trên mô hình: 38/40 → 0/40 lượt sai (chuỗi `std`, 5 ms), các ca qua ranh giới từ ra đúng khi phía trước có hai từ gõ ở nhịp người; các mô hình khác không đổi. Cái giá: đổi N3 (thêm ngoại lệ) và D11 (thêm ý mới, bỏ bất biến "vùng thay kết thúc ở vị trí Dấu theo dõi" cho loại app này).
-- **4A: đọc cả chữ sau con trỏ trong cùng lần đọc.** Cho dạng tài liệu mới. Cái giá: đổi câu chữ N3 và cách kiểm độ dài của D18; theo mã Chromium (`attributedSubstringForProposedRange:actualRange:`, chưa đo) vùng vượt cuối chữ bị cắt.
-- **4B, 4C:** giữ bằng chứng của 1B qua các lần kích hoạt và chỉ áp ý "Ở đầu văn bản" cho từ đầu tiên (mô hình VS Code sai 5/40, Firefox 3/40): làm hỏng các mô hình khác nên không dùng.
-- **1A, 1C:** tin vị trí app trả (sai đúng ở các ca này) và tự bật gạch chân (trái D13): không làm.
-
-### 2.3 Hướng đã chọn cho lần đọc của D20: câu trả lời tính từ đầu từ
-
-Ở lần đọc của D20, khi phép chứng minh không qua và câu trả lời lùi sau `followed.caret` trong loạt phím dồn, `CursorTracker.wordFromWordStart` xét thêm một cách hiểu: app tính vị trí từ đầu từ. Cách hiểu này đạt khi lần đọc lấy được toàn bộ chữ trước câu trả lời (phần đọc bắt đầu ở vị trí 0). Chữ đó có thể thiếu vài thao tác cuối, trong cùng giới hạn và hai dạng như phép chứng minh app chậm, và mọi thao tác xoá app thiếu phải biết chữ bị xoá. Chữ đó cộng các thao tác app thiếu phải là đúng một từ, trùng phần cuối của chữ Dấu đã gõ (`typedBeforeCaret`), và chữ Dấu gõ ngay trước từ đó không thuộc từ nào. Từ đó cũng phải là phần đầu của chữ app trả, nên các thao tác app thiếu chỉ đổi phần sau từ và từ được gieo là chữ của app. Khi đạt, `addMarks` neo `followed.caret` ở cuối từ đó và gieo từ như lần đọc sau một quãng nghỉ. Vùng thay (1,2 ở "Hoc", "oc" thành "ọc") kết thúc ở vị trí Dấu theo dõi tính theo toạ độ của app, đúng bất biến của D11.
-
-Ở Cursor có hai câu trả lời ở "j" của "Hoc ⌫j". Câu trả lời thứ nhất là 3 với "Hoc": app đúng giờ. Câu trả lời thứ hai là 4 với "Hoc ", không đơn vị nào trùng phần cuối của chữ Dấu đã gõ (`typed_read_as_typed=0`). Đó là dạng bộ đệm Chromium: trang báo lần cuối sau "c", bộ đệm ghi thêm dấu cách, còn ⌫ chưa áp. "Hoc " cũng là chữ trước ⌫ (dạng (a), thiếu một thao tác), cách hiểu ít thao tác nhất nên được chọn. "Hoc " cộng ⌫ ra "Hoc", nên vùng thay vẫn là 1,2. Vùng này đúng theo cả hai thứ tự:
-
-- App áp dấu cách và ⌫ trước lần thay, như mọi thao tác theo thứ tự Dấu gửi (giả định của phép chứng minh app chậm, D11). Khi đó app giữ lại "Hoc" từ đầu từ.
-- App chưa áp ⌫ khi lần thay tới, nhưng vẫn giữ "Hoc " từ đầu từ như câu trả lời của nó cho thấy. Khi đó "Hoc " thành "Học ", rồi ⌫ xoá dấu cách.
-
-Vùng thay chỉ sai nếu app áp ⌫ sau lần thay và lúc đó đã chuyển sang một từ mới rỗng sau dấu cách. Ca đó trái với thứ tự áp thao tác mà phép chứng minh app chậm vốn giả định; mô hình `LateDocument` cũng áp mọi thao tác theo thứ tự.
-
-- **Quyết định:** không trái N1–N5 hay D nào. Lần đọc là lần đọc vốn có của D20 (N3). Dấu chỉ gieo từ chữ của app, khi chữ đó trùng chữ Dấu đã gõ, không gieo từ chữ của riêng Dấu (D20 "nếu không tin được chữ đó").
-- **Ràng buộc phải giữ:** câu trả lời chậm của app tính từ đầu văn bản không được hiểu nhầm như vậy. Ở loại app đó, điều kiện trên chỉ đạt khi cả văn bản trước con trỏ là đúng từ vừa gõ. Ví dụ, trang dừng sau từ đầu của "Hoc nay. Hoc" và trả vị trí 3 với chữ "Hoc". Câu trả lời đó khớp một trạng thái cũ của chữ Dấu đã theo dõi, quá giới hạn dựng lại. Vì vậy ở lần đọc của D20, `CursorTracker.prove` xét cả các số thao tác quá giới hạn ở cả bản Release, và câu trả lời khớp như vậy (`LateProof.fitsPastLimits`) không được hiểu là tính từ đầu từ. Test: `staleAnswerAtDocumentStartLooksLikeWordStart`.
-- **Còn lại:** khi chữ đọc được không chứa cả từ vừa gõ (ví dụ chỉ còn "Ho"), Dấu không gieo từ và D20 không áp; chữ không hỏng. Log Debug ghi `typed_read_len`, `typed_read_as_typed`, `typed_read_word_start`, `typed_read_word_start_lag` và `typed_read_word_start_form` để biết lượt nào rơi vào ca nào.
-- **Kiểm:** `WordOriginTests` (`addMarksAfterBackspaceInBurst` khi app đúng giờ và khi app chậm hai thao tác ở "j", `addMarksAfterBackspaceInNewDocument`), `CursorTrackerTests.answerFromWordStart`.
+Kịch bản này từng được mô tả bằng mô hình "app tính vị trí theo từ" dựng từ log Cursor 3.29.15, và từng có bản vá riêng cho lần đọc của D20 (`wordFromWordStart`). Cả mô hình lẫn bản vá đã bỏ. Cơ chế gốc (ô textarea ẩn của Monaco chỉ giữ từ trước con trỏ, Chromium trả lời từ bản sao cập nhật chậm) và bản sửa (Dấu tự tính chữ ô giữ từ chữ nó đã gửi, câu trả lời chỉ dùng để kiểm) nằm ở [`MonacoInput.md`](MonacoInput.md) mục 2, 3 và 6.
 
 ## 3. Kịch bản C: trang bận, app chậm qua chỗ ngắt từ
 

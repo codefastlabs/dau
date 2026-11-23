@@ -131,6 +131,7 @@ final class DauInputController: IMKInputController {
             result.typedWordReadProof = outcome.typedWordReadProof
             result.seedDiffers = outcome.seedDiffers
             result.backspaceWait = outcome.backspaceWait
+            result.held = outcome.held
             #endif
         }
         result.selectedRangeNs = timed.selectedRangeNs
@@ -164,6 +165,8 @@ final class DauInputController: IMKInputController {
         /// N3 "Ngoại lệ sau ⌫ chưa áp": what the wait did, and its time (Debug perf log).
         var backspaceWait: InPlaceComposer.BackspaceWait?
         var waitNs: Int64 = -1
+        /// Held text: where positions count from, what the answer showed (in-place mode).
+        var held: InPlaceComposer.HeldCheck?
         #endif
     }
 
@@ -203,6 +206,7 @@ final class DauInputController: IMKInputController {
             if let wait = result.backspaceWait {
                 extra += " bksp=\(wait.applied ? "applied" : "timeout") bksp_asks=\(wait.asks) bksp_wait_ns=\(result.waitNs)"
             }
+            extra += result.held?.logFields ?? ""
         }
         #endif
         perf.record(result.kind,

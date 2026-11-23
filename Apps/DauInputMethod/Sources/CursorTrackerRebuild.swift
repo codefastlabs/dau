@@ -68,6 +68,9 @@ extension CursorTracker {
     /// `requireDeletedText`: an edit whose removed text this composer does not know fails.
     func prove(_ snapshot: [UInt16], at selection: NSRange, inWord: Bool = false, cacheForm: Bool = false,
                requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> LateProof {
+        if coordinates == .heldText {
+            return proveHeld(snapshot, at: selection, inWord: inWord, cacheForm: cacheForm, accept: accept)
+        }
         var proof = LateProof()
         let selection = ClientRange.sanitized(selection)  // D18: an unusable answer proves nothing
         let end = selection.location
@@ -99,9 +102,8 @@ extension CursorTracker {
             if m <= humanPace, !agrees(text) { return (nil, .agrees) }
             return accept(text) ? (text, nil) : (nil, .accept)
         }
-        // At a D20 read, counts past the limits are checked too, never to prove: an answer
-        // that fits one may be a state from before those edits (`LateProof.fitsPastLimits`,
-        // `wordFromWordStart`), and the Debug log tells how far behind it is.
+        // At a D20 read, counts past the limits are checked too, never to prove: the Debug
+        // log tells how far behind such an answer is (`LateProof.fitsPastLimits`).
         let scanned = cacheForm ? edits.count : limit
         var latestAtCaret: [UInt16]?
         var provedPastLimit: (m: Int, form: LateProof.Form)?
@@ -151,75 +153,151 @@ extension CursorTracker {
         return proof
     }
 
-    /// What `wordFromWordStart` found: the word and how many edits the app lacked.
-    struct WordStartAnswer: Equatable {
-        /// The word this composer typed last, as the app shows it from position 0. The
-        /// followed caret is at `word.count` in the app's coordinates.
-        var word: [UInt16]
+    // MARK: Held text (D11 "Ô chỉ giữ từ trước con trỏ")
+
+    /// Which state of the held text an answer shows.
+    struct HeldMatch: Equatable {
         /// The latest edits the answer lacks (0: on time).
         var lacking: Int
-        var form: LateProof.Form?
+        /// `.before`: that state as it was; `.cache`: plus the latest text this composer
+        /// inserted at the caret after it (Chromium's cache, `prove`).
+        var form: LateProof.Form
     }
 
-    /// The word before the caret when `snapshot`, read before `selection` at a D20 read whose
-    /// `proof` failed, comes from an app that counts positions from the start of the word
-    /// being typed (`docs/Architecture.md`, "App trả lời chậm"); nil if it does not.
-    ///
-    /// The text read is the whole of what the app holds before its answer (the read reaches
-    /// position 0). It may lack the latest edits, within the limits of `prove` and in the same
-    /// two forms, every edit it lacks removing text this composer knows. That text plus those
-    /// edits is one word, the end of `typedBeforeCaret`, and what this composer typed right
-    /// before it is not part of a word. The app shows the whole word: the edits it lacks
-    /// only change what follows it ("Hoc " lacking the ⌫ that deleted the space), so the word
-    /// is the app's text, never this composer's alone.
-    ///
-    /// An answer that fits a state of the text from before some edits, past the limits too,
-    /// may be a late one and is not taken (`LateProof.fitsPastLimits`): an app that counts
-    /// from the start of the document gives such an answer only when the whole document
-    /// before its caret is that word.
-    func wordFromWordStart(_ snapshot: [UInt16], at selection: NSRange, proof: LateProof) -> WordStartAnswer? {
-        let selection = ClientRange.sanitized(selection)
-        let end = selection.location
-        guard let caret = followed.caret, selection.length == 0, end != NSNotFound, end > 0, end < caret,
-              proof.text == nil, !proof.fitsPastLimits, snapshot.count == end else { return nil }
+    /// The state of the held text after one of the latest edits that `snapshot`, read
+    /// before `end`, shows; the fewest edits back first. Every edit after it that deleted
+    /// text must know that text. `limit`, `cacheLimit`: edits back each form may go.
+    /// `fromNow`: the state after the latest edit counts (an answer on time). `whole`: the
+    /// state must be a word of at least two units this composer knows in full, read from
+    /// position 0, as a switch to held text needs (`heldTextShown`).
+    func heldTextMatch(_ snapshot: [UInt16], at end: Int, limit: Int, cacheLimit: Int,
+                       fromNow: Bool, whole: Bool) -> HeldMatch? {
         let edits = followed.edits
-        let limitBefore = min(lateness.replayLimit(inWord: false), edits.count)
-        let limitCache = min(lateness.cacheReplayLimit, edits.count)
-        let typed = followed.typedBeforeCaret
-        // The word the app shows (`before`, ending at the followed `cursor`) with the last `m`
-        // edits applied.
-        func word(_ before: [UInt16], endingAt cursor: Int, last m: Int) -> [UInt16]? {
-            guard case .text(let text) = replay(before, endingAt: cursor, last: m, requireDeletedText: true),
-                  cursor - before.count + text.count == caret, !text.isEmpty, text.count <= before.count,
-                  before.prefix(text.count).elementsEqual(text), text.allSatisfy(Self.isWordUnit),
-                  typed.count > text.count, !Self.isWordUnit(typed[typed.count - text.count - 1]),
-                  typed.suffix(text.count).elementsEqual(text) else { return nil }
-            return text
-        }
-        if let text = word(snapshot, endingAt: caret, last: 0) {
-            return WordStartAnswer(word: text, lacking: 0, form: nil)
-        }
+        guard !edits.isEmpty, end >= 0, snapshot.count <= end else { return nil }
+        if whole, snapshot.count != end { return nil }
         var latestAtCaret: [UInt16]?
-        for m in stride(from: 1, through: max(limitBefore, limitCache), by: 1) {
-            let first = edits[edits.count - m]
-            if latestAtCaret == nil, first.atCaret, !first.inserted.isEmpty { latestAtCaret = first.inserted }
-            if m <= limitBefore, let text = word(snapshot, endingAt: first.cursor, last: m) {
-                return WordStartAnswer(word: text, lacking: m, form: .before)
+        var deletionsKnown = true
+        for m in 0..<edits.count {
+            let index = edits.count - 1 - m
+            if m > 0 {
+                // The edit right after this state is now among those the answer lacks.
+                let after = edits[index + 1]
+                if latestAtCaret == nil, after.atCaret, !after.inserted.isEmpty { latestAtCaret = after.inserted }
+                if after.deleted > 0, after.deletedText?.count != after.deleted { deletionsKnown = false }
             }
-            if m <= limitCache, let units = latestAtCaret, snapshot.count >= units.count,
-               snapshot.suffix(units.count).elementsEqual(units),
-               let text = word(Array(snapshot.dropLast(units.count)), endingAt: first.cursor, last: m) {
-                return WordStartAnswer(word: text, lacking: m, form: .cache)
+            guard deletionsKnown, m <= max(limit, cacheLimit) else { break }
+            guard let state = edits[index].heldAfter else { continue }
+            if whole, !(state.isWhole && state.length >= 2 && state.known.allSatisfy { HeldText.isWordUnit($0) }) { continue }
+            if m <= limit, m > 0 || fromNow, state.length == end, Self.shows(snapshot, state.known, whole: whole) {
+                return HeldMatch(lacking: m, form: .before)
+            }
+            if m > 0, m <= cacheLimit, let units = latestAtCaret, state.length + units.count == end,
+               Self.shows(snapshot, state.known + units, whole: whole) {
+                return HeldMatch(lacking: m, form: .cache)
             }
         }
         return nil
     }
 
-    /// A unit of a word as `InPlaceComposer.trailingWord` takes it: a letter, a combining
-    /// mark or a digit.
-    private static func isWordUnit(_ unit: UInt16) -> Bool {
-        guard let scalar = Unicode.Scalar(unit) else { return false }
-        return CharacterSet.alphanumerics.contains(scalar)
+    /// `snapshot` is the end of a text ending with `known`: the units both have agree, and
+    /// any it has before them are units of a word (the part of the held text not known).
+    private static func shows(_ snapshot: [UInt16], _ known: [UInt16], whole: Bool) -> Bool {
+        if whole { return snapshot == known }
+        let n = min(snapshot.count, known.count)
+        guard snapshot.suffix(n).elementsEqual(known.suffix(n)) else { return false }
+        return snapshot.dropLast(n).allSatisfy { HeldText.isWordUnit($0) }
+    }
+
+    /// `prove` once the client holds only the word before the caret: the answer shows a
+    /// state of that text after one of the latest edits, within the limits of `prove`, so
+    /// the text there now is the held text after every edit.
+    private func proveHeld(_ snapshot: [UInt16], at selection: NSRange, inWord: Bool, cacheForm: Bool,
+                           accept: ([UInt16]) -> Bool) -> LateProof {
+        var proof = LateProof()
+        let selection = ClientRange.sanitized(selection)
+        let end = selection.location
+        guard let caret = followed.caret, let now = followed.held, selection.length == 0, end != NSNotFound,
+              end != caret || cacheForm else {
+            proof.rejected = .answer
+            return proof
+        }
+        let edits = followed.edits.count
+        let limitBefore = min(lateness.replayLimit(inWord: inWord), edits)
+        let limitCache = cacheForm ? min(lateness.cacheReplayLimit, edits) : limitBefore
+        (proof.limit, proof.cacheLimit) = (limitBefore, limitCache)
+        // As in `prove`, form (a) is never at the followed caret: an answer there is the
+        // client's own text, which a D20 read takes as it is.
+        guard let match = heldTextMatch(snapshot, at: end, limit: end == caret ? 0 : limitBefore,
+                                        cacheLimit: limitCache, fromNow: false, whole: false) else {
+            proof.rejected = .limit
+            return proof
+        }
+        (proof.edits, proof.form) = (match.lacking, match.form)
+        if accept(now.known) { proof.text = now.known } else { proof.rejected = .accept }
+        return proof
+    }
+
+    /// A client counting from the start of the document still answers with positions
+    /// there: `snapshot`, read before `selection`, shows the word before the caret as held
+    /// text after one of the latest edits (`heldTextMatch`, whole), and no state of the text
+    /// followed from the start of the document, however far back, fits it
+    /// (`fitsDocumentState`). nil when not. `cacheForm`: a D20 read, with its limits.
+    func heldTextShown(_ snapshot: [UInt16], at selection: NSRange, cacheForm: Bool) -> HeldMatch? {
+        let selection = ClientRange.sanitized(selection)
+        let end = selection.location
+        guard coordinates == .document, let caret = followed.caret, selection.length == 0, end != NSNotFound,
+              end != caret else { return nil }
+        let edits = followed.edits.count
+        let limit = min(lateness.replayLimit(inWord: !cacheForm), edits)
+        let cacheLimit = cacheForm ? min(lateness.cacheReplayLimit, edits) : limit
+        guard let match = heldTextMatch(snapshot, at: end, limit: limit, cacheLimit: cacheLimit,
+                                        fromNow: true, whole: true),
+              !fitsDocumentState(snapshot, at: end) else { return nil }
+        return match
+    }
+
+    /// Some state of the text followed from the start of the document, after any number of
+    /// the latest edits, in either form of `prove`, is `snapshot` ending at `end`, and agrees
+    /// with what this composer typed: a late answer of a client counting from there may give
+    /// it ("Hoc nay. Hoc" in a new document, the page stuck after the first word).
+    func fitsDocumentState(_ snapshot: [UInt16], at end: Int) -> Bool {
+        guard let caret = followed.caret else { return false }
+        let edits = followed.edits
+        var latestAtCaret: [UInt16]?
+        for m in stride(from: 1, through: edits.count, by: 1) {
+            let first = edits[edits.count - m]
+            if latestAtCaret == nil, first.atCaret, !first.inserted.isEmpty { latestAtCaret = first.inserted }
+            var forms: [[UInt16]] = []
+            if first.cursor == end { forms.append(snapshot) }
+            if let units = latestAtCaret, first.cursor + units.count == end, snapshot.count >= units.count,
+               snapshot.suffix(units.count).elementsEqual(units) {
+                forms.append(Array(snapshot.dropLast(units.count)))
+            }
+            for before in forms {
+                if case .text(let text) = replay(before, endingAt: first.cursor, last: m, requireDeletedText: false),
+                   first.cursor - before.count + text.count == caret, agrees(text) {
+                    return true
+                }
+            }
+        }
+        return false
+    }
+
+    /// Held text never shows this: `snapshot`, read before `selection`, is longer than any
+    /// held text, or has units of words on both sides of a unit that is not, and ends with
+    /// what this composer typed from that boundary on. The client counts from the start of
+    /// the document again.
+    func showsDocument(_ snapshot: [UInt16], at selection: NSRange) -> Bool {
+        let end = ClientRange.sanitized(selection).location
+        guard end != NSNotFound else { return false }
+        // The longest held text, plus one unit Chromium's cache adds to it.
+        if end > HeldText.limit + 1 { return true }
+        guard let firstWord = snapshot.firstIndex(where: { HeldText.isWordUnit($0) }),
+              let boundary = snapshot.lastIndex(where: { !HeldText.isWordUnit($0) }), boundary > firstWord,
+              boundary < snapshot.count - 1 else { return false }
+        let typed = followed.typedBeforeCaret
+        let across = snapshot.count - boundary
+        return typed.count >= across && typed.suffix(across).elementsEqual(snapshot.suffix(across))
     }
 
     private enum Replay: Equatable {

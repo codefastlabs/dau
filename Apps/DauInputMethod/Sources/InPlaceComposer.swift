@@ -80,9 +80,9 @@ struct InPlaceComposer {
     /// the ⌫ after the first answer. Not tuned by measurement.
     static let backspaceWaitStep: TimeInterval = 0.002
 
-    /// The previous key was a ⌫ the app deletes itself, and the tracker holds the UTF-16
-    /// units it deletes at the followed caret.
-    private var unitsDeletedByLastKey: Int?
+    /// The previous key was a ⌫ the app deletes itself, deleting text the tracker knows:
+    /// where the caret was before it (`CursorTracker.caretBeforeDeletion`).
+    private var caretBeforeLastDeletion: Int?
     /// Set for the current key's first `selectedRange` (`askSelection`): the caret once the
     /// ⌫ is applied, and before.
     private var armedBackspaceWait: (appliedCaret: Int, pendingCaret: Int)?
@@ -98,6 +98,37 @@ struct InPlaceComposer {
         var applied: Bool
     }
     private var keyWait: BackspaceWait?
+
+    /// What the key's answer showed about held text (`CursorTracker.Coordinates.heldText`),
+    /// and where the client's positions count from after the key (Debug perf log, tests).
+    struct HeldCheck: Equatable {
+        enum Answer: String {
+            /// The answer is where the tracker follows the caret.
+            case now
+            /// A state of the held text after one of the latest edits (`HeldMatch.form`).
+            case before = "a"
+            case cache = "b"
+            /// The word being typed with other units of a word before it: followed from there.
+            case anchor
+            /// None of these.
+            case none
+        }
+        enum Switch: String { case held, doc }
+        var answer: Answer?
+        /// Edits the answer lacked.
+        var lacking: Int?
+        var switched: Switch?
+        var inHeldText = false
+        /// The followed caret when in held text.
+        var length: Int?
+
+        /// Perf log fields, each with a leading space (numbers and fixed words, D8).
+        var logFields: String {
+            " held=\(inHeldText ? 1 : 0) held_len=\(length ?? -1) held_match=\(answer?.rawValue ?? "-")"
+                + " held_lag=\(lacking ?? -1) held_switch=\(switched?.rawValue ?? "-")"
+        }
+    }
+    private var keyHeld = HeldCheck()
 
     /// The last word this composer produced, as it was when a word-ending character typed
     /// here ended it (D20 "Từ hệ thống vừa sửa"). Lives for the next key, plus one ⌫ in
@@ -135,6 +166,8 @@ struct InPlaceComposer {
         var selection: NSRange
         var predictedCaret: Int?
         var followedCaret: Int?
+        /// The positions are those of held text (`CursorTracker.Coordinates.heldText`).
+        var inHeldText = false
         var insertedLength: Int
         /// The `replacementRange` sent, or nil when nothing was sent.
         var replacement: NSRange?
@@ -156,6 +189,7 @@ struct InPlaceComposer {
         var attempt: Attempt?
         /// Set when this key waited for the ⌫ before it (Debug perf log, tests).
         var backspaceWait: BackspaceWait?
+        var held = HeldCheck()
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
         var typedWordRead: TypedWordRead?
@@ -197,9 +231,6 @@ struct InPlaceComposer {
         /// How many of the last units read are the last units this composer typed before the
         /// followed caret; -1: no read.
         var unitsAsTyped = -1
-        /// Behind the followed caret in a burst, taken as the word typed last in an app that
-        /// counts from the start of the word (`CursorTracker.wordFromWordStart`).
-        var fromWordStart: CursorTracker.WordStartAnswer?
 
         /// Perf log fields, each with a leading space; -1 or `-` when unknown or not reached.
         var logFields: String {
@@ -213,9 +244,7 @@ struct InPlaceComposer {
                 fields += " typed_read_limit=-1 typed_read_limit_b=-1 typed_read_lag=-1 typed_read_form=- typed_read_proved=- typed_read_reject=-"
             }
             return fields + " typed_read_stale=\(staleInBurst ? 1 : 0) typed_read_len=\(readUnits)"
-                + " typed_read_as_typed=\(unitsAsTyped) typed_read_word_start=\(fromWordStart == nil ? 0 : 1)"
-                + " typed_read_word_start_lag=\(fromWordStart?.lacking ?? -1)"
-                + " typed_read_word_start_form=\(fromWordStart?.form?.rawValue ?? "-")"
+                + " typed_read_as_typed=\(unitsAsTyped)"
         }
     }
     /// The word the last `seedWord` seeded.
@@ -237,13 +266,13 @@ struct InPlaceComposer {
         checkedLockedWord = false
         produced = nil
         undidMarkLetters = nil
-        unitsDeletedByLastKey = nil
+        caretBeforeLastDeletion = nil
     }
 
     /// A click (or any non-key event that moves the caret) at `time`.
     mutating func noteEvent(at time: TimeInterval?) {
         if let time { lastEventTime = time }
-        unitsDeletedByLastKey = nil  // the click came between the ⌫ and the next key
+        caretBeforeLastDeletion = nil  // the click came between the ⌫ and the next key
     }
 
     /// New activation (or another client): the client may give text again.
@@ -251,7 +280,7 @@ struct InPlaceComposer {
         failedReads = 0
         lastEventTime = nil
         produced = nil
-        unitsDeletedByLastKey = nil
+        caretBeforeLastDeletion = nil
     }
 
     // MARK: - Keys
@@ -276,12 +305,21 @@ struct InPlaceComposer {
             self.shadow = nil
         }
         outcome.backspaceWait = keyWait
+        outcome.held = heldAfterKey
         return outcome
         #else
         var outcome = handleTracked(route, time: time, engine: &engine, client: client)
         outcome.backspaceWait = keyWait
+        outcome.held = heldAfterKey
         return outcome
         #endif
+    }
+
+    private var heldAfterKey: HeldCheck {
+        var check = keyHeld
+        check.inHeldText = tracker.coordinates == .heldText
+        check.length = check.inHeldText ? tracker.followed.caret : nil
+        return check
     }
 
     /// `handleKey`, then whether the key undid a mark by a double key (`undidMarkLetters`).
@@ -310,6 +348,7 @@ struct InPlaceComposer {
         if let time { lastEventTime = time }
         lateRead = nil
         readProvedLate = false
+        keyHeld = HeldCheck()
         tracker.lateness.keyInBurst = !settled
         armBackspaceWait(sinceLast: sinceLast)
         let lastProduced = takeProducedWord(for: route)
@@ -335,14 +374,13 @@ struct InPlaceComposer {
         keyWait = nil
         armedBackspaceWait = nil
         #if DEBUG
-        if skipsBackspaceWait { unitsDeletedByLastKey = nil }
+        if skipsBackspaceWait { caretBeforeLastDeletion = nil }
         #endif
-        if let deleted = unitsDeletedByLastKey, let sinceLast, sinceLast >= 0, sinceLast < Self.backspaceWaitWindow,
-           let caret = tracker.followed.caret,
-           tracker.followed.unitsDeletedAtCaret == deleted {
-            armedBackspaceWait = (caret, caret.addingSaturated(deleted))
+        if let pending = caretBeforeLastDeletion, let sinceLast, sinceLast >= 0, sinceLast < Self.backspaceWaitWindow,
+           let caret = tracker.followed.caret, tracker.caretBeforeDeletion == pending {
+            armedBackspaceWait = (caret, pending)
         }
-        unitsDeletedByLastKey = nil
+        caretBeforeLastDeletion = nil
     }
 
     /// Hands the produced word to this key, its last one; a character right after the one ⌫
@@ -386,8 +424,8 @@ struct InPlaceComposer {
             // The one ⌫ over the character that ended the produced word.
             produced = ProducedWord(word: lastProduced.word, backspaced: true)
         }
-        if tracker.followed.editsRecorded != recordedBefore, let deleted = tracker.followed.unitsDeletedAtCaret {
-            unitsDeletedByLastKey = deleted
+        if tracker.followed.editsRecorded != recordedBefore, let pending = tracker.caretBeforeDeletion {
+            caretBeforeLastDeletion = pending
         }
         return result
     }
@@ -661,7 +699,10 @@ struct InPlaceComposer {
         }
         let real = read.map { Self.trailingWord($0.precomposedStringWithCanonicalMapping) } ?? []
         if real == engine.shown {
-            if tracker.followed.caret == nil, selection.length == 0 { tracker.anchor(at: selection.location) }
+            if tracker.followed.caret == nil, selection.length == 0 {
+                tracker.anchor(at: selection.location)
+                tracker.learnHeldText(read.map { Array($0.utf16) } ?? [], at: selection.location)
+            }
             return nil
         }
         // The app may answer from before the last keys of this word.
@@ -717,6 +758,7 @@ struct InPlaceComposer {
         let selection = answer.selection
         if !answer.staleInBurst, selection.length == 0, selection.location != NSNotFound, selection.location >= 0 {
             tracker.anchor(at: selection.location)
+            if let read = answer.read { tracker.learnHeldText(Array(read.utf16), at: selection.location) }
         }
         var outcome = answer.allowsSeed
             ? seedWord(scalar, selection: selection, engine: &engine, client: client, alreadyRead: answer.read,
@@ -779,33 +821,47 @@ struct InPlaceComposer {
             answer.check.unitsAsTyped = zip(read.reversed(), typed.reversed()).prefix { $0 == $1 }.count
         }
         #endif
+        let units = answer.read.map { Array($0.utf16) }
         if let rebuilt = proof?.text {
             let count = min(caret, Self.readLength, rebuilt.count)
             answer.read = String(decoding: rebuilt.suffix(count), as: UTF16.self)
             answer.selection = NSRange(location: caret, length: 0)
             readProvedLate = true
+            if tracker.coordinates == .heldText {
+                keyHeld.answer = proof?.form == .cache ? .cache : .before
+                keyHeld.lacking = proof?.edits
+            }
+        } else if tracker.coordinates == .document, let units,
+                  let match = tracker.heldTextShown(units, at: selection, cacheForm: true) {
+            // The client holds only the word before the caret: the word is the held text after
+            // every edit, where the client takes the range once it has applied them.
+            tracker.useHeldText()
+            noteHeld(match, switched: .held)
+            if let now = tracker.followed.caret, let held = tracker.followed.held {
+                answer.read = String(decoding: held.known.suffix(min(now, Self.readLength)), as: UTF16.self)
+                answer.selection = NSRange(location: now, length: 0)
+                readProvedLate = match.lacking > 0
+            }
+        } else if tracker.coordinates == .heldText {
+            if selection.location == caret {
+                keyHeld.answer = .now
+            } else if let units, tracker.showsDocument(units, at: selection) {
+                // Followed again from the answer, in the coordinates of the document.
+                tracker.useDocumentCoordinates()
+                keyHeld.switched = .doc
+            } else {
+                keyHeld.answer = HeldCheck.Answer.none
+                // In a burst the answer is too late to show (`replaceInHeldText`); after a
+                // pause the caret is anchored at it, and what the client holds learnt from
+                // the read (`addMarks`).
+                if tracker.lateness.keyInBurst { answer.staleInBurst = true }
+            }
         } else if selection.location < caret, tracker.lateness.keyInBurst {
             // Not proved, yet keys in a burst leave no time for a click IMK does not report:
             // the app is further behind than `rebuild` replays. Anchoring at the answer would
             // move the followed caret back to a stale one, and the next word's first
             // replacement would land in this word (`docs/research/LateAnswerFixes.md` 3.3).
-            // Unless the answer shows the word typed last in an app that counts from the start
-            // of the word, maybe without the latest edits after it: anchoring at the end of
-            // that word puts the followed caret in the app's coordinates, and the word is
-            // replaced where the app holds it once it has applied those edits.
-            var fromWordStart: CursorTracker.WordStartAnswer?
-            if let read = answer.read, let proof {
-                fromWordStart = tracker.wordFromWordStart(Array(read.utf16), at: selection, proof: proof)
-            }
-            if let word = fromWordStart?.word {
-                answer.read = String(decoding: word, as: UTF16.self)
-                answer.selection = NSRange(location: word.count, length: 0)
-            } else {
-                answer.staleInBurst = true
-            }
-            #if DEBUG
-            answer.check.fromWordStart = fromWordStart
-            #endif
+            answer.staleInBurst = true
         }
         return answer
     }
@@ -850,6 +906,7 @@ struct InPlaceComposer {
             return nil
         }
         guard let text = textForSeed(before: location, alreadyRead: alreadyRead, client: client) else { return nil }
+        tracker.learnHeldText(Array(text.utf16), at: location)
         let word = Self.trailingWord(text)
         if word.isEmpty {
             before = .noWord
@@ -1060,11 +1117,13 @@ struct InPlaceComposer {
         let selection = known ?? askSelection(client: client)
         if !readProvedLate, let followed = tracker.followed.caret, selection == NSRange(location: followed, length: 0) {
             tracker.answeredOnTime()
+            if tracker.coordinates == .heldText { keyHeld.answer = .now }
         }
         var text = insert.description
         if let extra { text.unicodeScalars.append(extra) }
         var attempt = Attempt(deleteCount: deleteCount, selection: selection, predictedCaret: tracker.predictedCaret,
-                              followedCaret: tracker.followed.caret, insertedLength: text.utf16.count)
+                              followedCaret: tracker.followed.caret, inHeldText: tracker.coordinates == .heldText,
+                              insertedLength: text.utf16.count)
         if let word, let late = replaceIfLate(deleteCount: deleteCount, text: text, selection: selection,
                                               word: word, attempt: &attempt, client: client) {
             return late
@@ -1074,8 +1133,10 @@ struct InPlaceComposer {
 
     /// D11 "App trả lời chậm": when the answer is not the followed caret, one read at the
     /// answer (the D11 read, N3) may prove the app has not applied the latest edits yet
-    /// (`CursorTracker.rebuild`); the key then replaces at the followed caret, which the app
-    /// reaches as it applies everything in order. nil: the answer stands.
+    /// (`CursorTracker.prove`); the key then replaces at the followed caret, which the app
+    /// reaches as it applies everything in order. The same read may show that the client
+    /// holds only the word before the caret (`CursorTracker.heldTextShown`, D11 "Ô chỉ giữ
+    /// từ trước con trỏ"). nil: the answer stands.
     private mutating func replaceIfLate(deleteCount: Int, text: String, selection: NSRange, word: [Unicode.Scalar],
                                         attempt: inout Attempt, client: some InPlaceClient) -> Outcome? {
         guard !readUnavailable, let followed = tracker.followed.caret, followed >= deleteCount,
@@ -1090,16 +1151,30 @@ struct InPlaceComposer {
         #endif
         guard let read else { return nil }
         let units = Array(read.utf16)
-        let proof = tracker.rebuild(units, at: selection, inWord: true,
-                                    accept: { Self.word(in: $0) == word })
+        let proof = tracker.prove(units, at: selection, inWord: true, accept: { Self.word(in: $0) == word })
         #if DEBUG
         attempt.proofRead = units.count
-        attempt.proofRebuilt = proof?.count ?? -1
+        attempt.proofRebuilt = proof.text?.count ?? -1
         attempt.proofWordAtAnswer = Self.word(in: units) == word ? 1 : 0
         #endif
-        if let rebuilt = proof, rebuilt.count >= deleteCount {
+        if tracker.coordinates == .heldText {
+            return replaceInHeldText(deleteCount: deleteCount, text: text, selection: selection, read: units,
+                                     proof: proof, word: word, attempt: attempt, client: client)
+        }
+        if let rebuilt = proof.text, rebuilt.count >= deleteCount {
             return replaceAtFollowed(followed, deleteCount: deleteCount, text: text, kind: .late,
                                      attempt: attempt, client: client)
+        }
+        if let match = tracker.heldTextShown(units, at: selection, cacheForm: false) {
+            tracker.useHeldText()
+            noteHeld(match, switched: .held)
+            attempt.followedCaret = tracker.followed.caret
+            attempt.inHeldText = true
+            if let caret = tracker.followed.caret, caret >= deleteCount {
+                return replaceAtFollowed(caret, deleteCount: deleteCount, text: text,
+                                         kind: match.lacking == 0 ? .replace : .late, attempt: attempt, client: client)
+            }
+            return nil
         }
         // The first replacement of a word, the answer a little behind, and the word not whole
         // before it, as it would be had the app edited the text before the word. Taking such
@@ -1112,6 +1187,63 @@ struct InPlaceComposer {
                                      attempt: attempt, client: client)
         }
         return nil
+    }
+
+    /// `replaceIfLate` once the client holds only the word before the caret: the range
+    /// always comes from the followed caret, the held text after every edit sent, and the
+    /// answer, other than it, is only checked (`docs/Architecture.md`, "Ô chỉ giữ từ trước
+    /// con trỏ").
+    private mutating func replaceInHeldText(deleteCount: Int, text: String, selection: NSRange, read: [UInt16],
+                                            proof: CursorTracker.LateProof, word: [Unicode.Scalar],
+                                            attempt: Attempt, client: some InPlaceClient) -> Outcome? {
+        let inWord = tracker.predictedCaret != nil
+        if let rebuilt = proof.text, rebuilt.count >= deleteCount, let caret = tracker.followed.caret {
+            keyHeld.answer = proof.form == .cache ? .cache : .before
+            keyHeld.lacking = proof.edits
+            return replaceAtFollowed(caret, deleteCount: deleteCount, text: text, kind: .late,
+                                     attempt: attempt, client: client)
+        }
+        if tracker.showsDocument(read, at: selection) {
+            tracker.useDocumentCoordinates()
+            keyHeld.switched = .doc
+            return inWord ? mismatch(attempt) : nil
+        }
+        let answer = selection.location
+        // The word being typed, whole, with other units of a word before it than the tracker
+        // took (`editor.wordSeparators` set otherwise): the text the client holds now.
+        if answer >= deleteCount, read.count == min(answer, Self.readLength), read.allSatisfy({ HeldText.isWordUnit($0) }),
+           Self.word(in: read) == word {
+            tracker.anchor(at: answer)
+            tracker.learnHeldText(read, at: answer)
+            keyHeld.answer = .anchor
+            return replaceAtFollowed(answer, deleteCount: deleteCount, text: text, kind: .replace,
+                                     attempt: attempt, client: client)
+        }
+        keyHeld.answer = HeldCheck.Answer.none
+        if inWord { return mismatch(attempt) }
+        if !tracker.lateness.keyInBurst {
+            // A pause: the client may have changed the text, as at a word start in a document.
+            tracker.anchor(at: answer)
+            tracker.learnHeldText(read, at: answer)
+            return nil
+        }
+        // In a burst no event the input method does not see came in between: the answer is
+        // too late to show, the held text is still the one followed.
+        guard let caret = tracker.followed.caret, caret >= deleteCount else { return mismatch(attempt) }
+        return replaceAtFollowed(caret, deleteCount: deleteCount, text: text, kind: .lateGuess,
+                                 attempt: attempt, client: client)
+    }
+
+    private func mismatch(_ attempt: Attempt) -> Outcome {
+        var result = Outcome(consumed: false, kind: .mismatch)
+        result.attempt = attempt
+        return result
+    }
+
+    private mutating func noteHeld(_ match: CursorTracker.HeldMatch, switched: HeldCheck.Switch? = nil) {
+        keyHeld.answer = match.lacking == 0 ? .now : (match.form == .cache ? .cache : .before)
+        keyHeld.lacking = match.lacking
+        keyHeld.switched = switched
     }
 
     /// Replaces at the range `CursorTracker.plan` makes of the app's answer.

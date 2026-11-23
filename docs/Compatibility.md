@@ -251,6 +251,7 @@ Cursor là một app với một bundle ID, nhưng có hai kiểu cửa sổ. C�
   | `"off"` kèm `"editor.experimentalEditContextEnabled": true` | 219 (câu thử một dòng, nên đầu dòng trùng đầu văn bản) | đúng 2/2, cả "Học" |
 
   Điều gì bật chế độ trình đọc màn hình ở các lượt buổi sáng 17/11 (cài đặt `auto`) chưa rõ.
+- Sau bản sửa cho ô chỉ giữ từ trước con trỏ (D11; 23/11/2026, 15:35–15:55, máy M1 Pro, Cursor 3.31.15, bản Debug của bản sửa). Cài đặt `off`: câu `edit` 10 ms đúng 5/5, 100 ms đúng 1/1, câu `std` 5 ms đúng 3/3; câu `edit` 5 ms chỉ đúng 1/5, bốn lượt sai ở 1–3 từ đầu văn bản ("mọot", "mot", "nguoiwf ạnn", "nườii"), trước khi Dấu nhận ra loại ô; "Hoc ⌫j" ra "Học" ở mọi lượt. Đối chứng Telex của Apple ở `edit` 10 ms ra "Sasng", "mêting" (D20, D4 Telex của Apple không có). Cài đặt máy (`auto`) đúng 2/2; `on` và EditContext đúng 2/2 mỗi cài đặt, log không đổi hệ. Đổi chế độ giữa câu ở 100 ms: `off` sang `on` đúng 2/2; `on` sang `off` đúng 1/2, lượt kia thiếu dấu một từ ("phai") ở lúc đổi. Khung agent, ô Agents đúng 1/1. Phím "j" chờ ⌫ khi câu trả lời là " " mất 26 ms (1 lần, 5 ms). Cùng bản: Chrome trang bận 10 ms 3/3, trang rảnh 5 ms 1/1, Edge, Firefox trang bận 1/1, Safari trang bận 2/2, VS Code 5 ms 2/2, Notes, Terminal (`std` 30 ms), TipTap 1/1, log không đổi hệ ở app nào.
 
 ### 5.5 Terminal
 

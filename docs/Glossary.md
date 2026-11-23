@@ -43,6 +43,7 @@ Bảng này ghi thuật ngữ dùng trong chuỗi giao diện của Dấu (Strin
 | Check for Updates… | Kiểm tra bản mới… | Nút này nằm ở trang Cập nhật & hỗ trợ (D7 (Cập nhật và loại bản dựng)). |
 | Report a Problem… | Báo lỗi… | Nút này mở sheet báo lỗi (D8 (Không telemetry)). |
 | Included | Gửi kèm | Đây là phần thông tin máy và thông tin Dấu trong sheet báo lỗi. |
+| held text (`HeldText`, `CursorTracker.Coordinates.heldText`) | ô chỉ giữ từ trước con trỏ | Đây là ô chỉ đưa bộ gõ từ ngay trước con trỏ, hoặc một ký tự khi không có từ, như trình soạn thảo Cursor khi chế độ hỗ trợ trình đọc màn hình của Monaco tắt. Từ này chỉ dùng trong tài liệu và mã, không có trên giao diện (D11 (Kiểm tra ngữ cảnh)). |
 
 ## Từ dễ hiểu hai nghĩa
 

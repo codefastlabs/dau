@@ -17,7 +17,8 @@ struct ReplaceDiag {
     /// Where the tracker expected the cursor (nil: unknown, first replacement of a word).
     var expected: Int?
     /// Where the tracker followed the cursor to across words (nil: unknown); differs from
-    /// `selection` when the app answered late (kind `late`).
+    /// `selection` when the app answered late (kind `late`). With `held=1` in `proof`, the
+    /// length of the text a client holding only the word before the caret holds.
     var known: Int?
     /// UTF-16 length of the text inserted.
     var insertedLength: Int
@@ -33,7 +34,7 @@ struct ReplaceDiag {
         known = attempt.followedCaret
         insertedLength = attempt.insertedLength
         replacement = attempt.replacement
-        proof = "read=\(attempt.proofRead) tail=\(attempt.proofTail) edits=\(attempt.proofEdits) burst=\(attempt.proofBurst) rebuilt=\(attempt.proofRebuilt) word_at_answer=\(attempt.proofWordAtAnswer)"
+        proof = "held=\(attempt.inHeldText ? 1 : 0) read=\(attempt.proofRead) tail=\(attempt.proofTail) edits=\(attempt.proofEdits) burst=\(attempt.proofBurst) rebuilt=\(attempt.proofRebuilt) word_at_answer=\(attempt.proofWordAtAnswer)"
     }
 
     /// Logs one line. Reads `selectedRange()` once more after the insertion to see where

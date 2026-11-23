@@ -116,8 +116,9 @@ struct PerfLog {
     ///   - extra: D20 fields, each with a leading space (` typed_read=letter seeded=1 diff=0`, and at
     ///     a D20 read the numbers of its late-answer check, `InPlaceComposer.TypedWordReadProof.logFields`), and
     ///     for a key that waited for the ⌫ before it (N3) ` bksp=applied|timeout bksp_asks=N
-    ///     bksp_wait_ns=N` (the wait is part of `handleNs`); only numbers and fixed words,
-    ///     never text (D8).
+    ///     bksp_wait_ns=N` (the wait is part of `handleNs`), and in in-place mode the held-text
+    ///     fields (`InPlaceComposer.HeldCheck.logFields`); only numbers and fixed words, never
+    ///     text (D8).
     func record(_ kind: Kind, startNs: UInt64, eventNs: UInt64, handleNs: UInt64,
                 selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, extra: String = "", app: String) {
