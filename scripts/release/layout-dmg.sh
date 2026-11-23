@@ -52,11 +52,11 @@ tell application "Finder"
   end tell
 end tell
 OSA
-status=$?
+osa_status=$?
 # Finder writes .DS_Store a moment after the window closes.
 for _ in {1..20}; do [[ -f /Volumes/$volume/.DS_Store ]] && break; sleep 0.5; done
 sync
-if (( status != 0 )); then log_die "Finder không sắp xếp được cửa sổ (AppleScript thoát $status). Cần quyền Automation cho Finder?"; fi
+if (( osa_status != 0 )); then log_die "Finder không sắp xếp được cửa sổ (AppleScript thoát $osa_status). Cần quyền Automation cho Finder?"; fi
 [[ -f /Volumes/$volume/.DS_Store ]] || log_die "Finder không ghi .DS_Store: bố cục không được lưu."
 log_ok "Bố cục đã ghi vào .DS_Store"
 hdiutil detach "/Volumes/$volume" -quiet || log_die "Không tháo được /Volumes/$volume"
