@@ -219,7 +219,7 @@ Số M1–M3 (29–30/10/2026) nằm ở bảng "Số đo (M1–M3)" của [`doc
 
 Cursor là một app với một bundle ID, nhưng có hai kiểu cửa sổ. Cửa sổ Agents mở khi chạy app và có ô nhập ở giữa. Cửa sổ IDE có giao diện kiểu VS Code, gồm trình soạn thảo và khung agent (mở bằng ⌘L). File › Open IDE trong cửa sổ Agents không mở gì khi chưa có workspace, còn `cursor --new-window <tệp>` thì mở được.
 
-**Hiện trạng (3.30.14, đo 17/11/2026, máy M1, macOS 27.2):** khung agent (`cursorchat`) và ô nhập Agents (`cursoragents`) thay tại chỗ đúng ở mọi chuỗi đã đo. Trình soạn thảo (`cursor`) trả vị trí theo hai kiểu, chưa rõ vì sao: tính từ đầu văn bản (các lượt buổi sáng, chữ đúng) hoặc tính từ đầu từ (7/7 lượt buổi chiều, cùng bản Cursor). Ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai 0–7 từ mỗi lượt. Nguồn chuyển bằng phím tắt hệ thống, có xác nhận bộ gõ trong ô.
+**Hiện trạng (3.30.14, đo 17/11/2026, máy M1, macOS 27.2):** khung agent (`cursorchat`) và ô nhập Agents (`cursoragents`) thay tại chỗ đúng ở mọi chuỗi đã đo. Trình soạn thảo (`cursor`) trả vị trí theo hai kiểu: tính từ đầu văn bản (các lượt buổi sáng, chữ đúng) hoặc tính từ đầu từ (7/7 lượt buổi chiều, cùng bản Cursor). Theo mã nguồn, trình soạn thảo Cursor nhận chữ qua một ô textarea ẩn; khi chế độ trình đọc màn hình của Monaco tắt, ô chỉ chứa từ trước con trỏ nên vị trí tính từ đầu từ, khi chế độ đó bật thì ô chứa nhiều dòng ([`docs/research/MonacoInput.md`](research/MonacoInput.md); cái gì bật chế độ đó trên máy đo chưa kiểm chứng). Ở kiểu sau, chuỗi `edit` gõ cách nhau 5 ms sai 0–7 từ mỗi lượt. Nguồn chuyển bằng phím tắt hệ thống, có xác nhận bộ gõ trong ô.
 
 | Chuỗi | Nhịp | `cursorchat` | `cursoragents` | `cursor` |
 |---|---|---|---|---|
