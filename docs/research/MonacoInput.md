@@ -1,6 +1,6 @@
 # Monaco đưa chữ cho bộ gõ thế nào: VS Code và Cursor
 
-File này tìm cơ chế gốc của kịch bản B ở [`LateAnswerFixes.md`](LateAnswerFixes.md): trình soạn thảo của Cursor có lúc trả `selectedRange` tính từ đầu từ, có lúc tính từ đầu văn bản, còn VS Code luôn tính từ đầu văn bản. Số đo nằm ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.3 và 5.4; mô hình trong test là `LateDocument.Origin.word`.
+File này tìm cơ chế gốc của kịch bản B ở [`LateAnswerFixes.md`](LateAnswerFixes.md): trình soạn thảo của Cursor có lúc trả `selectedRange` tính từ đầu từ, có lúc tính từ đầu văn bản, còn VS Code luôn tính từ đầu văn bản. Số đo nằm ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.3 và 5.4. Mục 6 là thiết kế bản sửa.
 
 Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc thấy trong mã nguồn, tả bằng lời của file này (không chép mã, D10 (Engine tự viết)). "Đọc gói app" là điều đọc thấy trong file JavaScript đã đóng gói của app cài trên máy, không chạy app. "Tác giả ghi" là điều tài liệu, ghi chú phát hành hay trả lời trên diễn đàn nói, chưa ai kiểm lại. "Suy luận, cần kiểm chứng" là ý của file này.
 
@@ -11,7 +11,7 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
 - **Chromium trả lời bộ gõ theo toạ độ của ô textarea** (mục 3). Vì vậy ở chế độ tắt, `selectedRange` và vùng thay tính từ đầu từ. Câu trả lời lấy từ bản sao bất đồng bộ đã tả ở [`WebEditorInput.md`](WebEditorInput.md) mục 8 và 10.2. Blink áp vùng thay theo nội dung ô lúc nó xử lý lời gọi. Vùng bắt đầu sau cuối ô bị bỏ, vùng chỉ có phần cuối vượt ô bị cắt.
 - **Giả thuyết H1 giải thích mọi quan sát của trình soạn thảo Cursor, trừ điều gì bật chế độ hỗ trợ trình đọc màn hình, và phép đo đã xác nhận nó** (mục 4, 5). H1: Cursor dùng ô textarea, kiểu vị trí đi theo chế độ đó, và chế độ được chốt khi mở cửa sổ. Nó giải thích ba câu trả lời ở "j" của "Hoc␣⌫j" (3 với "Hoc", 4 với "Hoc␣", 1 với một dấu cách) và các từ sai qua ranh giới từ. Điều gì làm Electron bật chế độ đó trên máy đo thì chưa rõ. Script gõ thử hỏi Cursor qua System Events, nhưng theo mã Electron, chỉ hỏi như vậy thì chưa đủ để bật.
 - **Phép đo xác nhận** (mục 5, 23/11/2026): với `accessibilitySupport` `off`, vị trí tính từ đầu từ và chữ sai; với `on`, hoặc với `off` kèm EditContext, vị trí tính từ đầu văn bản và chữ đúng cả câu.
-- **Hướng sửa** (mục 6): ở chế độ tắt, vùng thay đúng tính theo từ trước con trỏ lúc app áp lời gọi. Dấu tự tính được vùng đó từ chữ nó đã gõ, không cần câu trả lời cũ. Cách này cần đổi N3 và D11. Phương án không đổi quyết định nào là ghi cho người dùng bật EditContext hay chế độ trình đọc màn hình trong Cursor; cả hai đã đo là đúng.
+- **Thiết kế sửa** (mục 6, chưa có mã): Dấu nhận ra ô chỉ giữ từ trước con trỏ qua câu trả lời mà lần đọc vốn có của D11 và D20 đã lấy. Ở ô đó, Dấu tính vùng thay trong chữ ô giữ lúc trang áp lời gọi, từ chữ chính nó đã gõ; câu trả lời của app chỉ dùng để kiểm. Thiết kế cần đổi N3 và D11, bỏ `CursorTracker.wordFromWordStart` và các test dựa trên mô hình `LateDocument.Origin.word`. Bằng chứng là phép đo trên app thật ở mục 6.11.
 
 ## 1. Hai đường nhập của Monaco và bản Cursor dùng
 
@@ -114,19 +114,157 @@ H1 và H2 đều giải thích các câu trả lời ở "j" và các lỗi qua 
 
 Phép đo ngày 23/11/2026 (máy M1 Pro, Cursor 3.31.15, câu `edit` 10 ms; số ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4) khớp dự đoán của H1 ở cả ba cài đặt: `"editor.accessibilitySupport": "off"` cho vị trí tính từ đầu từ và chữ sai; `"on"`, hoặc `"off"` kèm `"editor.experimentalEditContextEnabled": true`, cho vị trí tính từ đầu văn bản (câu một dòng) và chữ đúng cả câu. Kiểu vị trí đi theo đường nhập và chế độ hỗ trợ trình đọc màn hình của Monaco, không theo Dấu. Điều gì bật chế độ đó khi cài đặt là `auto` vẫn chưa rõ.
 
-## 6. Hệ quả cho hướng sửa
+## 6. Thiết kế sửa: ô chỉ giữ từ trước con trỏ
 
-Ở đường textarea chế độ tắt, toạ độ đúng cho vùng thay là toạ độ trong từ trước con trỏ **lúc trang áp lời gọi**. Toạ độ đó không phải toạ độ của câu trả lời Dấu vừa đọc. Trang áp mọi lời gọi theo thứ tự Dấu gửi, nên Dấu biết lúc đó ô chứa gì nếu nó biết chữ trước con trỏ theo luật ở mục 2. Đó là từ theo `editor.wordSeparators`, tối đa khoảng 50 ký tự, hoặc một ký tự nếu không có từ. Vùng thay k đơn vị cuối của từ dài L là (L − k, k).
+Mục này là thiết kế của hướng B, chưa có mã. Thiết kế cần đổi N3 và D11 (lời đề xuất nằm ở báo cáo giao việc, chưa ghi vào [`docs/Decisions.md`](../Decisions.md)). Bằng chứng là phép đo trên app thật ở cuối mục; test đơn vị chỉ kiểm logic của chính Dấu, không dựng mô hình ô textarea hay bộ đệm của Chromium.
 
-Các hướng dưới đây chỉ liệt kê, chưa thiết kế:
+### 6.1 Ý chính
 
-- **A. Người dùng bật EditContext trong Cursor** (`editor.experimentalEditContextEnabled`). Cursor khi đó đi đường của VS Code 1.147, vốn đúng ở mọi ô đã đo. Dấu không đổi mã và không chạm quyết định nào. Dấu không tự sửa cài đặt của app khác. Cái giá: Cursor chưa được đo với tuỳ chọn này (N5 (Chỉ hứa điều đã kiểm chứng)). Trên diễn đàn Cursor có người báo bật tuỳ chọn này sửa được lỗi tiếng Nhật, có người báo không sửa được lỗi tiếng Trung khác (tác giả ghi). Cursor có thể đổi mặc định ở bản sau. Hướng này chỉ là ghi chú trong `docs/Compatibility.md`, không phải cách sửa của Dấu.
-- **B. Dấu nhận ra toạ độ theo từ và tự tính vùng thay trong từ.** Đây là hướng 1B ở [`LateAnswerFixes.md`](LateAnswerFixes.md) mục 2.2, nay có luật chính xác từ mã. Vùng thay tính từ chữ Dấu đã gõ, không từ câu trả lời cũ. Câu trả lời chỉ dùng để nhận ra kiểu toạ độ và chữ trước từ mà Dấu không gõ.
-  - Cái giá: N3 cấm tự cộng dồn vị trí ngoài chế độ gạch chân, nên cần một ngoại lệ. D11 có bất biến "vùng thay luôn kết thúc ở vị trí Dấu theo dõi". Bất biến này phải hiểu theo toạ độ của từ. Lần đọc của D20 cũng dùng toạ độ này; bản sửa ở `LateAnswerFixes.md` mục 2.3 mới nhận 3 với "Hoc" và 4 với "Hoc␣", chưa nhận 1 với " ".
-  - Rủi ro: nhận ra kiểu toạ độ từ câu trả lời dễ lẫn với câu trả lời cũ của app tính từ đầu văn bản khi phím dồn (`sameAnswerAsLateNewDocument`, `staleAnswerAtDocumentStartLooksLikeWordStart` ở `LateAnswerFixes.md`). Cũng cần chép luật ngăn từ của Monaco, mà luật này đổi theo `editor.wordSeparators` và theo ngôn ngữ của tệp.
-  - Hướng này không cần biết app là gì, vì Dấu nhận ra kiểu toạ độ qua câu trả lời, nên không trái D5. Nó cũng không phụ thuộc cài đặt: ở chế độ bật và ở EditContext, Dấu vẫn đi đường hiện có.
-- **C. Gạch chân cho trình soạn thảo Cursor.** `setMarkedText` với vùng thay `NSNotFound` không cần toạ độ, nên không chịu ảnh hưởng của cơ chế này (suy luận, cần kiểm chứng: gạch chân chưa đo trên Cursor 3.30.14 trở đi). Cái giá: D13 (Gạch chân là đường lui cuối cùng) đặt sửa lỗi trước gạch chân và hiện ghi Cursor không có nhãn. Ở chế độ gạch chân, D20 không chạy.
-- **Không có API giúp bỏ qua toạ độ.** Theo tài liệu Apple, cả `selectedRange()` và vùng thay của `insertText(_:replacementRange:)` đều tính trong kho chữ của đối tượng nhận. `NSTextInputClient` không có vùng thay tính tương đối với con trỏ. Giả phím ⌫ như OpenKey thì trái cách thay tại chỗ của Dấu (D1 (Nền tảng)). Một cách không phụ thuộc cài đặt chỉ có thể đến từ việc Dấu tự nhận ra kiểu toạ độ, tức hướng B.
+Ở đường textarea chế độ tắt, vùng thay đúng là vùng trong chữ mà ô giữ **lúc trang áp lời gọi**. Trang áp mọi lời gọi theo thứ tự Dấu gửi (mục 3). Vì vậy lúc đó ô chứa đúng từ trước con trỏ sau mọi thao tác Dấu đã gửi. Dấu tự tính được từ đó từ chữ nó đã gõ, theo luật của mục 2. Câu trả lời của app không bao giờ cho vùng thay; nó chỉ dùng để kiểm và để nhận ra kiểu ô.
+
+Thiết kế thêm cho `CursorTracker` một hệ toạ độ thứ hai, "ô chỉ giữ từ trước con trỏ", bên cạnh hệ toạ độ văn bản đang có. Ở hệ mới, mọi vị trí Dấu theo dõi (`followed.caret`, `predictedCaret`) là độ dài chữ ô giữ, gọi là L. Mọi phần còn lại của composer (D4, D20, D26, D30, D32, D33) giữ nguyên, vì chúng chỉ cần "k đơn vị cuối trước con trỏ" và vị trí con trỏ.
+
+### 6.2 Chữ ô giữ, tính từ chữ Dấu biết
+
+Đây là một hàm thuần của trạng thái Dấu. Đầu vào là chữ Dấu biết ngay trước con trỏ (chữ nó đã gõ, `typedBeforeCaret`, cộng chữ đọc được lúc neo) và điều Dấu biết về phần đứng trước chữ đó. Phần đứng trước có ba khả năng: chưa biết, một ranh giới (ký tự không thuộc từ hoặc đầu dòng), hoặc đúng n đơn vị thuộc từ rồi tới một ranh giới.
+
+- Đơn vị thuộc từ là đơn vị UTF-16 không phải dấu cách, Tab, xuống dòng hay một dấu trong giá trị mặc định của `editor.wordSeparators` (mục 2). Chữ có dấu tiếng Việt, chữ số, dấu kết hợp, `_` và các dấu ngoài ASCII như “ ” … – đều thuộc từ.
+- Dấu đếm các đơn vị thuộc từ ở cuối chữ nó biết. Gặp ranh giới thì dừng. Tới đầu chữ nó biết thì cộng phần đứng trước nếu biết; nếu không biết thì L chưa biết, trừ khi đã đếm đủ 51.
+- Đếm được ít nhất một đơn vị thì L là số đó, tối đa 51, và chữ ô giữ là chừng ấy đơn vị cuối.
+- Không có đơn vị nào thì ô giữ một ký tự trước con trỏ, L là 1 (trừ khi ký tự đó là nửa đầu cặp thay thế). Ở đầu dòng, L là 0. Nếu Dấu không biết ký tự trước con trỏ thì L chưa biết.
+
+Dấu ghi kèm mỗi thao tác trong `followed.edits` cặp (L, chữ ô giữ) sau thao tác đó, ở cả hệ toạ độ văn bản. Nhờ vậy việc nhận ra kiểu ô (mục 6.4) và việc kiểm câu trả lời cũ (mục 6.5) không cần đọc thêm.
+
+### 6.3 Vùng thay cho từng thao tác
+
+Mọi lần thay của Dấu thay k đơn vị cuối ngay trước con trỏ, và k đơn vị đó là chữ cái của từ trong engine. Chữ cái luôn thuộc từ theo luật của Monaco, nên chúng nằm trong chữ ô giữ. Vùng thay ở hệ mới luôn là **(L − k, k)**, với L tính sau mọi thao tác Dấu đã gửi trước lời gọi này. Vùng này kết thúc ở cuối ô, nên bất biến "vùng thay kết thúc ở vị trí Dấu theo dõi" của D11 vẫn đúng, tính theo hệ mới.
+
+| Thao tác | k và chữ chèn | L sau thao tác |
+|---|---|---|
+| Dấu thanh, biến đổi trong từ (D28) | k chữ cuối, chữ mới | L − k + độ dài chữ mới |
+| Gõ đúp xoá dấu (D26) | như trên | như trên |
+| Lần gieo của D20 sau ⌫ ("Hoc␣⌫j") | k ≤ độ dài từ gieo; L là 3 sau khi ⌫ xoá dấu cách Dấu biết, vùng (1, 2) | như trên |
+| Khôi phục khi kết thúc từ (D4) và khôi phục ngay (D33) | k chữ của từ, chữ chèn là phím gốc cộng ký tự kết thúc từ | tính lại từ chữ chèn: ký tự kết thúc là ranh giới thì L là 1, nếu không thì cộng dồn |
+| Backspace dời dấu (D32) | k chữ, chữ chèn kèm lại chữ cuối; ⌫ của app xoá chữ đó | như dòng đầu, rồi trừ 1 khi ⌫ áp |
+| Ký tự Dấu tự chèn (N3) | không có vùng | thuộc từ thì cộng 1 (tối đa 51), không thuộc từ thì là 1 |
+| ⌫ đi thẳng | không có vùng | xoá chữ Dấu biết thì tính lại theo mục 6.2; không biết thì L chưa biết |
+| Reset (click, mũi tên, phím tắt, Return, Tab, đổi nguồn) | không có vùng | chưa biết; lần đọc kế tiếp (D20) neo lại |
+
+Khi L chưa biết hoặc k > L, Dấu không gửi lần thay theo hệ mới mà xử lý như lệch vị trí của D11.
+
+Neo lại từ một lần đọc: nếu câu trả lời a ≤ 16 và chữ đọc được dài đúng a, chữ đó là toàn bộ chữ ô giữ. Trước nó là ranh giới, hoặc nó là ký tự đơn ở mục 6.2. Nếu a lớn hơn 16, chữ đọc được là 16 đơn vị cuối, và trước chúng có đúng a − 16 đơn vị thuộc từ.
+
+### 6.4 Nhận ra ô chỉ giữ từ trước con trỏ và khi nào đổi lại
+
+Mỗi client bắt đầu ở hệ toạ độ văn bản, tức hành vi hiện nay. Hệ toạ độ gắn với client. Click hay reset không đổi nó, vì chế độ của Monaco chốt theo cửa sổ (mục 2). Mở lại cửa sổ là một client mới.
+
+**Sang hệ mới.** Dấu chỉ xét ở lần đọc vốn có của D11 (câu trả lời khác vị trí Dấu theo dõi) và của D20, sau khi phép chứng minh app chậm của hệ văn bản không qua. Câu trả lời a với chữ đọc được R phải đạt đủ bốn điều kiện:
+1. a ≤ 16 và R dài đúng a, tức Dấu thấy toàn bộ chữ app giữ, từ vị trí 0.
+2. (a, R) trùng chữ ô giữ của một trạng thái trong `followed.edits`, ở dạng (a) hoặc dạng (b) của mục 6.5, trong giới hạn chậm của D11.
+3. Chữ ô giữ của trạng thái đó dài ít nhất 2 và toàn đơn vị thuộc từ mà Dấu biết rõ.
+4. (a, R) không trùng trạng thái nào của chữ Dấu theo dõi theo hệ văn bản, ở cả hai dạng và không giới hạn số thao tác. Đây là phép kiểm `LateProof.fitsPastLimits`, mở rộng cho cả hai dạng.
+
+Đạt thì Dấu sang hệ mới ngay ở phím đó và thay ở (L − k, k). Lần xét này không thêm lời gọi nào.
+
+Ở Cursor, phím đầu có lần đọc của D20 neo vị trí theo câu trả lời. Vì vậy ở từ đầu tiên hai hệ cho cùng vùng thay. Lần thay đầu của từ thứ hai trở đi có câu trả lời khác vị trí theo dõi, nên Dấu nhận ra kiểu ô ở đó, trước khi hai hệ cho vùng khác nhau. Ngoại lệ là khi câu trả lời lúc đó chỉ khớp một trạng thái một đơn vị (ngay sau dấu cách, hoặc từ một chữ cái). Khi đó Dấu chờ phím sau, và phím đó đi theo hành vi hiện nay.
+
+**Về hệ văn bản.** Ở hệ mới, câu trả lời khác L thì Dấu đọc một lần (như D11 hiện nay). Dấu về hệ văn bản khi câu trả lời không khớp trạng thái nào của mục 6.5 và cho thấy chữ ngoài từ trước con trỏ, theo một trong hai cách:
+- a lớn hơn 52, độ dài lớn nhất ô có thể có (51, cộng một ký tự chèn theo dạng (b));
+- R có một ranh giới với đơn vị thuộc từ ở cả hai phía, và phần cuối R trùng chữ Dấu đã gõ qua ranh giới đó.
+
+Khi về, câu trả lời được xử lý như mọi câu trả lời khác vị trí ở hệ văn bản (D11): ở đầu từ thì Dấu tin nó, giữa từ thì dựng lại hoặc reset. Trường hợp này xảy ra khi chế độ hỗ trợ trình đọc màn hình bật giữa phiên, hoặc khi người dùng bật EditContext rồi mở lại trình soạn thảo. Cái giá lớn nhất là một từ không có dấu ở phím đổi.
+
+### 6.5 Dấu dùng câu trả lời `selectedRange` vào việc gì
+
+Ở hệ mới, câu trả lời chỉ dùng để kiểm, không dùng để tính vùng.
+- Câu trả lời bằng L: app đúng giờ, Dấu không đọc.
+- Câu trả lời khác L: Dấu đọc một lần. Nếu (a, R) khớp chữ ô giữ của một trạng thái sau một trong các thao tác gần nhất, Dấu coi là app chậm và thay ở (L − k, k). Có hai dạng khớp: dạng (a) là đúng trạng thái đó; dạng (b) là trạng thái đó cộng ký tự Dấu chèn tại con trỏ mới nhất sau nó (bộ đệm Chromium, mục 3). Giới hạn số thao tác như D11. Mọi thao tác xoá ở giữa phải biết chữ bị xoá.
+- R kết thúc bằng toàn bộ chữ Dấu đã gõ của từ đang gõ, nhưng phần đứng trước khác dự đoán: đó là trạng thái hiện tại, với ranh giới từ khác luật mặc định (mục 6.7). Dấu neo lại L bằng a và phần đứng trước theo R, rồi thay ở (L − k, k).
+- Không khớp và không cho thấy hệ văn bản: giữa từ là lệch (D11: dựng lại khi phím trước cách đủ 50 ms, nếu không thì reset). Ở đầu từ, khi phím trước cách đủ 50 ms, Dấu neo lại theo mục 6.3; khi phím dồn, Dấu giữ L, vì người dùng không kịp làm gì mà IMK không báo.
+
+Ba câu trả lời đo được ở "j" của "Hoc␣⌫j" đều được xử lý như vậy: 3 với "Hoc" là đúng giờ; 4 với "Hoc␣" là dạng (b) của trạng thái sau "c"; 1 với "␣" là dạng (a) của trạng thái sau dấu cách. Cả ba cho vùng (1, 2). Lần gieo của D20 dùng chữ dựng lại từ trạng thái đó và các thao tác sau nó, như phép chứng minh app chậm hiện nay.
+
+Chờ ⌫ chưa áp (N3): vị trí "trước khi ⌫ áp" là L của trạng thái ngay trước ⌫, tính theo hệ đang dùng. Ví dụ, sau "Hoc␣⌫" vị trí đó là 1, không phải 3 + 1. Luật chờ giữ nguyên, vì Monaco cũng chạy trong Safari (vscode.dev, github.dev), nơi ⌫ phải chờ trong hàng phím của WebKit.
+
+### 6.6 Số lời gọi mỗi phím (N3)
+
+| Phím ở hệ mới | `selectedRange` | Đọc chữ | `insertText` |
+|---|---|---|---|
+| Có thay chữ, câu trả lời bằng L | 1 | 0 | 1 |
+| Có thay chữ, câu trả lời khác L | 1 | 1 | 1 hoặc 0 |
+| Lần đọc của D20, phép kiểm từ đã hết hợp lệ | như bảng ở `docs/Architecture.md`, mục "Vị trí thay chữ" | | |
+| Ký tự Dấu tự chèn, phím đi thẳng | 0 (trừ chờ ⌫) | 0 | 1 hoặc 0 |
+
+Ở Cursor chế độ tắt, mã hiện nay đọc một lần ở lần thay đầu của mỗi từ, vì câu trả lời luôn khác vị trí theo dõi. Ở hệ mới, Dấu chỉ đọc khi app chậm. Việc nhận ra kiểu ô dùng lần đọc vốn có, nên không thêm lời gọi.
+
+### 6.7 Ca hỏng và giới hạn
+
+| Ca | Hệ quả | Giới hạn |
+|---|---|---|
+| `editor.wordSeparators` của người dùng hay của ngôn ngữ tệp khác giá trị mặc định | L sai khi ký tự ngay trước từ được xếp loại khác | Câu trả lời đúng giờ khác L nên Dấu đọc lại và neo lại L (mục 6.5, ý thứ ba). Khi phím dồn và câu trả lời cũ thì không ý nào khớp, nên từ đó có thể không có dấu. Chỉ các từ đứng sát ký tự xếp loại khác bị ảnh hưởng. |
+| Click, chọn chữ, mũi tên | reset, L chưa biết | Lần đọc của D20 ở phím đầu neo lại L. Nếu D20 tắt, Dấu tin câu trả lời ở lần thay đầu, như hệ văn bản. |
+| Monaco tự sửa chữ: chọn gợi ý bằng ký tự xác nhận (`.` `(`), tự đóng ngoặc, định dạng khi gõ | chữ trước con trỏ khác chữ Dấu biết | Tự đóng ngoặc chỉ thêm chữ sau con trỏ, nằm ngoài ô, nên không đổi L. Các trường hợp còn lại xảy ra ở ranh giới từ. Câu trả lời đúng giờ ở lần thay sau khác L, nên Dấu đọc rồi neo lại (đầu từ) hoặc reset (giữa từ). Đây cũng là giới hạn của hệ văn bản hiện nay. |
+| Nhiều con trỏ | Monaco áp cùng một lần thay cho mọi con trỏ, theo con trỏ chính | Đây là cách Monaco làm với mọi bộ gõ; Dấu chỉ theo con trỏ chính. |
+| Từ dài hơn 51 đơn vị (tên biến dài) | ô chỉ giữ 51 đơn vị cuối | k ≤ 13 nên vùng (51 − k, k) vẫn đúng. |
+| Vùng chọn khác rỗng | ô chứa vùng chọn | Mọi cách chọn chữ đều reset Dấu trước đó. Ở hệ mới, Dấu coi vùng chọn là lệch, không áp ý "Gợi ý tự hoàn thành". |
+| Từ đầu phiên là từ một chữ cái, phím dồn ("anh ddi" ngay khi mở) | chưa nhận ra kiểu ô (điều kiện 3) | Phím đó đi theo hành vi hiện nay. Lỗi ở ca này mới thấy trên mô hình, chưa thấy ở app thật. |
+
+### 6.8 Vì sao app tính từ đầu văn bản không bị nhận nhầm
+
+Dấu chỉ xét việc đổi hệ khi câu trả lời khác vị trí Dấu theo dõi. Vì vậy app trả lời đúng giờ (AppKit, Notes, Safari, mọi app khi rảnh) không bao giờ được xét. Với câu trả lời khác vị trí:
+
+- **App tính từ đầu văn bản, trả lời chậm** (Chrome, Edge khi trang bận hay phím dồn; VS Code; Firefox): điều kiện 1 và 2 cùng đạt chỉ khi cả văn bản trước con trỏ cũ đúng bằng chữ ô giữ ở một trạng thái nào đó. Chữ đó do chính Dấu gõ ở đầu văn bản, nên trạng thái đó có trong `followed.edits` và điều kiện 4 loại nó. Lịch sử dài 256 thao tác, còn Chrome trang bận đã đo chậm tối đa 12. Ca "Hoc nay. Hoc" (test `staleAnswerAtDocumentStartLooksLikeWordStart`) rơi vào đúng trường hợp này.
+- **VS Code 1.147 (EditContext):** vị trí tính từ đầu dòng. Sau Return, Dấu reset và neo lại ở lần đọc của D20, nên lịch sử cũng tính từ đầu dòng và điều kiện 4 vẫn áp.
+- **Google Docs:** app luôn trả 1 với một ký tự (`docs/Compatibility.md` mục 5.10). Câu trả lời đó không bao giờ khớp chữ ô giữ dài từ 2 trở lên (điều kiện 3), nên Google Docs giữ hành vi hiện nay.
+- **Word trên web, TipTap, Notes, Telegram:** vị trí tính từ đầu văn bản và đã đo là đúng giờ hoặc chậm theo dạng bộ đệm. Lý do như ý đầu.
+- **Ô bỏ qua vùng thay (D43):** nếu bị nhận nhầm thì vùng thay vẫn bị bỏ qua như hiện nay, nên không có gì tệ hơn.
+- **Nhận nhầm còn lại:** con trỏ của một app tính từ đầu văn bản sang chỗ mà cả phần trước nó đúng bằng một từ Dấu vừa gõ, mà IMK không báo (ví dụ click vào thanh địa chỉ Chrome). Khi đó, nếu trạng thái khớp là trạng thái hiện tại thì vùng thay của hai hệ trùng nhau. Ở từ sau, câu trả lời cho thấy chữ ngoài từ, nên Dấu về hệ văn bản (mục 6.4).
+
+### 6.9 Điều thay cho `wordFromWordStart`
+
+Bản sửa ở commit `0208bdd` (`CursorTracker.wordFromWordStart`, [`LateAnswerFixes.md`](LateAnswerFixes.md) mục 2.3) bị bỏ, cùng `WordStartAnswer` và các trường log `typed_read_word_start*`. Hệ mới phủ cả ba câu trả lời ở "j", gồm cả câu trả lời 1 mà bản sửa đó không nhận. Ràng buộc duy nhất cần giữ của bản sửa đó, câu trả lời khớp một trạng thái cũ của hệ văn bản thì không hiểu là tính từ đầu từ, trở thành điều kiện 4 của mục 6.4.
+
+Các luật của phép chứng minh app chậm mà lý do ghi là "app tính theo từ" vẫn giữ: hai đơn vị so ở `typedHere`, `agrees`, và luật đơn vị thiếu đứng sau đơn vị đã so ở `withMissingUnits`. Trước khi Dấu nhận ra kiểu ô, Cursor vẫn đi đường của hệ văn bản, và các luật đó giữ cho câu trả lời đúng giờ của Cursor không bị coi là chậm. Nếu phép đo ở mục 6.11 cho thấy Dấu luôn nhận ra kiểu ô trước lần thay thứ hai của phiên, ba luật đó được xem lại.
+
+### 6.10 Test đơn vị cần có
+
+Các test dưới đây là hàm thuần của trạng thái Dấu, hoặc dùng đồ giả chỉ ghi lời gọi và trả câu trả lời đã viết sẵn lấy từ log app thật. Không test nào dựng ô textarea hay bộ đệm Chromium.
+
+1. **Chữ ô giữ** (mục 6.2), từ chữ Dấu biết và phần đứng trước: "nay. Hoc" ra 3 "Hoc"; "nay. Hoc␣" ra 1 "␣"; "x.y" ra 1; "“Hoc" sau dấu cách ra 4; "foo_hoc" ra 7; 60 chữ cái ra 51; Tab ra 1; chữ rỗng ở đầu dòng ra 0; "Hoc" mà phần trước chưa biết ra chưa biết; neo a = 20 với 16 đơn vị đọc được thì cộng 4.
+2. **L sau từng thao tác** (bảng mục 6.3): chèn "␣" sau "Hoc" ra 1; ⌫ xoá dấu cách đã biết ra 3 "Hoc"; ⌫ xoá chữ chưa biết ra chưa biết; khôi phục D4 có ký tự kết thúc "," ra 1; khôi phục kết thúc bằng "…" thì cộng dồn.
+3. **Vùng thay:** dấu thanh trên "tie" + e ra (2, 1); gieo "Hoc" + j ra (1, 2); D4 "mẻt" + dấu cách ra (0, 3) với chữ "metr␣"; D32 "hoà" ⌫ ra (1, 2) với "òà"; D26 "cả" + r ra (1, 1); từ 55 đơn vị + dấu thanh ra (51 − k, k); k > L thì không gửi.
+4. **Câu trả lời ở hệ mới** (mục 6.5), với lịch sử của "chiều nay. Hoc␣⌫": (3, "Hoc") là đúng giờ; (4, "Hoc␣") là dạng (b) thiếu 2; (1, "␣") là dạng (a) thiếu 1; (2, "Ho") không khớp; trạng thái quá giới hạn thì không khớp.
+5. **Sang hệ mới** (mục 6.4): lịch sử "chiều nay. Hoc␣⌫" theo hệ văn bản với vị trí 14, câu trả lời (3, "Hoc") thì sang; tài liệu mới "Hoc nay. Hoc␣⌫" với (3, "Hoc") thì không sang (điều kiện 4); (1, "h") kiểu Google Docs thì không sang; câu trả lời chậm của Chrome trong giới hạn thì phép chứng minh app chậm thắng; câu trả lời bằng vị trí theo dõi thì không xét.
+6. **Về hệ văn bản:** ở hệ mới, (219, "…nay. Hoc") thì về; (60, …) thì về; (2, "ab") không khớp thì không về mà xử lý như lệch.
+7. **Chờ ⌫ ở hệ mới:** sau "Hoc␣⌫", vị trí chờ là 1.
+8. **Composer với đồ giả ghi lời gọi:** câu `edit` với câu trả lời viết sẵn theo log Cursor 3.31.15 chế độ tắt (vị trí đúng giờ ở mỗi phím; ở "j" lần lượt 3, 4, 1). Test kiểm vùng thay đã gửi và số lời gọi mỗi phím, không kiểm chữ của app.
+
+Khi có các test này, các test dựa trên mô hình `LateDocument.Origin.word` bị bỏ:
+- cả `WordOriginTests` (7 test); các ca của nó được thay bằng test 4, 5 và 8;
+- `CursorTrackerTests.answerFromWordStart` (hàm bị bỏ), được thay bằng test 4 và 5;
+- `LateAnswerTests.staleAnswerAtDocumentStartLooksLikeWordStart`, được thay bằng ca thứ hai của test 5;
+- `AppModel.origin`, `RapidKeysTests.Run.dropped`, và trong `LateDocument` thì `Origin`, `State.window`, `dropped` cùng các nhánh `.word`.
+
+### 6.11 Phép đo trên app thật
+
+App thật là bằng chứng. Bản Debug có thêm các trường log chỉ có số (D8): `held=0|1` (hệ đang dùng), `held_len` (L), `held_match=now|a|b|none`, `held_lag` (số thao tác app thiếu), `held_switch=held|doc|-`. Các trường `typed_read_*` hiện có giữ nguyên, trừ `typed_read_word_start*`.
+
+| Ô | Điều kiện | Lượt | Đạt khi |
+|---|---|---|---|
+| `cursor`, `"editor.accessibilitySupport": "off"` | `edit` 10 ms; `edit` 5 ms; `std` 5 ms; `edit` 100 ms | 5; 5; 3; 1 | Chữ đúng cả câu ở mọi lượt. Mọi dòng `diag replace` sau phím đổi hệ có `held=1` và vùng thay kết thúc ở `held_len`. `held_switch=held` xuất hiện ở lần thay đầu của từ thứ hai có thay chữ. Không có `mismatch`. Ở "j", câu trả lời 3, 4 hay 1 đều gieo được từ. Có đối chứng Telex của Apple trong cùng ô. |
+| `cursor`, `"on"`, và `"off"` kèm `"editor.experimentalEditContextEnabled": true` | `edit` 10 ms | 2 mỗi cài đặt | Chữ đúng, mọi dòng `held=0`, không có `held_switch`. |
+| `cursor`, đổi chế độ giữa phiên | `"off"`, gõ `edit`, rồi sửa `settings.json` thành `"on"` khi cửa sổ vẫn mở, gõ lại `edit`; làm ngược lại từ `"on"` | 2 mỗi chiều | Chữ đúng ở cả hai câu, trừ tối đa một từ ở phím đổi. Log có `held_switch=doc` (hoặc `held`) đúng một lần. |
+| `cursor`, `auto` như máy đang để | `edit` 10 ms | 2 | Chữ đúng; ghi hệ đã dùng. |
+| `cursoragents`, `cursorchat` | `edit` 10 ms | 1 mỗi ô | Chữ đúng, `held=0`. |
+| Kiểm hồi quy các app tính từ đầu văn bản | Chrome trang bận 10 ms (3) và trang rảnh 5 ms (1); Edge trang bận 10 ms (1); Safari trang bận 10 ms (2); Firefox trang bận 10 ms (1); `vscodefile` 5 ms (2); Notes, Terminal, `tiptap` (1); Word trên web và Google Docs bằng `typed-word-docs.sh` (1) | như cột trước | Chữ như các lượt trước (Google Docs vẫn ra chữ sai đã ghi ở `docs/Compatibility.md` mục 5.10). Mọi dòng `held=0`. |
+
+Số đo ghi vào [`docs/Compatibility.md`](../Compatibility.md) mục 5.4 (Cursor) và mục của từng app.
+
+### 6.12 Các hướng không chọn
+
+- **A. Người dùng bật EditContext trong Cursor** (`editor.experimentalEditContextEnabled`). Cursor khi đó đi đường của VS Code 1.147, đã đo là đúng (mục 5). Dấu không tự sửa cài đặt của app khác. Hướng này chỉ là ghi chú trong `docs/Compatibility.md`, không phải cách sửa của Dấu, vì người dùng mặc định vẫn gặp lỗi.
+- **C. Gạch chân cho trình soạn thảo Cursor.** `setMarkedText` với vùng thay `NSNotFound` không cần toạ độ (suy luận, chưa đo trên Cursor 3.30.14 trở đi). Hướng này trái D13 (Gạch chân là đường lui cuối cùng): sửa lỗi đi trước, gạch chân chỉ là đường lui; ở chế độ gạch chân D20 không chạy.
+- **Không có API giúp bỏ qua toạ độ.** Theo tài liệu Apple, cả `selectedRange()` và vùng thay của `insertText(_:replacementRange:)` đều tính trong kho chữ của đối tượng nhận. `NSTextInputClient` không có vùng thay tính tương đối với con trỏ. Giả phím ⌫ như OpenKey thì trái cách thay tại chỗ của Dấu (D1 (Nền tảng)).
 
 ## Nguồn
 
