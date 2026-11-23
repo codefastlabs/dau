@@ -1145,6 +1145,11 @@ file_editor() {
     delay 0.5
   end tell' >/dev/null
   osascript -e "tell application \"System Events\" to tell process \"$proc\" to click (first button of (first window whose name contains \"dau-selftest\") whose subrole is \"AXCloseButton\")" >/dev/null 2>&1
+  # After a stop the text was not emptied and saved, so closing asks whether to save; a
+  # window left open is restored the next time the editor launches. The file is this run's
+  # own: discard it.
+  sleep 0.5
+  osascript -e "tell application \"System Events\" to tell process \"$proc\" to click button \"Don't Save\" of sheet 1 of (first window whose name contains \"dau-selftest\")" >/dev/null 2>&1
 }
 
 # A new window of the editor $1 (process name; $2 its command-line tool) on the empty file
@@ -1156,8 +1161,8 @@ open_editor_window() { # process cli file
   "$cli" --new-window "$file" >/dev/null 2>&1
   osascript -e "tell application \"System Events\" to set frontmost of process \"$proc\" to true" >/dev/null 2>&1
   # Not there in time: type_keys's guard reports it and stops the run.
-  # The new window can open behind another window of the app (Cursor keeps its agents
-  # window focused): raise it until it is the focused one.
+  # The new window can open behind another window of the app (an editor can keep another
+  # of its windows focused): raise it until it is the focused one.
   local i
   for i in {1..40}; do
     osascript -e "tell application \"System Events\" to tell process \"$proc\" to perform action \"AXRaise\" of (first window whose name contains \"dau-selftest\")" >/dev/null 2>&1
@@ -1168,9 +1173,55 @@ open_editor_window() { # process cli file
   done
 }
 
-# Cursor's editor. ⌘N in Cursor opens a new agent, not an untitled file, hence the file.
-run_cursor() { file_editor Cursor /Applications/Cursor.app/Contents/Resources/app/bin/cursor; }
-# VS Code opened the same way as Cursor: the control for that way of opening an editor.
+# Cursor's editor, as run_vscode does it: `--classic` opens an editor window instead of
+# the Agent Window (`cursor --help`), with no workspace and no file; ⌘N there opens an
+# untitled editor (in the Agent Window ⌘N starts a new agent).
+run_cursor() {
+  /Applications/Cursor.app/Contents/Resources/app/bin/cursor --classic --new-window >/dev/null 2>&1
+  osascript -e 'tell application "Cursor" to activate' >/dev/null
+  wait_until -i 0.3 20 front_ok Cursor
+  guarded Cursor "" 'tell application "System Events" to keystroke "n" using {command down}' \
+    >/dev/null || return 0
+  # Not there in time: type_keys's guard reports it and stops the run.
+  wait_until -i 0.3 10 front_ok Cursor Untitled
+  # This run's window, by its frame: an untitled window has no name of its own, and closing
+  # another one would discard the user's text.
+  local frame
+  frame="$(osascript -e 'tell application "System Events" to tell process "Cursor" to get {position, size} of front window' 2>/dev/null)"
+  select_dau; type_keys Cursor Untitled
+  copy_all Cursor Untitled
+  if stopped; then
+    # A stop leaves the typed text: close this run's window without saving, or Cursor
+    # restores it at its next launch.
+    # Compared as text: a list of the same numbers read back does not compare equal.
+    frame="${frame//[[:space:]]/}"
+    [[ "$frame" =~ '^-?[0-9]+,-?[0-9]+,[0-9]+,[0-9]+$' ]] && osascript -e "tell application \"System Events\" to tell process \"Cursor\"
+      repeat with w in windows
+        set p to position of w
+        set s to size of w
+        if ((item 1 of p as integer) as text) & \",\" & ((item 2 of p as integer) as text) & \",\" & ((item 1 of s as integer) as text) & \",\" & ((item 2 of s as integer) as text) is \"$frame\" then
+          click (first button of w whose subrole is \"AXCloseButton\")
+          delay 0.5
+          if exists sheet 1 of w then click button \"Don't Save\" of sheet 1 of w
+          exit repeat
+        end if
+      end repeat
+    end tell" >/dev/null 2>&1
+    return 0
+  fi
+  # Empty the untitled editor so ⌘W closes it without asking to save, then close the
+  # window it leaves. The delays between the keys stay fixed: pacing, nothing read.
+  guarded Cursor Untitled 'tell application "System Events"
+    keystroke "a" using {command down}
+    delay 0.1
+    key code 51
+    delay 0.2
+    keystroke "w" using {command down}
+    delay 0.3
+    keystroke "w" using {shift down, command down}
+  end tell' >/dev/null
+}
+# VS Code opened on a file, as file_editor does: the control for that way of opening an editor.
 run_vscodefile() { file_editor Code "/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"; }
 
 # --- VS Code terminal (vscodeterm, vscodeswitch) ---------------------------------------
