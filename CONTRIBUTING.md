@@ -49,7 +49,7 @@ Bộ gõ và app chủ dùng chung phần cài đặt qua một App Group. macOS
 4. Lần đầu trên một máy, bạn mở Dấu trong `/Applications`, bấm "Bật Dấu", rồi bấm Allow trong hộp thoại của macOS. Bạn không cần đăng xuất. Nếu không bật được, bạn hãy làm theo màn "Chưa bật được Dấu" của app. Script không cài bộ gõ lần đầu và không bật gì (N4 (Không tự đổi cài đặt hệ thống)).
 5. Những lần sau, bạn chỉ cần chạy lại `scripts/dev/install-app.sh`. Dấu.app vừa cài tự thay bộ gõ đã cài bằng bản nằm trong nó và không đổi danh sách nguồn đầu vào bạn đã bật.
 
-Để gõ hằng ngày, bạn hãy dùng bản Release. Lệnh `scripts/dev/install-app.sh --debug` cài bản Debug. Đây là bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry)); cách đo nằm ở [`docs/Compatibility.md`](docs/Compatibility.md), mục 4.
+Để gõ hằng ngày, bạn hãy dùng bản Release. Script chỉ build bản Release từ một commit, nên khi cây làm việc còn thay đổi chưa commit thì script dừng. Lệnh `scripts/dev/install-app.sh --debug` cài bản Debug của cây làm việc, kể cả thay đổi chưa commit. Đây là bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry)); cách đo nằm ở [`docs/Compatibility.md`](docs/Compatibility.md), mục 4. Đo xong, lệnh `scripts/dev/install-app.sh --no-build` cài lại bản Release đã build mà không build lại.
 
 Bản bạn tự dựng là **bản phát triển** (D7 (Cập nhật và loại bản dựng)), không phải bản phát hành. Bản phát hành chỉ do quy trình phát hành tạo ra và ký bằng Developer ID. Quy trình đó nằm ở `scripts/release/` và `.github/workflows/release.yml`, nhưng chưa chạy với chữ ký thật (xem `docs/Releasing.md`).
 

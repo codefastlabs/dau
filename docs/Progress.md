@@ -73,7 +73,7 @@ Xong khi: test và `scripts/check-l10n/check.sh` đạt; chạy thật ở bư�
 
 ### Bước 3 — Một lượt chạy chiếm màn hình (người dùng ngồi cùng ở mục 4)
 
-Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh --ref` trong `docs/history/LogM6.md`). Mục 2, 3, 4 và phần Notion của mục 7 chưa có số đo; mỗi ô `gdocs`, `wordweb` mất 22–39 giây (17/11).
+Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh` trong `docs/history/LogM6.md`). Mục 2, 3, 4 và phần Notion của mục 7 chưa có số đo; mỗi ô `gdocs`, `wordweb` mất 22–39 giây (17/11).
 
 1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug, xong 22/11 (nhật ký).
 2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
@@ -84,14 +84,14 @@ Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục t�
    - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
    - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
 7. "Thêm dấu cho từ đã gõ" (D20) trên web editor trong Chrome, bằng `scripts/selftest/typing/typed-word-docs.sh` (tài liệu trống của người dùng, đã đăng nhập sẵn). Word trên web và Google Docs: xong 17/11 (`docs/Compatibility.md` mục 5.10; Google Docs sai, ở Việc mở). Còn Notion: script chưa có ô cho Notion. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
-8. Dọn: gỡ bản thử, cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
+8. Dọn: gỡ bản thử, cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --no-build`).
 
 Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7; câu thay cho "[Phím tắt hệ thống]" khi không đọc được phím tắt chuyển nguồn (trang Cách gõ); nhãn trợ năng của sidebar và onboarding theo artboard ("Mục cài đặt", "Tìm trong cài đặt", "Cách bật Dấu"…) hay theo hệ thống như mã hiện nay; "Enter" hay "Return" trong câu tiếng Việt về kết thúc từ; và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Ảnh chụp `docs/canvas/` của các artboard đã sửa ở bước 1f (kênh, số build, từ ngữ) sinh lại khi người dùng duyệt. Rồi sửa mã và chụp lại `docs/canvas/`.
 
 ### Bước 4 — Phát hành và đóng mốc
 
 - Tag `v0.1.0-beta.1`; CI dựng bản nháp. Người dùng đồng ý một lần cho cả ba việc công bố: phát hành trên GitHub, cập nhật appcast, tạo repo `codefastlabs/homebrew-tap` với cask `dau`.
-- Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`).
+- Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --no-build`).
 - Gỡ hai bản thử 0.0.1 (chỉ máy này từng cài): xoá mục của chúng khỏi `site/appcast.xml` trước, rồi xoá hai bản phát hành và tag trên GitHub; cùng lần đồng ý công bố ở trên.
 - Kiểm toán, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
 

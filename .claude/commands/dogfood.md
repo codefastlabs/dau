@@ -29,7 +29,7 @@ Mỗi ô gõ thử cả hai chế độ, cùng đoạn văn, cùng chuỗi phím
 
 ## Trước khi chạy (không chiếm màn hình)
 
-1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản dùng hằng ngày, bản Release của commit mới nhất trên `main` (CLAUDE.md "Dọn sau mỗi lần chạy"); script báo chưa phải bản mới nhất thì cài bản đó trước (`scripts/dev/install-app.sh --ref main`). Lượt này cần bản khác (bản Debug, bản thử) thì gộp vào cùng lượt chạy và cài lại bản dùng hằng ngày khi dọn.
+1. `scripts/dev/dau-version.sh`: biết bộ gõ đã cài là bản nào. Mặc định gõ bằng bản dùng hằng ngày, bản Release của commit mới nhất trên `main` (CLAUDE.md "Dọn sau mỗi lần chạy"); script báo chưa phải bản mới nhất thì cài bản đó trước (trên `main`, cây sạch: `git pull --ff-only` rồi `scripts/dev/install-app.sh`). Lượt này cần bản khác (bản Debug, bản thử) thì gộp vào cùng lượt chạy và cài lại bản dùng hằng ngày khi dọn.
 2. Soạn sẵn văn bản sẽ gõ (mục "Văn bản") và kế hoạch app, ghi vào `build/dogfood/<ngày>/plan.md`. Mỗi đoạn có: chữ muốn ra, chuỗi phím Telex sẽ gõ (kể cả lỗi cố ý và chỗ sửa), app và ô gõ.
 3. Báo người dùng một dòng: "bắt đầu, khoảng N phút, dùng các app …", rồi chạy ngay; có hỏi trước hay không là do chế độ quyền của Claude Code (CLAUDE.md, mục "Điều phối").
 
@@ -75,7 +75,7 @@ Biết giới hạn của cách làm: phím từ System Events không hẳn là 
 
 ## Dọn
 
-Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (ở Notes thì xoá ghi chú, ở Mail thì chọn "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi chép phần cần giữ và cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --ref main`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
+Như CLAUDE.md, "Dọn sau mỗi lần chạy": xoá chữ đã gõ, đóng cửa sổ không lưu (ở Notes thì xoá ghi chú, ở Mail thì chọn "Don't Save"), khôi phục clipboard và nguồn đầu vào, trả danh sách quy tắc theo app của Dấu về như trước lượt, xoá `build/dogfood/` sau khi chép phần cần giữ và cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --no-build`) nếu lượt này đã cài bản khác. Báo người dùng lúc bắt đầu, lúc xong và đã dọn gì.
 
 ## Sau lượt gõ
 

@@ -34,17 +34,19 @@
 # Nothing is enabled or selected (N4).
 #
 # Usage:
-#   scripts/dev/install-app.sh               build Release, install
-#   scripts/dev/install-app.sh --debug       Debug instead of Release
+#   scripts/dev/install-app.sh               build Release of HEAD, install: the build for day-to-day
+#                                            use (on main, after git pull). Stops when tracked files
+#                                            have uncommitted changes, so an installed Release is
+#                                            always one commit; warns when HEAD lacks origin/main
+#   scripts/dev/install-app.sh --debug       Debug of the working tree, uncommitted changes included
 #   scripts/dev/install-app.sh --build-only  build and check only, touch nothing outside the repo
-#   scripts/dev/install-app.sh --ref main    build and install Release of a commit, branch or tag (here
-#                                            the latest commit of main, the build for day-to-day use) from
-#                                            a clean worktree in build/ref-src, whatever the working
-#                                            tree holds
+#                                            (any working tree, Release or Debug)
 #   scripts/dev/install-app.sh --no-build    skip xcodegen and xcodebuild: check and install the
-#                                            build already in build/DerivedData.noindex (for a
-#                                            caller that has just built it, e.g.
-#                                            scripts/selftest/app-group.sh)
+#                                            build already in build/DerivedData.noindex. Debug and
+#                                            Release builds sit side by side there, so after a Debug
+#                                            run `--no-build` puts the last Release back without a
+#                                            build, even while the working tree has changes (also
+#                                            used by scripts/selftest/app-group.sh after its build)
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
@@ -58,42 +60,35 @@ LSREGISTER=/System/Library/Frameworks/CoreServices.framework/Frameworks/LaunchSe
 CONFIG=Release
 BUILD_ONLY=0
 SKIP_BUILD=0
-REF=""
-args=("$@")
-i=1
-while (( i <= ${#args} )); do
-  case "${args[i]}" in
+for arg in "$@"; do
+  case "$arg" in
     --debug) CONFIG=Debug ;;
     --build-only) BUILD_ONLY=1 ;;
     --no-build) SKIP_BUILD=1 ;;
-    --ref) (( i++ )); REF="${args[i]:-}"; [[ -n "$REF" ]] || log_die 2 "--ref cần một commit, nhánh hoặc tag (ví dụ --ref main)." ;;
     -h|--help) log_usage "$0"; exit 0 ;;
-    *) log_die 2 "Tham số không hợp lệ: ${args[i]} (dùng --debug, --build-only, --no-build, --ref <commit> hoặc không có tham số)" ;;
+    *) log_die 2 "Tham số không hợp lệ: $arg (dùng --debug, --build-only, --no-build hoặc không có tham số)" ;;
   esac
-  (( i++ ))
 done
 if [[ "$SKIP_BUILD" == 1 && "$BUILD_ONLY" == 1 ]]; then
   log_die 2 "--no-build và --build-only không đi cùng nhau."
 fi
 
-# --ref: the day-to-day build is --ref main (CLAUDE.md, "Dọn sau mỗi lần chạy"). The commit is checked out in
-# a worktree of its own (build/ref-src, kept between runs so its DerivedData stays warm),
-# and that worktree's own install-app.sh builds and installs it: uncommitted changes here
-# never reach it, and its stamp is the exact commit.
-if [[ -n "$REF" ]]; then
-  [[ "$CONFIG" == Release && "$BUILD_ONLY" == 0 && "$SKIP_BUILD" == 0 ]] \
-    || log_die 2 "--ref chỉ đi một mình: nó cài bản Release của commit đó."
-  commit=$(git -C "$ROOT" rev-parse --verify --quiet "$REF^{commit}") \
-    || log_die 2 "Không có commit, nhánh hay tag \"$REF\"."
-  src="$ROOT/build/ref-src"
-  log_step "Cài bản Release của $REF (${commit[1,7]}) từ worktree $src"
-  if git -C "$src" rev-parse --git-dir >/dev/null 2>&1; then
-    git -C "$src" checkout --quiet --detach "$commit"
-  else
-    rm -rf "$src"
-    git -C "$ROOT" worktree add --quiet --detach "$src" "$commit"
+# An installed Release is always one commit: built from a clean HEAD, never from
+# uncommitted changes (the stamp would carry "+"). Debug and --build-only take any tree.
+if [[ "$CONFIG" == Release && "$BUILD_ONLY" == 0 && "$SKIP_BUILD" == 0 ]]; then
+  if [[ -n "$(git -C "$ROOT" status --porcelain --untracked-files=no 2>/dev/null)" ]]; then
+    log_error "Cây làm việc có thay đổi chưa commit: bản Release chỉ build từ một commit."
+    log_hint "Commit trước rồi chạy lại." \
+      "Cần cài lại bản Release đã build (ví dụ sau một lượt đo Debug): scripts/dev/install-app.sh --no-build" \
+      "Cần thử thay đổi chưa commit: scripts/dev/install-app.sh --debug"
+    exit 1
   fi
-  exec "$src/scripts/dev/install-app.sh"
+  # Offline: compares with origin/main as of the last fetch.
+  if git -C "$ROOT" rev-parse --verify --quiet origin/main >/dev/null \
+     && ! git -C "$ROOT" merge-base --is-ancestor origin/main HEAD; then
+    log_warn "HEAD chưa có commit mới nhất của origin/main (theo lần fetch gần nhất): bản cài sẽ không phải bản mới nhất."
+    log_hint "Trên main: git pull --ff-only rồi chạy lại."
+  fi
 fi
 
 if [[ "$SKIP_BUILD" == 0 ]]; then
@@ -107,18 +102,18 @@ APP="$DERIVED/Build/Products/$CONFIG/Dau.app"
 EMBEDDED_IM="$APP/Contents/Library/Input Methods/DauInputMethod.app"
 [[ -d "$APP" ]] || log_die "Không thấy $APP (bản $CONFIG chưa build)."
 
-# --no-build installs whatever is in build/: say which commit that is, and when it is not
-# the working tree's (same rule as scripts/build/stamp-build-commit.sh: "+" = uncommitted
-# changes, and then nothing says whether the build holds them).
+# --no-build installs whatever is in build/: say which commit that is (stamp rule of
+# scripts/build/stamp-build-commit.sh: "+" = built with uncommitted changes). A Release
+# with "+" (only --build-only makes one) is not installed: an installed Release is one commit.
 if [[ "$SKIP_BUILD" == 1 ]]; then
   built_commit="$(cat "$APP/Contents/Resources/BuildCommit.txt" 2>/dev/null || true)"
-  tree_commit="$(git -C "$ROOT" rev-parse --short=7 HEAD 2>/dev/null || true)"
-  [[ -n "$tree_commit" && -n "$(git -C "$ROOT" status --porcelain --untracked-files=no 2>/dev/null)" ]] && tree_commit+="+"
-  log_detail "bản build: ${built_commit:-không có mã commit}; cây làm việc: ${tree_commit:-không rõ}"
-  if [[ "$built_commit" != "$tree_commit" ]]; then
-    log_warn "Bản $CONFIG trong build/ không phải của cây làm việc hiện tại: --no-build cài bản đã build, không build lại."
-  elif [[ "$tree_commit" == *+ ]]; then
-    log_warn "Cây làm việc có thay đổi chưa commit: không biết bản đã build có gồm chúng không."
+  head_commit="$(git -C "$ROOT" rev-parse --short=7 HEAD 2>/dev/null || true)"
+  log_detail "bản build: ${built_commit:-không có mã commit}; HEAD: ${head_commit:-không rõ}"
+  if [[ "$CONFIG" == Release && ( -z "$built_commit" || "$built_commit" == *+ ) ]]; then
+    log_die "Bản Release trong build/ không phải của một commit (${built_commit:-không có mã}): không cài. Commit rồi chạy scripts/dev/install-app.sh."
+  fi
+  if [[ "${built_commit%+}" != "$head_commit" ]]; then
+    log_warn "Bản $CONFIG trong build/ là của ${built_commit:-?}, không phải HEAD: --no-build cài bản đã build, không build lại."
   fi
 fi
 

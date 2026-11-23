@@ -15,7 +15,7 @@
 # CSSMERR_TP_CERT_REVOKED) and the Apple Development identities in the keychain, and warns
 # when the Dấu.app in /Applications and the installed input method differ (D37).
 # It also answers "is the day-to-day build the latest?" (the installed input method
-# against ref main, the ref `install-app.sh --ref main` builds): "mới nhất" only when the build
+# against ref main, the commit `install-app.sh` builds on main): "mới nhất" only when the build
 # inputs are unchanged between the two commits (the paths that do not count: see the block
 # below), the same Xcode and SDK built it, and it is a Release without "+";
 # otherwise "cần cài lại" or "không rõ" with the reason and the command. Details: the block
@@ -71,7 +71,7 @@ fi
 
 # --- Is the day-to-day build the latest? -------------------------------------------------------
 # The answer to "bản dùng hằng ngày đã mới nhất chưa": the installed input method against ref
-# main (the ref `install-app.sh --ref main` builds, not HEAD). "Latest" needs all three:
+# main (the commit `install-app.sh` builds when run on main, not HEAD). "Latest" needs all three:
 #   1. the build inputs are the same between the installed commit and main;
 #   2. the same toolchain built it (DTXcodeBuild, DTSDKBuild in its Info.plist);
 #   3. it is a Release with no "+" (no uncommitted changes) on its commit.
@@ -85,7 +85,7 @@ fi
 # installed commit, DAU_VERSION_INSTALLED_XCODE_BUILD the installed DTXcodeBuild.
 non_inputs=(':(exclude)docs' ':(exclude)site' ':(exclude).github' ':(exclude).claude'
             ':(exclude,glob)**/*.md' ':(exclude,glob)Apps/*/Tests/**' ':(exclude,glob)Packages/*/Tests/**')
-reinstall_cmd="scripts/dev/install-app.sh --ref main"
+reinstall_cmd="trên main, cây sạch: git pull --ff-only rồi scripts/dev/install-app.sh"
 
 latest_verdict() { # prints "ok|<reason>", "reinstall|<reason>" or "unknown|<reason>"
   local main_ref=${DAU_VERSION_MAIN_REF:-main} built plist cfg

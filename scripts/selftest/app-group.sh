@@ -12,7 +12,7 @@
 #      /Applications (the old copy to the Trash) and replaces the installed input method
 #      with the Debug one inside it, stopping the old input method process. The Debug
 #      build then stays installed: the script ends by saying to put the day-to-day build
-#      back (scripts/dev/install-app.sh --ref main).
+#      back (scripts/dev/install-app.sh --no-build).
 #   2. Makes sure the input method runs. macOS launches it on demand, when a client
 #      activates it; if it is not running, the helper reselects the Dấu input source,
 #      which must already be enabled (the helper never enables or disables a source, N4),
@@ -43,7 +43,7 @@
 # Usage: scripts/selftest/app-group.sh [--install] [--no-build]
 #   --install    install the Debug Dấu.app and its input method before the test (default: use
 #                what is installed); the script only prints a hint to put
-#                the day-to-day build back (scripts/dev/install-app.sh --ref main)
+#                the day-to-day build back (scripts/dev/install-app.sh --no-build)
 #   --no-build   do not build; use build/DerivedData.noindex as it is (with --install, install
 #                that build)
 #
@@ -108,7 +108,7 @@ remind_release() {
   [[ "$INSTALLED_DEBUG" == 1 ]] || return 0
   INSTALLED_DEBUG=0
   log_warn "Dấu.app và bộ gõ đang cài là bản Debug (do --install)."
-  log_hint "Cài lại bản dùng hằng ngày: scripts/dev/install-app.sh --ref main"
+  log_hint "Cài lại bản dùng hằng ngày: scripts/dev/install-app.sh --no-build"
 }
 cleanup() { restore_typing_method; restore_source; remind_release; }
 trap cleanup EXIT

@@ -114,7 +114,7 @@ Bundle ID mà bộ gõ thật sự nhận có thể khác cột trên, ví dụ 
 ### 4.1 Chuẩn bị
 
 1. Thoát các bộ gõ tiếng Việt khác đang chạy (OpenKey, EVKey, GoTiengViet…), kể cả các bộ gõ trong Mục đăng nhập.
-2. Cài bản Debug bằng `scripts/dev/install-app.sh --debug`, vì chỉ bản Debug có nhật ký từng phím (D8 (Không telemetry)). Thử xong thì cài lại bản dùng hằng ngày bằng `scripts/dev/install-app.sh --ref main`.
+2. Cài bản Debug bằng `scripts/dev/install-app.sh --debug`, vì chỉ bản Debug có nhật ký từng phím (D8 (Không telemetry)). Thử xong thì cài lại bản dùng hằng ngày bằng `scripts/dev/install-app.sh --no-build`.
 3. Lần đầu trên một máy, mở Dấu trong `/Applications`, bấm "Bật Dấu" rồi bấm Allow (D37 (Cài bộ gõ)). Nếu không bật được thì theo đường lui của D37: tự thêm Dấu bằng "+" trong danh sách nguồn đầu vào của System Settings. Nếu "+" không có Dấu thì đăng xuất một lần ([`docs/research/InputMethodInstall.md`](research/InputMethodInstall.md) mục 1.3, 3.2).
 4. Giữ U.S. (hoặc một nguồn tiếng Anh khác) trong danh sách nguồn, vì Dấu chỉ có nguồn tiếng Việt (D2 (Chuyển Việt/Anh)).
 5. Nếu máy bật "Automatically switch to a document’s input source", mỗi ứng dụng nhớ nguồn riêng, nên phải chọn lại Dấu sau khi chuyển sang ứng dụng cần thử.

@@ -266,7 +266,7 @@ for cell in $CELLS; do
   p="$dir/perf.txt"
   if [[ "$(metric "$p" gap_d_ge20ms)" == - ]]; then
     log_error "Ô $index không có thời điểm phím (t_ns) trong nhật ký: bộ gõ đã cài là bản Release, hoặc bản Debug cũ hơn thay đổi ghi t_ns."
-    log_hint "Cài bản Debug mới (scripts/dev/install-app.sh --debug) rồi chạy lại; đo xong cài lại bản dùng hằng ngày (scripts/dev/install-app.sh --ref main)."
+    log_hint "Cài bản Debug mới (scripts/dev/install-app.sh --debug) rồi chạy lại; đo xong cài lại bản dùng hằng ngày (scripts/dev/install-app.sh --no-build)."
     STATUS=1
     break
   fi
