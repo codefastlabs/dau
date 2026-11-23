@@ -64,7 +64,7 @@ Các việc dưới đây không chặn việc đóng M7 và sẽ làm khi đã 
 - Phiên làm việc kiểm `generate_appcast` có ghi `sparkle:minimumSystemVersion` không và thêm nếu thiếu. Việc này cần xong trước lần nâng bản macOS tối thiểu.
 - Dấu sẽ có phát hành theo đợt (D7) và quay về bản trước (D19 (Quay về bản trước)).
 - CI sẽ có artifact attestation và phép đếm cấp phát (`malloc_logger`).
-- Phiên làm việc cài, bật và gõ thử trên macOS 14–26 và trên máy Intel. Theo D1 (Nền tảng), tới lúc đó Dấu chỉ nói đã kiểm trên macOS 27 và Apple silicon. Câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trên các bản macOS đó cũng cần lượt thử này.
+- Phiên làm việc cài, bật và gõ thử trên macOS 14 và macOS 26. Theo D1 (Nền tảng), tới lúc đó Dấu chỉ nói đã kiểm trên macOS 27 với máy Apple silicon và macOS 15 với máy Intel. Câu hỏi mở "Hộp thoại và đăng xuất khi bật bộ gõ" trên hai bản macOS đó cũng cần lượt thử này.
 - Cask sẽ được gửi vào `homebrew/cask` khi repo đạt ngưỡng (D6).
 
 ## M8 — Website

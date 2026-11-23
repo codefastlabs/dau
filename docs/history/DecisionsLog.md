@@ -58,6 +58,10 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 ## Quyết định
 
+### D1. Nền tảng
+
+- 23/11/2026 (người dùng giao phiên chính ghi): Dấu chạy được trên máy Intel. Bản Release universal của commit `2ab6cd5`, ký Apple Development, cài từ DMG trên một máy Intel Core i5 chạy macOS 15.8.1 (24H32); onboarding, bật và gõ thử đều đạt, không cần đăng xuất. Bản trước, nguyên văn: "Dấu mới được kiểm trên macOS 27 và Apple silicon. Beta đầu tiên nói rõ điều đó và không hứa macOS 14–26 hay máy Intel tới khi kiểm (N5 (Chỉ hứa điều đã kiểm chứng))."
+
 ### D2. Chuyển Việt/Anh
 
 - 30/10/2026: "Sửa 30/10/2026; bản trước: hai input mode 'Tiếng Việt'/'Tiếng Anh' trong Dấu. Lý do: chế độ Anh chỉ cho phím đi thẳng, trùng bàn phím tiếng Anh của macOS (N1); nằm ở nhóm 'Tiếng Anh' trong danh sách thêm nguồn nên người dùng không tìm thấy; làm mất các tiện ích chỉ nguồn của macOS có, như dùng Caps Lock để chuyển sang/về bàn phím tiếng Anh. Từ tiếng Anh lẫn trong câu Việt đã có D4 lo."
@@ -439,6 +443,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 02/11/2026 (hiện trạng trước 04/11/2026, nguyên văn): "Đo bằng Dấu thật (macOS 27.2, 02/11/2026): 'Bật Dấu' trả 0 nhưng macOS không ghi danh sách nguồn đang bật; Cài đặt nhận yêu cầu bật rồi báo lỗi 'Invalid value on inputSourceToBeEnabled', theo mã thì khi đó không dựng hộp thoại 'Cho phép … bật …?' (chuỗi này có trong Cài đặt nhưng chưa ai thấy hiện). Vì vậy: sau 'Bật Dấu' đọc lại trạng thái từ `com.apple.inputsources`, không tin TIS của chính tiến trình; chưa bật thì mở Cài đặt › Bàn phím và hướng dẫn bấm '+' (N4, D37). Đăng xuất: Apple DTS nói cần, một dự án khác nói không; trả lời bằng Dấu thật ở M5 T4."
 - 04/11/2026: "Trên macOS 27.2 (04/11/2026, bản thử rồi Dấu thật): có hộp thoại xin phép, và không cần đăng xuất nếu làm theo D37; còn phải đo trên macOS 14–26 và bản ký Developer ID; không đo trên tài khoản macOS mới (T4 bỏ, người dùng chốt 04/11/2026)."
+- 23/11/2026: macOS 15.8.1 trên máy Intel cho cùng kết quả (có hộp thoại xin phép, không cần đăng xuất); câu hỏi thu lại còn macOS 14, macOS 26, bản ký Developer ID và tài khoản macOS mới.
 
 ### Cài cho riêng mình hay cho cả máy
 

@@ -2,9 +2,9 @@
 
 Nghiên cứu cho M5 (Onboarding, cài, gỡ) và D37 (Cài bộ gõ): macOS làm gì khi một app cài, bật, thay và gỡ một bộ gõ InputMethodKit bên thứ ba. Mã làm theo kết luận ở đây: `SystemInputMethodInstaller` (`Apps/Dau/Sources/InputMethodInstaller.swift`), `InputMethodLifecycle` (`Packages/DauShared`). Các vòng thử theo giờ, kế hoạch đã bỏ và bản trước của file này: `docs/history/ResearchLog.md` mục 1.
 
-## Hiện trạng (11/11/2026, macOS 27.2)
+## Hiện trạng (23/11/2026, macOS 27.2 và macOS 15.8.1)
 
-Apple không có tài liệu công khai cho các hành vi dưới đây, nên mọi kết luận có thể đổi theo bản macOS. Đo trên máy phát triển, macOS 27.2 (26B123), tài khoản đã từng cài Dấu; chưa đo macOS 14–26, bản ký Developer ID, tài khoản macOS mới.
+Apple không có tài liệu công khai cho các hành vi dưới đây, nên mọi kết luận có thể đổi theo bản macOS. Các phép đo chạy trên máy phát triển, macOS 27.2 (26B123), tài khoản đã từng cài Dấu. Riêng việc bật lần đầu còn được thử trên một máy Intel chạy macOS 15.8.1 (24H32), máy chưa từng cài Dấu (mục 1.2). Chưa đo macOS 14, macOS 26, bản ký Developer ID và tài khoản macOS mới.
 
 - **Bật lần đầu không cần đăng xuất** nếu làm theo D37: xoá bộ đệm danh sách nguồn của mọi app ngay trước khi đăng ký, thoát System Settings, bật mục cha, người dùng bấm "Allow" (Dấu thật, 04/11/2026; mục 1). Apple DTS (06/2026) nói không tránh được đăng xuất; điều đó đúng khi không xoá bộ đệm.
 - **Hộp thoại `Allow “Dấu” to enable “Dấu”?`** hiện khi System Settings phải dựng mới trang Keyboard và đọc được Dấu trong bộ đệm của nó. Trang Keyboard đang mở sẵn thì yêu cầu bị bỏ qua im lặng. `TISEnableInputSource` vẫn trả 0 (mục 2).
@@ -49,7 +49,9 @@ App không chọn Dấu làm nguồn hiện hành; người dùng chuyển bằn
 
 ### 1.2 Giới hạn
 
-- Chỉ đo trên macOS 27.2, bản Debug, tài khoản đã từng cài Dấu. Chưa đo macOS 14–26, bản ký Developer ID đã notarize. Lần thử trên tài khoản macOS mới đã bỏ (04/11/2026).
+- Các bước trên đo trên macOS 27.2 với bản Debug, trên tài khoản đã từng cài Dấu. Lần thử trên tài khoản macOS mới đã bỏ (04/11/2026).
+- Trên một máy Intel chạy macOS 15.8.1 (23/11/2026), bản Release ký Apple Development cài lần đầu từ DMG cũng cho kết quả như vậy: onboarding hiện hộp thoại xin phép, bật không cần đăng xuất và gõ được ngay. File DMG trên máy đó không mang quarantine, nên lần thử này không cho biết gì về Gatekeeper.
+- Chưa đo macOS 14, macOS 26 và bản ký Developer ID đã notarize.
 - Hành vi bộ đệm không có tài liệu Apple. Đường lui (D37): đọc lại không thấy Dấu thì hướng dẫn tự thêm bằng "+" và nếu "+" không có Dấu thì đăng xuất một lần.
 
 ### 1.3 Bằng chứng bằng Dấu thật [Máy/Dấu]
@@ -288,7 +290,7 @@ Cho bước 1 của D14 (Onboarding). Bundle ID lấy từ `Info.plist` của b�
 ## 10. Câu hỏi còn mở
 
 ### 10.1 Các bản macOS khác và bản ký Developer ID
-Bật không đăng xuất và hộp thoại "Allow" mới đo trên macOS 27.2 với bản Debug. Cần đo macOS 14–26 và bản ký Developer ID đã notarize (M7 (Phát hành)).
+Bật không đăng xuất và hộp thoại "Allow" mới đo trên macOS 27.2 với bản Debug và trên macOS 15.8.1 (máy Intel) với bản Release ký Apple Development (mục 1.2). Cần đo macOS 14, macOS 26 và bản ký Developer ID đã notarize (M7 (Phát hành)).
 
 ### 10.2 Vì sao System Settings không dựng lại được nguồn
 Nhật ký "Invalid value on inputSourceToBeEnabled" (Dấu 02/11/2026 trước D37, bản thử 03/11/2026) phù hợp với giả thuyết bộ đệm của System Settings chưa có nguồn (mục 1.6); không tìm thấy nguồn Apple.

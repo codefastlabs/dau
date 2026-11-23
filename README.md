@@ -53,7 +53,7 @@ Việc nào macOS đã làm thì Dấu để macOS làm. Muốn gõ tắt cả c
 
 ## Sắp ra mắt
 
-Dấu chưa có bản cài để tải về. Dấu nhắm tới macOS 14 trở lên, nhưng tới nay mới chạy thử trên macOS 27.2 và máy Apple silicon. Bản beta đầu tiên chỉ hứa những điều đã kiểm chứng.[^8] Các mốc phát triển ghi ở [`docs/Roadmap.md`](docs/Roadmap.md). Các ứng dụng đã thử và các giới hạn còn lại ghi ở [`docs/Compatibility.md`](docs/Compatibility.md).
+Dấu chưa có bản cài để tải về. Dấu nhắm tới macOS 14 trở lên, nhưng tới nay mới chạy thử trên macOS 27.2 với máy Apple silicon và macOS 15.8.1 với máy Intel. Bản beta đầu tiên chỉ hứa những điều đã kiểm chứng.[^8] Các mốc phát triển ghi ở [`docs/Roadmap.md`](docs/Roadmap.md). Các ứng dụng đã thử và các giới hạn còn lại ghi ở [`docs/Compatibility.md`](docs/Compatibility.md).
 
 ## Dành cho nhà phát triển
 

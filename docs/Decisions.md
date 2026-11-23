@@ -109,7 +109,7 @@ Chữ hiển thị cho người dùng phải là lời hứa đã kiểm chứng
 
 Dấu chỉ chạy trên macOS, tối thiểu macOS 14 và là binary universal (Apple silicon và Intel). Dấu viết bằng Swift trong Xcode. Dấu không làm bản cho Windows, Linux hay web.
 
-- Dấu mới được kiểm trên macOS 27 và Apple silicon. Beta đầu tiên nói rõ điều đó và không hứa macOS 14–26 hay máy Intel tới khi kiểm (N5 (Chỉ hứa điều đã kiểm chứng)).
+- Dấu mới được kiểm trên macOS 27 với máy Apple silicon và trên macOS 15 với máy Intel. Trên máy Intel, phép kiểm gồm cài từ DMG, bật và gõ thử. Beta đầu tiên nói rõ điều đó và không hứa macOS 14 hay macOS 26 tới khi kiểm (N5 (Chỉ hứa điều đã kiểm chứng)).
 
 ### D2. Chuyển Việt/Anh
 
@@ -797,7 +797,7 @@ Mục này ghi các cách làm đã bị loại; các tính năng không làm n�
 
 Mục này chỉ giữ câu chưa có trả lời. Khi một câu đã được trả lời, luật chuyển vào quyết định liên quan, còn diễn biến ghi vào [`docs/history/DecisionsLog.md`](history/DecisionsLog.md).
 
-- **Hộp thoại và đăng xuất khi bật bộ gõ** (D37): trên macOS 27.2, việc bật có hộp thoại xin phép và không cần đăng xuất. Chưa biết điều đó có đúng trên macOS 14–26, với bản ký Developer ID (kể cả bản mang quarantine) và trên tài khoản macOS mới hay không. Các nguồn nói trái nhau: Apple DTS nói cần đăng xuất, còn một dự án khác nói không (`docs/research/InputMethodInstall.md` mục Hiện trạng, 1, 2, 10.4).
+- **Hộp thoại và đăng xuất khi bật bộ gõ** (D37): trên macOS 27.2 và macOS 15.8.1, việc bật có hộp thoại xin phép và không cần đăng xuất. Chưa biết điều đó có đúng trên macOS 14 và macOS 26, với bản ký Developer ID (kể cả bản mang quarantine) và trên tài khoản macOS mới hay không. Các nguồn nói trái nhau: Apple DTS nói cần đăng xuất, còn một dự án khác nói không (`docs/research/InputMethodInstall.md` mục Hiện trạng, 1, 2, 10.4).
 - **Bản chủ trong `~/Applications`** (D37): sandbox của bộ gõ không đọc được bản trong thư mục nhà, nên mục "Cài đặt Dấu…" không kiểm được chữ ký của bản đó và chỉ mở nó khi `/Applications` không có bản nào đạt. Việc mở nó từ sandbox có chạy thật không thì chưa đo. Với bản chủ trong `/Applications`, việc mở chạy được và kiểm chữ ký chạy trong sandbox.
 - **Hộp thoại App Group với bản ký Developer ID** (D24): bản có Team ID Personal Team không có hộp thoại, còn bản Developer ID chưa kiểm.
 - **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): chưa biết danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không.
