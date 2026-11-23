@@ -131,6 +131,7 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 06/11/2026: "Sidebar cố định như System Settings (người dùng chốt 06/11/2026, thay ngoại lệ 'theo HIG' ngày 05/11/2026: kéo thu sidebar bị giật và System Settings không cho thu)."
 
 - 11/11/2026 (sổ viết lại): bỏ chi tiết dựng `NSSplitViewController` (`canCollapse = false`, `canCollapseFromWindowResize = false`, độ dày tối thiểu bằng tối đa, `NSHostingController`, `sceneBridgingOptions`, `NSSearchField` `controlSize = .large`) và số "sidebar rộng 232"; cách dựng ở `docs/Architecture.md` mục "Cửa sổ Cài đặt", số đo ở `docs/research/SystemSettingsReference.md`. Luật không đổi.
+- 24/11/2026 (người dùng duyệt artboard): glyph của ô icon sidebar đổi từ nét sang trắng đặc, Dấu vẫn tự vẽ glyph thay vì dùng SF Symbols. Lý do: glyph nét 1 pt chiếm 10–11 pt của ô 20 trông nhỏ hơn icon System Settings (12–15 pt, đo trên macOS 27.2). Bản trước, nguyên văn: "Ô icon sidebar dùng `systemBlue/systemPurple/systemOrange/systemGreen` (glyph nét theo mockup)."
 
 ### D11. Kiểm tra ngữ cảnh
 

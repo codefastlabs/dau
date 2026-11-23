@@ -211,7 +211,7 @@ Dấu phát hành theo giấy phép GPLv3. Bản phát hành là DMG ký Develop
 - Mockup quy định nội dung, gồm có mục nào, chữ gì, thứ tự, icon và màu hệ thống.
 - App không chỉnh thông số của thành phần hệ thống để khớp pixel mockup.
 - Mọi thay đổi giao diện sửa artboard trên canvas trước. Người dùng duyệt artboard rồi mới sửa mã. Mã xong thì đối chiếu lại với artboard.
-- **Màu:** app chỉ dùng màu hệ thống, không dùng mã hex, không có ngoại lệ. Ô icon sidebar dùng `systemBlue/systemPurple/systemOrange/systemGreen` (glyph nét theo mockup). Nhãn "Mới" có nền `accentColor`. Banner "Dấu chưa được bật" dùng cam hệ thống như mockup.
+- **Màu:** app chỉ dùng màu hệ thống, không dùng mã hex, không có ngoại lệ. Ô icon sidebar dùng `systemBlue/systemPurple/systemOrange/systemGreen`, glyph trắng đặc theo mockup. Nhãn "Mới" có nền `accentColor`. Banner "Dấu chưa được bật" dùng cam hệ thống như mockup.
 - Nút mở/thu "Nâng cao" được phép ghép từ nút hệ thống và chevron.
 - **Vỏ cửa sổ Cài đặt:** cửa sổ không có cụm Lùi/Tiến, vì chỉ có bốn trang và sidebar luôn hiện. Thanh công cụ cao như nhau trên mọi trang, kể cả trang không có nút, để cửa sổ không đổi dáng khi chuyển trang. Tiêu đề trang là `navigationTitle` của hệ thống. App không tự vẽ tiêu đề và không ẩn tiêu đề cửa sổ bằng cách với vào `NSWindow`.
 - **Sidebar cố định như System Settings:** sidebar có độ rộng cố định, không kéo rộng hẹp và không thu gọn được. Con trỏ ở đường chia là mũi tên thường. Không có lệnh "Show/Hide Sidebar" (⌃⌘S). Sidebar dựng bằng `NSSplitViewController` của chính app, chỉ dùng thuộc tính có tài liệu Apple và không với vào cấu trúc bên trong của SwiftUI.
@@ -226,6 +226,7 @@ Dấu phát hành theo giấy phép GPLv3. Bản phát hành là DMG ký Develop
 - Chỉnh thông số cho khớp mockup (ví dụ lề hàng sidebar) trong khi app dựng bằng UI thuần vừa trái N1 vừa dễ vỡ khi macOS đổi.
 - Nút "Nâng cao" tự ghép vì System Settings không có hàng mở/thu nào, còn `DisclosureGroup` trong Form không có vạch ngăn dưới hàng mở và không có AXPress cho trợ năng (đo trên macOS 27.2).
 - Sidebar cố định vì kéo thu sidebar bị giật và System Settings không cho thu. SwiftUI không có API khoá sidebar của `NavigationSplitView`, nên app dùng `NSSplitViewController` của chính nó. Hai cách đã loại là duyệt cây view tìm `NSSplitView` mà `NavigationSplitView` dựng và phủ view lên đường chia.
+- Glyph sidebar đặc vì glyph nét mảnh khoảng 1 pt trong ô 20 trông nhỏ và nhẹ hơn hẳn icon của System Settings, mà glyph trắng chiếm 12–15 pt của ô và phần lớn là hình đặc (số đo ở `docs/research/SystemSettingsReference.md`).
 
 **Xem thêm:** số đo của System Settings ở [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md) và `scripts/selftest/settings-window/Reference.swift`; API cửa sổ ở [`docs/research/SwiftUIWindowAPI.md`](research/SwiftUIWindowAPI.md) (số đo trên app thử ở mục 1); cách dựng ở [`docs/Architecture.md`](Architecture.md) mục "Cửa sổ Cài đặt".
 

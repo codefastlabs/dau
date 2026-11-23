@@ -2,9 +2,9 @@
 
 Khi mockup và macOS khác nhau về bố cục, khoảng cách, cỡ chữ hay hình dáng control thì cửa sổ Cài đặt của Dấu theo System Settings; mockup chỉ quy định nội dung (D9 (Giao diện)). File này giữ số đo của System Settings, chỗ SwiftUI mặc định khác số đó và chỗ Dấu cố ý khác. Số mà `scripts/selftest/settings-window/run.sh` kiểm trên cửa sổ thật nằm trong [`scripts/selftest/settings-window/Reference.swift`](../../scripts/selftest/settings-window/Reference.swift).
 
-## Hiện trạng (11/11/2026)
+## Hiện trạng (24/11/2026)
 
-- **Chuẩn:** System Settings trên macOS 27.2 (26B123), đo 02/11/2026; thanh công cụ và sidebar đo thêm 05/11, cỡ cửa sổ 09/11.
+- **Chuẩn:** System Settings trên macOS 27.2 (26B123), đo 02/11/2026; thanh công cụ và sidebar đo thêm 05/11, cỡ cửa sổ 09/11, glyph trong ô icon sidebar 24/11.
 - **SwiftUI mặc định cho đúng phần lớn số đo**; chỗ khác ở mục "Hành vi SwiftUI khác hệ thống": sidebar 144 thay vì 232, lề trên form 20 thay vì 12, thẻ form tối đa 704, hàng chỉ có `Text` cao 36, nút trong hàng chỉ có nút căn trái.
 - **Cửa sổ System Settings rộng cố định 740, chỉ đổi được chiều cao**; sidebar 232 không kéo, không thu được. Cửa sổ Cài đặt của Dấu làm theo cả hai.
 - **Dấu cố ý khác chuẩn ở vài chỗ**, mỗi chỗ có lý do trong D9: lề trên form 20, ô tìm sidebar lệch 1–2 pt, nút mở/thu "Nâng cao", tiêu đề trong sheet (mục "Dấu so với chuẩn").
@@ -15,6 +15,7 @@ Khi mockup và macOS khác nhau về bố cục, khoảng cách, cỡ chữ hay 
 - System Settings mở bằng URL `x-apple.systempreferences:`, không bấm gì, không đổi cài đặt nào. Pane đã đo: Bàn phím, Giao diện, Âm thanh, Màn hình khoá, Desktop & Dock, Ngày & Giờ, Thông báo, Màn hình, Cài đặt chung, Bàn di chuột.
 - Khung phần tử đọc bằng Accessibility API (role, x, y, w, h). Mép, màu, bán kính góc đọc theo pixel trên ảnh `screencapture -l`.
 - Cỡ chữ suy ra bằng cách so độ rộng nét chữ đo được với độ rộng tính bằng `NSFont.systemFont` ở các cỡ và độ đậm; "≈" khi hai mức sát nhau.
+- Glyph trong ô icon đo trên ảnh `screencapture -l` ở màn 2x: một điểm ảnh tính là glyph khi nó trắng hơn màu ô (độ trắng trên 0,4 tính vùng nét; mảng trắng cộng độ trắng của mọi điểm trên 0,1), bỏ 2 pt sát mép ô. Glyph của Dấu đo cùng cách trên ô dựng từ mã ở 2x.
 - Số SwiftUI mặc định đo trên một app thử ngoài repo: `NavigationSplitView`, `List` sidebar 4 hàng (ô icon 20 màu, chữ), `Form { Section … }.formStyle(.grouped)`, `.navigationTitle`, không `listRowInsets`, không padding; chạy ở 820 × 600, 740 × 560 và rộng 1000–1400.
 - Giao diện Tối, màn Retina 2x (trừ chỗ ghi màn 1x). Đơn vị pt, gốc toạ độ ở góc trên trái cửa sổ (sheet: góc trên trái sheet).
 - Máy đo hiện thanh cuộn kiểu cũ (luôn hiện), nên hàng sidebar của System Settings rộng 215 thay vì 232.
@@ -47,6 +48,7 @@ Khi mockup và macOS khác nhau về bố cục, khoảng cách, cỡ chữ hay 
 | Hàng | cao 32 |
 | Vùng chọn | x 10, rộng = cột − 20 (đo được x 10..205 vì thanh cuộn; không có thanh cuộn thì suy ra 10..222, cần kiểm chứng), góc ≈ 7, màu nhấn khi danh sách giữ tiêu điểm bàn phím |
 | Ô icon | 20 × 20, x 19, giữa hàng |
+| Glyph trong ô icon | trắng, phần lớn là hình đặc; vùng nét 12–15 (cạnh dài), mảng trắng 8–22% diện tích ô (10 icon: Wi-Fi, Bluetooth, Network, VPN, Battery, Accessibility, Displays, Notifications, Sound, Focus) |
 | Chữ | 13, thường, trắng hoàn toàn (255) ở giao diện Tối; nét chữ từ x ≈ 46 (cách mép ô icon ≈ 7) |
 | Khoảng giữa hai nhóm | 13 |
 | Vùng đáy sidebar | không có |
@@ -166,6 +168,7 @@ Chỗ Dấu khớp mà dễ hỏi:
 - Cửa sổ mặc định 740 × 560, rộng cố định 740, cao đổi được (`SettingsScene`). Sidebar 232 cố định (`SettingsSplitViewController`).
 - Cụm Lùi/Tiến đo trên Dấu (05/11/2026; cụm đã bỏ 13/11/2026, D9): Lùi x 239,5, Tiến x 275,5, y 8, 36 × 36 và 37 × 36; khung tiêu đề từ x 316,5 (nét chữ của app thử từ x ≈ 326, `Reference.swift`).
 - Hàng chỉ có nút căn nút phải như hệ thống.
+- Icon sidebar: ô 20 bo góc 5, glyph trắng đặc vẽ viewBox 24 thành 18 ở giữa ô (`SectionIcon`). Vùng nét 12–14,5, mảng trắng 12–16% diện tích ô, trong khoảng của System Settings.
 - Icon ứng dụng: khung 24 cho hàng một dòng kèm control ("Quy tắc riêng", danh sách của sheet thêm quy tắc), như Trợ năng; 32 cho hàng có dòng phụ ("Đề xuất") và thẻ đầu "Cập nhật & hỗ trợ", như Hoạt động nền. Trên cửa sổ thật (màn Retina), nét vẽ icon ở hai chỗ 32 là 26 × 26 từ x 265, trùng System Settings.
 
 ## Nguồn API

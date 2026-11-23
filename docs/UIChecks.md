@@ -54,7 +54,7 @@ Mỗi mục có ba dòng: lỗi đã gặp, cách kiểm và điều kiện đ�
 - **Đạt khi:**
   - Ô tìm, hàng, vệt chọn, ô icon và chữ giống System Settings.
   - Màu ô là `systemBlue` / `systemPurple` / `systemOrange` / `systemGreen`.
-  - Glyph có nét trắng theo SVG của mockup (phần này đối chiếu nội dung).
+  - Glyph trắng đặc theo SVG của mockup (phần này đối chiếu nội dung).
 
 ### 6. Segmented "Kiểu gõ" hẹp, căn giữa
 
