@@ -3,7 +3,7 @@ import Carbon
 import Observation
 
 /// Whether Dấu is among the user's enabled input sources (as stored by macOS, read only).
-/// Drives the "Dấu chưa được bật" banner. Rechecked when the app becomes active and
+/// Drives the "Dấu isn’t turned on in your input sources" banner. Rechecked when the app becomes active and
 /// when the system announces a change of enabled input sources.
 @MainActor
 @Observable

@@ -4,11 +4,10 @@ import ApplicationServices
 import SwiftUI
 
 /// Where the capture modes put a window: the middle of the primary display (the one with
-/// the menu bar), in view. They used to move it to (-9000, -9000); macOS pulled it back
-/// into a corner of the main screen, where it peeked out during the run, and AppKit saved
-/// that corner as the window's frame for the next normal launch (03/11/2026). Not
-/// `NSScreen.main`: that is the screen of the user's key window, which can be a 1x display
-/// and gave 1x captures that the pass values (made on the Retina display) do not fit.
+/// the menu bar), in view. Not off-screen: macOS pulls such a window into a corner of the
+/// main screen and AppKit saves that frame for the next launch. Not `NSScreen.main`: that
+/// is the screen of the user's key window, which can be a 1x display and give 1x captures
+/// that the pass values (made on the Retina display) do not fit.
 @MainActor func centeredFrame(size: NSSize) -> NSRect {
     let visible = NSScreen.screens.first?.visibleFrame ?? NSRect(x: 0, y: 0, width: size.width, height: size.height)
     return NSRect(x: (visible.midX - size.width / 2).rounded(), y: (visible.midY - size.height / 2).rounded(),
@@ -18,8 +17,7 @@ import SwiftUI
 /// Puts a capture window in the middle of the primary display over a plain backdrop. The
 /// sidebar and toolbar materials blend what lies behind the window; the backdrop, one
 /// system color right below it, keeps that the same whatever the user has on screen.
-/// A precaution: its effect alone was not measured (the dark-mode failures of the first
-/// on-screen runs came from 1x captures, see `centeredFrame`).
+/// A precaution, not measured on its own.
 @MainActor func placeForCapture(_ window: NSWindow, size: NSSize) {
     let frame = centeredFrame(size: size)
     window.setFrame(frame, display: false)
@@ -43,11 +41,11 @@ import SwiftUI
 /// Debug only: in-app captures that need fake services, run by
 /// scripts/selftest/settings-window on a copy re-signed ad hoc without entitlements:
 /// `--capture-onboarding` (the onboarding window on fixed services),
-/// `--capture-uninstall` (the uninstall alerts and the "Bỏ Dấu khỏi nguồn đầu vào"
-/// sheet, laid out without running anything), `--capture-report` (the "Báo ứng dụng gõ
-/// lỗi" sheet on fixed sample content; nothing is opened or sent), `--capture-updates`
-/// (Cập nhật & hỗ trợ as a release build shows it, on a fake updater; Sparkle is not
-/// tested here, M7 step 2 does that with real builds). The Settings window
+/// `--capture-uninstall` (the uninstall alerts and the "Remove Dấu from Your Input Sources"
+/// sheet, laid out without running anything), `--capture-report` (the "Report a Typing
+/// Problem" sheet on fixed sample content; nothing is opened or sent), `--capture-updates`
+/// ("Updates & Support" as a release build shows it, on a fake updater; Sparkle itself is
+/// tested only with real release builds). The Settings window
 /// itself is measured from outside, in the real app (`--settings-window`, AXCheck.swift).
 @MainActor
 enum DebugCapture {
@@ -74,8 +72,8 @@ enum DebugCapture {
 
     /// `--capture-onboarding <dir>`: the onboarding window on fixed services (OpenKey
     /// running, Dấu installed but not enabled). Writes `onboarding-<step>-<mode>.png` for
-    /// "Chuyển Dấu vào Applications" (`0-move`: not the owner copy, nothing installed),
-    /// steps 1, 2 before "Bật Dấu" (`2`), 2 with an unreadable shortcut and another
+    /// "Move Dấu to %@" (`0-move`: not the owner copy, nothing installed),
+    /// steps 1, 2 before "Turn On Dấu" (`2`), 2 with an unreadable shortcut and another
     /// Vietnamese source on (`2-notes`), 2 waiting for Allow (`2-waiting`), 2 when macOS
     /// left Dấu off (`2-failed`), 2 on an install error (`2-error`), 2 once enabled
     /// (`2-done`), 2 enabled with no shortcut set (`2-done-noshortcut`) and 3, light and
@@ -163,7 +161,7 @@ enum DebugCapture {
                         detector?.otherSources = ["Tiếng Việt – Telex"]
                         flow.refresh()
                     }),
-                    // "Bật Dấu" is waiting for the click on macOS's dialog.
+                    // "Turn On Dấu" is waiting for the click on macOS's dialog.
                     ("2-waiting", {
                         shortcutNow = shortcutArgument
                         detector?.otherSources = []
@@ -178,13 +176,13 @@ enum DebugCapture {
                         installer?.release = .notEnabled
                         while flow.isWorking { try? await Task.sleep(for: .milliseconds(20)) }
                     }),
-                    // "Thử lại" hits an install error.
+                    // "Try Again" hits an install error.
                     ("2-error", {
                         installer?.enableWaits = false
                         installer?.failure = .invalidSignature
                         await flow.enable()
                     }),
-                    // Enabled from there (the capture skips "Cài lại"), and this time the user allows it.
+                    // Enabled from there (the capture skips "Reinstall"), and this time the user allows it.
                     ("2-done", {
                         installer?.failure = nil
                         installer?.enableOutcome = .enabled
@@ -240,8 +238,8 @@ enum DebugCapture {
     // MARK: Uninstall alert
 
     /// `--capture-uninstall <dir>`: opens the Settings window in the middle of the primary
-    /// display, lays out the "Gỡ Dấu khỏi máy?" alert, the result alert and the "Bỏ Dấu
-    /// khỏi nguồn đầu vào" sheet there without running anything, and writes
+    /// display, lays out the "Uninstall Dấu?" alert, the result alert and the "Remove Dấu
+    /// from Your Input Sources" sheet there without running anything, and writes
     /// `uninstall-confirm-<mode>.png`, `uninstall-done-<mode>.png`,
     /// `uninstall-remove-<mode>.png` (Dấu not selected) and
     /// `uninstall-remove-hint-<mode>.png` (Dấu selected: with the "–" hint), plus `frames.json`
@@ -306,12 +304,12 @@ enum DebugCapture {
 
     // MARK: Problem report sheet
 
-    /// `--capture-report <dir>`: the Settings window opens on Cập nhật & hỗ trợ with the
-    /// "Báo ứng dụng gõ lỗi" sheet shown (`UpdatesSupportView`), filled with
+    /// `--capture-report <dir>`: the Settings window opens on "Updates & Support" with the
+    /// "Report a Typing Problem" sheet shown (`UpdatesSupportView`), filled with
     /// `reportSample` instead of the running apps (the shot must not show the user's apps
     /// and must compare with the Report artboard). Writes `report-<mode>.png` (light,
-    /// dark) and `frames.json`: per shot the sheet's size ("sheet") and the "Gửi kèm" footer
-    /// ("reportIncluded", sheet points), so check (h) can tell a cut sheet. "Mở trên
+    /// dark) and `frames.json`: per shot the sheet's size ("sheet") and the "Included" footer
+    /// ("reportIncluded", sheet points), so check (h) can tell a cut sheet. "Open on
     /// GitHub" is never pressed.
     static let reportDirectory: URL? = {
         let args = CommandLine.arguments
@@ -356,7 +354,7 @@ enum DebugCapture {
 
     // MARK: Updates page of a release build
 
-    /// `--capture-updates <dir>`: the Settings window opens on Cập nhật & hỗ trợ as a
+    /// `--capture-updates <dir>`: the Settings window opens on "Updates & Support" as a
     /// release build shows it, on a fake updater (`CaptureUpdater`: checked today at 9:41,
     /// automatic checks on) and an in-memory channel store, so Sparkle never runs, nothing
     /// is downloaded and no setting is written. As on a release build, the version line
@@ -391,9 +389,9 @@ enum DebugCapture {
         ("stable", ["beta", nil, "beta"]),
     ]
 
-    /// The probes of Cập nhật & hỗ trợ that `--capture-updates` records: the version card's
-    /// first row, the "Tự động kiểm tra bản mới" row (its switch at the right), the "Kênh
-    /// phát hành" row and its control, and the installed input method's line
+    /// The probes of "Updates & Support" that `--capture-updates` records: the version card's
+    /// first row, the "Automatically check for updates" row (its switch at the right), the "Release
+    /// channel" row and its control, and the installed input method's line
     /// (a development build's; the capture must not show it).
     static let updatesProbes = ["firstRow", "autoCheck", "releaseChannel", "channelControl", "installedBuild"]
 
@@ -510,7 +508,7 @@ enum DebugCapture {
     /// and leave the installed input method alone (real-window checks).
     static let settingsWindowOnly = CommandLine.arguments.contains("--settings-window")
 
-    /// `--tampered`: the Settings window shows the "Cài lại" banner whatever is installed
+    /// `--tampered`: the Settings window shows the "Reinstall" banner whatever is installed
     /// (`InputMethodActions.forceTampered`), and the installed input method is left alone:
     /// no launch reconcile, no signature check.
     static let tampered = CommandLine.arguments.contains("--tampered")

@@ -35,7 +35,7 @@ final class FakeTextInputSources: TextInputSources {
     private var storedReads = 0
     private var enableCalled = false
     /// What macOS has stored as enabled (`com.apple.inputsources`). nil: follows the
-    /// enabled flags. Set to model the T4 bug: TIS says off, the stored entries stay.
+    /// enabled flags. Set to model TIS saying off while the stored entries stay.
     var stored: Set<String>?
     /// The user clicks "–" in System Settings: Dấu's entries go, stored and listed.
     func userRemovesDau() {
@@ -238,7 +238,7 @@ struct Rig {
 }
 
 @MainActor
-@Suite("Input method installer (M5)")
+@Suite("Input method installer")
 struct InputMethodInstallerTests {
     let old = InputMethodBundleInfo(bundleID: imID, version: "1", shortVersion: "0.1.0", modeIDs: [modeID])
 
@@ -492,7 +492,7 @@ struct InputMethodInstallerTests {
         #expect(try await rig.installer.reconcile() == .badSignature)
         #expect(rig.files.log.isEmpty && rig.tis.log.isEmpty && rig.processes.log.isEmpty)
         #expect(!rig.installer.installedIsGenuine())
-        // The user's "Cài lại" installs as before.
+        // The user's "Reinstall" installs.
         try await rig.installer.install()
         #expect(rig.files.log == ["copy"])
         #expect(try await rig.installer.reconcile() == .alreadyCurrent)
@@ -523,7 +523,7 @@ struct InputMethodInstallerTests {
         #expect(try await rig.installer.enable() == .enabled)
     }
 
-    @Test("enable: a copy that is not the owner copy does not check the signature and enables as before (D37)")
+    @Test("enable: a copy that is not the owner copy does not check the signature and enables (D37)")
     func enableNotOwnerDoesNotCheck() async throws {
         let rig = Rig(installed: old, sources: FakeTextInputSources.dau())
         rig.files.genuine = false
@@ -567,7 +567,7 @@ struct InputMethodInstallerTests {
         await #expect(throws: InputMethodInstallerError.notOwnerCopy) { try await rig.installer.install() }
         #expect(rig.files.log.isEmpty && rig.tis.log.isEmpty)
 
-        // Installed by the owner copy: this copy enables it ("Bật lại") without copying.
+        // Installed by the owner copy: this copy enables it ("Turn On Again") without copying.
         let installed = Rig(installed: old, sources: FakeTextInputSources.dau())
         installed.owner.runningCopyIsOwner = false
         #expect(try await installed.installer.enable() == .enabled)
@@ -895,7 +895,7 @@ struct InputMethodInstallerTests {
 }
 
 @MainActor
-@Suite("Tampered input method (D37, security review 02/11/2026)")
+@Suite("Tampered input method (D37)")
 struct TamperedInputMethodTests {
     @Test("a copy without this app's signature shows the banner; Cài lại installs ours")
     func reinstall() async {
@@ -969,7 +969,7 @@ struct TamperedInputMethodTests {
         await actions.reinstallInputMethod()
         #expect(installer.calls == ["reconcile"])
         #expect(actions.reinstall == .idle)
-        // "Bật lại" still works from such a copy.
+        // "Turn On Again" still works from such a copy.
         installer.current = .installed(version: nil)
         #expect(await actions.enableFromBanner() == false)
         #expect(installer.calls == ["reconcile", "enable"])
@@ -1120,7 +1120,7 @@ struct UninstallFlowTests {
         #expect(!actions.isUninstalling)
     }
 
-    @Test("Dấu listed: prepare (opens System Settings) and the sheet as before (D16)")
+    @Test("Dấu listed: prepare (opens System Settings) and the sheet (D16)")
     func listedKeepsTheSheet() async {
         let installer = FakeInputMethodInstaller(.enabled)
         installer.stillListed = true

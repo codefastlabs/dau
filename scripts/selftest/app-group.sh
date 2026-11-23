@@ -22,7 +22,7 @@
 #      been launched may take several seconds before it reads the settings and starts
 #      observing, and a change saved before that is not reported as a reload.
 #   4. Runs `Dau --set-typing-method vni` (Debug flag, the app's real signature and App
-#      Group entitlement; the host app is not sandboxed since D37), waits for the reload
+#      Group entitlement; the host app is not sandboxed, D37), waits for the reload
 #      line (10 seconds at most), and checks the input method's log (subsystem <IM bundle ID>, category settings)
 #      for `event=settings-reloaded … typingMethod=vni`. Then the same with telex, which
 #      also checks that a new app process reads vni back (`previous=vni`): the value

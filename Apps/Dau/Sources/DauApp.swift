@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 import DauShared
 
-/// Host app: the Settings window (M4), the onboarding window (M5) and, on the official
+/// Host app: the Settings window, the onboarding window and, on the official
 /// build only, Sparkle's updater (D7, `SparkleUpdater`). The entry point is main.swift.
 ///
 /// The Settings window is the app's main window, so opening Dấu from Finder shows it;
@@ -26,7 +26,7 @@ struct DauApp: App {
     private let opensOnboarding: Bool
 
     init() {
-        // "Báo lỗi…" fills in the app used right before Dấu (ReportSheet).
+        // "Report a Problem…" fills in the app used right before Dấu (ReportSheet).
         PreviousAppTracker.shared.start()
         #if DEBUG
         // `--capture-updates`: the release build's update rows on a fake updater.
@@ -73,7 +73,7 @@ struct DauApp: App {
         actions.startLaunchReconcile()
     }
 
-    /// The Settings window's first section: Gõ phím, or Cập nhật & hỗ trợ for the
+    /// The Settings window's first section: "Typing", or "Updates & Support" for the
     /// `--capture-report` (its sheet is presented from that page) and `--capture-updates`
     /// captures.
     private static var initialSection: SettingsSection {

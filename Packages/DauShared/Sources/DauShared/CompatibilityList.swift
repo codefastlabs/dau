@@ -9,7 +9,7 @@
 import Foundation
 
 /// The apps Dấu labels "Đề xuất" on the Apps page (D13). Suggestions are labels only:
-/// every app types without underline until the user turns it on (D13, 30/10/2026).
+/// every app types without underline until the user turns it on (D13).
 ///
 /// Decoding is lenient (D18): unknown keys are ignored, a malformed entry is dropped
 /// without losing the others, and blank bundle IDs are skipped.

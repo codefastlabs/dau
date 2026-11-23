@@ -4,7 +4,7 @@ import DauShared
 import Security
 import os
 
-// The real `InputMethodInstaller` (M5, D14, D16, D37; docs/research/InputMethodInstall.md
+// The real `InputMethodInstaller` (D14, D16, D37; docs/research/InputMethodInstall.md
 // sections 1–6). It talks to the system through narrow interfaces, so the order of
 // operations and every failure path are tested with fakes
 // (Apps/Dau/Tests/DauAppTests/InputMethodInstallerTests.swift):
@@ -19,7 +19,7 @@ import os
 //   input method (D37).
 //
 // N4: install copies Dấu's own files; enable and uninstall run only from a button the
-// user clicked ("Bật Dấu", "Bật lại", "Tiếp tục gỡ"); `reconcile` replaces Dấu's own
+// user clicked ("Turn On Dấu", "Turn On Again", "Uninstall"); `reconcile` replaces Dấu's own
 // bundle (D7, D37). Only the owner copy copies or replaces the input method (D37). Dấu
 // never selects itself as the input source, and never switches its own input source off:
 // macOS blocks that from an app, the user removes it in System Settings.
@@ -65,7 +65,7 @@ protocol InputMethodFiles {
     func installEmbedded() throws
     /// The same, but only ever swaps with an installed bundle that is there at the
     /// rename: returns false, nothing installed and no staging folder left, when there
-    /// is none (any more). Never installs anew.
+    /// is none. Never installs anew.
     func replaceInstalledWithEmbedded() throws -> Bool
     func moveInstalledToTrash() throws
 }
@@ -104,7 +104,7 @@ protocol InputMethodProcesses: AnyObject {
     func forceQuit(bundleID: String)
 }
 
-/// What "Bật Dấu" and uninstall need from System Settings (D37, docs/research/InputMethodInstall.md
+/// What "Turn On Dấu" and uninstall need from System Settings (D37, docs/research/InputMethodInstall.md
 /// sections 2 and 5): the enable request is only handled when System Settings has to open the
 /// Keyboard extension, and its input source cache must be rebuilt to drop a removed source.
 @MainActor
@@ -179,20 +179,14 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     var settingsQuitTimeout: Duration = .seconds(5)
     /// How long the input method has to quit on request before it is ended.
     var quitTimeout: Duration = .seconds(2)
+    // Poll intervals, not measured: whether `kTISNotifyEnabledKeyboardInputSourcesChanged`
+    // arrives after the stored list is readable is unknown (`InputMethodActions` measured
+    // that it does not for the selection).
     /// How often uninstall looks for the user to have removed Dấu from the input sources.
-    /// Polls the stored list instead of observing `kTISNotifyEnabledKeyboardInputSourcesChanged`:
-    /// whether that notification arrives after the stored list is readable is not measured
-    /// (the selection case in `InputMethodActions` measured that its notification does not);
-    /// 500 ms is not backed by a measurement.
     var removalPollInterval: Duration = .milliseconds(500)
-    /// Interval of the `isRunning` polls in `quitSystemSettings` and `stopInputMethod`. It
-    /// polls instead of observing the app's termination; no reason or measurement is
-    /// recorded for the choice or for 100 ms.
+    /// Interval of the `isRunning` polls in `quitSystemSettings` and `stopInputMethod`.
     private let pollInterval: Duration = .milliseconds(100)
-    /// Interval of the stored-entry poll in `enable()`. It polls instead of observing
-    /// `kTISNotifyEnabledKeyboardInputSourcesChanged`: not measured whether the notification
-    /// arrives after the stored entry is readable (the selection case in `InputMethodActions`
-    /// measured that it does not); 250 ms is not backed by a measurement.
+    /// Interval of the stored-entry poll in `enable()`.
     private let enablePollInterval: Duration = .milliseconds(250)
 
     init(files: InputMethodFiles, owner: OwnerCopyCheck, sources: TextInputSources, processes: InputMethodProcesses,
@@ -300,7 +294,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
         }
 
         // The status code proves nothing: wait for the stored entry (N4, N5). The user
-        // may take a while to click Allow; "Thử lại" cancels the wait.
+        // may take a while to click Allow; "Try Again" cancels the wait.
         var waited: Duration = .zero
         while true {
             try Task.checkCancellation()
@@ -336,7 +330,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             return .skipped("bundle ID \(installed.bundleID)")
         }
         // D37: a copy with a wrong signature or another team is never replaced silently;
-        // the "Cài lại" banner shows and the user decides.
+        // the "Reinstall" banner shows and the user decides.
         guard files.installedIsGenuine else {
             installLogger.error("event=reconcile-bad-signature")
             return .badSignature
@@ -365,7 +359,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
     func prepareUninstall() async throws {
         guard files.embedded != nil else { throw InputMethodInstallerError.unavailable }
         // Only opens the list: "–" works for the selected source too, and macOS selects a
-        // keyboard itself when Dấu goes away (measured on macOS 27.2, 04/11/2026).
+        // keyboard itself when Dấu goes away (measured on macOS 27.2).
         openInputSources()
         installLogger.notice("event=uninstall-prepared")
     }
@@ -402,7 +396,7 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
 
         // System Settings' input source cache still holds the removed bundle: the "+"
         // list keeps a row without a name (and TIS keeps listing it) until the cache is
-        // rebuilt, which used to take a logout. Deleting it makes System Settings rebuild
+        // rebuilt, otherwise only a logout rebuilds it. Deleting it makes System Settings rebuild
         // it at once (D37, docs/research/InputMethodInstall.md section 5.1).
         let cache = settings.clearKeyboardCache()
         installLogger.notice("event=uninstall-cache-cleared removed=\(cache.removed) failed=\(cache.failed)")

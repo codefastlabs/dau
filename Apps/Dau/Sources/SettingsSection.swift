@@ -56,7 +56,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
     }
 
     /// Case- and diacritic-insensitive match on the words as shown ("go phim" finds
-    /// "Gõ phím" in Vietnamese, "typing" finds "Typing" in English).
+    /// "Typing" in Vietnamese, "typing" finds "Typing" in English).
     func matches(_ query: String) -> Bool {
         matches(query) { String(localized: $0) }
     }
@@ -74,7 +74,7 @@ enum SettingsSection: String, CaseIterable, Identifiable, Hashable {
 extension String {
     /// Whether `query` occurs in the string, ignoring case and diacritics, with "đ" read
     /// as "d" too (it is a letter of its own, not a "d" with a mark, so diacritic folding
-    /// keeps it): "de xuat" finds "Đề xuất", as people type without marks.
+    /// keeps it): "de xuat" finds "Suggested", as people type without marks.
     func searchContains(_ query: String) -> Bool {
         func fold(_ s: String) -> String {
             s.folding(options: [.caseInsensitive, .diacriticInsensitive, .widthInsensitive], locale: nil)

@@ -2,7 +2,7 @@ import Foundation
 import Observation
 import SwiftUI
 
-// The update part of "Cập nhật & hỗ trợ" (D7), without Sparkle: the Sparkle-backed side
+// The update part of "Updates & Support" (D7), without Sparkle: the Sparkle-backed side
 // is SparkleUpdater.swift, left out of the unit-test package, so the choice of build,
 // the page's state, the release channel and the wording are tested without linking Sparkle.
 
@@ -36,7 +36,7 @@ protocol UpdaterBackend: AnyObject {
     var canCheckForUpdates: Bool { get }
     var lastUpdateCheckDate: Date? { get }
     var automaticallyChecksForUpdates: Bool { get set }
-    /// "Kiểm tra bản mới…": Sparkle's own windows show the result (D7).
+    /// "Check for Updates…": Sparkle's own windows show the result (D7).
     func checkForUpdates()
     /// Calls `changed` on the main actor whenever one of the three properties changes.
     func observeChanges(_ changed: @escaping @MainActor @Sendable () -> Void)
@@ -46,7 +46,7 @@ protocol UpdaterBackend: AnyObject {
     func allowedChannelsChanged()
 }
 
-// MARK: - Release channel (D7, "Kênh")
+// MARK: - Release channel (D7)
 
 /// The release channels of D7. In the appcast a beta item carries Sparkle's channel
 /// `beta`; an item without a channel is a stable release, which every channel sees.
@@ -99,7 +99,7 @@ final class DefaultsReleaseChannelStore: ReleaseChannelStore {
     }
 }
 
-/// The release channel (D7, "Kênh"): the user's choice, and whether the appcast has a
+/// The release channel (D7): the user's choice, and whether the appcast has a
 /// stable release yet. Both come from the appcast as Sparkle loads it, never from a build
 /// flag: the stable release is the unchanged file of the last beta, built while no
 /// stable release existed.
@@ -175,7 +175,7 @@ final class ReleaseChannels {
 final class UpdatesModel {
     private(set) var canCheck: Bool
     private(set) var lastCheck: Date?
-    /// "Tự động kiểm tra bản mới". Sparkle stores the choice in the app's defaults; its
+    /// "Automatically check for updates". Sparkle stores the choice in the app's defaults; its
     /// default is `SUEnableAutomaticChecks` in Info.plist (D7).
     var automaticChecks: Bool {
         didSet {
@@ -184,7 +184,7 @@ final class UpdatesModel {
         }
     }
 
-    /// "Kênh phát hành" (D7). The same object answers Sparkle's delegate
+    /// "Release channel" (D7). The same object answers Sparkle's delegate
     /// (`SparkleUpdaterBackend`), so the page and the updater never disagree.
     let channels: ReleaseChannels
 
@@ -204,7 +204,7 @@ final class UpdatesModel {
         backend.checkForUpdates()
     }
 
-    /// The selection of "Kênh phát hành", for a key-path binding (`$updates.channel` through
+    /// The selection of "Release channel", for a key-path binding (`$updates.channel` through
     /// `@Bindable`, as every other Settings row binds). Beta until the first appcast load,
     /// when the row is not shown anyway. Setting it is `chooseChannel`.
     var channel: ReleaseChannel {
@@ -212,7 +212,7 @@ final class UpdatesModel {
         set { chooseChannel(newValue) }
     }
 
-    /// The user picked a channel in "Kênh phát hành".
+    /// The user picked a channel in "Release channel".
     func chooseChannel(_ choice: ReleaseChannel) {
         guard channels.choose(choice) else { return }
         backend.allowedChannelsChanged()
@@ -227,7 +227,7 @@ final class UpdatesModel {
         }
     }
 
-    /// "Kiểm tra lần cuối: hôm nay lúc 9:41" (artboard SettingsAbout). Before the first
+    /// "Last checked: today at 9:41" (artboard SettingsAbout). Before the first
     /// check Sparkle has no date: the line says so rather than show a time (N5).
     static func lastCheckLine(_ date: Date?, now: Date = Date(), calendar: Calendar = .current,
                               locale: Locale = .current) -> String {
@@ -237,8 +237,8 @@ final class UpdatesModel {
 
     /// "today at 9:41", "yesterday at 9:41", else the date "at" the time. Built from the
     /// catalog rather than `DateFormatter.doesRelativeDateFormatting`: the Vietnamese
-    /// relative style puts the time first ("9:41 Hôm nay"), not the artboard's "hôm nay
-    /// lúc 9:41". The date and time themselves follow the user's region (`locale`).
+    /// relative style puts the time first ("9:41 Hôm nay"), where the catalog's "today
+    /// at %@" puts it last. The date and time themselves follow the user's region (`locale`).
     static func when(_ date: Date, now: Date, calendar: Calendar, locale: Locale) -> String {
         let time = date.formatted(Date.FormatStyle(date: .omitted, time: .shortened, locale: locale, calendar: calendar, timeZone: calendar.timeZone))
         if calendar.isDate(date, inSameDayAs: now) {

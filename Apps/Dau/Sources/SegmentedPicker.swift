@@ -6,12 +6,12 @@ import SwiftUI
 /// - The onboarding window's (the default): segments of equal width filling the width it
 ///   is given, large size. SwiftUI's segmented `Picker` keeps its intrinsic width on
 ///   macOS 14–15; on macOS 26+ `buttonSizing(.flexible)` makes it fill (measured on 27.2:
-///   "Kiểu gõ" in Settings spans the row, 528 pt), which the Settings window uses.
-/// - A Settings row with a segment shown but not selectable ("Kênh phát hành", D7):
+///   "Typing method" in Settings spans the row, 528 pt), which the Settings window uses.
+/// - A Settings row with a segment shown but not selectable ("Release channel", D7):
 ///   `fillsWidth: false`, regular size, as the row's SwiftUI segmented `Picker` would
 ///   draw. SwiftUI's segmented `Picker` cannot turn one segment off: `.disabled` on a
 ///   tagged option left the segment enabled on macOS 27.2 (a `Picker` laid out in a
-///   window never shown, 18/11/2026), while `NSSegmentedControl.setEnabled(_:forSegment:)`
+///   window never shown), while `NSSegmentedControl.setEnabled(_:forSegment:)`
 ///   is the AppKit API for it.
 ///
 /// Its look (selection color, height, separators) is the system's (D9).

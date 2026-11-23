@@ -9,7 +9,7 @@ import Testing
 /// `lag` models an app that applies keys asynchronously (WebKit, Chromium, terminals):
 /// for `lag` seconds after any edit, `selectedRange` and `text(in:)` still answer from
 /// the document as it was before that edit. `staleText` makes only the text lag (the
-/// selection is fresh), the case M2 saw in Safari.
+/// selection is fresh), the case seen in Safari.
 private final class FakeDocument: InPlaceClient {
     enum Call: Equatable {
         case selectedRange
@@ -703,7 +703,7 @@ struct InPlaceComposerTests {
 
     /// N3 "Ngoại lệ sau ⌫ chưa áp", the limit runs out: the key goes on as it did without
     /// the wait. Here the text read with the deletion is the engine's word, so the app is
-    /// only late (M6, keys in a burst): D32 replaces at the followed position.
+    /// only late (keys in a burst): D32 replaces at the followed position.
     @Test("stale snapshot right after a ⌫, older than the wait limit: as without the wait (late answer)")
     func backspaceStaleTimeout() {
         for var s in Self.sessions() {
@@ -757,7 +757,7 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("stale text with a fresh selection (Safari in M2): no damage when keys are fast")
+    @Test("stale text with a fresh selection (Safari): no damage when keys are fast")
     func staleTextFast() {
         // "tôi" was produced by a replacement just before: the text read is still "to"
         // while the cursor is already after "tôi". D20 reads, cannot trust that text and
@@ -783,7 +783,7 @@ struct InPlaceComposerTests {
         #expect(s.reads == 1)
     }
 
-    @Test("settle interval: above the 10–20 ms lag of asynchronous apps (M2), below a person going back to a word")
+    @Test("settle interval: above the 10–20 ms lag of asynchronous apps, below a person going back to a word")
     func settleInterval() {
         #expect(InPlaceComposer.settleInterval >= 0.05)
         #expect(InPlaceComposer.settleInterval <= 0.15)
@@ -816,7 +816,7 @@ struct InPlaceComposerTests {
     }
 }
 
-/// D20, "Chữ cái gõ sát chữ có sẵn" (05/11/2026): the first plain letter after a
+/// D20, "Chữ cái gõ sát chữ có sẵn": the first plain letter after a
 /// reset also reads the word before the cursor, and joins it only while the word with
 /// that letter is still a valid prefix (D30); otherwise the letter starts a new word.
 /// `⟦x⟧` in the names is the text before the cursor after a click.
@@ -977,7 +977,7 @@ struct InPlaceComposerLetterTests {
     }
 
     /// Cases B33 and C12 of docs/research/EditingTypedText.md, and the sentence of the
-    /// real-app check of D20 at 5 and 30 ms (`docs/Progress.md`, 17/11).
+    /// real-app check of D20 at 5 and 30 ms.
     @Test("keys 30 ms apart: a mark after ⌫ over Space or after an arrow applies (D20 does not wait)",
           arguments: [("ban ⌫f ", "bàn "), ("tooi←s", "tối"),
                        ("Hoc ⌫j tieesng Vieejt cungf ban ⌫j thaajt vui ", "Học tiếng Việt cùng bạn thật vui ")])
@@ -1069,7 +1069,7 @@ struct InPlaceComposerLetterTests {
     #endif
 }
 
-/// The three exceptions of D20 (05/11/2026), on the first key after a reset. Every
+/// The three exceptions of D20, on the first key after a reset. Every
 /// decision uses the text the read already returned: no client call beyond the read (N3).
 /// `⟦x⟧` in the names is the text before the cursor after a click.
 @Suite("InPlaceComposer: the three exceptions of D20")
@@ -1433,7 +1433,7 @@ struct InPlaceComposerSystemFixTests {
         #expect(t.overCalls == 0)
     }
 
-    @Test("10: no autocorrect, D20 after ⌫ as before — hoc␣⌫j → học")
+    @Test("10: no autocorrect, D20 after ⌫ — hoc␣⌫j → học")
     func noAutocorrect() {
         var s = Self.session()
         s.type("hoc ⌫j")
@@ -1452,7 +1452,7 @@ struct InPlaceComposerSystemFixTests {
     }
 }
 
-/// The text-side test of D26 used to leave a word out of `produced`.
+/// A double key seen from the text (D26) must leave the word out of `produced`.
 @Suite("InPlaceComposer: a double key seen from the text")
 struct ProducedWordTests {
     static func word(_ text: String) -> InPlaceComposer.ProducedWord {
@@ -1488,8 +1488,8 @@ struct BackspaceThenMarkTests {
     }
 
     /// One odd answer to a read (no position: NSTextInputClient allows `{NSNotFound, 0}`
-    /// when there is no selection; or no text) used to stop every later D20 read until the
-    /// next activation. Now it costs that key only (D20, "Phạm vi").
+    /// when there is no selection; or no text) costs that key only, not every later D20
+    /// read until the next activation (D20, "Phạm vi").
     @Test("2: one read that got no position or no text costs only that key (D18, D20)", arguments: [false, true])
     func oneOddAnswer(_ nilText: Bool) {
         var s = Session("Xin chao ")
@@ -1517,9 +1517,9 @@ struct BackspaceThenMarkTests {
         #expect(s.doc.text == "Xin chao ban học")
     }
 
-    /// The report itself (Claude app, 17/11/2026): "khuyến" right, then "cao␣⌫s" gave
-    /// "caos", ⌫⌫ gave "ca", s gave "cas". Of the mechanisms here, only an earlier read
-    /// that got nothing gave all of it at 150 ms between keys: an answer 3 edits late
+    /// The Claude app: "khuyến" right, then "cao␣⌫s" gave "caos", ⌫⌫ gave "ca", s gave
+    /// "cas". Of the mechanisms here, only an earlier read that got nothing gives all of
+    /// it at 150 ms between keys: an answer 3 edits late
     /// (Chrome's cache model) gives "caos" but then "cá"; 4 late also breaks "khuyến";
     /// the 50 ms gap would have to happen twice in a row.
     @Test("2: the reported keys — khuyeens cao␣⌫s after one earlier read that got nothing")

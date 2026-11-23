@@ -35,7 +35,7 @@
 	<true/>
 	<key>DauAppGroupIdentifier</key>
 	<string>$(APP_GROUP_ID)</string>
-	<!-- Host app (Dấu, Settings) opened by the input menu's "Cài đặt Dấu…". -->
+	<!-- Host app (Dấu, Settings) opened by the input menu's "Dấu Settings…". -->
 	<key>DauHostAppBundleIdentifier</key>
 	<string>$(BUNDLE_ID_PREFIX)</string>
 

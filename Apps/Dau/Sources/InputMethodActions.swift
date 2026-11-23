@@ -1,21 +1,21 @@
 import AppKit
 import SwiftUI
 
-/// The Settings window's input method actions: "Bật lại" on the "Dấu chưa được bật"
-/// banner (N4; there is no undo, Dấu cannot switch itself off) and "Gỡ cài đặt…" (D16):
+/// The Settings window's input method actions: "Turn On Again" on the "Dấu isn’t turned on in your input sources"
+/// banner (N4; there is no undo, Dấu cannot switch itself off) and "Uninstall…" (D16):
 /// confirmation, a sheet that waits for the user to remove Dấu from the input sources
 /// in System Settings, then the removal. Views
-/// get it from the environment; nil there (previews, tests) leaves the old behavior: "Bật lại"
-/// opens Keyboard settings and "Gỡ cài đặt…" is disabled.
+/// get it from the environment; nil there (previews, tests): "Turn On Again"
+/// opens Keyboard settings and "Uninstall…" is disabled.
 @MainActor
 @Observable
 final class InputMethodActions {
-    /// What the banner shows after "Bật lại" (mockup "SettingsBannerStates").
+    /// What the banner shows after "Turn On Again" (mockup "SettingsBannerStates").
     enum BannerState: Equatable {
         case idle
-        /// Waiting for the user's Allow ("Thử lại" cancels and asks again).
+        /// Waiting for the user's Allow ("Try Again" cancels and asks again).
         case working
-        /// Dấu was enabled from the banner: a confirmation with "Ẩn".
+        /// Dấu was enabled from the banner: a confirmation with "Hide".
         case enabled
         /// The wait ended, Dấu still off: how to add it by hand.
         case notEnabled
@@ -25,7 +25,7 @@ final class InputMethodActions {
 
     private(set) var banner: BannerState = .idle
     private(set) var isUninstalling = false
-    /// The uninstall sheet ("Bỏ Dấu khỏi nguồn đầu vào") is showing.
+    /// The uninstall sheet ("Remove Dấu from Your Input Sources") is showing.
     private(set) var isShowingUninstallSheet = false
     /// Dấu is the selected input source (re-read by the sheet while it waits): the sheet
     /// then warns that "–" may be dimmed and asks to select another keyboard first.
@@ -42,8 +42,8 @@ final class InputMethodActions {
     enum ReinstallState: Equatable { case idle, working, failed }
     private(set) var reinstall: ReinstallState = .idle
     /// Counts the checks of the installed copy: `checkInstalled` (after the launch
-    /// reconcile, whenever the app becomes active) and the end of "Cài lại". Views that show what is installed (the development
-    /// build's "Bộ gõ đã cài" line, D25) read it again when it changes.
+    /// reconcile, whenever the app becomes active) and the end of "Reinstall". Views that show what is installed (the development
+    /// build's "Installed input method" line, D25) read it again when it changes.
     private(set) var installedChecks = 0
 
     /// The input source shortcut and the English layout, read when Dấu got enabled from
@@ -72,10 +72,10 @@ final class InputMethodActions {
         self.readEnglishLayout = englishLayout
     }
 
-    /// "Bật lại" and "Thử lại". Returns true when the onboarding window should take over:
+    /// "Turn On Again" and "Try Again". Returns true when the onboarding window should take over:
     /// the input method is not installed, or macOS does not list it yet. A run still
     /// waiting for the user's Allow is cancelled first. An installed copy with a wrong
-    /// signature is not enabled (D37): the "Cài lại" banner shows instead.
+    /// signature is not enabled (D37): the "Reinstall" banner shows instead.
     func enableFromBanner() async -> Bool {
         bannerTask?.cancel()
         bannerAttempt += 1
@@ -113,8 +113,8 @@ final class InputMethodActions {
             banner = .idle
             return true
         case .success(.needsReinstall):
-            // D37: nothing was enabled. The tampered banner, with "Cài lại", shows above
-            // this one, which goes back to "Bật lại" for after the reinstall.
+            // D37: nothing was enabled. The tampered banner, with "Reinstall", shows above
+            // this one, which goes back to "Turn On Again" for after the reinstall.
             installedTampered = true
             banner = .idle
         case .failure:
@@ -123,7 +123,7 @@ final class InputMethodActions {
         return false
     }
 
-    /// "Ẩn" on the confirmation: hides it for this session.
+    /// "Hide" on the confirmation: hides it for this session.
     func dismissBanner() {
         guard banner == .enabled else { return }
         banner = .idle
@@ -131,7 +131,7 @@ final class InputMethodActions {
 
     /// D37, at launch: the owner copy replaces an installed input method that differs
     /// from the one inside it (`reconcile`), then the signature is checked. A copy with
-    /// a wrong signature is not replaced, so the check shows "Cài lại" for it.
+    /// a wrong signature is not replaced, so the check shows "Reinstall" for it.
     func startLaunchReconcile() {
         guard launchReconcile == nil else { return }
         let installer = self.installer
@@ -170,13 +170,13 @@ final class InputMethodActions {
         if !installedTampered { reinstall = .idle }
     }
 
-    /// "Cài lại" on the tampered banner: installs the app's own copy (signature checked
+    /// "Reinstall" on the tampered banner: installs the app's own copy (signature checked
     /// before it is swapped in); the replaced one quits, its bundle on disk having changed.
     /// Only the owner copy (D37): the banner does not show otherwise.
     func reinstallInputMethod() async {
         guard reinstall != .working, installer.isOwnerCopy else { return }
         #if DEBUG
-        // Captures (`--tampered`): the banner is pinned; "Cài lại" never touches the real copy.
+        // Captures (`--tampered`): the banner is pinned; "Reinstall" never touches the real copy.
         if tamperedPinned { return }
         #endif
         reinstall = .working
@@ -207,7 +207,7 @@ final class InputMethodActions {
     #endif
 
     /// The input sources changed: once Dấu is on (e.g. the user added it in Keyboard
-    /// settings) the "not enabled" guidance is no longer true.
+    /// settings) the "not enabled" guidance is out of date.
     func inputSourcesChanged(isEnabled: Bool?) {
         if isEnabled == true, banner == .notEnabled || banner == .failed { banner = .idle }
     }
@@ -217,7 +217,7 @@ final class InputMethodActions {
     enum UninstallOutcome: Equatable {
         case done(UninstallReport)
         case failed
-        /// "Huỷ gỡ cài đặt": nothing was removed.
+        /// "Cancel Uninstall": nothing was removed.
         case cancelled
     }
 
@@ -228,7 +228,7 @@ final class InputMethodActions {
     /// right; the notification only makes it quicker.
     var selectionPollInterval: Duration = .milliseconds(500)
 
-    /// "Gỡ cài đặt…": confirmation alert ("Tiếp tục gỡ"), then the sheet and the removal.
+    /// "Uninstall…": confirmation alert ("Uninstall"), then the sheet and the removal.
     func confirmUninstall(in window: NSWindow?) {
         guard !isUninstalling else { return }
         let (alert, deleteData) = UninstallAlert.confirmation()
@@ -286,7 +286,7 @@ final class InputMethodActions {
                 try await installer.waitUntilRemovedFromInputSources()
                 return .done(try await installer.finishUninstall(deleteSettings: deleteSettings))
             } catch is CancellationError {
-                // "Huỷ gỡ cài đặt": nothing was switched or removed.
+                // "Cancel Uninstall": nothing was switched or removed.
                 return .cancelled
             } catch {
                 installLogger.error("event=uninstall-failed error=\(String(describing: error), privacy: .public)")
@@ -310,7 +310,7 @@ final class InputMethodActions {
         set { if !newValue { cancelUninstall() } }
     }
 
-    /// "Huỷ gỡ cài đặt" on the sheet (or Esc).
+    /// "Cancel Uninstall" on the sheet (or Esc).
     func cancelUninstall() {
         uninstallTask?.cancel()
     }
@@ -321,7 +321,7 @@ final class InputMethodActions {
         dauIsSelected = installer.status() == .selected
     }
 
-    /// "Mở System Settings" on the sheet: the Input Sources list (N4: only opens it).
+    /// "Open %@" on the sheet: the Input Sources list (N4: only opens it).
     func showInputSources() { inputSourcesOpener() }
 }
 
@@ -329,13 +329,13 @@ extension EnvironmentValues {
     @Entry var inputMethodActions: InputMethodActions?
 }
 
-/// The uninstall alerts (mockup "ConfirmDialogs", "Gỡ Dấu khỏi máy?"): a system alert
+/// The uninstall alerts (mockup "ConfirmDialogs", "Uninstall Dấu?"): a system alert
 /// with the app icon, a checkbox and stacked buttons, the destructive one first. The
 /// buttons' look is the system's (D9): macOS 27 draws a destructive button as red text
 /// on a red tint, the mockup as white on red.
 @MainActor
 enum UninstallAlert {
-    /// The confirmation, and its "Xoá cả cài đặt và quy tắc ứng dụng" checkbox (off).
+    /// The confirmation, and its "Also delete settings and app rules" checkbox (off).
     static func confirmation() -> (NSAlert, NSButton) {
         let alert = NSAlert()
         alert.messageText = String(localized: "Uninstall Dấu?")

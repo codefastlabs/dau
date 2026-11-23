@@ -3,8 +3,8 @@ import DauEngine
 import DauShared
 import Testing
 
-/// Keys → composer → `LateDocument`, 100 ms apart (the 1b run: 100 ± 30 ms, so every key
-/// is past `InPlaceComposer.settleInterval`).
+/// Keys → composer → `LateDocument`, 100 ms apart (Chrome with a busy page at 100 ± 30 ms,
+/// `docs/history/LogM6.md` step 1b), so every key is past `InPlaceComposer.settleInterval`.
 private struct LateSession {
     var engine: VietEngine
     var composer = InPlaceComposer()
@@ -43,26 +43,26 @@ private struct LateSession {
     }
 }
 
-@Suite("In-place mode with an app that answers late (M6, Chrome with a busy page)")
+@Suite("In-place mode with an app that answers late (Chrome with a busy page)")
 struct LateAnswerTests {
-    /// Each word that came out wrong in the 1b run (build/load/1b-20261109-213527, not
-    /// committed), replayed with the answers one edit late at the key the diag log shows
+    /// Each word that came out wrong in Chrome with a busy page (`docs/history/LogM6.md`
+    /// step 1b), replayed with the answers one edit late at the key where the page was
     /// late. `keys` is typed on time, then `late` with lag 1, then `rest` on time.
     @Test("words of the 1b log: the first replacement of a word, answer one key late",
           arguments: [
-              // dau-busy-3: "bạn" → "ạnn" (sel 21, real cursor 22).
+              // "bạn" → "ạnn" (sel 21, real cursor 22).
               ("nguoiwf ban", "j", " ", "người bạn "),
-              // dau-busy-1: "meeting" → "êeting" (sel one key behind at the second e).
+              // "meeting" → "êeting" (sel one key behind at the second e).
               ("truwocs me", "e", "ting ", "trước meeting "),
-              // dau-busy-1: "ngày" → "nàyy".
+              // "ngày" → "nàyy".
               ("mooix ngay", "f", ". ", "mỗi ngày. "),
-              // dau-busy-3: "viết" → "vêetjs" (late at the second e; D11 then re-read
+              // "viết" → "vêetjs" (late at the second e; D11 then re-read
               // the damaged word at j).
               ("phari vie", "e", "tjs ", "phải viết "),
-              // dau-busy-3: "chiều" → "chêeuf".
+              // "chiều" → "chêeuf".
               ("meeting chie", "e", "uf nay", "meeting chiều nay"),
-              // Start of the document (dau-busy-1 key 3; there "S" itself never reached
-              // the page, see the 1c report): position known from the D20 read at "S".
+              // Start of the document (key 3; there "S" itself never reached
+              // the page): position known from the D20 read at "S".
               ("Sa", "s", "ng nay", "Sáng nay"),
           ])
     func firstReplacementLate(_ keys: String, _ late: String, _ rest: String, _ expected: String) {
@@ -75,22 +75,22 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
-    /// The 1d run (build/load/1d-20261109-225810, not committed), after the first fix:
-    /// at each wrong word the answer was one behind `known` and the read did not prove
-    /// a late answer. Replayed with Chrome's cache as its source shows it: the page two
+    /// Chrome with a busy page (`docs/history/LogM6.md` step 1d): at each wrong word the
+    /// answer is one behind `known` and the read does not prove a late answer. Replayed
+    /// with Chrome's cache as its source shows it: the page two
     /// edits behind, plus the latest key written into the cache at the page's caret
     /// (`LateDocument.Cache.chromium`). `late` is typed so; then `rest` on time.
     @Test("words of the 1d log: the answer is the page two keys behind plus the latest key in Chrome's cache",
           arguments: [
-              // dau-busy-1 "ỏii" (sel 35, known 36).
+              // "ỏii" (sel 35, known 36).
               ("gửi email hoi", "r", " veef", "gửi email hỏi về"),
-              // dau-busy-1 "ìnhh" (sel 65, known 66).
+              // "ìnhh" (sel 65, known 66).
               ("project. Minh", "f", " phari", "project. Mình phải"),
-              // dau-busy-1 "chêeuf" (sel 107, known 108).
+              // "chêeuf" (sel 107, known 108).
               ("meeting chie", "e", "uf nay", "meeting chiều nay"),
-              // dau-busy-3 "née" (sel 218, known 219).
+              // "née" (sel 218, known 219).
               ("daanx nhe", "s", ". ", "dẫn nhé. "),
-              // dau-busy-3 of 1b, "đaaline": the check of a locked word, same cache.
+              // "đaaline": the check of a locked word, same cache.
               ("cuar dea", "d", "line ", "của deadline "),
           ])
     func cacheInsertLate(_ keys: String, _ late: String, _ rest: String, _ expected: String) {
@@ -175,17 +175,11 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
-    /// Chrome, busy page, 10 ms between keys (22/11/2026, 1 of 3 runs): at "j" after
-    /// "Hoc ⌫" the D20 read answered after "Ho", further behind than `rebuild` can prove,
-    /// and the next word's answers stayed there. Anchoring at that answer made "tieesng"
-    /// replace the "o" of "Hoc" ("Hếcj tieng"). Not anchored, the next word is proved late
-    /// and comes out right; D20 does not apply to "Hoc" (the read gave no usable word).
-    /// Chrome, busy page, human fast pace (23/11/2026, 1 of 3 runs): the page stopped after
-    /// "Sáng nay " and Chrome's cache wrote "m" and "o" at its caret, later before earlier.
-    /// At "j" the answer was two edits late (proved); at the second "o" three, and with no
-    /// answer on time since the start of the document `rebuild` could replay two ("mojot"
-    /// gave "mọot"). The position the D20 read anchored at the first key counts as one.
-    /// The texts are the cache's as the log's positions show it (the log holds no text, D8).
+    /// Chrome, busy page, human fast pace: the page stops after "Sáng nay " and Chrome's
+    /// cache writes "m" and "o" at its caret, later before earlier. At "j" the answer is
+    /// two edits late (proved); at the second "o" three, and with no answer on time since
+    /// the start of the document `rebuild` could replay two ("mojot" gives "mọot"). The
+    /// position the D20 read anchored at the first key counts as one.
     @Test("busy page, start of the document: a late answer with no answer on time yet is proved from the anchor")
     func lateFromDocumentStart() {
         var s = LateSession()
@@ -204,6 +198,11 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
+    /// Chrome, busy page, 10 ms between keys: at "j" after "Hoc ⌫" the D20 read answers
+    /// after "Ho", further behind than `rebuild` can prove, and the next word's answers
+    /// stay there. Anchoring at that answer would make "tieesng" replace the "o" of "Hoc"
+    /// ("Hếcj tieng"). Not anchored, the next word is proved late and comes out right; D20
+    /// does not apply to "Hoc" (the read gives no usable word).
     @Test("busy page, 10 ms: a D20 read in a burst far behind does not move the followed position")
     func staleD20ReadInBurst() {
         let before = "chiều nay. "
@@ -242,10 +241,10 @@ struct LateAnswerTests {
         #expect(s.overCalls == 0)
     }
 
-    /// Chrome, busy page, human fast pace (22/11/2026: "dduwowjc" gave "đụơc" in 1 of 6
-    /// runs). The answer at "o" was one edit late, without the "u" → "ư" replacement, which
-    /// leaves the caret where it was: the answer was at `known` and was taken as on time, so
-    /// `rebuild` at "j" (three edits late) could replay only two. Every lag the page can
+    /// Chrome, busy page, human fast pace ("dduwowjc" gives "đụơc"). The answer at "o" is
+    /// one edit late, without the "u" → "ư" replacement, which leaves the caret where it
+    /// was: the answer is at `known` and, taken as on time, `rebuild` at "j" (three edits
+    /// late) could replay only two. Every lag the page can
     /// build up (at most one more per key) from 0 to 3 up to "j", then on time; both caches, in a
     /// burst and not.
     @Test("được: an answer at the followed position one caret-neutral replacement late is not on time",
@@ -271,11 +270,11 @@ struct LateAnswerTests {
         #expect(failures.isEmpty, "\(failures.count) lag sequences, first: \(failures.prefix(3))")
     }
 
-    /// The strings of `scripts/selftest/load/run.sh` (`--text edit`, the 1b string, and
+    /// The strings of `scripts/selftest/load/run.sh` (`--text edit`, and
     /// `--text std`; `--print keys`, `--print expect`) with every key answered 0, 1 or 2
     /// edits late, at random: after every key the text must be what the same keys give
     /// on time. (Three edits late is past `CursorTracker.lateLimit`: the answer is then
-    /// taken as it is, as before the fix, and words come out wrong.)
+    /// taken as it is, and words come out wrong.)
     static let editKeys = "Sasng nay mojot nguoiwf banj guiwr email hoir veef deadline cuar project. Minhf phari vieetjs laji kees hoajch truwocs meeting chieeuf nay. Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf dduwowjc luyeenj ddeeuf mooix ngayf. Chaofzf banj, xem video treen YouTube huowsng daanx nhes. "
 
     static let stdKeys = "Chieeuf nay anh cos ranhr khoong, minhf ddi uoongs caf phee nhes. Deadline cuar project nayf laf thuws saus tuaanf sau. Seeps vuwaf guwir email veef buooir meeting toois qua. Toois nay xem phim treen Netflix hay YouTube ddaay? "
@@ -319,8 +318,8 @@ struct LateAnswerTests {
 
     /// Busy page (`--busy 300:1000`, docs/Compatibility.md 5.2): Chrome answers up to 12 edits
     /// late across word ends. In a word `rebuild` now allows every edit since the app's last
-    /// answer on time (`CursorTracker.sinceOnTime`); with the fixes of 22/11/2026 the real runs
-    /// came out right (Chrome 9/9 at 10 ms). The model is harsher (lag from the start of the
+    /// answer on time (`CursorTracker.sinceOnTime`); the real Chrome runs come out right
+    /// (`docs/Compatibility.md` 5.2). The model is harsher (lag from the start of the
     /// text, before any answer on time), so some cases still fail: a known issue of the model
     /// (docs/research/LateAnswerFixes.md 3.3). The page is blocked
     /// 300 ms of every second; the lag grows by one per key while blocked (an app cannot
@@ -395,7 +394,7 @@ struct LateAnswerTests {
     }
 }
 
-/// The D20 read after ⌫ (reported 17/11/2026, see `BackspaceThenMarkTests`) in Chrome's
+/// The D20 read after ⌫ (see `BackspaceThenMarkTests`) in Chrome's
 /// cache model, with the answer within `lateLimit` edits late (`CursorTracker.rebuild`).
 @Suite("In-place mode: D20 after ⌫ with a late answer")
 struct LateBackspaceMarkTests {

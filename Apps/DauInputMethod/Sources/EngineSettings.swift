@@ -1,7 +1,7 @@
 import DauEngine
 import DauShared
 
-/// Applies settings to one controller's engine. Pure, unit tested.
+/// Applies settings to one controller's engine.
 enum EngineSettings {
     /// Gives `engine` the options of `settings`. When they differ, the word being typed
     /// is dropped first (`reset()`): its letters were built under the old rules (another
@@ -20,13 +20,11 @@ enum EngineSettings {
     }
 }
 
-/// Coalesces change notifications that come in a burst into one reload (D18 spirit: any
+/// Coalesces change notifications that come in a burst into one reload (D18: any
 /// process may post the settings change notification, as often as it likes, and each
 /// reload decodes the settings). The first change schedules a reload after `delay`;
 /// changes until it runs are folded into it. The reload clears the mark before it reads,
 /// so a change that comes while it reads schedules the next one: no change is lost.
-///
-/// Pure value type, unit tested in DauInputMethodTests.
 struct ChangeCoalescer {
     /// Time from the first change of a burst to the reload: short enough that a change
     /// made in the Settings app shows by the next key a person types after it.

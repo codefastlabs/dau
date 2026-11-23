@@ -2,9 +2,9 @@ import AppKit
 import SwiftUI
 import DauShared
 
-/// "Ứng dụng" (mockup "SettingsApps"): "Quy tắc riêng", the stored rules (D5, D13); and
-/// "Đề xuất", the installed apps of the compatibility list without a rule, each with
-/// "Bật gạch chân" (D13: nothing is turned on until the user clicks it).
+/// "Apps" (mockup "SettingsApps"): "App rules", the stored rules (D5, D13); and
+/// "Suggested", the installed apps of the compatibility list without a rule, each with
+/// "Turn On Underline" (D13: nothing is turned on until the user clicks it).
 /// Search field and + sit in the toolbar, as in the mockup header.
 struct AppRulesView: View {
     @Environment(SettingsModel.self) private var model
@@ -71,10 +71,9 @@ struct AppRulesView: View {
                 } header: {
                     // The section's description goes under its title, above the card,
                     // as in System Settings. N5, D13: the label goes only to apps whose
-                    // measurements show in-place replacement still failing (today Ghostty and Terminal),
+                    // measurements show in-place replacement still failing,
                     // where underlining is the right choice; the text says when to choose
-                    // it, not that it always helps. Wording approved
-                    // by the user (30/10/2026).
+                    // it, not that it always helps.
                     SectionHeader(
                         title: Text("Suggested"),
                         description: Text("Text may come out wrong in apps labeled “Suggested” unless underline is on. Choose “Underline” only if an app garbles text as you type."))
@@ -98,7 +97,7 @@ struct AppRulesView: View {
     }
 }
 
-/// One stored rule: icon 24, name, "Đề xuất" chip when it came from the compatibility
+/// One stored rule: icon 24, name, "Suggested" chip when it came from the compatibility
 /// list, underline popup (D5). Removed with the context menu or the Delete key while
 /// focused (the system draws the focus ring).
 struct AppRuleRow: View {
@@ -142,7 +141,7 @@ struct AppRuleRow: View {
     }
 }
 
-/// One suggestion: icon 32, name, a secondary line, and "Bật gạch chân", which stores
+/// One suggestion: icon 32, name, a secondary line, and "Turn On Underline", which stores
 /// the rule. The list's per-app notes are for maintainers and are not shown (N5);
 /// every row says the same, as the section description does.
 struct SuggestionRow: View {

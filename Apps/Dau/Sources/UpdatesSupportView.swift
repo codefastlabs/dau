@@ -1,14 +1,14 @@
 import AppKit
 import SwiftUI
 
-/// "Cập nhật & hỗ trợ" (artboards "SettingsAbout", "SettingsAboutDev").
+/// "Updates & Support" (artboards "SettingsAbout", "SettingsAboutDev").
 ///
 /// - The version card. On the official build (an updater exists, `UpdatesModel`, D7) it
-///   has the last check and "Kiểm tra bản mới…", then the rows "Tự động kiểm tra bản mới"
-///   and "Kênh phát hành"; Sparkle's own windows show what a check finds, the download and
+///   has the last check and "Check for Updates…", then the rows "Automatically check for updates"
+///   and "Release channel"; Sparkle's own windows show what a check finds, the download and
 ///   the install (D7). A development build has none of these; its card shows the
 ///   installed input method's build (D25, D37).
-/// - "Hỗ trợ": "Báo lỗi…" (`ReportSheet`, D8) and "Gỡ cài đặt…" (D16,
+/// - "Support": "Report a Problem…" (`ReportSheet`, D8) and "Uninstall…" (D16,
 ///   `InputMethodActions.confirmUninstall`), then the privacy note.
 struct UpdatesSupportView: View {
     @Environment(\.inputMethodActions) private var actions
@@ -23,12 +23,12 @@ struct UpdatesSupportView: View {
     }
     /// The installed input method's build (development builds only): read off the main
     /// thread when the page appears and after each check of the installed copy
-    /// (`InputMethodActions.installedChecks`: the launch reconcile, "Cài lại", app
+    /// (`InputMethodActions.installedChecks`: the launch reconcile, "Reinstall", app
     /// activation), not on every body evaluation. Nothing is shown before the first read
     /// ends (N5: "not installed" only once that was read).
     @State private var installed: InstalledRead = .unread
     enum InstalledRead: Equatable { case unread, notInstalled, build(String) }
-    /// "Báo lỗi…" shows the sheet; the Debug capture `--capture-report` opens it at once.
+    /// "Report a Problem…" shows the sheet; the Debug capture `--capture-report` opens it at once.
     @State private var isReporting = Self.reportAtStart
 
     private static var reportAtStart: Bool {
@@ -99,7 +99,7 @@ struct UpdatesSupportView: View {
                 LabeledContent("Remove Dấu from this Mac") {
                     // The system's destructive button, enabled and disabled look
                     // included (D9). macOS 27.2 draws it as a plain push button, text
-                    // not red (measured 02/11/2026); docs/UI.md follows the system.
+                    // not red (measured on macOS 27.2); docs/UI.md follows the system.
                     Button("Uninstall…", role: .destructive) {
                         actions?.confirmUninstall(in: NSApp.keyWindow)
                     }
@@ -127,7 +127,7 @@ struct UpdatesSupportView: View {
     }
 }
 
-/// "Kênh phát hành" (D7, "Kênh"; artboard SettingsAbout, both values of its `stage`): the
+/// "Release channel" (D7; artboard SettingsAbout, both values of its `stage`): the
 /// system segmented control Beta / Stable at the right of the row, like "Tone mark
 /// placement". Until the appcast has a stable release, Stable is shown but off and the
 /// description says there is none yet. The row appears once an appcast has loaded: before
@@ -147,8 +147,7 @@ struct ReleaseChannelRow: View {
                 // Swift 6 it checks its executor when called (SE-0423). SwiftUI may read the
                 // binding while NSHostingView renders asynchronously off the main thread
                 // (it reads the representable's dynamic properties there); the check then
-                // traps (dispatch_assert_queue_fail, `--capture-updates`, 18/11/2026, when
-                // the stage changed under a shown window).
+                // traps (dispatch_assert_queue_fail) when the stage changes under a shown window.
                 SegmentedPicker(String(localized: "Release channel"),
                                 selection: Self.selection(updates),
                                 options: [(.beta, String(localized: "Beta")), (.stable, String(localized: "Stable"))],

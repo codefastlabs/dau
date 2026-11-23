@@ -14,7 +14,7 @@
 # Env: DAU_SPARKLE_PUBLIC_KEY, when set, must equal the SUPublicEDKey in the build (--signed).
 # Exit status: 0 every check passed; 1 at least one failed; 2 bad usage.
 #
-# What is checked (Roadmap, M7), both modes: both binaries are universal (D1) and stripped
+# What is checked (Roadmap), both modes: both binaries are universal (D1) and stripped
 # (nm: no local symbols; an archive strips, a plain build does not); SUEnableSystemProfiling
 # is false (D8); no Sparkle keys in the input method, which does not link Sparkle (N2); the
 # input method passes dau_check_input_method.

@@ -341,7 +341,7 @@ func toolbar() -> AXUIElement? {
 func closeButton() -> AXUIElement? { windowElements { subrole($0) == "AXCloseButton" }.first }
 /// The toolbar's height. A page with toolbar items of its own (Ứng dụng: "+" and the
 /// search field) shows the toolbar to Accessibility. A page whose toolbar holds only the
-/// `ToolbarSpacer` that keeps it (`PageSearch`) does not (macOS 27.2, 13/11/2026), so
+/// `ToolbarSpacer` that keeps it (`PageSearch`) does not (macOS 27.2), so
 /// there the close button stands in: it sits at y 18 in the 52 pt toolbar and moves to
 /// y 8 when the toolbar collapses.
 func checkToolbarHeight(_ d: String, _ page: String, into shot: inout [String: CGRect]) {
@@ -743,10 +743,8 @@ func closeSheet(_ d: String) {
 /// Reads of the app list's row count that must agree, 0.1 s apart, before it counts as
 /// settled. The sheet builds its list off the main thread and sets it in one assignment
 /// (`AddAppRuleSheet.loadApps`): about 0.15 s on the first open, and the list already
-/// held every row at the first read in run.sh (18/11/2026), so 3 reads suffice. An older
-/// sheet was once read at 13, then 1 row before 106 (docs/history/LogM5.md, 04/11/2026);
-/// a list caught short would still FAIL loudly at "search cleared", which compares with
-/// this count.
+/// held every row at the first read, so 3 reads suffice. A list caught short would still
+/// FAIL loudly at "search cleared", which compares with this count.
 let appListSettleReads = 3
 let appListSettleInterval = 0.1
 
@@ -1042,8 +1040,7 @@ func measureLimits() {
 
 // MARK: - Shell: fixed sidebar (--geometry)
 
-/// The page shown, by the window's title, within 3 s (the callers used to wait 1 s before
-/// a 2 s poll).
+/// The page shown, by the window's title, within 3 s.
 func checkShown(_ d: String, _ p: String, _ when: String, _ index: Int) {
     let want = Reference.sectionTitles[index]
     waitUntil(timeout: 3, interval: 0.05) { windowTitle() == want }
@@ -1114,15 +1111,15 @@ func rgb(_ c: [CGFloat]) -> String { c.map { String(Int(($0 * 255).rounded())) }
 
 /// The window as it opens, before the checker selects, moves or types anything: the
 /// sidebar list has the keyboard focus (not its search field, not nothing), so the
-/// selected row (Gõ phím) is drawn with the accent selection, as on the canvas and as
-/// before the fixed sidebar. Without care the list gets no focus at launch, and the
+/// selected row (Gõ phím) is drawn with the accent selection, as on the canvas.
+/// Without care the list gets no focus at launch, and the
 /// selection is drawn grey (inactive). Dấu is brought to the front first: a window that
 /// is not key draws every selection grey.
 func measureLaunchFocus() {
     let d = "-", p = "launch-focus"
     bringToFront(d, p)
     awaitState(d, p, "Settings window is the main window", timeout: 3) { (attr(window, kAXMainAttribute) as? Bool) == true }
-    // Fixed: the selection is redrawn in the active style after the window becomes key,
+    // The selection is redrawn in the active style after the window becomes key,
     // and no accessibility state says when that drawing is done.
     wait(0.3)
     guard let outline = findSidebarOutline(d, p) else { return }

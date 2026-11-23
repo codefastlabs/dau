@@ -6,9 +6,9 @@ import DauShared
 // The Settings pages and the add-rule sheet are grouped `Form`s with the system's
 // metrics (D9, System Settings as the reference); the custom pieces are content from
 // the mockup that has no system equivalent, kept as the mockup draws them: the preview
-// (`PreviewCard`, `PreviewBox`), example chips (`Chip`, `ExampleChips`), "Mới"
+// (`PreviewCard`, `PreviewBox`), example chips (`Chip`, `ExampleChips`), "New"
 // (`NewBadge`), the shortcut keycaps (`Keycap`, TypingSettingsView.swift; System
-// Settings writes shortcuts as text) and the "Dấu chưa được bật" banner. The card
+// Settings writes shortcuts as text) and the "Dấu isn’t turned on in your input sources" banner. The card
 // primitive (`SettingsCard`), `SettingsColors` and `settingsButton` remain for the
 // onboarding window only. Colors are system colors only.
 
@@ -44,7 +44,7 @@ struct HeaderAdd {
 }
 
 /// A Settings page: a grouped `Form` whose sections are the page's content, after the
-/// "Dấu chưa được bật" banner when it shows. The Form brings System Settings' metrics:
+/// "Dấu isn’t turned on in your input sources" banner when it shows. The Form brings System Settings' metrics:
 /// 20 pt margins, cards, section headers, row heights, separators, and it scrolls
 /// under the toolbar with the system's scroll edge.
 ///
@@ -125,7 +125,7 @@ private struct PageSearch: ViewModifier {
             }
         } else if #available(macOS 26, *) {
             // A page with no toolbar item of its own still keeps the 52 pt toolbar and the
-            // large title, as on Ứng dụng (D9). Without an item SwiftUI drops the toolbar;
+            // large title, as on "Apps" (D9). Without an item SwiftUI drops the toolbar;
             // no API keeps an empty one (`toolbar(.visible, for: .windowToolbar)` and
             // `.unified(showsTitle: true)` measured without effect), so the system space
             // item holds it. It is not exposed to Accessibility. Measured on macOS 27.2:
@@ -221,7 +221,7 @@ extension View {
 
 }
 
-/// Capsule label: configuration chips, "Đề xuất", example keys. A label, not a control.
+/// Capsule label: configuration chips, "Suggested", example keys. A label, not a control.
 struct Chip: View {
     let text: Text
     var height: CGFloat = 22
@@ -252,7 +252,7 @@ struct Chip: View {
     }
 }
 
-/// "Mới" badge: accent fill with the system's text-on-accent color.
+/// "New" badge: accent fill with the system's text-on-accent color.
 struct NewBadge: View {
     var body: some View {
         Text("New")
@@ -264,8 +264,8 @@ struct NewBadge: View {
     }
 }
 
-/// "keys › result" as two chips (mockup "Thông minh"); the result is emphasized.
-/// Both come from the engine (`TypingExample`). VoiceOver reads "keys thành result".
+/// "keys › result" as two chips (mockup "Smart Typing"); the result is emphasized.
+/// Both come from the engine (`TypingExample`). VoiceOver reads "%@ becomes %@".
 struct ExampleChips: View {
     let example: TypingExample
 
@@ -324,16 +324,16 @@ struct WrappingHStack: Layout {
     }
 }
 
-/// "Dấu chưa được bật" banner (docs/UI.md, "Cửa sổ Cài đặt › Banner", mockup
+/// "Dấu isn’t turned on in your input sources" banner (docs/UI.md, "Cửa sổ Cài đặt › Banner", mockup
 /// "SettingsNotEnabled", "SettingsBannerStates"), first on every page while Dấu is not
 /// among the enabled input sources: a tile (orange with a white warning symbol), title,
 /// subtitle, button.
 ///
-/// "Bật lại" enables Dấu (N4: the user's click, read back from Text Input Sources). While
-/// macOS waits for the user's Allow the banner waits too (spinner, "Thử lại" cancels the
+/// "Turn On Again" enables Dấu (N4: the user's click, read back from Text Input Sources). While
+/// macOS waits for the user's Allow the banner waits too (spinner, "Try Again" cancels the
 /// wait and asks again); when macOS keeps Dấu off it says so with the way to add it by
-/// hand and "Thử lại"; once enabled it turns into a green confirmation with the real
-/// shortcut and "Ẩn", which hides it for this session. No undo: Dấu cannot switch itself
+/// hand and "Try Again"; once enabled it turns into a green confirmation with the real
+/// shortcut and "Hide", which hides it for this session. No undo: Dấu cannot switch itself
 /// off. Not installed or not listed yet: the onboarding window opens.
 struct NotEnabledBanner: View {
     @Environment(InputSourceStatus.self) private var status
@@ -378,7 +378,7 @@ struct NotEnabledBanner: View {
         }
     }
 
-    /// "Chọn Dấu trong menu nhập liệu, hoặc bấm ⌃Space để chuyển giữa Dấu và U.S.": the
+    /// "Choose Dấu from the Input menu, or press %@ to switch between Dấu and “%@”.": the
     /// real shortcut (N5); without a readable one, only the first half.
     private var enabledHint: Text {
         guard let actions else { return Text("Choose Dấu from the Input menu.") }
@@ -417,9 +417,9 @@ struct NotEnabledBanner: View {
     }
 }
 
-/// "Bộ gõ trên máy không phải bản Dấu đã cài" (mockup "SettingsTampered"): the input
+/// "Dấu’s input method on this Mac has been changed" (mockup "SettingsTampered"): the input
 /// method in ~/Library/Input Methods does not carry this app's signature, so whatever
-/// replaced it gets every key typed with the enabled "Dấu – Tiếng Việt". "Cài lại"
+/// replaced it gets every key typed with the enabled "Dấu – Tiếng Việt". "Reinstall"
 /// installs the app's own copy.
 struct TamperedBanner: View {
     @Environment(\.inputMethodActions) private var actions
@@ -597,8 +597,8 @@ extension EnvironmentValues {
 }
 
 /// Always the same view structure, probe or not: a probe that changed the structure
-/// (an `if` around the modifier) once made the captures lay out a sidebar
-/// row 8 pt away from the real window. Put probes on a row's content or on a whole
+/// (an `if` around the modifier) makes the captures lay out a sidebar row 8 pt away from
+/// the real window. Put probes on a row's content or on a whole
 /// control, never outside list-row modifiers (`listRowInsets`, `listRowBackground`).
 struct LayoutProbeModifier: ViewModifier {
     @Environment(\.layoutProbe) private var probe

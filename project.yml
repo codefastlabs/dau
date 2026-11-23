@@ -9,7 +9,8 @@
 # Builds are signed "Apple Development" with automatic signing: the App Group needs a real
 # Team ID, macOS rejects it for ad-hoc signed builds (D24, Tên và định danh). No provisioning
 # profile is needed: a Team-ID-prefixed App Group is allowed on macOS without one.
-# Developer ID signing + notarization are set up in M7 (CI overrides via xcodebuild settings).
+# Developer ID signing and notarization: CI overrides these via xcodebuild settings
+# (scripts/release/build-release.sh).
 
 name: Dau
 
@@ -31,9 +32,8 @@ packages:
   DauShared:
     path: Packages/DauShared
   # Exact pin: Package.resolved is git-ignored, so project.yml is the only record of the
-  # version. 2.10.1 is the latest stable release of sparkle-project/Sparkle (checked
-  # 17/11/2026); bump it on purpose, never by a floating range. Only the host app links it
-  # (D7); the input method never does (N2: no network code in the input method).
+  # version (2.10.1); bump it on purpose, never by a floating range. Only the host app
+  # links it (D7); the input method never does (N2: no network code in the input method).
   Sparkle:
     url: https://github.com/sparkle-project/Sparkle
     exactVersion: 2.10.1

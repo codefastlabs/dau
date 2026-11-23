@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Types one text into real apps while the whole Mac is under CPU and memory load, and when it is not (M6 step 2).
+# Types one text into real apps while the whole Mac is under CPU and memory load, and when it is not.
 # Side effects: unless --dry-run: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/selftest/load/heavy.sh [--delay MS] [--dry-run]

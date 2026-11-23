@@ -41,7 +41,7 @@ struct CodeSignatureTests {
         #expect(!CodeSignature.isValid(tool.url, requirement: nil))
     }
 
-    /// The case the old Team ID comparison let through: an ad-hoc signature with the right
+    /// The case a Team ID comparison would let through: an ad-hoc signature with the right
     /// identifier has no Team ID, like an ad-hoc host app.
     @Test func adHocSignatureFailsTheRequirement() throws {
         let identifier = "com.codefastlabs.dau.inputmethod.Dau"

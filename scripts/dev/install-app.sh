@@ -125,7 +125,7 @@ fi
 # D25: a bundle must hold only the icon set its Info.plist names. Xcode's incremental build
 # keeps the other set's .icns after DAU_OFFICIAL changes (assetcatalog_output and the
 # product bundle are never pruned), and AppKit then showed the standard icon on a
-# development build (measured 11/11/2026, docs/history/LogM6.md). Prints the stray files.
+# development build (docs/history/LogM6.md). Prints the stray files.
 stray_icons() { # bundle
   local named
   named=$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIconFile' "$1/Contents/Info.plist" 2>/dev/null) || named=""

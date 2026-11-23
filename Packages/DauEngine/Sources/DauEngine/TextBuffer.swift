@@ -3,13 +3,8 @@
 
 /// A short run of Unicode scalars stored inline in a `SIMD32<UInt32>`.
 ///
-/// Why SIMD storage: the hot path must not allocate per key
-/// (docs/Architecture.md, section "DauEngine"; D33).
-/// `Array` would allocate (or copy-on-write when an `Action` still references the
-/// engine's array), `InlineArray` needs macOS 26 while Dấu targets macOS 14 (D1),
-/// and tuple storage needs `withUnsafe…` closures for indexed access. A SIMD vector
-/// is a plain value type of fixed size (128 bytes), lives on the stack or inline in
-/// its owner, and supports indexed get/set directly.
+/// Inline SIMD storage: no allocation per key (docs/Architecture.md, "DauEngine"; D33).
+/// `InlineArray` needs macOS 26, Dấu targets macOS 14 (D1).
 ///
 /// Capacity 32 covers the largest text the engine ever emits: a restore of the
 /// keystroke baseline (at most `VietEngine.rawCapacity` = 31 scalars) plus the

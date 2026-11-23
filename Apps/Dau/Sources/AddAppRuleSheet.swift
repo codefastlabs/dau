@@ -3,20 +3,20 @@ import SwiftUI
 import UniformTypeIdentifiers
 import DauShared
 
-/// "Thêm quy tắc cho ứng dụng" sheet (mockup "SettingsAppsAdd" for the content: title,
+/// "Add App Rule" sheet (mockup "SettingsAppsAdd" for the content: title,
 /// search, the apps without a stored rule (apps of the compatibility list carry the
-/// "Đề xuất" chip), "Khi đang gõ" (the rule's only setting, D5), Huỷ / Thêm).
+/// "Suggested" chip), "While typing" (the rule's only setting, D5), "Cancel" / "Add").
 ///
 /// Built from system parts as System Settings builds its sheets (D9; measured on macOS
 /// 27.2, Displays › Advanced… and Keyboard › Input Sources › Edit…): a header row
 /// (title left, the system search field right), the app list in a `GroupBox` card, the
-/// "Khi đang gõ" card of a grouped `Form` (cards 20 pt from the sheet's edges, 10 pt
+/// "While typing" card of a grouped `Form` (cards 20 pt from the sheet's edges, 10 pt
 /// apart) and the sheet's own button bar under a divider, from the toolbar's
 /// cancellation and confirmation placements (64 × 24 buttons, 20 pt from the right and
 /// bottom edges). The list is outside the Form because a `List` nested in a grouped
 /// Form cannot scroll. `searchable` would put the field in a toolbar band of its own,
 /// apart from the title (and a sheet shows no toolbar title), so the header row holds
-/// an `NSSearchField` instead. "Chọn ứng dụng khác…" (an automatic toolbar item, at the
+/// an `NSSearchField` instead. "Choose Another App…" (an automatic toolbar item, at the
 /// leading end of the button bar) opens the system open panel for apps stored elsewhere.
 struct AddAppRuleSheet: View {
     @Environment(SettingsModel.self) private var model
@@ -42,7 +42,7 @@ struct AddAppRuleSheet: View {
         AppCandidate.matching(candidates, query: query)
     }
 
-    /// The selection while it is on screen: "Thêm" and Return add only a visible app.
+    /// The selection while it is on screen: "Add" and Return add only a visible app.
     private var visibleSelection: AppCandidate.ID? {
         AppCandidate.selection(selection, among: visibleCandidates)
     }
@@ -85,7 +85,7 @@ struct AddAppRuleSheet: View {
             .scrollDisabled(true)
             // The grouped Form starts its card 20 below its top (SwiftUI's default);
             // pull it up so the two cards are `cardGap` apart. If macOS changes that
-            // margin, ax-check's "list card → Khi đang gõ card" fails.
+            // margin, ax-check's "list card → While typing card" fails.
             .contentMargins(.top, Self.cardGap - 20, for: .scrollContent)
             .fixedSize(horizontal: false, vertical: true)
         }
@@ -170,8 +170,8 @@ struct AddAppRuleSheet: View {
         selection = id
     }
 
-    /// Stores the rule. An app of the compatibility list keeps its "Đề xuất" chip in
-    /// "Quy tắc riêng" (source `.suggested`), as when it is accepted from "Đề xuất".
+    /// Stores the rule. An app of the compatibility list keeps its "Suggested" chip in
+    /// "App rules" (source `.suggested`), as when it is accepted from "Suggested".
     private func add() {
         guard let id = visibleSelection, let candidate = candidates.first(where: { $0.id == id }) else { return }
         model.settings.upsert(AppRule(
@@ -185,7 +185,7 @@ struct AppCandidate: Identifiable {
     let bundleID: String
     let name: String
     let icon: NSImage
-    /// In the compatibility list: shown with the "Đề xuất" chip.
+    /// In the compatibility list: shown with the "Suggested" chip.
     var suggested = false
     var id: String { bundleID }
 
@@ -198,7 +198,7 @@ struct AppCandidate: Identifiable {
     }
 
     /// `selection` if it is among `visible`, else nil: a selected app hidden by the
-    /// search is no longer selected, so "Thêm" turns off.
+    /// search is not selected, so "Add" turns off.
     static func selection(_ selection: ID?, among visible: [AppCandidate]) -> ID? {
         guard let selection, visible.contains(where: { $0.id == selection }) else { return nil }
         return selection

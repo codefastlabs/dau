@@ -11,7 +11,7 @@ enum SystemSettings {
     }
 
     /// Keyboard settings with the Input Sources list (the "Edit…" sheet) already open, where
-    /// the user removes Dấu in the uninstall (measured on macOS 27.2, 04/11/2026: the
+    /// the user removes Dấu in the uninstall (measured on macOS 27.2: the
     /// `?InputSources` query opens that sheet). Only the uninstall uses it; every other
     /// button opens the plain Keyboard pane.
     static func openInputSources() {

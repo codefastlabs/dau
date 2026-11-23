@@ -4,7 +4,7 @@ import Testing
 import DauShared
 @testable import Dau
 
-// D7, "Kênh": beta items carry Sparkle's channel `beta`, untagged items are stable. The
+// D7: beta items carry Sparkle's channel `beta`, untagged items are stable. The
 // default is written once, at the first appcast load (no stable item: Beta; one: Stable);
 // afterwards only the user changes it. Sparkle is not linked here: the appcast is the
 // list of item channels its delegate passes on (`SparkleChannelDelegate`), the store an
@@ -209,9 +209,9 @@ struct ReleaseChannelRowTests {
         #expect(control.isEnabled(forSegment: 0) && control.isEnabled(forSegment: 1))
     }
 
-    /// Regression (18/11/2026, `--capture-updates`): SwiftUI read the control's binding on
+    /// SwiftUI reads the control's binding on
     /// NSHostingView's asynchronous rendering thread, and a `Binding(get:set:)` made of
-    /// main-actor closures trapped there (Swift 6 executor check). A window that is never
+    /// main-actor closures traps there (Swift 6 executor check). A window that is never
     /// shown renders on the main thread only, so the test reads the row's binding off the
     /// main thread itself, as that rendering does.
     @Test("the channel binding can be read off the main thread")
@@ -227,7 +227,7 @@ struct ReleaseChannelRowTests {
     }
 }
 
-/// Hands a value to another thread in a test (the binding is read there on purpose).
+/// Hands a value to another thread in a test (the binding is read there).
 final class UncheckedBox<Value>: @unchecked Sendable {
     let value: Value
     init(_ value: Value) { self.value = value }

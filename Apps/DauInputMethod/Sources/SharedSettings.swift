@@ -50,7 +50,7 @@ extension SettingsStore {
 /// `scripts/selftest/app-group.sh` can check without typing that a change saved by the
 /// Settings app reaches this process through the App Group and the Darwin notification.
 ///
-/// Process-wide on purpose: controllers only observe changes while a client is active,
+/// Process-wide: controllers only observe changes while a client is active,
 /// and the self test must also work when no client has been activated yet. It reads the
 /// same store the controllers read, on the same queue.
 ///

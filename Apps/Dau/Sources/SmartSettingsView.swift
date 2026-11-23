@@ -1,9 +1,9 @@
 import SwiftUI
 import DauShared
 
-/// "Thông minh" (mockups "SettingsSmart", "SettingsSmartAdvanced"): automatic restore
+/// "Smart Typing" (mockups "SettingsSmart", "SettingsSmartAdvanced"): automatic restore
 /// of foreign words (D4), adding marks to a typed word (D20), and the collapsed
-/// "Nâng cao" group (D21, D22, D23).
+/// "Advanced" group (D21, D22, D23).
 struct SmartSettingsView: View {
     @Environment(SettingsModel.self) private var model
     @State private var advancedExpanded = false
@@ -34,8 +34,8 @@ struct SmartSettingsView: View {
                         Text("Add marks to typed words")
                         NewBadge()
                     }
-                    // D20 scope (30/10/2026): only the text right before the cursor,
-                    // never in apps with a "Có gạch chân" rule. N5: stability on web
+                    // D20: only the text right before the cursor,
+                    // never in apps with an "Underline" rule. N5: stability on web
                     // editors is an open question in Decisions.md; the placeholder
                     // stays until it is measured.
                     Text("Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule. [Test results on Google Docs, Notion…]")
@@ -46,7 +46,7 @@ struct SmartSettingsView: View {
             }
 
             Section {
-                // D9: a system button with a chevron, accepted for "Nâng cao" (the
+                // D9: a system button with a chevron, accepted for "Advanced" (the
                 // disclosure group indents the options).
                 Button {
                     withAnimation(.easeInOut(duration: 0.15)) { advancedExpanded.toggle() }

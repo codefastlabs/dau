@@ -212,7 +212,7 @@ struct InputSourceChangeTests {
         #expect(InputSourceChange.endsWord(previous: us, current: dau, ownBundleID: own))
     }
 
-    @Test("when nothing can be told, the word ends as before")
+    @Test("when nothing can be told, the word ends")
     func unknown() {
         #expect(InputSourceChange.endsWord(previous: dau, current: nil, ownBundleID: own))
         #expect(InputSourceChange.endsWord(previous: nil, current: dau, ownBundleID: own))

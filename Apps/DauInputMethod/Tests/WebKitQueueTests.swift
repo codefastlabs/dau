@@ -19,8 +19,8 @@ private struct WebKitSession {
     var badTyped = 0
     var waits: [InPlaceComposer.BackspaceWait] = []
 
-    /// `passThrough`: the old behaviour, characters the engine leaves unchanged go to the
-    /// app (`InPlaceComposer.passesCharactersThrough`).
+    /// `passThrough`: characters the engine leaves unchanged go to the app
+    /// (`InPlaceComposer.passesCharactersThrough`), the control.
     init(_ text: String = "", passThrough: Bool = false) {
         engine = VietEngine(options: DauSettings.defaults.engineOptions)
         doc = LateDocument(text)
@@ -138,8 +138,8 @@ struct WebKitQueueTests {
         return s
     }
 
-    /// The old behaviour reproduces the Safari runs (`docs/Compatibility.md` 5.1, busy
-    /// page, keys at a person's fast pace: the text scrambled): a key let through waits
+    /// Characters left to the app reproduce the Safari runs (`docs/Compatibility.md` 5.1,
+    /// busy page, keys at a person's fast pace: the text is scrambled): a key let through waits
     /// in the queue while the replacement of the next key reaches the page first.
     @Test("keys left to the app (the old behaviour), page stuck from the first key: vieetj scrambles")
     func oldBehaviourScrambles() {
@@ -207,9 +207,9 @@ struct WebKitQueueTests {
     }
 
     /// ⌫ is still left to the app (D32): behind the queued events of the keys typed
-    /// before it, it reaches the page after the input method's next calls ("Hoc ⌫j" gave
-    /// "Hocj" in Safari with a busy page, 3 of 6 runs, `docs/research/LateAnswerFixes.md`
-    /// 5.4). The key after it waits (N3 "Ngoại lệ sau ⌫ chưa áp"); a page that never gets
+    /// before it, it reaches the page after the input method's next calls ("Hoc ⌫j" gives
+    /// "Hocj" in Safari with a busy page, `docs/research/LateAnswerFixes.md` 5.4). The key
+    /// after it waits (N3 "Ngoại lệ sau ⌫ chưa áp"); a page that never gets
     /// to the ⌫ within `backspaceWaitLimit` (untimed queue, nothing handled) leaves the key
     /// to go on as without the wait.
     @Test("⌫ behind queued events, page stuck past the wait limit: the key waits the whole limit, then goes on")
@@ -225,7 +225,8 @@ struct WebKitQueueTests {
     }
 
     /// The same model with a free page that handles each event before the next key:
-    /// the old and the new behaviour give the same text (the bug needs a queue).
+    /// characters left to the app and typed by the input method give the same text (the
+    /// order bug needs a queue).
     @Test("page free between keys: the old and the new behaviour type the same text")
     func freePageSameText() {
         for passThrough in [false, true] {
@@ -241,8 +242,8 @@ struct WebKitQueueTests {
     // MARK: In time: the key after a ⌫ waits for the page (N3 "Ngoại lệ sau ⌫ chưa áp")
 
     /// A page blocked 300 ms in every second, at a phase set by the seed (the Safari busy
-    /// page of 18/11/2026: a script blocks the page 300 ms every second). The times are
-    /// chosen, not measured.
+    /// page: a script blocks the page 300 ms every second). The times are chosen, not
+    /// measured.
     static func busyPage(seed: UInt64) -> (TimeInterval) -> TimeInterval {
         var rng = SplitMix(seed &* 2_654_435_761 &+ 7)
         let phase = rng.uniform(0, 1)
@@ -259,7 +260,7 @@ struct WebKitQueueTests {
     }
 
     /// Arrival times: a person typing fast (40 ± 20 ms, 150 ms more after a space; the
-    /// Safari runs of 18/11/2026), or a burst (1–5 ms).
+    /// Safari runs, `docs/Compatibility.md` 5.1), or a burst (1–5 ms).
     static func arrivalTimes(_ keys: [KeyRoute], burst: Bool, seed: UInt64) -> [TimeInterval] {
         var rng = SplitMix(seed &* 9_973 &+ 5)
         var t = 0.0
@@ -275,8 +276,9 @@ struct WebKitQueueTests {
 
     private static func timedRun(_ keys: String, busy: Bool, seed: UInt64) -> TimedWebKitSession {
         // Busy: a page blocked as above. Burst: a free page. Each event 0.05–0.3 ms once the
-        // page is free (chosen: in Safari the page had applied the ⌫ 3 ms after the first
-        // ask, 22/11/2026), 0.5–2 ms on the free page so that keys 1–5 ms apart queue up.
+        // page is free (chosen: Safari applies the ⌫ about 3 ms after the first ask,
+        // `docs/research/LateAnswerFixes.md` 5.4), 0.5–2 ms on the free page so that keys
+        // 1–5 ms apart queue up.
         var s = TimedWebKitSession(pageFree: busy ? busyPage(seed: seed) : { $0 },
                                    work: busy ? work(0.05, 0.3, seed: seed) : work(0.5, 2, seed: seed))
         let keyRoutes = routes(keys)

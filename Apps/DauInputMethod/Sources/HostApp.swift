@@ -2,7 +2,7 @@ import AppKit
 import os
 import Security
 
-/// Finds the host app (Dấu, the Settings app) for the input menu's "Cài đặt Dấu…".
+/// Finds the host app (Dấu, the Settings app) for the input menu's "Dấu Settings…".
 ///
 /// Not "whatever LaunchServices returns for the bundle ID": on a development machine
 /// LaunchServices may know many old copies (DerivedData, temporary builds), and
@@ -11,16 +11,16 @@ import Security
 /// 1. A running copy of the host app: the user already has it; activate that one.
 /// 2. The app this bundle is nested in (`Dau.app/Contents/Library/Input Methods/`), when
 ///    the input method runs from inside the app.
-/// 3. The installed input method is a copy made by the host app (M5), so a matching host
+/// 3. The installed input method is a copy made by the host app, so a matching host
 ///    app has the same version: among the copies LaunchServices knows, keep those whose
 ///    CFBundleShortVersionString and CFBundleVersion equal the input method's, preferring
 ///    one in an Applications folder. No match: nothing is opened (logged by the caller),
 ///    rather than an older or newer app.
 ///    The input method's sandbox can read Info.plist of copies in /Applications but not
-///    in a home folder (measured 02/11/2026: `deny file-read-data` for a DerivedData
+///    in a home folder (measured: `deny file-read-data` for a DerivedData
 ///    copy), so a build that is neither running nor in /Applications never matches.
 /// 4. Not registered: an app copied into /Applications without Finder (`ditto`, `cp`, a
-///    package manager) may be unknown to LaunchServices for a while (measured 05/11/2026:
+///    package manager) may be unknown to LaunchServices for a while (measured:
 ///    after `ditto` into /Applications only the DerivedData copies were known, and the
 ///    menu item opened nothing). So the Applications folder is scanned for a bundle with
 ///    the host's ID and the same version, like step 3.
@@ -28,7 +28,7 @@ import Security
 ///    signature check: then it is the host (D37). LaunchServices must know it.
 /// 6. LaunchServices knows exactly one copy (any version): open it if its signature
 ///    passes. A copy whose Info.plist cannot be read (a development build in the home
-///    folder) used to open here; it cannot be checked, so it no longer does (`accepts`).
+///    folder) is not opened (`accepts`).
 ///
 /// At every step a copy is opened only if its signature passes (`accepts`,
 /// `HostAppSignature`): signed by this input method's team, with the host's bundle ID.
@@ -118,7 +118,7 @@ enum HostApp {
         /// Readable, and not signed that way: never opened.
         case untrusted
         /// Could not be checked: the sandbox does not let the input method read the
-        /// bundle (a copy in a home folder, measured 02/11/2026), or this input method has
+        /// bundle (a copy in a home folder), or this input method has
         /// no Team ID of its own (ad-hoc signed).
         case unknown
     }
@@ -252,11 +252,11 @@ enum HostApp {
 /// read from the signatures would take two ad-hoc signatures (no Team ID) for the same
 /// team, and the Team ID of an ad-hoc signature is whatever its maker wrote.
 ///
-/// The sandbox: the input method can read bundles in /Applications (measured 02/11/2026
-/// for Info.plist) but not in a home folder. The check needs the bundle's files, so a
+/// The sandbox: the input method can read bundles in /Applications (measured for
+/// Info.plist) but not in a home folder. The check needs the bundle's files, so a
 /// copy whose Info.plist cannot be read is `HostApp.Trust.unknown`, not untrusted; what
 /// that allows is decided by `HostApp.accepts`. The Security calls themselves run inside
-/// the input method's sandbox (measured 11/11/2026: "Dấu Settings…" opened the copy
+/// the input method's sandbox (measured: "Dấu Settings…" opened the copy
 /// with no `host-app-signature-invalid`; `docs/history/LogM6.md`, `docs/Architecture.md`,
 /// "Khởi chạy bộ gõ").
 enum HostAppSignature {

@@ -49,7 +49,7 @@ struct Typist {
     }
 
     /// Puts `displayed` in the field as if it was already there, then seeds the engine
-    /// from it (D20), as the IMK layer will do when the buffer is empty.
+    /// from it (D20), as the IMK layer does when the buffer is empty.
     mutating func seed(_ displayed: String) -> Bool {
         text.append(contentsOf: displayed.unicodeScalars)
         return engine.seed(displayed: displayed.unicodeScalars)

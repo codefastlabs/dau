@@ -157,7 +157,7 @@ struct ProblemReportTests {
         #expect(values["macos"] == "macOS 27.2")
         #expect(values["dau-version"] == "Dấu 0.1.0 (6520, a1b2c3d)")
         #expect(values["settings"] == "Telex · No Underline")
-        // Every value is made of what the sheet shows: its fields and the "Gửi kèm" line.
+        // Every value is made of what the sheet shows: its fields and the "Included" line.
         let shown = [report.app, report.website, report.kind.title, report.example, report.includedLine]
         for (name, value) in items where name != "template" {
             for part in value.components(separatedBy: CharacterSet(charactersIn: ":·")) {

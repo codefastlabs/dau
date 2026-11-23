@@ -348,7 +348,7 @@ struct TypistSimOptionsTests {
     // MARK: - Sensitivity
 
     /// What a dead end of today would need: replays its keys with each single option.
-    /// (K4, D26's lock after ⌫, is gone since 12/11/2026.)
+    /// (D26's release after ⌫ is in the engine, so it is not a cause.)
     enum Cause: String, CaseIterable {
         case restored = "K1 từ đã khôi phục (b′ sửa)"
         case baseline = "K3 mốc sau ⌫ (c sửa)"

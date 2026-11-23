@@ -3,7 +3,7 @@ import DauEngine
 import DauShared
 import Testing
 
-/// Keys → composer → a `LateDocument` that behaves as the word-origin model (from Cursor 3.29.15 logs, 10/11/2026)
+/// Keys → composer → a `LateDocument` that behaves as the word-origin model
 /// (`LateDocument.Origin.word`, Chromium's cache, the caret kept after a replaced range),
 /// every key `interval` after the previous one.
 private struct EditorSession {
@@ -39,15 +39,16 @@ private struct EditorSession {
     }
 }
 
-/// The word-origin model (from Cursor 3.29.15 logs, 10/11/2026): the app answers `selectedRange` from the start of the word being typed. The editor of Cursor 3.30.14 answers this way in some runs (`docs/Compatibility.md` 5.4).
-/// (`LateDocument.Origin.word`; runs of 10/11/2026 in `docs/history/LogM6.md`, logs in
-/// build/load/cursor-20261110-094602 and cursor2-20261110-100405, not committed).
-@Suite("In-place mode in an app that counts positions from the start of the word (M6: the word-origin model)")
+/// The word-origin model (from Cursor 3.29.15 logs): the app answers `selectedRange` from
+/// the start of the word being typed. The editor of Cursor 3.30.14 answers this way in
+/// some runs (`docs/Compatibility.md` 5.4). `LateDocument.Origin.word`; the runs are in
+/// `docs/history/LogM6.md`.
+@Suite("In-place mode in an app that counts positions from the start of the word (the word-origin model)")
 struct WordOriginTests {
-    // MARK: The app is on time (group 1 of the runs)
+    // MARK: The app is on time
 
-    /// Milliseconds between the keys of the 20 ms run of 09:46 (cell c-20, Dấu Debug
-    /// dc7208c, `ev_ns` of the perf log): about 30 ms, and near 90 ms every eighth key.
+    /// Milliseconds between the keys of a Cursor run at a nominal 20 ms (`ev_ns` of the
+    /// perf log): about 30 ms, and near 90 ms every eighth key.
     static let gapsOf20msRun: [Double] = [
         0, 50, 12, 18, 26, 32, 29, 83, 30, 29, 35, 22, 33, 23, 28, 102, 20, 33, 25, 31, 28, 37, 30, 120, 34, 31, 39,
         28, 91, 7, 21, 81, 31, 30, 32, 26, 32, 27, 31, 86, 31, 30, 30, 27, 30, 26, 32, 101, 29, 37, 23, 37, 33, 26,
@@ -60,19 +61,18 @@ struct WordOriginTests {
         25, 28, 51, 26, 33, 32, 29, 115, 20, 33, 28,
     ]
 
-    /// The 20 ms run replayed with its own key times and an app that is on time. That
-    /// run gave "uongs" and "tuanf" and nothing else wrong (as every run at nominal 5 and
-    /// 20 ms; none at 100 ms): `late` at keys 47 ("uo" + o, sel 2, known 5, range 4,1)
-    /// and 112 ("tua" + a, sel 3, known 7, range 6,1), `mismatch` at the next mark key
-    /// of each word.
+    /// The Cursor run replayed with its own key times and an app that is on time. The
+    /// words that could go wrong are "uongs" and "tuanf": taken as `late` at keys 47
+    /// ("uo" + o, sel 2, known 5, range 4,1) and 112 ("tua" + a, sel 3, known 7, range
+    /// 6,1), then `mismatch` at the next mark key of each word.
     ///
-    /// The answer in the log was right at both keys. The keys since the previous replacement
-    /// came in one burst, and the answer happened to be the caret that replacement had
-    /// (a position in its own word), so the text read, with that replacement replayed
-    /// over it, came out as the text the tracker typed: the replacement's removed text
-    /// was not known (it was made at the app's answer, away from the followed position),
-    /// so it fitted any text. Taken for an app that had applied none of those keys, the
-    /// key replaced at the followed position, a range the app drops.
+    /// The answer is right at both keys. The keys since the previous replacement come in
+    /// one burst, and the answer happens to be the caret that replacement had (a position
+    /// in its own word), so the text read, with that replacement replayed over it, comes
+    /// out as the text the tracker typed: the replacement's removed text is not known (it
+    /// was made at the app's answer, away from the followed position), so it fits any
+    /// text. Taken for an app that has applied none of those keys, the key would replace
+    /// at the followed position, a range the app drops.
     @Test("the 20 ms run of the Cursor log replayed with its key times, the app on time: every word right")
     func runAt20ms() {
         var s = EditorSession()
@@ -88,15 +88,15 @@ struct WordOriginTests {
         #expect(s.overCalls == 0)
     }
 
-    /// The two words with the positions of the logs, the keys of the burst 5 and 20 ms
+    /// The two words with the positions seen in Cursor, the keys of the burst 5 and 20 ms
     /// apart. `before` is typed at 100 ms: the word whose replacement the app's answer
-    /// was taken for (in the logs "ddi" and "saus" were replaced at the app's answer,
-    /// which was not the followed position).
+    /// could be taken for ("ddi" and "saus" are replaced at the app's answer, which is
+    /// not the followed position).
     @Test("words of the Cursor logs: the answer is right, the keys since the last replacement came in a burst",
           arguments: [
-              // "uo" + o: sel 2, known 5; was `late`, range 4,1.
+              // "uo" + o: sel 2, known 5; not `late` (range 4,1 would be dropped).
               ("minhf ", "ddi uo", "o", "ngs ", 2, 5, "mình đi uống "),
-              // "tua" + a: sel 3, known 7; was `late`, range 6,1.
+              // "tua" + a: sel 3, known 7; not `late` (range 6,1 would be dropped).
               ("thuws ", "saus tua", "a", "nf ", 3, 7, "thứ sáu tuần "),
           ], [0.005, 0.02])
     func rightAnswerInBurst(_ word: (before: String, keys: String, key: String, rest: String, sel: Int, known: Int,
@@ -115,35 +115,33 @@ struct WordOriginTests {
         #expect(s.overCalls == 0)
     }
 
-    // MARK: After a word of one letter (run of 11:44)
+    // MARK: After a word of one letter
 
-    /// The run c100-short of 11:44 (Cursor 3.29.15, Dấu Debug dc71b7f, 100 ms between
-    /// keys; build/load/fix2-20261110-114446, not committed): "owr ddaau, uwf cos. anh
-    /// ddi " gave "ở dâu, ừ co. anh đi ". The answer in the log was right at both keys; after
-    /// a replaced word of one letter the followed position is two past it, within
-    /// `CursorTracker.lateLimit`, where the text of the app was not compared with the
-    /// text typed:
-    /// - "d" + d (sel 1, known 3, was `late`, range 2,1): the text read, "d", with the
-    ///   last two edits replayed gave "d d", whose word is the engine's, though "ở d"
-    ///   was typed there. Then `resync` at the second a.
-    /// - "co" + s (sel 2, known 4, was `late`, range 3,1): "co" is the text typed, "ừ co",
-    ///   with its two first units missing, which the cache of a late Chromium page
-    ///   never shows.
+    /// Cursor 3.29.15, 100 ms between keys: "owr ddaau, uwf cos. anh ddi " must give
+    /// "ở dâu, ừ có. anh đi " (the app's answer is right at both keys below, but could be
+    /// taken for `late`). After a replaced word of one letter the followed position is
+    /// two past it, within `CursorTracker.lateLimit`, where the text of the app must be
+    /// compared with the text typed:
+    /// - "d" + d (sel 1, known 3, range 2,1): the text read, "d", with the last two edits
+    ///   replayed gives "d d", whose word is the engine's, though "ở d" was typed there.
+    ///   Then `resync` at the second a.
+    /// - "co" + s (sel 2, known 4, range 3,1): "co" is the text typed, "ừ co", with its
+    ///   two first units missing, which the cache of a late Chromium page never shows.
     ///
-    /// The log's kinds from the first key of the string (after the confirm step); at
-    /// each replacement of the log checked here, the answer and the followed position (the
-    /// first replacement of the run, not checked, had known -1 in the log and has 1 here:
-    /// the log does not say why the first key did not anchor the position).
+    /// The kinds are those of the Cursor run from the first key of the string (after the
+    /// confirm step); at each replacement checked here, the answer and the followed
+    /// position. The first replacement of the run is not checked: its followed position is
+    /// -1 in Cursor and 1 here.
     @Test("the 100 ms run of the Cursor log after one-letter words, the app on time: every word right")
     func afterOneLetterWord() {
         var s = EditorSession()
         s.type("owr ddaau, uwf cos. anh ddi ", every: 0.1)
         #expect(s.doc.text == "ở đâu, ừ có. anh đi ")
-        // The log: seed_none replace replace pass pass late pass resync pass … late …
+        // Only `pass`, `replace` and `seedNone`: no `late`, `resync` or other kind.
         let odd = s.kinds.enumerated().filter { ![.pass, .replace, .seedNone].contains($0.element) }
         #expect(odd.isEmpty, "\(odd.map { "key \($0.offset + 1) \($0.element.rawValue)" })")
-        // (key of the string, sel, known) of the log's diag lines; known 11 at key 26 followed the
-        // wrong "co" (9 once that word is replaced at the answer).
+        // (key of the string, sel, known) as seen in Cursor; known 11 at key 26 would follow
+        // the wrong "co" (9 once that word is replaced at the answer).
         for (key, sel, known) in [(6, 1, 3), (13, 1, 6), (18, 2, 4), (26, 1, 9)] {
             let attempt = s.outcomes[key - 1].attempt
             #expect(attempt?.selection.location == sel, "key \(key)")
@@ -153,10 +151,9 @@ struct WordOriginTests {
         #expect(s.overCalls == 0)
     }
 
-    /// The run c20-short of 11:44: "anh ddi owr ddaau " at 20 ms gave "anh đi ở dâu",
-    /// `late` at "d" + d (sel 1, known 3), `resync` at the second a. `before` at 100 ms
-    /// stands for the start of that run, where the position was not followed (known -1
-    /// at the first replacement).
+    /// "anh ddi owr ddaau " at 20 ms must give "anh đi ở dâu": not `late` at "d" + d (sel
+    /// 1, known 3), no `resync` at the second a. `before` at 100 ms stands for the start
+    /// of the run, where the position is not followed (known -1 at the first replacement).
     @Test("after a one-letter word with the keys in a burst, the app on time: every word right")
     func afterOneLetterWordInBurst() {
         var s = EditorSession()
@@ -171,7 +168,7 @@ struct WordOriginTests {
         #expect(s.overCalls == 0)
     }
 
-    /// A run of the model cannot be told from a late app with what the input method has: the
+    /// The model cannot be told from a late app with what the input method has: the
     /// same keys at the same times in a new document of an app that counts from the
     /// start of the document, uses Chromium's cache and has applied none of them (VS
     /// Code's new document, measured for the first word: sel 1, known 4, `late`,

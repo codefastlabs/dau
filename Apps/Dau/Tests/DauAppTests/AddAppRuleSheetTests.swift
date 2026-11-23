@@ -2,7 +2,7 @@ import AppKit
 import Testing
 @testable import Dau
 
-/// The add-rule sheet's search and selection: "Thêm" (and Return) add only an app that
+/// The add-rule sheet's search and selection: "Add" (and Return) add only an app that
 /// is on screen, so a query that hides the selected app clears the selection.
 @MainActor
 @Suite("Add-rule sheet search")
@@ -31,7 +31,7 @@ struct AddAppRuleSheetTests {
         let chrome = "com.google.Chrome"
         // Selected, then a query that keeps it on screen.
         #expect(AppCandidate.selection(chrome, among: AppCandidate.matching(c, query: "goo")) == chrome)
-        // Selected app A, then a query that hides A: nothing selected, "Thêm" off.
+        // Selected app A, then a query that hides A: nothing selected, "Add" off.
         #expect(AppCandidate.selection(chrome, among: AppCandidate.matching(c, query: "TextEdit")) == nil)
         #expect(AppCandidate.selection(chrome, among: AppCandidate.matching(c, query: "zzz")) == nil)
         #expect(AppCandidate.selection(nil, among: c) == nil)

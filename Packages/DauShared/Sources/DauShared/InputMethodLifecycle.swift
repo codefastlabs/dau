@@ -33,7 +33,7 @@ public enum InputMethodLifecycle {
     }
 
     /// Whether a quit request should be honoured: the executable at launch is no longer
-    /// the one on disk (replaced or gone). Unknown at launch: honour it (old behaviour).
+    /// the one on disk (replaced or gone). Unknown at launch: honour it.
     public static func shouldQuit(launchedFrom launch: BundleFile?, now current: BundleFile?) -> Bool {
         guard let launch else { return true }
         return current != launch

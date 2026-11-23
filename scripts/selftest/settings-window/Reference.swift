@@ -73,7 +73,7 @@ enum Reference {
 
     /// The system's page title (an AXStaticText in the toolbar) starts here, with no
     /// Back/Forward cluster before it (D9). Measured on Dấu's Ứng dụng page, the one page
-    /// that kept its toolbar (run.sh 13/11/2026, macOS 27.2: 235.5 at 2x, 236 at 1x).
+    /// that kept its toolbar (macOS 27.2: 235.5 at 2x, 236 at 1x).
     /// The system draws it; System Settings has no pane without the cluster to read it
     /// from (SystemSettingsReference.md).
     static let titleX: CGFloat = 235.5
@@ -200,9 +200,9 @@ enum Reference {
 
     // MARK: Scroll and background checks, (a)–(d) (System for the scroller; the rest deliberate, content or probe)
 
-    /// Content: the section check (d) scrolls. Since the cut list (13/11/2026) no section
+    /// Content: the section check (d) scrolls. No section
     /// overflows the default window; Gõ phím, the longest with Thông minh (content ends
-    /// near y 510 of 560), scrolls 58 pt at the smallest height (run.sh 13/11/2026), where (d) runs;
+    /// near y 510 of 560), scrolls 58 pt at the smallest height, where (d) runs;
     /// its content does not depend on a disclosure. `scrolledProbeStartX` starts right of its title.
     static let scrollingSection = "typing"
     /// Probe: how far check (d) scrolls the page (through the scroll bar's value), and the
@@ -242,7 +242,7 @@ enum Reference {
     static let straySampleTop: CGFloat = 64
     static let straySampleStep: CGFloat = 16
     /// Probe: header region compared when scrolled; x from just right of the page title
-    /// ("Gõ phím": ends near 311 in the 13/11/2026 screenshots; the longest title, "Cập nhật & hỗ trợ", near 372) to
+    /// ("Gõ phím": ends near 311; the longest title, "Cập nhật & hỗ trợ", near 372) to
     /// 24 from the edge every 6; y 6...46 every 4.
     static let scrolledProbeStartX: CGFloat = 470
     static let scrolledProbeRightInset: CGFloat = 24

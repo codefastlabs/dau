@@ -3,10 +3,11 @@ import DauEngine
 import DauShared
 import Testing
 
-/// How an app applies keys, for the simulation of keys that come in a burst (M6). The
+/// How an app applies keys, for the simulation of keys that come in a burst. The
 /// cache and replacement behaviour of each model comes from the app's source
-/// (`LateDocument`); the times are not measured: they are chosen so the code from
-/// before M6 fails where M3 measured it fail (`docs/Compatibility.md` section 5: Chrome at 0 ms
+/// (`LateDocument`); the times are not measured: they are chosen so an input method
+/// without the late-answer proof (`CursorTracker.rebuild`) fails where the apps were
+/// measured to fail (`docs/Compatibility.md` section 5: Chrome at 0 ms
 /// only, VS Code and Firefox at 0 and 5 ms, every app right from 20 ms).
 struct AppModel: CustomStringConvertible {
     var name: String
@@ -94,7 +95,7 @@ struct RapidSession {
         reads += doc.reads
         kinds.append(outcome.kind)
         if let wait = outcome.backspaceWait { waits.append(wait) }
-        // Costs of the calls, medians measured in M2/M3 (Debug; docs/history/DecisionsLog.md,
+        // Costs of the calls, medians measured (Debug; docs/history/DecisionsLog.md,
         // section D20): selectedRange 0.3 ms, attributedSubstring 0.8 ms (Chrome,
         // VS Code), insertText 0.6 ms; the rest of a key 0.3 ms.
         let end = start + 0.0003 + Double(doc.selections) * 0.0003 + Double(doc.reads) * 0.0008
@@ -131,7 +132,7 @@ func arrivals(_ count: Int, ms: Double, jitter: Double, seed: UInt64) -> [TimeIn
     return times
 }
 
-@Suite("In-place mode with keys in a burst (M6: keys under 50 ms apart in Chrome, VS Code, Firefox)")
+@Suite("In-place mode with keys in a burst (keys under 50 ms apart in Chrome, VS Code, Firefox)")
 struct RapidKeysTests {
     static let strings = [("edit", LateAnswerTests.editKeys), ("std", LateAnswerTests.stdKeys)]
     static let speeds: [Double] = [0, 5, 10, 20]
@@ -172,8 +173,8 @@ struct RapidKeysTests {
     /// Every app model × speed × string over `seeds` seeds, against an app that is always
     /// up to date given the same keys at the same times (at these speeds D20 and the D11
     /// re-read do not apply: "Hoc ⌫j" gives "Hocj" there too). Must match at 5, 10, 20 ms
-    /// for Chrome, VS Code, Firefox; 0 ms and `busy` are printed only (the table of the
-    /// M6 report, lines starting with RAPID).
+    /// for Chrome, VS Code, Firefox; 0 ms and `busy` are printed only (lines starting
+    /// with RAPID).
     @Test("load-test strings at 5, 10, 20 ms in Chrome, VS Code, Firefox models, many seeds: same text as an app that is up to date")
     func burstTable() {
         var lines: [String] = []
@@ -202,7 +203,7 @@ struct RapidKeysTests {
                         applied += run.waits.filter(\.applied).count
                         maxWait = max(maxWait, run.waits.map(\.waited).max() ?? 0)
                     }
-                    // Pass criterion (D13: typing speed of a person, M6): the calibrated models
+                    // Pass criterion (D13: typing speed of a person): the calibrated models
                     // at 5, 10, 20 ms. 0 ms (a machine sending the whole string) and the
                     // uncalibrated `busy` model are recorded only. N3 and ranges always.
                     failures += over + bad + (ms > 0 && model.name != AppModel.busy.name ? wrong : 0)
@@ -283,13 +284,13 @@ struct RapidKeysTests {
 
     // MARK: The first word of an empty document
 
-    /// The fast-key run of 10/11/2026 (VS Code, nominal 5 and 10 ms, keys 10–20 ms apart):
-    /// in a new document "Chieeuf" gave "êhieuf", at the second "e" `sel` 1, `known` 4.
+    /// VS Code with fast keys (nominal 5 and 10 ms, keys 10–20 ms apart): in a new
+    /// document "Chieeuf" gives "êhieuf", at the second "e" `sel` 1, `known` 4.
     /// With Chromium's cache that answer is an app that has reported none of the four
     /// keys, the cache holding the latest one at the caret it knows (0): "e" before caret
     /// 1. No text of the app's precedes the keys, so nothing read could show the app was
-    /// only late. (An app that has reported "C", three behind, was already taken for
-    /// late.) The text of the run comes out with the caret kept after a replaced range;
+    /// only late. (An app that has reported "C", three behind, is taken for late by the
+    /// text read.) The text of the run comes out with the caret kept after a replaced range;
     /// the other caret behaviour and Firefox's cache (caret 0, nothing to read) are the
     /// same case.
     @Test("first word of an empty document, keys in a burst, the app has reported none of them: replaced at the followed position",
@@ -411,9 +412,8 @@ struct RapidKeysTests {
     /// The timed models with a new document that is not ready when the first keys come:
     /// the app applies the first edit only after `stall`. The stall is not measured: 40
     /// and 80 ms put the app three to eight keys behind at the first replacement at
-    /// 10–20 ms between keys, around what the 10/11 run showed for VS Code (`sel` 1,
-    /// `known` 4). Lines starting with START are the table of the report; 0 ms is
-    /// printed only.
+    /// 10–20 ms between keys, around what VS Code shows (`sel` 1, `known` 4). Lines
+    /// starting with START are printed as a table; 0 ms is printed only.
     @Test("first words of an empty document that stalls 40 or 80 ms, at 5, 10, 20 ms in Chrome, VS Code, Firefox models: same text as an app that is up to date")
     func stalledStartTable() {
         var lines: [String] = []
@@ -491,7 +491,7 @@ struct RapidKeysTests {
         doc.override = "abc defg "
         now += 0.005
         let outcome = composer.handle(.character("j"), time: now, engine: &engine, client: doc)
-        // The first replacement of a word: the answer stands (D11), as before M6.
+        // The first replacement of a word: the answer stands (D11).
         #expect(outcome.kind == .replace)
         // The same answer with the text that was typed there: late.
         var engine2 = VietEngine(options: DauSettings.defaults.engineOptions)

@@ -14,7 +14,7 @@ enum OnboardingScene {
     /// The window, title bar included (mockup).
     static let size = CGSize(width: 720, height: 500)
     /// The hidden title bar still counts as top safe area, and SwiftUI adds it to the
-    /// window's size: the content is laid out below it (32 pt on macOS 27, 28 before).
+    /// window's size: the content is laid out below it (32 pt on macOS 27, 28 on earlier versions).
     static let titleBarHeight: CGFloat = {
         let content = NSRect(x: 0, y: 0, width: 100, height: 100)
         return NSWindow.frameRect(forContentRect: content, styleMask: [.titled, .closable]).height - content.height
@@ -209,7 +209,7 @@ struct OnboardingStepView: View {
         }
         // No side margin here: `StepLayout` puts it inside the scroll area, so the scroll
         // bar sits at the window's edge as in System Settings (D9; artboard
-        // OnboardingEnableNotes, canvas version 104).
+        // OnboardingEnableNotes).
         .padding(.top, OnboardingScene.belowTitleBar(40))
         .padding(.bottom, 28)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
@@ -300,7 +300,7 @@ struct OnboardingCard<Content: View>: View {
 
 // MARK: Before step 1
 
-/// "Chuyển Dấu vào Applications" (artboard OnboardingMoveToApplications; D37): this copy of
+/// "Move Dấu to %@" (artboard OnboardingMoveToApplications; D37): this copy of
 /// Dấu is not the owner copy and no input method is installed, so it installs nothing and
 /// says how to get the copy that will. The folder's name is macOS's own (D38). Its probes
 /// are named as a screen of step 1 (`onbTitle-1.move`): it shows before that step.
@@ -387,14 +387,14 @@ struct ConflictCard: View {
     }
 }
 
-/// "Đang chạy": a capsule on the system orange tint.
+/// "Running": a capsule on the system orange tint.
 struct RunningChip: View {
     var body: some View {
         StatusChip(text: Text("Running"), tint: .orange)
     }
 }
 
-/// A status capsule on a system color's light tint ("Đang chạy" orange).
+/// A status capsule on a system color's light tint ("Running" orange).
 struct StatusChip: View {
     let text: Text
     let tint: Color
@@ -435,9 +435,9 @@ struct OtherAppIcon: View {
 // MARK: Step 2
 
 /// Step 2 has five screens (docs/UI.md "Onboarding"), one `StepLayout` each: before
-/// "Bật Dấu" (`OnboardingEnable`, `OnboardingEnableNotes`), waiting for the user to click
+/// "Turn On Dấu" (`OnboardingEnable`, `OnboardingEnableNotes`), waiting for the user to click
 /// Allow (`OnboardingEnableWaiting`), done (`OnboardingEnableDone`,
-/// `OnboardingEnableDoneNoShortcut`), "Chưa bật được" (`OnboardingEnableFailed`), and an
+/// `OnboardingEnableDoneNoShortcut`), "Couldn’t Turn On Dấu" (`OnboardingEnableFailed`), and an
 /// install error or an installed input method whose signature is wrong
 /// (`OnboardingEnableError`). The first card of each is the `onbCard-2` probe.
 struct EnableStep: View {
@@ -684,8 +684,8 @@ struct NumberedLine: View {
 /// A small picture of macOS's "Allow … to enable …?" dialog, so the user knows what to
 /// look for. Not a control: hidden from VoiceOver. System colors only (D9); the text is
 /// the dialog's own wording. Drawn like the real dialog at about 0.75 scale (measured on
-/// macOS 27.2, docs/research/InputMethodInstall.md section 2.1; artboards OnboardingEnable*,
-/// canvas version 105): no icon, everything left-aligned, the whole body shown, two
+/// macOS 27.2, docs/research/InputMethodInstall.md section 2.1; artboards OnboardingEnable*):
+/// no icon, everything left-aligned, the whole body shown, two
 /// equal capsule buttons with "Allow" (the default) blue on the right.
 struct AllowDialogIllustration: View {
     /// The dialog's own words, in the system's language (D38).
@@ -724,11 +724,11 @@ struct AllowDialogIllustration: View {
     }
 }
 
-/// "Chọn Dấu trong menu nhập liệu, hoặc bấm <phím tắt thật> để chuyển giữa Dấu và U.S.":
-/// the real shortcut (N5), as the "Sau khi bật" card reads it, drawn as keycaps like the
-/// Settings "Gõ phím" page (`OnboardingEnableDone`). No shortcut set: says so and offers
-/// "Đặt phím tắt trong System Settings" (`OnboardingEnableDoneNoShortcut`). A shortcut
-/// that cannot be read: only "Chọn Dấu trong menu nhập liệu." and the same button, no
+/// "Choose Dấu from the Input menu, or press %@ to switch between Dấu and “%@”.":
+/// the real shortcut (N5), as the "Once it’s on" card reads it, drawn as keycaps like the
+/// Settings "Typing" page (`OnboardingEnableDone`). No shortcut set: says so and offers
+/// "Set a Shortcut in %@" (`OnboardingEnableDoneNoShortcut`). A shortcut
+/// that cannot be read: only "Choose Dấu from the Input menu." and the same button, no
 /// claim about the shortcut.
 struct ChooseDauLine: View {
     let reading: InputSourceShortcut.Reading
@@ -766,7 +766,7 @@ struct ChooseDauLine: View {
 }
 
 /// A sentence that names the input-source shortcut, with the shortcut drawn as keycaps
-/// (`ShortcutKeycaps`, the Settings "Gõ phím" page's) where the text names it. The
+/// (`ShortcutKeycaps`, the Settings "Typing" page's) where the text names it. The
 /// sentence is localized with `marker` in the shortcut's place, so a translation puts the
 /// keys wherever its word order needs them. VoiceOver reads it as one sentence with the
 /// keys spelled out (`InputSourceShortcut.inlineText`).

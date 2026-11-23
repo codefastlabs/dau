@@ -8,7 +8,7 @@ import DauShared
 /// One instance per client session (IMKServer creates it). Each controller owns its own
 /// `VietEngine` and cursor tracker: no global mutable state (Architecture.md).
 ///
-/// Dấu has a single input mode, "Tiếng Việt" (D2, 30/10/2026). English is typed with a
+/// Dấu has a single input mode, "Tiếng Việt" (D2). English is typed with a
 /// system input source (U.S.…), so there is no mode state here: whatever mode ID IMK
 /// reports (an old install may still have "….Dau.en" enabled), keys are handled as
 /// Vietnamese (D18).
@@ -22,7 +22,7 @@ import DauShared
 /// of trapping) if that ever stops being true (D18).
 @objc(DauInputController)
 final class DauInputController: IMKInputController {
-    /// Shared settings as last read from `SettingsStore.inputMethod` (M4). Re-read on
+    /// Shared settings as last read from `SettingsStore.inputMethod`. Re-read on
     /// every change notification and at activation.
     private var settings = SettingsStore.inputMethod.load()
     private lazy var engine = VietEngine(options: settings.engineOptions)
@@ -285,9 +285,9 @@ final class DauInputController: IMKInputController {
     }
 
     /// The client app's bundle ID, read once at activation. Chrome sometimes activates
-    /// the input method through a client whose `bundleIdentifier()` is nil (seen
-    /// 30/10/2026 in the D13 trial: the Chrome rule then did not apply); the frontmost
-    /// app is the one receiving keys, so it stands in. "?" if neither is known (D18).
+    /// the input method through a client whose `bundleIdentifier()` is nil (seen in
+    /// Chrome; its per-app rule would not apply); the frontmost app is the one receiving
+    /// keys, so it stands in. "?" if neither is known (D18).
     private func clientBundleID(_ sender: Any?) -> String {
         if let id = (sender as? IMKTextInput)?.bundleIdentifier(), !id.isEmpty { return id }
         let frontmost = onMain { NSWorkspace.shared.frontmostApplication?.bundleIdentifier } ?? nil
@@ -303,8 +303,8 @@ final class DauInputController: IMKInputController {
 
     /// The client wants the composition ended now (click elsewhere, focus change…).
     /// Underline mode commits the marked word as shown; in-place mode has nothing to
-    /// insert and forgets the word. (super is not called on purpose: its default would
-    /// insert `composedString`, which Dấu does not use.)
+    /// insert and forgets the word. super is not called: its default would insert
+    /// `composedString`, which Dấu does not use.
     override func commitComposition(_ sender: Any!) {
         outsideKey { [self] in _ = resetComposition(client: sender) }
     }
@@ -340,16 +340,15 @@ final class DauInputController: IMKInputController {
         }
     }
 
-    // MARK: - Input source changes IMK may not report (M3)
+    // MARK: - Input source changes IMK may not report
 
     /// A switch to another input source and back that IMK does not report with
     /// `deactivateServer`/`activateServer` must still end the word (D4: reset, no
-    /// restore). Selecting a source with `TISSelectInputSource` from another process
-    /// (measured 10/11/2026, `0bf8d3f`) makes TIS report the new source and the menu bar
-    /// change, but the focused field keeps its input method and Dấu gets no call. The
-    /// system shortcut makes IMK call `activateServer`/`deactivateServer`. This observer
-    /// is for a real switch IMK does not report (for example "Automatically switch to a document's input source",
-    /// or another app calling TIS); those paths are not measured. The system posts the
+    /// restore). The system shortcut makes IMK call `activateServer`/`deactivateServer`;
+    /// this observer is for a real switch IMK does not report (for example "Automatically
+    /// switch to a document's input source", or another app calling TIS; not measured).
+    /// What `TISSelectInputSource` from another process does is in `InputSourceChange`.
+    /// The system posts the
     /// distributed notification `kTISNotifySelectedKeyboardInputSourceChanged` for every
     /// switch, and a sandboxed process may observe it. A switch made with the keyboard
     /// shortcut or the menu also activates this controller; its notification arrives just
@@ -388,7 +387,7 @@ final class DauInputController: IMKInputController {
         }
     }
 
-    // MARK: - Shared settings (M4)
+    // MARK: - Shared settings
 
     /// Registers for the settings change notification once per controller. Each
     /// controller re-reads the store itself, so there is no registry of live controllers
@@ -489,7 +488,7 @@ final class DauInputController: IMKInputController {
         return onMain { () -> NSMenu in
             // The system puts these under its own "Dấu" heading and ends the input menu
             // with its "Open Keyboard Settings…": no heading of ours, no item of ours for
-            // Keyboard settings (N1; artboard Main, canvas version 106).
+            // Keyboard settings (N1; artboard Main).
             let menu = NSMenu()
             menu.autoenablesItems = false
             let methods: [(String, DauSettings.TypingMethod, Selector)] = [
@@ -517,8 +516,8 @@ final class DauInputController: IMKInputController {
 
     /// Menu actions run on the main thread only (D18); anywhere else they do nothing.
     private func selectOnMain(_ method: DauSettings.TypingMethod) {
-        // The non-Sendable controller enters the @MainActor closure; safe because `onMain`
-        // runs the closure only when already on the main thread, never elsewhere.
+        // The non-Sendable controller enters the @MainActor closure; `onMain` runs the
+        // closure only when already on the main thread.
         nonisolated(unsafe) let controller = self
         _ = onMain { controller.setTypingMethod(method) }
     }
@@ -536,7 +535,7 @@ final class DauInputController: IMKInputController {
         }
     }
 
-    /// "Cài đặt Dấu…": opens the host app, whose main window is Settings (UI.md).
+    /// "Dấu Settings…": opens the host app, whose main window is Settings (UI.md).
     @objc func openHostApp(_ sender: Any?) {
         _ = onMain { HostApp.open(logger: settingsLogger) }
     }

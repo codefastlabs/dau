@@ -7,7 +7,7 @@
 #   scripts/dev/clean-dau.sh         list what would be removed; changes nothing
 #   scripts/dev/clean-dau.sh --yes   remove what it can of the list, then say to log out
 #
-# Covers the bundle IDs of Dấu (com.codefastlabs.dau…) and of the M0 placeholder
+# Covers the bundle IDs of Dấu (com.codefastlabs.dau…) and of the placeholder
 # (com.example.dau…), for both prefixes alike:
 #   - running Dấu / input method processes (Dấu.app is asked to quit if it is running,
 #     then the processes are ended);
@@ -198,7 +198,7 @@ for d in $data; do
   rm -rf -- "$d"
   if [[ -e $d ]]; then
     notremoved "KHÔNG xoá được: ${d#$HOME/}"
-    # Seen (09/11/2026): rm gets "Operation not permitted" on a container when the process
+    # Seen: rm gets "Operation not permitted" on a container when the process
     # running the script has no Full Disk Access. Not tried with that permission granted.
     [[ $d == */Containers/* || $d == */"Group Containers"/* ]] &&
       log_hint "Tiến trình chạy script có thể thiếu Full Disk Access (System Settings › Privacy & Security). Hoặc mở Finder › Go › Go to Folder… \"${d:h}\", kéo \"${d:t}\" vào Thùng rác."

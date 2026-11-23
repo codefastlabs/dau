@@ -3,8 +3,8 @@ import Testing
 import DauShared
 @testable import Dau
 
-// Measurement, not a check (CLAUDE.md "Đo trước khi tối ưu"): how long the "Thêm quy tắc
-// cho ứng dụng" sheet's app list takes to build on this Mac, stage by stage, with the real
+// Measurement, not a check (CLAUDE.md "Đo trước khi tối ưu"): how long the "Add App
+// Rule" sheet's app list takes to build on this Mac, stage by stage, with the real
 // folders, bundles and icons (`AddAppRuleSheet.loadApps`, `AppListing.installed`). Off by
 // default (it reads every app on the Mac and prints timings); run with
 //   DAU_MEASURE_APP_LIST=1 swift test --package-path Apps/Dau/Tests --filter AppListTiming

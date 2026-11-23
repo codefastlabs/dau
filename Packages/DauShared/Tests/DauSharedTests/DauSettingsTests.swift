@@ -119,10 +119,9 @@ struct DauSettingsCodingTests {
         ])
     }
 
-    @Test("D5/D18: settings saved before the single-mode change still load")
+    @Test("D5/D18: settings with legacy keys still load")
     func legacyModeKeys() throws {
-        // Written by builds that had "Dấu – Tiếng Anh", a start mode per rule and
-        // "Nhớ chế độ theo từng ứng dụng" (before 30/10/2026).
+        // Legacy keys: a start mode per rule ("mode") and "rememberModePerApp".
         let s = try decode("""
             {"typingMethod":"vni","rememberModePerApp":true,
              "appRules":[{"bundleID":"com.apple.Terminal","mode":"english","underline":true,

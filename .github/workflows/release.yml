@@ -11,8 +11,8 @@
 #   removed from that beta's item, no new item (D7).
 # With the secrets below the build is signed with Developer ID, notarized and the appcast is
 # signed; without them it builds a development build (D7), unsigned and not for users, and
-# makes NO release: the *-dev-unsigned.dmg is only an artifact of the run (7 days). Simpler and
-# safer than a draft: nothing unsigned ever sits in the Releases list, one click from public.
+# makes NO release: the *-dev-unsigned.dmg is only an artifact of the run (7 days),
+# so nothing unsigned ever sits in the Releases list, one click from public.
 name: Release
 
 on:

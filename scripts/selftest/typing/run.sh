@@ -90,7 +90,7 @@
 #                     page's main thread for MS ms every PERIOD ms (MS < PERIOD), from when
 #                     the page loads until its tab closes. The app stays responsive to the
 #                     window server; only the page (the renderer, which applies the text) is
-#                     late. The clean "busy app" condition of M6.
+#                     late. The clean "busy app" condition.
 #   --doc-url URL     gdocs, gdocssafari, wordweb: the link of the document to type into, opened when the browser's
 #                     front tab does not show such a document already. It must be empty and
 #                     yours: the run deletes everything it typed (⌘A, Delete) and leaves it empty.
@@ -142,7 +142,7 @@
 # keys are typed after it, read back with ⌘A ⌘C without it, and the document emptied (⌘A,
 # Delete). It starts with a digit and the keys never start the document: Word for the web
 # drops the first marked-text composition of an empty document (Apple's Telex and Dấu's
-# underline mode, 22/11/2026: "qkpb" gave "kpb", "Hom nay" gave "om nay"; docs/Compatibility.md
+# underline mode: "qkpb" gave "kpb", "Hom nay" gave "om nay"; docs/Compatibility.md
 # 5.10), and a digit goes in without marked text. The tab stays open (closing it right after an edit makes the page ask
 # "Leave site?" while it saves).
 # Notes: a new note (⌘N) in the folder shown; it syncs while it exists. The script
@@ -450,7 +450,7 @@ PAGE_TITLE="Dấu self test"
 # The title the page shows only while its text area has the keyboard focus (the page
 # sets it). Keys and ⌘A ⌘C are sent only under this title: a window title alone does not
 # say where the focus is, and keys sent while the address bar had it went into the
-# address bar (and its read-back passed, since ⌘A ⌘C copied the same text from there).
+# address bar (and its read-back passed, because ⌘A ⌘C copied the same text from there).
 FOCUS_TITLE="$PAGE_TITLE [focus]"
 cat > "$PAGE" <<HTML
 <!doctype html><meta charset="utf-8"><title>$PAGE_TITLE</title>
@@ -488,9 +488,9 @@ select_dau() {
   stopped && return 1
   # --underline: the input method reads $FORCE_KEY when it is activated. A field that was
   # already in front with Dấu (an online document's tab, opened before the run) gets no
-  # activation, and the run typed in place ("Không thấy underline-on", 23/11/2026): leave
+  # activation, and the run types in place ("Không thấy underline-on"): leave
   # Dấu for U.S., then come back, both with the system's shortcut. Leaving through the API
-  # was not enough: Chrome sent no activation on the way back in 1 of 3 runs.
+  # is not enough: Chrome sent no activation on the way back in 1 of 3 runs.
   if [[ $UNDERLINE == 1 && -z "$SOURCE_ID" ]] && is_current_source "$DAU_SOURCE"; then
     cycle_to_source "$US_SOURCE"
     wait_until 3 is_current_source "$US_SOURCE"
@@ -576,7 +576,7 @@ guard_reason() { # error-text process title where
 guarded() {
   local out start=$SECONDS waited where
   # 15 s: on a Mac under heavy load the test page has been seen not to report the focus
-  # within 3 s (docs/history/LogM6.md, 10/11/2026). A longer wait that passes is reported, and
+  # within 3 s (docs/history/LogM6.md). A longer wait that passes is reported, and
   # a failure says where the keyboard focus is, to tell a slow page from a focus elsewhere.
   wait_until -i 0.4 15 front_ok "$1" "$2"
   waited=$(( SECONDS - start ))
@@ -596,7 +596,7 @@ stopped() { [[ -e "$STOP_FILE" ]]; }
 # macOS reports the wanted source. The system then switches the source for the focused
 # field itself; a source selected from this script's process (TISSelectInputSource) is
 # reported as current, and shown in the menu bar, while the field keeps the old input
-# method (docs/history/LogM6.md, 10/11/2026). Only called when the wanted source is not the
+# method (docs/history/LogM6.md). Only called when the wanted source is not the
 # current one. Shortcut off or unreadable: falls back to the API, and says so.
 cycle_to_source() { # source-id
   local json key mods using="" n
@@ -625,7 +625,7 @@ cycle_to_source() { # source-id
 type_keys() { # process [window-title-substring]
   stopped && return 1
   # Safari has been seen to take the focus back to its address field after the page
-  # reported it (busy Mac, 12/11/2026): put it back once more right before typing.
+  # reported it (busy Mac): put it back once more right before typing.
   [[ "${2:-}" == "$FOCUS_TITLE" ]] && focus_test_field "$1"
   # The delay goes in as whole milliseconds: coercing "0.030" to a real follows the
   # user's locale (Vietnamese uses a decimal comma, so it became 30 seconds).
@@ -699,8 +699,8 @@ OSA
   # the keys: with macOS's "Automatically switch to a document's input source" on, the
   # focused document may have its own source.
   # Another source means the keys may have been typed by it: the text read back would be
-  # that source's, printed as if it were the wanted one's (a control cell typed by Dấu,
-  # 12/11/2026). No verdict for this app: status 4.
+  # that source's, printed as if it were the wanted one's (a control cell typed by Dấu).
+  # No verdict for this app: status 4.
   local after="$("$INPUT_SOURCE" current 2>/dev/null)"
   if [[ "$after" != "$DAU_SOURCE" ]]; then
     log_error "Dừng: nguồn đầu vào ngay sau khi gõ là \"$after\", không phải $DAU_SOURCE; chữ đọc lại không phải của nguồn cần đo."
@@ -763,37 +763,36 @@ open_test_page_of() { # page file, browser app name, process
   open -a "$1" "$file"
   wait_until -i 0.3 5 front_ok "$2" "$PAGE_TITLE" && return 0
   # `open -a` on a running Safari has been seen to load the page without bringing Safari
-  # to the front (another browser stayed frontmost for 15 s, 11/11/2026); `activate`
-  # then did (docs/history/LogM6.md, 11/11/2026). Only the app being tested is activated.
+  # to the front (another browser stayed frontmost for 15 s); `activate`
+  # then did (docs/history/LogM6.md). Only the app being tested is activated.
   osascript -e "tell application \"$1\" to activate" >/dev/null 2>&1
   wait_until -i 0.3 10 front_ok "$2" "$PAGE_TITLE"
 }
 
 # Puts the keyboard focus in the test page's text field of browser process $1 when the
 # page does not report it (title without "[focus]"): Safari has been seen to open the
-# page with the focus in its address field (docs/history/LogM6.md, 10/11/2026), and the
+# page with the focus in its address field (docs/history/LogM6.md), and the
 # page's autofocus does not take it back. When the focus is in Safari's address field
 # (confirmed through Accessibility), sends Tab to reach the page's first field; otherwise
 # clicks the middle of the browser's focused window. Tries up to three times. Acts only while the browser is frontmost with the test page in that window: the
 # text field fills the page (96vw × 90vh) so that the middle of the window is inside
-# it. A first version looked for the page's AXTextArea through Accessibility and did
-# not click in Safari (why was not kept). A click, not a script in the page: it needs
+# it. A click, not a script in the page: it needs
 # no browser setting.
 # Whether it worked is not judged here: type_keys's guard still checks the title.
 # Called before select_dau, so the source is chosen with the field focused (scripts/CLAUDE.md):
 # with macOS's "Automatically switch to a document's input source" on, a source chosen while
 # the address field had the focus can be switched back when the focus moves into the field
-# (Safari, 23/11/2026: the source became U.S. while typing, 5 of 36 runs; cause not shown).
+# (Safari: the source became U.S. while typing, 5 of 36 runs; cause not shown).
 focus_test_field() { # process
   stopped && return 1
   wait_until -i 0.3 2 front_ok "$1" "$FOCUS_TITLE" && return 0
   log_warn "$1: ô nhập của trang thử chưa có focus, bấm vào ô"
   # Under a busy Mac one click has been seen not to move the focus out of Safari's
-  # address field within 15 s (heavy.sh, 12/11/2026): click again, up to three times.
+  # address field within 15 s (heavy.sh): click again, up to three times.
   local err try
   for try in 1 2 3; do
     # Focus in Safari's address field ("smart search field"): clicks have been seen not to
-    # take it out under load (12/11/2026); Tab moves it to the page's first field. Sent only
+    # take it out under load; Tab moves it to the page's first field. Sent only
     # when that field is confirmed to hold the focus, never into a page's text field.
     err="$(osascript -e "$(front_guard "$1" "$PAGE_TITLE")" -e "
     tell application \"System Events\" to tell process \"$1\"
@@ -876,7 +875,7 @@ webdoc_marker() { # title
     # The marker once: kept, the keys go after it. Compared in lower case (an editor may
     # capitalize it). → takes away the selection ⌘A left, the caret at its end: a first key
     # typed over the selection would replace the marker (Word for the web also dropped the
-    # first marked-text composition then, "Hom" gave "om", 22/11/2026).
+    # first marked-text composition then, "Hom" gave "om").
     if [[ "${(L)got}" == $WD_MARKER ]]; then
       guarded "$WD_PROC" "$title" 'tell application "System Events"
         key code 124
@@ -929,7 +928,7 @@ run_webdoc() { # gdocs | gdocssafari | wordweb
   local first
   first="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 0
   # The address bar had the focus (it copies the page's link; a click in the page did not take
-  # it out in Chrome, 17/11/2026): open the link again in a new tab, which loads with the focus
+  # it out in Chrome): open the link again in a new tab, which loads with the focus
   # in the document, and look again.
   if [[ "$first" == http* ]]; then
     log_warn "$WD_APP: focus ở thanh địa chỉ, mở lại tài liệu trong tab mới"
@@ -985,7 +984,7 @@ run_firefox() {
 
 # Notes: a new note (⌘N) in the folder shown; read with ⌘A ⌘C, then emptied and deleted
 # through Notes' AppleScript (it goes to Recently Deleted). Notes keeps an empty note
-# while it is selected, so emptying alone left one behind after each run (11/11/2026).
+# while it is selected, so emptying alone leaves one behind after each run.
 # The note syncs while it exists. When the selected note is already empty, ⌘N selects
 # it again instead of making another, so the note to type in is "the selected note once
 # it is empty", new or reused.
@@ -1270,7 +1269,7 @@ OSA
 # Opens an empty VS Code window and takes its frame as VSCODE_WIN_ID. An empty window, not a
 # file: VS Code trusts empty windows by default (security.workspace.trust.emptyWindow), while a
 # file in this run's temporary folder opens in Restricted Mode, where a new terminal first asks
-# "Do you trust the authors…?" (seen 12/11/2026: the paste went to that dialog and Return
+# "Do you trust the authors…?" (the paste went to that dialog and Return
 # trusted the folder). Status 1, the run stopped, when exactly one new window is not found.
 vscode_open_window() {
   local -a before after new
@@ -1818,7 +1817,7 @@ run_cursoragents() {
 }
 
 # The message box of Antigravity 2.x (an Electron agent app: one window, "Antigravity", no
-# editor of its own). Seen 23/11/2026 (Antigravity 2.33.0): ⌘N starts a new conversation
+# editor of its own). Seen in Antigravity 2.33.0: ⌘N starts a new conversation
 # and moves the focus into the box, the focused element is AXTextArea "Message input".
 # A box that is not empty (a draft) stops the run before anything is typed. Return is never
 # sent: nothing goes to an agent. The box is emptied at the end.
@@ -1869,7 +1868,7 @@ run_antigravity() {
 # (a draft) stops the run. Return is never sent: nothing goes to an agent. At the end the
 # box is emptied, the agent tab closed with ⌘W, and the window closed without saving (the
 # file is this run's own and empty).
-# Seen 17/11/2026 (Cursor 3.30.14): ⌘L moves the focus into the box by itself, and the
+# Seen in Cursor 3.30.14: ⌘L moves the focus into the box by itself, and the
 # focused element is AXTextArea "Prompt"; the placeholder is not exposed through
 # AXPlaceholderValue, AXDescription, AXTitle or AXValue. Not checked yet: that ⌘A ⌘C in the
 # box puts its text on the clipboard; that the window title stays the file's name while the
@@ -1878,7 +1877,7 @@ run_antigravity() {
 cursor_chat_focus() {
   local out
   # Electron builds its accessibility tree only when asked: without AXManualAccessibility
-  # the process has no focused element at all (seen 17/11/2026). Setting it lasts for this
+  # the process has no focused element at all (seen). Setting it lasts for this
   # Cursor process only.
   osascript -e 'tell application "System Events" to tell process "Cursor" to set value of attribute "AXManualAccessibility" to true' >/dev/null 2>&1
   out="$(osascript -e 'tell application "System Events" to tell process "Cursor" to get {role, description} of (value of attribute "AXFocusedUIElement")' 2>/dev/null)"
@@ -1888,7 +1887,7 @@ run_cursorchat() {
   local file="$WORK/dau-selftest.txt" draft
   open_editor_window Cursor /Applications/Cursor.app/Contents/Resources/app/bin/cursor "$file"
   # The window takes a moment to load after it is in front: a ⌘L sent at once was lost
-  # three times out of three (17/11/2026), after 3 s it opened the agent tab.
+  # three times out of three, after 3 s it opened the agent tab.
   osascript -e 'tell application "System Events" to tell process "Cursor" to set value of attribute "AXManualAccessibility" to true' >/dev/null 2>&1
   sleep 3
   guarded Cursor dau-selftest 'tell application "System Events" to keystroke "l" using {command down}' \
@@ -2039,7 +2038,7 @@ run_telegram() {
     return 0
   fi
   # The chat's title is not checked: Telegram 13.1.0 exposes no text in the chat header to
-  # Accessibility (seen 17/11/2026: no element of the window holds "Saved Messages" as value
+  # Accessibility (seen: no element of the window holds "Saved Messages" as value
   # or description, and nothing at all in the header area), while the window, after Quick
   # Search's first result, showed Saved Messages. What keeps the user's chats safe is the
   # rest: Return is never sent in the message box, a box holding a draft is left alone, and
@@ -2101,7 +2100,7 @@ run_terminal() {
   select_dau; type_keys Terminal
   # The keys sit after the prompt on its last line, or on its last rows when they wrap
   # (long --keys): print the last non-blank rows joined, the caller compares by suffix.
-  # Under 60 characters, one row as before; longer, enough rows for the text plus a prompt
+  # Under 60 characters, one row; longer, enough rows for the text plus a prompt
   # of up to one row at the 80 columns of a new window of the default profile.
   local rows=1
   (( ${#EXPECT} < 60 )) || rows=$(( 2 + ${#EXPECT} / 80 ))
@@ -2213,7 +2212,7 @@ cli_editor() { # process command...
 # open (so none of their windows opens), then the copy is put back and whatever the run
 # added next to it (the vault's own settings file, snapshot and Quick Look folders) removed,
 # in cleanup, also after a stop. Obsidian has to be closed while the file is changed: a
-# running Obsidian is quit (normally, as from its menu). Seen 23/11/2026 (Obsidian 1.15.1):
+# running Obsidian is quit (normally, as from its menu). Seen in Obsidian 1.15.1:
 # obsidian://open?vault=…&file=… opens the note in a window titled
 # "dau-selftest - dau-selftest - Obsidian <version>" with the caret in the empty body.
 OBS_DIR="$HOME/Library/Application Support/obsidian"
@@ -2256,8 +2255,8 @@ run_obsidian() {
 }
 # Notion (Electron, its own block editor): a new private page of this run, moved to Trash at
 # the end. Its accessibility tree comes and goes (empty for minutes after a while), so the
-# steps check the window title, the one thing it always reports. Seen 23/11/2026 (Notion
-# 7.44.1, English UI):
+# steps check the window title, the one thing it always reports. Seen in Notion
+# 7.44.1, English UI:
 # - ⌘N shows a menu (New page, New chat, …); "1" picks New page, which opens in a new tab of
 #   the front window, titled "New page", in Private, the focus in its title. A title that
 #   stays the old one means the menu did not come (Notion still loading): stop.
@@ -2649,7 +2648,7 @@ EXPECT_TRIMMED="$(printf '%s' "$EXPECT" | trim_right)"
 FAILED=0
 # Accessibility for the process running the script, checked before any app opens: without
 # it System Events answers every window and focus query with an error, which the checks
-# below drop with stderr, so they report a missing window instead (seen 12/11/2026).
+# below drop with stderr, so they report a missing window instead (seen).
 if ! osascript -e 'tell application "System Events" to count windows of (first process whose frontmost is true)' >/dev/null 2>&1; then
   log_error "Dừng: tiến trình chạy script chưa có quyền Trợ năng (System Events không trả lời câu hỏi về cửa sổ); chưa mở app nào, không gửi phím."
   exit 3

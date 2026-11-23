@@ -35,8 +35,8 @@ struct SimVariant: OptionSet, Hashable, Sendable {
     /// while the word is locked by spelling (D30) puts the engine back as it was before
     /// that key, raw keys included (only the last raw key is dropped). Any other ⌫: D32.
     static let tailStraight = SimVariant(rawValue: 4)
-    // (d), ⌫ that deletes the letter a double key added releases D26's lock, was measured
-    // here and is Dấu's rule since 12/11/2026 (D26): it is in the engine, not a variant.
+    // No variant (d): ⌫ that deletes the letter a double key added releases the lock of
+    // D26 in the engine itself.
 
     var label: String {
         if isEmpty { return "a" }

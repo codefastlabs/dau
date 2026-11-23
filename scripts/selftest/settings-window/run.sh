@@ -17,10 +17,10 @@
 # passes `-AppleLanguages (vi)`: the expected texts are the Vietnamese ones, whatever the
 # Mac's language (the app follows macOS's language list, D41), and
 # `-ApplePersistenceIgnoreState YES`: a capture ends with exit(), so macOS keeps its open
-# windows as state to restore, and the next launch of the ad hoc copy reopened the
+# windows as state to restore, and the next launch of the ad hoc copy reopens the
 # onboarding window in front of Settings (the uninstall and report captures found no
-# sheet in 3 of 3 launches without the flag, 0 of 3 with it, 18/11/2026). The installed Dấu
-# opened Settings as usual (checked once).
+# sheet in 3 of 3 launches without the flag, 0 of 3 with it). The installed Dấu
+# opens Settings as usual.
 #
 # In-app captures, on a copy of the Debug app re-signed ad hoc without entitlements (so
 # the copy has no App Group and its fake services cannot touch the user's settings):
@@ -180,7 +180,7 @@ capture "uninstall alerts" --capture-uninstall "$out/uninstall"
 capture "problem report sheet" --capture-report "$out/report"
 # Cập nhật & hỗ trợ as a release build shows it (D7, D25; mockup "SettingsAbout", both
 # stages of "Kênh phát hành"), on a fake updater and sample version 0.1.0 (6520): Sparkle
-# is not tested here, M7 step 2 is.
+# itself is tested only with real release builds.
 capture "updates page (release)" --capture-updates "$out/updates-release"
 fi
 

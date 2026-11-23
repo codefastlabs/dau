@@ -9,14 +9,13 @@ import Foundation
 ///
 /// It also follows the cursor across word boundaries (`known`), with the edits this
 /// composer made or let through (⌫; `edits`), so an app that answers from before its latest
-/// edits (Chrome with a busy page, M6: the page applies keys late, `selectedRange` and
+/// edits (Chrome with a busy page: the page applies keys late, `selectedRange` and
 /// `attributedSubstring` answer from the text as it was) can be told from an app whose
 /// text really changed: the text the app gives, plus the edits it has not applied yet,
 /// must be the word the engine holds (`rebuild`). The caller decides; nothing here talks
 /// to the client.
 ///
 /// Ranges are UTF-16 offsets from the start of the client's document (NSRange).
-/// Pure value type, no IMK calls, unit tested in DauInputMethodTests.
 struct CursorTracker: Equatable {
     /// Where the cursor should be now, if known. Only kept inside one word: across a word
     /// boundary apps may legitimately edit text (autocorrect, smart quotes), so a mismatch
@@ -33,19 +32,18 @@ struct CursorTracker: Equatable {
     private(set) var tail: [UInt16] = []
     /// The latest edits, oldest first (at most `editLimit`).
     private(set) var edits: [Edit] = []
-    /// Enough for an app that falls far behind a burst of keys (M6: in the simulation of
-    /// VS Code and Firefox at 0 ms, `RapidKeysTests`, answers were over a hundred edits
-    /// behind); one edit is a few dozen bytes, and `rebuild` replays only the counts
+    /// Enough for an app that falls far behind a burst of keys (the simulation of VS Code
+    /// and Firefox at 0 ms in `RapidKeysTests` answers over a hundred edits behind); one edit is a few dozen bytes, and `rebuild` replays only the counts
     /// whose caret matches the answer.
     static let editLimit = 256
     /// Long enough to check, past `editLimit` units of edits, the text the app answers
     /// with before them (`rebuild`, `InPlaceComposer.readLength` units).
     static let tailLimit = 512
     /// How many edits an app may be behind for `rebuild` when the keys came at a human
-    /// pace. In the 1b run (M6, Chrome with a page blocked 300 ms every second, keys
-    /// 100 ± 30 ms apart) every late answer was one key behind. More would also take for
-    /// late an app whose text was replaced by the same letters at the same place (⌘A the
-    /// input method never sees, then the word typed again), which D11 must re-read
+    /// pace: Chrome with a page blocked 300 ms every second, keys 100 ± 30 ms apart, is
+    /// never more than one key behind (`docs/Compatibility.md` 5.2). More would also take
+    /// for late an app whose text was replaced by the same letters at the same place (⌘A
+    /// the input method never sees, then the word typed again), which D11 must re-read
     /// instead. Edits made by keys that came in a burst add to it (`burst`), with a
     /// stricter check.
     static let lateLimit = 2
@@ -55,20 +53,21 @@ struct CursorTracker: Equatable {
     var keyInBurst = false
     /// How many of the latest edits were made by keys that came in a burst, one after
     /// the other: no person can click or press ⌘A between them, and an app that applies
-    /// keys late may be behind all of them (before M6, Chrome, VS Code and Firefox went
-    /// wrong under about 20 ms; `docs/Compatibility.md` 6.2).
+    /// keys late may be behind all of them (Chrome, VS Code and Firefox at under about
+    /// 20 ms between keys; `docs/Compatibility.md` 6.2).
     private(set) var burst = 0
     /// Edits this composer made since the app last answered at `known`, or since the position
     /// was anchored at an answer of the app (`anchor`) (nil: neither since the position was
     /// last followed or forgotten). An app that answered on time had
     /// every edit up to then, so it can lack at most these: `rebuild` replays no further
-    /// back, whatever the time between keys. Chrome with a busy page (18/11/2026) stayed up
-    /// to 12 edits late across word ends 50–60 ms apart, past `lateLimit` + `burst`, and the
-    /// stale answer was taken as the position ("bạn gửi" → "bạửigui"). Replaying further
-    /// back than the answer on time would also take for late an app whose text was changed
-    /// into one this composer had before (⌘A unseen then the same letters typed again; "car"
-    /// autocorrected to "cả"). Without an answer on time (an app that counts positions from
-    /// the start of the word, Cursor) the bound stays `lateLimit` + `burst`.
+    /// back, whatever the time between keys: Chrome with a busy page stays up to 12 edits
+    /// late across word ends 50–60 ms apart, past `lateLimit` + `burst`, and taking the
+    /// stale answer as the position turns "bạn gửi" into "bạửigui" (`docs/research/LateAnswerFixes.md`
+    /// 3.3). Replaying further back than the answer on time would also take for late an
+    /// app whose text was changed into one this composer had before (⌘A unseen then the
+    /// same letters typed again; "car" autocorrected to "cả"). Without an answer on time
+    /// (an app that counts positions from the start of the word, Cursor) the bound stays
+    /// `lateLimit` + `burst`.
     private(set) var sinceOnTime: Int?
 
     /// Edits recorded so far (wraps): tells whether a key recorded one.
@@ -89,9 +88,9 @@ struct CursorTracker: Equatable {
     /// it was (a mark on a letter, "u" → "ư") gives the same answer whether the app has
     /// applied it or not; and Chromium's cache answers the caret the page reported plus
     /// the latest text inserted at the caret (`rebuild`), so that text may be missing too,
-    /// with such replacements before it. Taking every such answer as on time capped
-    /// `rebuild` one or two edits short of a late answer (Chrome, busy page, 22/11/2026:
-    /// "dduwowjc" gave "đụơc", the answer at "o" one edit late, at `known` after "ư").
+    /// with such replacements before it. Taking every such answer as on time would cap
+    /// `rebuild` one or two edits short of a late answer (Chrome, busy page: "dduwowjc"
+    /// gives "đụơc", the answer at "o" one edit late, at `known` after "ư").
     mutating func answeredOnTime() {
         guard let known else { sinceOnTime = 0; return }
         var caret = known, missing = 0, cacheForm = false
@@ -231,9 +230,9 @@ struct CursorTracker: Equatable {
         known = location
         // The app told this position with no edit of this composer after it: as an answer
         // on time, a late answer can lack every edit since, and no more (`sinceOnTime`).
-        // Without it, an app late from the start of a document (Chrome, busy page,
-        // 23/11/2026: "mojot" gave "mọot", three edits late at the second "o") stayed
-        // capped at `lateLimit` + `burst`.
+        // Otherwise an app late from the start of a document (Chrome, busy page: "mojot"
+        // gave "mọot", three edits late at the second "o") stays capped at
+        // `lateLimit` + `burst`.
         sinceOnTime = 0
     }
 
@@ -317,16 +316,16 @@ struct CursorTracker: Equatable {
     /// Past `lateLimit` an edit that removes text this composer does not know fails too
     /// (a replacement made at the app's answer, away from the followed position, starts
     /// `tail` over): replayed, it fits any text and writes this composer's own text over
-    /// it, so the comparison with `tail` would compare `tail` with itself. That took an
-    /// app that was on time for a late one where positions count from the start of the
-    /// word being typed (Cursor's editor, M6 runs of 10/11/2026: the answer was the
-    /// caret the previous replacement had in its own word; "uoongs" gave "uongs").
+    /// it, so the comparison with `tail` would compare `tail` with itself. That would take
+    /// an app that was on time for a late one where positions count from the start of the
+    /// word being typed (Cursor's editor: the answer is the caret the previous replacement
+    /// had in its own word; "uoongs" gives "uongs").
     ///
     /// Within `lateLimit` the text this composer typed, where it knows it, must not say
     /// otherwise: the text rebuilt and `tail` agree over the units both have (`agrees`).
     /// After a replaced word of one letter the same app answers two before the followed
-    /// position with the letters of the new word, which replayed gave the engine's word
-    /// though another letter was typed there (run of 11:44, 100 ms: "owr ddaau" gave
+    /// position with the letters of the new word, which replayed gives the engine's word
+    /// though another letter was typed there (Cursor, 100 ms apart: "owr ddaau" gives
     /// "ở dâu").
     func rebuild(_ snapshot: [UInt16], at selection: NSRange, inWord: Bool = false,
                  requireDeletedText: Bool = false, accept: ([UInt16]) -> Bool) -> [UInt16]? {
@@ -362,8 +361,8 @@ struct CursorTracker: Equatable {
             }
         }
         // Chrome's cache is not always the text as it was some edits ago, plus the latest
-        // key: the page may answer between its own updates (1d run: "hoi" + r answered
-        // one behind, and neither form above fit). So the text read may be the text this
+        // key: the page may answer between its own updates ("hoi" + r answered one
+        // behind, and neither form above fits). So the text read may be the text this
         // composer typed with any `d` of its latest units missing.
         let d = known - end
         if d >= 1, d <= Self.lateLimit, let text = withMissingUnits(snapshot, missing: d), accept(text) {
@@ -408,9 +407,8 @@ struct CursorTracker: Equatable {
     /// of `text`, and the key being handled is itself in the burst (`keyInBurst`): every
     /// edit past `lateLimit` and this key came one after the other, with no time for a
     /// click IMK does not report (D11). That is the first word of a new document the app
-    /// is slow to start (M6, fast-key run of 10/11/2026: VS Code, "Chieeuf" gave "êhieuf",
-    /// the answer from before every key of the document). After a pause the answer
-    /// stands, as before.
+    /// is slow to start (VS Code with fast keys: "Chieeuf" gives "êhieuf", the answer from
+    /// before every key of the document). After a pause the answer stands.
     private func typedHere(_ text: [UInt16], before count: Int, fromStart: Bool) -> Bool {
         let n = min(text.count, tail.count)
         if fromStart, count == 0 {
@@ -428,7 +426,7 @@ struct CursorTracker: Equatable {
     /// A unit that is missing comes after one that was compared: what Chromium's cache
     /// lacks is what the page has not reported, after the text it has. Text that is
     /// `tail` without its first units is an app that holds only the word being typed
-    /// (Cursor's editor, run of 11:44: "co" read where "ừ co" was typed, "uwf cos" gave
+    /// (Cursor's editor: "co" read where "ừ co" was typed, "uwf cos" gave
     /// "ừ co").
     private func withMissingUnits(_ snapshot: [UInt16], missing d: Int) -> [UInt16]? {
         let n = min(snapshot.count, tail.count - d)

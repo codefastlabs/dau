@@ -2,15 +2,15 @@ import AppKit
 import DauShared
 import Foundation
 
-/// The content of "Báo ứng dụng gõ lỗi" (artboard Report, `ReportSheet`) and the GitHub
+/// The content of "Report a Typing Problem" (artboard Report, `ReportSheet`) and the GitHub
 /// issue it opens (D8: reports go only through a prefilled GitHub issue that the user
 /// reviews and sends; Dấu sends nothing itself, N2).
 ///
-/// Everything the issue URL carries is on the sheet: the four fields and the "Gửi kèm"
-/// line. Nothing else goes in it (the sheet says "Chỉ gửi những gì có trong bảng này"),
+/// Everything the issue URL carries is on the sheet: the four fields and the "Included"
+/// line. Nothing else goes in it (the sheet says "Only what’s shown here is sent."),
 /// so no bundle ID, no path, no other setting.
 struct ProblemReport: Equatable {
-    /// "Lỗi gặp phải".
+    /// "Problem".
     enum Kind: String, CaseIterable, Identifiable {
         case missingText, repeatedText, wrongMarks, other
         var id: String { rawValue }
@@ -25,22 +25,22 @@ struct ProblemReport: Equatable {
         }
     }
 
-    /// "Ứng dụng": the app's name as the popup shows it.
+    /// "App": the app's name as the popup shows it.
     var app: String
-    /// "Trang web" (optional).
+    /// "Website" (optional).
     var website: String = ""
     var kind: Kind = .missingText
-    /// "Ví dụ đã gõ".
+    /// "What you typed".
     var example: String = ""
-    // "Gửi kèm":
+    // "Included":
     /// "macOS 27.2".
     var macOS: String
     /// `AppVersion.reportVersion` (D25): "Dấu 0.1.0 (6520, a1b2c3d)" on the official build,
     /// the page's version line ("Dấu 1.0.0 (a1b2c3d)") on a development build.
     var dauVersion: String
-    /// "Telex", "VNI", "Telex đơn giản".
+    /// "Telex", "VNI", "Simple Telex".
     var typingMethod: String
-    /// The underline rule of the chosen app: "Có gạch chân" or "Không gạch chân" (D5, D13).
+    /// The underline rule of the chosen app: "Underline" or "No Underline" (D5, D13).
     var underline: String
     /// The chosen app's version, when its bundle has one (never made up, N5).
     var appVersion: String?
@@ -50,13 +50,13 @@ struct ProblemReport: Equatable {
     static let newIssueURL = URL(string: "https://github.com/codefastlabs/dau/issues/new")!
     static let template = "typing-problem.yml"
 
-    /// The "Gửi kèm" items, in the artboard's order: macOS, Dấu, typing method, underline,
+    /// The "Included" items, in the artboard's order: macOS, Dấu, typing method, underline,
     /// the app and its version.
     var included: [String] {
         [macOS, dauVersion, typingMethod, underline, appVersion.map { "\(app) \($0)" }].compactMap { $0 }
     }
 
-    /// "macOS 27 · Dấu 0.1.0 (6520, a1b2c3d) · Telex · Không gạch chân · Chrome 131.0".
+    /// "macOS 27 · Dấu 0.1.0 (6520, a1b2c3d) · Telex · No Underline · Chrome 131.0".
     var includedLine: String { included.joined(separator: " · ") }
 
     /// The issue title: the app and the kind, both shown on the sheet.
@@ -154,11 +154,11 @@ struct ReportedApp: Identifiable, Equatable, Sendable {
     }
 }
 
-/// The app the user was in right before Dấu, to fill "Ứng dụng" (artboard Report: the
+/// The app the user was in right before Dấu, to fill "App" (artboard Report: the
 /// field is filled in for the user).
 ///
-/// Why this app: people open "Báo lỗi…" right after an app typed wrong, by switching to
-/// Dấu from it (its input menu's "Cài đặt Dấu…" or the Dock), so the last other app that
+/// Why this app: people open "Report a Problem…" right after an app typed wrong, by switching to
+/// Dấu from it (its input menu's "Dấu Settings…" or the Dock), so the last other app that
 /// was frontmost is the likely subject. macOS keeps no history of the frontmost app, so
 /// Dấu follows `NSWorkspace.didActivateApplicationNotification` from launch, and takes
 /// the frontmost app at launch (still the one Dấu was opened from). The user can pick

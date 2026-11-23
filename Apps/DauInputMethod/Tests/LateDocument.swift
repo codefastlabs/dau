@@ -5,7 +5,7 @@ import Testing
 
 /// An app that applies every edit in order (keys it types, `insertText` with absolute
 /// ranges) but answers `selectedRange` and `attributedSubstring` from an earlier state
-/// of its text: Chrome with a busy page (M6 step 1, log of 09/11/2026), and apps that
+/// of its text: Chrome with a busy page (`docs/history/LogM6.md` step 1), and apps that
 /// apply keys asynchronously when keys come in a burst (Chromium, Electron, Firefox;
 /// `docs/Compatibility.md` 6.2). With `keyQueue`, WebKit instead: the input method's
 /// calls overtake the keys it left to the app (see "WebKit's key queue" below).
@@ -52,8 +52,8 @@ final class LateDocument: InPlaceClient {
     enum Origin {
         /// The start of the document.
         case document
-        /// The start of the word being typed (the word-origin model, from the editor log of Cursor 3.29.15, runs of 10/11/2026 in
-        /// `docs/history/LogM6.md`: at 100 ms between keys `selectedRange` was the number of
+        /// The start of the word being typed (the word-origin model, from the editor log of
+        /// Cursor 3.29.15, runs in `docs/history/LogM6.md`: at 100 ms between keys `selectedRange` was the number of
         /// letters of the word at every replacement, 0-based again after each space,
         /// also after a replacement whose text ends with a space).
         ///
@@ -202,7 +202,7 @@ final class LateDocument: InPlaceClient {
             state.cursor = range.location + units.count
         } else {
             // The caret was after the range (keys the input method had not seen applied
-            // yet): it stays after them, shifted by the change in length. The 1b texts
+            // yet): it stays after them, shifted by the change in length. Chrome's texts
             // show this ("ạnn gửi", no stray "n" at the end of the text).
             state.cursor += units.count - range.length
         }
@@ -334,8 +334,9 @@ final class LateDocument: InPlaceClient {
     ///   events; Safari answers the input method from the page, apart from its own
     ///   main thread.
     /// - The other models: the answers do not move. Chrome answers from a cache in the
-    ///   browser process that is not updated while the input method blocks it (measured
-    ///   22/11/2026: every wait in Chrome with a busy page ran out); Firefox, whose cache
+    ///   browser process that is not updated while the input method blocks it (measured:
+    ///   every wait in Chrome with a busy page runs out, `docs/research/LateAnswerFixes.md`
+    ///   5.4); Firefox, whose cache
     ///   is in its parent process, is taken to do the same (not measured). The time still
     ///   counts for the next key (`paused`).
     func pause(_ seconds: TimeInterval) {
@@ -346,8 +347,8 @@ final class LateDocument: InPlaceClient {
 
     /// WebKit's queue in time: `selectedRange` and the read are synchronous for the input
     /// method and answered by the page when it is free (`pageFree`), after the event it
-    /// was sent last; the input method waits that long (measured 22/11/2026: the first ask
-    /// blocked until the page was free).
+    /// was sent last; the input method waits that long (measured: the first ask blocks
+    /// until the page is free).
     private func waitForPage() {
         guard keyQueue, let clock else { return }
         let ready = pageFree(clock)

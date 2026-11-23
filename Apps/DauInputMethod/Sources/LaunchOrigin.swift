@@ -2,9 +2,9 @@
 ///
 /// The bundle is `LSBackgroundOnly`: launched by the user (Finder double-click) it would
 /// show nothing. So a user launch opens the host app (Dấu, Settings) and the process
-/// quits; a launch by the system to serve typing keeps running as before.
+/// quits; a launch by the system to serve typing keeps running.
 ///
-/// Signals measured on macOS 27.2 (02/11/2026, Architecture.md "Khởi chạy bộ gõ"):
+/// Signals measured on macOS 27.2 (Architecture.md "Khởi chạy bộ gõ"):
 /// - System (imklaunchagent asks LaunchServices, no launch event, flags dontSwitch):
 ///   no Apple event reaches the app; in `applicationDidFinishLaunching` the current
 ///   event is the `aevt/oapp` that AppKit makes up, whose sender is the process itself.
@@ -16,7 +16,7 @@
 ///   system. Indistinguishable with public API (only LaunchServices sees the flags), so
 ///   it is treated as a system launch: keep running (the safe default).
 ///
-/// Pure value logic, unit-tested; `InputMethodAppDelegate` reads the event.
+/// `InputMethodAppDelegate` reads the event.
 enum LaunchOrigin: String, Equatable, Sendable {
     case user
     case system
@@ -72,7 +72,7 @@ enum LaunchPolicy {
     }
 
     /// Quit after a user launch only if no client has activated the input method
-    /// meanwhile (D18 spirit: never exit while typing could need it).
+    /// meanwhile (D18: never exit while typing could need it).
     static func quitsAfterOpeningHostApp(origin: LaunchOrigin, clientActivated: Bool) -> Bool {
         origin == .user && !clientActivated
     }

@@ -27,7 +27,7 @@ struct SeedTests {
         SeedCase("â", " ", "â "), SeedCase("đ", " ", "đ "),
         SeedCase("â", "a ", "aa "),         // D26 on a seeded word: the double undoes
         SeedCase("đ", "d ", "dd "),
-        SeedCase("tr", "aw ", "traw "),     // longer words are restored as before
+        SeedCase("tr", "aw ", "traw "),     // longer words are restored
     ])
     func loneLetters(_ c: SeedCase) {
         var t = Typist()

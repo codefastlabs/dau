@@ -8,8 +8,8 @@ import SwiftUI
 /// `SettingsDetail`). The mockup only sets the content (sections, rows, copy, order,
 /// icons).
 ///
-/// The sidebar cannot be resized or collapsed, as in System Settings (D9, "Sidebar cố
-/// định như System Settings"). SwiftUI has no API to lock the sidebar of a
+/// The sidebar cannot be resized or collapsed, as in System Settings (D9). SwiftUI has no
+/// API to lock the sidebar of a
 /// `NavigationSplitView`, so the scene's content is an AppKit split view the app owns
 /// (`SettingsSplitViewController`), wrapped in an `NSViewControllerRepresentable`
 /// (https://developer.apple.com/documentation/swiftui/nsviewcontrollerrepresentable). The
@@ -36,7 +36,7 @@ struct SettingsWindow: View {
             // sidebar runs the full height as in System Settings
             // (https://developer.apple.com/documentation/swiftui/view/ignoressafearea(_:edges:)).
             .ignoresSafeArea()
-            // "Gỡ cài đặt…": the sheet that waits for the user to remove Dấu from the input
+            // "Uninstall…": the sheet that waits for the user to remove Dấu from the input
             // sources (`InputMethodActions.performUninstall`); closing it cancels the removal.
             // A key-path binding, not `Binding(get:set:)` (`ReleaseChannelRow.body`).
             .sheet(isPresented: Self.uninstallSheetPresented(actions)) {
@@ -76,7 +76,7 @@ final class SettingsWindowState {
         SettingsSection.allCases.filter { $0.matches(query) }
     }
 
-    /// The sidebar search's jump: when the page shown no longer matches, show the first
+    /// The sidebar search's jump: when the page shown does not match, show the first
     /// section that does, so the result is visible right away. Nothing matches: the page
     /// stays (the sidebar shows the system's empty state).
     func showFirstMatch() {
@@ -267,9 +267,9 @@ struct SettingsSidebar: View {
     /// is bound with `focused(_:)`, and setting the binding to true "moves focus to the
     /// view" (https://developer.apple.com/documentation/swiftui/view/focused(_:),
     /// https://developer.apple.com/documentation/swiftui/focusstate): it is set when the
-    /// list appears. `defaultFocus(_:_:priority:)` alone did not take inside this hosting
-    /// controller: the real window opened with no focus and a grey selection (run.sh
-    /// 06/11/2026); set on appear, the list became the window's first responder in a
+    /// list appears. `defaultFocus(_:_:priority:)` alone does not take inside this hosting
+    /// controller: the real window opens with no focus and a grey selection; set on
+    /// appear, the list becomes the window's first responder in a
     /// window that is never shown (`swift test` "Settings window shell").
     @FocusState private var listFocused: Bool
 
@@ -314,7 +314,7 @@ struct SettingsSidebar: View {
         // The search field at the top of the sidebar, under the toolbar, above the list
         // (https://developer.apple.com/documentation/swiftui/view/safeareainset(edge:alignment:spacing:content:)).
         // `searchable(placement: .sidebar)` needs a `NavigationSplitView` sidebar: in this
-        // hosting controller it went to the toolbar (docs/research/SwiftUIWindowAPI.md,
+        // hosting controller it goes to the toolbar (docs/research/SwiftUIWindowAPI.md,
         // section 4). The field's height is its own at the large control size (no frame
         // height), set on the SwiftUI side too
         // (https://developer.apple.com/documentation/swiftui/view/controlsize(_:)); the

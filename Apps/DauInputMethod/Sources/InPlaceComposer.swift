@@ -50,19 +50,15 @@ protocol InPlaceClient {
 ///
 /// A field that ignores `replacementRange` (Ghostty, xterm.js terminals) gets the same
 /// calls as any field (D43: no special handling; underline per app, D13).
-///
-/// Pure value type over `InPlaceClient`, no IMK, unit tested in DauInputMethodTests.
 struct InPlaceComposer {
     /// D20 on (`DauSettings.addMarksToTypedWords`, D15 default on). Set from the shared
     /// settings at activation and on change, never read per key from the store.
     var addMarksEnabled = true
 
     #if DEBUG
-    /// Tests only: leave the characters the engine does not change to the app, as before
-    /// the input method inserted them itself (`typeCharacter`). Kept as the control that
-    /// shows why N3 changed ("Vì sao Dấu tự chèn ký tự"): with it, WebKit's key queue
-    /// (`LateDocument.keyQueue`) gets the old order bug back (WebKitQueueTests). Never set
-    /// in the input method.
+    /// Tests only: leave unchanged characters to the app instead of `typeCharacter`; the
+    /// control for WebKitQueueTests (N3 "Vì sao Dấu tự chèn ký tự"). Never set in the
+    /// input method.
     var passesCharactersThrough = false
     /// Tests only: never wait for a ⌫ (N3 "Ngoại lệ sau ⌫ chưa áp"), to compare with.
     var skipsBackspaceWait = false
@@ -83,8 +79,7 @@ struct InPlaceComposer {
     private(set) var tracker = CursorTracker()
     private(set) var before = Before.unknown
     /// Reads in a row that got no position or no text (D20, "Phạm vi"). One only costs
-    /// that key its read: an app may fail once and give text again (the Claude app,
-    /// 17/11/2026: one odd answer had stopped D20 until the app was switched).
+    /// that key its read: an app may fail once and give text again (the Claude app).
     private var failedReads = 0
     /// Reads that fail in a row before no read is made again until the next activation
     /// (`activate`), N3.
@@ -116,15 +111,14 @@ struct InPlaceComposer {
     /// The longest a key waits, the calls made while waiting included (D42: p99 of a key
     /// at most 20 ms). A timed workaround: IMK has no API that tells the input method a
     /// key is still waiting in the app, nor asks the app to apply it first
-    /// (docs/research/IMKCapabilities.md 4.1). Measured 22/11/2026: in Safari the first
-    /// `selectedRange` already blocks until the page is free, and the page had applied the
-    /// ⌫ 3 ms after it; Chrome does not update the cache it answers from while the input
-    /// method blocks it, so there waiting only costs time (every wait ran out, 150 asks,
-    /// about 410 ms, then words went wrong), and the D11 late-answer proof already handles
-    /// the order of its edits.
+    /// (docs/research/IMKCapabilities.md 4.1). Safari's first `selectedRange` already
+    /// blocks until the page is free, and the page applies the ⌫ about 3 ms after it;
+    /// Chrome does not update the cache it answers from while the input method blocks it,
+    /// so there waiting only costs time, and the D11 late-answer proof already handles the
+    /// order of its edits (numbers: `docs/research/LateAnswerFixes.md` 5.4).
     static let backspaceWaitLimit: TimeInterval = 0.02
     /// Pause between two `selectedRange` asks while waiting. Short next to the 3 ms
-    /// Safari took to apply the ⌫ after the first answer (measured above), so an applied
+    /// Safari takes to apply the ⌫ after the first answer (`backspaceWaitLimit`), so an applied
     /// ⌫ is seen at most about 2 ms late; a wait that runs out (`backspaceWaitLimit`)
     /// makes about 10 asks. Not tuned by measurement.
     static let backspaceWaitStep: TimeInterval = 0.002
@@ -183,8 +177,8 @@ struct InPlaceComposer {
     /// burst (`CursorTracker.keyInBurst`). The D11 re-sync on a mismatch and the read of a
     /// word past valid (`checkLockedWord`) wait for it: apps that apply keys asynchronously
     /// (Chromium, Electron, terminals) answer `selectedRange`/`attributedSubstring` from a
-    /// snapshot that can still miss the previous keys, and M2 measured such reads wrong
-    /// below 10–20 ms between keys in Chrome, VS Code and Terminal. The D20 read does not
+    /// snapshot that can still miss the previous keys: such reads are wrong below 10–20 ms
+    /// between keys in Chrome, VS Code and Terminal. The D20 read does not
     /// wait (D20): its answer goes through the late-answer proof (`CursorTracker`), which
     /// does not trust a stale snapshot.
     static let settleInterval: TimeInterval = 0.05
@@ -395,7 +389,7 @@ struct InPlaceComposer {
                 // docs/history/CompatibilityFixed.md), so a consumed ⌫ lost one letter more there
                 // ("h"). So the key is never consumed: every app deletes the last
                 // character itself, and the replacement puts that character back at the
-                // end ("hoà" → "hòà" → app's Delete → "hò"). Same calls as before (N3).
+                // end ("hoà" → "hòà" → app's Delete → "hò"). Same calls as any replacement (N3).
                 // A decomposed (NFD) last character, possible only on a word seeded by
                 // D20 and not yet rewritten, may be deleted mark by mark: no guess.
                 if let lastShown, lastShown.properties.generalCategory != .nonspacingMark, deleteCount >= 1 {
@@ -408,7 +402,7 @@ struct InPlaceComposer {
                 if result.kind == .replace || result.kind == .late || result.kind == .lateGuess {
                     tracker.backspacePassedThrough()
                 } else {
-                    // Let the app's own Delete run; the engine no longer knows the word.
+                    // Let the app's own Delete run; the engine does not know the word.
                     reset(engine: &engine)
                 }
             }
@@ -681,7 +675,7 @@ struct InPlaceComposer {
             return nil
         }
         // The app may answer from before the last keys of this word (Chrome with a busy
-        // page, M6: at "deadline" + d the answer was one key behind "dea"): the word is
+        // page: at "deadline" + d the answer is one key behind "dea"): the word is
         // still the engine's if the text read plus those keys is.
         let shown = engine.shown
         if let read, tracker.rebuild(Array(read.utf16), at: selection, accept: { Self.word(in: $0) == shown }) != nil {
@@ -734,8 +728,8 @@ struct InPlaceComposer {
         if let known = tracker.known, selection.length == 0, selection.location != NSNotFound,
            selection.location >= 0, selection.location != known, !tracker.edits.isEmpty {
             didRead = true
-            // The app may answer from before the last Delete (Chrome with a busy page, M6:
-            // "Hoc", Space, ⌫, j found no word and gave "Hocj"). Read once at its answer;
+            // The app may answer from before the last Delete (Chrome with a busy page:
+            // "Hoc", Space, ⌫, j finds no word and gives "Hocj"). Read once at its answer;
             // if that text with the edits it has not applied yet (each one's removed text
             // checked against what it read) ends where this composer followed the cursor
             // to, that is the text before the cursor.
@@ -750,11 +744,11 @@ struct InPlaceComposer {
                 // Not proved, the answer behind the followed position, and this key came in a
                 // burst after the edits it lacks: no time for a click IMK does not report, so
                 // the app is taken to be further behind than `rebuild` can replay (Chrome,
-                // busy page, 10 ms between keys, 22/11/2026: "Hoc ⌫j" answered after "Ho").
-                // Anchoring there moved `known` back to a stale caret, and the next word's
-                // first replacement, the app still behind, then replaced a letter of this one
-                // ("Hoc ⌫j tieesng" gave "Hếcj tieng"). The followed position stays; the text
-                // read is not this word, so nothing is seeded: the key starts a word.
+                // busy page, 10 ms between keys: "Hoc ⌫j" answers after "Ho"). Anchoring
+                // there would move `known` back to a stale caret, and the next word's first
+                // replacement, the app still behind, would replace a letter of this one
+                // ("Hoc ⌫j tieesng" gives "Hếcj tieng"). The followed position stays; the
+                // text read is not this word, so nothing is seeded: the key starts a word.
                 staleInBurst = true
             }
         }
@@ -964,7 +958,7 @@ struct InPlaceComposer {
     /// Vietnamese: longer than 7 letters, D33, or letters the engine does not know), the
     /// key and the rest of the word go in unchanged (D33's state,
     /// `VietEngine.seedOverflow`) until the word ends, typed at the caret by the input
-    /// method (N3). nil: not letters ("abc123"), the key starts a new word as before.
+    /// method (N3). nil: not letters ("abc123"), the key starts a new word.
     private mutating func continueForeignWord(_ word: [Unicode.Scalar], _ scalar: Unicode.Scalar, location: Int,
                                               engine: inout VietEngine, client: some InPlaceClient) -> Outcome? {
         guard word.allSatisfy({ CharacterSet.letters.contains($0) }) else {
@@ -1050,8 +1044,8 @@ struct InPlaceComposer {
     /// `word`: the engine's word before this key, when the key may be checked against an
     /// app that answers late. If `selectedRange` is not where this composer followed the
     /// cursor to (`CursorTracker.known`), the app may not have applied the latest edits
-    /// yet (Chrome with a busy page, M6: the first replacement of a word took "ba" for
-    /// "an" in "bạn" and gave "ạnn"; Chrome, VS Code, Firefox with keys in a burst, M3).
+    /// yet (Chrome with a busy page: the first replacement of a word takes "ba" for
+    /// "an" in "bạn" and gives "ạnn"; Chrome, VS Code, Firefox with keys in a burst).
     /// One read at the app's answer (the D11 read on a mismatch, N3), whatever the time
     /// since the previous key: if that text plus the edits it has not applied is `word`
     /// (`CursorTracker.rebuild`), the key replaces at the followed position; the app
@@ -1105,9 +1099,10 @@ struct InPlaceComposer {
                 // First replacement of a word, the answer a little behind, and the text read
                 // neither proves a late answer nor holds the whole word before the answer
                 // (which an app that edited the text before the word would show: it has
-                // every key, at other offsets). Every such answer in the 1d run was a late
-                // one; taking it as the position replaced the letter before the word and
-                // also moved `known` back, which hid the next late answer ("kóo").
+                // every key, at other offsets). In Chrome with a busy page such an answer
+                // is a late one; taking it as the position would replace the letter before
+                // the word and also move `known` back, which hides the next late answer
+                // ("kóo"; `docs/history/LogM6.md`, step 1d).
                 let behind = followed - selection.location
                 if tracker.expected == nil, behind >= 1, behind <= CursorTracker.lateLimit,
                    Self.word(in: units) != word {
@@ -1176,8 +1171,7 @@ struct InPlaceComposer {
     /// in `tracker` as it records a character typed at the caret (`atCaret`).
     private mutating func typeCharacter(_ scalar: Unicode.Scalar, client: some InPlaceClient) -> Bool {
         #if DEBUG
-        // Tests only: the old behaviour, the key left to the app, to reproduce what
-        // WebKit's key queue did with it (`LateDocument.keyQueue`).
+        // Tests only: the key is left to the app (`passesCharactersThrough`).
         if passesCharactersThrough { return false }
         #endif
         waitForBackspace(client: client)
@@ -1189,8 +1183,8 @@ struct InPlaceComposer {
     /// otherwise: when armed (`waitFor`) and this key asked no `selectedRange` yet, ask
     /// one (and wait as `askSelection` does), so the text goes in after the app applied
     /// the ⌫. A ⌫ still queued in WebKit behind the keys typed after it deletes one of
-    /// them instead ("khoong⌫g" gave "khôngg kó" in Safari, busy page, 10 ms between
-    /// keys, 2 of 3 runs, 22/11/2026). Not armed: no call (N3).
+    /// them instead ("khoong⌫g" gives "khôngg kó" in Safari with a busy page and 10 ms
+    /// between keys). Not armed: no call (N3).
     private mutating func waitForBackspace(client: some InPlaceClient) {
         guard waitFor != nil else { return }
         _ = askSelection(client: client)

@@ -3,10 +3,8 @@
 /// What Dấu does in one app, identified by bundle ID. A rule always applies (D5),
 /// whether the user added it or it came from the compatibility list.
 ///
-/// D5 (30/10/2026): a rule has one setting, underline or not (D13). Dấu has a single
-/// input mode (D2), so there is no start mode per app. Rules stored by older versions
-/// may still carry a `"mode"` key; it is ignored when decoding and dropped on the next
-/// save (D18).
+/// A rule has one setting, underline or not (D13); there is no start mode per app (D2).
+/// Unknown keys such as the legacy `"mode"` are ignored and dropped on save (D18).
 public struct AppRule: Sendable, Codable, Equatable, Hashable, Identifiable {
     /// Where the rule comes from.
     public enum Source: String, Sendable, Codable, CaseIterable {

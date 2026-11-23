@@ -4,7 +4,7 @@ import Testing
 import DauShared
 @testable import Dau
 
-/// The Settings window's split view (D9, "Sidebar cố định như System Settings"): built
+/// The Settings window's split view (D9): built
 /// without a window; the focus tests put it in a window that is never shown (not ordered in, no
 /// screen). What only the real window shows (the selection's accent color at launch, the
 /// sidebar width as the window resizes) is measured by scripts/selftest/settings-window.

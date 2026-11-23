@@ -1,7 +1,7 @@
 import Foundation
 
 /// The system shortcut that switches input sources, read (never written, N4) from the
-/// user's preferences so "Gõ phím" can show it as keycaps (D2):
+/// user's preferences so "Typing" can show it as keycaps (D2):
 /// - `com.apple.symbolichotkeys` → `AppleSymbolicHotKeys`, entries 60 ("Select the
 ///   previous input source", ⌃Space by default) and 61 ("Select next source in input
 ///   menu"); each holds `enabled` and `value.parameters = (character, key code,

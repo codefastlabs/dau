@@ -2,7 +2,7 @@ import Foundation
 import os
 
 /// Timing of one key, for D11 (cost of `selectedRange` per app), and
-/// when it arrived (`t_ns`, `ev_ns`), for the gaps between keys under load (M6).
+/// when it arrived (`t_ns`, `ev_ns`), for the gaps between keys under load.
 ///
 /// D8: only numbers, a fixed event kind and the client's bundle ID are logged. Never the
 /// characters typed, the engine output or any text read from the client.
@@ -65,7 +65,7 @@ struct PerfLog {
         /// in unchanged, inserted at the caret (as `pass`).
         case resyncPass = "resync_pass"
         /// selectedRange answered from before the input method's latest edits (the app
-        /// had not applied them yet: Chrome with a busy page, M6); one attributedSubstring
+        /// had not applied them yet: Chrome with a busy page); one attributedSubstring
         /// showed that text plus those edits is the engine's word, and the key replaced
         /// it at the position the input method followed (one insertText).
         case late
@@ -76,8 +76,7 @@ struct PerfLog {
         case lateGuess = "late_guess"
     }
 
-    /// Off unless `DauPerfLog` is set, in Debug builds too: even without text, one line
-    /// per key with its time and app is typing metadata (D8). Set in the global domain,
+    /// Off unless `DauPerfLog` is set, in Debug builds too (D8). Set in the global domain,
     /// which a shell can write and the sandboxed input method reads
     /// (`defaults write -g DauPerfLog -bool true`); read when a client session starts,
     /// so it applies to the next text field. The measuring scripts set it and remove it.

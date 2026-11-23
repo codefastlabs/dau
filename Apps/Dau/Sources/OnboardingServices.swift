@@ -32,7 +32,7 @@ protocol OldInputMethodDetector {
 }
 
 /// The key-intercepting input methods step 1 looks for, with the bundle IDs read from
-/// each app's released Info.plist (docs/research/InputMethodInstall.md section 8, 30/10/2026).
+/// each app's released Info.plist (docs/research/InputMethodInstall.md section 8).
 /// Matched by bundle ID, never by process name. UniKey, VietKey and Laban Key have no
 /// macOS app. XKey also installs an IMK input method (`com.codetay.inputmethod.XKey`,
 /// process `XKeyIM`): as an input source it is only a soft note
@@ -153,14 +153,14 @@ enum InputMethodInstallerError: Error, Equatable {
     case invalidSignature
     case failed(String)
     /// Dấu's entries are still among the stored input sources: the user has not removed
-    /// it yet, so nothing is deleted (a bundle gone before that leaves an entry that can
-    /// no longer be removed).
+    /// it yet, so nothing is deleted (a bundle gone before that leaves an entry that
+    /// cannot be removed).
     case stillListed
     /// This copy of Dấu is not the owner copy: it never copies the input method (D37).
     case notOwnerCopy
 }
 
-/// What Text Input Sources reports after "Bật Dấu" (N4: re-read, never assumed).
+/// What Text Input Sources reports after "Turn On Dấu" (N4: re-read, never assumed).
 enum EnableOutcome: Equatable, Sendable {
     /// "Dấu – Tiếng Việt" is among the enabled input sources.
     case enabled
@@ -171,7 +171,7 @@ enum EnableOutcome: Equatable, Sendable {
     /// after a logout (D37), when none of the ways around it worked.
     case notListed
     /// The owner copy found the installed input method's signature invalid or by another
-    /// team: nothing was registered or enabled (D37). The interface leads to "Cài lại".
+    /// team: nothing was registered or enabled (D37). The interface leads to "Reinstall".
     case needsReinstall
 }
 
@@ -188,7 +188,7 @@ enum ReconcileOutcome: Equatable, Sendable {
     /// This copy of Dấu is not the owner copy: nothing read, nothing touched.
     case notOwnerCopy
     /// The installed copy's signature is invalid or by another team: not replaced; the
-    /// "Cài lại" banner shows and the user decides.
+    /// "Reinstall" banner shows and the user decides.
     case badSignature
     /// Not replaced: the installed bundle has another identity (D37: IDs never change)
     /// or cannot be read.
@@ -196,7 +196,7 @@ enum ReconcileOutcome: Equatable, Sendable {
 }
 
 extension InputMethodInstallerError {
-    /// What the "Chi tiết" line of the error screen says, in Vietnamese and only what the
+    /// What the "Details" line of the error screen says, in Vietnamese and only what the
     /// error is (N5). The technical text (system status codes) goes to the log, not here.
     var detail: String {
         switch self {

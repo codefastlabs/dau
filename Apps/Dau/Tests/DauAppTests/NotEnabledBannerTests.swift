@@ -4,9 +4,9 @@ import Testing
 import DauShared
 @testable import Dau
 
-/// The "Dấu chưa được bật" banner (docs/UI.md "Cửa sổ Cài đặt › Banner", artboards
+/// The "Dấu isn’t turned on in your input sources" banner (docs/UI.md "Cửa sổ Cài đặt › Banner", artboards
 /// "SettingsNotEnabled", "SettingsBannerStates"): first on every Settings page while Dấu is
-/// not among the enabled input sources, in each state "Bật lại" leads to, and absent
+/// not among the enabled input sources, in each state "Turn On Again" leads to, and absent
 /// otherwise. The real window's split view (`SettingsSplitViewController`) is laid out in
 /// a window that is never shown; the pages' `layoutProbe`s report where each view is.
 @MainActor
@@ -109,7 +109,7 @@ struct NotEnabledBannerTests {
         let actions = actions(installer)
         _ = await actions.enableFromBanner()
         #expect(actions.banner == .enabled)
-        // The status has caught up (Dấu is on); the confirmation stays until Ẩn.
+        // The status has caught up (Dấu is on); the confirmation stays until "Hide".
         expectBannerFirst(layout(.typing, enabled: true, actions: actions), "banner.enabled", on: .typing)
         actions.dismissBanner()
         #expect(layout(.typing, enabled: true, actions: actions).keys.filter { $0.hasPrefix("banner") }.isEmpty)

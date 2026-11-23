@@ -1,6 +1,6 @@
 import Testing
 
-/// Signals as measured on macOS 27.2 (02/11/2026): see LaunchOrigin.swift.
+/// Signals as measured on macOS 27.2: see LaunchOrigin.swift.
 @Suite("LaunchPolicy (user launch opens the host app)")
 struct LaunchOriginTests {
     static let ownPID: Int32 = 38_139

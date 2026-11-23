@@ -120,7 +120,7 @@ struct OnboardingFlowTests {
         #expect(opened.count == 0)
         flow.next()
         #expect(flow.step == .enable)
-        // "Mở System Settings" opens the Keyboard pane (N4: only opens it).
+        // "Open %@" opens the Keyboard pane (N4: only opens it).
         flow.openSystemSettings()
         #expect(opened.count == 1)
         // The user added Dấu by hand: the window notices and shows step 2 done.
@@ -190,22 +190,22 @@ struct OnboardingFlowTests {
         #expect(InputMethodInstallerError.failed("swap errno 13").detail.contains("errno") == false)
     }
 
-    // MARK: "Cài lại" on the install error: one rule for every cause (D37, docs/UI.md "Lỗi cài")
+    // MARK: "Reinstall" on the install error: one rule for every cause (D37, docs/UI.md "Lỗi cài")
 
     @Test("copy failed: Cài lại copies the input method again and enables nothing; Bật Dấu then enables")
     func reinstallAfterCopyFailed() async {
         let (flow, _, installer) = flow(status: .notInstalled, failure: .failed("swap errno 13"))
         flow.start()
-        await flow.enable()   // "Bật Dấu": the copy fails
+        await flow.enable()   // "Turn On Dấu": the copy fails
         #expect(installer.calls == ["install"])
         #expect(flow.enableScreen == .error)
         installer.failure = nil
-        await flow.reinstall()   // "Cài lại"
+        await flow.reinstall()   // "Reinstall"
         #expect(installer.calls == ["install", "install"])
         #expect(flow.status == .installed(version: nil))
         #expect(flow.enableScreen == .ready)
         #expect(flow.errorDetail == nil)
-        await flow.enable()   // "Bật Dấu"
+        await flow.enable()   // "Turn On Dấu"
         #expect(installer.calls == ["install", "install", "enable"])
         #expect(flow.enableScreen == .done)
     }
@@ -214,11 +214,11 @@ struct OnboardingFlowTests {
     func reinstallAfterRegistrationFailed() async {
         let (flow, _, installer) = flow(status: .installed(version: nil), failure: .failed("TISRegisterInputSource -50"))
         flow.start()
-        await flow.enable()   // "Bật Dấu": registering fails
+        await flow.enable()   // "Turn On Dấu": registering fails
         #expect(installer.calls == ["enable"])
         #expect(flow.enableScreen == .error)
         installer.failure = nil
-        await flow.reinstall()   // "Cài lại"
+        await flow.reinstall()   // "Reinstall"
         #expect(installer.calls == ["enable", "install"])
         #expect(flow.enableScreen == .ready)
         #expect(!flow.status.isEnabled)
@@ -242,11 +242,11 @@ struct OnboardingFlowTests {
     func reinstallOnlyFromError() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         flow.start()
-        await flow.reinstall()   // "Trước khi bấm"
+        await flow.reinstall()   // "Turn On Dấu"
         installer.enableOutcome = .notEnabled
         await flow.enable()
         #expect(flow.enableScreen == .notEnabled)
-        await flow.reinstall()   // "Chưa bật được"
+        await flow.reinstall()   // "Couldn’t Turn On Dấu"
         #expect(installer.calls == ["enable"])
     }
 
@@ -271,7 +271,7 @@ struct OnboardingFlowTests {
         #expect(flow.failed)
         #expect(flow.problem == .failed)
         #expect(flow.enableScreen == .error)
-        // "Chi tiết" is the error's own description, not a placeholder (N5).
+        // "Details" is the error's own description, not a placeholder (N5).
         #expect(flow.errorDetail == InputMethodInstallerError.unavailable.detail)
         #expect(flow.errorDetail?.contains("[") == false)
         #expect(installer.calls == ["enable"])
@@ -337,7 +337,7 @@ struct OnboardingFlowTests {
         #expect(flow.englishLayout == "U.S.")
     }
 
-    // MARK: Before step 1: "Chuyển Dấu vào Applications" (D37)
+    // MARK: Before step 1: "Move Dấu to %@" (D37)
 
     @Test("not the owner copy and nothing installed: the move screen before step 1, no step started, nothing installs")
     func moveToApplications() async {
@@ -442,10 +442,10 @@ struct OnboardingFlowTests {
         #expect(flow.installedTampered)
         #expect(flow.enableScreen == .error)
         #expect(flow.errorDetail == InputMethodInstallerError.invalidSignature.detail)
-        await flow.enable()   // no "Bật Dấu" on this screen; a call replaces and enables nothing (D37)
+        await flow.enable()   // no "Turn On Dấu" on this screen; a call replaces and enables nothing (D37)
         #expect(installer.calls.isEmpty)
         #expect(flow.enableScreen == .error)
-        await flow.reinstall()   // "Cài lại"
+        await flow.reinstall()   // "Reinstall"
         #expect(installer.calls == ["install"])
         #expect(flow.errorDetail == nil)
         #expect(!flow.installedTampered && !flow.isReinstalling)
@@ -514,13 +514,13 @@ struct OnboardingFlowTests {
         flow.refresh()
         #expect(flow.enableScreen == .error)
         installer.failure = nil
-        await flow.reinstall()   // "Cài lại"
+        await flow.reinstall()   // "Reinstall"
         #expect(installer.calls == ["install", "install"])
         #expect(flow.enableScreen == .ready)
         #expect(flow.errorDetail == nil)
     }
 
-    @Test("a copy that is not the owner copy does not check the signature: Bật Dấu as before; an enabled Dấu never shows the signature error in onboarding (D37)")
+    @Test("a copy that is not the owner copy does not check the signature: Bật Dấu enables; an enabled Dấu never shows the signature error in onboarding (D37)")
     func tamperedNotOwnerOrEnabled() async {
         let (flow, _, installer) = flow(status: .installed(version: nil))
         installer.genuine = false

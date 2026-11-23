@@ -36,7 +36,7 @@ protocol MarkedTextClient {
 ///
 /// `text` mirrors what the engine believes is on screen for the word (its `screen`), so
 /// every engine `Action` applies to it exactly as it would to the document in place
-/// mode. Pure value type, no IMK, unit tested in DauInputMethodTests.
+/// mode.
 struct MarkedComposer {
     /// The marked text shown in the app (empty: none).
     private(set) var text: [Unicode.Scalar] = []
@@ -185,7 +185,7 @@ struct MarkedComposer {
         if detached || text.isEmpty {
             // Nothing marked: the app deletes a character of committed text itself.
             // The engine never replaces here (overflow or no word); if it did, its word
-            // is no longer on screen as it thinks: forget it.
+            // is not on screen as it thinks: forget it.
             if case .replace = engine.backspace() { engine.reset() }
             if !engine.isComposing { detached = false }
             return Outcome(consumed: false, call: .none)

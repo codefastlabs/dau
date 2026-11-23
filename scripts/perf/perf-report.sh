@@ -16,7 +16,7 @@
 # bksp_asks, bksp_wait_us, and handle_nowait_us (handle_ns minus bksp_wait_ns, every key: D42
 # with and without the wait).
 #
-# Gaps between keys (M6, app under load). Each key line carries t_ns (CLOCK_UPTIME_RAW when
+# Gaps between keys (app under load). Each key line carries t_ns (CLOCK_UPTIME_RAW when
 # the input method's handle started: the key reached the input method) and ev_ns (the
 # event's own timestamp, same clock: when the key event was made, 0 if unknown). Per app:
 #   gap_<a_lt2ms|b_2to10ms|c_10to20ms|d_ge20ms>   keys by t_ns gap to the app's previous
@@ -29,7 +29,7 @@
 #                                                  their t_ns gap (under/over 10 ms)
 #   lag_us                                         t_ns - ev_ns, p50/p99/max
 # Mouse clicks and shortcuts (⌘A ⌘C…) are key lines too (kind reset/commit) and count in
-# the gaps. Lines written before these fields existed parse as before and give no gap rows.
+# the gaps. Lines without these fields give no gap rows.
 #
 # Usage:
 #   scripts/perf/perf-report.sh                      last 1 hour, all apps

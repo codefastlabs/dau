@@ -97,7 +97,7 @@ struct SpellingTests {
     ])
     func loneLettersAndBackspace(_ c: Case) { expectTyped(c.keys, c.expected) }
 
-    /// D31 lone letters: the plain letters and the other single vowels are as before.
+    /// D31 lone letters: the plain letters and the other single vowels stay as typed.
     @Test(arguments: [
         Case("a ", "a "), Case("d ", "d "), Case("A ", "A "), Case("D ", "D "),
         Case("ee ", "ê "), Case("oo ", "ô "), Case("ow ", "ơ "), Case("uw ", "ư "), Case("w ", "ư "),
@@ -158,7 +158,7 @@ struct SpellingTests {
     func placeNames(_ c: Case) { expectTyped(c.keys, c.expected) }
 
     /// Accepted consequences of the D31 place-name rules (measured on a 428-word list):
-    /// these English words now spell a valid syllable, or start one, so Vietnamese wins
+    /// these English words spell a valid syllable, or start one, so Vietnamese wins
     /// (D4) or a later key counts as a double (D26).
     @Test(arguments: [
         Case("karma ", "kẩm "), Case("Kansas ", "Kâns "), Case("Kris ", "Krí "),

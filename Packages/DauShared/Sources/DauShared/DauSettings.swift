@@ -6,7 +6,7 @@
 /// Decoding is lenient: a missing key or an unknown enum value falls back to the D15
 /// default, and a malformed app rule is dropped without losing the others. Settings
 /// written by a newer or older version of the app therefore never make the input
-/// method fail (D18 spirit).
+/// method fail (D18).
 public struct DauSettings: Sendable, Codable, Equatable {
     /// "Kiểu gõ".
     public enum TypingMethod: String, Sendable, Codable, CaseIterable {
@@ -46,8 +46,6 @@ public struct DauSettings: Sendable, Codable, Equatable {
     /// "Nâng cao" (D21, D22).
     public var advanced: Advanced
     /// Per-app rules (D5, D13), at most one per bundle ID, in display order.
-    /// (No "Nhớ chế độ theo từng ứng dụng" since 30/10/2026, D5: an old
-    /// `"rememberModePerApp"` key is ignored when decoding and dropped on the next save.)
     public private(set) var appRules: [AppRule]
 
     /// D15 defaults.
@@ -106,8 +104,7 @@ public struct DauSettings: Sendable, Codable, Equatable {
     }
 
     /// At most one rule per bundle ID, in O(n): a later rule for the same bundle ID
-    /// replaces the earlier one in its place (what `upsert` does one rule at a time,
-    /// which made a long list O(n²)).
+    /// replaces the earlier one in its place.
     static func merged(_ rules: [AppRule]) -> [AppRule] {
         var result: [AppRule] = []
         result.reserveCapacity(rules.count)

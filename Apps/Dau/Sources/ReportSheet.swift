@@ -2,13 +2,13 @@ import AppKit
 import SwiftUI
 import DauShared
 
-/// "Báo ứng dụng gõ lỗi" (artboard Report), from "Báo lỗi…" on Cập nhật & hỗ trợ.
+/// "Report a Typing Problem" (artboard Report), from "Report a Problem…" on "Updates & Support".
 ///
 /// Content from the artboard: the title and the line saying the user reviews the report
 /// and that GitHub issues are public; the hint for an app that cannot select Dấu (log
-/// out once, D37; macOS's own menu name, D38); the fields Ứng dụng, Trang web, Lỗi gặp
-/// phải, Ví dụ đã gõ; "Gửi kèm" with exactly what goes along; Huỷ / Mở trên GitHub.
-/// "Mở trên GitHub" opens the prefilled issue in the browser, where the user reads it
+/// out once, D37; macOS's own menu name, D38); the fields "App", "Website", "Problem",
+/// "What you typed"; "Included" with exactly what goes along; "Cancel" / "Open on GitHub".
+/// "Open on GitHub" opens the prefilled issue in the browser, where the user reads it
 /// again and sends it: Dấu itself sends nothing (D8, N2; `ProblemReport`).
 ///
 /// Built like the add-rule sheet (D9): a header, the content as cards of a grouped

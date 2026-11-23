@@ -27,7 +27,7 @@ struct AppRuleLoadTests {
                                                             AppRule(bundleID: "a", underline: true)]).appRules)
     }
 
-    @Test("50,000 rules build in well under half a second (O(n), was O(n²))")
+    @Test("50,000 rules build in well under half a second (O(n))")
     func initIsLinear() {
         let rules = (0..<50_000).map { AppRule(bundleID: "com.example.app\($0)") }
         let clock = ContinuousClock()

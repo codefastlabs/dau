@@ -1,7 +1,7 @@
 import SwiftUI
 import DauShared
 
-/// "Gõ phím" (mockup "SettingsTyping"): preview, typing method, tone placement, free
+/// "Typing" (mockup "SettingsTyping"): preview, typing method, tone placement, free
 /// marking, and the system shortcut that switches input sources, e.g. Dấu ↔ U.S. (D2).
 struct TypingSettingsView: View {
     @Environment(SettingsModel.self) private var model
@@ -70,7 +70,7 @@ struct FlexibleSegments: ViewModifier {
     }
 }
 
-/// The "Xem trước" row: chips for the configuration, then keys › result computed by
+/// The "Preview" row: chips for the configuration, then keys › result computed by
 /// the engine with the current settings, in two boxes set into the card. Custom
 /// content of the mockup; the Form draws the card around it.
 struct PreviewCard: View {
@@ -131,7 +131,7 @@ struct PreviewBox<Content: View>: View {
 }
 
 /// The input-source shortcut as keycaps, or the placeholder when it cannot be read.
-/// `inSentence`: drawn inside running text (onboarding, `ShortcutSentence`), so "hoặc"
+/// `inSentence`: drawn inside running text (onboarding, `ShortcutSentence`), so "or"
 /// takes the sentence's font and color instead of the Settings row's value style.
 struct ShortcutKeycaps: View {
     let shortcut: InputSourceShortcut?

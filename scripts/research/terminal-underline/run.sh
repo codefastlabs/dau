@@ -29,7 +29,7 @@ DELAY=120
 # id | app | source (dau, apple) | mode | keys | expect [| keys2 | expect2]
 # Mode: words joined by "+": inplace; underline (--underline); shot (--shot: picture of
 # the window right after the keys, before the last word is committed); busy (--busy
-# 300:1000: the test page blocks its main thread 300 ms of every second, M6); fast (30 ms
+# 300:1000: the test page blocks its main thread 300 ms of every second); fast (30 ms
 # between keys instead of --delay).
 # Keys: ⌫ Delete, ← left arrow, ↩ Return (typing/run.sh).
 # Cell groups (results: docs/research/TerminalAndUnderline.md; measurements of the removed

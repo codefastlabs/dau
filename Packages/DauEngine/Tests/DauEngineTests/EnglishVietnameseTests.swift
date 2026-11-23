@@ -34,7 +34,7 @@ struct EnglishVietnameseTests {
     ])
     func doubleKeepsLetters(_ c: Case) { expectTyped(c.keys, c.expected) }
 
-    /// D26 (kept by the user's decision): after a doubled tone key the restore baseline
+    /// D26: after a doubled tone key the restore baseline
     /// is the text shown, so an English word whose double letter is a tone key loses
     /// one letter; typing the letter three times keeps both. "passsword" also crosses
     /// D33 at its 8th letter, where the baseline already equals the screen.

@@ -5,7 +5,7 @@ import DauShared
 /// window can only show what Dấu really types (N5). Pinned by
 /// `SettingsSamplesTests` (Apps/Dau/Tests).
 enum SettingsSamples {
-    /// "Xem trước" on "Gõ phím", typed with the user's settings. With "Đặt dấu tự do"
+    /// "Preview" on "Typing", typed with the user's settings. With "Free mark placement"
     /// off the tone keys follow the vowel directly, since that is how the user types
     /// then (D28).
     static func preview(_ settings: DauSettings) -> TypingExample {
@@ -19,7 +19,7 @@ enum SettingsSamples {
         return TypingExample(keys: keys, options: settings.engineOptions)
     }
 
-    /// The "Thông minh" examples use the user's typing method with automatic restore
+    /// The "Smart Typing" examples use the user's typing method with automatic restore
     /// on, since they describe what that switch does.
     static func smart(_ keys: String, after displayed: String = "",
                       _ method: DauSettings.TypingMethod) -> TypingExample {
@@ -49,7 +49,7 @@ enum SettingsSamples {
         return TypingExample(keys: keys, options: DauSettings(typingMethod: method).engineOptions)
     }
 
-    /// "Thêm dấu cho từ đã gõ" (D20): "hoc" is already in the app, then the nặng key.
+    /// "Add marks to typed words" (D20): "hoc" is already in the app, then the nặng key.
     static func addMarks(_ method: DauSettings.TypingMethod) -> TypingExample {
         smart(method == .vni ? "5" : "j", after: "hoc", method)
     }

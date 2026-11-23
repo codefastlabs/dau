@@ -93,7 +93,7 @@ struct CursorTrackerTests {
         #expect(t.plan(selection: at(100), deleteCount: 1) == .replace(at(99, 1)))
     }
 
-    // MARK: Following the cursor across words (an app that answers late, M6)
+    // MARK: Following the cursor across words (an app that answers late)
 
     @Test("the position is followed across a word end; the expected one is not")
     func knownAcrossWords() {

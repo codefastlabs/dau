@@ -76,7 +76,7 @@ final class SparkleUpdaterBackend: UpdaterBackend {
     }
 }
 
-/// Sparkle's updater delegate for the release channel (D7, "Kênh"); the logic and the
+/// Sparkle's updater delegate for the release channel (D7); the logic and the
 /// call order it relies on are documented on `ReleaseChannels` (Updater.swift).
 /// `SPUUpdaterDelegate` is `NS_SWIFT_UI_ACTOR` in Sparkle 2.10.1: both calls come on the
 /// main actor.

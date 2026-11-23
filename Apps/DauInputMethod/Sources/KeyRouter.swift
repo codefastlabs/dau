@@ -2,7 +2,6 @@ import AppKit
 import Carbon
 
 /// What the controller does with one key-down event, decided from the event fields only.
-/// Pure function so it can be unit tested without IMK (DauInputMethodTests).
 enum KeyRoute: Equatable {
     /// Reset the engine and let the app handle the key: ⌘/⌃/⌥ shortcuts, arrows, Esc,
     /// navigation and function keys, dead keys, multi-character events (D4, D18).
@@ -85,7 +84,7 @@ enum KeyRouter {
 /// nothing recurses. A key that arrives while busy is not handled (`key` returns nil).
 ///
 /// A reference type: the controller keeps one for its life and the bodies run while no
-/// property of this object is borrowed. Unit tested in DauInputMethodTests.
+/// property of this object is borrowed.
 final class KeyReentry {
     /// A body (key, reset, reload) is running.
     private(set) var isBusy = false
@@ -134,13 +133,12 @@ final class KeyReentry {
 ///
 /// A real switch away and back that IMK does not report (U.S. then Dấu) gives two
 /// notifications. A source selected by `TISSelectInputSource` from another process
-/// reaches TIS and the menu bar but not the field (measured 10/11/2026), so it only
+/// reaches TIS and the menu bar but not the field: the focused field keeps its input
+/// method and Dấu gets no call (measured), so it only
 /// exercises this path. The first notification finds
 /// U.S. current, which is not Dấu, and ends the word (D4). Both arriving only after the
 /// switch back (two switches within the delivery time of one notification) would find
 /// Dấu both times and keep the word; no person switches that fast.
-///
-/// Pure, unit tested in DauInputMethodTests.
 enum InputSourceChange {
     /// - Parameters:
     ///   - previous: the source ID seen last, nil if unknown.
@@ -148,7 +146,7 @@ enum InputSourceChange {
     ///   - ownBundleID: this input method's bundle ID; its input modes are
     ///     `<bundle ID>.<mode>` (D24).
     /// - Returns: true when the word must end: the current source is unknown (nothing
-    ///   can be told, so as before), not Dấu, or not the one seen last.
+    ///   can be told: end the word), not Dấu, or not the one seen last.
     static func endsWord(previous: String?, current: String?, ownBundleID: String?) -> Bool {
         guard let current, let ownBundleID, isOwn(current, bundleID: ownBundleID) else { return true }
         guard let previous else { return true }

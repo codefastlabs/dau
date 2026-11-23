@@ -8,7 +8,7 @@
 // caret; that only works when the input mode declares TISIconIsTemplate (Info.plist,
 // docs/history/CompatibilityFixed.md). The system cannot draw a text label ("A") for us.
 //
-// TODO(M7): replace with the official identity files (Brand.md "File cần xuất").
+// TODO: replace with the official identity files (Brand.md "File cần xuất").
 //
 // Usage: scripts/assets/make-mode-icons.sh (wraps this script and tiffutil).
 //        The tool (dau_swift_tool, scripts/lib/swift-tool.sh): make-mode-icons <output-dir>  → V.png, V@2x.png

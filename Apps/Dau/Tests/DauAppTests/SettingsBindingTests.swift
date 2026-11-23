@@ -5,7 +5,7 @@ import DauShared
 
 // SwiftUI may read a binding on NSHostingView's asynchronous rendering thread. A
 // `Binding(get:set:)` made of closures in a main-actor view body traps there under Swift 6
-// (the executor check; found on "Kênh phát hành", `--capture-updates` 18/11/2026). The
+// (the executor check). The
 // Settings window's bindings are key-path bindings through `@Bindable`; these tests read
 // each one off the main thread, as that rendering does (a window that is never shown only
 // renders on the main thread). `ReleaseChannelRowTests.bindingOffMain` covers the channel.

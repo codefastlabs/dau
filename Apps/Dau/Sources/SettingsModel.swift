@@ -5,7 +5,7 @@ import os
 
 /// The host app's view of the shared settings. Every change is saved right away to the
 /// App Group suite, which posts the change notification the input method listens to.
-/// Changes made elsewhere (the input method's "Kiểu gõ" menu) are reloaded the same way.
+/// Changes made elsewhere (the input method's "Typing method" menu) are reloaded the same way.
 @MainActor
 @Observable
 final class SettingsModel {
@@ -16,8 +16,8 @@ final class SettingsModel {
         }
     }
 
-    /// Apps labelled "Đề xuất" on the Apps page (D13). Bundled with the app; the signed
-    /// downloaded copy of M7 (D7) will replace it here. Not shared with the input method.
+    /// Apps labelled "Suggested" on the Apps page (D13). Bundled with the app and updated
+    /// with it (D7). Not shared with the input method.
     @ObservationIgnored let compatibility: CompatibilityList
     @ObservationIgnored private let store: SettingsStore
     @ObservationIgnored private var observer: SettingsChangeObserver?

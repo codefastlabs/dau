@@ -26,7 +26,7 @@
 //   (h) report/ (Dau --capture-report): the "Báo ứng dụng gõ lỗi" sheet in both
 //   appearances, Reference.reportSheetWidth wide, its "Gửi kèm" footer inside the sheet.
 //   (i) updates-release/ (Dau --capture-updates): Cập nhật & hỗ trợ as a release build
-//   shows it, on a fake updater (Sparkle is not tested here; M7 step 2 is), for both
+//   shows it, on a fake updater (Sparkle itself is tested only with real release builds), for both
 //   stages of the SettingsAbout artboard in both appearances (the window is not active,
 //   so selected segments are grey): the version line on its sample values, no installed
 //   input method line, the first card as wide as the real window's (a), the "Kênh phát
@@ -317,8 +317,8 @@ for key in ["light", "dark"].map({ "report-\($0)" }) {
 
 // MARK: - Updates page of a release build (i)
 
-// Artboard SettingsAbout, both values of its `stage` tweak; a fake updater, so Sparkle is
-// not tested here (M7 step 2 is). Frames are the page's layout probes, window points. The
+// Artboard SettingsAbout, both values of its `stage` tweak; a fake updater, so Sparkle itself is
+// tested only with real release builds. Frames are the page's layout probes, window points. The
 // probes measure rows, not the card: a row spans the card less Reference.cardInset on each
 // side (as AXCheck's "Kiểu gõ spans its row"), so the card is the first row widened by it.
 let updatesDir = root.appendingPathComponent("updates-release")

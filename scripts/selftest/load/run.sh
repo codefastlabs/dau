@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Types one text into real apps, idle and under load, to see whether in-place replacement goes wrong when the app is busy (M6).
+# Types one text into real apps, idle and under load, to see whether in-place replacement goes wrong when the app is busy.
 # Side effects: unless --dry-run or --print: builds, takes the screen, changes input source, changes user settings
 #
 # Usage: scripts/selftest/load/run.sh [--reps N] [--apps "A…"] [--loads "L…"] [--text std|edit]
@@ -21,7 +21,7 @@
 # per-key log of the Debug input method (scripts/perf/perf-report.sh):
 #   H1  the busy app lets queued keys go in a burst: keys reach the input method < 10 ms
 #       apart (gap_a/gap_b) although they were sent evenly (evgap_d), lag_us is large,
-#       and the < 10 ms failure follows (measured before M6, docs/Compatibility.md 6.2).
+#       and the < 10 ms failure follows (docs/Compatibility.md 6.2).
 #   H2  keys arrive evenly (gap_d) but the app has not applied the previous insertText
 #       yet, so selectedRange is stale: mismatch/resync at gaps ≥ 10 ms (gap_ge10_*),
 #       or wrong text with even gaps.
@@ -111,7 +111,7 @@ BUSY=300:1000
 # Checked with DauEngine (default options, D15): these keys give exactly TEXT_EXPECT.
 TEXT_KEYS='Chieeuf nay anh cos ranhr khoong, minhf ddi uoongs caf phee nhes. Deadline cuar project nayf laf thuws saus tuaanf sau. Seeps vuwaf guwir email veef buooir meeting toois qua. Toois nay xem phim treen Netflix hay YouTube ddaay? '
 TEXT_EXPECT='Chiều nay anh có rảnh không, mình đi uống cà phê nhé. Deadline của project này là thứ sáu tuần sau. Sếp vừa gửi email về buổi meeting tối qua. Tối nay xem phim trên Netflix hay YouTube đây? '
-# --text edit (M6, 09/11/2026). Checked with DauEngine the same way (ExternalCasesTests's
+# --text edit: checked with DauEngine the same way (ExternalCasesTests's
 # replay, which also plays ⌫ and D20): these keys give exactly EDIT_EXPECT. Chaofzf puts a
 # tone, removes it (z) and puts it back: "Chào".
 EDIT_KEYS='Sasng nay mojot nguoiwf banj guiwr email hoir veef deadline cuar project. Minhf phari vieetjs laji kees hoajch truwocs meeting chieeuf nay. Hoc ⌫j tieesng Anh khoong⌫g khos, chir caanf dduwowjc luyeenj ddeeuf mooix ngayf. Chaofzf banj, xem video treen YouTube huowsng daanx nhes. '
