@@ -143,6 +143,36 @@ struct HeldTextTests {
         #expect(!t.fitsDocumentState(units("Hoc"), at: 3))
     }
 
+    /// The answers measured at "j" of "Sasng nay moj" in the editor of Cursor 3.31.15, keys
+    /// 5 ms apart: states of one unit, the first answers there to differ from the followed caret.
+    @Test("held text shown by a state of one unit: after a space with the letter typed next, or a letter some edits back")
+    func detectionFromOneUnitStates() {
+        var t = CursorTracker()
+        t.anchor(at: 0)
+        t.lateness.keyInBurst = true
+        t.typedAtCaret("S"); t.typedAtCaret("a")
+        t.didReplace(NSRange(location: 1, length: 1), text: "á")
+        for c in "ng nay mo" { t.typedAtCaret(String(c)) }
+        // The space, then the "o" typed last: Chromium's cache, two edits back.
+        #expect(t.heldTextShown(units(" o"), at: at(2), cacheForm: false) == .init(lacking: 2, form: .cache))
+        // "m", one edit back.
+        #expect(t.heldTextShown(units("m"), at: at(1), cacheForm: false) == .init(lacking: 1, form: .before))
+        // One unit that is the text before the caret now, as Google Docs answers: never.
+        var o = CursorTracker()
+        o.anchor(at: 0)
+        o.lateness.keyInBurst = true
+        for c in "Sáng o o" { o.typedAtCaret(String(c)) }
+        #expect(o.heldTextShown(units("o"), at: at(1), cacheForm: false) == nil)
+        // Nor a letter of a word before a space: "o" of "o mo".
+        var w = CursorTracker()
+        w.anchor(at: 0)
+        w.lateness.keyInBurst = true
+        for c in "Sáng o mo" { w.typedAtCaret(String(c)) }
+        #expect(w.heldTextShown(units("o"), at: at(1), cacheForm: false) == nil)
+        // A space alone, a state some edits back: never.
+        #expect(t.heldTextShown(units(" "), at: at(1), cacheForm: false) == nil)
+    }
+
     @Test("held text shows no text before the word: back to the document's coordinates")
     func switchBack() {
         let t = heldTracker("chiều nay. Hoc")
@@ -240,6 +270,19 @@ struct HeldTextComposerTests {
         #expect(s.composer.tracker.coordinates == .heldText)
         #expect(s.last.held.switched == .held)
         #expect(s.sent == "ày 1,2")
+        #expect(s.overCalls == 0)
+    }
+
+    /// A new file in Cursor's editor, keys 5 ms apart: at "s" the answer is 1 with "a", and the
+    /// first answers at "j" measured there are states of one unit (`docs/Compatibility.md` 5.4).
+    @Test("Sasng nay moj: a state of one unit at j switches to held text and gives mọ at 1,1",
+          arguments: [(2, " o"), (1, "m"), (2, "mo")])
+    func detectionAtFirstReplacementAfterSpace(_ location: Int, _ before: String) {
+        var s = Session()
+        s.type("Sasng nay moj", answers: [0: (0, ""), 2: (1, "a"), 12: (location, before)])
+        #expect(s.composer.tracker.coordinates == .heldText)
+        #expect(s.last.held.switched == .held)
+        #expect(s.sent == "ọ 1,1")
         #expect(s.overCalls == 0)
     }
 

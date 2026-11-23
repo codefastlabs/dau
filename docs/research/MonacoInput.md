@@ -11,7 +11,7 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
 - **Chromium trả lời bộ gõ theo toạ độ của ô textarea** (mục 3). Vì vậy ở chế độ tắt, `selectedRange` và vùng thay tính từ đầu từ. Câu trả lời lấy từ bản sao bất đồng bộ đã tả ở [`WebEditorInput.md`](WebEditorInput.md) mục 8 và 10.2. Blink áp vùng thay theo nội dung ô lúc nó xử lý lời gọi. Vùng bắt đầu sau cuối ô bị bỏ, vùng chỉ có phần cuối vượt ô bị cắt.
 - **Giả thuyết H1 giải thích mọi quan sát của trình soạn thảo Cursor, trừ điều gì bật chế độ hỗ trợ trình đọc màn hình, và phép đo đã xác nhận nó** (mục 4, 5). H1: Cursor dùng ô textarea, kiểu vị trí đi theo chế độ đó, và chế độ được chốt khi mở cửa sổ. Nó giải thích ba câu trả lời ở "j" của "Hoc␣⌫j" (3 với "Hoc", 4 với "Hoc␣", 1 với một dấu cách) và các từ sai qua ranh giới từ. Điều gì làm Electron bật chế độ đó trên máy đo thì chưa rõ. Script gõ thử hỏi Cursor qua System Events, nhưng theo mã Electron, chỉ hỏi như vậy thì chưa đủ để bật.
 - **Phép đo xác nhận** (mục 5, 23/11/2026): với `accessibilitySupport` `off`, vị trí tính từ đầu từ và chữ sai; với `on`, hoặc với `off` kèm EditContext, vị trí tính từ đầu văn bản và chữ đúng cả câu.
-- **Bản sửa** (mục 6, đã có mã, chờ phép đo trên app thật ở mục 6.11): Dấu nhận ra ô chỉ giữ từ trước con trỏ qua câu trả lời mà lần đọc vốn có của D11 và D20 đã lấy. Ở ô đó, Dấu tính vùng thay trong chữ ô giữ lúc trang áp lời gọi, từ chữ chính nó đã gõ; câu trả lời của app chỉ dùng để kiểm. N3 và D11 đã đổi theo đó. `CursorTracker.wordFromWordStart` và mô hình `LateDocument.Origin.word` đã bỏ. Bằng chứng là phép đo trên app thật ở mục 6.11.
+- **Bản sửa** (mục 6, đã đo ở mục 6.11): Dấu nhận ra ô chỉ giữ từ trước con trỏ qua câu trả lời mà lần đọc vốn có của D11 và D20 đã lấy. Ở ô đó, Dấu tính vùng thay trong chữ ô giữ lúc trang áp lời gọi, từ chữ chính nó đã gõ; câu trả lời của app chỉ dùng để kiểm. N3 và D11 đã đổi theo đó. `CursorTracker.wordFromWordStart` và mô hình `LateDocument.Origin.word` đã bỏ. Với câu `edit` ở chế độ tắt, Cursor 3.31.15 đúng 9/10 lượt ở 5 ms và 3/3 ở 10 ms. Hai ca còn sai nằm ở mục 6.7.
 
 ## 1. Hai đường nhập của Monaco và bản Cursor dùng
 
@@ -161,12 +161,12 @@ Mỗi client bắt đầu ở hệ toạ độ văn bản, tức hành vi hiện
 **Sang hệ mới.** Dấu chỉ xét ở lần đọc vốn có của D11 (câu trả lời khác vị trí Dấu theo dõi) và của D20, sau khi phép chứng minh app chậm của hệ văn bản không qua. Câu trả lời a với chữ đọc được R phải đạt đủ bốn điều kiện:
 1. a ≤ 16 và R dài đúng a, tức Dấu thấy toàn bộ chữ app giữ, từ vị trí 0.
 2. (a, R) trùng chữ ô giữ của một trạng thái trong `followed.edits`, ở dạng (a) hoặc dạng (b) của mục 6.5, trong giới hạn chậm của D11.
-3. Chữ ô giữ của trạng thái đó dài ít nhất 2 và toàn đơn vị thuộc từ mà Dấu biết rõ.
+3. Dấu biết trọn chữ ô giữ của trạng thái đó. Nếu a = 1, R phải là một chữ cái, trạng thái khớp phải thuộc từ đang gõ và chậm ít nhất một thao tác, và R không trùng chữ ô giữ hiện tại.
 4. (a, R) không trùng trạng thái nào của chữ Dấu theo dõi theo hệ văn bản mà cũng trùng chữ Dấu đã gõ, ở cả hai dạng và không giới hạn số thao tác (`CursorTracker.fitsDocumentState`). Nếu không đòi trùng chữ Dấu đã gõ, "Hoc" ở vị trí 3 khớp về hình học với trạng thái sau "chi" của "chiều nay. Hoc".
 
 Đạt thì Dấu sang hệ mới ngay ở phím đó và thay ở (L − k, k). Lần xét này không thêm lời gọi nào.
 
-Ở Cursor, phím đầu có lần đọc của D20 neo vị trí theo câu trả lời. Vì vậy ở từ đầu tiên hai hệ cho cùng vùng thay. Lần thay đầu của từ thứ hai trở đi có câu trả lời khác vị trí theo dõi, nên Dấu nhận ra kiểu ô ở đó, trước khi hai hệ cho vùng khác nhau. Ngoại lệ là khi câu trả lời lúc đó chỉ khớp một trạng thái một đơn vị (ngay sau dấu cách, hoặc từ một chữ cái). Khi đó Dấu chờ phím sau, và phím đó đi theo hành vi hiện nay.
+Ở Cursor, phím đầu có lần đọc của D20 neo vị trí theo câu trả lời. Vì vậy ở từ đầu tiên hai hệ cho cùng vùng thay. Lần thay đầu của từ thứ hai trở đi có câu trả lời khác vị trí theo dõi, nên Dấu nhận ra kiểu ô ở đó, trước khi hai hệ cho vùng khác nhau. Khi phím dồn, câu trả lời đó thường là chữ ô giữ một đơn vị. Đó có thể là dấu cách cộng chữ cái Dấu vừa chèn (2 với "␣o" ở "moj"), hoặc chữ cái đầu của từ (1 với "m"). Cả hai đạt điều kiện 3, nên Dấu nhận ra kiểu ô ngay ở phím đó.
 
 **Về hệ văn bản.** Ở hệ mới, câu trả lời khác L thì Dấu đọc một lần (như D11 hiện nay). Dấu về hệ văn bản khi câu trả lời không khớp trạng thái nào của mục 6.5 và cho thấy chữ ngoài từ trước con trỏ, theo một trong hai cách:
 - a lớn hơn 52, độ dài lớn nhất ô có thể có (51, cộng một ký tự chèn theo dạng (b));
@@ -207,7 +207,9 @@ Chờ ⌫ chưa áp (N3): vị trí "trước khi ⌫ áp" là L của trạng t
 | Nhiều con trỏ | Monaco áp cùng một lần thay cho mọi con trỏ, theo con trỏ chính | Đây là cách Monaco làm với mọi bộ gõ; Dấu chỉ theo con trỏ chính. |
 | Từ dài hơn 51 đơn vị (tên biến dài) | ô chỉ giữ 51 đơn vị cuối | k ≤ 13 nên vùng (51 − k, k) vẫn đúng. |
 | Vùng chọn khác rỗng | ô chứa vùng chọn | Mọi cách chọn chữ đều reset Dấu trước đó. Ở hệ mới, Dấu coi vùng chọn là lệch, không áp ý "Gợi ý tự hoàn thành". |
-| Từ đầu phiên là từ một chữ cái, phím dồn ("anh ddi" ngay khi mở) | chưa nhận ra kiểu ô (điều kiện 3) | Phím đó đi theo hành vi hiện nay. Lỗi ở ca này mới thấy trên mô hình, chưa thấy ở app thật. |
+| Câu trả lời ở lần thay đầu sau ranh giới từ là một trạng thái của từ đầu tiên trong văn bản, nơi chữ ô giữ trùng cả văn bản | hai hệ giải thích câu trả lời như nhau; Dấu theo hệ văn bản (điều kiện 4), nên vùng thay sai và từ đó thiếu dấu ("mot") | Đo được 2 lần trong 49 lượt `edit` 5 ms trên Cursor 3.31.15. Nếu chọn hệ mới ở ca này thì Chrome khi trang kẹt sau từ đầu sẽ bị sửa sai từ đầu. |
+| Câu trả lời là chính vùng thay Dấu vừa gửi, có độ dài khác 0 (`(2, 2)` sau lần thay "ươ") | Dấu coi là lệch, nên chữ cái sau đó không thêm dấu ("trươcs") | Gặp 1 lần trên Cursor 3.31.15 ở 5 ms; cơ chế chưa rõ. |
+| Dấu đã ở hệ mới, phím dồn | 1 lần ra "đeeuf" thay vì "đều" (câu trả lời 1, chữ đọc được không khớp trạng thái nào) | Gặp 1 lần trong 10 lượt `edit` 5 ms; cơ chế chưa rõ, vì log không ghi chữ đọc được (D8). |
 
 ### 6.8 Vì sao app tính từ đầu văn bản không bị nhận nhầm
 
@@ -215,7 +217,7 @@ Dấu chỉ xét việc đổi hệ khi câu trả lời khác vị trí Dấu t
 
 - **App tính từ đầu văn bản, trả lời chậm** (Chrome, Edge khi trang bận hay phím dồn; VS Code; Firefox): điều kiện 1 và 2 cùng đạt chỉ khi cả văn bản trước con trỏ cũ đúng bằng chữ ô giữ ở một trạng thái nào đó. Chữ đó do chính Dấu gõ ở đầu văn bản, nên trạng thái đó có trong `followed.edits` và điều kiện 4 loại nó. Lịch sử dài 256 thao tác, còn Chrome trang bận đã đo chậm tối đa 12. Ca "Hoc nay. Hoc" (test `HeldTextTests.detection`) rơi vào đúng trường hợp này.
 - **VS Code 1.147 (EditContext):** vị trí tính từ đầu dòng. Sau Return, Dấu reset và neo lại ở lần đọc của D20, nên lịch sử cũng tính từ đầu dòng và điều kiện 4 vẫn áp.
-- **Google Docs:** app luôn trả 1 với một ký tự (`docs/Compatibility.md` mục 5.10). Câu trả lời đó không bao giờ khớp chữ ô giữ dài từ 2 trở lên (điều kiện 3), nên Google Docs giữ hành vi hiện nay.
+- **Google Docs:** app luôn trả 1 với ký tự ngay trước con trỏ (`docs/Compatibility.md` mục 5.10). Điều kiện 3 loại ký tự đó khi nó là chữ ô giữ hiện tại, là dấu cách, hay chỉ khớp một từ trước ranh giới. Google Docs chỉ bị nhận nhầm khi chữ cái cuối của từ trùng chữ cái đầu của chính từ đó ("non"). Luật này chưa đo trên Google Docs.
 - **Word trên web, TipTap, Notes, Telegram:** vị trí tính từ đầu văn bản và đã đo là đúng giờ hoặc chậm theo dạng bộ đệm. Lý do như ý đầu.
 - **Ô bỏ qua vùng thay (D43):** nếu bị nhận nhầm thì vùng thay vẫn bị bỏ qua như hiện nay, nên không có gì tệ hơn.
 - **Nhận nhầm còn lại:** con trỏ của một app tính từ đầu văn bản sang chỗ mà cả phần trước nó đúng bằng một từ Dấu vừa gõ, mà IMK không báo (ví dụ click vào thanh địa chỉ Chrome). Khi đó, nếu trạng thái khớp là trạng thái hiện tại thì vùng thay của hai hệ trùng nhau. Ở từ sau, câu trả lời cho thấy chữ ngoài từ, nên Dấu về hệ văn bản (mục 6.4).
@@ -234,10 +236,10 @@ Các test dưới đây (`HeldTextTests`, `HeldTextComposerTests`) là hàm thu�
 2. **L sau từng thao tác** (bảng mục 6.3): chèn "␣" sau "Hoc" ra 1; ⌫ xoá dấu cách đã biết ra 3 "Hoc"; ⌫ xoá chữ chưa biết ra chưa biết; khôi phục D4 có ký tự kết thúc "," ra 1; khôi phục kết thúc bằng "…" thì cộng dồn.
 3. **Vùng thay:** dấu thanh trên "tie" + e ra (2, 1); gieo "Hoc" + j ra (1, 2); D4 "mẻt" + dấu cách ra (1, 2) với chữ "etr␣"; D32 "hoà" ⌫ ra (1, 2) với "òà"; D26 "cả" + r ra (1, 1) với "ar"; từ 55 đơn vị + dấu thanh ra (51 − k, k); k > L thì không gửi.
 4. **Câu trả lời ở hệ mới** (mục 6.5), với lịch sử của "chiều nay. Hoc␣⌫": (3, "Hoc") là đúng giờ; (4, "Hoc␣") là dạng (b) thiếu 2; (1, "␣") là dạng (a) thiếu 1; (2, "Ho") không khớp; trạng thái quá giới hạn thì không khớp.
-5. **Sang hệ mới** (mục 6.4): lịch sử "chiều nay. Hoc␣⌫" theo hệ văn bản với vị trí 14, câu trả lời (3, "Hoc") thì sang; tài liệu mới "Hoc nay. Hoc␣⌫" với (3, "Hoc") thì không sang (điều kiện 4); (1, "h") kiểu Google Docs thì không sang; câu trả lời chậm của Chrome trong giới hạn thì phép chứng minh app chậm thắng; câu trả lời bằng vị trí theo dõi thì không xét.
+5. **Sang hệ mới** (mục 6.4): lịch sử "chiều nay. Hoc␣⌫" theo hệ văn bản với vị trí 14, câu trả lời (3, "Hoc") thì sang; tài liệu mới "Hoc nay. Hoc␣⌫" với (3, "Hoc") thì không sang (điều kiện 4); (1, "h") kiểu Google Docs thì không sang; câu trả lời chậm của Chrome trong giới hạn thì phép chứng minh app chậm thắng; câu trả lời bằng vị trí theo dõi thì không xét. Với lịch sử "Sáng nay mo", (2, "␣o") là dạng (b) thiếu 2 và (1, "m") là dạng (a) thiếu 1, nên đều sang; (1, "o") trùng chữ ô giữ hiện tại ở "Sáng o o", (1, "o") của từ trước dấu cách ở "Sáng o mo" và (1, "␣") thì không sang.
 6. **Về hệ văn bản:** ở hệ mới, (219, "…nay. Hoc") thì về; (53, …) thì về; (14, "ay. Hoc") khi chữ đó trùng chữ Dấu đã gõ thì về; (4, "Hoc␣"), (2, "␣H") và (2, "ab") thì không về.
 7. **Chờ ⌫ ở hệ mới:** sau "Hoc␣⌫", vị trí chờ là 1.
-8. **Composer với đồ giả ghi lời gọi:** "chieeuf nayf. Hoc␣⌫j" trong tệp mới, câu trả lời viết sẵn ở các phím có hỏi (0 ở "c", rồi 4, 5 và 3 với "nay", là vị trí đúng giờ của trình soạn thảo Cursor chế độ tắt); ở "j" lần lượt 3 "Hoc", 4 "Hoc␣" và 1 "␣" như log Cursor 3.31.15. Dấu nhận ra kiểu ô ở "nayf" và cả ba câu trả lời cho vùng (1, 2). Cũng vậy cho D4, D26, D32 và cho câu trả lời 219 cho thấy văn bản. Test kiểm vùng thay đã gửi và số lời gọi mỗi phím, không kiểm chữ của app.
+8. **Composer với đồ giả ghi lời gọi:** "chieeuf nayf. Hoc␣⌫j" trong tệp mới, câu trả lời viết sẵn ở các phím có hỏi (0 ở "c", rồi 4, 5 và 3 với "nay", là vị trí đúng giờ của trình soạn thảo Cursor chế độ tắt); ở "j" lần lượt 3 "Hoc", 4 "Hoc␣" và 1 "␣" như log Cursor 3.31.15. Dấu nhận ra kiểu ô ở "nayf" và cả ba câu trả lời cho vùng (1, 2). Cũng vậy cho D4, D26, D32 và cho câu trả lời 219 cho thấy văn bản. "Sasng nay moj" với câu trả lời 1 "a" ở "s" và, ở "j", 2 "␣o", 1 "m" hay 2 "mo" như log Cursor 3.31.15 khi phím dồn: Dấu sang hệ mới ở "j" và gửi (1, 1). Test kiểm vùng thay đã gửi và số lời gọi mỗi phím, không kiểm chữ của app.
 
 Mô hình `LateDocument.Origin.word` và các test dựa trên nó đã bỏ; các ca của chúng nay là test 4, 5 và 8.
 
@@ -245,16 +247,7 @@ Mô hình `LateDocument.Origin.word` và các test dựa trên nó đã bỏ; c�
 
 App thật là bằng chứng. Bản Debug có thêm các trường log chỉ có số (D8): `held=0|1` (hệ đang dùng), `held_len` (L), `held_match=now|a|b|anchor|none`, `held_lag` (số thao tác app thiếu), `held_switch=held|doc|-`. Các trường `typed_read_*` hiện có giữ nguyên, trừ `typed_read_word_start*`.
 
-| Ô | Điều kiện | Lượt | Đạt khi |
-|---|---|---|---|
-| `cursor`, `"editor.accessibilitySupport": "off"` | `edit` 10 ms; `edit` 5 ms; `std` 5 ms; `edit` 100 ms | 5; 5; 3; 1 | Chữ đúng cả câu ở mọi lượt. Mọi dòng `diag replace` sau phím đổi hệ có `held=1` và vùng thay kết thúc ở `held_len`. `held_switch=held` xuất hiện ở lần thay đầu của từ thứ hai có thay chữ. Không có `mismatch`. Ở "j", câu trả lời 3, 4 hay 1 đều gieo được từ. Có đối chứng Telex của Apple trong cùng ô. |
-| `cursor`, `"on"`, và `"off"` kèm `"editor.experimentalEditContextEnabled": true` | `edit` 10 ms | 2 mỗi cài đặt | Chữ đúng, mọi dòng `held=0`, không có `held_switch`. |
-| `cursor`, đổi chế độ giữa phiên | `"off"`, gõ `edit`, rồi sửa `settings.json` thành `"on"` khi cửa sổ vẫn mở, gõ lại `edit`; làm ngược lại từ `"on"` | 2 mỗi chiều | Chữ đúng ở cả hai câu, trừ tối đa một từ ở phím đổi. Log có `held_switch=doc` (hoặc `held`) đúng một lần. |
-| `cursor`, `auto` như máy đang để | `edit` 10 ms | 2 | Chữ đúng; ghi hệ đã dùng. |
-| `cursoragents`, `cursorchat` | `edit` 10 ms | 1 mỗi ô | Chữ đúng, `held=0`. |
-| Kiểm hồi quy các app tính từ đầu văn bản | Chrome trang bận 10 ms (3) và trang rảnh 5 ms (1); Edge trang bận 10 ms (1); Safari trang bận 10 ms (2); Firefox trang bận 10 ms (1); `vscodefile` 5 ms (2); Notes, Terminal, `tiptap` (1); Word trên web và Google Docs bằng `typed-word-docs.sh` (1) | như cột trước | Chữ như các lượt trước (Google Docs vẫn ra chữ sai đã ghi ở `docs/Compatibility.md` mục 5.10). Mọi dòng `held=0`. |
-
-Số đo ghi vào [`docs/Compatibility.md`](../Compatibility.md) mục 5.4 (Cursor) và mục của từng app.
+Ở chế độ tắt, Cursor 3.31.15 với câu `edit` đúng 9/10 lượt ở 5 ms và 3/3 ở 10 ms. Ở chế độ bật, khi dùng EditContext và ở cài đặt `auto` của máy đo, log không đổi hệ. Chrome, Edge, Firefox, Safari, VS Code, Notes, Terminal và TipTap cho chữ như trước và không đổi hệ lần nào. Số đo và điều kiện nằm ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.4 (Cursor) và mục của từng app.
 
 ### 6.12 Các hướng không chọn
 

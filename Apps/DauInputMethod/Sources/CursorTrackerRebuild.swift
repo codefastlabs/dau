@@ -168,15 +168,18 @@ extension CursorTracker {
     /// before `end`, shows; the fewest edits back first. Every edit after it that deleted
     /// text must know that text. `limit`, `cacheLimit`: edits back each form may go.
     /// `fromNow`: the state after the latest edit counts (an answer on time). `whole`: the
-    /// state must be a word of at least two units this composer knows in full, read from
-    /// position 0, as a switch to held text needs (`heldTextShown`).
+    /// answer is all of a state this composer knows in full, read from position 0, as a
+    /// switch to held text needs (`heldTextShown`); one unit only when it is a unit of a word
+    /// that a state of the word being typed, some edits back, holds and the state now does
+    /// not (D11).
     func heldTextMatch(_ snapshot: [UInt16], at end: Int, limit: Int, cacheLimit: Int,
                        fromNow: Bool, whole: Bool) -> HeldMatch? {
         let edits = followed.edits
         guard !edits.isEmpty, end >= 0, snapshot.count <= end else { return nil }
-        if whole, snapshot.count != end { return nil }
+        if whole, snapshot.count != end || end == 0 { return nil }
         var latestAtCaret: [UInt16]?
         var deletionsKnown = true
+        var lacksWordEnd = false
         for m in 0..<edits.count {
             let index = edits.count - 1 - m
             if m > 0 {
@@ -184,10 +187,17 @@ extension CursorTracker {
                 let after = edits[index + 1]
                 if latestAtCaret == nil, after.atCaret, !after.inserted.isEmpty { latestAtCaret = after.inserted }
                 if after.deleted > 0, after.deletedText?.count != after.deleted { deletionsKnown = false }
+                if after.inserted.contains(where: { !HeldText.isWordUnit($0) }) { lacksWordEnd = true }
             }
             guard deletionsKnown, m <= max(limit, cacheLimit) else { break }
             guard let state = edits[index].heldAfter else { continue }
-            if whole, !(state.isWhole && state.length >= 2 && state.known.allSatisfy { HeldText.isWordUnit($0) }) { continue }
+            if whole, !state.isWhole { continue }
+            if whole, end == 1 {
+                // Google Docs always answers 1 with the unit before its caret.
+                if m == 0, snapshot == state.known { return nil }
+                if lacksWordEnd { break }
+                if m == 0 || !HeldText.isWordUnit(snapshot[0]) { continue }
+            }
             if m <= limit, m > 0 || fromNow, state.length == end, Self.shows(snapshot, state.known, whole: whole) {
                 return HeldMatch(lacking: m, form: .before)
             }
