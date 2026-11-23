@@ -1,4 +1,5 @@
 import Foundation
+@testable import DauInputMethodCore
 import Testing
 
 @Suite("CursorTracker (method A + D11 drift check)")

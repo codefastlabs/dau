@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 /// Keys → composer → `LateDocument`, 100 ms apart (Chrome with a busy page at 100 ± 30 ms,

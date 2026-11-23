@@ -31,6 +31,8 @@ packages:
     path: Packages/DauEngine
   DauShared:
     path: Packages/DauShared
+  DauInputMethodCore:
+    path: Packages/DauInputMethodCore
   # Exact pin: Package.resolved is git-ignored, so project.yml is the only record of the
   # version (2.10.1); bump it on purpose, never by a floating range. Only the host app
   # links it (D7); the input method never does (N2: no network code in the input method).
@@ -217,36 +219,8 @@ targets:
     dependencies:
       - package: DauEngine
       - package: DauShared
+      - package: DauInputMethodCore
       - sdk: InputMethodKit.framework
-
-  # Logic tests for the input method's pure helpers (key routing, cursor tracking,
-  # settings → engine options, host app lookup, legacy cleanup, underline mode,
-  # in-place mode with D20, user vs system launch).
-  # No host app: the files are compiled straight into the test bundle.
-  DauInputMethodTests:
-    type: bundle.unit-test
-    platform: macOS
-    sources:
-      - path: Apps/DauInputMethod/Tests
-      - path: Apps/DauInputMethod/Sources/KeyRouter.swift
-      - path: Apps/DauInputMethod/Sources/CursorTracker.swift
-      - path: Apps/DauInputMethod/Sources/CursorTrackerRebuild.swift
-      - path: Apps/DauInputMethod/Sources/HeldText.swift
-      - path: Apps/DauInputMethod/Sources/ClientRange.swift
-      - path: Apps/DauInputMethod/Sources/MarkedComposer.swift
-      - path: Apps/DauInputMethod/Sources/InPlaceComposer.swift
-      - path: Apps/DauInputMethod/Sources/PerfLog.swift
-      - path: Apps/DauInputMethod/Sources/EngineSettings.swift
-      - path: Apps/DauInputMethod/Sources/HostApp.swift
-      - path: Apps/DauInputMethod/Sources/LaunchOrigin.swift
-    dependencies:
-      - package: DauEngine
-      - package: DauShared
-    settings:
-      base:
-        PRODUCT_NAME: DauInputMethodTests
-        PRODUCT_BUNDLE_IDENTIFIER: $(BUNDLE_ID_PREFIX).inputmethod.tests
-        GENERATE_INFOPLIST_FILE: YES
 
 schemes:
   Dau:
@@ -263,9 +237,5 @@ schemes:
         DauInputMethod: all
     run:
       config: Debug
-    test:
-      config: Debug
-      targets:
-        - DauInputMethodTests
     archive:
       config: Release

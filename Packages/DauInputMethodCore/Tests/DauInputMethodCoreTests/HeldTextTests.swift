@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 private func units(_ s: String) -> [UInt16] { Array(s.utf16) }

@@ -13,7 +13,8 @@ dau/
 │  ├─ DauEngine/               # Swift package thuần, không Foundation/AppKit
 │  │  ├─ Sources/DauEngine/    # VietEngine, bảng nguyên âm/dấu, quy tắc chính tả
 │  │  └─ Tests/                # Swift Testing: ca Telex/VNI, ca biên, fuzz, hiệu năng
-│  └─ DauShared/               # model cài đặt chung, App Group + Darwin notification, xem trước bằng engine thật, danh sách tương thích
+│  ├─ DauShared/               # model cài đặt chung, App Group + Darwin notification, xem trước bằng engine thật, danh sách tương thích
+│  └─ DauInputMethodCore/      # phần logic của bộ gõ không cần InputMethodKit, test bằng swift test
 ├─ Apps/
 │  ├─ DauInputMethod/          # bộ gõ (IMK), sandbox, không quyền mạng (N2 (Bộ gõ không có quyền mạng))
 │  └─ Dau/                     # app chủ SwiftUI, không sandbox (D37 (Cài bộ gõ)): Cài đặt, onboarding, cài/thay/gỡ bộ gõ, cập nhật (Sparkle), báo lỗi
@@ -108,6 +109,7 @@ Các phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3
 
 ### Điều khiển và hai chế độ ghi chữ
 
+- Mã của bộ gõ nằm ở hai nơi. `Apps/DauInputMethod` giữ phần gắn với InputMethodKit: lớp điều khiển, delegate của tiến trình và `main.swift`. Package `Packages/DauInputMethodCore` giữ phần logic không cần InputMethodKit, gồm định tuyến phím (`KeyRouter`), `CursorTracker`, hai composer, đổi cài đặt sang engine, tìm app chủ (`HostApp`) và phân biệt lần mở (`LaunchPolicy`). Bộ gõ link package này, còn test của package chạy bằng `swift test`, không cần project Xcode hay ký mã.
 - Bộ gõ dùng một lớp con của `IMKInputController`; mỗi client có một instance và một `VietEngine` riêng. Bộ gõ không có trạng thái toàn cục (khác OpenKey).
 - `handle(_:client:)` đưa phím vào engine qua `InPlaceComposer` (thay tại chỗ) hoặc `MarkedComposer` (gạch chân). Cả hai là kiểu giá trị thuần và test bằng client giả.
 - Khi thay tại chỗ và engine trả `replace`, bộ gõ hỏi `selectedRange` một lần để có vị trí con trỏ trong chữ mà ô nhận đang giữ (D11), rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Khi engine để nguyên một ký tự, bộ gõ gọi một `insertText` của ký tự đó tại con trỏ (`NSNotFound`) và không hỏi `selectedRange`, trừ ngay sau một ⌫ đi thẳng (ý "Chờ ⌫ chưa áp"). Ở bản Debug, khi khoá `DauPerfLog` bật, bộ gõ hỏi thêm một `selectedRange` sau khi thay để chẩn đoán (`ReplaceDiag.swift`). Lời gọi này chạy sau khi đã ghi thời gian của phím, nên nó không nằm trong số đo (D42 (Ngưỡng hiệu năng)).

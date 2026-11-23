@@ -13,17 +13,17 @@ import os
 /// `defaults write` and read them with `log show`, without the Input Monitoring
 /// permission a keylogger needs. In Debug, the per-key `os.Logger` line is on only while
 /// `DauPerfLog` is set; `scripts/perf/perf-report.sh` reads it with `log show`.
-struct PerfLog {
-    static let subsystem = Bundle.main.bundleIdentifier ?? "DauInputMethod"
+public struct PerfLog {
+    public static let subsystem = Bundle.main.bundleIdentifier ?? "DauInputMethod"
     static let logger = Logger(subsystem: subsystem, category: "perf")
     #if DEBUG
-    static let signposter = OSSignposter(subsystem: subsystem, category: "perf")
+    public static let signposter = OSSignposter(subsystem: subsystem, category: "perf")
     #else
-    static let signposter = OSSignposter.disabled
+    public static let signposter = OSSignposter.disabled
     #endif
 
     /// Event kinds. Raw values are parsed by scripts/perf/perf-report.sh.
-    enum Kind: String {
+    public enum Kind: String {
         /// In-place mode: a character the engine left unchanged, inserted at the caret by
         /// the input method (one insertText, replacementRange NSNotFound, no selectedRange;
         /// N3). Other keys (⌫, Return, Tab with nothing to restore): went to the app, no call.
@@ -81,9 +81,9 @@ struct PerfLog {
     /// (`defaults write -g DauPerfLog -bool true`); read when a client session starts,
     /// so it applies to the next text field. The measuring scripts set it and remove it.
     static let defaultsKey = "DauPerfLog"
-    let enabled: Bool
+    public let enabled: Bool
 
-    init() {
+    public init() {
         #if DEBUG
         enabled = UserDefaults.standard.bool(forKey: Self.defaultsKey)
         #else
@@ -91,14 +91,14 @@ struct PerfLog {
         #endif
     }
 
-    @inline(__always) static func now() -> UInt64 {
+    @inlinable @inline(__always) public static func now() -> UInt64 {
         clock_gettime_nsec_np(CLOCK_UPTIME_RAW)
     }
 
     /// `NSEvent.timestamp` (seconds since boot, the same uptime clock as `now()`) in ns,
     /// or 0 when IMK passed something that is not a usable time (D18: never trap on a
     /// negative, NaN or huge value).
-    static func eventNs(_ timestamp: TimeInterval) -> UInt64 {
+    public static func eventNs(_ timestamp: TimeInterval) -> UInt64 {
         guard timestamp.isFinite, timestamp > 0, timestamp < 1e9 else { return 0 }
         return UInt64(timestamp * 1e9)
     }
@@ -119,7 +119,7 @@ struct PerfLog {
     ///     bksp_wait_ns=N` (the wait is part of `handleNs`), and in in-place mode the held-text
     ///     fields (`InPlaceComposer.HeldCheck.logFields`); only numbers and fixed words, never
     ///     text (D8).
-    func record(_ kind: Kind, startNs: UInt64, eventNs: UInt64, handleNs: UInt64,
+    public func record(_ kind: Kind, startNs: UInt64, eventNs: UInt64, handleNs: UInt64,
                 selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, extra: String = "", app: String) {
         #if DEBUG
@@ -131,7 +131,7 @@ struct PerfLog {
     }
 
     /// Non-key events worth counting while testing (client changed, mode changed…).
-    func note(_ event: StaticString, app: String) {
+    public func note(_ event: StaticString, app: String) {
         #if DEBUG
         guard enabled else { return }
         PerfLog.logger.notice("event name=\(String(describing: event), privacy: .public) app=\(app, privacy: .public)")

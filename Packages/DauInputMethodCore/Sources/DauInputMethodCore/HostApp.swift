@@ -34,7 +34,7 @@ import Security
 /// `HostAppSignature`): signed by this input method's team, with the host's bundle ID.
 /// Any app can claim the bundle ID. Steps 1, 2 and 5 also open a copy the sandbox does
 /// not let the input method check.
-enum HostApp {
+public enum HostApp {
     /// Info.plist key of the input method holding the host app's bundle ID
     /// (`$(BUNDLE_ID_PREFIX)` in project.yml), so the ID is never written in code.
     static let bundleIDInfoKey = "DauHostAppBundleIdentifier"
@@ -141,7 +141,7 @@ enum HostApp {
     /// reason only, the path private). `completion` runs on the main thread with whether
     /// the app opened (false if none fits or opening failed).
     @MainActor
-    static func open(logger: Logger, completion: (@MainActor @Sendable (Bool) -> Void)? = nil) {
+    public static func open(logger: Logger, completion: (@MainActor @Sendable (Bool) -> Void)? = nil) {
         guard let (url, reason) = url() else {
             let known = (Bundle.main.object(forInfoDictionaryKey: bundleIDInfoKey) as? String)
                 .map { NSWorkspace.shared.urlsForApplications(withBundleIdentifier: $0) } ?? []

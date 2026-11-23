@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 /// A text document seen through `IMKTextInput` with document access (TSMDocumentAccess),

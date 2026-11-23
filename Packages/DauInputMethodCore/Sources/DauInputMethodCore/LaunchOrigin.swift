@@ -17,38 +17,38 @@
 ///   it is treated as a system launch: keep running (the safe default).
 ///
 /// `InputMethodAppDelegate` reads the event.
-enum LaunchOrigin: String, Equatable, Sendable {
+public enum LaunchOrigin: String, Equatable, Sendable {
     case user
     case system
 }
 
 /// The launch Apple event as seen in `applicationDidFinishLaunching`.
-struct LaunchEvent: Equatable, Sendable {
+public struct LaunchEvent: Equatable, Sendable {
     /// `kCoreEventClass` ('aevt').
     static let coreEventClass: UInt32 = 0x6165_7674
     /// `kAEOpenApplication` ('oapp').
-    static let openApplication: UInt32 = 0x6F61_7070
+    public static let openApplication: UInt32 = 0x6F61_7070
 
     /// nil: no current Apple event.
-    var eventClass: UInt32?
-    var eventID: UInt32?
+    public internal(set) var eventClass: UInt32?
+    public internal(set) var eventID: UInt32?
     /// `keySenderPIDAttr` of the event; nil if missing.
     var senderPID: Int32?
 
-    init(eventClass: UInt32?, eventID: UInt32?, senderPID: Int32?) {
+    public init(eventClass: UInt32?, eventID: UInt32?, senderPID: Int32?) {
         self.eventClass = eventClass
         self.eventID = eventID
         self.senderPID = senderPID
     }
 
     /// For the log (D8: flags only).
-    func senderKind(ownPID: Int32) -> String {
+    public func senderKind(ownPID: Int32) -> String {
         guard let senderPID else { return "none" }
         return senderPID == ownPID ? "self" : "other"
     }
 }
 
-enum LaunchPolicy {
+public enum LaunchPolicy {
     /// Reopen events in this window after launch are ignored: a second launch request
     /// that raced the first one (not observed; precaution against the system asking
     /// twice while the process starts) must not open the host app.
@@ -57,7 +57,7 @@ enum LaunchPolicy {
     /// User only for a real "open application" event sent by another process.
     /// Anything else (no event, the event AppKit makes up, another event, an unknown
     /// sender) is a system launch: keep running.
-    static func origin(of event: LaunchEvent, ownPID: Int32) -> LaunchOrigin {
+    public static func origin(of event: LaunchEvent, ownPID: Int32) -> LaunchOrigin {
         guard event.eventClass == LaunchEvent.coreEventClass,
               event.eventID == LaunchEvent.openApplication,
               let sender = event.senderPID, sender > 0, sender != ownPID else { return .system }
@@ -66,14 +66,14 @@ enum LaunchPolicy {
 
     /// Reopen (the user opened the bundle while this process runs): open the host app,
     /// unless it comes right after launch. Never quits: this process may be serving typing.
-    static func opensHostAppOnReopen(secondsSinceLaunch: Double?) -> Bool {
+    public static func opensHostAppOnReopen(secondsSinceLaunch: Double?) -> Bool {
         guard let secondsSinceLaunch, secondsSinceLaunch.isFinite else { return false }
         return secondsSinceLaunch >= reopenSettleSeconds
     }
 
     /// Quit after a user launch only if no client has activated the input method
     /// meanwhile (D18: never exit while typing could need it).
-    static func quitsAfterOpeningHostApp(origin: LaunchOrigin, clientActivated: Bool) -> Bool {
+    public static func quitsAfterOpeningHostApp(origin: LaunchOrigin, clientActivated: Bool) -> Bool {
         origin == .user && !clientActivated
     }
 }

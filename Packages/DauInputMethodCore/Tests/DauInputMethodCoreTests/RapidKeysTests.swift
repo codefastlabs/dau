@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 /// How an app applies keys, for the simulation of keys that come in a burst. The

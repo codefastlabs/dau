@@ -4,7 +4,7 @@ import DauShared
 
 /// The two client calls underline mode makes. `IMKTextInput` in the input method, a
 /// recording fake in the unit tests.
-protocol MarkedTextClient {
+public protocol MarkedTextClient {
     func setMarkedText(_ text: String, selectionRange: NSRange, replacementRange: NSRange)
     func insertText(_ text: String, replacementRange: NSRange)
 }
@@ -37,7 +37,7 @@ protocol MarkedTextClient {
 /// `text` mirrors what the engine believes is on screen for the word (its `screen`), so
 /// every engine `Action` applies to it exactly as it would to the document in place
 /// mode.
-struct MarkedComposer {
+public struct MarkedComposer {
     /// The marked text shown in the app (empty: none).
     private(set) var text: [Unicode.Scalar] = []
     /// The word grew past `maxMarkedLength` (only possible after D33 left the rest of the
@@ -53,23 +53,25 @@ struct MarkedComposer {
 
     static let notFound = NSRange(location: NSNotFound, length: NSNotFound)
 
-    enum Call: Equatable {
+    public init() {}
+
+    public enum Call: Equatable {
         case none
         case setMarkedText
         case insertText
     }
 
-    struct Outcome: Equatable {
+    public struct Outcome: Equatable {
         /// Whether `handle` returns true (key consumed).
-        var consumed: Bool
+        public internal(set) var consumed: Bool
         /// The client call made for this key, at most one (N3).
-        var call: Call
+        public internal(set) var call: Call
     }
 
-    var isComposing: Bool { !text.isEmpty }
+    public var isComposing: Bool { !text.isEmpty }
 
     /// One key in underline mode.
-    mutating func handle(_ route: KeyRoute, engine: inout VietEngine, client: some MarkedTextClient) -> Outcome {
+    public mutating func handle(_ route: KeyRoute, engine: inout VietEngine, client: some MarkedTextClient) -> Outcome {
         switch route {
         case .ignore:
             // D4: arrows, Esc, shortcuts end the word without restoring it; what is shown
@@ -100,7 +102,7 @@ struct MarkedComposer {
     /// Commits what is shown (if anything) and resets the engine: every reset event in
     /// underline mode. Returns the call made (`insertText` or none).
     @discardableResult
-    mutating func commit(engine: inout VietEngine, client: some MarkedTextClient) -> Call {
+    public mutating func commit(engine: inout VietEngine, client: some MarkedTextClient) -> Call {
         engine.reset()
         detached = false
         guard !text.isEmpty else { return .none }
@@ -112,7 +114,7 @@ struct MarkedComposer {
 
     /// Forgets the marked text without any client call: only when there is no client
     /// left to commit to (D18). The app keeps or drops its marked text itself.
-    mutating func abandon(engine: inout VietEngine) {
+    public mutating func abandon(engine: inout VietEngine) {
         engine.reset()
         text.removeAll()
         detached = false
@@ -248,16 +250,16 @@ struct MarkedComposer {
 
 /// Whether underline mode is on for a client app (D5, D13): the app's rule asks for it,
 /// or (Debug builds only) the app is in the trial override list.
-enum UnderlineMode {
+public enum UnderlineMode {
     /// Debug builds only: defaults key holding an array of bundle IDs forced into
     /// underline mode for trials, without touching the user's settings. It lives in the
     /// global domain (`defaults write -g`): the input method's own sandbox container and
     /// the App Group container cannot be written from a shell (macOS app data
     /// protection), but a sandboxed process can read the global domain. Never written by
     /// Dấu, never read by Release builds. See scripts/selftest/typing/run.sh `--underline`.
-    static let debugForceKey = "DauDebugForceUnderline"
+    public static let debugForceKey = "DauDebugForceUnderline"
 
-    static func isOn(settings: DauSettings, bundleID: String, debugForced: [String]) -> Bool {
+    public static func isOn(settings: DauSettings, bundleID: String, debugForced: [String]) -> Bool {
         guard !bundleID.isEmpty, bundleID != "?" else { return false }
         if debugForced.contains(bundleID) { return true }
         return settings.rule(for: bundleID)?.underline ?? false

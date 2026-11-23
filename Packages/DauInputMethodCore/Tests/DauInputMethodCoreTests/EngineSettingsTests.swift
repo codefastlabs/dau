@@ -1,5 +1,6 @@
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 @Suite("EngineSettings (shared settings → engine options)")

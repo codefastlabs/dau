@@ -2,7 +2,7 @@ import AppKit
 import Carbon
 
 /// What the controller does with one key-down event, decided from the event fields only.
-enum KeyRoute: Equatable {
+public enum KeyRoute: Equatable {
     /// Reset the engine and let the app handle the key: ⌘/⌃/⌥ shortcuts, arrows, Esc,
     /// navigation and function keys, dead keys, multi-character events (D4, D18).
     case ignore
@@ -15,7 +15,7 @@ enum KeyRoute: Equatable {
     case character(Unicode.Scalar)
 }
 
-enum KeyRouter {
+public enum KeyRouter {
     // Virtual key codes (HIToolbox/Events.h, layout independent).
     static let keyReturn: UInt16 = 0x24
     static let keyTab: UInt16 = 0x30
@@ -38,7 +38,7 @@ enum KeyRouter {
     /// - Parameters:
     ///   - characters: `NSEvent.characters`, read only for key-down events (it throws for
     ///     other event types). nil or empty for dead keys.
-    static func route(keyCode: UInt16, modifiers: NSEvent.ModifierFlags, characters: String?) -> KeyRoute {
+    public static func route(keyCode: UInt16, modifiers: NSEvent.ModifierFlags, characters: String?) -> KeyRoute {
         if !modifiers.intersection(shortcutModifiers).isEmpty { return .ignore }
         switch keyCode {
         case keyDelete:
@@ -85,13 +85,15 @@ enum KeyRouter {
 ///
 /// A reference type: the controller keeps one for its life and the bodies run while no
 /// property of this object is borrowed.
-final class KeyReentry {
+public final class KeyReentry {
     /// A body (key, reset, reload) is running.
     private(set) var isBusy = false
     private var deferred: [() -> Void] = []
 
+    public init() {}
+
     /// Runs `body` now, or after the body that is running when busy.
-    func run(_ body: @escaping () -> Void) {
+    public func run(_ body: @escaping () -> Void) {
         guard !isBusy else {
             deferred.append(body)
             return
@@ -104,7 +106,7 @@ final class KeyReentry {
 
     /// Handles a key with `body` and returns its result; nil when busy (the client sent a
     /// key from inside a client call): the caller lets that key go to the app untouched.
-    func key(_ body: () -> Bool) -> Bool? {
+    public func key(_ body: () -> Bool) -> Bool? {
         guard !isBusy else { return nil }
         isBusy = true
         let result = body()
@@ -139,7 +141,7 @@ final class KeyReentry {
 /// U.S. current, which is not Dấu, and ends the word (D4). Both arriving only after the
 /// switch back (two switches within the delivery time of one notification) would find
 /// Dấu both times and keep the word; no person switches that fast.
-enum InputSourceChange {
+public enum InputSourceChange {
     /// - Parameters:
     ///   - previous: the source ID seen last, nil if unknown.
     ///   - current: the source ID now, nil if it could not be read.
@@ -147,7 +149,7 @@ enum InputSourceChange {
     ///     `<bundle ID>.<mode>` (D24).
     /// - Returns: true when the word must end: the current source is unknown (nothing
     ///   can be told: end the word), not Dấu, or not the one seen last.
-    static func endsWord(previous: String?, current: String?, ownBundleID: String?) -> Bool {
+    public static func endsWord(previous: String?, current: String?, ownBundleID: String?) -> Bool {
         guard let current, let ownBundleID, isOwn(current, bundleID: ownBundleID) else { return true }
         guard let previous else { return true }
         return previous != current
@@ -160,7 +162,7 @@ enum InputSourceChange {
 
     /// The ID of the selected keyboard input source (for Dấu, its input mode), or nil.
     /// One TIS read, at activation and at a change notification, never per key (N3).
-    static func currentSourceID() -> String? {
+    public static func currentSourceID() -> String? {
         guard let source = TISCopyCurrentKeyboardInputSource()?.takeRetainedValue(),
               let pointer = TISGetInputSourceProperty(source, kTISPropertyInputSourceID) else { return nil }
         let id = Unmanaged<CFString>.fromOpaque(pointer).takeUnretainedValue() as String

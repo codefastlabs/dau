@@ -349,7 +349,7 @@ Tự phản biện:
 ## 6. Phương pháp
 
 - **Cách chạy, mục 2:** hai file test tạm, đã xoá, không commit.
-  - Một file trong `Apps/DauInputMethod/Tests` dựng lại ô nhập giả theo kiểu `InPlaceComposerTests` và `MarkedComposerTests`, thêm mũi tên dời con trỏ, ⌥⌫ xoá từ, sửa từ kiểu tự sửa chính tả. Chạy bằng `xcodebuild test -scheme DauInputMethod -only-testing:…`.
+  - Một file trong `Packages/DauInputMethodCore/Tests` dựng lại ô nhập giả theo kiểu `InPlaceComposerTests` và `MarkedComposerTests`, thêm mũi tên dời con trỏ, ⌥⌫ xoá từ, sửa từ kiểu tự sửa chính tả. Chạy bằng `swift test --package-path Packages/DauInputMethodCore --filter …`.
   - Một file trong `Packages/DauEngine/Tests` dùng `typed` của `Typist` cho các số đo trên danh sách từ tiếng Anh. Chạy bằng `swift test --package-path Packages/DauEngine --filter …`.
 - **Cách chạy, mục 4** (Swift Testing; in bảng ra stdout):
   - `DAU_SIM=1 swift test --package-path Packages/DauEngine --filter TypistSimOptions`: `matrixRows` (cũng chạy trong mọi `swift test`), `wordLists`, `existingCases`, `optionsRun`.

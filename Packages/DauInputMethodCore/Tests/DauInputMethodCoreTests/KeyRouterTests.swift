@@ -1,4 +1,5 @@
 import AppKit
+@testable import DauInputMethodCore
 import Testing
 
 @Suite("KeyRouter")

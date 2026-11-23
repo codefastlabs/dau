@@ -1,4 +1,5 @@
 import Foundation
+@testable import DauInputMethodCore
 import Testing
 
 @Suite("HostApp (input menu › Dấu Settings…)")

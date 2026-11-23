@@ -1,3 +1,4 @@
+@testable import DauInputMethodCore
 import Testing
 
 /// Signals as measured on macOS 27.2: see LaunchOrigin.swift.

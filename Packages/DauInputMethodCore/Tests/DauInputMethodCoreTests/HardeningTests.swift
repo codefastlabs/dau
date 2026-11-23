@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 // D18 (Phòng thủ với IMK): odd client answers, notifications any process can post, calls
@@ -257,7 +258,7 @@ struct KeyReentryTests {
     /// `handle` through `reentry.key`, every other entry point through `run`
     /// (`outsideKey`), `resetComposition` committing the underlined word. The controller
     /// itself is an `IMKInputController` that IMK creates for an `IMKServer` connection;
-    /// it is not in the test target (logic tests only, project.yml), so this copies its
+    /// it is not in this package (no InputMethodKit here), so this copies its
     /// three methods.
     final class Controller {
         var engine = VietEngine()

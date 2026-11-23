@@ -4,6 +4,7 @@ import InputMethodKit
 import os
 import DauEngine
 import DauShared
+import DauInputMethodCore
 
 /// One instance per client session (IMKServer creates it). Each controller owns its own
 /// `VietEngine` and cursor tracker: no global mutable state (Architecture.md).

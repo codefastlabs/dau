@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 /// An app that applies every edit in order (keys it types, `insertText` with absolute

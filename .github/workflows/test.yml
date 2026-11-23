@@ -1,5 +1,6 @@
-# Tests on every push and pull request: engine (with PerformanceTests), shared package, host app,
-# input method. None of them needs the screen (CONTRIBUTING.md, "Chạy test").
+# Tests on every push and pull request: engine (with PerformanceTests), shared package, input
+# method helpers, host app. All run with `swift test`, none needs the screen or an Xcode project
+# (CONTRIBUTING.md, "Chạy test").
 name: Test
 
 on:
@@ -35,22 +36,14 @@ jobs:
           sudo xcode-select -s "$dir"
           xcodebuild -version
 
-      - name: Install XcodeGen
-        run: brew install xcodegen
-
       - name: Engine tests (with PerformanceTests)
         run: swift test --package-path Packages/DauEngine
 
       - name: Shared package tests
         run: swift test --package-path Packages/DauShared
 
+      - name: Input method tests
+        run: swift test --package-path Packages/DauInputMethodCore
+
       - name: Host app tests
         run: swift test --package-path Apps/Dau/Tests
-
-      - name: Input method tests
-        run: |
-          xcodegen generate
-          # Ad-hoc signed, no team: the logic tests need no App Group.
-          xcodebuild test -project Dau.xcodeproj -scheme DauInputMethod \
-            -destination 'platform=macOS' \
-            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY=- DEVELOPMENT_TEAM=

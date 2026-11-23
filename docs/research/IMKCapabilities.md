@@ -27,7 +27,7 @@ Hai việc đã xong ngày 22/11/2026 bằng N3 (Ít lời gọi vào ứng dụ
 
 ## 1. Dấu đang dùng gì
 
-Kiểm bằng grep trong `Apps/DauInputMethod/Sources/` (22/11/2026, nhánh main):
+Kiểm bằng grep trong mã của bộ gõ (22/11/2026, nhánh main). Mã đó nay nằm ở `Apps/DauInputMethod/Sources/` và `Packages/DauInputMethodCore/Sources/`.
 
 - `DauInputController` ghi đè `recognizedEvents`, `handle(_:client:)`, `activateServer`, `deactivateServer`, `commitComposition`, `inputControllerWillClose`, `setValue(_:forTag:client:)` và `menu`. Controller này không ghi đè `init(server:delegate:client:)`.
 - Mọi lời gọi vào client (`IMKTextInput`) trong lúc gõ đi qua `TimedClient` (`DauInputController.swift`). Đó là `selectedRange`, `attributedSubstring(from:)`, `insertText(_:replacementRange:)` và `setMarkedText(_:selectionRange:replacementRange:)`. `setMarkedText` chỉ dùng ở chế độ gạch chân, với chuỗi trơn và vùng thay `NSNotFound` (`MarkedComposer.showMarked`).

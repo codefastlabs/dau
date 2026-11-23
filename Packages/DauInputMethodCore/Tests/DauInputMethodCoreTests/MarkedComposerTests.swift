@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 /// A text field that supports marked text, like an app seen through `IMKTextInput`.

@@ -3,7 +3,7 @@ import DauEngine
 
 /// The client calls in-place mode makes: `IMKTextInput` in the input method (through a
 /// timing wrapper), a scripted fake document in the unit tests.
-protocol InPlaceClient {
+public protocol InPlaceClient {
     func selectedRange() -> NSRange
     /// Plain text of `range` (`attributedSubstring(from:)`), or nil if the client gives none.
     func text(in range: NSRange) -> String?
@@ -21,10 +21,10 @@ protocol InPlaceClient {
 /// Which key asks the client what is set by N3 and tabled in `docs/Architecture.md`,
 /// "Vị trí thay chữ". A field that ignores `replacementRange` gets the same calls as any
 /// field (D43).
-struct InPlaceComposer {
+public struct InPlaceComposer {
     /// D20 on (`DauSettings.addMarksToTypedWords`). Set from the shared settings at
     /// activation and on change, never read per key from the store.
-    var addMarksEnabled = true
+    public var addMarksEnabled = true
 
     #if DEBUG
     /// Tests only: leave unchanged characters to the app instead of `typeCharacter`, the
@@ -33,6 +33,8 @@ struct InPlaceComposer {
     /// Tests only: never wait for a ⌫, to compare with.
     var skipsBackspaceWait = false
     #endif
+
+    public init() {}
 
     /// What precedes the caret while the engine has no word; a D20 read costs two client
     /// calls, so it is skipped when the answer is already known.
@@ -88,20 +90,20 @@ struct InPlaceComposer {
     private var armedBackspaceWait: (appliedCaret: Int, pendingCaret: Int)?
 
     /// What waiting for a ⌫ did on this key (Debug perf log, tests).
-    struct BackspaceWait: Equatable {
+    public struct BackspaceWait: Equatable {
         /// `selectedRange` asks after the first.
-        var asks: Int
+        public internal(set) var asks: Int
         /// Seconds from the first pause to the end of the last ask (`waitClock`).
         var waited: TimeInterval
         /// The app answered with the ⌫ applied; false: the limit ran out, or it answered some
         /// other position, taken as is.
-        var applied: Bool
+        public internal(set) var applied: Bool
     }
     private var keyWait: BackspaceWait?
 
     /// What the key's answer showed about held text (`CursorTracker.Coordinates.heldText`),
     /// and where the client's positions count from after the key (Debug perf log, tests).
-    struct HeldCheck: Equatable {
+    public struct HeldCheck: Equatable {
         enum Answer: String {
             /// The answer is where the tracker follows the caret.
             case now
@@ -123,7 +125,7 @@ struct InPlaceComposer {
         var length: Int?
 
         /// Perf log fields, each with a leading space (numbers and fixed words, D8).
-        var logFields: String {
+        public var logFields: String {
             " held=\(inHeldText ? 1 : 0) held_len=\(length ?? -1) held_match=\(answer?.rawValue ?? "-")"
                 + " held_lag=\(lacking ?? -1) held_switch=\(switched?.rawValue ?? "-")"
         }
@@ -161,59 +163,59 @@ struct InPlaceComposer {
     static let settleInterval: TimeInterval = 0.05
 
     /// Positions of the last replacement attempt of a key (Debug diagnostics).
-    struct Attempt: Equatable {
-        var deleteCount: Int
-        var selection: NSRange
-        var predictedCaret: Int?
-        var followedCaret: Int?
+    public struct Attempt: Equatable {
+        public internal(set) var deleteCount: Int
+        public internal(set) var selection: NSRange
+        public internal(set) var predictedCaret: Int?
+        public internal(set) var followedCaret: Int?
         /// The positions are those of held text (`CursorTracker.Coordinates.heldText`).
-        var inHeldText = false
-        var insertedLength: Int
+        public internal(set) var inHeldText = false
+        public internal(set) var insertedLength: Int
         /// The `replacementRange` sent, or nil when nothing was sent.
-        var replacement: NSRange?
+        public internal(set) var replacement: NSRange?
         /// The late-answer proof, numbers only (D8): units read before the answer, sizes of
         /// the tracker's typed text and edits, edits in burst, length `rebuild` gave, and
         /// whether the text read ends with the engine's word (1/0). -1: not reached.
-        var proofRead = -1
-        var proofTail = -1
-        var proofEdits = -1
-        var proofBurst = -1
-        var proofRebuilt = -1
-        var proofWordAtAnswer = -1
+        public internal(set) var proofRead = -1
+        public internal(set) var proofTail = -1
+        public internal(set) var proofEdits = -1
+        public internal(set) var proofBurst = -1
+        public internal(set) var proofRebuilt = -1
+        public internal(set) var proofWordAtAnswer = -1
     }
 
-    struct Outcome: Equatable {
+    public struct Outcome: Equatable {
         /// Whether `handle` returns true (key consumed).
-        var consumed = false
-        var kind = PerfLog.Kind.pass
-        var attempt: Attempt?
+        public internal(set) var consumed = false
+        public internal(set) var kind = PerfLog.Kind.pass
+        public internal(set) var attempt: Attempt?
         /// Set when this key waited for the ⌫ before it (Debug perf log, tests).
-        var backspaceWait: BackspaceWait?
-        var held = HeldCheck()
+        public internal(set) var backspaceWait: BackspaceWait?
+        public internal(set) var held = HeldCheck()
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
-        var typedWordRead: TypedWordRead?
+        public internal(set) var typedWordRead: TypedWordRead?
         /// How that read's answer was checked against the followed caret (`answerForRead`).
-        var typedWordReadProof: TypedWordReadProof?
+        public internal(set) var typedWordReadProof: TypedWordReadProof?
         /// While a word seeded by a D20 read is being typed: whether the word shown differs
         /// from what an engine that never read the text would show. nil: no seeded word, or
         /// the key ended it.
-        var seedDiffers: Bool?
+        public internal(set) var seedDiffers: Bool?
         #endif
     }
 
     #if DEBUG
     /// What a D20 read did (Debug perf log only).
-    struct TypedWordRead: Equatable {
+    public struct TypedWordRead: Equatable {
         /// What triggered the read (D20, "Chữ cái gõ sát chữ có sẵn" for a letter).
-        enum Trigger: String { case mark, letter }
-        var trigger: Trigger
+        public enum Trigger: String { case mark, letter }
+        public internal(set) var trigger: Trigger
         /// The engine was seeded with the word read and kept it.
-        var seeded: Bool
+        public internal(set) var seeded: Bool
     }
 
     /// The numbers of the late-answer proof at a D20 read (D8: numbers only).
-    struct TypedWordReadProof: Equatable {
+    public struct TypedWordReadProof: Equatable {
         /// The app's answer to `selectedRange`.
         var selection = NSRange(location: NSNotFound, length: 0)
         var followedCaret: Int?
@@ -233,7 +235,7 @@ struct InPlaceComposer {
         var unitsAsTyped = -1
 
         /// Perf log fields, each with a leading space; -1 or `-` when unknown or not reached.
-        var logFields: String {
+        public var logFields: String {
             let sel = selection.location == NSNotFound ? "notfound" : "\(selection.location),\(selection.length)"
             var fields = " typed_read_sel=\(sel) typed_read_known=\(followedCaret ?? -1) typed_read_since=\(editsSinceOnTimeAnswer ?? -1)"
                 + " typed_read_burst=\(editsInBurst) typed_read_inburst=\(keyInBurst ? 1 : 0) typed_read_after_bksp=\(afterBackspace ? 1 : 0)"
@@ -259,7 +261,7 @@ struct InPlaceComposer {
     // MARK: - Session events
 
     /// Forget the word without restoring it (D4) and what precedes the caret.
-    mutating func reset(engine: inout VietEngine) {
+    public mutating func reset(engine: inout VietEngine) {
         engine.reset()
         tracker.invalidate()
         before = .unknown
@@ -270,13 +272,13 @@ struct InPlaceComposer {
     }
 
     /// A click (or any non-key event that moves the caret) at `time`.
-    mutating func noteEvent(at time: TimeInterval?) {
+    public mutating func noteEvent(at time: TimeInterval?) {
         if let time { lastEventTime = time }
         caretBeforeLastDeletion = nil  // the click came between the ⌫ and the next key
     }
 
     /// New activation (or another client): the client may give text again.
-    mutating func activate() {
+    public mutating func activate() {
         failedReads = 0
         lastEventTime = nil
         produced = nil
@@ -286,7 +288,7 @@ struct InPlaceComposer {
     // MARK: - Keys
 
     /// One key in in-place mode. `time` is the event's timestamp (nil if unknown).
-    mutating func handle(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
+    public mutating func handle(_ route: KeyRoute, time: TimeInterval?, engine: inout VietEngine,
                          client: some InPlaceClient) -> Outcome {
         #if DEBUG
         // Feed the key to the unseeded shadow before the real engine changes.

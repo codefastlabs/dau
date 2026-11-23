@@ -1,4 +1,5 @@
 import AppKit
+import DauInputMethodCore
 import os
 
 /// Application delegate of the input method process: tells a user launch from a system

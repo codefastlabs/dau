@@ -1,6 +1,6 @@
 ---
 name: imk-dev
-description: Viết target DauInputMethod (InputMethodKit) — controller, thay chữ tại chỗ, gạch chân, input mode, Info.plist, entitlements. Dùng cho mọi việc trong Apps/DauInputMethod.
+description: Viết target DauInputMethod (InputMethodKit) — controller, thay chữ tại chỗ, gạch chân, input mode, Info.plist, entitlements. Dùng cho mọi việc trong Apps/DauInputMethod và Packages/DauInputMethodCore.
 tools: Read, Grep, Glob, Bash, Write, Edit, WebFetch
 model: inherit
 ---

@@ -1,5 +1,6 @@
 #if DEBUG
 import Foundation
+import DauInputMethodCore
 import InputMethodKit
 import os
 

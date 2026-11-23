@@ -1,6 +1,7 @@
 import Foundation
 import DauEngine
 import DauShared
+@testable import DauInputMethodCore
 import Testing
 
 /// Keys → composer → `LateDocument` with WebKit's key queue (`LateDocument.keyQueue`).
