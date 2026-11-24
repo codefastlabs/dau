@@ -11,7 +11,7 @@ Chờ người dùng:
 
 Việc tiếp theo:
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
-- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Công nghệ, chỗ đặt và ngôn ngữ của trang đã chốt ở D45 (Trang web); cấu hình và số đo ở `docs/research/WebsiteStack.md`. Việc kế tiếp là các việc canvas trong mục "Hiện trạng" của tài liệu đó (màu tương phản, dòng quyền riêng tư của trang, artboard tiếng Anh của trang tải về và ảnh Open Graph), người dùng duyệt, rồi giao web-dev dựng `site/`. Trang chỉ lên tên miền cùng beta đầu tiên.
+- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Công nghệ, chỗ đặt và ngôn ngữ của trang đã chốt ở D45 (Trang web); cấu hình và số đo ở `docs/research/WebsiteStack.md`. Artboard trang tải về tiếng Việt và tiếng Anh đã duyệt 24/11; việc kế tiếp là giao web-dev dựng `site/` theo D45 và `docs/research/WebsiteStack.md`. Trang chỉ lên tên miền cùng beta đầu tiên.
 - Không chờ bước 0: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần.
 

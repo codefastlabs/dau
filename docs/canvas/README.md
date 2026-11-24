@@ -24,20 +24,10 @@
 
 - [Cài đặt – Gõ phím](SettingsTyping.png) · [nguồn](src/SettingsTyping.dc.html)
 - [Cài đặt – Thông minh](SettingsSmart.png) · [nguồn](src/SettingsSmart.dc.html)
-- [Cài đặt – tìm không có kết quả](SettingsSearchEmpty.png) · [nguồn](src/SettingsSearchEmpty.dc.html)
 - [Cài đặt – Ứng dụng](SettingsApps.png) · [nguồn](src/SettingsApps.dc.html)
 - [Cài đặt – Cập nhật & hỗ trợ](SettingsAbout.png) · [nguồn](src/SettingsAbout.dc.html)
 - [Cài đặt – Cập nhật & hỗ trợ (bản phát triển)](SettingsAboutDev.png) · [nguồn](src/SettingsAboutDev.dc.html)
-
-## Trạng thái
-
-- [Trạng thái – Dấu chưa được bật](SettingsNotEnabled.png) · [nguồn](src/SettingsNotEnabled.dc.html)
-- [Trạng thái – bộ gõ trên máy đã bị thay](SettingsTampered.png) · [nguồn](src/SettingsTampered.dc.html)
-- [Trạng thái – chế độ tối](SettingsDark.png) · [nguồn](src/SettingsDark.dc.html)
-
-## Banner “Dấu chưa được bật”
-
-- [Banner “Dấu chưa được bật” – sau khi bấm Bật lại](SettingsBannerStates.png) · [nguồn](src/SettingsBannerStates.dc.html)
+- [Cài đặt – tìm không có kết quả](SettingsSearchEmpty.png) · [nguồn](src/SettingsSearchEmpty.dc.html)
 
 ## Thông minh
 
@@ -53,6 +43,16 @@
 
 - [Cập nhật & hỗ trợ – cuộn xuống: Người ủng hộ](SettingsAboutSupporters.png) · [nguồn](src/SettingsAboutSupporters.dc.html)
 
+## Trạng thái
+
+- [Trạng thái – Dấu chưa được bật](SettingsNotEnabled.png) · [nguồn](src/SettingsNotEnabled.dc.html)
+- [Trạng thái – bộ gõ trên máy đã bị thay](SettingsTampered.png) · [nguồn](src/SettingsTampered.dc.html)
+- [Trạng thái – chế độ tối](SettingsDark.png) · [nguồn](src/SettingsDark.dc.html)
+
+## Banner “Dấu chưa được bật”
+
+- [Banner “Dấu chưa được bật” – sau khi bấm Bật lại](SettingsBannerStates.png) · [nguồn](src/SettingsBannerStates.dc.html)
+
 ## Khác
 
 - [Xác nhận quay về / gỡ cài đặt](ConfirmDialogs.png) · [nguồn](src/ConfirmDialogs.dc.html)
@@ -62,6 +62,7 @@
 - [Ảnh chia sẻ Open Graph 1200×630](OgImage.png) · [nguồn](src/OgImage.dc.html)
 - [Ảnh xem trước GitHub 1280×640](GithubPreview.png) · [nguồn](src/GithubPreview.dc.html)
 - [Cửa sổ ảnh đĩa DMG (bản phát hành)](DmgWindow.png) · [nguồn](src/DmgWindow.dc.html)
+- [Ảnh chia sẻ Open Graph 1200×630 (tiếng Anh)](OgImageEn.png) · [nguồn](src/OgImageEn.dc.html)
 
 ## Gỡ cài đặt
 
@@ -70,7 +71,6 @@
 
 ## Nhận diện
 
-- [Nhận diện – hướng biểu tượng](BrandConcepts.png) · [nguồn](src/BrandConcepts.dc.html)
 - [Nhận diện – hướng dẫn thương hiệu](BrandGuide.png) · [nguồn](src/BrandGuide.dc.html)
 - [Nhận diện – biểu tượng ứng dụng](AppIcon.png) · [nguồn](src/AppIcon.dc.html)
 - [Nhận diện – nơi hình đại diện xuất hiện](BrandInUse.png) · [nguồn](src/BrandInUse.dc.html)
@@ -79,8 +79,14 @@
 
 ## Trang tải về
 
-- [Trang tải về – máy tính](Landing.png) · [nguồn](src/Landing.dc.html)
-- [Trang tải về – điện thoại](LandingMobile.png) · [nguồn](src/LandingMobile.dc.html)
+- [Trang tải về – máy tính, phần trên (đầu trang tới Bảng gõ)](Landing.png) · [nguồn](src/Landing.dc.html)
+- [Trang tải về – máy tính, phần dưới (Quyền riêng tư tới chân trang)](LandingLower.png) · [nguồn](src/LandingLower.dc.html)
+- [Trang tải về – điện thoại, phần trên](LandingMobile.png) · [nguồn](src/LandingMobile.dc.html)
+- [Trang tải về – điện thoại, phần dưới](LandingMobileLower.png) · [nguồn](src/LandingMobileLower.dc.html)
+- [Trang tải về – máy tính, phần trên (tiếng Anh)](LandingEn.png) · [nguồn](src/LandingEn.dc.html)
+- [Trang tải về – máy tính, phần dưới (tiếng Anh)](LandingEnLower.png) · [nguồn](src/LandingEnLower.dc.html)
+- [Trang tải về – điện thoại, phần trên (tiếng Anh)](LandingMobileEn.png) · [nguồn](src/LandingMobileEn.dc.html)
+- [Trang tải về – điện thoại, phần dưới (tiếng Anh)](LandingMobileEnLower.png) · [nguồn](src/LandingMobileEnLower.dc.html)
 
 ## Mô hình
 

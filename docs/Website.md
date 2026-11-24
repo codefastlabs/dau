@@ -16,7 +16,12 @@ Mọi trang theo các quy tắc chung sau:
 
 ## Trang tải về (M8)
 
-Artboard của trang có hai bản: [máy tính](canvas/Landing.png) và [điện thoại](canvas/LandingMobile.png). Artboard tiếng Anh của hai bản này chưa có và phải có trước khi viết mã.
+Artboard của trang có bản máy tính và bản điện thoại, mỗi bản bằng tiếng Việt và tiếng Anh. Canvas giới hạn mỗi artboard cao 8.000 px, nên mỗi bản tách thành phần trên (đầu trang tới Bảng gõ) và phần dưới (Quyền riêng tư tới chân trang):
+
+- Máy tính, tiếng Việt: [phần trên](canvas/Landing.png), [phần dưới](canvas/LandingLower.png).
+- Máy tính, tiếng Anh: [phần trên](canvas/LandingEn.png), [phần dưới](canvas/LandingEnLower.png).
+- Điện thoại, tiếng Việt: [phần trên](canvas/LandingMobile.png), [phần dưới](canvas/LandingMobileLower.png).
+- Điện thoại, tiếng Anh: [phần trên](canvas/LandingMobileEn.png), [phần dưới](canvas/LandingMobileEnLower.png).
 
 - Trang dùng phông Be Vietnam Pro, nền Giấy và màu nhấn Mực (D25 (Nhận diện)).
 - Một mã nguồn responsive phục vụ cả máy tính lẫn điện thoại.

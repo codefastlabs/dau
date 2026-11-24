@@ -4,92 +4,203 @@
   "boards": {
     "AppIcon.dc.html": {
       "h": 762,
+      "page": "brand",
       "title": "Nhận diện – biểu tượng ứng dụng",
       "w": 1200,
       "x": 1280,
-      "y": 11960
+      "y": 0
     },
     "AppIconDev.dc.html": {
       "h": 852,
+      "page": "brand",
       "title": "Nhận diện – biểu tượng bản phát triển",
       "w": 1200,
-      "x": 2640,
-      "y": 12662
-    },
-    "BrandConcepts.dc.html": {
-      "h": 533,
-      "title": "Nhận diện – hướng biểu tượng",
-      "w": 1200,
       "x": 0,
-      "y": 11960
+      "y": 892
     },
     "BrandGuide.dc.html": {
       "h": 772,
+      "page": "brand",
       "title": "Nhận diện – hướng dẫn thương hiệu",
       "w": 1200,
       "x": 0,
-      "y": 12613
+      "y": 0
     },
     "BrandInUse.dc.html": {
       "h": 624,
+      "page": "brand",
       "title": "Nhận diện – nơi hình đại diện xuất hiện",
       "w": 1200,
       "x": 1280,
-      "y": 12842
+      "y": 892
     },
     "ConfirmDialogs.dc.html": {
       "h": 560,
+      "page": "settings",
       "title": "Xác nhận quay về / gỡ cài đặt",
       "w": 900,
-      "x": 2940,
-      "y": 7980
+      "x": 0,
+      "y": 4780
+    },
+    "DmgWindow.dc.html": {
+      "h": 620,
+      "page": "brand",
+      "title": "Cửa sổ ảnh đĩa DMG (bản phát hành)",
+      "w": 900,
+      "x": 0,
+      "y": 2624
     },
     "GithubPreview.dc.html": {
       "h": 640,
+      "page": "brand",
       "title": "Ảnh xem trước GitHub 1280×640",
       "w": 1280,
-      "x": 1280,
-      "y": 13586
+      "x": 2560,
+      "y": 1864
     },
     "Landing.dc.html": {
       "expand": "fill",
-      "h": 8620,
-      "title": "Trang tải về – máy tính",
+      "h": 3795,
+      "page": "website",
+      "title": "Trang tải về – máy tính, phần trên (đầu trang tới Bảng gõ)",
       "w": 1280,
       "x": 0,
-      "y": 14900
+      "y": 0
+    },
+    "LandingEn.dc.html": {
+      "expand": "fill",
+      "h": 3795,
+      "page": "website",
+      "title": "Trang tải về – máy tính, phần trên (tiếng Anh)",
+      "w": 1280,
+      "x": 1360,
+      "y": 0
     },
     "LandingMobile.dc.html": {
       "expand": "fill",
-      "h": 14159,
-      "title": "Trang tải về – điện thoại",
+      "h": 6744,
+      "page": "website",
+      "title": "Trang tải về – điện thoại, phần trên",
       "w": 390,
-      "x": 1360,
-      "y": 14900
+      "x": 2720,
+      "y": 0
+    },
+    "LandingMobileEn.dc.html": {
+      "expand": "fill",
+      "h": 6737,
+      "page": "website",
+      "title": "Trang tải về – điện thoại, phần trên (tiếng Anh)",
+      "w": 390,
+      "x": 3190,
+      "y": 0
     },
     "Main.dc.html": {
       "h": 560,
+      "page": "typing",
       "title": "Menu nguồn đầu vào (hệ thống vẽ)",
       "w": 760,
       "x": 0,
-      "y": 10660
+      "y": 0
     },
     "MenuBarIcons.dc.html": {
       "h": 582,
+      "page": "brand",
       "title": "Nhận diện – biểu tượng trong hệ thống",
       "w": 900,
-      "x": 2640,
-      "y": 11960
+      "x": 2560,
+      "y": 0
+    },
+    "ModelAddMarks.dc.html": {
+      "h": 556,
+      "page": "website",
+      "title": "Mô hình – Thêm dấu cho từ đã gõ (D20, D32, D13; Website mục 4)",
+      "w": 1200,
+      "x": 4940,
+      "y": 840
+    },
+    "ModelForeignWords.dc.html": {
+      "h": 666,
+      "page": "website",
+      "title": "Mô hình – Giữ nguyên từ nước ngoài (D4, D26; Website mục 4)",
+      "w": 1200,
+      "x": 3660,
+      "y": 840
+    },
+    "ModelKeyFlow.dc.html": {
+      "h": 720,
+      "page": "website",
+      "title": "Mô hình – Đường đi của một phím (N3, N2; trang M10)",
+      "w": 1200,
+      "x": 4940,
+      "y": 0
+    },
+    "ModelPartOfMacOS.dc.html": {
+      "h": 602,
+      "page": "website",
+      "title": "Mô hình – Như một phần của macOS (D2, N1, N4; Website mục 4)",
+      "w": 1200,
+      "x": 3660,
+      "y": 1684
+    },
+    "ModelPerApp.dc.html": {
+      "h": 724,
+      "page": "website",
+      "title": "Mô hình – Theo từng ứng dụng (D5, D13, D43; Website mục 4)",
+      "w": 1200,
+      "x": 6220,
+      "y": 840
+    },
+    "ModelPrivacy.dc.html": {
+      "h": 608,
+      "page": "website",
+      "title": "Mô hình – Hai phần chạy riêng (N2, D8; Website mục 6)",
+      "w": 1200,
+      "x": 4940,
+      "y": 1684
+    },
+    "ModelThreeWays.dc.html": {
+      "h": 703,
+      "page": "website",
+      "title": "Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)",
+      "w": 1200,
+      "x": 3660,
+      "y": 0
+    },
+    "ModelTonePlacement.dc.html": {
+      "h": 660,
+      "page": "website",
+      "title": "Mô hình – Gõ phím dấu ở đâu cũng được (D28, D15; Website mục 2)",
+      "w": 1200,
+      "x": 6220,
+      "y": 0
+    },
+    "ModelVNI.dc.html": {
+      "h": 528,
+      "page": "website",
+      "title": "Mô hình – VNI: chữ số thành dấu (D36, D26; Website mục 5 và Hỏi đáp)",
+      "w": 1200,
+      "x": 6220,
+      "y": 1684
     },
     "OgImage.dc.html": {
       "h": 630,
+      "page": "brand",
       "title": "Ảnh chia sẻ Open Graph 1200×630",
       "w": 1200,
       "x": 0,
-      "y": 13505
+      "y": 1864
+    },
+    "OgImageEn.dc.html": {
+      "h": 630,
+      "page": "brand",
+      "title": "Ảnh chia sẻ Open Graph 1200×630 (tiếng Anh)",
+      "w": 1200,
+      "x": 1280,
+      "y": 1864
     },
     "Onboarding.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 3: chọn kiểu gõ",
       "w": 820,
       "x": 1800,
@@ -97,6 +208,7 @@
     },
     "OnboardingConflict.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 1: tắt bộ gõ cũ",
       "w": 820,
       "x": 0,
@@ -104,6 +216,7 @@
     },
     "OnboardingEnable.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: bật Dấu",
       "w": 820,
       "x": 900,
@@ -111,6 +224,7 @@
     },
     "OnboardingEnableDone.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: đã bật",
       "w": 820,
       "x": 900,
@@ -118,6 +232,7 @@
     },
     "OnboardingEnableDoneNoShortcut.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: đã bật, chưa có phím tắt",
       "w": 820,
       "x": 900,
@@ -125,6 +240,7 @@
     },
     "OnboardingEnableError.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: chưa cài được",
       "w": 820,
       "x": 900,
@@ -132,6 +248,7 @@
     },
     "OnboardingEnableFailed.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: chưa bật được",
       "w": 820,
       "x": 900,
@@ -139,6 +256,7 @@
     },
     "OnboardingEnableNotes.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: không đọc được phím tắt, có nguồn tiếng Việt khác",
       "w": 820,
       "x": 900,
@@ -146,6 +264,7 @@
     },
     "OnboardingEnableWaiting.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 2: chờ bấm Allow",
       "w": 820,
       "x": 900,
@@ -153,6 +272,7 @@
     },
     "OnboardingMoveToApplications.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – trước bước 1: chuyển Dấu vào Applications (bản không phải bản chủ, bộ gõ chưa cài)",
       "w": 820,
       "x": 0,
@@ -160,6 +280,7 @@
     },
     "OnboardingNotSelected.dc.html": {
       "h": 580,
+      "page": "onboarding",
       "title": "Thiết lập Dấu – bước 3: Dấu chưa là nguồn đang dùng",
       "w": 820,
       "x": 1800,
@@ -167,210 +288,195 @@
     },
     "Report.dc.html": {
       "h": 660,
+      "page": "settings",
       "title": "Báo ứng dụng gõ lỗi",
       "w": 760,
       "x": 2940,
-      "y": 9340
+      "y": 4780
     },
     "SettingsAbout.dc.html": {
       "h": 760,
       "is_interactive": true,
+      "page": "settings",
       "title": "Cài đặt – Cập nhật & hỗ trợ",
       "w": 900,
       "x": 2940,
-      "y": 5440
+      "y": 0
     },
     "SettingsAboutDev.dc.html": {
       "h": 760,
+      "page": "settings",
       "title": "Cài đặt – Cập nhật & hỗ trợ (bản phát triển)",
       "w": 900,
-      "x": 3920,
-      "y": 5440
+      "x": 2940,
+      "y": 1760
+    },
+    "SettingsAboutSupporters.dc.html": {
+      "h": 760,
+      "page": "settings",
+      "title": "Cập nhật & hỗ trợ – cuộn xuống: Người ủng hộ",
+      "w": 900,
+      "x": 2940,
+      "y": 880
     },
     "SettingsApps.dc.html": {
       "h": 740,
       "is_interactive": true,
+      "page": "settings",
       "title": "Cài đặt – Ứng dụng",
       "w": 900,
       "x": 1960,
-      "y": 5440
+      "y": 0
     },
     "SettingsAppsAdd.dc.html": {
       "h": 740,
+      "page": "settings",
       "title": "Ứng dụng – thêm quy tắc",
       "w": 900,
       "x": 1960,
-      "y": 6300
+      "y": 1740
     },
     "SettingsAppsAddEmpty.dc.html": {
       "h": 740,
+      "page": "settings",
       "title": "Ứng dụng – thêm quy tắc, chưa chọn",
       "w": 900,
       "x": 1960,
-      "y": 8020
+      "y": 2600
     },
     "SettingsAppsEmpty.dc.html": {
       "h": 740,
+      "page": "settings",
       "title": "Ứng dụng – chưa có quy tắc riêng",
       "w": 900,
       "x": 1960,
-      "y": 7160
+      "y": 880
     },
     "SettingsBannerStates.dc.html": {
       "h": 560,
+      "page": "settings",
       "title": "Banner “Dấu chưa được bật” – sau khi bấm Bật lại",
       "w": 760,
-      "x": 0,
-      "y": 7040
+      "x": 980,
+      "y": 3720
     },
     "SettingsDark.dc.html": {
       "h": 680,
+      "page": "settings",
       "title": "Trạng thái – chế độ tối",
       "w": 900,
-      "x": 0,
-      "y": 8520
+      "x": 2940,
+      "y": 3720
     },
     "SettingsNotEnabled.dc.html": {
       "h": 680,
+      "page": "settings",
       "title": "Trạng thái – Dấu chưa được bật",
       "w": 900,
       "x": 0,
-      "y": 6240
+      "y": 3720
     },
     "SettingsSearchEmpty.dc.html": {
       "h": 680,
+      "page": "settings",
       "title": "Cài đặt – tìm không có kết quả",
       "w": 900,
-      "x": 980,
-      "y": 7160
+      "x": 3920,
+      "y": 3720
     },
     "SettingsSmart.dc.html": {
       "h": 680,
       "is_interactive": true,
+      "page": "settings",
       "title": "Cài đặt – Thông minh",
       "w": 900,
       "x": 980,
-      "y": 5440
+      "y": 0
     },
     "SettingsSmartAdvanced.dc.html": {
       "h": 760,
+      "page": "settings",
       "title": "Thông minh – mở “Nâng cao”",
       "w": 900,
       "x": 980,
-      "y": 6240
+      "y": 880
     },
     "SettingsTampered.dc.html": {
       "h": 680,
+      "page": "settings",
       "title": "Trạng thái – bộ gõ trên máy đã bị thay",
       "w": 900,
-      "x": 0,
-      "y": 7720
+      "x": 1960,
+      "y": 3720
     },
     "SettingsTyping.dc.html": {
       "h": 680,
       "is_interactive": true,
+      "page": "settings",
       "title": "Cài đặt – Gõ phím",
       "w": 900,
       "x": 0,
-      "y": 5440
+      "y": 0
     },
     "TypingStates.dc.html": {
       "h": 640,
+      "page": "typing",
       "title": "Khi gõ trong ứng dụng",
       "w": 900,
       "x": 840,
-      "y": 10660
+      "y": 0
+    },
+    "UninstallDone.dc.html": {
+      "h": 560,
+      "page": "settings",
+      "title": "Gỡ cài đặt – xong (trái: gỡ trọn; phải: không chuyển được ứng dụng)",
+      "w": 900,
+      "x": 1960,
+      "y": 4780
     },
     "UninstallRemoveSource.dc.html": {
       "h": 560,
+      "page": "settings",
       "title": "Gỡ cài đặt – bỏ Dấu khỏi nguồn đầu vào",
       "w": 900,
-      "x": 2940,
-      "y": 8660
+      "x": 980,
+      "y": 4780
     },
-    "DmgWindow.dc.html": {
-      "x": 2640,
-      "y": 13634,
-      "w": 900,
-      "h": 620,
-      "title": "Cửa sổ ảnh đĩa DMG (bản phát hành)"
+    "LandingLower.dc.html": {
+      "expand": "fill",
+      "page": "website",
+      "x": 0,
+      "y": 3915,
+      "w": 1280,
+      "h": 4843,
+      "title": "Trang tải về – máy tính, phần dưới (Quyền riêng tư tới chân trang)"
     },
-    "ModelThreeWays.dc.html": {
-      "x": 1830,
-      "y": 14900,
-      "w": 1200,
-      "h": 703,
-      "title": "Mô hình – Ba cách gõ “hoà” (N3, D13; Website mục 3)"
+    "LandingEnLower.dc.html": {
+      "expand": "fill",
+      "page": "website",
+      "x": 1360,
+      "y": 3915,
+      "w": 1280,
+      "h": 4799,
+      "title": "Trang tải về – máy tính, phần dưới (tiếng Anh)"
     },
-    "ModelKeyFlow.dc.html": {
-      "x": 3110,
-      "y": 14900,
-      "w": 1200,
-      "h": 720,
-      "title": "Mô hình – Đường đi của một phím (N3, N2; trang M10)"
+    "LandingMobileLower.dc.html": {
+      "expand": "fill",
+      "page": "website",
+      "x": 2720,
+      "y": 6864,
+      "w": 390,
+      "h": 7501,
+      "title": "Trang tải về – điện thoại, phần dưới"
     },
-    "ModelTonePlacement.dc.html": {
-      "x": 4390,
-      "y": 14900,
-      "w": 1200,
-      "h": 660,
-      "title": "Mô hình – Gõ phím dấu ở đâu cũng được (D28, D15; Website mục 2)"
-    },
-    "ModelForeignWords.dc.html": {
-      "x": 1830,
-      "y": 15740,
-      "w": 1200,
-      "h": 666,
-      "title": "Mô hình – Giữ nguyên từ nước ngoài (D4, D26; Website mục 4)"
-    },
-    "ModelAddMarks.dc.html": {
-      "x": 3110,
-      "y": 15740,
-      "w": 1200,
-      "h": 556,
-      "title": "Mô hình – Thêm dấu cho từ đã gõ (D20, D32, D13; Website mục 4)"
-    },
-    "ModelPerApp.dc.html": {
-      "x": 4390,
-      "y": 15740,
-      "w": 1200,
-      "h": 724,
-      "title": "Mô hình – Theo từng ứng dụng (D5, D13, D43; Website mục 4)"
-    },
-    "ModelPartOfMacOS.dc.html": {
-      "x": 1830,
-      "y": 16584,
-      "w": 1200,
-      "h": 602,
-      "title": "Mô hình – Như một phần của macOS (D2, N1, N4; Website mục 4)"
-    },
-    "ModelPrivacy.dc.html": {
-      "x": 3110,
-      "y": 16584,
-      "w": 1200,
-      "h": 608,
-      "title": "Mô hình – Hai phần chạy riêng (N2, D8; Website mục 6)"
-    },
-    "ModelVNI.dc.html": {
-      "x": 4390,
-      "y": 16584,
-      "w": 1200,
-      "h": 528,
-      "title": "Mô hình – VNI: chữ số thành dấu (D36, D26; Website mục 5 và Hỏi đáp)"
-    },
-    "SettingsAboutSupporters.dc.html": {
-      "x": 4900,
-      "y": 5440,
-      "w": 900,
-      "h": 760,
-      "title": "Cập nhật & hỗ trợ – cuộn xuống: Người ủng hộ"
-    },
-    "UninstallDone.dc.html": {
-      "x": 3920,
-      "y": 8660,
-      "w": 900,
-      "h": 560,
-      "title": "Gỡ cài đặt – xong (trái: gỡ trọn; phải: không chuyển được ứng dụng)"
+    "LandingMobileEnLower.dc.html": {
+      "expand": "fill",
+      "page": "website",
+      "x": 3190,
+      "y": 6864,
+      "w": 390,
+      "h": 7231,
+      "title": "Trang tải về – điện thoại, phần dưới (tiếng Anh)"
     }
   },
   "createdOnFiles": {
@@ -385,6 +491,7 @@
     "row1": {
       "kind": "title1",
       "maxW": 2620,
+      "page": "onboarding",
       "text": "Thiết lập Dấu (onboarding)",
       "w": 240,
       "x": 0,
@@ -392,43 +499,66 @@
     },
     "row2": {
       "kind": "title1",
-      "maxW": 5800,
-      "text": "Cửa sổ Cài đặt",
+      "maxW": 3840,
+      "page": "settings",
+      "text": "Cửa sổ Cài đặt: bốn trang và trạng thái của từng trang",
       "w": 240,
       "x": 0,
-      "y": 5180
+      "y": -260
     },
     "row3": {
       "kind": "title1",
       "maxW": 1740,
+      "page": "typing",
       "text": "Khi gõ",
       "w": 240,
       "x": 0,
-      "y": 10400
+      "y": -260
     },
     "row4": {
       "kind": "title1",
       "maxW": 3840,
-      "text": "Nhận diện",
+      "page": "brand",
+      "text": "Nhận diện và phát hành",
       "w": 240,
       "x": 0,
-      "y": 11700
+      "y": -260
     },
     "row5": {
       "kind": "title1",
-      "maxW": 1750,
-      "text": "Trang tải về",
+      "maxW": 3580,
+      "page": "website",
+      "text": "Trang tải về: tiếng Việt và tiếng Anh",
       "w": 240,
       "x": 0,
-      "y": 14640
+      "y": -260
     },
     "row6": {
       "kind": "title1",
       "maxW": 3760,
+      "page": "website",
       "text": "Mô hình minh hoạ cho website",
       "w": 240,
-      "x": 1830,
-      "y": 14640
+      "x": 3660,
+      "y": -260
+    },
+    "settingsShared": {
+      "kind": "title1",
+      "maxW": 4820,
+      "page": "settings",
+      "text": "Trạng thái chung của cửa sổ",
+      "w": 240,
+      "x": 0,
+      "y": 3460
+    },
+    "settingsUninstall": {
+      "kind": "title1",
+      "maxW": 3700,
+      "page": "settings",
+      "text": "Gỡ cài đặt và báo lỗi",
+      "w": 240,
+      "x": 0,
+      "y": 4520
     }
   },
   "order": [
@@ -444,27 +574,26 @@
     "Onboarding.dc.html",
     "OnboardingNotSelected.dc.html",
     "SettingsTyping.dc.html",
-    "SettingsNotEnabled.dc.html",
-    "SettingsBannerStates.dc.html",
-    "SettingsTampered.dc.html",
-    "SettingsDark.dc.html",
     "SettingsSmart.dc.html",
     "SettingsSmartAdvanced.dc.html",
-    "SettingsSearchEmpty.dc.html",
     "SettingsApps.dc.html",
     "SettingsAppsEmpty.dc.html",
     "SettingsAppsAdd.dc.html",
     "SettingsAppsAddEmpty.dc.html",
     "SettingsAbout.dc.html",
-    "SettingsAboutDev.dc.html",
     "SettingsAboutSupporters.dc.html",
+    "SettingsAboutDev.dc.html",
+    "SettingsNotEnabled.dc.html",
+    "SettingsBannerStates.dc.html",
+    "SettingsTampered.dc.html",
+    "SettingsDark.dc.html",
+    "SettingsSearchEmpty.dc.html",
     "ConfirmDialogs.dc.html",
     "UninstallRemoveSource.dc.html",
     "UninstallDone.dc.html",
     "Report.dc.html",
     "Main.dc.html",
     "TypingStates.dc.html",
-    "BrandConcepts.dc.html",
     "BrandGuide.dc.html",
     "OgImage.dc.html",
     "AppIcon.dc.html",
@@ -472,9 +601,12 @@
     "GithubPreview.dc.html",
     "MenuBarIcons.dc.html",
     "AppIconDev.dc.html",
-    "Landing.dc.html",
-    "LandingMobile.dc.html",
     "DmgWindow.dc.html",
+    "OgImageEn.dc.html",
+    "Landing.dc.html",
+    "LandingLower.dc.html",
+    "LandingMobile.dc.html",
+    "LandingMobileLower.dc.html",
     "ModelThreeWays.dc.html",
     "ModelKeyFlow.dc.html",
     "ModelTonePlacement.dc.html",
@@ -483,12 +615,32 @@
     "ModelPerApp.dc.html",
     "ModelPartOfMacOS.dc.html",
     "ModelPrivacy.dc.html",
-    "ModelVNI.dc.html"
+    "ModelVNI.dc.html",
+    "LandingEn.dc.html",
+    "LandingEnLower.dc.html",
+    "LandingMobileEn.dc.html",
+    "LandingMobileEnLower.dc.html"
   ],
   "pages": [
     {
-      "id": "design",
-      "name": "Thiết kế"
+      "id": "onboarding",
+      "name": "Thiết lập Dấu"
+    },
+    {
+      "id": "settings",
+      "name": "Cài đặt"
+    },
+    {
+      "id": "typing",
+      "name": "Khi gõ"
+    },
+    {
+      "id": "brand",
+      "name": "Nhận diện"
+    },
+    {
+      "id": "website",
+      "name": "Trang web"
     }
   ],
   "title": "Bộ gõ tiếng Việt cho macOS – Mockup"

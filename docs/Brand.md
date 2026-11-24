@@ -21,7 +21,7 @@ Các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh x
 - [nơi hình đại diện xuất hiện](canvas/BrandInUse.png)
 - [biểu tượng trong hệ thống](canvas/MenuBarIcons.png)
 - [biểu tượng bản phát triển](canvas/AppIconDev.png)
-- [ảnh chia sẻ Open Graph](canvas/OgImage.png)
+- [ảnh chia sẻ Open Graph](canvas/OgImage.png), [bản tiếng Anh](canvas/OgImageEn.png)
 - [ảnh xem trước GitHub](canvas/GithubPreview.png)
 
 ## Biểu tượng
@@ -79,6 +79,7 @@ App dùng màu và phông của hệ thống (D9). Bảng màu này dành cho bi
 | `favicon.ico` + `favicon.svg` | 16, 32 | Tab trình duyệt, kết quả tìm kiếm |
 | `apple-touch-icon.png` | 180×180 | Ghim trang trên iPhone, iPad |
 | `og-image.png` | 1200×630 | `og:image`, `twitter:image` cho link chia sẻ trên Zalo, Messenger, Slack, iMessage, X |
+| `og-image-en.png` | 1200×630 | Như `og-image.png`, cho bản tiếng Anh `/en` của trang (artboard "Ảnh chia sẻ Open Graph 1200×630 (tiếng Anh)") |
 | GitHub social preview: `Resources/Brand/github-preview.png` | 1280×640 | Settings › Social preview của repo |
 | Nền DMG: `Resources/Brand/DmgBackground.png`, `DmgBackground@2x.png` | 640×400 và 1280×800 | File DMG phát hành |
 

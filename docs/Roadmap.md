@@ -70,7 +70,6 @@ Các việc dưới đây không chặn việc đóng M7 và sẽ làm khi đã 
 ## M8 — Website
 
 - Công nghệ, chỗ đặt và ngôn ngữ của trang theo D45 (Trang web). Cấu hình, cấu trúc thư mục và nguồn dữ liệu nằm ở [`docs/research/WebsiteStack.md`](research/WebsiteStack.md).
-- Trước khi viết mã, phiên chính làm các việc tài liệu và canvas trong mục "Hiện trạng" của `WebsiteStack.md`, gồm artboard tiếng Anh của trang tải về và ảnh Open Graph. Người dùng duyệt artboard trước khi giao mã.
 - Trang tải về dựng theo [`docs/Website.md`](Website.md) (mục "Trang tải về (M8)") và [`docs/Brand.md`](Brand.md), có bản tiếng Việt và tiếng Anh. Trang là trang tĩnh, responsive, có thẻ meta, ảnh Open Graph và favicon.
 - Các ô số liệu và lời hứa chỉ được điền từ kết quả đã đo (N5 (Chỉ hứa điều đã kiểm chứng)).
 - M8 xong khi kiểm toán ĐẠT và Lighthouse đạt từ 95 trở lên ở cả bốn hạng mục trên điện thoại. Lighthouse đo cả `/` lẫn `/en`.

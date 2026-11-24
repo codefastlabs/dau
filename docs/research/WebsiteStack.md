@@ -34,19 +34,15 @@ Mỗi khẳng định ghi rõ nguồn của nó: **đo** (điều kiện ở m�
 3. Xem gói tài khoản có Deployment Checks không. Nếu có, chọn job của `site.yml` làm check bắt buộc.
 4. Bật Web Analytics cho project trong mục Analytics của Vercel; script và điểm nhận số liệu chỉ có sau lần triển khai kế tiếp. Sự kiện tuỳ chỉnh chỉ ghi được ở gói Pro trở lên (mục 3, ý "Đo lượt xem"). Project đang ở gói Hobby (24/11/2026), nên tới khi lên Pro chỉ có số lượt xem.
 
-**Việc của phiên chính trước khi viết mã.** Đây là thay đổi tài liệu và canvas, không cần quyết định của người dùng:
+**Việc của phiên chính khi viết mã.** Đây là thay đổi tài liệu và script, không cần quyết định của người dùng. Phần canvas (tương phản, dòng quyền riêng tư, artboard tiếng Anh) đã xong và được duyệt ngày 24/11/2026.
 
-1. Theo [`Apps/Dau/CLAUDE.md`](../../Apps/Dau/CLAUDE.md), canvas làm trước, mã làm sau.
-   - Sửa màu tiêu đề "Ghi chú" của cửa sổ minh hoạ trong hero. Chữ `#6e6e73` trên nền `#F3F1EC` chỉ đạt 4,49:1, dưới ngưỡng 4,5:1. Trang thử dùng `#5c5c63` và đạt Trợ năng 100.
-   - Thêm vào artboard mục Quyền riêng tư dòng nói đúng cách trang đếm lượt xem ([`docs/Website.md`](../Website.md) mục 6).
-   - Vẽ artboard tiếng Anh cho trang tải về và cho ảnh Open Graph (`og-image-en.png`), rồi thêm file đó vào danh sách xuất của [`docs/Brand.md`](../Brand.md).
-2. Trong commit đầu tiên có mã của `site/`, sửa [`docs/Releasing.md`](../Releasing.md):
+1. Trong commit đầu tiên có mã của `site/`, sửa [`docs/Releasing.md`](../Releasing.md):
    - Bước "Vercel" hiện ghi "không có bước build"; bước đó phải đổi theo mục 3 và nhóm việc cần tài khoản ở trên.
    - Bước chạy bài tải nặng hiện ghi số đo vào nhật ký [`docs/Progress.md`](../Progress.md) để trang lấy từ đó; bước này phải ghi vào file dữ liệu ở mục 8.
    - Bước "Công bố" commit thêm file checksum.
    - Thêm bước so byte appcast sau triển khai.
-3. Trong cùng commit đó, sửa dòng `site/` trong [`docs/Architecture.md`](../Architecture.md).
-4. Thêm `.githooks/pre-push` và bước kiểm `core.hooksPath` vào `scripts/dev/doctor.sh` khi dựng `site/` (mục 3).
+2. Trong cùng commit đó, sửa dòng `site/` trong [`docs/Architecture.md`](../Architecture.md).
+3. Thêm `.githooks/pre-push` và bước kiểm `core.hooksPath` vào `scripts/dev/doctor.sh` khi dựng `site/` (mục 3).
 
 ## Điều kiện đo
 
