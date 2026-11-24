@@ -58,6 +58,7 @@ Sổ này là nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết
 | [D42](#d42-ngưỡng-hiệu-năng) | Ngưỡng hiệu năng | Trước mỗi bản phát hành phải chạy bài tải nặng. Vượt ngưỡng thì không phát hành. |
 | [D43](#d43-ô-bỏ-qua-vùng-thay-chữ) | Ô bỏ qua vùng thay chữ | Dấu không xử lý riêng ô bỏ qua vùng thay chữ. Người dùng tự bật gạch chân để gõ đúng ở đó. Ghostty mang nhãn "Đề xuất". |
 | [D44](#d44-văn-xuôi-tiếng-việt) | Văn xuôi tiếng Việt | Tài liệu viết thành câu tiếng Việt tự nhiên, rõ ràng, đủ ý và giữ tối đa ý nghĩa gốc, không theo khuôn câu tiếng Anh. |
+| [D45](#d45-trang-web) | Trang web | Trang web là trang tĩnh dựng bằng TanStack Start bản React, nằm trong repo của Dấu ở `site/`, có tiếng Việt ở `/` và tiếng Anh ở `/en`, không đo người đọc. |
 
 Cuối sổ: [Đã biết nhưng không làm](#đã-biết-nhưng-không-làm), [Đã cân nhắc và loại bỏ](#đã-cân-nhắc-và-loại-bỏ), [Câu hỏi mở](#câu-hỏi-mở).
 
@@ -759,6 +760,23 @@ Tài liệu tiếng Việt trong dự án viết thành câu đủ ý, tự nhi�
 **Hệ quả đã chấp nhận:** phần diễn giải sẽ dài hơn. Tài liệu hiện có được rà và viết lại từng bước mà không đổi số đo hay dữ kiện thực nghiệm.
 
 **Xem thêm:** quy tắc viết tài liệu ở [`docs/CLAUDE.md`](CLAUDE.md), mục "Thứ tự theo người đọc" và "Câu đủ ý".
+
+### D45. Trang web
+
+- **Công nghệ:** trang web dựng bằng TanStack Start bản React và Tailwind CSS. Mọi trang prerender thành HTML tĩnh lúc build. Trang không có server lúc chạy, không dùng Nitro và không dùng API mà TanStack ghi là thử nghiệm. Vercel phục vụ thư mục đầu ra như file tĩnh.
+- **Chỗ đặt:** mã trang nằm trong repo của Dấu, ở `site/`. `site/appcast.xml` giữ nguyên chỗ. Bản build chép nó nguyên byte vào đầu ra. Trang đọc lúc build đúng các file dữ liệu mà app dùng, như danh sách tương thích và danh sách người ủng hộ (D39 (Ủng hộ dự án)).
+- **Ngôn ngữ:** trang có tiếng Việt ở `/` và tiếng Anh ở `/en`, từ M8. `x-default` trỏ về `/en`, theo cách D41 (Ngôn ngữ giao diện) lùi về tiếng Anh. Trang không tự chuyển theo ngôn ngữ trình duyệt. Khi app mở trang web, app chọn bản theo ngôn ngữ app đang hiện (D41).
+- **Quyền riêng tư:** trang không đo người đọc (không analytics, không Speed Insights) và không gọi bên thứ ba. Phông tự phục vụ trên cùng tên miền.
+
+**Vì sao:**
+
+- Người dùng chọn họ TanStack bản React, Tailwind CSS và hai ngôn ngữ ngay từ M8. Trang tĩnh đủ cho nội dung của `docs/Website.md`. Đo trên trang thử đầy đủ, Lighthouse đạt 100 ở cả bốn hạng mục trên điện thoại và máy tính ([`docs/research/WebsiteStack.md`](research/WebsiteStack.md)).
+- Nitro chỉ cần khi trang render lúc chạy. Preset tĩnh của Nitro làm được cùng việc với `vercel.json` nhưng còn là bản RC và thay prerender của TanStack Start. API thử nghiệm (Deferred Hydration, Server Components) chỉ bớt vài KB JS khi hiệu năng đã là 100, đổi lại có lỗi mở làm mất HTML dựng sẵn.
+- Repo chung giữ appcast và dữ liệu dùng chung trên một đường: địa chỉ feed nằm trong mọi bản app đã phát hành nên không đổi được. Script phát hành đọc `site/appcast.xml` trên `main`. Repo riêng chỉ bớt CI và pull request lẫn lộn, đổi lại appcast và dữ liệu phải đi qua hai repo.
+- Không đo người đọc theo tinh thần D8 (Không telemetry): mục Quyền riêng tư của trang nói Dấu không gửi gì đi.
+- Người dùng chốt ngày 24/11/2026.
+
+**Xem thêm:** nội dung trang ở [`docs/Website.md`](Website.md), cấu hình và số đo ở [`docs/research/WebsiteStack.md`](research/WebsiteStack.md).
 
 ## Đã biết nhưng không làm
 

@@ -4,14 +4,15 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 ## Trạng thái hiện tại
 
-M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. M7 (Phát hành) đang làm từ 17/11/2026, theo mục "Kế hoạch M7" bên dưới.
+M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. M7 (Phát hành) đang làm từ 17/11/2026, theo mục "Kế hoạch M7" bên dưới. M8 (Website) làm song song từ 24/11/2026, trong lúc M7 chờ bước 0.
 
 Chờ người dùng:
 - Bước 0 của kế hoạch M7: đăng ký Apple Developer Program trước tiên (việc lâu nhất).
 
 Việc tiếp theo:
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
-- Không chờ bước 0, chuẩn bị cho M8: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`. Chín mô hình minh hoạ cách Dấu làm việc và phần ghi nhận người ủng hộ (D39 (Ủng hộ dự án)) đã có artboard được duyệt; `docs/Website.md` dẫn mỗi mục tới mô hình của nó. Thứ tự M8 so với beta đầu tiên vẫn theo `docs/Roadmap.md` cho tới khi người dùng chọn khác.
+- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Công nghệ, chỗ đặt và ngôn ngữ của trang đã chốt ở D45 (Trang web); cấu hình và số đo ở `docs/research/WebsiteStack.md`. Việc kế tiếp là các việc canvas trong mục "Hiện trạng" của tài liệu đó (màu tương phản, dòng quyền riêng tư của trang, artboard tiếng Anh của trang tải về và ảnh Open Graph), người dùng duyệt, rồi giao web-dev dựng `site/`. Trang chỉ lên tên miền cùng beta đầu tiên.
+- Không chờ bước 0: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần.
 
 Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chưa rõ ảnh hưởng, chưa kiểm, giao diện, để sau). API IMK nào giúp được từng việc và phép đo rẻ nhất: [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) mục "Hiện trạng" và mục 4.
@@ -37,7 +38,7 @@ Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chư
 | M5 Onboarding, cài, gỡ | xong | ĐẠT (05/11) |
 | M6 Hiệu năng dưới tải | xong | ĐẠT (16/11) |
 | M7 Phát hành | đang làm | — |
-| M8 Website | chưa | — |
+| M8 Website | đang làm (từ 24/11, song song M7) | — |
 | M9 Đa ngôn ngữ | phần nền (D41 (Ngôn ngữ giao diện)) và câu chữ tiếng Anh xong 06–09/11 | — |
 | M10 Học cách gõ | chưa | — |
 

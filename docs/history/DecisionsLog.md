@@ -505,3 +505,7 @@ Khi sổ viết lại dạng tra cứu (11/11/2026), mục "Câu hỏi đã tr�
 ## D44. Văn xuôi tiếng Việt
 
 - 20/11/2026 (người dùng giao phiên chính chốt): ban hành D44. Quy định văn xuôi trong mọi tài liệu markdown phải viết thành câu tiếng Việt hoàn chỉnh, tự nhiên, rõ ràng và chuẩn xác cao nhất, bảo toàn tối đa ý nghĩa gốc và số liệu thực nghiệm. Bỏ các ngoại lệ miễn trừ làm ảnh hưởng đến trải nghiệm của người đọc. Thay thế quy tắc viết câu ngắn cũ ở `docs/CLAUDE.md`.
+
+## D45. Trang web
+
+- 24/11/2026 (người dùng chốt): ban hành D45. Roadmap M8 trước đó ghi "Người dùng chốt công nghệ của trang web"; bản tiếng Anh của trang tải về trước đó thuộc M9.

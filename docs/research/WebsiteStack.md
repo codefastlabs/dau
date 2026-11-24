@@ -37,20 +37,15 @@ Mỗi khẳng định ghi rõ nguồn của nó: **đo** (điều kiện ở m�
 
 1. Theo [`Apps/Dau/CLAUDE.md`](../../Apps/Dau/CLAUDE.md), canvas làm trước, mã làm sau.
    - Sửa màu tiêu đề "Ghi chú" của cửa sổ minh hoạ trong hero. Chữ `#6e6e73` trên nền `#F3F1EC` chỉ đạt 4,49:1, dưới ngưỡng 4,5:1. Trang thử dùng `#5c5c63` và đạt Trợ năng 100.
+   - Thêm vào artboard mục Quyền riêng tư dòng nói trang web không đo người đọc ([`docs/Website.md`](../Website.md) mục 6).
    - Vẽ artboard tiếng Anh cho trang tải về và cho ảnh Open Graph (`og-image-en.png`), rồi thêm file đó vào danh sách xuất của [`docs/Brand.md`](../Brand.md).
-2. Sửa [`docs/Website.md`](../Website.md):
-   - Thêm luật cho bản `/en`: tên giao diện macOS ghi bằng tiếng Anh của Apple (D38 (Chữ trên giao diện)).
-   - Đổi mã mục sang tiếng Anh như mục 2.
-   - Ghi trang 404 có hai ngôn ngữ.
-   - Thêm vào mục Quyền riêng tư câu nói trang web không thu số liệu người đọc (không analytics), rồi sửa artboard theo.
-3. Sửa [`docs/Roadmap.md`](../Roadmap.md): bỏ dòng "Trang tải về (M8) cần có bản tiếng Anh" khỏi M9, vì bản tiếng Anh làm ngay ở M8.
-4. Sửa [`docs/Releasing.md`](../Releasing.md):
+2. Trong commit đầu tiên có mã của `site/`, sửa [`docs/Releasing.md`](../Releasing.md):
    - Bước "Vercel" hiện ghi "không có bước build"; bước đó phải đổi theo mục 3 và nhóm việc cần tài khoản ở trên.
    - Bước chạy bài tải nặng hiện ghi số đo vào nhật ký [`docs/Progress.md`](../Progress.md) để trang lấy từ đó; bước này phải ghi vào file dữ liệu ở mục 8.
    - Bước "Công bố" commit thêm file checksum.
    - Thêm bước so byte appcast sau triển khai.
-5. Sửa dòng `site/` trong [`docs/Architecture.md`](../Architecture.md) trong cùng commit M8.
-6. Thêm `.githooks/pre-push` và bước kiểm `core.hooksPath` vào `scripts/dev/doctor.sh` khi dựng `site/` (mục 3).
+3. Trong cùng commit đó, sửa dòng `site/` trong [`docs/Architecture.md`](../Architecture.md).
+4. Thêm `.githooks/pre-push` và bước kiểm `core.hooksPath` vào `scripts/dev/doctor.sh` khi dựng `site/` (mục 3).
 
 ## Điều kiện đo
 
@@ -249,7 +244,7 @@ Chính sách chia làm hai phần:
    - Mỗi HTML có thẻ CSP với mã băm khớp mọi script nội tuyến của nó.
 2. **Deployment Checks của Vercel**, nếu gói tài khoản có. Vercel giữ bản triển khai mới khỏi tên miền chính cho tới khi job của `site.yml` đạt (tài liệu "Deployment Checks"). Lớp này chặn được cả lỗi mà build không thấy, như Lighthouse dưới ngưỡng. Đây là việc cần tài khoản của người dùng (mục "Hiện trạng").
 3. **Hook `pre-push` trên máy.** File `.githooks/pre-push` (zsh, đề xuất, chưa có) chạy `pnpm --dir site build` khi các commit sắp đẩy có chạm `site/`. Bước build đã gồm bước kiểm đầu ra. Hook bật một lần cho mỗi bản clone bằng `git config core.hooksPath .githooks`. `scripts/dev/doctor.sh` sẽ kiểm việc bật này (việc của phiên chính). Bước "Công bố" đẩy từ máy, nên hook chạy cả ở bước đó.
-4. **So byte appcast sau mỗi lần triển khai**, không chỉ sau khi công bố. Một script (đề xuất, chưa có) tải `https://dau.codefastlabs.com/appcast.xml`, so byte với `site/appcast.xml` của đúng commit đã triển khai và kiểm header `Cache-Control`. Trong `site.yml`, job này chạy theo sự kiện `deployment_status` của GitHub, chỉ khi `github.event.deployment.environment == 'Production'` và `github.event.deployment_status.state == 'success'`, và so với file tại `github.event.deployment.sha`. Như vậy bản xem trước của nhánh khác và khoảng thời gian commit mới chưa triển khai xong không làm job báo lỗi oan. Ở bước "Công bố", script chạy sau khi Vercel báo triển khai xong và so với `origin/main`. Script có tác dụng phụ mạng.
+4. **So byte appcast sau mỗi lần triển khai**, không chỉ sau khi công bố. Một script (đề xuất, chưa có) tải `https://dau.codefastlabs.com/appcast.xml`, so byte với `site/appcast.xml` của đúng commit đã triển khai và kiểm header `Cache-Control`. Trong `site.yml`, job này chạy theo sự kiện `deployment_status` của GitHub, chỉ khi `github.event.deployment.environment == 'Production'` và `github.event.deployment_status.state == 'success'`. Job so với file tại `github.event.deployment.sha`. Như vậy bản xem trước của nhánh khác và khoảng thời gian commit mới chưa triển khai xong không làm job báo lỗi oan. Ở bước "Công bố", script chạy sau khi Vercel báo triển khai xong và so với `origin/main`. Script có tác dụng phụ mạng.
 
 ## 4. Tailwind v4, màu và phông
 
@@ -381,6 +376,7 @@ Trang nằm trong repo của Dấu, ở thư mục `site/`, không tách repo ri
 | Khoá ký và bí mật | Phụ thuộc npm chỉ chạy trong `site.yml` (quyền `contents: read`, không dùng bí mật) và trên máy build của Vercel. `release.yml` dùng khoá ký nhưng không cài gì từ npm. Workflow do pull request của Dependabot kích hoạt không nhận Actions secrets (tài liệu GitHub). | Tách hẳn phụ thuộc npm khỏi repo giữ khoá ký. |
 | Chuỗi cung ứng của appcast | Một gói npm chạy lúc build trên Vercel có thể sửa `dist/client/appcast.xml` và cả bước kiểm byte chạy cùng bản dựng đó. Feed không ký: `SURequireSignedFeed` không có trong `project.yml` hay `Info.plist`. `docs/Releasing.md` cũng ghi Dấu không đặt khoá này. Sparkle vẫn kiểm chữ ký EdDSA của từng DMG, nên feed bị sửa không cài được một DMG lạ. Feed bị sửa vẫn có thể bớt mục hay đổi thông tin của mục (suy luận từ tài liệu Sparkle về `SURequireSignedFeed`). Biện pháp: bước so byte sau triển khai (mục 3) chạy ngoài máy build của Vercel và so với `origin/main`. | Rủi ro như bên trái, vì appcast vẫn đi qua bản dựng có npm. |
 | Nhịp thay đổi | Pull request cập nhật npm của Dependabot nằm chung danh sách với mã Swift. | Tách riêng. |
+| CI macOS và số build | Mỗi lần đẩy lên `main` chạy workflow Test trên runner macOS, 3–6 phút (sáu lần chạy gần nhất ngày 24/11/2026), kể cả commit chỉ đổi `site/` hay tài liệu. `test.yml` không lọc được đường dẫn vì `check-release-gate.sh` đòi Test đạt trên commit mang tag. Số build bằng mười lần số commit ([`docs/Releasing.md`](../Releasing.md), đoạn "Số build"), nên commit của trang làm số build tăng; số build chỉ cần tăng dần nên điều này không hỏng gì. | Commit của trang không chạy Test macOS và không đổi số build. |
 
 **Kết luận.** Repo riêng chỉ được hai điều. Thứ nhất, phụ thuộc npm không nằm cạnh khoá ký. Thứ hai, pull request cập nhật npm không lẫn với mã Swift. Điều thứ nhất đã có biện pháp: không job nào vừa cài npm vừa đọc bí mật. Đổi lại, repo riêng làm vỡ quy trình appcast đang chạy và tách dữ liệu mà D39 bắt dùng chung. Vì vậy trang nằm trong repo của Dấu. `release.yml` không cài phụ thuộc của `site/`. Mọi workflow chạm `site/` không dùng bí mật.
 

@@ -69,10 +69,11 @@ Các việc dưới đây không chặn việc đóng M7 và sẽ làm khi đã 
 
 ## M8 — Website
 
-- Người dùng chốt công nghệ của trang web. Thư mục đã chốt ngày 17/11/2026 là `site/`, thư mục gốc của project Vercel, nơi `appcast.xml` đã nằm ([`docs/Releasing.md`](Releasing.md)).
-- Trang tải về dựng theo [`docs/Website.md`](Website.md) (mục "Trang tải về (M8)") và [`docs/Brand.md`](Brand.md). Trang là trang tĩnh, responsive, có thẻ meta, ảnh Open Graph và favicon.
+- Công nghệ, chỗ đặt và ngôn ngữ của trang theo D45 (Trang web). Cấu hình, cấu trúc thư mục và nguồn dữ liệu nằm ở [`docs/research/WebsiteStack.md`](research/WebsiteStack.md).
+- Trước khi viết mã, phiên chính làm các việc tài liệu và canvas trong mục "Hiện trạng" của `WebsiteStack.md`, gồm artboard tiếng Anh của trang tải về và ảnh Open Graph. Người dùng duyệt artboard trước khi giao mã.
+- Trang tải về dựng theo [`docs/Website.md`](Website.md) (mục "Trang tải về (M8)") và [`docs/Brand.md`](Brand.md), có bản tiếng Việt và tiếng Anh. Trang là trang tĩnh, responsive, có thẻ meta, ảnh Open Graph và favicon.
 - Các ô số liệu và lời hứa chỉ được điền từ kết quả đã đo (N5 (Chỉ hứa điều đã kiểm chứng)).
-- M8 xong khi Lighthouse đạt từ 95 trở lên ở cả bốn hạng mục trên điện thoại và kiểm toán ĐẠT.
+- M8 xong khi kiểm toán ĐẠT và Lighthouse đạt từ 95 trở lên ở cả bốn hạng mục trên điện thoại. Lighthouse đo cả `/` lẫn `/en`.
 
 ## M9 — Đa ngôn ngữ (phần còn lại)
 
@@ -82,7 +83,6 @@ Mục đích của M9 là để người Việt có thể dùng Dấu rộng rã
 - Mục "Open Dấu Settings…" của hệ thống, mục cuối của menu nhập liệu, chỉ có khi bộ gõ khai báo được trang cài đặt riêng. Phần này cần một lượt nghiên cứu riêng trước khi làm.
 - Canvas cần bản tiếng Anh cho các màn chính.
 - Bộ kiểm cửa sổ thật (`scripts/selftest/settings-window/run.sh`) cần chạy theo từng ngôn ngữ, vì độ dài chữ làm đổi bố cục. Hiện nay mọi lần mở đều ép tiếng Việt (`-AppleLanguages (vi)`).
-- Trang tải về (M8) cần có bản tiếng Anh.
 - M9 xong khi một máy để tiếng Anh hẳn thấy toàn bộ app, bộ gõ, onboarding và hộp thoại bằng tiếng Anh, `run.sh` đạt ở cả hai ngôn ngữ và kiểm toán ĐẠT.
 
 ## M10 — Học cách gõ

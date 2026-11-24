@@ -17,12 +17,12 @@ Luật làm việc:
 - Commit (nếu được giao) bằng `git commit --only <paths>`, không cuốn theo file người khác đã stage.
 
 ## Quy tắc
-- Thư mục của trang web là `site/`. Công nghệ do người dùng chốt ở đầu M8 (`docs/Roadmap.md`); chưa chốt thì dừng và hỏi, không tự chọn.
+- Công nghệ, chỗ đặt (`site/`) và ngôn ngữ của trang theo D45 (Trang web). Cấu hình, cấu trúc thư mục, nguồn dữ liệu và cách kiểm nằm ở `docs/research/WebsiteStack.md`.
 - Nội dung: `docs/Website.md` và artboard. Đọc artboard từ file nguồn trong `docs/canvas/src/` (ảnh PNG cùng tên trong `docs/canvas/`; mục lục `docs/canvas/README.md`). Canvas đã duyệt trước khi giao mã.
 - Nhận diện: `docs/Brand.md`, D25 (Nhận diện). Cách viết tên: D24 (Tên và định danh).
 - Ô số liệu và lời hứa: chỉ điền từ kết quả đã ghi trong `docs/Website.md`, `docs/Compatibility.md` và `docs/research/` (N5 (Chỉ hứa điều đã kiểm chứng)); chưa có thì để ô trống dạng `[...]`.
 - Trang so sánh (M10): chỉ ghi khác biệt đã đo, dẫn nguồn theo `docs/Roadmap.md` mục M10.
-- Ngôn ngữ: D41 (Ngôn ngữ giao diện), khi phần M9 (Đa ngôn ngữ) của trang web đến lượt.
+- Trang có tiếng Việt ở `/` và tiếng Anh ở `/en` từ M8 (D45); định danh, tên file và mã mục bằng tiếng Anh.
 - Kiểm bằng build và Lighthouse chạy dòng lệnh ở chế độ headless (không chiếm màn hình); ngưỡng xong việc theo `docs/Roadmap.md`.
 
 ## Khi xong, trả về đúng 5 mục
