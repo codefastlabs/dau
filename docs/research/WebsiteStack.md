@@ -32,12 +32,13 @@ Mỗi khẳng định ghi rõ nguồn của nó: **đo** (điều kiện ở m�
 1. Đặt Root Directory là `site` và giữ bật "Include files outside the root directory in the Build Step" (mặc định bật).
 2. Thêm biến môi trường `ENABLE_EXPERIMENTAL_COREPACK=1` để Vercel dùng đúng bản pnpm ghi trong `packageManager`.
 3. Xem gói tài khoản có Deployment Checks không. Nếu có, chọn job của `site.yml` làm check bắt buộc.
+4. Bật Web Analytics cho project trong mục Analytics của Vercel; script và điểm nhận số liệu chỉ có sau lần triển khai kế tiếp. Sự kiện tuỳ chỉnh chỉ ghi được ở gói Pro trở lên (mục 3, ý "Đo lượt xem"). Project đang ở gói Hobby (24/11/2026), nên tới khi lên Pro chỉ có số lượt xem.
 
 **Việc của phiên chính trước khi viết mã.** Đây là thay đổi tài liệu và canvas, không cần quyết định của người dùng:
 
 1. Theo [`Apps/Dau/CLAUDE.md`](../../Apps/Dau/CLAUDE.md), canvas làm trước, mã làm sau.
    - Sửa màu tiêu đề "Ghi chú" của cửa sổ minh hoạ trong hero. Chữ `#6e6e73` trên nền `#F3F1EC` chỉ đạt 4,49:1, dưới ngưỡng 4,5:1. Trang thử dùng `#5c5c63` và đạt Trợ năng 100.
-   - Thêm vào artboard mục Quyền riêng tư dòng nói trang web không đo người đọc ([`docs/Website.md`](../Website.md) mục 6).
+   - Thêm vào artboard mục Quyền riêng tư dòng nói đúng cách trang đếm lượt xem ([`docs/Website.md`](../Website.md) mục 6).
    - Vẽ artboard tiếng Anh cho trang tải về và cho ảnh Open Graph (`og-image-en.png`), rồi thêm file đó vào danh sách xuất của [`docs/Brand.md`](../Brand.md).
 2. Trong commit đầu tiên có mã của `site/`, sửa [`docs/Releasing.md`](../Releasing.md):
    - Bước "Vercel" hiện ghi "không có bước build"; bước đó phải đổi theo mục 3 và nhóm việc cần tài khoản ở trên.
@@ -210,7 +211,11 @@ Phần cấu hình đọc từ tài liệu Vercel. Content-Type của `.xml`, c�
 - **Trang 404.** Vercel tự dùng file `404.html` trong đầu ra (tài liệu "Custom 404 pages"). TanStack Start không prerender được một đường dẫn trả về 404. Trang lỗi vì vậy là một route thường `/not-found` (file `src/routes/not-found.tsx`), khai trong `pages` với `prerender: { enabled: true, outputPath: '/404.html' }` và `sitemap: { exclude: true }`. Đo: đầu ra chỉ có `404.html`, không có `not-found.html`. Sitemap không có `/not-found`. Route này có `robots: noindex`.
 - **Header của `appcast.xml`.** Phản hồi của Vercel ở tên miền hiện có `cache-control: public, max-age=0, must-revalidate` (đo trên phản hồi 404). Tài liệu CDN của Vercel ghi rằng mỗi bản triển khai mới có cache mới. Header vẫn khai rõ trong `vercel.json`, vì Sparkle cần luôn đọc bản mới. Ghi trong repo thì một thay đổi mặc định của Vercel không đổi được hành vi đó. Bước so byte sau triển khai cũng kiểm header này.
 - **Appcast giống từng byte.** Appcast giữ ở `site/appcast.xml`, nơi ba script phát hành đọc. Script `build` chép nó vào `dist/client/` (đo bằng `cmp`).
-- **Không có Vercel Web Analytics hay Speed Insights.** Trang không gọi bên thứ ba và không thu số liệu người đọc, theo tinh thần D8 (Không telemetry). Câu nói trang web không thu số liệu người đọc chưa có trong mục Quyền riêng tư của [`docs/Website.md`](../Website.md); thêm câu đó là việc của phiên chính (mục "Hiện trạng").
+- **Đo lượt xem (D45).** Trang gọi `inject()` của `@vercel/analytics` 2.0.1 để đếm lượt xem và gửi sự kiện qua `createClientTracker` của `@codefast/tracking` 0.10.0 với một đích duy nhất `createVercelAnalyticsDestination({ consentRequirement: "exempt" })` và `isAnalyticsAllowed: () => false`.
+  - Đọc mã `create-client-tracker.js`: khi `isAnalyticsAllowed` trả `false`, tracker chỉ gửi tới đích `exempt` và không gọi `anonymousId`, nên không có định danh nào được tạo. Cách dùng này không cần phần server của thư viện (hỏi vùng, cookie định danh), nên trang vẫn tĩnh.
+  - Đo trên bản dựng thử (danh mục hai sự kiện viết bằng `valibot` 1.5.0): JS của chunk route tăng 2,9 KB gzip. Lúc chạy, `inject()` tải thêm script của Vercel từ `/_vercel/insights/script.js` trên cùng tên miền (đọc từ mã đã build; kích thước chưa đo vì chỉ có sau khi triển khai).
+  - Tài liệu Vercel: Web Analytics không dùng cookie, nhận diện lượt xem bằng một mã băm từ request, mã này đổi mỗi ngày và dữ liệu lượt xem bị bỏ sau 24 giờ. Sự kiện tuỳ chỉnh chỉ có ở gói Pro và Enterprise. Gói Hobby có 50.000 sự kiện mỗi tháng và xem được một tháng số liệu. Phải bật Web Analytics cho từng project trong bảng điều khiển.
+  - CSP: script và điểm nhận nằm trên cùng tên miền, nên `script-src` và `connect-src` cần có `'self'`. Điều này suy từ đường dẫn trong mã đã build, chưa đo trên Vercel.
 
 ### Chính sách bảo mật nội dung (CSP)
 

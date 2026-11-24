@@ -509,3 +509,4 @@ Khi sổ viết lại dạng tra cứu (11/11/2026), mục "Câu hỏi đã tr�
 ## D45. Trang web
 
 - 24/11/2026 (người dùng chốt): ban hành D45. Roadmap M8 trước đó ghi "Người dùng chốt công nghệ của trang web"; bản tiếng Anh của trang tải về trước đó thuộc M9.
+- 24/11/2026 (người dùng chọn): D45 đổi ý "Quyền riêng tư" từ "trang không đo người đọc (không analytics, không Speed Insights)" thành "Đo lượt xem" bằng Vercel Web Analytics và `@codefast/tracking` ở làn exempt.
