@@ -8,10 +8,11 @@
 //   PROJECT   the folder with <name>.dc.html and support.js
 //   OUT       where <name>.png goes
 //   PIDFILE   gets the pid of the Chrome this tool started, for the caller's cleanup
-//   stdin     name<TAB>width<TAB>height, one board a line (canvas-index boards)
+//   stdin     name<TAB>width<TAB>height<TAB>kind, one board a line (canvas-index boards)
 //
 // stdout, one line per event, for the caller to print:
-//   ok<TAB>name<TAB>width<TAB>height     the board was written
+//   ok<TAB>name<TAB>width<TAB>height     the board was written at that size
+//   resize<TAB>name<TAB>height           a page board whose content is that tall, not its frame height
 //   warn<TAB>name<TAB>text               a resource of the board did not load
 //   fail<TAB>name<TAB>text               the board was not written
 // Exit status 0 when every board was written, 1 otherwise (also when Chrome did not start).
@@ -25,6 +26,13 @@
 // then the viewport is captured at scale 1. One step is added: a web font that is still
 // loading when the time is up is waited for, so that the picture does not depend on how
 // fast the font came (see `render`).
+//
+// A canvas frame has a fixed height, but a page board (`"expand": "fill"`) is a web page
+// whose height follows its text. Such a board is captured at the height of its content,
+// so a longer text is never cut off, and the new height is reported for canvas.json.
+//
+// Boards are captured under prefers-reduced-motion: reduce, so an animated board shows the
+// final frame it declares for reduced motion, the same picture on every run.
 import Foundation
 
 let usage = "Cách dùng: canvas-render CHROME PROFILE PROJECT OUT PIDFILE < boards.tsv"
@@ -190,8 +198,15 @@ final class Chrome {
     }
 }
 
-/// Renders one board to `png`. Returns the URLs the page asked for and did not get.
-func render(_ chrome: Chrome, url: String, width: Int, height: Int, png: String) throws -> [String] {
+/// What `render` produced: the height it captured and the URLs the page asked for and did not get.
+struct Rendering {
+    let height: Int
+    let missing: [String]
+}
+
+/// Renders one board to `png`. A page board is captured at the height of its content.
+func render(_ chrome: Chrome, url: String, width: Int, height frameHeight: Int, isPage: Bool, png: String) throws -> Rendering {
+    var height = frameHeight
     // Chrome takes a size only for a new window; in headless mode that window is never shown.
     let target = try chrome.send("Target.createTarget",
                                  ["url": "about:blank", "width": width, "height": height, "newWindow": true])
@@ -207,6 +222,10 @@ func render(_ chrome: Chrome, url: String, width: Int, height: Int, png: String)
     try chrome.send("Network.enable", session: session)
     try chrome.send("Emulation.setDeviceMetricsOverride",
                     ["width": width, "height": height, "deviceScaleFactor": 1, "mobile": false], session: session)
+    // An animated board shows its final frame under reduced motion; captured mid-animation it
+    // shows whichever frames the virtual clock happens to land on.
+    try chrome.send("Emulation.setEmulatedMedia",
+                    ["features": [["name": "prefers-reduced-motion", "value": "reduce"]]], session: session)
     // Hold the clock until the page is on its way, then let it run for the budget.
     try chrome.send("Emulation.setVirtualTimePolicy", ["policy": "pause"], session: session)
     let navigation = try chrome.send("Page.navigate", ["url": url], session: session)
@@ -249,6 +268,16 @@ func render(_ chrome: Chrome, url: String, width: Int, height: Int, png: String)
                                      "returnByValue": true], session: session)
         return (state["result"] as? [String: Any])?["value"] as? String == "loading"
     }
+    /// The height of the laid-out page: the body grows with its content whatever the viewport.
+    func contentHeight() throws -> Int {
+        let state = try chrome.send("Runtime.evaluate",
+                                    ["expression": "Math.round(document.body.getBoundingClientRect().height)",
+                                     "returnByValue": true], session: session)
+        guard let value = (state["result"] as? [String: Any])?["value"] as? Int, value > 0 else {
+            throw ProtocolError(description: "Không đo được chiều cao của trang")
+        }
+        return value
+    }
 
     try runClock(virtualTimeBudget)
     // Chrome asks for a web font when it lays out text that uses it, and text added during
@@ -260,6 +289,16 @@ func render(_ chrome: Chrome, url: String, width: Int, height: Int, png: String)
         guard try fontLoading() else { break }
         lateFont = true
         try runClock(fontRoundBudget)
+    }
+    if isPage {
+        let measured = try contentHeight()
+        if measured != height {
+            height = measured
+            try chrome.send("Emulation.setDeviceMetricsOverride",
+                            ["width": width, "height": height, "deviceScaleFactor": 1, "mobile": false], session: session)
+            try runClock(fontRoundBudget)
+            lateFont = true  // the page was painted at the frame height: paint it once more, cleanly
+        }
     }
     if lateFont {
         // Chrome may already have painted with the fallback font. Painting again over that
@@ -280,7 +319,7 @@ func render(_ chrome: Chrome, url: String, width: Int, height: Int, png: String)
     guard FileManager.default.createFile(atPath: png, contents: image) else {
         throw ProtocolError(description: "Không ghi được \(png)")
     }
-    return missing
+    return Rendering(height: height, missing: missing)
 }
 
 let arguments = Array(CommandLine.arguments.dropFirst())
@@ -288,13 +327,15 @@ guard arguments.count == 5 else { fail(usage) }
 let (executable, profile, project, out, pidFile) = (arguments[0], arguments[1], arguments[2], arguments[3], arguments[4])
 
 struct Board {
-    let name: String, width: String, height: String
+    let name: String, width: String, height: String, isPage: Bool
 }
 var boards: [Board] = []
 while let line = readLine() {
     let fields = line.split(separator: "\t", omittingEmptySubsequences: false).map(String.init)
-    guard fields.count == 3, Double(fields[1]) != nil, Double(fields[2]) != nil else { fail("Dòng không hợp lệ: \(line)") }
-    boards.append(Board(name: fields[0], width: fields[1], height: fields[2]))
+    guard fields.count == 4, Double(fields[1]) != nil, Double(fields[2]) != nil, ["page", "fixed"].contains(fields[3]) else {
+        fail("Dòng không hợp lệ: \(line)")
+    }
+    boards.append(Board(name: fields[0], width: fields[1], height: fields[2], isPage: fields[3] == "page"))
 }
 
 setvbuf(stdout, nil, _IOLBF, 0)  // the caller prints each line as it comes
@@ -332,9 +373,11 @@ for board in boards {
     // nothing is cut off.
     let width = Int(Double(board.width)!.rounded(.up)), height = Int(Double(board.height)!.rounded(.up))
     do {
-        let missing = try render(chrome, url: page.absoluteString, width: width, height: height, png: "\(out)/\(stem).png")
-        for url in missing { print("warn\t\(board.name)\tkhông tải được \(url)") }
-        print("ok\t\(board.name)\t\(board.width)\t\(board.height)")
+        let rendering = try render(chrome, url: page.absoluteString, width: width, height: height,
+                                   isPage: board.isPage, png: "\(out)/\(stem).png")
+        for url in rendering.missing { print("warn\t\(board.name)\tkhông tải được \(url)") }
+        if rendering.height != height { print("resize\t\(board.name)\t\(rendering.height)") }
+        print("ok\t\(board.name)\t\(board.width)\t\(rendering.height != height ? String(rendering.height) : board.height)")
     } catch {
         failed = true
         print("fail\t\(board.name)\t\(error)")

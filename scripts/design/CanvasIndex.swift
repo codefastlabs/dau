@@ -1,7 +1,8 @@
 // Reads the design canvas layout (canvas.json) for scripts/design/render-canvas.sh, which
 // builds this file once with scripts/lib/swift-tool.sh.
 //
-//   canvas-index boards canvas.json   name<TAB>width<TAB>height, every page but "archive"
+//   canvas-index boards canvas.json   name<TAB>width<TAB>height<TAB>kind, every page but "archive";
+//                                     kind is "page" for a board with "expand": "fill", else "fixed"
 //   canvas-index readme canvas.json   docs/canvas/README.md (index by section)
 //
 // Order: the canvas order.
@@ -66,7 +67,8 @@ guard arguments.count == 2 else { fail(usage) }
 switch arguments[0] {
 case "boards":
     for (name, board) in renderedBoards(arguments[1]) {
-        print("\(name)\t\(number(board["w"]))\t\(number(board["h"]))")
+        let kind = board["expand"] as? String == "fill" ? "page" : "fixed"
+        print("\(name)\t\(number(board["w"]))\t\(number(board["h"]))\t\(kind)")
     }
 case "readme":
     readme(arguments[1])

@@ -1,12 +1,14 @@
 #!/bin/zsh
 # Renders the design canvas artboards to PNG and copies their sources into docs/canvas/,
 # so the approved design can be read without access to the canvas on claude.ai.
-# Side effects: builds, writes repo files
+# Side effects: builds, writes repo files (also rewrites <dir>/project/canvas.json when a page board is not its frame height)
 #
 # Usage: scripts/design/render-canvas.sh <dir> [--out <folder>]
 #   dir     a local copy of the canvas files: <dir>/project/*.dc.html, <dir>/project/canvas.json
 #           and <dir>/artifact-type/dc-runtime.js. Claude saves them with the Artifact tool
-#           (action "read" with `paths`); there is no other way to download them.
+#           (action "read" with `paths`); there is no other way to download them. Images an
+#           artboard shows from the canvas uploads (src="/_blob/<id>") go in <dir>/_blob/, saved
+#           with the Artifact tool (action "read", path <id>, which names the file <id>.<ext>).
 #   --out   write the snapshot to <folder> instead of docs/canvas/ (to try a render without
 #           touching the repo). The folder must be missing, empty or an earlier snapshot.
 #
@@ -18,6 +20,11 @@
 # a profile of its own under build/canvas/, never the user's.
 # The canvas runtime (dc-runtime.js) is the canvas publisher's code: it is opened from
 # build/canvas/ as a file:// page for the render only and never copied into the repo.
+# A page board ("expand": "fill") is captured at the height of its content, not of its frame,
+# so a longer text is never cut off. When that height differs from the frame, the new height
+# goes into the snapshot's canvas.json and into <dir>/project/canvas.json, boards below it in its
+# column move by the same amount, and the script says so: publish that file to the canvas
+# (Apps/Dau/CLAUDE.md) so the frames match the snapshot.
 # Writes <name>.png, src/<name>.dc.html, canvas.json and README.md (index by section) into
 # the output folder. The old snapshot is replaced only after every board rendered; when a
 # board fails or the run is interrupted it stays as it was. build/canvas/ and the Chrome
@@ -71,33 +78,65 @@ trap 'exit 143' TERM HUP
 
 rm -rf "$WORK"; mkdir -p "$WORK/project" "$PROFILE" "$WORK/out/src"
 cp "$SRC"/project/*.dc.html "$SRC/project/canvas.json" "$WORK/project/"
+# Canvas uploads live only on claude.ai: the render copy points /_blob/<id> at the saved files.
+if [[ -d $SRC/_blob ]]; then
+  mkdir -p "$WORK/project/_blob"
+  for upload in "$SRC"/_blob/*(N.); do cp "$upload" "$WORK/project/_blob/${${upload:t}%%.*}"; done
+  sed -i "" "s|\"/_blob/|\"./_blob/|g" "$WORK"/project/*.dc.html
+fi
 cp "$SRC/artifact-type/dc-runtime.js" "$WORK/project/support.js"
 
 INDEX=$(dau_swift_tool canvas-index "${0:A:h}/CanvasIndex.swift") || exit 1
 RENDER=$(dau_swift_tool canvas-render "${0:A:h}/CanvasRender.swift") || exit 1
 
-# name<TAB>width<TAB>height for the boards outside the "archive" page, in canvas order.
+# name<TAB>width<TAB>height<TAB>kind for the boards outside the "archive" page, in canvas order.
 "$INDEX" boards "$WORK/project/canvas.json" > "$WORK/boards.tsv"
 count=$(wc -l < "$WORK/boards.tsv" | tr -d ' ')
 (( count > 0 )) || log_die "canvas.json không có artboard nào ngoài trang archive."
-while IFS=$'\t' read -r name w h; do
+while IFS=$'\t' read -r name w h kind; do
   [[ -f $WORK/project/$name ]] || log_die "canvas.json có $name nhưng thư mục không có file đó."
 done < "$WORK/boards.tsv"
 
 log_step "Chụp $count artboard bằng một Chrome chạy ẩn"
 failed=0 warned=0
-# Lines from canvas-render: ok/warn/fail, then the board, then the details.
+resized=()  # name height, for the page boards whose content is not their frame height
+# Lines from canvas-render: ok/warn/resize/fail, then the board, then the details.
 "$RENDER" "$CHROME" "$PROFILE" "$WORK/project" "$WORK/out" "$WORK/chrome.pid" < "$WORK/boards.tsv" \
   | while IFS=$'\t' read -r kind name a b; do
       case $kind in
-        ok)   cp "$WORK/project/$name" "$WORK/out/src/"; log_detail "$name (${a}×${b})" ;;
+        ok)   cp "$SRC/project/$name" "$WORK/out/src/"; log_detail "$name (${a}×${b})" ;;
         warn) log_warn "$name: $a"; warned=1 ;;
+        resize) resized+=("$name" "$a") ;;
         fail) log_warn "Không chụp được $name: $a"; failed=1 ;;
       esac
     done || failed=1
 (( failed == 0 )) || log_die "Có artboard không chụp được (xem trên); $OUT giữ nguyên."
 (( warned == 0 )) || log_hint "Ảnh của các artboard trên có thể thiếu phông hoặc hình; kiểm lại mạng rồi chạy lại."
 
+if (( ${#resized} )); then
+  heights="{}"
+  for name h in "${resized[@]}"; do
+    log_detail "$name: khung trên canvas thành $h px cho vừa nội dung"
+    (( h <= 8000 )) || log_warn "$name cao $h px, quá giới hạn 8000 px của canvas: tách artboard ở ranh giới một mục (Apps/Dau/CLAUDE.md)."
+    heights=$(jq --arg n "$name" --argjson h "$h" '. + {($n): $h}' <<< "$heights")
+  done
+  # Each resized board takes its new height, and every board on its page that starts below its
+  # old bottom and shares part of its columns moves by the same amount: the gap between rows
+  # stays and no frame covers another.
+  jq --argjson heights "$heights" '
+    reduce ($heights | to_entries[]) as $r (.;
+      .boards[$r.key] as $b
+      | ($r.value - $b.h) as $delta
+      | .boards |= with_entries(
+          if .key == $r.key then .value.h = $r.value
+          elif (.value.page // "") == ($b.page // "") and .value.y >= $b.y + $b.h
+               and .value.x < $b.x + $b.w and $b.x < .value.x + .value.w
+          then .value.y += $delta
+          else . end))' "$WORK/project/canvas.json" > "$WORK/canvas.json"
+  mv "$WORK/canvas.json" "$WORK/project/canvas.json"
+  cp "$WORK/project/canvas.json" "$SRC/project/canvas.json"
+  log_hint "Publish $SRC/project/canvas.json lên canvas để khung khớp bản chụp (Apps/Dau/CLAUDE.md)."
+fi
 cp "$WORK/project/canvas.json" "$WORK/out/"
 "$INDEX" readme "$WORK/project/canvas.json" > "$WORK/out/README.md"
 rm -rf "$OUT"; mkdir -p "${OUT:h}"; mv "$WORK/out" "$OUT"
