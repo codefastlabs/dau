@@ -11,7 +11,7 @@ Chờ người dùng:
 
 Việc tiếp theo:
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
-- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Trang trong `site/` đã dựng ngày 24/11 theo D45 (Trang web) và `docs/research/WebsiteStack.md`, theo mục "Kế hoạch M8" bên dưới. Trang chỉ lên tên miền cùng beta đầu tiên.
+- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Trang trong `site/` đã dựng và lên `main` ngày 24/11 theo D45 (Trang web) và `docs/research/WebsiteStack.md`; ba workflow Site, Test và CodeQL xanh trên commit cuối. Việc còn lại ở mục "Kế hoạch M8" bên dưới: lên tên miền cùng beta đầu tiên, các ô chờ bản phát hành và M7, đo lại bốn ứng dụng.
 - Không chờ bước 0: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần.
 
@@ -98,7 +98,7 @@ Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo s�
 
 ## Kế hoạch M8
 
-1. Dựng `site/`, dữ liệu lúc build, kiểm đầu ra, CI, hook `pre-push`, checksum trong script phát hành, test engine cho ví dụ trên trang: xong 24/11.
+1. Dựng `site/`, dữ liệu lúc build, kiểm đầu ra, CI, hook `pre-push`, checksum trong script phát hành, test engine cho ví dụ trên trang, các lượt sửa theo artboard người dùng duyệt (hero, thẻ số đo, quyền riêng tư, hoạt ảnh từng phím, VietQR, GitHub Sponsors): xong và push 24/11.
 2. Lên tên miền cùng beta đầu tiên (bước 4 của kế hoạch M7): người dùng nối project Vercel theo `docs/Releasing.md`, bước "Vercel"; sau lần triển khai đầu, chạy `scripts/release/check-site-appcast.sh` và kiểm `/en`, chuyển hướng 308, header bảo mật trên tên miền (`docs/research/WebsiteStack.md` mục 3).
 3. Các ô `[…]` còn lại đều chờ bản phát hành hoặc M7, theo nguồn ở `docs/research/WebsiteStack.md` mục "Dữ liệu lúc build": phiên bản, ngày, dung lượng và SHA-256 khi có bản phát hành; ký số, notarize và cách dựng bản kiểm chứng được khi có tài khoản Apple Developer. Mục "Đo được" hiện khi bước bài tải nặng của `docs/Releasing.md` ghi `Measurements.json` cho bản đang cho tải.
 4. Danh sách 15 ứng dụng đã kiểm chứng gõ đúng trên trang dựa một phần vào số đo có trước khi Dấu tự chèn ký tự (N3, 22/11): Mail và Notes đo 30/10, Telegram và Edge đo 17/11. Đo lại bốn ô này ở lượt chạy chiếm màn hình kế tiếp (bước 3 của kế hoạch M7) rồi sửa `docs/Compatibility.md` và `CompatibilityList.json` nếu kết quả khác.
