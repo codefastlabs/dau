@@ -1,0 +1,88 @@
+# The website (site/, D45): type check, lint, format, build with the output check, Lighthouse CI.
+# main has no branch protection, so this reports a broken commit rather than blocking it; the layer
+# that blocks is Vercel keeping the last good deployment when `pnpm build` fails
+# (docs/research/WebsiteStack.md, section 3). No secrets are used: npm packages never run next to
+# a signing key.
+name: Site
+
+on:
+  push:
+    branches: [main]
+    paths: ["site/**", ".github/workflows/site.yml"]
+  pull_request:
+    paths: ["site/**", ".github/workflows/site.yml"]
+  # Vercel reports each deployment to GitHub; the appcast check runs on production ones only.
+  deployment_status:
+
+# Read-only: this workflow publishes nothing.
+permissions:
+  contents: read
+
+concurrency:
+  group: site-${{ github.event_name }}-${{ github.ref }}-${{ github.event.deployment.id || '' }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: github.event_name != 'deployment_status'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: site
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # No version: pnpm comes from "packageManager", Node from "engines.node" in site/package.json.
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        with:
+          package_json_file: site/package.json
+
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: site/package.json
+          cache: pnpm
+          cache-dependency-path: site/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm test
+
+      # Cuts the font, builds, and checks the output (appcast bytes, links, font, CSP).
+      - run: pnpm build
+
+      # Scores and LCP/TBT/CLS limits in lighthouserc.json; reports stay in the run's artifacts,
+      # never on public storage.
+      - name: Lighthouse CI
+        run: pnpm exec lhci autorun
+
+      - name: Upload Lighthouse reports
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: lighthouse
+          path: site/.lighthouseci/
+          if-no-files-found: ignore
+
+  # After a production deployment, the appcast the domain serves must be the bytes of the
+  # deployed commit (docs/research/WebsiteStack.md, section 3, "Cách bảo vệ" item 4).
+  appcast:
+    if: >-
+      github.event_name == 'deployment_status' &&
+      github.event.deployment.environment == 'Production' &&
+      github.event.deployment_status.state == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      # The repository's scripts are zsh (scripts/README.md); the Ubuntu image has none.
+      - name: Install zsh
+        run: sudo apt-get update -q && sudo apt-get install -y -q zsh
+
+      - name: Compare the served appcast with the deployed commit
+        run: scripts/release/check-site-appcast.sh "${{ github.event.deployment.sha }}"

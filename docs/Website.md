@@ -12,7 +12,7 @@ Mọi trang theo các quy tắc chung sau:
 - Mỗi trang có bản tiếng Việt và bản tiếng Anh với cùng nội dung và cùng mã mục. Tên giao diện macOS trong bản tiếng Việt ghi bằng tiếng Việt của Apple, kèm tiếng Anh trong ngoặc, vì trang không biết macOS của người đọc dùng ngôn ngữ nào. Bản tiếng Anh chỉ ghi tên tiếng Anh của Apple (D38 (Chữ trên giao diện)).
 - Trang không có ảnh chụp app. Các mô hình minh hoạ thay cho ảnh chụp, vì ảnh chụp phải chụp lại mỗi khi giao diện đổi và phải có bản cho từng ngôn ngữ.
 - Hướng dẫn cài và bật Dấu nằm trong mục Hỏi đáp và trong onboarding của app, không có trang riêng.
-- Trang lỗi 404 hiện cùng lúc tiếng Việt và tiếng Anh, vì một đường dẫn lạ không cho biết người đọc muốn bản nào.
+- Trang lỗi 404 hiện cùng lúc tiếng Việt và tiếng Anh, vì một đường dẫn lạ không cho biết người đọc muốn bản nào ([artboard](canvas/NotFound.png)).
 
 ## Trang tải về (M8)
 
@@ -25,7 +25,7 @@ Artboard của trang có bản máy tính và bản điện thoại, mỗi bản
 
 - Trang dùng phông Be Vietnam Pro, nền Giấy và màu nhấn Mực (D25 (Nhận diện)).
 - Một mã nguồn responsive phục vụ cả máy tính lẫn điện thoại.
-- Các mô hình minh hoạ cách Dấu làm việc nằm ở trang "Trang web" của canvas, cạnh artboard trang tải về. Mỗi mục dưới đây dẫn tới mô hình của nó. Mọi ví dụ chữ trong mô hình lấy từ một test của engine. Hoạt ảnh trong mô hình là CSS dựng sẵn và chỉ hiện khung cuối khi người dùng bật giảm chuyển động (`prefers-reduced-motion`).
+- Các mô hình minh hoạ cách Dấu làm việc nằm ở trang "Trang web" của canvas, cạnh artboard trang tải về. Mỗi mục dưới đây dẫn tới mô hình của nó. Mọi ví dụ chữ trong mô hình lấy từ một test của engine. Hoạt ảnh trong mô hình là CSS dựng sẵn và chỉ hiện khung cuối khi người dùng bật giảm chuyển động (`prefers-reduced-motion`). Mỗi hoạt ảnh gõ phím mở bằng trạng thái trước phím đầu (ô trống hoặc từ đã gõ sẵn) rồi đi từng phím. Phím đang gõ sáng lên cùng lúc với chữ nó tạo ra. Ô chữ hiện đủ mọi bước mà test engine kiểm.
 
 Các mục xếp theo thứ tự sau. Trang mở bằng một ý: Dấu thay chữ ngay tại chỗ bạn gõ, không gạch chân và không phím giả. Các mục giữa là bằng chứng cho ý đó. Trang khép bằng nút tải trước phần góp sức. Mã mục ghi trong ngoặc sau tên mục, giống nhau ở hai bản; app và tài liệu dẫn tới mục bằng mã này.
 
@@ -34,12 +34,12 @@ Các mục xếp theo thứ tự sau. Trang mở bằng một ý: Dấu thay ch�
    - Một dòng chữ nhỏ chứa cụm "Bộ gõ tiếng Việt cho macOS" để máy tìm kiếm nhận ra trang. Trên điện thoại, dòng này chỉ có đúng cụm đó.
    - Tiêu đề là câu "Gõ tiếng Việt trên Mac, tự nhiên như vốn có." Trên máy tính, tiêu đề nằm trong hai đến ba dòng.
    - Phụ đề là câu "Dấu thay chữ ngay tại chỗ bạn gõ: không gạch chân, không phím xoá giả. Gõ Telex hay VNI như bạn vẫn quen." Câu này đúng với mặc định của D13 (Gạch chân là đường lui cuối cùng) và cách làm của N3 (Ít lời gọi vào ứng dụng đích).
-   - Bên dưới phụ đề có nút chính, nút "Xem mã nguồn" và một dòng yêu cầu hệ thống.
-   - Bên phải là hoạt ảnh phát lại chuỗi phím thành chữ có dấu. Hoạt ảnh chỉ hiện phím vừa gõ, không hiện sẵn cả chuỗi và có một từ gõ dấu giữa chừng (`hofa` ra "hoà") theo mô hình [Gõ phím dấu ở đâu cũng được](canvas/ModelTonePlacement.png) (D28 (Đặt dấu tự do), D15 (Cài đặt mặc định)). Hoạt ảnh dựng sẵn bằng CSS, không phải engine chạy trên web. Khi người dùng bật giảm chuyển động (`prefers-reduced-motion`), hoạt ảnh đứng ở câu đã gõ xong.
+   - Bên dưới phụ đề có nút chính, nút "Xem mã nguồn" và một dòng yêu cầu hệ thống. Dòng này ghi bản macOS tối thiểu cùng các bản đã kiểm theo D1 (Nền tảng), không hứa bản chưa kiểm.
+   - Bên phải là hoạt ảnh phát lại chuỗi phím thành chữ có dấu. Hoạt ảnh gõ câu "tôi yêu tiếng Việt", xuống dòng rồi gõ "hoà bình". Cỡ chữ co theo bề rộng khung, nên mỗi dòng gõ ra không bị ngắt giữa chừng. Hoạt ảnh chỉ hiện phím vừa gõ, không hiện sẵn cả chuỗi. Từ "hoà" gõ dấu giữa chừng (`hofa`) theo mô hình [Gõ phím dấu ở đâu cũng được](canvas/ModelTonePlacement.png) (D28 (Đặt dấu tự do), D15 (Cài đặt mặc định)). Hoạt ảnh dựng sẵn bằng CSS, không phải engine chạy trên web. Khi người dùng bật giảm chuyển động (`prefers-reduced-motion`), hoạt ảnh đứng ở câu đã gõ xong.
 3. **Vì sao có Dấu** (`#why`) so ba loại bộ gõ trên cùng bốn phím h, o, a, f, theo mô hình [Ba cách gõ “hoà”](canvas/ModelThreeWays.png) (N3, D13). Mục chỉ tả cách mỗi loại làm việc.
    - Bộ gõ có sẵn của macOS dùng gạch chân.
    - Bộ gõ giả lập phím xoá chữ cũ rồi gõ lại bằng phím giả. Dấu không đo các bộ gõ này, nên mục không đặt số đo nào cho chúng (N5).
-   - Dấu thay đúng phần chữ cần đổi trong một lần. Chỉ cột của Dấu có ô số đo khi máy bận, lấy từ bài tải nặng của D42 (Ngưỡng hiệu năng). Mục kèm danh sách ứng dụng đã kiểm chứng gõ đúng; danh sách chỉ gồm ứng dụng không mang nhãn "Đề xuất" trong `docs/Compatibility.md`.
+   - Dấu thay đúng phần chữ cần đổi trong một lần. Chỉ Dấu có số đo khi máy bận, lấy từ lượt bài tải nặng mới nhất của D42 (Ngưỡng hiệu năng). Số này viết bằng lời người dùng hiểu: thời gian Dấu xử lý 99% số phím có đổi chữ, so với một lần màn hình vẽ lại, kèm chữ gõ ra có đúng không. Ngày, máy, bản dùng để đo và ngưỡng phát hành nằm ở một dòng chữ nhỏ. Bên cạnh là danh sách ứng dụng đã kiểm chứng gõ đúng; danh sách chỉ gồm ứng dụng không mang nhãn "Đề xuất" trong `docs/Compatibility.md`.
    - Mục không có tên API. Mô hình [Đường đi của một phím](canvas/ModelKeyFlow.png) thuộc trang M10, không thuộc trang này.
 4. **Tính năng** (`#features`) gồm bốn thẻ. Mỗi thẻ đặt phần hoạt ảnh (ô gõ và phím) của mô hình tương ứng, không đặt tiêu đề hay đoạn dẫn của mô hình:
    - [Giữ nguyên từ nước ngoài](canvas/ModelForeignWords.png) (D4, D26).
@@ -63,7 +63,7 @@ Các mục xếp theo thứ tự sau. Trang mở bằng một ý: Dấu thay ch�
    - Khi người đọc không dùng Mac, nút chính ở thanh điều hướng, hero và mục này đổi thành "Sao chép liên kết", kèm câu "Dấu chỉ chạy trên Mac. Mở lại trang này trên máy Mac để tải về." Trong mục này, câu đó lên đầu và "Tải về (.dmg)" thành nút phụ. Artboard điện thoại vẽ trạng thái này. Trang là trang tĩnh nên không gửi email.
 10. **Góp sức** (`#contribute`):
    - Người đọc có thể góp công: báo lỗi, dùng thử bản mới khi có kênh Beta, góp mã nguồn, giới thiệu Dấu cho người khác.
-   - Người đọc có thể ủng hộ qua VietQR và GitHub Sponsors (D39 (Ủng hộ dự án)).
+   - Người đọc có thể ủng hộ qua VietQR và GitHub Sponsors (D39 (Ủng hộ dự án)). Phần VietQR có mã QR cùng nút tải ảnh mã cho người xem trên điện thoại và ghi người nhận cùng ngân hàng. Mã không kèm lời nhắn sẵn. Nội dung chuyển khoản chỉ nhận chữ không dấu, mà D24 (Tên và định danh) không cho chữ "Dau" không dấu đứng trước người dùng. Người chuyển tự ghi tên muốn hiện vào nội dung.
    - Phần Cảm ơn liệt kê tên người ủng hộ, cùng danh sách với mục "Người ủng hộ" trong app và giải thích cách đồng ý được nêu tên (D39). Phần này chỉ nêu tên một người khi người đó đồng ý và không ghi số tiền. Khi chưa có người ủng hộ nào, trang ẩn phần tên và chỉ giữ câu cảm ơn cùng cách đồng ý.
    - Phần "Tiền ủng hộ đã dùng vào việc gì" là một bảng gồm ngày, khoản chi và số tiền. Bảng chỉ ghi khoản đã chi thật (D39, N5).
 11. **Chân trang** nằm trên nền Than, có logo có viền và các liên kết tới mã nguồn, báo lỗi, lịch sử phiên bản, hướng dẫn gỡ và ủng hộ.

@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Offline self-test of the appcast channel logic: scripts/lib/appcast.sh and check-appcast.sh (--beta, --promoted).
+# Offline self-test of the appcast channel logic (scripts/lib/appcast.sh, check-appcast.sh --beta and --promoted) and of the Checksums.json merge (scripts/lib/checksums.sh).
 # Side effects: builds (build/appcast-test, deleted when it ends; no network, no signing)
 # Uses a hand-made appcast in the shape generate_appcast writes (one element per line, no final
 # newline), never a real key or archive. What it covers: the beta item is found by tag (beta.1 is
@@ -12,6 +12,7 @@
 set -uo pipefail
 source "${${(%):-%x}:A:h:h}/lib/log.sh"
 source "${${(%):-%x}:A:h:h}/lib/appcast.sh"
+source "${${(%):-%x}:A:h:h}/lib/checksums.sh"
 DAU_ROOT=${${(%):-%x}:A:h:h:h}
 check=$DAU_ROOT/scripts/release/check-appcast.sh
 dir=$DAU_ROOT/build/appcast-test
@@ -103,5 +104,26 @@ expect "mất một mục cũ thì lỗi" 1 $check --beta v0.1.0-beta.11 --appca
 expect "số build trùng mục cũ thì lỗi" 1 $check --beta v0.1.0-beta.11 --appcast $dir/dup-build.xml --base $before
 expect "mục đầu không phải của tag thì lỗi" 1 $check --beta v0.1.0-beta.1 --appcast $dir/new-ok.xml
 
+# --- Checksums.json (scripts/lib/checksums.sh) ---
+[[ $(appcast_item_version $before v0.1.0-beta.10) == 100 ]] && log_ok "sparkle:version của mục beta.10 là 100" \
+  || { log_error "appcast_item_version beta.10"; fails=$(( fails + 1 )); }
+expect "tag không có mục thì appcast_item_version lỗi" 1 appcast_item_version $before v9.9.9-beta.1
+print -rn -- "$(head -c 2048 /dev/zero | tr '\0' 'x')" > $dir/fake.dmg
+fake_sha=$(checksums_sha256 $dir/fake.dmg)
+[[ $fake_sha == $(shasum -a 256 $dir/fake.dmg | cut -d' ' -f1) && $fake_sha =~ ^[0-9a-f]{64}$ ]] \
+  && log_ok "SHA-256 là 64 chữ số hex thường, khớp shasum" || { log_error "checksums_sha256: $fake_sha"; fails=$(( fails + 1 )); }
+print -r -- '{}' > $dir/cs-empty.json
+checksums_merge $dir/cs-empty.json 1230 $fake_sha > $dir/cs-one.json
+[[ $(checksums_get $dir/cs-one.json 1230) == $fake_sha ]] && log_ok "merge vào {} ghi đúng mục" || { log_error "merge vào {}"; fails=$(( fails + 1 )); }
+print -r -- '{
+  "990": "aaa"
+}' > $dir/cs-old.json
+checksums_merge $dir/cs-old.json 1230 $fake_sha > $dir/cs-two.json
+{ print '{'; print "  \"990\": \"aaa\","; print "  \"1230\": \"$fake_sha\""; print '}'; } > $dir/cs-two.want
+same "merge giữ mục cũ, khoá xếp theo số, thụt 2 dấu cách, có xuống dòng cuối" $dir/cs-two.json $dir/cs-two.want
+checksums_merge $dir/cs-two.json 1230 $fake_sha > $dir/cs-again.json
+same "merge cùng số, cùng SHA-256 thì không đổi gì" $dir/cs-two.json $dir/cs-again.json
+expect "merge cùng số build, SHA-256 khác thì lỗi" 1 checksums_merge $dir/cs-two.json 1230 deadbeef
+[[ $(checksums_from_ref no-such-ref) == '{}' ]] && log_ok "ref không có file thì ra {}" || { log_error "checksums_from_ref"; fails=$(( fails + 1 )); }
 (( fails == 0 )) || log_die "$fails ca không đạt."
 log_done "Mọi ca đạt"

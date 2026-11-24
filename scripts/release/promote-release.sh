@@ -27,13 +27,16 @@
 #     --out      download directory (default build/promote; wiped first, must be inside build/).
 # Before anything it runs check-release-gate.sh: the commit must be on origin/main and have passed the
 # Test workflow. Needs the GitHub CLI (gh), logged in (GH_TOKEN on CI), and the tags and origin/main fetched.
-# Output in --out: Dau-X.Y.Z.dmg, Dau-X.Y.Z.dSYMs.zip, appcast-before.xml (copy of origin/main's), appcast.xml.
+# Output in --out: Dau-X.Y.Z.dmg, Dau-X.Y.Z.dSYMs.zip, appcast-before.xml (copy of origin/main's), appcast.xml,
+# checksums-before.json (copy of origin/main's), Checksums.json (the same plus the beta's entry if it was missing; the
+# entry must equal the SHA-256 of the renamed DMG, else the script stops). Checksums.json is attached to the draft like appcast.xml.
 # The draft is not a pre-release; publishing it and the Homebrew cask: docs/Releasing.md.
 # Exit status: 0 done; 1 a check failed; 2 bad usage.
 
 set -euo pipefail
 source "${${(%):-%x}:A:h:h}/lib/build.sh"
 source "${${(%):-%x}:A:h:h}/lib/appcast.sh"
+source "${${(%):-%x}:A:h:h}/lib/checksums.sh"
 
 tag=${GITHUB_REF_NAME-} dry=0 out=$DAU_ROOT/build/promote
 while (( $# )); do
@@ -108,10 +111,27 @@ esac
 appcast_untag "$before" "$beta" > "$appcast"
 "$DAU_ROOT/scripts/release/check-appcast.sh" --promoted "$beta" --appcast "$appcast" --before "$before" || exit 1
 
+# --- the checksums ---------------------------------------------------------------------------
+# The stable DMG is the beta's, byte for byte, so it has the beta's sparkle:version and, once the
+# beta was published, the beta's entry in origin/main's Checksums.json. The entry must match the
+# renamed DMG; a missing entry (beta published before Checksums.json existed) is added.
+log_step "Checksums.json: SHA-256 của $beta khớp DMG đã đổi tên"
+checksums=$out/Checksums.json
+beta_version=$(appcast_item_version "$before" "$beta") || log_die "Không đọc được sparkle:version của $beta trong appcast."
+dmg_sha256=$(checksums_sha256 "$dmg")
+base_checksums=$out/checksums-before.json
+checksums_from_ref origin/main > "$base_checksums"
+recorded=$(checksums_get "$base_checksums" "$beta_version")
+[[ -z $recorded || $recorded == $dmg_sha256 ]] \
+  || log_die "Checksums.json của origin/main ghi SHA-256 $recorded cho build $beta_version, nhưng ${dmg:t} là $dmg_sha256: DMG của bản chính thức không phải DMG đã công bố."
+[[ -n $recorded ]] || log_warn "Checksums.json của origin/main chưa có build $beta_version: thêm vào từ DMG đã tải."
+checksums_merge "$base_checksums" "$beta_version" "$dmg_sha256" > "$checksums"
+log_ok "Checksums.json: build $beta_version = ${dmg_sha256[1,16]}… (${dmg:t})"
+
 # --- draft release ---------------------------------------------------------------------
 if (( dry )); then
   log_done "Chạy thử xong: chưa tạo gì trên GitHub (${out#$DAU_ROOT/})"
   exit 0
 fi
-gh release create "$tag" --verify-tag --draft --title "Dấu $version" --generate-notes "$dmg" "$dsyms" "$appcast"
-log_done "Đã tạo bản nháp $tag từ $beta, kèm appcast.xml đã bỏ thẻ beta; công bố theo docs/Releasing.md"
+gh release create "$tag" --verify-tag --draft --title "Dấu $version" --generate-notes "$dmg" "$dsyms" "$appcast" "$checksums"
+log_done "Đã tạo bản nháp $tag từ $beta, kèm appcast.xml đã bỏ thẻ beta và Checksums.json; công bố theo docs/Releasing.md"

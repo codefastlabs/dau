@@ -40,7 +40,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 22/11/2026, sau khi Dấ
 
 ## 1. Danh sách tương thích
 
-- Danh sách có sẵn trong bản build, ở `Apps/Dau/Resources/CompatibilityList.json`, với model `CompatibilityList` trong DauShared. Mỗi mục gồm bundle ID, cờ `suggestUnderline` và ghi chú cho người bảo trì.
+- Danh sách có sẵn trong bản build, ở `Apps/Dau/Resources/CompatibilityList.json`, với model `CompatibilityList` trong DauShared. Mỗi mục gồm bundle ID, cờ `suggestUnderline` và ghi chú cho người bảo trì. Các trường `measured`, `inPlaceCorrect` và `measuredMacOS` cùng danh sách `webApps` (trang web đã đo) chỉ dành cho trang web, nơi lấy số ứng dụng đã đo và danh sách ứng dụng đã kiểm chứng gõ đúng; app bỏ qua các trường này. Phiên đo tương thích sửa các trường đó cùng lúc với bảng ở mục "Hiện trạng".
 - Danh sách đi kèm app và đổi theo bản cập nhật app, không tải riêng (D7 (Cập nhật và loại bản dựng)). Tiến trình bộ gõ không tải gì (N2 (Bộ gõ không có quyền mạng)).
 - Ứng dụng có `suggestUnderline` hiện ở mục "Đề xuất" của trang Ứng dụng (D5 (Quy tắc theo ứng dụng); hành vi nằm ở [`docs/UI.md`](UI.md), mục "Ứng dụng"). Mặc định mọi ứng dụng đều không gạch chân. Người dùng tự bật.
 - Ứng dụng nào được gắn nhãn thì theo D13. Bundle ID lấy từ mục 3.

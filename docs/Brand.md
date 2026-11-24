@@ -10,7 +10,7 @@ Tài liệu này ghi biểu tượng, logo chữ, màu, phông và các file nh�
 - Ảnh xem trước GitHub là `Resources/Brand/github-preview.png`, cỡ 1280 × 640, xuất từ artboard bằng `scripts/assets/export-github-preview.sh`. Script không dùng bản chụp trong `docs/canvas/`, vì canvas đặt `@import` phông sau các luật CSS khác nên bản chụp dùng phông thay thế chứ không phải Be Vietnam Pro. Ảnh tải lên ở Settings › Social preview của repo.
 - Ảnh template thanh menu hiện là bản tạm `Apps/DauInputMethod/Resources/ModeVietnamese.tiff`, sinh bằng `scripts/assets/make-mode-icons.sh`.
 - Nền cửa sổ DMG gồm `Resources/Brand/DmgBackground.png` (640 × 400) và `DmgBackground@2x.png` (1280 × 800). `scripts/assets/make-dmg-background.sh` vẽ hai ảnh này theo artboard "Cửa sổ ảnh đĩa DMG". Ảnh chỉ có màu Giấy và một mũi tên Mực mờ, không có biểu tượng và không có chữ, vì Finder tự vẽ những thứ đó. Cỡ cửa sổ, cỡ biểu tượng và toạ độ hai biểu tượng ghi ở đầu script. `scripts/release/build-release.sh` ghép hai ảnh thành một file TIFF nhiều độ phân giải bằng `tiffutil -cathidpicheck`, nên repo không giữ file TIFF.
-- Favicon, `apple-touch-icon.png` và ảnh Open Graph chưa được xuất; chúng đi cùng website (M8).
+- Favicon (`favicon.svg`, `favicon.ico`), `apple-touch-icon.png` và hai ảnh Open Graph nằm ở `site/public/`. `node site/tools/ExportImages.ts` xuất chúng: favicon lấy từ `Resources/Brand/AppIcon.svg`, bỏ lề và bóng để mặt biểu tượng phủ kín ô vuông; ảnh Open Graph chụp artboard `OgImage.dc.html` và `OgImageEn.dc.html` bằng Chrome headless với Be Vietnam Pro của Fontsource, nên không cần mạng.
 
 ## Mockup
 

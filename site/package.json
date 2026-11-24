@@ -1,0 +1,52 @@
+{
+  "name": "dau-site",
+  "private": true,
+  "type": "module",
+  "imports": {
+    "#site/*": "./*",
+    "#tools/*": "./tools/*.ts",
+    "#*": [
+      "./src/*",
+      "./src/*.ts",
+      "./src/*.tsx"
+    ]
+  },
+  "scripts": {
+    "dev": "node tools/SubsetFonts.ts && vite dev",
+    "build": "node tools/SubsetFonts.ts && vite build && node tools/VerifyOutput.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "oxlint --deny-warnings",
+    "format": "oxfmt",
+    "format:check": "oxfmt --check",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@codefast/tracking": "0.10.0",
+    "@tanstack/react-router": "1.170.46",
+    "@tanstack/react-start": "1.169.7",
+    "@vercel/analytics": "2.0.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "valibot": "1.5.0"
+  },
+  "devDependencies": {
+    "@fontsource/be-vietnam-pro": "5.3.0",
+    "@lhci/cli": "0.16.1",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/node": "26.6.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "oxfmt": "0.80.0",
+    "oxlint": "1.95.0",
+    "subset-font": "2.9.0",
+    "tailwindcss": "4.3.5",
+    "typescript": "7.0.2",
+    "vite": "8.3.8",
+    "vitest": "5.1.1"
+  },
+  "engines": {
+    "node": "26.x"
+  },
+  "packageManager": "pnpm@12.21.0"
+}

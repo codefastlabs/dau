@@ -100,3 +100,7 @@
 - [Mô hình – Hai phần chạy riêng (N2, D8; Website mục 6)](ModelPrivacy.png) · [nguồn](src/ModelPrivacy.dc.html)
 - [Mô hình – VNI: chữ số thành dấu (D36, D26; Website mục 5 và Hỏi đáp)](ModelVNI.png) · [nguồn](src/ModelVNI.dc.html)
 
+## Trang 404
+
+- [Trang 404 – hai ngôn ngữ cùng lúc (Website, quy tắc chung)](NotFound.png) · [nguồn](src/NotFound.dc.html)
+

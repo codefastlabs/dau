@@ -12,10 +12,11 @@ Công cụ dòng lệnh để build, cài, kiểm và đo Dấu. Ai được ch�
 | `scripts/assets/` | sinh nguồn biểu tượng app (file Icon Composer chuẩn và bản phát triển) và xem thử bằng `ictool`, xuất ảnh xem trước GitHub, vẽ nền cửa sổ DMG, sinh ảnh template thanh menu |
 | `scripts/selftest/` | thử trên app thật (chiếm màn hình hoặc đổi nguồn đầu vào): gõ thử một câu (`typing/`), ma trận gõ khi app bận và lượt đo khi cả máy bận (`load/`), cửa sổ Cài đặt, App Group |
 | `scripts/check-l10n/` | kiểm String Catalog |
-| `scripts/lib/` | công cụ dùng chung giữa các script |
+| `scripts/lib/` | công cụ dùng chung giữa các script (đọc và sửa appcast `appcast.sh`, hợp nhất SHA-256 của DMG vào `Checksums.json` bằng `checksums.sh`) |
+| `.githooks/` | hook git của repo, ngoài `scripts/`: `pre-push` build `site/` trước khi đẩy commit có chạm thư mục đó; bật bằng `git config core.hooksPath .githooks`, `scripts/dev/doctor.sh` kiểm việc bật này |
 | `scripts/research/` | công cụ cho tài liệu nghiên cứu: trích dữ liệu từ dự án khác (chỉ đọc file, không chạy mã của họ), so Dấu với bộ gõ có sẵn của macOS bằng cách gõ thật (`compare-ims/`, `terminal-underline/`) |
 | `scripts/design/` | chụp canvas thiết kế thành bản trong repo (`docs/canvas/`) |
-| `scripts/release/` | dựng bản phát hành: archive, ký Developer ID, notarize, DMG, appcast; kiểm bản build (`docs/Releasing.md`). `build-release.sh` dựng một bản beta, chạy được không cần chứng chỉ (chế độ không ký); `promote-release.sh` biến beta cuối thành bản chính thức bằng cách sao tài sản của nó, không dựng lại; `check-release-gate.sh` (commit trong `origin/main`, workflow Test đã đạt) và `check-appcast.sh` (appcast nền có beta mới nhất; thẻ kênh beta; appcast quảng bá) chặn bản ký sai điều kiện; `test-appcast.sh` tự kiểm offline phần đọc và sửa appcast; `layout-dmg.sh` mở Finder nên chỉ chạy trên CI |
+| `scripts/release/` | dựng bản phát hành: archive, ký Developer ID, notarize, DMG, appcast; kiểm bản build (`docs/Releasing.md`). `build-release.sh` dựng một bản beta, chạy được không cần chứng chỉ (chế độ không ký); `promote-release.sh` biến beta cuối thành bản chính thức bằng cách sao tài sản của nó, không dựng lại; `check-release-gate.sh` (commit trong `origin/main`, workflow Test đã đạt) và `check-appcast.sh` (appcast nền có beta mới nhất; thẻ kênh beta; appcast quảng bá) chặn bản ký sai điều kiện; `test-appcast.sh` tự kiểm offline phần đọc và sửa appcast cùng phần hợp nhất `Checksums.json`; `check-site-appcast.sh` so appcast mà `dau.codefastlabs.com` đang phục vụ với `site/appcast.xml` của một commit (từng byte) và kiểm header `Cache-Control`, chạy sau mỗi lần Vercel triển khai; `layout-dmg.sh` mở Finder nên chỉ chạy trên CI |
 
 ## Đầu mỗi script
 
@@ -41,6 +42,7 @@ File `.swift` trong `scripts/` là công cụ do một script `.sh` biên dịch
 | `changes input source` | chọn lại nguồn đầu vào hoặc bỏ Dấu khỏi nguồn đầu vào |
 | `changes user settings` | ghi `defaults`, cài đặt App Group của người dùng hoặc tệp cài đặt của app khác (script tự trả lại khi xong, trừ khi ghi khác; ví dụ `typing/run.sh` với `webstorm`: `trusted-paths.xml` và `recentProjects.xml` của WebStorm, chỉ trả lại khi script tự mở WebStorm) |
 | `deletes data` | xoá hoặc chuyển vào Thùng rác dữ liệu, bộ cài của Dấu |
+| `network` | gọi tới máy chủ ngoài (tải một trang, một file) và không đổi gì ở đó; chỉ ghi file tạm |
 | `changes GitHub` | tạo hoặc đổi thứ trên GitHub (bản nháp phát hành) bằng tài khoản đang đăng nhập `gh` |
 
 Hook `.claude/hooks/guard-scripts.sh` canh các script có tác dụng phụ làm phiền người dùng (mọi từ ngoài `none`, `builds`, `writes repo files`), theo bảng ghi rõ trong hook (script nào, với đối số nào): subagent gọi thì bị chặn; phiên chính chạy được. Có hỏi người dùng trước hay không là do chế độ quyền của Claude Code (`CLAUDE.md`, mục "Điều phối"). Hook không đọc dòng `# Side effects:`: đổi tác dụng phụ của một script thì sửa cả bảng ấy.

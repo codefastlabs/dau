@@ -2,7 +2,7 @@ import Foundation
 import Testing
 import DauEngine
 
-/// Replays every typed example the website shows (`site/src/data/typing-examples.json`)
+/// Replays every typed example the website shows (`site/src/data/TypingExamples.json`)
 /// so the site cannot show text the engine does not produce.
 @Suite("Website typing examples")
 struct WebsiteExamplesTests {
@@ -36,7 +36,7 @@ struct WebsiteExamplesTests {
     static let fileURL: URL = {
         var url = URL(fileURLWithPath: #filePath)
         for _ in 0..<5 { url.deleteLastPathComponent() }
-        return url.appendingPathComponent("site/src/data/typing-examples.json")
+        return url.appendingPathComponent("site/src/data/TypingExamples.json")
     }()
 
     static let examples: [Example] = {
@@ -51,7 +51,7 @@ struct WebsiteExamplesTests {
     @Test func fileHasUniqueIds() {
         #expect(!Self.examples.isEmpty)
         let ids = Self.examples.map(\.id)
-        #expect(Set(ids).count == ids.count, "duplicate ids in typing-examples.json")
+        #expect(Set(ids).count == ids.count, "duplicate ids in TypingExamples.json")
     }
 
     @Test(arguments: examples)

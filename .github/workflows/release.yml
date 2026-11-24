@@ -94,12 +94,14 @@ jobs:
       - name: Summary
         run: cat build/release/summary.txt
 
-      - name: Keep the unsigned development build as an artifact
+      - name: Keep the unsigned development build and its Checksums.json as an artifact
         if: steps.build.outputs.signed != '1'
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dau-dev-unsigned-DO-NOT-DISTRIBUTE
-          path: ${{ steps.build.outputs.dmg }}
+          path: |
+            ${{ steps.build.outputs.dmg }}
+            ${{ steps.build.outputs.checksums }}
           retention-days: 7
 
       - name: Draft GitHub release
@@ -109,8 +111,8 @@ jobs:
         run: |
           flags=(--draft --title "Dấu ${{ steps.build.outputs.label }}" --generate-notes)
           case "$GITHUB_REF_NAME" in *-beta.*) flags+=(--prerelease) ;; esac
-          files=("${{ steps.build.outputs.dmg }}" "${{ steps.build.outputs.dsyms }}")
-          # The updated appcast is a release asset, not published: docs/Releasing.md.
+          files=("${{ steps.build.outputs.dmg }}" "${{ steps.build.outputs.dsyms }}" "${{ steps.build.outputs.checksums }}")
+          # The updated appcast and Checksums.json are release assets, not published: docs/Releasing.md.
           if [ -n "${{ steps.build.outputs.appcast }}" ]; then files+=("${{ steps.build.outputs.appcast }}"); fi
           gh release create "$GITHUB_REF_NAME" "${flags[@]}" "${files[@]}"
 

@@ -9,6 +9,7 @@
 #   appcast_item_channel FILE TAG   "beta" (or another channel name), "-" (no channel tag: stable) or
 #                                "missing" (no item for TAG)
 #   appcast_has_version FILE N   status 0 when some item has sparkle:version N
+#   appcast_item_version FILE TAG   sparkle:version of the item of TAG (stdout); status 1 when TAG has no item
 #   appcast_is_feed_signed FILE  status 0 when the appcast carries its own signature block
 #                                (Sparkle's SURequireSignedFeed): editing it would break that signature
 #   appcast_untag FILE TAG       FILE with the beta channel tag removed from the item of TAG only,
@@ -73,4 +74,15 @@ appcast_untag() { # file tag
   # Command substitution drops the trailing newlines: put back what the file had (awk always ends
   # with one), so a file without a final newline (generate_appcast writes none) stays identical.
   if [[ -z $(tail -c1 "$1") ]]; then print -r -- "$result"; else print -rn -- "$result"; fi
+}
+
+appcast_item_version() { # file tag
+  local line
+  for line in ${(f)"$(appcast_summary "$1")"}; do
+    if [[ ${line#*|*|} == *"/releases/download/$2/"* ]]; then
+      print -r -- "${line%%|*}"
+      return 0
+    fi
+  done
+  return 1
 }

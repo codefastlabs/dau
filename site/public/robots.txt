@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dau.codefastlabs.com/sitemap.xml

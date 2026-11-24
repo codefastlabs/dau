@@ -21,7 +21,7 @@ dau/
 ├─ Config/                     # xcconfig ký mã (Signing.xcconfig, Local.xcconfig.example)
 ├─ Resources/Brand/            # file nhận diện gốc (docs/Brand.md)
 ├─ scripts/                    # script build, đo, phát hành: scripts/README.md
-├─ site/                       # trang web; tới M8 chỉ có appcast.xml (docs/Releasing.md)
+├─ site/                       # trang web TanStack Start prerender tĩnh, kèm appcast.xml (D45; docs/research/WebsiteStack.md)
 ├─ .github/                    # GitHub Actions và mẫu issue (docs/Releasing.md)
 └─ docs/                       # mục lục: docs/README.md
 ```

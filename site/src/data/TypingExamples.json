@@ -11,7 +11,7 @@
   },
   "examples": [
     { "id": "hero-sentence", "method": "telex", "keys": "tooi yeeu tieengs Vieetj", "expected": "tôi yêu tiếng Việt", "frames": ["t","to","tô","tôi","tôi ","tôi y","tôi ye","tôi yê","tôi yêu","tôi yêu ","tôi yêu t","tôi yêu ti","tôi yêu tie","tôi yêu tiê","tôi yêu tiên","tôi yêu tiêng","tôi yêu tiếng","tôi yêu tiếng ","tôi yêu tiếng V","tôi yêu tiếng Vi","tôi yêu tiếng Vie","tôi yêu tiếng Viê","tôi yêu tiếng Viêt","tôi yêu tiếng Việt"] },
-    { "id": "hero-hoa", "method": "telex", "keys": "hofa", "expected": "hoà", "frames": ["h","ho","hò","hoà"] },
+    { "id": "hero-hoa-binh", "method": "telex", "keys": "hofa binhf", "expected": "hoà bình", "frames": ["h","ho","hò","hoà","hoà ","hoà b","hoà bi","hoà bin","hoà binh","hoà bình"] },
 
     { "id": "three-ways-hoa", "method": "telex", "keys": "hoaf", "expected": "hoà", "frames": ["h","ho","hoa","hoà"] },
 

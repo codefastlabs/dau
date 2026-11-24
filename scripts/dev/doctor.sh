@@ -175,6 +175,50 @@ else
   log_hint "Thường là một ô mật khẩu đang được chọn (trình duyệt, Terminal có Secure Keyboard Entry). Rời ô đó hoặc đóng tiến trình đó."
 fi
 
+# --- Site and git hook -------------------------------------------------------------------
+log_step "Trang web (site/) và hook pre-push"
+hooks_path=$(git -C "$root" config core.hooksPath 2>/dev/null)
+if [[ $hooks_path == .githooks ]]; then
+  log_ok "core.hooksPath = .githooks (hook pre-push build trang trước khi đẩy commit chạm site/)"
+else
+  log_warn "core.hooksPath là '${hooks_path:-(chưa đặt)}', không phải .githooks: hook pre-push không chạy, một commit làm hỏng build trang có thể lên main."
+  log_hint "git -C $root config core.hooksPath .githooks"
+fi
+# The wanted versions are the ones site/package.json pins (engines.node, packageManager).
+site_pkg=$root/site/package.json
+if [[ ! -f $site_pkg ]]; then
+  log_detail "Bỏ qua kiểm Node và pnpm: chưa có site/package.json."
+elif ! command -v jq >/dev/null; then
+  log_warn "Không có jq, bỏ qua kiểm Node và pnpm của site/."
+else
+  want_node=$(jq -r '.engines.node // empty' "$site_pkg" | grep -oE '[0-9]+' | head -1)
+  want_pnpm=$(jq -r '.packageManager // empty' "$site_pkg" | sed -n 's/^pnpm@\([^+]*\).*/\1/p')
+  node_v=$(node --version 2>/dev/null)
+  if [[ -z $want_node ]]; then
+    log_warn "site/package.json không ghi engines.node: không biết cần Node nào."
+  elif [[ $node_v == v$want_node.* ]]; then
+    log_ok "Node: $node_v (site/package.json: engines.node)"
+  elif [[ -n $node_v ]]; then
+    log_warn "Node: $node_v, khác dòng $want_node.x mà site/package.json yêu cầu. Build trang có thể từ chối hoặc ra kết quả khác CI."
+    log_hint "Cài Node $want_node.x (ví dụ bằng nvm hoặc fnm) rồi mở lại terminal."
+  else
+    log_warn "Chưa có node: không build được site/ (chỉ cần khi sửa trang web)."
+    log_hint "Cài Node $want_node.x (ví dụ bằng nvm hoặc fnm)."
+  fi
+  pnpm_v=$(pnpm --version 2>/dev/null)
+  if [[ -z $want_pnpm ]]; then
+    log_warn "site/package.json không ghi packageManager dạng pnpm@X.Y.Z: không biết cần pnpm nào."
+  elif [[ $pnpm_v == $want_pnpm ]]; then
+    log_ok "pnpm: $pnpm_v (site/package.json: packageManager)"
+  elif [[ -n $pnpm_v ]]; then
+    log_warn "pnpm: $pnpm_v, khác bản $want_pnpm mà site/package.json ghim."
+    log_hint "npm install -g pnpm@$want_pnpm"
+  else
+    log_warn "Chưa có pnpm: không build được site/ (chỉ cần khi sửa trang web)."
+    log_hint "npm install -g pnpm@$want_pnpm"
+  fi
+fi
+
 # --- Research data ---------------------------------------------------------------------
 log_step "Dữ liệu nghiên cứu (tuỳ chọn)"
 ext=${EXT_IME_DIR:-/tmp/ext-ime}

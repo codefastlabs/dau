@@ -1,0 +1,47 @@
+#!/bin/zsh
+# Builds the site before a push that carries a commit touching site/, and stops the push when the build fails.
+# Side effects: builds (pnpm install into site/node_modules when missing; site/dist)
+# Why: main has no branch protection and the release "Công bố" step pushes straight to it, so this
+# is the check that runs before a broken site commit reaches main (docs/research/WebsiteStack.md,
+# "Cách bảo vệ", layer 3). `pnpm --dir site build` already ends with the output check.
+# Enable once per clone: git config core.hooksPath .githooks (scripts/dev/doctor.sh checks it).
+# Git passes "<local ref> <local sha> <remote ref> <remote sha>" per ref on stdin. A deleted ref
+# (local sha all zeros) pushes no commit. A new remote ref (remote sha all zeros) is checked
+# over the commits that no remote-tracking ref has yet, and so is a remote sha this clone has not
+# fetched (otherwise the range is an error and the build would be skipped). Skip once in an emergency:
+# git push --no-verify.
+# The build runs on the working tree, which is the pushed state when you push the checked-out branch
+# with no uncommitted changes in site/.
+
+set -uo pipefail
+root=$(git rev-parse --show-toplevel) || exit 1
+source "$root/scripts/lib/log.sh"
+
+is_zero_sha() { [[ -z ${1//0/} ]]; }  # also true for an empty string
+touches_site=0
+while read -r local_ref local_sha remote_ref remote_sha; do
+  is_zero_sha "$local_sha" && continue
+  if is_zero_sha "$remote_sha" || ! git cat-file -e "$remote_sha^{commit}" 2>/dev/null; then range=($local_sha --not --remotes); else range=("$remote_sha..$local_sha"); fi
+  changed=$(git log --name-only --format= "${range[@]}" 2>/dev/null)
+  site_files=(${(M)${(f)changed}:#site/*})
+  if (( ${#site_files} )); then touches_site=1; break; fi
+done
+
+(( touches_site )) || exit 0
+
+log_step "Commit sắp đẩy có chạm site/: build trang trước khi đẩy"
+command -v pnpm >/dev/null || { log_error "Không có pnpm."; log_hint "Xem scripts/dev/doctor.sh để biết cách cài (Node và pnpm theo site/package.json)."; exit 1; }
+if [[ ! -d $root/site/node_modules ]]; then
+  log_detail "site/node_modules chưa có: pnpm --dir site install --frozen-lockfile"
+  pnpm --dir "$root/site" install --frozen-lockfile || { log_error "Cài phụ thuộc của site/ không đạt: không đẩy."; exit 1; }
+fi
+if ! git -C "$root" diff --quiet HEAD -- site; then
+  log_warn "site/ có thay đổi chưa commit: bản build dưới đây gồm cả chúng, không chỉ phần sắp đẩy."
+fi
+if pnpm --dir "$root/site" build; then
+  log_ok "Build trang đạt, kể cả bước kiểm đầu ra"
+else
+  log_error "Build trang không đạt: không đẩy."
+  log_hint "Sửa lỗi rồi đẩy lại. Khẩn cấp mới bỏ qua bằng git push --no-verify."
+  exit 1
+fi

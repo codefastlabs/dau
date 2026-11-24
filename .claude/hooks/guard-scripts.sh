@@ -45,6 +45,7 @@ typeset -A guarded=(
   [scripts/release/layout-dmg.sh]="always"
   [scripts/release/build-release.sh]="with --layout"
   [scripts/release/promote-release.sh]="unless --dry-run"
+  [scripts/release/check-site-appcast.sh]="always"
 )
 runners=(zsh bash sh source . env time nohup exec command)
 

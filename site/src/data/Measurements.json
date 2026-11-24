@@ -1,0 +1,21 @@
+{
+  "engineTests": null,
+  "heavyLoad": {
+    "sparkleVersion": null,
+    "apps": [
+      "Safari",
+      "Chrome",
+      "VS Code"
+    ],
+    "p99Ms": 5.14,
+    "p99LimitMs": 20,
+    "p99Build": "Debug",
+    "rssMB": 64,
+    "rssLimitMB": 96,
+    "rssBuild": "Debug",
+    "machine": "M3 Max",
+    "macOS": "27.2",
+    "date": "2026-11-22",
+    "commit": "622c2b2"
+  }
+}

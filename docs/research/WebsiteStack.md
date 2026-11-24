@@ -9,6 +9,7 @@ Mỗi khẳng định ghi rõ nguồn của nó: **đo** (điều kiện ở m�
 **Kết luận.**
 
 - TanStack Start bản React dựng trang tải về thành HTML tĩnh. Trang thử đầy đủ có thẻ mô tả, favicon, màu đã sửa tương phản, nút tải nhận ra máy không phải Mac và chính sách CSP. Trang này đạt 100 ở cả bốn hạng mục Lighthouse, cả trên điện thoại lẫn máy tính (đo, mục 1).
+- Trang thật trong `site/` dựng theo tài liệu này ngày 24/11/2026 và cũng đạt 100 ở cả bốn hạng mục Lighthouse trên điện thoại, ở cả `/` lẫn `/en`. Số đo nằm ở nhật ký [`docs/Progress.md`](../Progress.md) ngày 24/11.
 - Phần JS tối thiểu của một trang React hydrate là phần chạy của React (66,6 KB gzip) cộng router của TanStack (30,2 KB gzip). Tuỳ chọn cấu hình của router và Vite không giảm được phần này (đo).
 - Trang hydrate cả trang theo mặc định, không dùng Deferred Hydration (`Hydrate`). `Hydrate` chỉ bớt 6,1 KB JS khi hiệu năng đã là 100. API này còn thử nghiệm và có lỗi mở làm mất HTML dựng sẵn (mục 1).
 - `site/dist/` phải nằm trong `.gitignore`. Tailwind tự dò nguồn và chỉ bỏ qua những gì git bỏ qua (mục 4).
@@ -27,22 +28,7 @@ Mỗi khẳng định ghi rõ nguồn của nó: **đo** (điều kiện ở m�
 | 7 | Rủi ro | Ghim phiên bản chính xác, gộp cập nhật hằng tuần, tự kiểm đầu ra build và so appcast trên tên miền với `origin/main`. |
 | 8 | Repo, dữ liệu | Trang nằm trong repo của Dấu, ở `site/`. Mọi số và lời hứa trên trang đọc lúc build từ file dữ liệu trong repo. Ô chưa có nguồn giữ dạng `[…]`. |
 
-**Việc cần tài khoản của người dùng.** Toàn bộ nằm trong bước nối project Vercel ([`docs/Releasing.md`](../Releasing.md) bước "Vercel"):
-
-1. Đặt Root Directory là `site` và giữ bật "Include files outside the root directory in the Build Step" (mặc định bật).
-2. Thêm biến môi trường `ENABLE_EXPERIMENTAL_COREPACK=1` để Vercel dùng đúng bản pnpm ghi trong `packageManager`.
-3. Xem gói tài khoản có Deployment Checks không. Nếu có, chọn job của `site.yml` làm check bắt buộc.
-4. Bật Web Analytics cho project trong mục Analytics của Vercel; script và điểm nhận số liệu chỉ có sau lần triển khai kế tiếp. Sự kiện tuỳ chỉnh chỉ ghi được ở gói Pro trở lên (mục 3, ý "Đo lượt xem"). Project đang ở gói Hobby (24/11/2026), nên tới khi lên Pro chỉ có số lượt xem.
-
-**Việc của phiên chính khi viết mã.** Đây là thay đổi tài liệu và script, không cần quyết định của người dùng. Phần canvas (tương phản, dòng quyền riêng tư, artboard tiếng Anh) đã xong và được duyệt ngày 24/11/2026.
-
-1. Trong commit đầu tiên có mã của `site/`, sửa [`docs/Releasing.md`](../Releasing.md):
-   - Bước "Vercel" hiện ghi "không có bước build"; bước đó phải đổi theo mục 3 và nhóm việc cần tài khoản ở trên.
-   - Bước chạy bài tải nặng hiện ghi số đo vào nhật ký [`docs/Progress.md`](../Progress.md) để trang lấy từ đó; bước này phải ghi vào file dữ liệu ở mục 8.
-   - Bước "Công bố" commit thêm file checksum.
-   - Thêm bước so byte appcast sau triển khai.
-2. Trong cùng commit đó, sửa dòng `site/` trong [`docs/Architecture.md`](../Architecture.md).
-3. Thêm `.githooks/pre-push` và bước kiểm `core.hooksPath` vào `scripts/dev/doctor.sh` khi dựng `site/` (mục 3).
+**Việc cần tài khoản của người dùng.** Toàn bộ nằm trong bước nối project Vercel của [`docs/Releasing.md`](../Releasing.md), bước "Vercel": Root Directory, Corepack, Deployment Checks và Web Analytics. Lý do của từng việc nằm ở mục 3 và mục 5.
 
 ## Điều kiện đo
 
@@ -125,7 +111,7 @@ Mã mục viết bằng tiếng Anh và giống nhau ở hai bản, để liên 
 
 ### Thẻ trong `<head>`
 
-Một hàm dùng chung (`localizedHead(path, locale, messages)`, file `src/i18n/head.ts`) dựng mọi thẻ phụ thuộc đường dẫn. Bản tiếng Việt của `path` là chính `path`. Bản tiếng Anh là `/en` cộng `path`, trừ trang chủ là `/en`. Nhờ vậy, trang so sánh của M10 (`/compare` và `/en/compare`, đường dẫn tiếng Anh ở cả hai bản) dùng lại cùng hàm.
+Một hàm dùng chung (`localizedHead(path, locale, messages)`, file `src/i18n/Head.ts`) dựng mọi thẻ phụ thuộc đường dẫn. Bản tiếng Việt của `path` là chính `path`. Bản tiếng Anh là `/en` cộng `path`, trừ trang chủ là `/en`. Nhờ vậy, trang so sánh của M10 (`/compare` và `/en/compare`, đường dẫn tiếng Anh ở cả hai bản) dùng lại cùng hàm.
 
 - `canonical` trỏ về chính trang. `alternate` có `hreflang` cho `vi`, `en` và `x-default`. Hai bản trỏ qua lại nhau, đúng yêu cầu của Google là mỗi bản liệt kê chính nó và mọi bản khác.
 - Open Graph gồm `og:site_name` là "Dấu" (D24 (Tên và định danh)), `og:locale` (`vi_VN` hoặc `en_US`), `og:locale:alternate` (bản còn lại), `og:url` (bằng `canonical`), `og:title`, `og:description` và `og:image`.
@@ -156,7 +142,7 @@ Paraglide JS 3.2.2, dựng theo ví dụ `start-i18n-paraglide` của TanStack, 
 
 - Liên kết đổi ngôn ngữ là thẻ `<a>` thường. Thẻ có `hreflang` và `lang` của bản đích (ví dụ `<a href="/en" hreflang="en" lang="en">English</a>`). Trình đọc màn hình nhờ vậy đọc đúng giọng.
 - Trang 404 hiện cả hai ngôn ngữ. Trang tĩnh không biết người đọc muốn bản nào. Mỗi khối có `lang` riêng và liên kết về trang chủ của ngôn ngữ đó. Route gốc dùng cùng thành phần `NotFound` làm `notFoundComponent`.
-- Đo: HTML dựng sẵn của `404.html` và DOM sau khi hydrate ở `/abc/xyz` giống nhau từng ký tự (3/3 lượt).
+- `404.html` không có script. Vercel phục vụ file này ở mọi đường dẫn lạ, nơi router không khớp route nào. Khi trang hydrate ở `/abc/xyz`, React dựng lại cả trang và ghi lỗi #418 vào console (đo trên trang thật, Chrome 158). Trang 404 không có gì tương tác, nên bước kiểm đầu ra bỏ mọi script khỏi file này.
 
 ## 3. Vercel với đầu ra tĩnh
 
@@ -215,7 +201,7 @@ Phần cấu hình đọc từ tài liệu Vercel. Content-Type của `.xml`, c�
 
 ### Chính sách bảo mật nội dung (CSP)
 
-HTML do TanStack Start dựng có ba thẻ `<script>` nội tuyến: khôi phục vị trí cuộn, dữ liệu hydrate `$_TSR` và lời gọi khởi động (đo). Nội dung của chúng đổi theo từng bản dựng vì có tên file đã băm. `vercel.json` là file tĩnh, nên không chứa được mã băm của từng bản dựng.
+HTML do TanStack Start dựng có ba thẻ `<script>` nội tuyến: khôi phục vị trí cuộn, dữ liệu hydrate `$_TSR` và lời gọi khởi động (đo). Trang thêm thẻ thứ tư, script nhận ra máy không phải Mac (mục 6). Nội dung của chúng đổi theo từng bản dựng vì có tên file đã băm. `vercel.json` là file tĩnh, nên không chứa được mã băm của từng bản dựng.
 
 Chính sách chia làm hai phần:
 
@@ -237,21 +223,22 @@ Chính sách chia làm hai phần:
 
 `main` không có branch protection. Bước "Công bố" đẩy thẳng lên `main`. Workflow `site.yml` chạy sau khi commit đã ở `main`, nên nó báo lỗi chứ không chặn được lỗi. Bốn lớp dưới đây là những gì thật sự chặn hay phát hiện lỗi:
 
-1. **Vercel giữ bản cũ khi build hỏng.** Đây là lớp chặn có sẵn. Script `build` kết thúc bằng bước kiểm đầu ra (`tools/verifyOutput.ts`). Bước này làm build hỏng khi đầu ra sai, nên Vercel không đưa bản sai lên. Bước này kiểm:
+1. **Vercel giữ bản cũ khi build hỏng.** Đây là lớp chặn có sẵn. Script `build` kết thúc bằng bước kiểm đầu ra (`tools/VerifyOutput.ts`). Bước này làm build hỏng khi đầu ra sai, nên Vercel không đưa bản sai lên. Bước này kiểm:
    - `dist/client/appcast.xml` giống từng byte `site/appcast.xml`.
    - Đầu ra có đủ `index.html`, `en.html`, `404.html`, `sitemap.xml` và `robots.txt`.
    - Mọi `href` và `src` nội bộ trong HTML trỏ tới file có thật.
+   - Mọi ảnh PNG và ICO trong đầu ra còn đúng chữ ký định dạng. Prerender dò theo cả liên kết tới file đã build (nút tải ảnh mã VietQR) và ghi đè file đó bằng phản hồi nó nhận (đo). Vì vậy `vite.config.ts` lọc bỏ đường dẫn `/assets/` khỏi prerender, còn bước kiểm đầu ra xoá các đường dẫn đó khỏi sitemap.
    - Mọi ký tự hiện ra trong HTML nằm trong tập ký tự của phông đã cắt (mục 4).
    - Mỗi HTML có thẻ CSP với mã băm khớp mọi script nội tuyến của nó.
 2. **Deployment Checks của Vercel**, nếu gói tài khoản có. Vercel giữ bản triển khai mới khỏi tên miền chính cho tới khi job của `site.yml` đạt (tài liệu "Deployment Checks"). Lớp này chặn được cả lỗi mà build không thấy, như Lighthouse dưới ngưỡng. Đây là việc cần tài khoản của người dùng (mục "Hiện trạng").
-3. **Hook `pre-push` trên máy.** File `.githooks/pre-push` (zsh, đề xuất, chưa có) chạy `pnpm --dir site build` khi các commit sắp đẩy có chạm `site/`. Bước build đã gồm bước kiểm đầu ra. Hook bật một lần cho mỗi bản clone bằng `git config core.hooksPath .githooks`. `scripts/dev/doctor.sh` sẽ kiểm việc bật này (việc của phiên chính). Bước "Công bố" đẩy từ máy, nên hook chạy cả ở bước đó.
-4. **So byte appcast sau mỗi lần triển khai**, không chỉ sau khi công bố. Một script (đề xuất, chưa có) tải `https://dau.codefastlabs.com/appcast.xml`, so byte với `site/appcast.xml` của đúng commit đã triển khai và kiểm header `Cache-Control`. Trong `site.yml`, job này chạy theo sự kiện `deployment_status` của GitHub, chỉ khi `github.event.deployment.environment == 'Production'` và `github.event.deployment_status.state == 'success'`. Job so với file tại `github.event.deployment.sha`. Như vậy bản xem trước của nhánh khác và khoảng thời gian commit mới chưa triển khai xong không làm job báo lỗi oan. Ở bước "Công bố", script chạy sau khi Vercel báo triển khai xong và so với `origin/main`. Script có tác dụng phụ mạng.
+3. **Hook `pre-push` trên máy.** File `.githooks/pre-push` (zsh) chạy `pnpm --dir site build` khi các commit sắp đẩy có chạm `site/`. Bước build đã gồm bước kiểm đầu ra. Hook bật một lần cho mỗi bản clone bằng `git config core.hooksPath .githooks`. `scripts/dev/doctor.sh` kiểm việc bật này. Bước "Công bố" đẩy từ máy, nên hook chạy cả ở bước đó.
+4. **So byte appcast sau mỗi lần triển khai**, không chỉ sau khi công bố. Script `scripts/release/check-site-appcast.sh` tải `https://dau.codefastlabs.com/appcast.xml`, so byte với `site/appcast.xml` của đúng commit đã triển khai và kiểm header `Cache-Control`. Trong `site.yml`, job này chạy theo sự kiện `deployment_status` của GitHub, chỉ khi `github.event.deployment.environment == 'Production'` và `github.event.deployment_status.state == 'success'`. Job so với file tại `github.event.deployment.sha`. Như vậy bản xem trước của nhánh khác và khoảng thời gian commit mới chưa triển khai xong không làm job báo lỗi oan. Ở bước "Công bố", script chạy sau khi Vercel báo triển khai xong và so với `origin/main`. Script có tác dụng phụ mạng.
 
 ## 4. Tailwind v4, màu và phông
 
 ### Token màu
 
-Khai báo trong `@theme` của `src/styles.css`, mở đầu bằng `--color-*: initial;` để chỉ còn token của trang. Mọi màu artboard dùng đều có token. Màu nào không thuộc bảng màu của [`docs/Brand.md`](../Brand.md) thì vẫn có tên, để một màu lạ trong mã là lỗi build chứ không là một mã hex rời.
+Khai báo trong `@theme` của `src/Styles.css`, mở đầu bằng `--color-*: initial;` để chỉ còn token của trang. Mọi màu artboard dùng đều có token. Màu nào không thuộc bảng màu của [`docs/Brand.md`](../Brand.md) thì vẫn có tên, để một màu lạ trong mã là lỗi build chứ không là một mã hex rời.
 
 | Token | Giá trị | Dùng ở artboard |
 |---|---|---|
@@ -295,12 +282,12 @@ Số đo trong bảng dùng cấu hình điện thoại. CLS bằng 0 là số �
 
 **Cắt phông.**
 
-- Script `tools/subsetFonts.ts` chạy trước `vite build` trong script `build` (`"build": "node tools/subsetFonts.ts && vite build && node tools/verifyOutput.ts"`).
-- Script dùng gói `subset-font` (giấy phép BSD-3-Clause, dùng HarfBuzz) cắt từng file woff2 của Fontsource, giữ `unicode-range`. File ra ghi vào `site/src/fonts/`, kèm `site/src/fonts/fonts.css` và danh sách ký tự đã giữ (`site/src/fonts/charset.txt`).
+- Script `tools/SubsetFonts.ts` chạy trước `vite build` trong script `build` (`"build": "node tools/SubsetFonts.ts && vite build && node tools/VerifyOutput.ts"`).
+- Script dùng gói `subset-font` (giấy phép BSD-3-Clause, dùng HarfBuzz) cắt từng file woff2 của Fontsource, giữ `unicode-range`. File ra ghi vào `site/src/fonts/`, kèm `site/src/fonts/Fonts.css` và danh sách ký tự đã giữ (`site/src/fonts/Charset.txt`).
 - Vite băm tên file theo nội dung, nên khi tập ký tự đổi thì tên file đổi và cache cũ không dùng nhầm.
 - `site/src/fonts/` nằm trong `.gitignore`. File trong đó sinh lại ở mỗi lần build từ gói Fontsource đã ghim, nên không có bản commit nào để lệch với nội dung.
 - Đầu vào gồm mọi nguồn chữ của trang: `src/i18n/vi.ts`, `src/i18n/en.ts`, các file dữ liệu ở mục 8, chữ trong `src/models/` và toàn bộ ASCII in được.
-- Bước kiểm đầu ra so mọi ký tự trong phần chữ của HTML đầu ra với `charset.txt`. Một ký tự nằm ngoài tập là lỗi build, nên chữ thêm từ một nguồn mới không thể hiện bằng phông dự phòng mà không ai biết.
+- Bước kiểm đầu ra so mọi ký tự trong phần chữ của HTML đầu ra với `Charset.txt`. Một ký tự nằm ngoài tập là lỗi build, nên chữ thêm từ một nguồn mới không thể hiện bằng phông dự phòng mà không ai biết.
 
 Preload không đổi LCP (đo), nên không thêm. Vite đặt file phông vào `dist/client/assets/` cùng tên miền, nên trang không gọi bên thứ ba.
 
@@ -312,7 +299,7 @@ Preload không đổi LCP (đo), nên không thêm. Vite đặt file phông vào
   3. `pnpm typecheck` (`tsc --noEmit`).
   4. `pnpm lint` (`oxlint --deny-warnings`) và `pnpm format:check` (`oxfmt --check`).
   5. `pnpm build`, gồm cắt phông và bước kiểm đầu ra.
-  6. Lighthouse CI (`@lhci/cli`) với `collect.staticDistDir: './dist/client'` và `collect.url` gồm `/` và `/en.html` (server tĩnh của LHCI phục vụ theo tên file), `numberOfRuns: 3`.
+  6. Lighthouse CI (`@lhci/cli`) đo `/` và `/en` qua `tools/ServeDist.ts`, `numberOfRuns: 3`. Script này phục vụ `dist/client` như Vercel: đường dẫn sạch, `404.html`, header của `vercel.json` và nén brotli. Server tĩnh có sẵn của LHCI (`collect.staticDistDir`) chỉ phục vụ trang tiếng Anh ở `/en.html`. Router không biết đường dẫn đó nên dựng trang 404 thay vào, và LCP lên 2,7 s (đo).
      - Phần `assert` đặt bốn hạng mục ở mức `["error", {"minScore": 0.95}]` với `aggregationMethod: "median"`.
      - Phần `assert` thêm ngưỡng số liệu: `largest-contentful-paint` tối đa 2500 ms, `total-blocking-time` tối đa 200 ms, `cumulative-layout-shift` tối đa 0,1. Điểm số trên máy chạy chung có thể dao động, còn ngưỡng số liệu cho biết chỉ số nào hỏng.
      - `upload.target` là `filesystem`, rồi tải kết quả lên làm artifact. Đích `temporary-public-storage` đẩy báo cáo lên kho công khai, nên không dùng.
@@ -322,15 +309,16 @@ Preload không đổi LCP (đo), nên không thêm. Vite đặt file phông vào
   - Vercel: theo tài liệu Vercel, `engines.node` ghi đè phiên bản Node của project; Node 26.x có sẵn. Vercel hỗ trợ pnpm 12. Muốn Vercel dùng đúng bản trong `packageManager` thì phải bật Corepack bằng biến `ENABLE_EXPERIMENTAL_COREPACK=1`; nếu không, Vercel chọn bản pnpm theo `lockfileVersion` (bản thử ghi `9.0`).
   - GitHub Actions: `actions/setup-node` đọc `engines.node` qua `node-version-file`, còn `pnpm/action-setup` đọc `packageManager` khi không có `version`.
 - **Lint: oxlint 1.95.0.** Cấu hình `.oxlintrc.json` bật plugin `react`, `typescript` và `jsx-a11y`. File này có `ignorePatterns: ["src/routeTree.gen.ts"]`. `--deny-warnings` biến cảnh báo thành lỗi (đo: một `<img>` thiếu `alt` làm lệnh thoát mã 1).
-- **Format: oxfmt 0.80.0.** Cấu hình `.oxfmtrc.json` có `ignorePatterns: ["src/routeTree.gen.ts"]` và `sortTailwindcss: { "stylesheet": "./src/styles.css" }`.
+- **Format: oxfmt 0.80.0.** Cấu hình `.oxfmtrc.json` có `ignorePatterns: ["src/routeTree.gen.ts", "src/data/*.json"]` (file dữ liệu do script phát hành và người viết test ghi, không theo định dạng của oxfmt) và `sortTailwindcss: { "stylesheet": "./src/Styles.css" }`.
   - Đo: `stylesheet` cho oxfmt đọc token trong `@theme`, nên `text-ink zzz-unknown p-4 bg-paper flex mt-2` thành `zzz-unknown mt-2 flex bg-paper p-4 text-ink`. Khi không có `stylesheet`, oxfmt coi `bg-paper` và `text-ink` là class lạ và để chúng ở đầu.
   - oxfmt còn dưới 1.0, nên phiên bản ghim chính xác và cập nhật qua Dependabot như các gói khác.
 - **Cập nhật phụ thuộc: Dependabot.** Theo tài liệu GitHub, Dependabot hỗ trợ pnpm từ bản 7 tới bản 12. File `.github/dependabot.yml` có hai mục:
-  - `npm` cho `/site`, chạy hằng tuần, gộp `@tanstack/*` một nhóm và Vite với Tailwind một nhóm, vì các gói TanStack phụ thuộc lẫn nhau theo phiên bản chính xác.
+  - `npm` cho `/site`, chạy hằng tuần, gộp `@tanstack/*` một nhóm và Vite, Vitest với Tailwind một nhóm, vì các gói TanStack phụ thuộc lẫn nhau theo phiên bản chính xác.
   - `github-actions` cho `/`.
 - **Phiên bản chính xác.** `package.json` ghim phiên bản chính xác, vì TanStack Start ra bản thường xuyên (mục 7) và các gói `@tanstack/start-*` đi theo cặp.
 - **`.gitignore`.** Thêm `site/node_modules/`, `site/dist/`, `site/src/fonts/`, `site/.tanstack/`, `site/.lighthouseci/` và `site/.vercel/`. Commit `src/routeTree.gen.ts`, theo FAQ của TanStack Router.
-- **Tên file.** Thành phần React đặt tên PascalCase, mỗi file một thành phần cùng tên (`DownloadButton.tsx`). Tài liệu TanStack không đặt luật riêng cho việc này. Route giữ quy ước file route của TanStack Router (`__root.tsx`, `{-$locale}/index.tsx`, `not-found.tsx`). Module không phải thành phần đặt tên camelCase (`head.ts`, `subsetFonts.ts`).
+- **Tên file.** Tên file mã và dữ liệu theo quy ước chung của repo (`CLAUDE.md` gốc, mục "Quy ước mã nguồn"): PascalCase, kể cả module không phải thành phần và bước build (`Head.ts`, `SiteData.ts`, `SubsetFonts.ts`, `TypingExamples.json`). Thành phần React mỗi file một thành phần cùng tên (`DownloadButton.tsx`). Tên do công cụ hay URL quy định giữ nguyên: tệp cấu hình, `router.tsx` và tệp route của TanStack Router (`__root.tsx`, `{-$locale}/index.tsx`, `not-found.tsx`, vì tên tệp route là đường dẫn), `subset-font.d.ts` (tên gói npm), `vi.ts` và `en.ts` (mã ngôn ngữ), `appcast.xml` và mọi file trong `public/` (tên là địa chỉ URL).
+- **Import.** Mã trong `site/` import qua alias trong mục `imports` của `package.json`, không dùng đường dẫn tương đối và không ghi đuôi `.ts`: `#…` trỏ tới `src/` (ví dụ `#i18n/Locale`), `#tools/…` trỏ tới `tools/`, `#site/…` trỏ tới gốc `site/`, ví dụ `#site/appcast.xml` cho feed. Feed dùng mẫu có `*` chứ không dùng khoá cố định, vì server dev so cả chuỗi `#appcast.xml?raw` với khoá nên không khớp (đo bằng `pnpm dev`). Đích của `#*` là mảng `["./src/*", "./src/*.ts", "./src/*.tsx"]`. Vite và Vitest khớp đích đầu rồi tự dò đuôi. TypeScript không dò đuôi cho đích của `imports` (đo bằng `tsc --traceResolution`), nên nó bỏ qua đích đầu và lấy đích có đuôi; vì vậy `tsconfig.json` không cần `paths`. `#tools/*` ghi sẵn đuôi `.ts` trong đích, vì các bước trong `tools/` chạy thẳng bằng Node và Node không dò đuôi. Test chạy bằng Vitest, vì test nạp mã của `src/`. File dữ liệu của app nằm ngoài gói `site/` nên vẫn import bằng đường dẫn tương đối: đích của `imports` không ra ngoài gói được.
 
 ## 6. Tương tác nhỏ
 
@@ -341,7 +329,7 @@ Ba tương tác viết thành thành phần React.
   - Safari trên iPad mặc định ở chế độ máy tính. Khi đó chuỗi User-Agent giống Safari trên macOS (blog WebKit, Safari 13). Mã WebKit (`WebPageProxyIOS.mm`) đặt `navigator.platform` là `"MacIntel"`.
   - Mã WebKit (`Navigator::maxTouchPoints`) trả về 5 trên thiết bị cảm ứng iOS và 0 trên Mac, nên `maxTouchPoints > 1` tách được iPad ra.
   - Thứ tự kiểm: nếu có `userAgentData` thì dùng `platform === 'macOS'`. Nếu không có, máy là Mac khi chuỗi User-Agent có `Macintosh` và `maxTouchPoints < 2`.
-  - HTML dựng sẵn luôn ở trạng thái "máy Mac", vì đó là trạng thái của người tải thật. Nút ở hai trạng thái giữ cùng khung (đo: CLS 0 ở trạng thái không phải Mac, mục 1).
+  - HTML dựng sẵn luôn ở trạng thái "máy Mac", vì đó là trạng thái của người tải thật. HTML chứa cả hai trạng thái. Một script nhỏ trong `<head>` (`src/components/Platform.ts`) đặt `data-platform="other"` lên `<html>` trước lần vẽ đầu. CSS theo thuộc tính đó chọn trạng thái để hiện. Trên điện thoại, câu "Dấu chỉ chạy trên Mac…" nằm ngay dưới nút ở hero, trong màn hình đầu. Nếu câu đó chèn vào sau khi hydrate, hoạt ảnh bên dưới bị đẩy xuống (suy luận). Khi quyết định trước lần vẽ đầu, CLS là 0 ở cả hai trang với cấu hình điện thoại của Lighthouse (đo).
   - Trang chỉ đọc các giá trị này trên máy người đọc, không gửi đi và không lưu lại.
 - **Nút sao chép.** Dùng `navigator.clipboard.writeText` (MDN: "Baseline: Widely available" từ tháng 3/2020, chỉ chạy trong secure context). Nút bắt lỗi `NotAllowedError` để không hỏng. Một vùng `aria-live="polite"` báo "Đã sao chép liên kết" cho trình đọc màn hình.
 - **Đổi ngôn ngữ.** Dùng liên kết thường (mục 2). Liên kết này cũng là cách `crawlLinks` tìm ra trang tiếng Anh lúc prerender.
@@ -388,14 +376,16 @@ Mọi ô số liệu và lời hứa trên trang ([`docs/Website.md`](../Website
 | Ô trên trang | Nguồn | Ai ghi, khi nào |
 |---|---|---|
 | Phiên bản, ngày phát hành, dung lượng, địa chỉ tải DMG | Mục đã chọn trong `site/appcast.xml`: `sparkle:shortVersionString` và tiêu đề, `pubDate`, `length` và `url` của `enclosure` | Bước "Công bố" (đã có) |
-| SHA-256 của DMG | `site/src/data/checksums.json`, khoá là `sparkle:version` của mục | `build-release.sh` ghi file này thành tài sản của bản nháp. Bước "Công bố" commit nó cùng `appcast.xml`. Appcast không có SHA-256, chỉ có chữ ký EdDSA. |
-| Lệnh Homebrew và nút "Sao chép" của nó | `site/src/data/distribution.json`, trường `homebrewCask` (mặc định `false`) | Commit đổi sang `true` khi cask có thật trong `codefastlabs/homebrew-tap` (D6 (Phát hành)) |
-| Số ca test engine | `site/src/data/measurements.json`, trường `engineTests` (số ca, commit, ngày) | Bước chạy bài tải nặng của quy trình phát hành |
-| p99 thời gian xử lý một phím có thay chữ, bộ nhớ RSS | `site/src/data/measurements.json`, trường `heavyLoad` (p99 ms, RSS MB, ngưỡng 20 ms và 96 MB, bản dựng, máy, phiên bản macOS, ngày, commit), theo D42 (Ngưỡng hiệu năng) | Bước chạy bài tải nặng ghi file này thay cho nhật ký `docs/Progress.md` |
-| Số ứng dụng đã đo, danh sách ứng dụng đã kiểm chứng gõ đúng, ứng dụng mang nhãn "Đề xuất" | `Apps/Dau/Resources/CompatibilityList.json`, file app đọc qua `CompatibilityList.bundled()` | Phiên đo tương thích. Trang cần thêm các trường file chưa có: mọi ứng dụng đã đo (file hiện chỉ có 15 ứng dụng cần ghi chú), cờ gõ đúng tại chỗ và phiên bản macOS đã đo. `init(from:)` của `CompatibilityList` chỉ đọc theo các khoá nó khai báo, nên thêm trường không đổi hành vi của app (đọc mã). |
-| Tên người ủng hộ | `Apps/Dau/Resources/Supporters.json` (đề xuất, chưa có; D39 chưa đặt tên file), một file cho app, trang và ghi chú phát hành theo D39 | Người duy trì, khi người ủng hộ đồng ý |
-| Tiền ủng hộ đã dùng vào việc gì | `site/src/data/expenses.json` (ngày, khoản chi, số tiền), chỉ ghi khoản đã chi (D39) | Người duy trì, khi đã chi |
-| Ví dụ chữ trong mô hình minh hoạ | `site/src/data/typing-examples.json` (chuỗi phím, kiểu gõ, chữ mong đợi) | Người viết trang. Một test engine mới (`WebsiteExamplesTests`) đọc cùng file này và kiểm engine gõ ra đúng chữ đó, như `ExternalCasesTests` đọc file trong `docs/research/`. Ví dụ trên trang và engine không thể lệch nhau. |
+| SHA-256 của DMG | `site/src/data/Checksums.json`, khoá là `sparkle:version` của mục | `build-release.sh` ghi file này thành tài sản của bản nháp. Bước "Công bố" commit nó cùng `appcast.xml`. Appcast không có SHA-256, chỉ có chữ ký EdDSA. |
+| Lệnh Homebrew và nút "Sao chép" của nó | `site/src/data/Distribution.json`, trường `homebrewCask` (mặc định `false`) | Commit đổi sang `true` khi cask có thật trong `codefastlabs/homebrew-tap` (D6 (Phát hành)) |
+| Nút "Ủng hộ qua GitHub Sponsors" và dòng chú thích của nó | `site/src/data/Distribution.json`, trường `githubSponsors` (mặc định `false`) | Commit đổi sang `true` khi tài khoản Sponsors của `codefastlabs` nhận ủng hộ (D39 (Ủng hộ dự án)) |
+| Mã VietQR, người nhận, ngân hàng | Ảnh `site/src/assets/VietQR.png`, dựng lại từ nội dung mã QR của ngân hàng, bỏ lời nhắn sẵn (trường 62.08) và tính lại CRC; mọi trường khác giữ nguyên. `site/src/data/Distribution.json`, trường `vietQR` (người nhận, ngân hàng) | Người duy trì, khi đổi tài khoản nhận (D39 (Ủng hộ dự án)) |
+| Số ca test engine | `site/src/data/Measurements.json`, trường `engineTests` (số ca, commit, ngày) | Bước chạy bài tải nặng của quy trình phát hành |
+| p99 thời gian xử lý một phím có thay chữ, bộ nhớ RSS | `site/src/data/Measurements.json`, trường `heavyLoad` (p99 ms, RSS MB, ngưỡng 20 ms và 96 MB, bản dựng, máy, phiên bản macOS, ngày, commit, `apps` là tên ngắn của các ứng dụng đã gõ thử như "Chrome" hay "VS Code"), theo D42 (Ngưỡng hiệu năng) | Bước chạy bài tải nặng ghi file này thay cho nhật ký `docs/Progress.md` |
+| Số ứng dụng đã đo, danh sách ứng dụng đã kiểm chứng gõ đúng, ứng dụng mang nhãn "Đề xuất" | `Apps/Dau/Resources/CompatibilityList.json`, file app đọc qua `CompatibilityList.bundled()` | Phiên đo tương thích. Trang đọc các trường `measured`, `inPlaceCorrect` và `measuredMacOS` của từng mục, cùng danh sách `webApps` cho trang web đã đo (không có bundle ID). `init(from:)` của `CompatibilityList` chỉ đọc theo các khoá nó khai báo, nên thêm trường không đổi hành vi của app (đọc mã). |
+| Tên người ủng hộ | `Apps/Dau/Resources/Supporters.json`, một file cho app, trang và ghi chú phát hành theo D39 | Người duy trì, khi người ủng hộ đồng ý |
+| Tiền ủng hộ đã dùng vào việc gì | `site/src/data/Expenses.json` (ngày, khoản chi, số tiền), chỉ ghi khoản đã chi (D39) | Người duy trì, khi đã chi |
+| Ví dụ chữ trong mô hình minh hoạ | `site/src/data/TypingExamples.json` (chuỗi phím, kiểu gõ, chữ mong đợi) | Người viết trang. Một test engine mới (`WebsiteExamplesTests`) đọc cùng file này và kiểm engine gõ ra đúng chữ đó, như `ExternalCasesTests` đọc file trong `docs/research/`. Ví dụ trên trang và engine không thể lệch nhau. |
 
 **Luật chọn mục appcast** (D6, D7 (Cập nhật và loại bản dựng)):
 
@@ -416,19 +406,19 @@ site/
 ├─ lighthouserc.json        # mục 5
 ├─ public/                  # chép nguyên vào đầu ra: favicon, ảnh Open Graph, robots.txt
 ├─ tools/                   # bước build viết bằng TypeScript, chạy bằng Node
-│  ├─ subsetFonts.ts        # cắt phông theo mọi nguồn chữ, chạy trước vite build (mục 4)
-│  └─ verifyOutput.ts       # kiểm đầu ra, chèn CSP, xoá lastmod và pages.json (mục 3)
+│  ├─ SubsetFonts.ts        # cắt phông theo mọi nguồn chữ, chạy trước vite build (mục 4)
+│  └─ VerifyOutput.ts       # kiểm đầu ra, chèn CSP, xoá lastmod và pages.json (mục 3)
 └─ src/
    ├─ router.tsx            # createRouter, trailingSlash: 'never'
    ├─ routeTree.gen.ts      # plugin sinh, có commit
-   ├─ styles.css            # @import 'tailwindcss', @theme, nạp fonts/fonts.css
+   ├─ Styles.css            # @import 'tailwindcss', @theme, nạp fonts/Fonts.css
    ├─ fonts/                # phông đã cắt, sinh lúc build, nằm trong .gitignore
-   ├─ data/                 # checksums.json, distribution.json, measurements.json, expenses.json, typing-examples.json
+   ├─ data/                 # Checksums.json, Distribution.json, Measurements.json, Expenses.json, TypingExamples.json
    ├─ i18n/
    │  ├─ vi.ts              # bản gốc, định nghĩa kiểu Messages
    │  ├─ en.ts              # satisfies Messages
-   │  ├─ locale.ts          # 'vi' | 'en' từ tham số đường dẫn
-   │  └─ head.ts            # localizedHead: canonical, alternate, Open Graph theo đường dẫn
+   │  ├─ Locale.ts          # 'vi' | 'en' từ tham số đường dẫn
+   │  └─ Head.ts            # localizedHead: canonical, alternate, Open Graph theo đường dẫn
    ├─ routes/
    │  ├─ __root.tsx         # <html lang>, head chung, nạp CSS, notFoundComponent
    │  ├─ {-$locale}/index.tsx   # trang tải về: / và /en

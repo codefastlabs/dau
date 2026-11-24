@@ -60,7 +60,7 @@
     },
     "Landing.dc.html": {
       "expand": "fill",
-      "h": 3795,
+      "h": 3938,
       "page": "website",
       "title": "Trang tải về – máy tính, phần trên (đầu trang tới Bảng gõ)",
       "w": 1280,
@@ -69,7 +69,7 @@
     },
     "LandingEn.dc.html": {
       "expand": "fill",
-      "h": 3795,
+      "h": 3913,
       "page": "website",
       "title": "Trang tải về – máy tính, phần trên (tiếng Anh)",
       "w": 1280,
@@ -78,7 +78,7 @@
     },
     "LandingMobile.dc.html": {
       "expand": "fill",
-      "h": 6744,
+      "h": 7068,
       "page": "website",
       "title": "Trang tải về – điện thoại, phần trên",
       "w": 390,
@@ -87,7 +87,7 @@
     },
     "LandingMobileEn.dc.html": {
       "expand": "fill",
-      "h": 6737,
+      "h": 7100,
       "page": "website",
       "title": "Trang tải về – điện thoại, phần trên (tiếng Anh)",
       "w": 390,
@@ -446,37 +446,46 @@
       "expand": "fill",
       "page": "website",
       "x": 0,
-      "y": 3915,
+      "y": 4058,
       "w": 1280,
-      "h": 4843,
+      "h": 4903,
       "title": "Trang tải về – máy tính, phần dưới (Quyền riêng tư tới chân trang)"
     },
     "LandingEnLower.dc.html": {
       "expand": "fill",
       "page": "website",
       "x": 1360,
-      "y": 3915,
+      "y": 4033,
       "w": 1280,
-      "h": 4799,
+      "h": 4900,
       "title": "Trang tải về – máy tính, phần dưới (tiếng Anh)"
     },
     "LandingMobileLower.dc.html": {
       "expand": "fill",
       "page": "website",
       "x": 2720,
-      "y": 6864,
+      "y": 7188,
       "w": 390,
-      "h": 7501,
+      "h": 7878,
       "title": "Trang tải về – điện thoại, phần dưới"
     },
     "LandingMobileEnLower.dc.html": {
       "expand": "fill",
       "page": "website",
       "x": 3190,
-      "y": 6864,
+      "y": 7227,
       "w": 390,
-      "h": 7231,
+      "h": 7704,
       "title": "Trang tải về – điện thoại, phần dưới (tiếng Anh)"
+    },
+    "NotFound.dc.html": {
+      "expand": "fill",
+      "page": "website",
+      "x": 3660,
+      "y": 2412,
+      "w": 1280,
+      "h": 720,
+      "title": "Trang 404 – hai ngôn ngữ cùng lúc (Website, quy tắc chung)"
     }
   },
   "createdOnFiles": {
@@ -619,7 +628,8 @@
     "LandingEn.dc.html",
     "LandingEnLower.dc.html",
     "LandingMobileEn.dc.html",
-    "LandingMobileEnLower.dc.html"
+    "LandingMobileEnLower.dc.html",
+    "NotFound.dc.html"
   ],
   "pages": [
     {

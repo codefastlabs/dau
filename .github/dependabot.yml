@@ -1,0 +1,19 @@
+# Weekly dependency updates (docs/research/WebsiteStack.md, section 5). Versions in site/ are
+# pinned exactly; each pull request runs site.yml, Lighthouse CI included.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /site
+    schedule:
+      interval: weekly
+    groups:
+      # The @tanstack packages depend on each other at exact versions.
+      tanstack:
+        patterns: ["@tanstack/*"]
+      vite-tailwind:
+        patterns: ["vite", "@vitejs/*", "vitest", "tailwindcss", "@tailwindcss/*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

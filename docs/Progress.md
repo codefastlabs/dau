@@ -11,7 +11,7 @@ Chờ người dùng:
 
 Việc tiếp theo:
 - Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
-- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Công nghệ, chỗ đặt và ngôn ngữ của trang đã chốt ở D45 (Trang web); cấu hình và số đo ở `docs/research/WebsiteStack.md`. Artboard trang tải về tiếng Việt và tiếng Anh đã duyệt 24/11; việc kế tiếp là giao web-dev dựng `site/` theo D45 và `docs/research/WebsiteStack.md`. Trang chỉ lên tên miền cùng beta đầu tiên.
+- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Trang trong `site/` đã dựng ngày 24/11 theo D45 (Trang web) và `docs/research/WebsiteStack.md`, theo mục "Kế hoạch M8" bên dưới. Trang chỉ lên tên miền cùng beta đầu tiên.
 - Không chờ bước 0: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
 - Không chờ bước 0: tìm cách sửa Google Docs và chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần.
 
@@ -50,7 +50,7 @@ Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt art
 
 1. Đăng ký Apple Developer Program (99 USD/năm). Đăng ký tổ chức nếu codefastlabs là pháp nhân (cần mã D-U-N-S, có thể mất vài ngày): Gatekeeper hiện "codefastlabs", khớp D7. Không phải pháp nhân thì đăng ký cá nhân, khi đó phiên chính sửa câu "của codefastlabs" ở D7. Báo Team ID khi có.
 2. Khi có tài khoản: làm theo `docs/Releasing.md` (release-eng viết ở 1a). Các bước gồm tạo chứng chỉ Developer ID Application và khoá App Store Connect API cho notarize, sinh khoá EdDSA của Sparkle bằng một lệnh, rồi nạp cả ba vào secret của GitHub Actions. Phiên chính không cầm khoá.
-3. Vercel: nối repo với project của `dau.codefastlabs.com`, thư mục gốc theo `docs/Releasing.md` (tới M8 chỉ có `appcast.xml`).
+3. Vercel: nối repo với project của `dau.codefastlabs.com` theo `docs/Releasing.md`, bước "Vercel" (Root Directory `site`, có bước build của trang).
 4. Duyệt artboard (1e): xong 17/11.
 
 ### Bước 1 — Không cần ký: xong 17/11
@@ -95,6 +95,13 @@ Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo s�
 - Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --no-build`).
 - Gỡ hai bản thử 0.0.1 (chỉ máy này từng cài): xoá mục của chúng khỏi `site/appcast.xml` trước, rồi xoá hai bản phát hành và tag trên GitHub; cùng lần đồng ý công bố ở trên.
 - Kiểm toán, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
+
+## Kế hoạch M8
+
+1. Dựng `site/`, dữ liệu lúc build, kiểm đầu ra, CI, hook `pre-push`, checksum trong script phát hành, test engine cho ví dụ trên trang: xong 24/11.
+2. Lên tên miền cùng beta đầu tiên (bước 4 của kế hoạch M7): người dùng nối project Vercel theo `docs/Releasing.md`, bước "Vercel"; sau lần triển khai đầu, chạy `scripts/release/check-site-appcast.sh` và kiểm `/en`, chuyển hướng 308, header bảo mật trên tên miền (`docs/research/WebsiteStack.md` mục 3).
+3. Các ô `[…]` còn lại đều chờ bản phát hành hoặc M7, theo nguồn ở `docs/research/WebsiteStack.md` mục "Dữ liệu lúc build": phiên bản, ngày, dung lượng và SHA-256 khi có bản phát hành; ký số, notarize và cách dựng bản kiểm chứng được khi có tài khoản Apple Developer. Mục "Đo được" hiện khi bước bài tải nặng của `docs/Releasing.md` ghi `Measurements.json` cho bản đang cho tải.
+4. Danh sách 15 ứng dụng đã kiểm chứng gõ đúng trên trang dựa một phần vào số đo có trước khi Dấu tự chèn ký tự (N3, 22/11): Mail và Notes đo 30/10, Telegram và Edge đo 17/11. Đo lại bốn ô này ở lượt chạy chiếm màn hình kế tiếp (bước 3 của kế hoạch M7) rồi sửa `docs/Compatibility.md` và `CompatibilityList.json` nếu kết quả khác.
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LogM5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LogBetweenM5AndM6.md`, M6 ở `docs/history/LogM6.md`. M7: phần trước ngày áp luật nhật ký (17/11) ở `docs/history/LogM7.md`; đóng M7 thì nối phần dưới vào cuối file đó.
@@ -157,3 +164,4 @@ Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3
   - Script Editor mở mới, chọn Dấu: bộ gõ được mở bình thường (00:15:43). Claude không gõ được bằng Dấu sau khi cài lại (người dùng báo, 23:56 và 00:12–00:15); log không có yêu cầu nào từ Claude.
   - Cần lặp lại, mỗi bước đọc nguồn hiện hành của app đang thử trước khi gõ: app kẹt có hồi lại chỉ nhờ bộ gõ được khởi động không (tiền đề của cách sửa "app chủ khởi động bộ gõ sau khi bật").
 - 24/11 — đo lớp nền đặt dưới cửa sổ chụp trong app (`CaptureBackdrop` của các lượt `--capture-*`): máy M3 Max, macOS 27.2, bản Debug của cây làm việc, màn chính 1x; 5 lượt chụp của `scripts/selftest/settings-window/run.sh` (56 ảnh) chạy bốn lần: có lớp nền hai lần, không lớp nền trên desktop thường, không lớp nền với một cửa sổ sọc nhiều màu phủ màn chính phía sau. So từng điểm ảnh (lệch khi một kênh lệch quá 8/255): hai lần có lớp nền giống hệt; không lớp nền trên desktop thường giống hệt 56/56; với cửa sổ sọc, 53/56 giống hệt, 3 ảnh lệch 9–10 điểm ảnh, đều ở vòng quay chờ đang chạy. Ảnh chụp chỉ chứa cửa sổ được chụp, nên thứ phía sau không lộ vào ảnh; lớp nền đã bỏ, ma trận `run.sh` sau khi bỏ đạt mọi hàng — commit "test(settings-window): drop the backdrop under in-app capture windows".
+- 24/11 — Lighthouse trên trang thật trong `site/` (máy M3 Max, macOS 27.2.1, Node 26.1.0, Lighthouse của `@lhci/cli` với Chrome 158 headless, cấu hình điện thoại mặc định, 3 lượt mỗi trang; `pnpm --dir site build` rồi `pnpm --dir site exec lhci autorun`, server `site/tools/ServeDist.ts` có header của `vercel.json` và nén brotli). `/` và `/en`: cả bốn hạng mục 100 ở mọi lượt; LCP trung vị 753 ms và 809 ms, TBT 0, CLS 0. Một lượt `--preset=desktop` mỗi trang cũng 100, CLS 0,033 và 0,001 do phông thay phông dự phòng (`docs/research/WebsiteStack.md` mục 1). Chunk JS lõi 124,6 KB gzip so với 110,2 KB ở trang thử; phần đo lượt xem chiếm 2,8 KB, phần còn lại chưa rõ.

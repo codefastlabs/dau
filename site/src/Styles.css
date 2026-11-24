@@ -1,0 +1,200 @@
+@import "tailwindcss";
+@import "./fonts/Fonts.css";
+
+/* Only the page's own colours exist, so a colour outside this table fails to resolve instead
+   of slipping in as a stray hex value (docs/research/WebsiteStack.md, section 4). */
+@theme {
+  --color-*: initial;
+  --color-paper: #f6f1e7;
+  --color-ink: #10285a;
+  --color-charcoal: #1d1d1f;
+  --color-vermilion: #e0533d;
+  --color-ink-soft: #1b3a78;
+  --color-ink-pale: #afc2e8;
+  --color-white: #ffffff;
+  --color-black: #000000;
+  --color-mist: #f3f1ec;
+  --color-linen: #f8f6f1;
+  --color-slate: #4a4a52;
+  --color-graphite: #5a5a60;
+  --color-iron: #3a3a40;
+  --color-smoke: #3a3a3c;
+  --color-muted: #5c5c63;
+  --color-switch-off: #c7c7cc;
+  --color-window-close: #ff5f57;
+  --color-window-minimize: #febc2e;
+  --color-window-zoom: #28c840;
+  --color-error: #b42318;
+  --color-accent-purple: #5b3fa8;
+  --color-accent-green: #3c8a4a;
+  --color-accent-blue: #2f6fde;
+
+  --font-sans: "Be Vietnam Pro", -apple-system, "Helvetica Neue", sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+}
+
+/* Set before first paint by the platform check in the document head (components/Platform.ts):
+   the page offers the download on a Mac and the copy-link button elsewhere. */
+@custom-variant non-mac (&:where([data-platform="other"], [data-platform="other"] *));
+
+@layer base {
+  html {
+    background: var(--color-paper);
+    color: var(--color-charcoal);
+    font-family: var(--font-sans);
+    -webkit-text-size-adjust: 100%;
+  }
+  body {
+    margin: 0;
+  }
+  a:focus-visible,
+  summary:focus-visible,
+  button:focus-visible {
+    outline: 3px solid var(--color-ink-soft);
+    outline-offset: 3px;
+    border-radius: 8px;
+  }
+}
+
+@layer components {
+  /* Key caps and typing fields of the illustration models (docs/canvas/src/Model*.dc.html). */
+  .key-cap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 30px;
+    height: 30px;
+    padding: 0 8px;
+    box-sizing: border-box;
+    border-radius: 7px;
+    background: var(--color-white);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 18%, transparent);
+    box-shadow: 0 1px 0 color-mix(in srgb, var(--color-ink) 18%, transparent);
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--color-charcoal);
+  }
+  .typing-field {
+    position: relative;
+    height: 64px;
+    border-radius: 12px;
+    background: var(--color-white);
+    border: 1px solid color-mix(in srgb, var(--color-ink) 14%, transparent);
+    box-sizing: border-box;
+    font-size: 28px;
+    font-weight: 500;
+    color: var(--color-charcoal);
+    overflow: hidden;
+  }
+  .typing-field .frame {
+    position: absolute;
+    left: 20px;
+    top: 0;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    white-space: pre;
+  }
+  .typing-field .caret {
+    display: inline-block;
+    width: 2px;
+    height: 30px;
+    background: var(--color-ink);
+    margin-left: 1px;
+  }
+  .typing-field.small {
+    height: 56px;
+    font-size: 24px;
+  }
+  .typing-field.small .frame {
+    height: 56px;
+    left: 16px;
+  }
+  .typing-field.small .caret {
+    height: 26px;
+  }
+  .switch {
+    appearance: none;
+    width: 40px;
+    height: 24px;
+    border-radius: 12px;
+    background: var(--color-switch-off);
+    margin: 0;
+    position: relative;
+    flex: none;
+  }
+  .switch::after {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--color-white);
+    box-shadow: 0 1px 3px color-mix(in srgb, var(--color-black) 30%, transparent);
+  }
+  .switch:checked {
+    background: var(--color-ink);
+  }
+  .switch:checked::after {
+    left: 18px;
+  }
+  .hero-caret {
+    display: inline-block;
+    width: 3px;
+    height: 1em;
+    background: var(--color-ink);
+    vertical-align: -0.12em;
+    margin-left: 2px;
+    animation: caret-blink 1s step-end infinite;
+  }
+  .faq summary {
+    list-style: none;
+    cursor: pointer;
+  }
+  .faq summary::-webkit-details-marker {
+    display: none;
+  }
+  .faq details[open] .faq-toggle {
+    transform: rotate(45deg);
+  }
+}
+
+/* Every frame of a typing animation starts hidden; Frames.tsx gives each its own timing.
+   A lit key cap is a copy in Ink drawn over the cap during the frames its key produces. */
+.frame,
+.key-lit {
+  opacity: 0;
+}
+.key-lit {
+  position: absolute;
+  inset: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 7px;
+  background: var(--color-ink);
+  color: var(--color-paper);
+}
+
+@keyframes caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Reduced motion shows only the finished text (docs/Website.md). */
+@media (prefers-reduced-motion: reduce) {
+  .frame,
+  .key-lit {
+    animation: none !important;
+    opacity: 0;
+  }
+  .frame.last {
+    opacity: 1;
+  }
+  .hero-caret {
+    animation: none;
+  }
+}

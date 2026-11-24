@@ -35,3 +35,11 @@ Package.resolved
 
 # Per-developer signing team (Config/Local.xcconfig.example)
 Config/Local.xcconfig
+
+# Website (site/): dependencies, build output and files the build regenerates
+site/node_modules/
+site/dist/
+site/.tanstack/
+site/.lighthouseci/
+site/.vercel/
+site/src/fonts/

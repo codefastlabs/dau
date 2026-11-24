@@ -55,16 +55,19 @@
 # Skipped there: Developer ID signature, notarize, staple, DMG signature, appcast.
 #
 # Output in --out: Dau-<version>.dmg (signed) or Dau-<version>-dev-unsigned.dmg,
-# Dau-<version>.dSYMs.zip, appcast/appcast.xml
+# Dau-<version>.dSYMs.zip, Checksums.json (origin/main's site/src/data/Checksums.json, "{}" when absent, plus
+# "<sparkle:version>": "<SHA-256 of the DMG>"; made in both modes, published like the appcast), appcast/appcast.xml
 # (signed only: the site/appcast.xml of origin/main with this release added as a NEW item tagged
 # <sparkle:channel>beta</sparkle:channel> (generate_appcast --channel beta; D7: an item without the tag
 # is a stable release every channel sees); publishing it is a
 # separate act, docs/Releasing.md), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
-# appcast, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
+# checksums, appcast, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
 # Exit status: 0 done; 1 a step or a check failed; 2 bad usage.
 
 set -euo pipefail
 source "${${(%):-%x}:A:h:h}/lib/build.sh"
+source "${${(%):-%x}:A:h:h}/lib/appcast.sh"
+source "${${(%):-%x}:A:h:h}/lib/checksums.sh"
 
 # hdiutil still works but prints a "deprecated, use diskutil image" warning on every call
 # (macOS 27); other lines, including errors, pass through. Revisit if Apple removes it.
@@ -360,16 +363,31 @@ else
   skipped+=("ký bản cập nhật và sinh appcast")
 fi
 
+# --- checksums ----------------------------------------------------------------
+# Same flow as the appcast: start from origin/main's file (not the one at the tagged commit, which
+# can lack the previous release), add this build. The key is sparkle:version, the build number.
+log_step "Ghi SHA-256 của DMG vào Checksums.json"
+checksums=$out/Checksums.json
+base_checksums=$(mktemp "${TMPDIR:-/tmp}/dau-checksums.XXXXXX")
+checksums_from_ref origin/main > "$base_checksums"
+dmg_sha256=$(checksums_sha256 "$dmg")
+checksums_merge "$base_checksums" "$build_number" "$dmg_sha256" > "$checksums" \
+  || log_die "Checksums.json của origin/main đã ghi SHA-256 khác cho số build $build_number."
+command rm -f "$base_checksums"
+[[ $(checksums_get "$checksums" "$build_number") == "$dmg_sha256" ]] || log_die "Checksums.json không khớp DMG."
+log_ok "Checksums.json: build $build_number = ${dmg_sha256[1,16]}… (${dmg_name})"
+
 # --- summary -----------------------------------------------------------------
 {
   print -r -- "Dấu ${label:-${display:-dev}} (hiển thị ${display:-dev}, build $build_number), chế độ: $([[ $signed == 1 ]] && print ký || print không ký)"
   print -r -- "DMG: $dmg_name"
+  print -r -- "SHA-256 của DMG: $dmg_sha256"
   print -r -- "Bố cục cửa sổ DMG: $laid_out"
   for s in $skipped; do print -r -- "Đã bỏ qua: $s"; done
 } > "$out/summary.txt"
 if [[ -n ${GITHUB_OUTPUT-} ]]; then
   {
-    print -r -- "dmg=$dmg"; print -r -- "dsyms=$dsyms"; print -r -- "appcast=$appcast"
+    print -r -- "dmg=$dmg"; print -r -- "dsyms=$dsyms"; print -r -- "checksums=$checksums"; print -r -- "appcast=$appcast"
     print -r -- "display=${display:-dev}"; print -r -- "label=${label:-${display:-dev}}"; print -r -- "signed=$signed"
   } >> "$GITHUB_OUTPUT"
 fi

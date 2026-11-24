@@ -1,7 +1,7 @@
 {
-  "version": 8,
-  "updated": "2026-11-17",
-  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong and underline right: Ghostty, Terminal. Every app types without underline until the user turns it on. Apps where a terminal is one field among many (VS Code, Cursor, Claude) are not labeled for their terminal (D43). Bundle IDs from docs/Compatibility.md section 3.",
+  "version": 10,
+  "updated": "2026-11-24",
+  "about": "Dấu labels “Đề xuất” for underlining (D13) only on an app where in-place replacement measured wrong and underline right: Ghostty, Terminal. Every app types without underline until the user turns it on. Apps where a terminal is one field among many (VS Code, Cursor, Claude) are not labeled for their terminal (D43). Bundle IDs from docs/Compatibility.md section 3. The website (site/) reads measured, inPlaceCorrect and measuredMacOS for its app count and its list of apps verified to type correctly; webApps are measured web pages, which have no bundle ID. The app ignores these keys.",
   "apps": [
     {
       "name": "Visual Studio Code",
@@ -9,6 +9,9 @@
         "com.microsoft.VSCode"
       ],
       "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
       "note": "Electron. Measured 10/11/2026 (VS Code 1.145.2, M1 machine): in-place right in 14 of 15 runs at 5, 10 and 20 ms nominal; the other run lost its first few keys right after an Apple Telex field chosen through the API. 17/11/2026 (VS Code 1.146.0, M1 machine): right in 2 of 2 runs at 5 ms, each right after an Apple Telex field chosen by the system shortcut; no key lost."
     },
     {
@@ -17,6 +20,9 @@
         "com.google.Chrome"
       ],
       "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
       "note": "Chromium. Measured 10/11/2026 (M3 Max machine): in-place right in 7 of 7 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page; 3 of 3 with a busy page again on 17/11/2026 (Chrome 157, M1 machine, edited string at 100 ± 30 ms); TipTap editor 9 of 9 (12/11/2026); label removed."
     },
     {
@@ -25,6 +31,9 @@
         "com.microsoft.edgemac"
       ],
       "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
       "note": "Chromium (Microsoft Edge Framework). Measured 10/11/2026 (M1 machine): in-place right in 9 of 9 runs at 5, 10 and 20 ms nominal and 3 of 3 with a busy page; 17/11/2026 (Edge 157.0.4341.60, M1 machine): 2 of 2 at 5 ms and 1 of 1 with a busy page (edited string at 100 ± 30 ms); label removed."
     },
     {
@@ -33,6 +42,7 @@
         "com.brave.Browser"
       ],
       "suggestUnderline": false,
+      "measured": false,
       "note": "Chromium (inferred). Not measured."
     },
     {
@@ -41,6 +51,7 @@
         "company.thebrowser.Browser"
       ],
       "suggestUnderline": false,
+      "measured": false,
       "note": "Chromium (inferred). Not measured."
     },
     {
@@ -49,7 +60,10 @@
         "com.todesktop.230313mzl4w4u92"
       ],
       "suggestUnderline": false,
-      "note": "Electron. One app with two kinds of window: Agents (a prompt box) and IDE (the editor and an agent panel, ⌘L). Measured 17/11/2026 (3.30.14, docs/Compatibility.md 5.4): in-place right in all three places, standard string at 5 ms (editor 3 of 3) and 20 ms, edited string at 100 ± 30 ms, \"anh ddi\" from a new document at 20 ms 2 of 2. The editor answers positions from the start of the document. Underline not measured on 3.30.14."
+      "measured": true,
+      "inPlaceCorrect": false,
+      "measuredMacOS": "27",
+      "note": "Electron. One app with two kinds of window: Agents (a prompt box) and IDE (the editor and an agent panel, ⌘L). Measured 23/11/2026 (3.31.15, docs/Compatibility.md 5.4): agent panel and Agents box in-place right at 5 ms; the editor right when it reports positions from the start of the document, and when its field holds only the word before the cursor the edit string is right 9 of 10 at 5 ms and 3 of 3 at 10 ms. Underline not measured."
     },
     {
       "name": "Ghostty",
@@ -57,6 +71,9 @@
         "com.mitchellh.ghostty"
       ],
       "suggestUnderline": true,
+      "measured": true,
+      "inPlaceCorrect": false,
+      "measuredMacOS": "27",
       "note": "Terminal drawn by the app (AppKit, Metal). Ignores replacementRange and reports the cursor at {0,0}; Dấu has no special handling for it (D43). Measured 11–12/11/2026 (1.4.0, docs/Compatibility.md 5.6): in-place wrong at 120 ms; underline right, but Return right after an underlined word is swallowed (Ghostty's own bug, Apple's Telex too)."
     },
     {
@@ -65,6 +82,7 @@
         "com.vng.zalo"
       ],
       "suggestUnderline": false,
+      "measured": false,
       "note": "Electron. Not measured."
     },
     {
@@ -73,6 +91,7 @@
         "com.hnc.Discord"
       ],
       "suggestUnderline": false,
+      "measured": false,
       "note": "Electron. Not measured."
     },
     {
@@ -81,6 +100,7 @@
         "com.tinyspeck.slackmacgap"
       ],
       "suggestUnderline": false,
+      "measured": false,
       "note": "Electron (inferred). Not measured."
     },
     {
@@ -89,7 +109,10 @@
         "notion.id"
       ],
       "suggestUnderline": false,
-      "note": "Electron. Not measured."
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "Electron. Measured 23/11/2026 (docs/Compatibility.md 5.11): in-place right at 30 ms, with ⌫ and adding marks to a typed word."
     },
     {
       "name": "Obsidian",
@@ -97,7 +120,10 @@
         "md.obsidian"
       ],
       "suggestUnderline": false,
-      "note": "Electron (inferred). Not measured."
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "Electron. Measured 23/11/2026 (docs/Compatibility.md 5.11): in-place right at 30 ms, with ⌫ and adding marks to a typed word."
     },
     {
       "name": "Figma",
@@ -105,6 +131,7 @@
         "com.figma.Desktop"
       ],
       "suggestUnderline": false,
+      "measured": false,
       "note": "Electron, content drawn on a canvas. Not measured."
     },
     {
@@ -113,6 +140,9 @@
         "org.mozilla.firefox"
       ],
       "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
       "note": "Gecko. Measured 10/11/2026: in-place right in 7 of 7 runs at 5, 10 and 20 ms nominal (M3 Max machine) and 3 of 3 with a busy page (M1 machine); 17/11/2026 (Firefox 160.0, M1 machine): 2 of 2 at 5 ms and 1 of 1 with a busy page (edited string at 100 ± 30 ms); label removed."
     },
     {
@@ -121,7 +151,142 @@
         "com.apple.Terminal"
       ],
       "suggestUnderline": true,
+      "measured": true,
+      "inPlaceCorrect": false,
+      "measuredMacOS": "27",
       "note": "Apple Terminal. Measured 17/11/2026 (2.15, docs/Compatibility.md 5.5): in-place right at 30 ms and above, wrong with keys under 30 ms apart (5 ms 0/2, 10 ms 1/2, 20 ms 1/2); underline right 3/3 at 5, 10 and 20 ms; Apple Telex also wrong under 30 ms. Terminal does not pass ⌫ to the input method (6.5)."
+    },
+    {
+      "name": "TextEdit",
+      "bundleIDs": [
+        "com.apple.TextEdit"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "AppKit. Measured (docs/Compatibility.md 5.1): in-place right at 30 and 120 ms."
+    },
+    {
+      "name": "Safari",
+      "bundleIDs": [
+        "com.apple.Safari"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "WebKit. Measured (docs/Compatibility.md 5.1): in-place right, also with a busy page (Safari 27.2, 22/11/2026)."
+    },
+    {
+      "name": "Sublime Text",
+      "bundleIDs": [
+        "com.sublimetext.4"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "Drawn by the app, AppKit shell. Measured (docs/Compatibility.md 5.7): in-place right, also after ⌫ and ←; again 23/11/2026 at 30 ms."
+    },
+    {
+      "name": "Zed",
+      "bundleIDs": [
+        "dev.zed.Zed"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "GPUI (Metal), AppKit shell. Measured 23/11/2026 (1.29.2, docs/Compatibility.md 5.11): in-place right at 30 ms."
+    },
+    {
+      "name": "Xcode",
+      "bundleIDs": [
+        "com.apple.dt.Xcode"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": false,
+      "measuredMacOS": "27",
+      "note": "AppKit. Measured 23/11/2026 (27.2, docs/Compatibility.md 5.11) in a plain text file only: in-place right at 30 ms. Code files, with code completion, not measured, so not listed as verified."
+    },
+    {
+      "name": "Antigravity",
+      "bundleIDs": [
+        "com.google.antigravity"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "Electron. Measured 23/11/2026 (2.33.0, docs/Compatibility.md 5.11): message box in-place right at 30 ms."
+    },
+    {
+      "name": "Telegram",
+      "bundleIDs": [
+        "ru.keepcoder.Telegram"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "AppKit (Telegram for macOS). Measured 17/11/2026 (13.1.0, docs/Compatibility.md 5.8): in-place right at 5 and 30 ms."
+    },
+    {
+      "name": "Notes",
+      "bundleIDs": [
+        "com.apple.Notes"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "AppKit. Measured 30/10/2026 (docs/Compatibility.md 5.8): in-place right at 30 ms."
+    },
+    {
+      "name": "Mail",
+      "bundleIDs": [
+        "com.apple.mail"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "AppKit. Measured 30/10/2026 (docs/Compatibility.md 5.8): in-place right at 30 ms."
+    },
+    {
+      "name": "WebStorm",
+      "bundleIDs": [
+        "com.jetbrains.WebStorm"
+      ],
+      "suggestUnderline": false,
+      "measured": true,
+      "inPlaceCorrect": false,
+      "measuredMacOS": "27",
+      "note": "JetBrains Runtime. Measured (2026.3, docs/Compatibility.md 5.9): Vietnamese right at 80 ms, but English words are not restored (D4), a Dấu bug."
+    }
+  ],
+  "webApps": [
+    {
+      "name": {
+        "vi": "Word trên web",
+        "en": "Word on the web"
+      },
+      "measured": true,
+      "inPlaceCorrect": true,
+      "measuredMacOS": "27",
+      "note": "In Chrome. Measured (docs/Compatibility.md 5.10): in-place right at 80 ± 30 ms, 9 of 9 on 22/11/2026 (Chrome 158)."
+    },
+    {
+      "name": {
+        "vi": "Google Docs",
+        "en": "Google Docs"
+      },
+      "measured": true,
+      "inPlaceCorrect": false,
+      "measuredMacOS": "27",
+      "note": "In Chrome. Measured (docs/Compatibility.md 5.10): in-place wrong, the page reports the cursor at (1, 0)."
     }
   ]
 }
