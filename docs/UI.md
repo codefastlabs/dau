@@ -4,7 +4,7 @@ Tài liệu này ghi hành vi, trạng thái và quy tắc của giao diện app
 
 ## Nguồn của từng phần
 
-- **Trông như thế nào:** hình dáng của giao diện nằm trên canvas mockup https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln, trang "Thiết kế", gồm mục, thứ tự, icon và trạng thái. Khi sửa, sửa canvas trước, mã sau (D9 (Giao diện)).
+- **Trông như thế nào:** hình dáng của giao diện nằm trên canvas mockup https://claude.ai/artifact/B2xhNxL3voGwTkXkFV72Ln, chia trang theo khu vực ("Thiết lập Dấu", "Cài đặt", "Khi gõ", "Nhận diện", "Trang web"), gồm mục, thứ tự, icon và trạng thái. Khi sửa, sửa canvas trước, mã sau (D9 (Giao diện)).
   - Repo giữ một bản chụp chỉ đọc của canvas. Mục lục nằm ở [`docs/canvas/README.md`](canvas/README.md), ảnh nằm ở `docs/canvas/<Tên>.png` và nguồn artboard nằm ở `docs/canvas/src/<Tên>.dc.html`; agent đọc file nguồn này. Bản chụp sinh lại bằng `scripts/design/render-canvas.sh`.
 - **Bố cục, khoảng cách, control:** phần này theo System Settings của macOS hiện hành (D9). Số đo nằm ở [`docs/research/SystemSettingsReference.md`](research/SystemSettingsReference.md), mức đạt nằm ở [`scripts/selftest/settings-window/Reference.swift`](../scripts/selftest/settings-window/Reference.swift). Cách kiểm nằm ở [`docs/UIChecks.md`](UIChecks.md).
 - **Chữ:** chữ nằm trong String Catalog của mã (`Localizable.xcstrings`) và theo D41 (Ngôn ngữ giao diện). Canvas viết bằng tiếng Việt; câu mới giao cho mã kèm câu tiếng Anh làm khoá.

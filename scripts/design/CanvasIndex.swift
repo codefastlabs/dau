@@ -1,7 +1,7 @@
 // Reads the design canvas layout (canvas.json) for scripts/design/render-canvas.sh, which
 // builds this file once with scripts/lib/swift-tool.sh.
 //
-//   canvas-index boards canvas.json   name<TAB>width<TAB>height, design page only
+//   canvas-index boards canvas.json   name<TAB>width<TAB>height, every page but "archive"
 //   canvas-index readme canvas.json   docs/canvas/README.md (index by section)
 //
 // Order: the canvas order.
@@ -21,8 +21,8 @@ func number(_ value: Any?) -> String {
     return CFNumberIsFloatType(n) ? "\(n.doubleValue)" : "\(n.int64Value)"
 }
 
-/// (name, board) for every board of the design page, in canvas order.
-func designBoards(_ path: String) -> [(String, [String: Any])] {
+/// (name, board) for every board outside the "archive" page, in canvas order.
+func renderedBoards(_ path: String) -> [(String, [String: Any])] {
     guard let data = FileManager.default.contents(atPath: path) else { fail("Không đọc được \(path)") }
     guard let root = (try? JSONSerialization.jsonObject(with: data)) as? [String: Any],
           let boards = root["boards"] as? [String: Any],
@@ -35,7 +35,7 @@ func designBoards(_ path: String) -> [(String, [String: Any])] {
 
 func readme(_ path: String) {
     var sections: [(String, [(title: String, stem: String)])] = []
-    for (name, board) in designBoards(path) {
+    for (name, board) in renderedBoards(path) {
         guard let title = board["title"] as? String else { fail("\(path): \(name) không có \"title\"") }
         let section = title.range(of: " – ").map { String(title[..<$0.lowerBound]) } ?? "Khác"
         let stem = name.hasSuffix(".dc.html") ? String(name.dropLast(".dc.html".count)) : name
@@ -46,7 +46,7 @@ func readme(_ path: String) {
         }
     }
     print("# Bản chụp canvas thiết kế\n")
-    print("Ảnh chụp các artboard trên trang \"Thiết kế\" của canvas mockup, để xem thiết kế đã duyệt mà "
+    print("Ảnh chụp các artboard trên mọi trang của canvas mockup, để xem thiết kế đã duyệt mà "
         + "không cần mở canvas trên claude.ai. Canvas vẫn là nơi sửa thiết kế (`Apps/Dau/CLAUDE.md`); "
         + "thư mục này chỉ là bản chụp, sinh bằng `scripts/design/render-canvas.sh`, không sửa tay.\n")
     print("- `*.png`: ảnh chụp từng artboard.")
@@ -65,7 +65,7 @@ let arguments = Array(CommandLine.arguments.dropFirst())
 guard arguments.count == 2 else { fail(usage) }
 switch arguments[0] {
 case "boards":
-    for (name, board) in designBoards(arguments[1]) {
+    for (name, board) in renderedBoards(arguments[1]) {
         print("\(name)\t\(number(board["w"]))\t\(number(board["h"]))")
     }
 case "readme":

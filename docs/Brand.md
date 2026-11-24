@@ -14,9 +14,8 @@ Tài liệu này ghi biểu tượng, logo chữ, màu, phông và các file nh�
 
 ## Mockup
 
-Các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh xem trước GitHub" nằm trên canvas. Link canvas và bản chụp trong repo ghi ở [`docs/UI.md`](UI.md) và [`docs/canvas/README.md`](canvas/README.md):
+Các artboard "Nhận diện – …", "Ảnh chia sẻ Open Graph" và "Ảnh xem trước GitHub" nằm ở trang "Nhận diện" của canvas. Link canvas và bản chụp trong repo ghi ở [`docs/UI.md`](UI.md) và [`docs/canvas/README.md`](canvas/README.md):
 
-- [hướng biểu tượng](canvas/BrandConcepts.png)
 - [hướng dẫn thương hiệu](canvas/BrandGuide.png)
 - [biểu tượng ứng dụng](canvas/AppIcon.png)
 - [nơi hình đại diện xuất hiện](canvas/BrandInUse.png)

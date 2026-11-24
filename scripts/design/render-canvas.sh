@@ -10,7 +10,7 @@
 #   --out   write the snapshot to <folder> instead of docs/canvas/ (to try a render without
 #           touching the repo). The folder must be missing, empty or an earlier snapshot.
 #
-# Renders every artboard on the canvas page "Thiết kế" with one
+# Renders every artboard on every canvas page except "archive" with one
 # headless Chrome for the whole run (CanvasRender.swift drives it over the DevTools pipe):
 # no window is shown and the keyboard focus stays where it is. macOS lists that Chrome as a
 # foreground app for a few hundredths of a second while it starts, before Chrome declares
@@ -76,10 +76,10 @@ cp "$SRC/artifact-type/dc-runtime.js" "$WORK/project/support.js"
 INDEX=$(dau_swift_tool canvas-index "${0:A:h}/CanvasIndex.swift") || exit 1
 RENDER=$(dau_swift_tool canvas-render "${0:A:h}/CanvasRender.swift") || exit 1
 
-# name<TAB>width<TAB>height for the boards on the "Thiết kế" page, in canvas order.
+# name<TAB>width<TAB>height for the boards outside the "archive" page, in canvas order.
 "$INDEX" boards "$WORK/project/canvas.json" > "$WORK/boards.tsv"
 count=$(wc -l < "$WORK/boards.tsv" | tr -d ' ')
-(( count > 0 )) || log_die "canvas.json không có artboard nào trên trang Thiết kế."
+(( count > 0 )) || log_die "canvas.json không có artboard nào ngoài trang archive."
 while IFS=$'\t' read -r name w h; do
   [[ -f $WORK/project/$name ]] || log_die "canvas.json có $name nhưng thư mục không có file đó."
 done < "$WORK/boards.tsv"

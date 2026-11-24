@@ -20,7 +20,7 @@ Artboard của trang có hai bản: [máy tính](canvas/Landing.png) và [điệ
 
 - Trang dùng phông Be Vietnam Pro, nền Giấy và màu nhấn Mực (D25 (Nhận diện)).
 - Một mã nguồn responsive phục vụ cả máy tính lẫn điện thoại.
-- Các mô hình minh hoạ cách Dấu làm việc nằm ở nhóm "Mô hình minh hoạ cho website" trên canvas. Mỗi mục dưới đây dẫn tới mô hình của nó. Mọi ví dụ chữ trong mô hình lấy từ một test của engine. Hoạt ảnh trong mô hình là CSS dựng sẵn và chỉ hiện khung cuối khi người dùng bật giảm chuyển động (`prefers-reduced-motion`).
+- Các mô hình minh hoạ cách Dấu làm việc nằm ở trang "Trang web" của canvas, cạnh artboard trang tải về. Mỗi mục dưới đây dẫn tới mô hình của nó. Mọi ví dụ chữ trong mô hình lấy từ một test của engine. Hoạt ảnh trong mô hình là CSS dựng sẵn và chỉ hiện khung cuối khi người dùng bật giảm chuyển động (`prefers-reduced-motion`).
 
 Các mục xếp theo thứ tự sau. Trang mở bằng một ý: Dấu thay chữ ngay tại chỗ bạn gõ, không gạch chân và không phím giả. Các mục giữa là bằng chứng cho ý đó. Trang khép bằng nút tải trước phần góp sức. Mã mục ghi trong ngoặc sau tên mục, giống nhau ở hai bản; app và tài liệu dẫn tới mục bằng mã này.
 
