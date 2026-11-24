@@ -29,8 +29,33 @@
   --color-accent-green: #3c8a4a;
   --color-accent-blue: #2f6fde;
 
-  --font-sans: "Be Vietnam Pro", -apple-system, "Helvetica Neue", sans-serif;
+  --font-sans:
+    "Be Vietnam Pro", "Be Vietnam Pro Fallback", -apple-system, "Helvetica Neue", sans-serif;
   --font-mono: ui-monospace, Menlo, monospace;
+}
+
+/* Until Be Vietnam Pro arrives the text shows in Arial (Liberation Sans on Linux) resized to
+   Be Vietnam Pro's widths and line metrics, so the layout barely moves when the web font
+   swaps in (measurement: docs/research/WebsiteStack.md, section 4). */
+@font-face {
+  font-family: "Be Vietnam Pro Fallback";
+  font-weight: 100 600;
+  src: local("Arial"), local("ArialMT"), local("Liberation Sans"), local("LiberationSans");
+  size-adjust: 107.54%;
+  ascent-override: 92.99%;
+  descent-override: 24.64%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: "Be Vietnam Pro Fallback";
+  font-weight: 700 900;
+  src:
+    local("Arial Bold"), local("Arial-BoldMT"), local("Liberation Sans Bold"),
+    local("LiberationSans-Bold");
+  size-adjust: 105.96%;
+  ascent-override: 94.37%;
+  descent-override: 25.01%;
+  line-gap-override: 0%;
 }
 
 /* Set before first paint by the platform check in the document head (components/Platform.ts):

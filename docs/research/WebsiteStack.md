@@ -289,6 +289,8 @@ Số đo trong bảng dùng cấu hình điện thoại. CLS bằng 0 là số �
 - Đầu vào gồm mọi nguồn chữ của trang: `src/i18n/vi.ts`, `src/i18n/en.ts`, các file dữ liệu ở mục 8, chữ trong `src/models/` và toàn bộ ASCII in được.
 - Bước kiểm đầu ra so mọi ký tự trong phần chữ của HTML đầu ra với `Charset.txt`. Một ký tự nằm ngoài tập là lỗi build, nên chữ thêm từ một nguồn mới không thể hiện bằng phông dự phòng mà không ai biết.
 
+**Phông dự phòng chỉnh theo kích thước.** Trên máy chạy Ubuntu của GitHub, Lighthouse CI đo CLS 0,159 ở `/en` (3/3 lượt, 24/11/2026), còn trên máy Mac là 0. Báo cáo của CI ghi nguyên nhân là "Web font loaded": lần vẽ đầu ở 314 ms, mười lăm file phông tải xong khoảng 1000 ms, nên chữ hiện trước bằng phông dự phòng của Linux rồi mới đổi sang Be Vietnam Pro. Khối chữ ở hero đổi chiều cao và đẩy khối hoạt ảnh bên dưới (hero xếp một cột trên điện thoại). Trên Mac, phông tải xong trước khi hết thời gian chờ nên không có lần đổi này. `Styles.css` vì vậy khai "Be Vietnam Pro Fallback": Arial, trên Linux là Liberation Sans cùng kích thước, chỉnh bằng `size-adjust` và `ascent-override`/`descent-override` cho khớp Be Vietnam Pro. Số đo bằng Chrome trên một đoạn chữ Anh và Việt ở cỡ 1000 px: bản thường (400 so với Arial) `size-adjust` 107,54%, ascent 92,99%, descent 24,64%; bản đậm (800 so với Arial Bold) 105,96%, 94,37%, 25,01%. Đo trên máy Mac với phông tải chậm thật (`throttlingMethod=devtools`, 2 lượt mỗi bản): không có phông dự phòng này, `/en` dịch 0,111 và 0,122 ở đúng phần tử CI báo; có phông này, cả hai lượt còn 0,029.
+
 Preload không đổi LCP (đo), nên không thêm. Vite đặt file phông vào `dist/client/assets/` cùng tên miền, nên trang không gọi bên thứ ba.
 
 ## 5. Công cụ và CI
