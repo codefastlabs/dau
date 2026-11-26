@@ -55,7 +55,7 @@ Các phương án đang bàn, đối chiếu với điều bộ gõ khác làm v
   - Bộ gõ khác: Phím Việt và VietTelex làm gần như vậy, chỉ bằng IMK.
   - Tín hiệu Dấu đã có: ở phím có thay chữ, `selectedRange` vẫn là `(1, 0)` sau khi Dấu đã gõ vài chữ vào đó. Đây là tín hiệu "vị trí sai cố định" của Phím Việt và cùng loại với "app báo con trỏ sai" mà VietTelex dùng.
   - Giới hạn chung của hai bộ gõ đó: từ đang gõ khi phát hiện thì không cứu được, vì các chữ trước đã nằm trong tài liệu và Google Docs không cho thay chúng. Phím Việt tránh từ hỏng đó bằng cách gõ chữ đánh dấu cho hai từ đầu của mọi app.
-  - Đơn vị nhớ: Chrome báo cả cửa sổ là một client (tác giả VietTelex ghi), nên nhớ theo client cũng là nhớ theo tab. VietTelex quên khi có click, phím tắt hay kích hoạt lại.
+  - Đơn vị nhớ: tác giả VietTelex ghi Chrome báo cả cửa sổ là một client. Dấu đo thấy khác (25/11/2026, máy M1 Pro, Chrome 157.0.8103.79, bản Debug có log định danh client, không giữ lại; nhật ký `docs/Progress.md`): mỗi tab là một client IMK riêng với một controller riêng của Dấu, và quay về tab nào thì nhận lại đúng client và controller của tab đó. Vậy trạng thái giữ trong controller là trạng thái của tab và còn nguyên khi chuyển tab. VietTelex quên khi có click, phím tắt hay kích hoạt lại.
   - Trái với D13 (Gạch chân là đường lui cuối cùng) và D5 (Quy tắc theo ứng dụng). Theo D13, gạch chân chỉ do người dùng bật và mặc định mọi app không gạch chân. Muốn làm thì phải sửa quyết định trước.
 - **Cài đặt phía người dùng trong Google Docs** (chế độ chữ nổi, hỗ trợ trình đọc màn hình, hỗ trợ kính lúp): không có nguồn nói nó sửa được. Dấu không đo, vì kể cả khi chạy được thì đó cũng chỉ là cách vòng người dùng phải tự bật (mục 10.6 B).
 - **Nhận ra Google Docs theo URL hay tiêu đề cửa sổ** (VietTelex, XKey): cần quyền Trợ năng, trái N4. Tiêu đề cửa sổ còn đổi theo ngôn ngữ giao diện ("Google Tài liệu").
@@ -82,7 +82,7 @@ Các phương án đang bàn, đối chiếu với điều bộ gõ khác làm v
   - Google Docs xử lý sự kiện soạn chữ (composition) bình thường.
   - Ô nhập ẩn của Google Docs tự báo một vị trí con trỏ nhất quán, nên phép thử từng ô không bao giờ phát hiện ra nó; chỉ nhận ra theo URL mới được.
 - **Phép thử từng ô chỉ dùng IMK (đọc mã, `App/Sources/TelexInputController.swift`):**
-  - Theo tác giả, Chromium báo cả cửa sổ là một client IMK, nên "ô" được tính lại mỗi lần bộ gõ được kích hoạt và mỗi lần có click hay phím tắt ⌘.
+  - Theo tác giả, Chromium báo cả cửa sổ là một client IMK, nên "ô" được tính lại mỗi lần bộ gõ được kích hoạt và mỗi lần có click hay phím tắt ⌘. Dấu đo thấy mỗi tab một client (ý "Đơn vị nhớ" ở trên).
   - Sau một lần thay, VietTelex so vị trí con trỏ với vị trí lẽ ra có nếu app thay đúng và nếu app nối thêm. Hai lần "nối thêm" thì ô đó dùng chữ đánh dấu tới lần tính lại sau. Vị trí nằm trước đầu từ thì coi là "chưa biết"; bốn lần chưa biết liên tiếp cũng về chữ đánh dấu.
   - Bài học tác giả ghi: Chrome có thể trả chữ cũ ngay sau `insertText`, nên một tín hiệu tự báo trái với tín hiệu khác chỉ là "chưa biết", không phải "hỏng".
 - **Báo lỗi liên quan:**
