@@ -136,7 +136,7 @@ Artboard: [Gõ phím](canvas/SettingsTyping.png).
 Artboard: [Thông minh](canvas/SettingsSmart.png), [mở "Nâng cao"](canvas/SettingsSmartAdvanced.png).
 
 - Với "Tự khôi phục từ không phải tiếng Việt" (D4 (Từ nước ngoài)), ví dụ trong ghi chú phải khớp hành vi của engine: khi từ trùng nhau thì tiếng Việt thắng và gõ đúp phím dấu để giữ chữ gốc.
-- Với "Thêm dấu cho từ đã gõ" (D20 (Thêm dấu cho từ đã gõ)), ghi chú nêu phạm vi: tính năng không áp dụng ở ứng dụng có quy tắc gạch chân. Độ ổn định trên web editor để ô trống cho tới khi đo (N5).
+- Với "Thêm dấu cho từ đã gõ" (D20 (Thêm dấu cho từ đã gõ)), ghi chú nêu phạm vi: tính năng không áp dụng ở ứng dụng có quy tắc gạch chân và ở ô Dấu tự gạch chân (D13, ý "Ô giấu chữ"), lấy Google Docs làm ví dụ. Ghi chú không liệt kê app đã kiểm; số đo theo app ở `docs/Compatibility.md`.
 - Nhóm "Nâng cao" thu gọn và tóm tắt số tuỳ chọn cùng trạng thái của chúng.
   - "Gõ tắt phụ âm" và "Cho phép phụ âm z, f, w, j" loại trừ nhau: bật mục này thì mục kia tắt (D22 (Gõ tắt loại trừ z, f, w, j)).
   - Với Telex, w ở đầu từ luôn thành ư, nên mục thứ hai chỉ có tác dụng với z, f, j (D23 (w → qu chỉ ở VNI)).
@@ -146,6 +146,7 @@ Artboard: [Thông minh](canvas/SettingsSmart.png), [mở "Nâng cao"](canvas/Set
 
 Artboard: [Ứng dụng](canvas/SettingsApps.png), [chưa có quy tắc riêng](canvas/SettingsAppsEmpty.png).
 
+- Mô tả dưới tiêu đề "Quy tắc riêng" nói rằng ở ô không cho thay chữ tại chỗ, như Google Docs, Dấu tự gạch chân, và quy tắc "Không gạch chân" tắt việc đó ở ứng dụng ấy (D13, ý "Ô giấu chữ").
 - Mục "Quy tắc riêng" chỉ chứa các quy tắc đã lưu. Đặt một quy tắc về "Không gạch chân" vẫn giữ quy tắc đó. Khi người dùng xoá quy tắc (bằng menu chuột phải hoặc phím Delete), ứng dụng đó trở lại mục "Đề xuất".
 - Mục "Đề xuất" chỉ hiện khi có ứng dụng trong danh sách tương thích (cờ `suggestUnderline`) đã được cài mà chưa có quy tắc.
   - Quy tắc chỉ lưu khi người dùng bấm "Bật gạch chân"; quy tắc đó có nguồn là đề xuất và giữ nhãn "Đề xuất". Trước khi bấm, Dấu không lưu gì (D13 (Gạch chân là đường lui cuối cùng)).

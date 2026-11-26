@@ -38,7 +38,7 @@ struct SmartSettingsView: View {
                     // never in apps with an "Underline" rule. N5: stability on web
                     // editors is an open question in Decisions.md; the placeholder
                     // stays until it is measured.
-                    Text("Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule. [Test results on Google Docs, Notion…]")
+                    Text("Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule or in fields Dấu underlines on its own, such as Google Docs.")
                 }
                 WrappingHStack {
                     ExampleChips(example: SettingsSamples.addMarks(method))

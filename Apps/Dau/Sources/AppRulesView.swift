@@ -34,7 +34,7 @@ struct AppRulesView: View {
         SettingsPage(search: $query, searchPrompt: Text("Search apps"),
                      add: HeaderAdd(label: String(localized: "Add App"), action: { isAdding = true })) {
             // The page's first row reports as `firstRow`, as on the other pages.
-            Section(header: Text("App rules")) {
+            Section {
                 if rules.isEmpty {
                     Text("No app rules yet. Click + to add one.")
                         .layoutProbe("firstRow")
@@ -57,6 +57,11 @@ struct AppRulesView: View {
                             }
                     }
                 }
+            } header: {
+                // D13, "Ô giấu chữ".
+                SectionHeader(
+                    title: Text("App rules"),
+                    description: Text("In fields that don’t allow replacing text in place, such as Google Docs, Dấu underlines on its own. The “No Underline” rule turns this off in that app."))
             }
 
             // Only while an installed suggested app has no rule (D13); hidden too when

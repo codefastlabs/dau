@@ -188,7 +188,7 @@ Số ca theo kết quả, thay tại chỗ, không tính X5:
 | K4 | Khoá gõ đúp còn tới hết từ, kể cả khi ⌫ đã xoá chữ của phím đúp. Đã sửa 12/11/2026: D26 mở khoá khi ⌫ xoá chữ đó. | D26 | 0 (trước: 2) | A16, A17 |
 | K5 | Quá 7 chữ thì khôi phục ngay và engine để nguyên các phím sau; ⌫ về 7 chữ không trở lại. | D33 | 2 | A18, B32 |
 | K6 | ⌫ xoá chữ cuối, không xoá dấu thanh (người mới có thể chờ ⌫ xoá dấu; kỳ vọng này là giả định). | D32 | 1 | A19 |
-| K7 | Gạch chân không có D20: không hỏi vị trí con trỏ nên không thay được chữ đã chốt. | D13, D20 (phạm vi), N3 (Ít lời gọi vào ứng dụng đích) | 31 | các ô "/ K7" |
+| K7 | Gạch chân không có D20: từ đã chốt nằm ngoài vùng gạch chân, và chế độ đó không thay chữ đã chốt. | D13, D20 (phạm vi), N3 (Ít lời gọi vào ứng dụng đích) | 31 | các ô "/ K7" |
 | K8 | D20 không tự thêm mũ/móc để từ thành hợp lệ. | D20, "Đã biết nhưng không làm" | 1 | B23 |
 | K10 | Tự sửa chính tả của macOS đổi từ thành chữ khác kết quả của phím. | D4 (giới hạn đã biết), D20 | 1 | B36 |
 | K11 | D20 chỉ đọc phần trước con trỏ; dấu móc hay vị trí dấu cần cả từ ("nguo‸i" + w, "duo‸ng" + w ra "uơ" của D35 ("uơ" và "ươ")). | D20 (phạm vi), D35 | 2 | C8, C9 |

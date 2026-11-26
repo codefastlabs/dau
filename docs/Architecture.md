@@ -56,14 +56,14 @@ Dấu chạy thành hai tiến trình, nối với nhau chỉ qua App Group và 
 2. Với phím điều khiển (mũi tên, tổ hợp ⌘/⌃/⌥, Esc…), phím chết và sự kiện mang nhiều ký tự (`KeyRouter`), bộ gõ reset engine và trả `false` để hệ thống xử lý. Trường hợp này không khôi phục từ (D4 (Từ nước ngoài)).
 3. Với Backspace, engine bỏ chữ cuối đang hiển thị và đặt lại dấu (D32 (Backspace)). Phím luôn đi tiếp tới app để app tự xoá chữ cuối. Khi dấu phải dời, bộ gõ thay phần chữ đứng trước trong cùng phím đó (mục "Backspace thay tại chỗ").
 4. Với ký tự, bộ gõ gọi `engine.handle(scalar)`.
-   - Nếu engine trả `passThrough`, bộ gõ tự chèn ký tự đó tại con trỏ bằng `client.insertText(ký tự, replacementRange: NSNotFound)` và trả `true`. Bộ gõ không hỏi `selectedRange`, trừ ngay sau một ⌫ đi thẳng (mục "App trả lời chậm", ý "Chờ ⌫ chưa áp"). Nhờ vậy mọi thao tác chữ tới app qua cùng một đường, theo đúng thứ tự bộ gõ gọi (N3, ý "Vì sao Dấu tự chèn ký tự"). Cách này áp cho mọi app và cho mọi nhánh mà phím cuối cùng để nguyên: D4, D20, D30, D33 và các nhánh dựng lại hay reset của D11.
+   - Nếu engine trả `passThrough`, bộ gõ tự chèn ký tự đó tại con trỏ bằng `client.insertText(ký tự, replacementRange: NSNotFound)` và trả `true`. Bộ gõ không hỏi `selectedRange`, trừ ngay sau một ⌫ đi thẳng (mục "App trả lời chậm", ý "Chờ ⌫ chưa áp") và ở ký tự kết thúc một từ có dấu hiệu ô giấu chữ (mục "Ô giấu chữ"). Nhờ vậy mọi thao tác chữ tới app qua cùng một đường, theo đúng thứ tự bộ gõ gọi (N3, ý "Vì sao Dấu tự chèn ký tự"). Cách này áp cho mọi app và cho mọi nhánh mà phím cuối cùng để nguyên: D4, D20, D30, D33 và các nhánh dựng lại hay reset của D11.
    - Nếu engine trả `replace(n, s)`, bộ gõ gọi `client.insertText(s, replacementRange: vùng n ký tự trước con trỏ)` và trả `true`.
    - Khi engine rỗng mà bộ gõ chưa biết chữ trước con trỏ, bộ gõ có thể đọc chữ của app trước (D20 (Thêm dấu cho từ đã gõ), mục "Thêm dấu cho từ đã gõ").
 5. Với ký tự kết thúc từ (Space, dấu câu, Enter, Tab), nếu từ không phải âm tiết tiếng Việt hợp lệ thì bộ gõ khôi phục phím gốc (D4). Sau đó bộ gõ chốt từ và reset.
 
 Các phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3), Return, Tab, Enter bàn phím số (bước 5, với `endWord()`, sau lần khôi phục nếu có) và các phím ở bước 2. Phím đến trong lúc bộ gõ còn đang xử lý phím trước cũng đi thẳng (mục "Đầu vào từ IMK", ý "Gọi ngược trong lúc xử lý"; N3).
 
-Ở chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)), bước 3–5 ghi chữ bằng marked text thay cho thay chữ tại chỗ (mục "Chế độ gạch chân").
+Ở chế độ gạch chân (D13 (Gạch chân là đường lui cuối cùng)), bước 3–5 ghi chữ bằng marked text thay cho thay chữ tại chỗ (mục "Chế độ gạch chân"). Controller dùng chế độ này khi quy tắc của app bật nó hoặc khi tự nhận ra ô giấu chữ (mục "Ô giấu chữ").
 
 ## DauEngine
 
@@ -109,10 +109,10 @@ Các phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3
 
 ### Điều khiển và hai chế độ ghi chữ
 
-- Mã của bộ gõ nằm ở hai nơi. `Apps/DauInputMethod` giữ phần gắn với InputMethodKit: lớp điều khiển, delegate của tiến trình và `main.swift`. Package `Packages/DauInputMethodCore` giữ phần logic không cần InputMethodKit, gồm định tuyến phím (`KeyRouter`), `CursorTracker`, hai composer, đổi cài đặt sang engine, tìm app chủ (`HostApp`) và phân biệt lần mở (`LaunchPolicy`). Bộ gõ link package này, còn test của package chạy bằng `swift test`, không cần project Xcode hay ký mã.
+- Mã của bộ gõ nằm ở hai nơi. `Apps/DauInputMethod` giữ phần gắn với InputMethodKit: lớp điều khiển, delegate của tiến trình và `main.swift`. Package `Packages/DauInputMethodCore` giữ phần logic không cần InputMethodKit, gồm định tuyến phím (`KeyRouter`), `CursorTracker`, hai composer, phần tự gạch chân ở ô giấu chữ (`AutoUnderline`), đổi cài đặt sang engine, tìm app chủ (`HostApp`) và phân biệt lần mở (`LaunchPolicy`). Bộ gõ link package này, còn test của package chạy bằng `swift test`, không cần project Xcode hay ký mã.
 - Bộ gõ dùng một lớp con của `IMKInputController`; mỗi client có một instance và một `VietEngine` riêng. Bộ gõ không có trạng thái toàn cục (khác OpenKey).
 - `handle(_:client:)` đưa phím vào engine qua `InPlaceComposer` (thay tại chỗ) hoặc `MarkedComposer` (gạch chân). Cả hai là kiểu giá trị thuần và test bằng client giả.
-- Khi thay tại chỗ và engine trả `replace`, bộ gõ hỏi `selectedRange` một lần để có vị trí con trỏ trong chữ mà ô nhận đang giữ (D11), rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Khi engine để nguyên một ký tự, bộ gõ gọi một `insertText` của ký tự đó tại con trỏ (`NSNotFound`) và không hỏi `selectedRange`, trừ ngay sau một ⌫ đi thẳng (ý "Chờ ⌫ chưa áp"). Ở bản Debug, khi khoá `DauPerfLog` bật, bộ gõ hỏi thêm một `selectedRange` sau khi thay để chẩn đoán (`ReplaceDiag.swift`). Lời gọi này chạy sau khi đã ghi thời gian của phím, nên nó không nằm trong số đo (D42 (Ngưỡng hiệu năng)).
+- Khi thay tại chỗ và engine trả `replace`, bộ gõ hỏi `selectedRange` một lần để có vị trí con trỏ trong chữ mà ô nhận đang giữ (D11), rồi gọi `insertText(_:replacementRange:)` đúng một lần (N3). Khi engine để nguyên một ký tự, bộ gõ gọi một `insertText` của ký tự đó tại con trỏ (`NSNotFound`) và không hỏi `selectedRange`, trừ ngay sau một ⌫ đi thẳng (ý "Chờ ⌫ chưa áp") và ở ký tự kết thúc một từ có dấu hiệu ô giấu chữ (mục "Ô giấu chữ"). Ở bản Debug, khi khoá `DauPerfLog` bật, bộ gõ hỏi thêm một `selectedRange` sau khi thay để chẩn đoán (`ReplaceDiag.swift`). Lời gọi này chạy sau khi đã ghi thời gian của phím, nên nó không nằm trong số đo (D42 (Ngưỡng hiệu năng)).
 - Engine reset trong các trường hợp sau: click chuột; `activateServer`/`deactivateServer` và `commitComposition`; phím di chuyển con trỏ; `selectedRange` khác dự đoán mà không phải do app trả lời chậm (D11 (Kiểm tra ngữ cảnh)); và nguồn đầu vào đổi mà IMK không báo, nếu có đường như vậy (mục "Đổi nguồn đầu vào không qua `activateServer`").
 
 ### Vị trí thay chữ
@@ -131,7 +131,12 @@ Mọi lần đọc chữ là một lần gọi `attributedSubstring` cho phần 
 | Có thay chữ, vị trí khác vị trí Dấu theo dõi | một lần | một lần, để chứng minh app chậm; chỉ dựng lại từ chữ đó khi phím trước cách đủ `settleInterval` | D11 |
 | Dấu/biến đổi đầu tiên trong một từ đã hết hợp lệ, khi phím trước cách đủ `settleInterval` | một lần | tối đa một lần mỗi từ | D11 |
 | Chữ cái hoặc dấu thanh/biến đổi đầu tiên khi engine rỗng và chưa biết chữ trước con trỏ, ở mọi nhịp gõ | một lần, kể cả khi engine để nguyên phím | một lần | D20 |
-| Mọi phím ở chế độ gạch chân | không | không | D13 |
+| Có thay chữ trong từ dài ít nhất hai đơn vị, câu trả lời nằm trong từ Dấu vừa gõ và Dấu chưa có vị trí theo dõi | một lần | thêm một lần, một đơn vị ngay trước câu trả lời | N3 (ý "Ngoại lệ ô giấu chữ"), D13 |
+| Ký tự kết thúc từ có lần thấy đầu tiên của ô giấu chữ | một lần | không | N3 (ý "Ngoại lệ ô giấu chữ"), D13 |
+| Mọi phím ở chế độ gạch chân, trừ hàng dưới | không | không | D13 |
+| Ký tự kết thúc từ ở chế độ gạch chân Dấu tự bật, trong `AutoUnderline.checkedCommits` lần chốt đầu | một lần, ngay trước `insertText` chốt từ | không | N3 (ý "Ngoại lệ ô giấu chữ"), D13 |
+
+Ở ô không có dấu hiệu ô giấu chữ, ba hàng của ngoại lệ ô giấu chữ không thêm lời gọi nào (mục "Ô giấu chữ" bên dưới).
 
 Ô bỏ qua vùng thay (Ghostty, terminal dựng bằng xterm.js, terminal của WebStorm) không có cách xử lý riêng; Dấu thay tại chỗ ở đó như ở mọi ô khác (D43 (Ô bỏ qua vùng thay chữ)).
 
@@ -218,7 +223,7 @@ Phần này theo D32. Khi `backspace()` trả `passThrough`, ⌫ đi thẳng. Kh
 
 ### Chế độ gạch chân
 
-Chế độ này nằm ở `MarkedComposer.swift` (D13) và bật khi quy tắc của app có `underline`. Từ đang gõ hiện bằng `setMarkedText` (app tự vẽ gạch chân) và chốt bằng `insertText` khi kết thúc từ. Mọi lời gọi dùng `replacementRange` = NSNotFound, nên chế độ này **không bao giờ hỏi `selectedRange`**. Vì vậy chế độ này đúng với app áp phím bất đồng bộ, nhưng không có D20, vì muốn biến từ đã chốt thành marked text thì cần vị trí tuyệt đối.
+Chế độ này nằm ở `MarkedComposer.swift` (D13). Chế độ bật khi quy tắc của app có `underline`, hoặc khi controller tự nhận ra ô giấu chữ (mục "Ô giấu chữ" bên dưới). Từ đang gõ hiện bằng `setMarkedText` (app tự vẽ gạch chân) và chốt bằng `insertText` khi kết thúc từ. Mọi lời gọi dùng `replacementRange` = NSNotFound, nên `MarkedComposer` **không bao giờ hỏi `selectedRange`**. Lần hỏi duy nhất ở chế độ này là lần kiểm trước khi chốt của `AutoUnderline`. Vì vậy chế độ này đúng với app áp phím bất đồng bộ, nhưng không có D20, vì muốn biến từ đã chốt thành marked text thì cần vị trí tuyệt đối.
 
 Mỗi phím có tối đa một lời gọi (N3), như sau:
 
@@ -232,6 +237,19 @@ Mỗi phím có tối đa một lời gọi (N3), như sau:
 Ký tự kết thúc từ không bao giờ đi riêng sau chữ chốt. Ký tự này nằm trong cùng `insertText` với chữ chốt, kể cả khi D4 khôi phục từ (D13 (Gạch chân là đường lui cuối cùng)).
 
 Gõ đúp, khôi phục và độ dài từ hoạt động giống hệt thay tại chỗ: `MarkedComposer` giữ bản sao phần chữ engine đang hiển thị và áp nguyên `Action` lên đó (một test so khớp ngẫu nhiên với thay tại chỗ). Chuỗi chữ dài hơn 32 ký tự không có dấu cách (chỉ sau D33) chốt sớm; phần còn lại của từ chèn từng ký tự bằng `insertText`, như ký tự ngoài từ. Có thể gõ thử chế độ này bằng `scripts/selftest/typing/run.sh --underline`.
+
+### Ô giấu chữ
+
+Phần này theo D13, ý "Ô giấu chữ", và N3, ý "Ngoại lệ ô giấu chữ". Ô giấu chữ là ô báo vị trí con trỏ nằm trong chính từ Dấu vừa gõ, mà D11 không giải thích được câu trả lời đó (Google Docs báo `(1, 0)`). Ở ô đó, controller tự chuyển sang chế độ gạch chân.
+
+- **Hai kiểu, hai chỗ:** `HiddenTextDetector` (thuộc tính `InPlaceComposer.hiddenText`) đếm số lần thấy dấu hiệu khi thay tại chỗ. `AutoUnderline` nằm trong controller, giữ quy tắc của app và quyết định chế độ của controller (`AutoUnderline.underlines`). Cả hai sống bằng đời controller, qua các lần kích hoạt; reset từ và `activate` không xoá chúng. Chrome cho mỗi tab một controller, nên mỗi tab tự nhận ra riêng.
+- **Một lần thấy** (`InPlaceComposer.liesInsideTypedWord`, `explainsAnswer`): ở phím chữ có thay chữ, câu trả lời của `selectedRange` là con trỏ nằm trong từ của engine trước phím đó, tức từ vị trí 1 tới trước độ dài từ, với từ dài ít nhất hai đơn vị (`HiddenTextDetector.liesInside`). App tính vị trí từ đầu văn bản hay đầu dòng không bao giờ trả như vậy khi từ nằm trước con trỏ. Câu trả lời đó chỉ tính là một lần thấy khi phím không thay theo phép chứng minh app chậm (kind `late`) và câu trả lời không khớp chữ ô giữ (`HeldCheck.Answer` khác `none`). Kind `late_guess` không phải phép chứng minh, nên vẫn tính. Khi Dấu chưa có vị trí theo dõi, Dấu đọc thêm một đơn vị ngay trước câu trả lời, trước khi gửi gì; đơn vị đó phải là chữ cuối của từ.
+- **Hỏi ở cuối từ** (`InPlaceComposer.askAtWordEnd`): sau lần thấy đầu, ký tự kết thúc từ đó (phím mà engine để nguyên) hỏi `selectedRange` một lần, trước khi Dấu chèn ký tự. Câu trả lời nằm trong từ vừa xong thì là lần thấy thứ hai. Độ dài từ ở đây là độ dài lúc thấy, nếu lớn hơn độ dài từ engine đang giữ: khi lần thấy kết thúc bằng lệch (D11), engine bắt đầu lại từ phím đó (`forgetWord`), còn app vẫn hiện cả từ. Lệch như vậy không bỏ lần hỏi ở cuối từ; reset do người dùng (click, mũi tên, Return) thì bỏ. Nếu chính phím kết thúc từ có thay chữ (D4 khôi phục), câu trả lời vốn có của phím đó được xét như mọi phím có thay chữ.
+- **Bật:** khi đã có hai lần thấy và engine không còn giữ từ nào sau một phím (`AutoUnderline.afterInPlaceKey`), controller chuyển sang gạch chân, xoá số lần thấy và trạng thái thay tại chỗ (`switchAutoUnderline`). Từ kế tiếp là từ gạch chân đầu tiên.
+- **Tự về** (`AutoUnderline.beforeWordCommit`, `afterMarkedKey`): ở mỗi ký tự kết thúc từ, khi engine đã kết thúc từ, Dấu hỏi `selectedRange` một lần ngay trước `insertText` chốt từ đó (`MarkedComposer.handle`, tham số `beforeWordCommit`), chỉ trong `AutoUnderline.checkedCommits` lần chốt đầu sau khi bật. Dấu hỏi trước khi chốt vì lúc đó trang chưa có gì của phím này phải áp. Hỏi ngay sau `insertText` thì Safari chỉ trả lời khi trang đã áp xong lần chốt. Mỗi lần so vị trí mới với vị trí ở lần kiểm trước. Vị trí phải tăng đúng bằng số đơn vị UTF-16 Dấu đã chèn ở giữa hai lần kiểm. Đúng như vậy ở hai lần kiểm liền nhau thì controller về thay tại chỗ và lại tự nhận ra như từ đầu. Phím mà Dấu để app tự xử lý (Return, ⌫ khi không có từ, phím reset) và các sự kiện reset (`textMovedUnseen`) làm mất mốc so, nên phải đếm lại. Hết số lần kiểm thì Dấu thôi hỏi tới hết đời controller.
+- **Quy tắc theo app thắng** (`UnderlineMode.rule`, D5): quy tắc có gạch chân, hay khoá Debug `DauDebugForceUnderline`, cho `.underline`. Khi đó controller luôn gạch chân, không tự nhận ra và không kiểm lúc chốt. Quy tắc không gạch chân cho `.noUnderline`, và `HiddenTextDetector` tắt. Không có quy tắc thì là `.detect`. Quy tắc mới đến lúc controller đang tự gạch chân thì tắt chế độ đó (`AutoUnderline.setRule`).
+- **Log perf** (bản Debug): dòng phím có `hidden_ask=1` (phím có lần hỏi thêm, ở cuối từ hay trước khi chốt), `hidden_read=1` (phím có lần đọc một đơn vị), `hidden_sight=1` (một lần thấy) và `auto_underline=1` (phím gõ lúc controller đang tự gạch chân). Bộ gõ ghi sự kiện `auto-underline-on` khi bật, `auto-underline-off-follows` khi tự về, `auto-underline-off-rule` khi quy tắc mới tắt chế độ này và `auto-underline-checks-done` khi hết số lần kiểm. `scripts/perf/perf-report.sh` đếm các trường này theo từng app và cho thời gian của lần hỏi thêm (`hidden_ask_us`) cùng lần đọc (`hidden_read_us`).
+- **Kiểm:** `AutoUnderlineTests` đi qua hai composer như controller, với client giả chỉ ghi lời gọi và trả lời ngay. Client giả trả lời theo chữ đã nhận, theo một trạng thái cũ hơn vài thao tác hoặc theo câu trả lời cố định lấy từ số đo Google Docs.
 
 ### Đầu vào từ IMK
 
@@ -255,7 +273,7 @@ Phần này theo D18. Dưới đây là mọi điểm vào và cách bộ gõ x�
 - Bộ gõ có một input mode duy nhất là "Dấu – Tiếng Việt" (`….Dau.vi`), khai trong Info.plist (`ComponentInputModeDict`). Nhờ vậy ID của nguồn đã bật không đổi và nguồn nằm trong nhóm Tiếng Việt (D2 (Chuyển Việt/Anh)).
   - Bộ gõ không giữ trạng thái chế độ: IMK báo mode nào (kể cả `….Dau.en` còn sót từ bản cũ) thì bộ gõ cũng xử lý như tiếng Việt. `setValue(_:forTag:client:)` chỉ reset từ đang gõ.
   - Bộ gõ không tự đổi nguồn theo app, không nhớ chế độ theo app (D5) và không tự thông báo cho VoiceOver (D17 (Trợ năng)).
-- Với quy tắc theo app, lựa chọn gạch chân đọc lúc `activateServer` và khi cài đặt đổi, không đọc theo phím. Nếu chế độ đổi giữa chừng một từ, bộ gõ chốt từ trước. Bundle ID lấy từ client lúc `activateServer`. Chrome đôi khi đưa client có `bundleIdentifier()` là nil; khi đó bộ gõ dùng app đang ở trước (`NSWorkspace.frontmostApplication`).
+- Với quy tắc theo app, lựa chọn gạch chân đọc lúc `activateServer` và khi cài đặt đổi, không đọc theo phím (`UnderlineMode.rule`; ô giấu chữ ở mục "Ô giấu chữ"). Nếu chế độ đổi giữa chừng một từ, bộ gõ chốt từ trước. Bundle ID lấy từ client lúc `activateServer`. Chrome đôi khi đưa client có `bundleIdentifier()` là nil; khi đó bộ gõ dùng app đang ở trước (`NSWorkspace.frontmostApplication`).
 - Bộ gõ đọc cài đặt từ App Group và nghe thay đổi để áp dụng ngay. Bộ gõ không đọc danh sách tương thích (D13).
 
 ### Đổi nguồn đầu vào không qua `activateServer`
@@ -459,7 +477,7 @@ Phần này là `SystemUINames` (D38 (Chữ trên giao diện)).
 - Nhật ký từng phím (category `perf`, `diag`) và signpost chỉ có ở bản Debug; chúng bị loại khỏi bản Release lúc build (D8). Nhật ký từng phím chỉ ghi khi khoá `DauPerfLog` đã đặt trong global domain.
   - `scripts/selftest/typing/run.sh` tự bật khoá này lúc chạy và trả khoá về như cũ khi xong. Khi đo tay thì bật khoá, đo, rồi xoá khoá (`scripts/perf/perf-report.sh`).
   - Mỗi dòng phím có `t_ns` (lúc `handle` bắt đầu, theo `CLOCK_UPTIME_RAW`) và `ev_ns` (thời điểm của chính sự kiện phím). Từ hai giá trị này, `perf-report.sh` dựng khoảng cách giữa các phím và độ trễ từ lúc tạo phím tới bộ gõ, cho bài test tải nặng (`scripts/selftest/load/heavy.sh`, D42 (Ngưỡng hiệu năng)) và bài một app bận (`scripts/selftest/load/run.sh`).
-- Bộ gõ bản Debug đọc thêm khoá `DauDebugForceUnderline` (mảng bundle ID, miền global) để ép gạch chân khi thử mà không đụng tới cài đặt của người dùng; bản Release không đọc khoá này.
+- Bộ gõ bản Debug đọc thêm khoá `DauDebugForceUnderline` (mảng bundle ID, miền global) để ép gạch chân khi thử mà không đụng tới cài đặt của người dùng. Khoá này có tác dụng như quy tắc có gạch chân, nên app trong đó không tự nhận ra ô giấu chữ. Bản Release không đọc khoá này.
 - **Cờ chạy của app chủ bản Debug** nằm trong `#if DEBUG`; danh sách đủ nằm ở nơi định nghĩa từng cờ.
   - Các cờ chạy không mở cửa sổ, in một giá trị rồi thoát là các cờ `--print-…` ở đầu `main.swift` và `--set-typing-method` ở `DebugSettingsCommand`. (`--reconcile-input-method` có ở cả bản Release, xem mục "Cài, bật, thay, gỡ bộ gõ".)
   - Các cờ chụp màn hình với dịch vụ giả và chọn màn hình hay trạng thái (`--capture-…`, `--onboarding`, `--shortcut`, `--active`, `--tampered`) nằm ở `DebugCapture.swift` và `DauApp.swift`.

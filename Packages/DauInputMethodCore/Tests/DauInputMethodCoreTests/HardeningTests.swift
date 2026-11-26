@@ -175,6 +175,41 @@ struct InPlaceOddRangeTests {
         #expect(client.rangedInserts.isEmpty)
     }
 
+    @Test("hidden-text detector on (D13): odd answers are no sighting, ask nothing more and do not trap",
+          arguments: odd)
+    func hiddenTextOddRange(_ selection: NSRange) {
+        var engine = VietEngine()
+        var composer = InPlaceComposer()
+        composer.addMarksEnabled = false
+        composer.hiddenText.isOn = true
+        let client = OddClient(selection: selection)
+        var time = 1.0
+        for c in "too ".unicodeScalars {
+            time += 0.2
+            _ = composer.handle(.character(c), time: time, engine: &engine, client: client)
+        }
+        #expect(client.selectedRangeCalls == 1)
+        #expect(client.reads.isEmpty)
+        #expect(composer.hiddenText.sightings == 0)
+    }
+
+    @Test("hidden-text detector on (D13): a read of one unit that gives two is no sighting")
+    func hiddenTextOddRead() {
+        var engine = VietEngine()
+        var composer = InPlaceComposer()
+        composer.addMarksEnabled = false
+        composer.hiddenText.isOn = true
+        // Inside "to" with no followed caret: one read, answered "to" whatever is asked.
+        let client = OddClient(selection: NSRange(location: 1, length: 0))
+        var time = 1.0
+        for c in "too".unicodeScalars {
+            time += 0.2
+            _ = composer.handle(.character(c), time: time, engine: &engine, client: client)
+        }
+        #expect(client.reads == [NSRange(location: 0, length: 1)])
+        #expect(composer.hiddenText.sightings == 0)
+    }
+
     @Test("checked word path (D11 on a locked word): a huge answer is not read")
     func lockedWord() {
         var engine = VietEngine()

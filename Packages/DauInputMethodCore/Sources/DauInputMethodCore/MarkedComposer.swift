@@ -14,7 +14,7 @@ public protocol MarkedTextClient {
 ///
 /// Every call targets the client's own marked range or its selection
 /// (`replacementRange` = NSNotFound), so no absolute position is needed and
-/// `selectedRange` is never asked (N3). That is the point for apps that apply keys
+/// the composer never asks `selectedRange` (N3). That is the point for apps that apply keys
 /// asynchronously (Chrome, VS Code, Terminal): a snapshot of the cursor taken while
 /// earlier keys are still in flight cannot send a replacement to the wrong place.
 ///
@@ -66,12 +66,18 @@ public struct MarkedComposer {
         public internal(set) var consumed: Bool
         /// The client call made for this key, at most one (N3).
         public internal(set) var call: Call
+        /// UTF-16 units of the `insertText`, 0 without one.
+        public internal(set) var insertedUnits = 0
+        /// The `insertText` committed a word with the character that ended it.
+        public internal(set) var endedWord = false
     }
 
     public var isComposing: Bool { !text.isEmpty }
 
-    /// One key in underline mode.
-    public mutating func handle(_ route: KeyRoute, engine: inout VietEngine, client: some MarkedTextClient) -> Outcome {
+    /// One key in underline mode. `beforeWordCommit` runs on a word-ending character once
+    /// the engine ended the word, right before the `insertText` that commits it.
+    public mutating func handle(_ route: KeyRoute, engine: inout VietEngine, client: some MarkedTextClient,
+                                beforeWordCommit: () -> Void = {}) -> Outcome {
         switch route {
         case .ignore:
             // D4: arrows, Esc, shortcuts end the word without restoring it; what is shown
@@ -95,7 +101,7 @@ public struct MarkedComposer {
             return backspace(engine: &engine, client: client)
 
         case .character(let scalar):
-            return character(scalar, engine: &engine, client: client)
+            return character(scalar, engine: &engine, client: client, beforeWordCommit: beforeWordCommit)
         }
     }
 
@@ -123,7 +129,7 @@ public struct MarkedComposer {
     // MARK: - Keys
 
     private mutating func character(_ scalar: Unicode.Scalar, engine: inout VietEngine,
-                                    client: some MarkedTextClient) -> Outcome {
+                                    client: some MarkedTextClient, beforeWordCommit: () -> Void) -> Outcome {
         if detached {
             // D33: the rest of an over-long word goes in as typed until the word ends,
             // typed at the caret by the input method (`typeCharacter`, N3).
@@ -157,8 +163,9 @@ public struct MarkedComposer {
                 // `text` mirrors the engine's screen). Keep what is shown and add the key
                 // as typed, in one call (D13: the character goes with the word).
                 text.append(scalar)
+                let units = Self.string(text).utf16.count
                 let call = commit(engine: &engine, client: client)
-                return Outcome(consumed: call == .insertText, call: call)
+                return Outcome(consumed: call == .insertText, call: call, insertedUnits: units)
             }
         }
 
@@ -167,8 +174,9 @@ public struct MarkedComposer {
             detached = false
             let string = Self.string(text)
             text.removeAll()
+            beforeWordCommit()
             client.insertText(string, replacementRange: Self.notFound)
-            return Outcome(consumed: true, call: .insertText)
+            return Outcome(consumed: true, call: .insertText, insertedUnits: string.utf16.count, endedWord: true)
         }
         if text.count > Self.maxMarkedLength {
             // Commit the long run now; the rest of the word is typed at the caret by the
@@ -177,7 +185,7 @@ public struct MarkedComposer {
             text.removeAll()
             detached = true
             client.insertText(string, replacementRange: Self.notFound)
-            return Outcome(consumed: true, call: .insertText)
+            return Outcome(consumed: true, call: .insertText, insertedUnits: string.utf16.count)
         }
         showMarked(client)
         return Outcome(consumed: true, call: .setMarkedText)
@@ -208,7 +216,7 @@ public struct MarkedComposer {
             let string = Self.string(text)
             text.removeAll()
             client.insertText(string, replacementRange: Self.notFound)
-            return Outcome(consumed: true, call: .insertText)
+            return Outcome(consumed: true, call: .insertText, insertedUnits: string.utf16.count)
         }
         // Empty text clears the marked text: the word is gone.
         showMarked(client)
@@ -221,8 +229,9 @@ public struct MarkedComposer {
     /// D33): one `insertText` of it at the caret, key consumed (N3, "Vì sao Dấu tự chèn
     /// ký tự").
     private func typeCharacter(_ scalar: Unicode.Scalar, client: some MarkedTextClient) -> Outcome {
-        client.insertText(String(Character(scalar)), replacementRange: Self.notFound)
-        return Outcome(consumed: true, call: .insertText)
+        let string = String(Character(scalar))
+        client.insertText(string, replacementRange: Self.notFound)
+        return Outcome(consumed: true, call: .insertText, insertedUnits: string.utf16.count)
     }
 
     /// Applies an engine replacement to the marked text. False if it would delete more
@@ -248,8 +257,8 @@ public struct MarkedComposer {
     }
 }
 
-/// Whether underline mode is on for a client app (D5, D13): the app's rule asks for it,
-/// or (Debug builds only) the app is in the trial override list.
+/// The underline rule of a client app (D5, D13): the app's rule, or (Debug builds only) the
+/// trial override list, which counts as an "Underline" rule.
 public enum UnderlineMode {
     /// Debug builds only: defaults key holding an array of bundle IDs forced into
     /// underline mode for trials, without touching the user's settings. It lives in the
@@ -259,9 +268,11 @@ public enum UnderlineMode {
     /// Dấu, never read by Release builds. See scripts/selftest/typing/run.sh `--underline`.
     public static let debugForceKey = "DauDebugForceUnderline"
 
-    public static func isOn(settings: DauSettings, bundleID: String, debugForced: [String]) -> Bool {
-        guard !bundleID.isEmpty, bundleID != "?" else { return false }
-        if debugForced.contains(bundleID) { return true }
-        return settings.rule(for: bundleID)?.underline ?? false
+    public static func rule(settings: DauSettings, bundleID: String, debugForced: [String]) -> AutoUnderline.Rule {
+        guard !bundleID.isEmpty, bundleID != "?" else { return .detect }
+        if debugForced.contains(bundleID) { return .underline }
+        guard let rule = settings.rule(for: bundleID) else { return .detect }
+        return rule.underline ? .underline : .noUnderline
     }
+
 }

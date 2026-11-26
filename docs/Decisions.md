@@ -26,7 +26,7 @@ Sổ này là nguồn chuẩn duy nhất cho mọi nguyên tắc (N) và quyết
 | [D10](#d10-engine-tự-viết) | Engine tự viết | Engine viết bằng Swift thuần. OpenKey chỉ là tài liệu tham khảo. |
 | [D11](#d11-kiểm-tra-ngữ-cảnh) | Kiểm tra ngữ cảnh | Dấu hỏi vị trí con trỏ ở mỗi phím có thay chữ. Khi vị trí lệch, Dấu dựng lại bộ đệm, chứng minh app chậm hoặc reset. |
 | [D12](#d12-ưu-tiên-tiến-trình) | Ưu tiên tiến trình | Dấu không bật ưu tiên tiến trình khi chưa đo thấy cần. |
-| [D13](#d13-gạch-chân-là-đường-lui-cuối-cùng) | Gạch chân là đường lui cuối cùng | Dấu thay chữ tại chỗ. Gạch chân chỉ có khi người dùng tự bật. Nhãn "Đề xuất" gắn theo số đo. |
+| [D13](#d13-gạch-chân-là-đường-lui-cuối-cùng) | Gạch chân là đường lui cuối cùng | Dấu thay chữ tại chỗ. Gạch chân có khi người dùng tự bật, hoặc ở ô giấu chữ mà Dấu tự nhận ra. Nhãn "Đề xuất" gắn theo số đo. |
 | [D14](#d14-onboarding) | Onboarding | Onboarding có ba bước. Bước 1 chỉ hiện khi một bộ gõ chặn phím đang chạy. |
 | [D15](#d15-cài-đặt-mặc-định) | Cài đặt mặc định | Mặc định là Telex và đặt dấu kiểu mới, với đặt dấu tự do, tự khôi phục và thêm dấu cho từ đã gõ đều bật. |
 | [D16](#d16-bảo-trì-và-gỡ-cài-đặt) | Bảo trì và gỡ cài đặt | App chỉ gỡ bộ gõ sau khi người dùng bỏ Dấu khỏi nguồn đầu vào bằng nút "–", rồi tự chuyển chính nó vào Thùng rác. |
@@ -80,6 +80,7 @@ Khi đang gõ, Dấu gọi vào ứng dụng đích ít nhất có thể.
 - Ở mọi app, ký tự mà engine để nguyên (chữ, số, dấu câu, dấu cách, phím không kèm ⌘, ⌃, ⌥) do Dấu chèn bằng `insertText` tại con trỏ (`NSNotFound`), không để phím đi thẳng. Nhờ vậy mọi thao tác chữ tới app qua cùng một đường. Phím đi thẳng chỉ còn ⌫ (D32 (Backspace)), Return, Tab, Esc, mũi tên, phím chức năng và phím có ⌘, ⌃, ⌥. Ba loại phím khác cũng đi thẳng. Phím chết là phím không cho ký tự, như dấu ´ của bàn phím quốc tế. Phím chết không có ký tự nào để Dấu chèn, nên app tự ghép nó với phím sau. Sự kiện mang nhiều ký tự một lúc đi thẳng vì engine chỉ nhận một ký tự mỗi phím. Phím đến trong lúc Dấu còn đang xử lý phím trước đi thẳng vì engine đang bận. Từ đang gõ kết thúc khi phím trước xong (D18 (Phòng thủ với IMK)). Không có ngoại lệ theo app (D5 (Quy tắc theo ứng dụng)).
 - Dấu hỏi vị trí con trỏ (`selectedRange`) ở mỗi phím có thay chữ, không tự cộng dồn vị trí từ một vị trí gốc. Ở ô chỉ giữ từ trước con trỏ (D11, ý "Ô chỉ giữ từ trước con trỏ"), Dấu tự tính vị trí trong từ đó từ chữ chính nó đã gửi và dùng câu trả lời để kiểm vị trí đó. Chế độ gạch chân là ngoại lệ (D13 (Gạch chân là đường lui cuối cùng)). Phím Dấu tự chèn và phím đi thẳng không hỏi, trừ lần đọc của D20 (Thêm dấu cho từ đã gõ) và lần đọc của D11 (Kiểm tra ngữ cảnh) ở từ đã hết hợp lệ.
 - Dấu chỉ đọc chữ trước con trỏ trong các trường hợp một quyết định cho phép. Mỗi trường hợp đọc một lần. Các trường hợp đó là lệch vị trí và từ đã hết hợp lệ (D11 (Kiểm tra ngữ cảnh)), cùng phím đầu khi chưa biết chữ trước con trỏ (D20).
+- **Ngoại lệ ô giấu chữ (D13):** ở phím có thay chữ mà dấu hiệu ô giấu chữ xuất hiện, Dấu đọc chữ trước vị trí app báo một lần. Sau lần thấy đầu, Dấu hỏi `selectedRange` thêm một lần ở dấu cách kết thúc từ đó. Khi Dấu đang tự gạch chân, Dấu hỏi `selectedRange` một lần ngay trước mỗi lần chốt chữ, chỉ ở 8 lần chốt đầu. Ở ô không có dấu hiệu đó, ngoại lệ này không thêm lời gọi nào.
 - **Ngoại lệ sau ⌫ chưa áp:** phím đến trong hạn chờ ngay sau một ⌫ đi thẳng mà Dấu biết chữ bị xoá thì hỏi `selectedRange`. Trong trường hợp này, phím Dấu tự chèn cũng hỏi một lần. Nếu `selectedRange` đầu tiên trả đúng vị trí của con trỏ trước khi ⌫ áp, theo hệ vị trí đang dùng (D11), nghĩa là app chưa áp ⌫, thì Dấu hỏi lại `selectedRange` tới khi app áp xong ⌫ hoặc hết một hạn chờ. Sau đó Dấu xử lý phím như thường, kể cả một lần đọc chữ lại nếu đường đó cần. Hết hạn thì Dấu xử lý như khi không chờ. Không có ngoại lệ theo app.
 
 **Vì sao:** `insertText(_:replacementRange:)` cần vị trí của từ đang gõ trong chữ mà ô nhận đang giữ (tài liệu Apple của `NSTextInputClient`). Chỉ cộng dồn từ một vị trí gốc thì không biết lúc app tự sửa chữ hay con trỏ đi chỗ khác. VS Code đổi gốc toạ độ. Vị trí Dấu tự theo dõi chỉ dùng khi câu trả lời trùng nó hoặc khi chữ đọc được chứng minh app trả lời chậm (D11, ý "App trả lời chậm"). Ở ô chỉ giữ từ trước con trỏ, chữ ô giữ đổi ở mỗi từ, nên câu trả lời cũ tính trong một từ đã không còn. Chỉ vị trí Dấu tự tính từ chữ nó đã gửi mới đúng lúc app áp lời gọi (trình soạn thảo Cursor 3.31.15, [`docs/research/MonacoInput.md`](research/MonacoInput.md)).
@@ -281,6 +282,12 @@ Dấu không bật `.latencyCritical` hay `beginActivity` theo mặc định. D�
 
 - Thay tại chỗ là cách gõ của Dấu. Gõ sai ở một app là lỗi của Dấu và phải sửa, không giải quyết bằng gạch chân. Gạch chân (marked text) là cách bộ gõ mặc định của macOS hiện chữ. Dấu muốn làm tốt hơn cách đó. Ngoại lệ là ô bỏ qua vùng thay chữ (terminal như Ghostty, xterm.js): ở đó gạch chân là cách gõ đúng. Dấu không xử lý riêng (D43 (Ô bỏ qua vùng thay chữ)).
 - Gạch chân chỉ còn là đường lui cho app mà thay tại chỗ chưa sửa được. Người dùng tự bật theo từng app (D5 (Quy tắc theo ứng dụng)). **Mặc định mọi app không gạch chân.**
+- **Ô giấu chữ:** Dấu tự gạch chân riêng ô đó, người dùng không phải bật gì. Ô giấu chữ là ô mà app báo vị trí con trỏ nằm trong chính từ Dấu vừa gõ, và phép chứng minh app chậm hay ô chỉ giữ từ trước con trỏ của D11 (Kiểm tra ngữ cảnh) không giải thích được câu trả lời đó. Google Docs là ví dụ: trang báo con trỏ ở `(1, 0)` và chỉ cho bộ gõ thấy một ký tự.
+  - Dấu cần thấy dấu hiệu đó hai lần rồi mới gạch chân, bắt đầu từ từ kế tiếp. Hai lần thấy có thể nằm trong cùng một từ, vì lần hỏi thêm ở cuối từ cũng tính; nhờ vậy Google Docs trên Chrome được nhận ra ngay ở từ đầu. Khi Dấu chưa có vị trí theo dõi, lần thấy còn cần ký tự app đưa trước vị trí đó là ký tự cuối của từ.
+  - Trạng thái nằm trong controller của ô nhận. Chrome cho mỗi tab một controller, nên các tab khác vẫn thay tại chỗ.
+  - Dấu tự về thay tại chỗ khi ở hai lần chốt liền, vị trí app báo ngay trước lần chốt tăng đúng bằng số đơn vị Dấu đã chèn kể từ lần hỏi trước. Dấu chỉ kiểm điều này ở 8 lần chốt đầu sau khi bắt đầu gạch chân. Ô bị nhận nhầm lộ ra ngay ở vài từ đầu, còn hỏi ở mọi từ thì tốn một lời gọi mỗi từ và có thể chặn phím khi trang bận.
+  - Quy tắc theo app của người dùng thắng: quy tắc "Có gạch chân" luôn gạch chân và không tự về, quy tắc "Không gạch chân" tắt việc tự nhận ra ở app đó.
+  - Ở ô Dấu tự gạch chân, D20 (Thêm dấu cho từ đã gõ) không chạy, như ở app có quy tắc gạch chân.
 - Nhãn "Đề xuất" trong danh sách tương thích chỉ gắn cho app mà số đo cho thấy thay tại chỗ còn sai ở tốc độ gõ thật. Sửa được ở app nào thì bỏ nhãn của app đó. Dấu không gắn nhãn theo công nghệ giao diện khi chưa đo.
 - Gửi cả chuỗi một lần (0 ms) không phải tốc độ gõ thật, nên không dùng làm tiêu chí.
 - Ở chế độ gạch chân, ký tự chốt chữ (dấu cách, dấu câu) gửi cùng chữ chốt trong một `insertText`, không đi thẳng, cùng lý do với N3 (Ít lời gọi vào ứng dụng đích). Khi phím dồn, Safari từng dời dấu cách sang sau chữ kế.
@@ -288,6 +295,7 @@ Dấu không bật `.latencyCritical` hay `beginActivity` theo mặc định. D�
 
 **Vì sao:**
 
+- Ô giấu chữ: thay tại chỗ không đúng được ở Google Docs, vì mọi đường trong tầm bộ gõ đã thử và không được ([`docs/research/WebEditorInput.md`](research/WebEditorInput.md) mục 10.5 đến 10.7). Gạch chân gõ đúng ở đó. Một quy tắc theo app không tách được Google Docs với các tab khác của cùng trình duyệt, nên Dấu tự nhận ra theo ô. Số đo: [`docs/Compatibility.md`](Compatibility.md) mục 5.10.
 - Cursor 3.30.14 (17/11/2026) thay tại chỗ đúng ở trình soạn thảo, khung agent và ô nhập Agents, nên không có nhãn.
 - Ở Ghostty, thay tại chỗ sai ở mọi nhịp vì app bỏ qua vùng thay (D43), còn gạch chân thì đúng.
 - Chrome, Edge, Firefox và VS Code đúng ở nhịp danh nghĩa 5, 10, 20 ms (khoảng cách phím thật phần lớn 10–20 ms).
@@ -375,7 +383,7 @@ Tính năng "Thêm dấu cho từ đã gõ" đọc chữ đang hiển thị như
 - Dấu không giữ "lịch sử từ" để Backspace quay lại sửa như OpenKey, vì trường hợp lùi về sau từ rồi gõ phím dấu đã được D20 phủ.
 - **Khi nào đọc:** Dấu đọc ở phím chữ cái, phím dấu thanh hoặc phím biến đổi đầu tiên khi bộ đệm trống mà chưa biết chữ trước con trỏ (sau reset, click, ⌫, Return hoặc Tab). Luật này áp dụng cả khi trước con trỏ không có chữ hoặc khi phím đó cuối cùng được chèn nguyên. Mỗi lần như vậy gồm một `selectedRange` và một lần đọc chữ trước con trỏ (N3 (Ít lời gọi vào ứng dụng đích)). Gõ liền qua dấu cách thì không đọc.
 - **Phạm vi:**
-  - Tính năng không áp dụng ở app đang bật gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì chế độ đó không hỏi vị trí con trỏ.
+  - Tính năng không áp dụng ở app hay ô đang gạch chân (D13 (Gạch chân là đường lui cuối cùng)), vì từ đã chốt nằm ngoài vùng gạch chân và chế độ đó không thay chữ đã chốt.
   - Nếu app không trả vị trí hay chữ cho một lần đọc, phím đó đi như phím đầu của từ mới. Nếu hai lần đọc liền nhau đều không nhận được gì, Dấu không đọc lại tới lần kích hoạt sau (N3 (Ít lời gọi vào ứng dụng đích)). Một lần đọc được ở giữa thì bộ đếm bắt đầu lại.
   - Dấu đọc ở mọi nhịp gõ, kể cả khi phím dồn ("Hoc␣⌫j" gõ nhanh vẫn ra "Học"). Chữ đọc được kiểm như ở D11 (Kiểm tra ngữ cảnh), ý "App trả lời chậm". Nếu không tin được chữ đó, phím đó không đặt dấu vào chữ đã có.
   - Dấu chỉ xét phần chữ ngay trước con trỏ ("hoc|tap" + j → "họctap").

@@ -15,6 +15,13 @@
 # bksp_asks and bksp_wait_ns (included in handle_ns). Rows: bksp_<applied|timeout> (counts),
 # bksp_asks, bksp_wait_us, and handle_nowait_us (handle_ns minus bksp_wait_ns, every key: D42
 # with and without the wait).
+# D13 "Ô giấu chữ" (N3 "Ngoại lệ ô giấu chữ"): the extra calls per app. Rows: hidden_ask,
+# hidden_read, hidden_sight (counts of keys that asked selectedRange, read one unit, or saw the
+# field), hidden_ask_us (sel_ns of those keys: their only selectedRange), hidden_read_us (read_ns
+# of the keys that read: the key's last read), auto_underline (keys typed while this controller
+# underlines because it found the field). Events: auto-underline-on, auto-underline-off-follows
+# (the caret followed the commits), auto-underline-off-rule (the app got a rule),
+# auto-underline-checks-done (the commit checks ran out), as event_<name>.
 #
 # Gaps between keys (app under load). Each key line carries t_ns (CLOCK_UPTIME_RAW when
 # the input method's handle started: the key reached the input method) and ev_ns (the
@@ -99,6 +106,11 @@ read_log | awk -v want="$(printf '%s' "$APP_FILTER" | tr '[:upper:]' '[:lower:]'
     if (b != "") { print app, "bksp_" b, 1; print app, "bksp_asks", field("bksp_asks") + 0 }
     if (bw != "" && bw + 0 >= 0) print app, "bksp_wait_us", bw / 1000
     if (h != "") print app, "handle_nowait_us", (h - ((bw != "" && bw + 0 >= 0) ? bw : 0)) / 1000
+    # D13 "Ô giấu chữ": the extra calls, and the keys typed while auto underlining.
+    if (field("hidden_ask") == "1") { print app, "hidden_ask", 1; if (s != "" && s + 0 >= 0) print app, "hidden_ask_us", s / 1000 }
+    if (field("hidden_read") == "1") { print app, "hidden_read", 1; if (r != "" && r + 0 >= 0) print app, "hidden_read_us", r / 1000 }
+    if (field("hidden_sight") == "1") print app, "hidden_sight", 1
+    if (field("auto_underline") == "1") print app, "auto_underline", 1
     if (kind == "replace" || kind == "mismatch" || kind == "unsupported") {
       if (h != "") print app, "handle_replace_us", h / 1000
     }
@@ -176,7 +188,8 @@ echo "Đơn vị: µs. p50/p99 theo hạng gần nhất (nearest rank). n = số
 awk '
   function flush(   i50, i99) {
     if (n == 0) return
-    if (metric ~ /^(count_|event_|typed_read_|diff_|gap_|evgap_)/ || metric == "bksp_applied" || metric == "bksp_timeout") {
+    if (metric ~ /^(count_|event_|typed_read_|diff_|gap_|evgap_)/ || metric == "bksp_applied" || metric == "bksp_timeout" \
+        || metric == "hidden_ask" || metric == "hidden_read" || metric == "hidden_sight" || metric == "auto_underline") {
       printf "  %-22s %8d\n", metric, sum
     } else {
       i50 = int((50 * n + 99) / 100); if (i50 < 1) i50 = 1
