@@ -355,6 +355,7 @@ fi
 # --- helpers -------------------------------------------------------------------------
 INPUT_SOURCE="$(dau_swift_tool input-source "$ROOT/scripts/lib/InputSource.swift")" || exit 1
 CLIPBOARD="$(dau_swift_tool clipboard "$HERE/Clipboard.swift")" || exit 1
+POINTER="$(dau_swift_tool pointer "$HERE/Pointer.swift")" || exit 1
 
 IM_PLIST="$HOME/Library/Input Methods/DauInputMethod.app/Contents/Info.plist"
 [[ -f "$IM_PLIST" ]] || log_die "Chưa cài bộ gõ: chạy scripts/dev/install-app.sh, rồi mở Dấu trong /Applications và bấm \"Bật Dấu\"."
@@ -2240,29 +2241,59 @@ run_obsidian() {
 #   and Return trash the page, and its tab shows the page that was open before; ⌘W closes
 #   that tab, the one ⌘N opened.
 notion_paste() { # text: pasted into Notion's focus through the clipboard (restored by cleanup)
-  printf '%s' "$1" | pbcopy
+  printf '%s' "$1" | LC_ALL=en_US.UTF-8 pbcopy  # pbcopy reads bytes in the locale's encoding
   guarded Notion "" 'tell application "System Events" to keystroke "v" using {command down}' >/dev/null
 }
 notion_title_is() { front_ok Notion "$1"; }
+notion_front_title() { osascript -e 'tell application "System Events" to tell process "Notion" to get name of window 1' 2>/dev/null; }
+# The page menu's "Move to Trash" in the language Notion shows; told apart by the name of
+# Notion's File menu, the only text checked here in each language (Notion 7.43, macOS 27).
+notion_trash_label() {
+  case "$(osascript -e 'tell application "System Events" to tell process "Notion" to get name of menu bar item 3 of menu bar 1' 2>/dev/null)" in
+    Tệp) print -r -- "Chuyển vào Thùng rác" ;;
+    *) print -r -- "Move to Trash" ;;
+  esac
+}
+# The window on the main display, inside it, for the run: the page menu's "•••" sits at the
+# window's top right, and a window wider than the display or on another display puts it
+# where the click cannot reach. NOTION_FRAME keeps the frame to put back.
+NOTION_FRAME=""
+notion_fit_window() {
+  NOTION_FRAME="$(osascript -e 'tell application "System Events" to tell process "Notion" to get {position, size} of window 1' 2>/dev/null)"
+  osascript -e 'tell application "System Events" to tell process "Notion"
+    set position of window 1 to {40, 60}
+    set size of window 1 to {1200, 800}
+  end tell' >/dev/null 2>&1
+}
+notion_restore_window() {
+  local f="${NOTION_FRAME//[[:space:]]/}"
+  [[ "$f" =~ '^(-?[0-9]+),(-?[0-9]+),([0-9]+),([0-9]+)$' ]] || return 0
+  osascript -e "tell application \"System Events\" to tell process \"Notion\"
+    set position of window 1 to {$match[1], $match[2]}
+    set size of window 1 to {$match[3], $match[4]}
+  end tell" >/dev/null 2>&1
+}
 notion_trash() { # title the page has now
-  local title="$1"
+  local title="$1" xy
   # Only while this run's page is in front, so the click can only reach its "•••". Esc first:
   # with the text still selected after the read-back, the click did not open the menu (the
-  # paste and Return then went into the page).
-  if ! osascript -e "tell application \"System Events\" to tell process \"Notion\"
+  # paste and Return then went into the page). The page bar, and its "•••", is drawn only
+  # while the pointer hovers over it, hence a real pointer move before the click (Pointer.swift).
+  if ! xy="$(osascript -e "tell application \"System Events\" to tell process \"Notion\"
     if not frontmost then error \"not front\"
     if name of window 1 is not \"$title\" then error \"not the page\"
     key code 53
-    delay 0.3
     set {x, y} to position of window 1
     set {w, h} to size of window 1
-    click at {x + w - 24, y + 61}
-  end tell" >/dev/null 2>&1; then
-    log_warn "Không bấm được menu của trang Notion: trang \"$title\" còn trong Private, xoá tay giúp (Move to Trash)"
+    return ((x + w - 24) as text) & \" \" & ((y + 61) as text)
+  end tell" 2>/dev/null)"; then
+    log_warn "Không bấm được menu của trang Notion: trang \"$title\" còn trong mục riêng tư, xoá tay giúp"
     return 0
   fi
+  sleep 0.3
+  $POINTER click ${=xy}
   sleep 0.8  # Fixed: the menu fades in before its search field takes keys; nothing to read
-  notion_paste "Move to Trash"
+  notion_paste "$(notion_trash_label)"
   sleep 0.8  # Fixed: the list filters as the text arrives; nothing to read
   guarded Notion "" 'tell application "System Events" to key code 36' >/dev/null
   # Trashed: the tab shows the page open before. Not: the paste and Return went into this
@@ -2270,22 +2301,28 @@ notion_trash() { # title the page has now
   if wait_until 5 eval '! notion_title_is "$title"'; then
     guarded Notion "" 'tell application "System Events" to keystroke "w" using {command down}' >/dev/null
   else
-    log_warn "Trang Notion \"$title\" chưa vào Trash, xoá tay giúp (Move to Trash)"
+    log_warn "Trang Notion \"$title\" chưa vào Thùng rác, xoá tay giúp"
   fi
 }
 run_notion() {
   local before
   open -a Notion
   wait_until -i 0.5 30 front_ok Notion ""
-  before="$(window_names Notion)"
+  notion_fit_window
+  before="$(notion_front_title)"
   guarded Notion "" 'tell application "System Events"
     keystroke "n" using {command down}
     delay 1
     keystroke "1"
-  end tell' >/dev/null || return 0
-  if ! wait_until 5 notion_title_is "New page"; then
+  end tell' >/dev/null || { notion_restore_window; return 0; }
+  # A new page: the window title changes from the page in front before. Its name follows
+  # Notion's language ("New page", "Trang mới"), so only the change is checked.
+  local page=""
+  notion_new_page() { page="$(notion_front_title)"; [[ -n "$page" && "$page" != "$before" ]]; }
+  if ! wait_until 5 notion_new_page; then
     log_error "Dừng: Notion chưa mở trang mới (cửa sổ vẫn là \"$before\"); có thể Notion còn đang tải — không gõ gì"
     stop_run front "Notion chưa mở trang mới"
+    notion_restore_window
     return 0
   fi
   sleep 0.5  # Fixed: the title field takes keys once the page is drawn; nothing to read
@@ -2296,12 +2333,14 @@ run_notion() {
   if ! wait_until 5 notion_title_is "$SELFTEST_TITLE"; then
     log_error "Dừng: trang mới của Notion không nhận tiêu đề \"$SELFTEST_TITLE\" — không gõ gì"
     stop_run front "trang mới của Notion không nhận tiêu đề"
-    notion_trash "New page"
+    notion_trash "$page"
+    notion_restore_window
     return 0
   fi
   select_dau; type_keys Notion "$SELFTEST_TITLE"
   copy_all Notion "$SELFTEST_TITLE"
   notion_trash "$SELFTEST_TITLE"
+  notion_restore_window
 }
 # Zed: GPUI, its own text input, not AppKit's text system.
 run_zed() { cli_editor Zed /Applications/Zed.app/Contents/MacOS/cli -n; }

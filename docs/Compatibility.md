@@ -30,7 +30,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 22/11/2026, sau khi Dấ
 | Telegram | Đúng ở 5 và 30 ms (chuỗi chuẩn) và ở 100 ± 30 ms (chuỗi `edit`), ngày 17/11/2026 (mục 5.8). | chưa đo | không |
 | Antigravity | Ô nhắn tin đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
 | Obsidian | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
-| Notion | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
+| Notion | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11); câu thêm dấu cho từ đã gõ ở 80 ± 30 ms đúng 3/3 (26/11/2026, máy M1 Pro, Notion 7.43.2). | chưa đo | không |
 | Word trên web (Chrome) | Đúng ở 80 ± 30 ms, kể cả thêm dấu cho từ đã gõ: 6/6 lượt (17/11/2026, máy M3 Max) và 9/9 sau khi Dấu tự chèn ký tự (22/11/2026, Chrome 158); mục 5.10. | Mất ký tự đầu tiên của tài liệu trống, 6/6 (22/11/2026), như Telex của Apple; mục 5.10. | không |
 | Google Docs (Chrome, Safari) | Dấu tự gạch chân ở ô này (D13, ô giấu chữ): mỗi tab mới sai hai từ đầu ở Chrome (7/7) và một từ ở Safari (6/6, bản cuối), rồi đúng hết câu; không thêm dấu được cho từ đã chốt (26/11/2026, máy M1 Pro; mục 5.10). Thay tại chỗ thì sai, vì Google Docs luôn trả vị trí con trỏ là (1, 0), nên Dấu chỉ thay được một ký tự. | Chữ gõ liền đúng 5/5 (23/11/2026, Chrome 158); không thêm dấu cho từ đã chốt (mục 6.8). Mục 5.10. | không: Dấu tự gạch chân riêng ô này |
 
@@ -337,6 +337,7 @@ Các app này được đo để biết ngoài Terminal (mục 6.5) còn app nà
 - Antigravity 2.33.0 (ô nhắn tin của app agent, không gửi) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`.
 - Obsidian 1.15.1 (ghi chú trong một kho tạm) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`.
 - Notion 7.44.1 (thân một trang riêng tư mới, đưa vào Trash sau khi đo) đúng 1/1 câu `edit` và 1/1 `hoaf⌫`.
+- Notion 7.43.2, giao diện tiếng Việt (26/11/2026, 15:30–15:32, máy M1 Pro, bản Debug của `cf1a29a`): câu thêm dấu cho từ đã gõ của `scripts/selftest/typing/typed-word-docs.sh` ("Hom ⌫o nay minhf hoc ⌫j tieng ⌫es Viet ⌫ej voiws banj, buooir hojc onlinr⌫e raats vui. ") với `typing/run.sh --delay 80 --jitter 30 --word-pause 250 notion`. Dấu đúng 3/3, cả bốn chỗ D20 và ⌫ giữa từ. Telex của Apple ra "Hm Ho nay mình hoc hoj tieng tiené Viet Vieẹ với bạn, buổi học online rất vui.": ô hợp lệ, và Telex của Apple không có D20.
 - Ở lượt này Sublime Text cũng được đo lại (mục 5.7).
 - Bộ gõ bản Release không ghi nhật ký từng phím (D8), nên lượt này không có số đo thời gian.
 
