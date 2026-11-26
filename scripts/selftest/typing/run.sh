@@ -34,9 +34,9 @@
 #           integrated terminal of WebStorm: a cell of the same kind as vscodeterm's runs in it)
 #           | telegram (the message box of the "Saved Messages" chat in the native Telegram app;
 #           nothing is sent, the box is emptied at the end)
-#           | gdocs, gdocssafari, wordweb (an empty Google Docs document in Chrome or in Safari,
-#           or Word for the web in Chrome, of your own, signed in in that browser, given with
-#           --doc-url; one of them per run, see below)
+#           | gdocs, gdocssafari, wordweb (a new Google Docs document in Chrome or in Safari, or
+#           a new Word for the web document in Chrome, created by the run in the account signed
+#           in in that browser; one of them per run, see below)
 #           | all (= the first four)
 #     No TextEdit: it autosaves every new document to iCloud Drive, closed or not
 #     (docs/Troubleshooting.md); Safari's test page is the AppKit/WebKit reference.
@@ -91,10 +91,11 @@
 #                     the page loads until its tab closes. The app stays responsive to the
 #                     window server; only the page (the renderer, which applies the text) is
 #                     late. The clean "busy app" condition.
-#   --doc-url URL     gdocs, gdocssafari, wordweb: the link of the document to type into, opened when the browser's
-#                     front tab does not show such a document already. It must be empty and
-#                     yours: the run deletes everything it typed (⌘A, Delete) and leaves it empty.
-#                     The link is private: pass it on the command line, never commit it.
+#   --doc-file FILE   gdocs, gdocssafari, wordweb: FILE holds the link of a document an earlier
+#                     run created, typed into again (several runs, one document). Missing or
+#                     empty: the run creates a new document and writes its link there. Without
+#                     this option every run creates a new document. The link is private: FILE
+#                     belongs under build/ (git-ignored).
 #   --save DIR        also write, per app, to DIR: <app>.txt (the text read back);
 #                     <app>.perf.log (the input method's perf and diag log, ReplaceDiag:
 #                     positions of each replacement, from the start of that app's run;
@@ -134,17 +135,20 @@
 # document whose first letter the app capitalized by itself counts as a pass (noted).
 #
 # Edge, Firefox: the same local test page as Safari/Chrome, closed with ⌘W.
-# gdocs, gdocssafari, wordweb: the browser's front tab (Chrome; Safari for gdocssafari) is used when it already shows such a document (title with
-# " - Google Docs", " - Google Tài liệu" in Vietnamese, or ".docx"); otherwise --doc-url opens
-# in a new tab. The document must be empty (⌘A ⌘C copies nothing), or the run stops with
-# nothing typed. Then the marker "1qkpb " is typed and must come back alone through ⌘A ⌘C
-# (tried again for about 20 s while the editor loads), or the run stops. The marker stays: the
-# keys are typed after it, read back with ⌘A ⌘C without it, and the document emptied (⌘A,
-# Delete). It starts with a digit and the keys never start the document: Word for the web
-# drops the first marked-text composition of an empty document (Apple's Telex and Dấu's
-# underline mode: "qkpb" gave "kpb", "Hom nay" gave "om nay"; docs/Compatibility.md
-# 5.10), and a digit goes in without marked text. The tab stays open (closing it right after an edit makes the page ask
-# "Leave site?" while it saves).
+# gdocs, gdocssafari, wordweb: the run types only into a document it created itself, in the
+# account signed in in that browser (Chrome; Safari for gdocssafari): a link of someone else's
+# document would ask that account for edit access. A new document is https://docs.new or
+# https://word.new opened in a new tab; it stays in that account's Drive or OneDrive, and its
+# link is printed so the user can delete it. With --doc-file the front tab is used when it
+# shows that link already, otherwise the link opens in a new tab. One click into the page (the
+# middle of the window), the input source selected, and the keys typed; nothing is selected
+# before them (⌘A right before typing makes Word for the web drop the first marked-text
+# composition of an empty document). They are read back with ⌘A ⌘C, the whole text being the
+# result (empty: the keys did not reach the document, no result). The document is then emptied
+# (⌘A, Delete), so the next run starts empty. A read-back longer than the keys, or not starting
+# with their first letter, means the document held other text: the run stops and deletes
+# nothing. The tab stays open (closing it right after an edit makes the page ask "Leave site?"
+# while it saves).
 # Notes: a new note (⌘N) in the folder shown; it syncs while it exists. The script
 # empties it and deletes it through Notes' AppleScript (to Recently Deleted).
 # Mail: a new message (⌘N), keys go to the body focused through Accessibility, the To
@@ -179,16 +183,15 @@
 # and pasted with ⌘V, then Return, so it never goes through the input method, whatever the
 # current source is (the clipboard is put back at the end); it lands in the user's zsh
 # history. The cell takes the terminal like Ghostty's does (raw bytes teed to a file, a zsh
-# line editor, ⌃D ends the line). Before any test key the script types the marker "qkpb"
-# (letters no Telex rule touches) and the cell reports having read it from its tty: a marker
-# that does not come back means the keys do not reach the terminal, and the run stops (exit
-# 3) without typing more. Nothing is saved: a window with text in the editor is closed with
+# line editor, ⌃D ends the line). The cell writes a file when it runs and another when its line
+# editor is about to read: both must be there, within a bounded wait, before any test key (the
+# terminal had the keyboard focus, the paste ran), or the run stops (exit 3) with nothing
+# typed. Nothing is saved: a window with text in the editor is closed with
 # "Don't Save", and only this run's window is closed, by its frame, also at exit after Ctrl-C or a
 # stop (the cell still running in the terminal is killed first). vscodeswitch then clicks in the editor area of the window (a real mouse
-# click, as the user does, so the input method gets no deactivation from this script); if
-# the click does not leave the focus in the editor (checked: ⌘A ⌘C on the empty editor must
-# copy nothing, in the terminal it copies its text) it presses ⌘1 (focus first editor group)
-# and checks again, then stops.
+# click, as the user does, so the input method gets no deactivation from this script), then
+# ⌘1 (focus first editor group) for a click that landed elsewhere; nothing is typed or selected
+# to check the focus: the editor's read-back after the keys shows where they went.
 #
 # WebStorm (webstorm, webstormterm; process "webstorm", bundle com.jetbrains.WebStorm, found in
 # ~/Applications or /Applications): `webstorm --temp-project <file>` (the command-line option
@@ -197,11 +200,10 @@
 # dau-selftest-webstormterm.txt), found by that title only; no other window is touched. The
 # IDE marks that project's folder trusted itself, so no trust dialog is expected; any other
 # window that takes the focus (a dialog) fails the title check and the run stops (exit 3) with
-# the title of the window that has the keys. Before any test key the script types the marker
-# "qkpb " (as the vscodeterm cell does): the editor must give it back through ⌘A ⌘C (webstorm),
-# the cell must read it from its tty (webstormterm); it is tried again for up to 15 s while the
-# editor is still loading, and a marker that does not come back stops the run (exit 3) without
-# typing more. The marker is then deleted from the editor.
+# the title of the window that has the keys. Nothing is typed or selected to probe the window:
+# webstorm types the keys into the new empty file once its window has the keys (a fixed wait for
+# the editor to take the focus), its read-back showing where they went; webstormterm starts the
+# cell as vscodeterm does and waits for its two files.
 #   webstorm: ⌘A ⌘C read-back; the text is emptied (⌘A, Delete) before the window is closed.
 #   webstormterm: ⌥F12 (Terminal tool window, the macOS keymap's own shortcut) opens the terminal
 #     and gives it the focus; the cell of vscodeterm (same file, raw bytes, line, ⌃D) is pasted
@@ -272,7 +274,7 @@ KEEP_SOURCE=0
 JITTER_MS=0
 WORD_PAUSE_MS=0
 BUSY=""
-DOC_URL=""
+DOC_FILE=""
 FORCE_KEY=DauDebugForceUnderline
 APPS=()
 # Prints the whole leading comment block.
@@ -292,7 +294,7 @@ while [[ $# -gt 0 ]]; do
     --jitter) JITTER_MS="${2:?--jitter cần số ms}"; shift 2 ;;
     --word-pause) WORD_PAUSE_MS="${2:?--word-pause cần số ms}"; shift 2 ;;
     --busy) BUSY="${2:?--busy cần MS:PERIOD, ví dụ 300:1000}"; shift 2 ;;
-    --doc-url) DOC_URL="${2:?--doc-url cần đường dẫn tài liệu}"; shift 2 ;;
+    --doc-file) DOC_FILE="${2:?--doc-file cần đường dẫn file}"; shift 2 ;;
     -h|--help) usage; exit 0 ;;
     all) APPS+=(safari chrome vscode terminal); shift ;;
     safari|chrome|vscode|terminal|edge|firefox|notes|mail|cursor|cursoragents|cursorchat|vscodefile|sublime|zed|xcode|antigravity|obsidian|notion|ghostty|ghosttyvim|xterm|tiptap|vscodeterm|vscodeswitch|webstorm|webstormterm|telegram|gdocs|gdocssafari|wordweb) APPS+=("$1"); shift ;;
@@ -336,10 +338,9 @@ if [[ "$KEYS" == *↩* ]]; then
 fi
 WEBDOC_APPS=(${(M)APPS:#(gdocs|gdocssafari|wordweb)})
 if (( ${#WEBDOC_APPS} )); then
-  (( ${#WEBDOC_APPS} == 1 )) || log_die 2 "Mỗi lần chạy chỉ một ô gdocs hoặc wordweb (mỗi ô một tài liệu, một --doc-url)."
-  [[ "$DOC_URL" == https://* ]] || log_die 2 "${WEBDOC_APPS[1]} cần --doc-url https://… (tài liệu trống của chính bạn, đã đăng nhập trong Chrome)."
-elif [[ -n "$DOC_URL" ]]; then
-  log_die 2 "--doc-url chỉ dùng với gdocs hoặc wordweb"
+  (( ${#WEBDOC_APPS} == 1 )) || log_die 2 "Mỗi lần chạy chỉ một ô gdocs, gdocssafari hoặc wordweb (mỗi ô một tài liệu)."
+elif [[ -n "$DOC_FILE" ]]; then
+  log_die 2 "--doc-file chỉ dùng với gdocs, gdocssafari hoặc wordweb"
 fi
 if [[ "$KEYS2" == *$'\n'*|| "$KEYS2" == *$'\r'* || "$KEYS2" == *↩* ]]; then
   log_die 2 "--keys2 không được có xuống dòng hay ↩ (không nhấn Return trong trình soạn thảo)."
@@ -484,6 +485,7 @@ fi
 # only). Stops the run (status 4) with a message if not. Prints nothing on stdout: it runs
 # inside the command substitution that collects an app's text.
 is_current_source() { [[ "$("$INPUT_SOURCE" current 2>/dev/null)" == "$1" ]]; }
+source_changed_from() { [[ "$("$INPUT_SOURCE" current 2>/dev/null)" != "$1" ]]; }
 select_dau() {
   stopped && return 1
   # --underline: the input method reads $FORCE_KEY when it is activated. A field that was
@@ -569,25 +571,26 @@ guard_reason() { # error-text process title where
     print -r -- "kiểm tra trước khi gõ không đạt: ${1%%$'\n'*}"
   fi
 }
-# Runs AppleScript $3 only if the guard for process $1 (title $2) passes.
-# The check alone is retried first (15 s at most): right after `open`, Safari 27 may
-# briefly report an untitled front window. Keys are still only sent
-# once the check passes.
+# Runs AppleScript $3 only if the guard for process $1 (title $2) passes, in one osascript.
+# A failed check is retried (15 s at most) before the run stops: right after `open`, Safari 27
+# may briefly report an untitled front window. Keys are still only sent once the check passes.
 guarded() {
-  local out start=$SECONDS waited where
+  local out start=$SECONDS waited=0 where
+  out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)" && { printf '%s' "$out"; return 0; }
+  # Only a failed check is retried: an error of $3 itself may come after it sent keys.
   # 15 s: on a Mac under heavy load the test page has been seen not to report the focus
   # within 3 s (docs/history/LogM6.md). A longer wait that passes is reported, and
   # a failure says where the keyboard focus is, to tell a slow page from a focus elsewhere.
-  wait_until -i 0.4 15 front_ok "$1" "$2"
-  waited=$(( SECONDS - start ))
-  (( waited >= 3 )) && log_warn "$1: chờ $waited giây mới tới kiểm tra cửa sổ và focus"
-  if ! out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)"; then
-    where="$(osascript -e "tell application \"System Events\" to tell process \"$1\" to get {role, description} of (value of attribute \"AXFocusedUIElement\")" 2>&1)"
-    log_error "Dừng: $out — không gửi phím nào nữa (sau $waited giây; focus của $1 đang ở: ${where:-không đọc được})"
-    stop_run front "$(guard_reason "$out" "$1" "${2:-}" "$where")"
-    return 1
+  if [[ "$out" == *"frontmost is "* || "$out" == *"front window of "* || "$out" == *"Can’t get"* || "$out" == *"Can't get"* ]]; then
+    wait_until -i 0.4 15 front_ok "$1" "$2"
+    waited=$(( SECONDS - start ))
+    (( waited >= 3 )) && log_warn "$1: chờ $waited giây mới tới kiểm tra cửa sổ và focus"
+    out="$(osascript -e "$(front_guard "$1" "$2")" -e "$3" 2>&1)" && { printf '%s' "$out"; return 0; }
   fi
-  printf '%s' "$out"
+  where="$(osascript -e "tell application \"System Events\" to tell process \"$1\" to get {role, description} of (value of attribute \"AXFocusedUIElement\")" 2>&1)"
+  log_error "Dừng: $out — không gửi phím nào nữa (sau $waited giây; focus của $1 đang ở: ${where:-không đọc được})"
+  stop_run front "$(guard_reason "$out" "$1" "${2:-}" "$where")"
+  return 1
 }
 stopped() { [[ -e "$STOP_FILE" ]]; }
 
@@ -608,10 +611,12 @@ cycle_to_source() { # source-id
     (( mods & 524288 )) && using+="option down, "
     (( mods & 1048576 )) && using+="command down, "
     using="${using%, }"
+    local before
     for n in 1 2 3 4 5 6 7 8 9 10; do
+      before="$("$INPUT_SOURCE" current 2>/dev/null)"
       osascript -e "tell application \"System Events\" to key code $key using {$using}" >/dev/null 2>&1
-      # Fixed: the switch, and the system's source switcher going away, are not readable.
-      sleep 0.5
+      # Each press moves to the next source: wait for that move, not a fixed time.
+      wait_until -i 0.05 1 source_changed_from "$before"
       is_current_source "$1" && return 0
     done
     log_warn "Phím tắt chuyển nguồn của macOS không đưa tới $1 sau 10 lần nhấn: chọn bằng API"
@@ -827,10 +832,10 @@ run_chrome() {
   close_test_tab "Google Chrome"
 }
 
-# gdocs, gdocssafari, wordweb: an empty online document of the user's own (header: front tab or
-# --doc-url). Its tab title (the document's name, then " - Google Docs" or, with a Vietnamese
-# Google interface, " - Google Tài liệu"; Word: the name ending in ".docx") is the window title
-# every key checks. WD_APP / WD_PROC: the browser of the cell (Chrome; Safari for gdocssafari).
+# gdocs, gdocssafari, wordweb: a document this run created (header). Its tab title (the
+# document's name, then " - Google Docs" or, with a Vietnamese Google interface, " - Google Tài
+# liệu"; Word: the name ending in ".docx") is the window title every key checks. WD_APP /
+# WD_PROC: the browser of the cell (Chrome; Safari for gdocssafari).
 WD_APP="Google Chrome"; WD_PROC="Google Chrome"
 webdoc_front_title() {
   osascript - "$WD_PROC" <<'OSA' 2>/dev/null
@@ -843,6 +848,13 @@ on run argv
   end tell
 end run
 OSA
+}
+# The link of the front tab, from the browser's own AppleScript dictionary.
+webdoc_front_url() {
+  case "$WD_APP" in
+    Safari) osascript -e 'tell application "Safari" to return URL of current tab of front window' 2>/dev/null ;;
+    *) osascript -e "tell application \"$WD_APP\" to return URL of active tab of front window" 2>/dev/null ;;
+  esac
 }
 # The front tab's title without the browser's suffix (Chrome adds " - Google Chrome - <profile>",
 # Safari adds nothing), if it is such a document.
@@ -857,107 +869,95 @@ webdoc_doc_title() { # gdocs | gdocssafari | wordweb
 }
 webdoc_has_doc() { webdoc_doc_title "$1" >/dev/null; }
 webdoc_title_changed() { [[ "$(webdoc_front_title)" != "$1" ]]; }
-WD_MARKER=1qkpb
-WD_MARKER_OSA='tell application "System Events"
-    repeat with c in {"1", "q", "k", "p", "b", " "}
-      keystroke c
-      delay 0.1
-    end repeat
-  end tell'
-webdoc_marker() { # title
-  local title="$1" i got
-  for i in {1..6}; do
-    stopped && return 1
-    guarded "$WD_PROC" "$title" "$WD_MARKER_OSA" >/dev/null || return 1
-    # Fixed: these editors apply keys asynchronously; nothing outside them shows when.
-    sleep 0.8
-    got="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 1
-    # The marker once: kept, the keys go after it. Compared in lower case (an editor may
-    # capitalize it). → takes away the selection ⌘A left, the caret at its end: a first key
-    # typed over the selection would replace the marker (Word for the web also dropped the
-    # first marked-text composition then, "Hom" gave "om").
-    if [[ "${(L)got}" == $WD_MARKER ]]; then
-      guarded "$WD_PROC" "$title" 'tell application "System Events"
-        key code 124
-        delay 0.3
-      end tell' >/dev/null || return 1
-      return 0
-    fi
-    # Earlier tries reached the body late: the marker more than once. Emptied, typed again.
-    if [[ -n "$got" && -z "${${${(L)got}//$WD_MARKER/}//[[:space:]]/}" ]]; then
-      guarded "$WD_PROC" "$title" 'tell application "System Events"
-        keystroke "a" using {command down}
-        delay 0.2
-        key code 51
-        delay 0.5
-      end tell' >/dev/null || return 1
-      continue
-    fi
-    if [[ -n "$got" ]]; then
-      log_error "Dừng: ⌘A ⌘C sau chuỗi đánh dấu chép ra \"${got[1,80]}\": tài liệu không trống hoặc focus không ở thân tài liệu; không xoá gì, không gõ thêm (xoá tay chuỗi \"$WD_MARKER\" nếu có)."
-      stop_run front "tài liệu không trống hoặc focus không ở thân tài liệu (⌘A ⌘C chép ra chữ khác chuỗi đánh dấu)"
-      return 1
-    fi
-    # Fixed: nothing to observe while the editor loads.
-    sleep 2.5
-  done
-  log_error "Dừng: chuỗi đánh dấu không tới thân tài liệu sau khoảng 20 giây; không gõ gì thêm."
-  stop_run front "chuỗi đánh dấu không tới thân tài liệu (trình soạn thảo chưa nạp xong, hoặc focus ở chỗ khác)"
-  return 1
+# The link a new document settles on: docs.new and word.new redirect (through the sign-in
+# page when the browser is not signed in) before the editor's own link.
+webdoc_url_settled() { # gdocs | gdocssafari | wordweb
+  local u="$(webdoc_front_url)"
+  case "$1" in
+    gdocs|gdocssafari) [[ "$u" == https://docs.google.com/document/d/* ]] ;;
+    wordweb) [[ "$u" == https://* && "$u" != https://word.new* && "$u" != *login* ]] ;;
+  esac
+}
+# The front tab has finished loading: the document's body comes after its tab title. Chrome
+# says so in its AppleScript dictionary; Safari's has no such property, so a Safari tab counts
+# as loaded once its title and link are there.
+webdoc_loaded() {
+  [[ "$WD_APP" == Safari ]] && return 0
+  [[ "$(osascript -e "tell application \"$WD_APP\" to return loading of active tab of front window" 2>/dev/null)" == false ]]
+}
+# The document's tab in front: the --doc-file link (the front tab when it already shows it), or
+# a new document. Status 1 (run stopped) when no such tab comes up.
+webdoc_open() { # gdocs | gdocssafari | wordweb
+  local url="" before
+  [[ -n "$DOC_FILE" && -s "$DOC_FILE" ]] && url="$(<"$DOC_FILE")"
+  if [[ -n "$url" && "$(webdoc_front_url)" == "$url" ]] && webdoc_has_doc "$1"; then
+    return 0
+  fi
+  before="$(webdoc_front_title)"
+  if [[ -n "$url" ]]; then
+    open -a "$WD_APP" "$url"
+  else
+    case "$1" in
+      gdocs|gdocssafari) open -a "$WD_APP" https://docs.new ;;
+      wordweb) open -a "$WD_APP" https://word.new ;;
+    esac
+  fi
+  wait_until -i 0.2 3 webdoc_title_changed "$before"
+  # 60 s: a new Word document goes through several pages before its editor.
+  if ! wait_until -i 0.2 60 webdoc_has_doc "$1" || ! wait_until -i 0.2 10 webdoc_url_settled "$1"; then
+    log_error "Dừng: sau 60 giây tab trước của $WD_APP chưa là tài liệu $1 (đang là \"$(webdoc_front_title)\"); không gõ gì."
+    log_hint "Đăng nhập tài khoản Google hay Microsoft trong $WD_APP rồi chạy lại."
+    stop_run front "tab tài liệu $1 không lên trước trong 60 giây"
+    return 1
+  fi
+  wait_until -i 0.1 15 webdoc_loaded
+  # Fixed: Word for the web still moves the caret after its tab has loaded (the first keys
+  # landed at the end of the text), and nothing readable says when its editor is ready.
+  [[ "$1" == wordweb ]] && sleep 2
+  if [[ -z "$url" ]]; then
+    url="$(webdoc_front_url)"
+    log_detail "$WD_APP: tài liệu mới $url (nằm lại trong tài khoản, xoá tay khi không cần)" >&2
+    [[ -z "$DOC_FILE" ]] || print -r -- "$url" > "$DOC_FILE"
+  fi
+}
+# One click into the middle of the front window, below the browser's toolbar and inside the
+# page: the document's body takes the keyboard focus, as when the user clicks into it.
+webdoc_click_body() { # title
+  stopped && return 1
+  guarded "$WD_PROC" "$1" 'tell application "System Events" to tell process "'"$WD_PROC"'"
+    set w to value of attribute "AXFocusedWindow"
+    set {x, y} to position of w
+    set {sw, sh} to size of w
+    click at {x + sw / 2, y + sh * 0.55}
+  end tell' >/dev/null
 }
 run_webdoc() { # gdocs | gdocssafari | wordweb
-  local before title
+  local title
   osascript -e "tell application \"$WD_APP\" to activate" >/dev/null 2>&1
   wait_until -i 0.2 3 front_ok "$WD_PROC"
-  # The front tab already shows such a document (the previous cell's): use it. Otherwise open
-  # the link in a new tab. Tabs are never closed: closing one right after an edit makes the
-  # page ask "Leave site?" while it saves, and a tab of the same title could be one of the user's.
-  if ! webdoc_has_doc "$1"; then
-    before="$(webdoc_front_title)"
-    open -a "$WD_APP" "$DOC_URL"
-    wait_until -i 0.2 3 webdoc_title_changed "$before"
-    if ! wait_until -i 0.5 30 webdoc_has_doc "$1"; then
-      log_error "Dừng: sau 30 giây tab trước của $WD_APP chưa là tài liệu $1 (đang là \"$(webdoc_front_title)\"); không gõ gì."
-      stop_run front "tab tài liệu $1 không lên trước trong 30 giây"
-      return 0
-    fi
-  fi
+  webdoc_open "$1" || return 0
   title="$(webdoc_doc_title "$1")"
-  # Empty before anything is typed: a document with text (another of the user's in front)
-  # stops the run with nothing typed and nothing deleted.
-  local first
-  first="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 0
-  # The address bar had the focus (it copies the page's link; a click in the page did not take
-  # it out in Chrome): open the link again in a new tab, which loads with the focus
-  # in the document, and look again.
-  if [[ "$first" == http* ]]; then
-    log_warn "$WD_APP: focus ở thanh địa chỉ, mở lại tài liệu trong tab mới"
-    before="$(webdoc_front_title)"
-    open -a "$WD_APP" "$DOC_URL"
-    wait_until -i 0.2 3 webdoc_title_changed "$before"
-    wait_until -i 0.5 30 webdoc_has_doc "$1" || { stop_run front "tab tài liệu $1 không lên trước trong 30 giây"; return 0; }
-    title="$(webdoc_doc_title "$1")"
-    sleep 2  # Fixed: the document loads its text after the tab title appears; nothing common to poll
-    first="$(copy_all "$WD_PROC" "$title" | trim_right)" || return 0
+  # As a user: click into the body and type. Nothing is selected before the keys: ⌘A right
+  # before typing makes Word for the web drop the first marked-text composition.
+  webdoc_click_body "$title" || return 0
+  select_dau
+  type_keys "$WD_PROC" "$title"
+  local text
+  text="$(copy_all "$WD_PROC" "$title")"
+  if [[ -z "$text" ]]; then
+    log_error "Dừng: ⌘A ⌘C sau khi gõ không chép ra chữ nào: phím không tới tài liệu, không có kết quả."
+    stop_run front "phím không tới tài liệu: đọc lại không có chữ"
+    return 0
   fi
-  if [[ -n "$first" ]]; then
-    log_error "Dừng: tài liệu trong tab \"$title\" không trống (⌘A ⌘C chép ra \"${first[1,80]}\"); không gõ, không xoá gì."
+  # The keys never give more characters than they have keys, and the text they give starts
+  # with their first letter: anything else was in the document before (it is not deleted).
+  local LC_ALL=en_US.UTF-8  # lengths and letters in characters, not bytes
+  if (( ${#text} > ${#KEYS} + 2 )) || [[ "${(L)text[1]}" != "${(L)KEYS[1]}" ]]; then
+    log_error "Dừng: tài liệu trong tab \"$title\" có chữ khác ngoài phím vừa gõ (\"${text[1,80]}\"); không xoá gì."
     stop_run front "tài liệu trong tab trước của $WD_APP không trống"
     return 0
   fi
-  select_dau; webdoc_marker "$title" || return 0
-  type_keys "$WD_PROC" "$title"
-  # The text after the marker (and the space that ended it).
-  local text
-  text="$(copy_all "$WD_PROC" "$title")"
-  # No marker at the start: a key replaced it (the keys did not go after it): no result.
-  if [[ "${(L)text[1,${#WD_MARKER}]}" != $WD_MARKER ]]; then
-    log_error "Dừng: chữ đọc lại không bắt đầu bằng chuỗi đánh dấu \"$WD_MARKER\" (\"${text[1,80]}\"): phím đã gõ đè lên nó, kết quả không dùng được."
-    stop_run front "chữ đọc lại không bắt đầu bằng chuỗi đánh dấu"
-  else
-    text="${text[$(( ${#WD_MARKER} + 1 )),-1]}"
-    print -r -- "${text# }"
-  fi
+  print -r -- "$text"
   guarded "$WD_PROC" "$title" 'tell application "System Events"
     keystroke "a" using {command down}
     delay 0.2
@@ -1227,21 +1227,19 @@ run_vscodefile() { file_editor Code "/Applications/Visual Studio Code.app/Conten
 # --- VS Code terminal (vscodeterm, vscodeswitch) ---------------------------------------
 # What runs, how the keys are known to reach the terminal and the editor: the leading
 # comment ("VS Code terminal"). The cell is Ghostty's (ghostty_cell) with two differences:
-# it reads the marker from its tty before the line editor starts, and Return does not end
+# Return does not end
 # the line: it is recorded as ↩ in it (as the xterm page does), so the keys after a Return
 # are typed at the start of a new line of the terminal, as in a real shell.
 VSCODE_CLI="/Applications/Visual Studio Code.app/Contents/Resources/app/bin/code"
 VSCODE_TITLE=Untitled          # the title of the empty editor, in the window title
-VSCODE_MARKER="qkpb "           # no Telex rule touches these letters; the space commits an input method's marked text (Apple's Telex holds "qkpb" underlined until then)
 VSCODE_RAW="$WORK/vscode.raw"
 VSCODE_LINE="$WORK/vscode.line"
 VSCODE_CELL="$WORK/vscode-cell.zsh"
-VSCODE_STARTED="$WORK/vscode.started"   # the cell runs (its pid inside) and is about to read the marker
-VSCODE_MARKER_FILE="$WORK/vscode.marker" # the marker as the cell read it from its tty
+VSCODE_STARTED="$WORK/vscode.started"   # the cell runs (its pid inside)
 VSCODE_READY="$WORK/vscode.ready"       # the line editor is about to read
 VSCODE_EDITOR_TEXT="$WORK/vscodeswitch.editor"
 VSCODE_PHASES="$WORK/vscode.phases"
-# The cell, a zsh script: $1 raw bytes file, $2 line file, $3 started, $4 marker, $5 ready.
+# The cell, a zsh script: $1 raw bytes file, $2 line file, $3 started, $4 ready.
 vscode_cell() {
   cat <<'CELL'
 # Runs in the integrated terminal of VS Code (run_vscodeterm) or WebStorm (run_webstormterm),
@@ -1250,8 +1248,6 @@ export LC_ALL=en_US.UTF-8
 size=(${=$(stty size </dev/tty 2>/dev/null)})
 stty raw -echo </dev/tty
 print -r -- $$ > $3
-read -rs -k 5 marker </dev/tty
-print -rn -- "$marker" > $4
 /usr/bin/script -q /dev/null /bin/zsh -f -c '
   (( $1 > 0 )) && stty rows $1 cols $2 2>/dev/null
   zmodload zsh/zle
@@ -1264,14 +1260,13 @@ print -rn -- "$marker" > $4
   : > $4
   vared -p "dau> " line
   print -rn -- "$line" > $3
-' zsh "${size[1]:-0}" "${size[2]:-0}" "$2" "$5" < <(exec /usr/bin/tee "$1" </dev/tty)
+' zsh "${size[1]:-0}" "${size[2]:-0}" "$2" "$4" < <(exec /usr/bin/tee "$1" </dev/tty)
 /usr/bin/pkill -P $$ -x tee
 stty sane </dev/tty
 exit 0
 CELL
 }
 phase() { print -r -- "$(strftime '%H:%M:%S' $EPOCHSECONDS) $1" >> "$VSCODE_PHASES"; }
-vscode_marker_back() { [[ -e "$VSCODE_MARKER_FILE" && "$(<"$VSCODE_MARKER_FILE")" == "$VSCODE_MARKER" ]]; }
 # --- this run's VS Code window ------------------------------------------------------------
 # Every key to VS Code goes through front_guard, which for process Code also asks that the
 # focused window is this run's window (VSCODE_WIN_ID: its position and size, "x_y_w_h", taken
@@ -1279,8 +1274,8 @@ vscode_marker_back() { [[ -e "$VSCODE_MARKER_FILE" && "$(<"$VSCODE_MARKER_FILE")
 # that frame) and that it has no sheet and is not in Restricted Mode. A VS Code dialog that is
 # HTML in the page (Workspace Trust) is not seen through Accessibility: in an empty window
 # VS Code trusts by default, so none is expected; one that appeared anyway would have to take
-# the keyboard focus out of the editor or terminal, which the marker (the cell reading it back)
-# and the title check catch. No id, or not unique: stop_run, no key sent.
+# the keyboard focus out of the editor or terminal, which the title check
+# and the cell's started and ready files catch. No id, or not unique: stop_run, no key sent.
 VSCODE_WIN_ID=""
 # One line "x_y_w_h" for each window of VS Code.
 vscode_geoms() {
@@ -1423,10 +1418,10 @@ vscode_stop_cell() {
 vscode_cleanup() { vscode_stop_cell; vscode_close_window; }
 
 # A new window with an empty Untitled editor and a new integrated terminal, the cell started
-# in it, the marker read back, the line editor ready. Status 0 when the keys can go into the
+# in it, its line editor ready. Status 0 when the keys can go into the
 # line editor; otherwise the run is stopped (stop_run) or the source did not take.
 vscode_start_cell() {
-  rm -f "$VSCODE_RAW" "$VSCODE_LINE" "$VSCODE_STARTED" "$VSCODE_MARKER_FILE" "$VSCODE_READY" "$VSCODE_PHASES"
+  rm -f "$VSCODE_RAW" "$VSCODE_LINE" "$VSCODE_STARTED" "$VSCODE_READY" "$VSCODE_PHASES"
   vscode_cell > "$VSCODE_CELL"
   vscode_open_window || return 1
   # The empty document of the switch (also here: one way to open for both cells).
@@ -1440,12 +1435,12 @@ vscode_start_cell() {
   # Fixed: the terminal's shell starts after the panel shows and nothing says when it is ready
   # to take the paste (its own start-up files may take seconds). The paste is held by the
   # terminal's tty until the shell reads it, so a late shell loses nothing; only a paste
-  # before the panel has the focus would go astray, and the marker below catches that.
+  # before the panel has the focus would go astray, and the missing started file below catches that.
   sleep 3
   shot_window Code vscode-1-before-paste
   # The command goes by the clipboard, not by keys: no input method between the script and
   # the shell, whatever the current source is. A leading space keeps it out of some histories.
-  print -rn -- " /bin/zsh -f ${(qq)VSCODE_CELL} ${(qq)VSCODE_RAW} ${(qq)VSCODE_LINE} ${(qq)VSCODE_STARTED} ${(qq)VSCODE_MARKER_FILE} ${(qq)VSCODE_READY}" | pbcopy
+  print -rn -- " /bin/zsh -f ${(qq)VSCODE_CELL} ${(qq)VSCODE_RAW} ${(qq)VSCODE_LINE} ${(qq)VSCODE_STARTED} ${(qq)VSCODE_READY}" | pbcopy
   # Two guarded steps: the guard (this run's window, no sheet, not Restricted Mode) is
   # checked again right before Return, after the paste.
   guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "v" using {command down}' >/dev/null || return 1
@@ -1460,18 +1455,6 @@ vscode_start_cell() {
     return 1
   fi
   select_dau || return 1
-  # The marker, key by key; nothing reads the pace.
-  guarded Code "$VSCODE_TITLE" 'tell application "System Events"
-    repeat with c in {"q", "k", "p", "b", " "}
-      keystroke c
-      delay 0.1
-    end repeat
-  end tell' >/dev/null || return 1
-  if ! wait_until -i 0.2 5 vscode_marker_back; then
-    log_error "Dừng: chuỗi đánh dấu \"$VSCODE_MARKER\" không tới cell sau 5 giây (cell đọc được: \"$(cat "$VSCODE_MARKER_FILE" 2>/dev/null)\"): phím không vào terminal; không gõ gì thêm."
-    stop_run front "phím không vào terminal của VS Code: chuỗi đánh dấu \"$VSCODE_MARKER\" không tới cell"
-    return 1
-  fi
   if ! wait_until -i 0.2 5 test -e "$VSCODE_READY"; then
     log_error "Dừng: trình sửa dòng của cell chưa sẵn sàng sau 5 giây; không gõ gì thêm."
     stop_run front "trình sửa dòng của cell trong terminal VS Code chưa sẵn sàng"
@@ -1511,24 +1494,12 @@ run_vscodeterm() {
 
 # --keys2 in the editor: type_keys reads $KEYS, so it gets --keys2 under that name.
 type_keys2() { local KEYS="$KEYS2"; type_keys "$@"; }
-# ⌘A ⌘C in the editor group must copy nothing while the empty editor has the focus; in the
-# terminal it copies the terminal's text. Status 0 when nothing was copied.
-vscode_editor_has_focus() {
-  stopped && return 1
-  printf '' | pbcopy
-  guarded Code "$VSCODE_TITLE" 'tell application "System Events"
-    keystroke "a" using {command down}
-    delay 0.2
-    keystroke "c" using {command down}
-  end tell' >/dev/null || return 1
-  # Text on the clipboard within 2 s: the focus is in the terminal (or a view with text).
-  ! wait_until 2 clipboard_has_text
-}
-# The focus from the terminal to the empty editor: a click in the window's editor area (the
-# user's own action, so the input method hears no deactivation from this script, and no
-# keybinding of VS Code or the terminal can swallow it), at 60 % of the width and 25 % of
-# the height: right of the side bar, above the terminal panel. Not enough (checked above):
-# ⌘1, "focus first editor group".
+# The focus from the terminal to the empty editor, as a user moves it: a click in the window's
+# editor area (so the input method hears no deactivation from this script, and no keybinding of
+# VS Code or the terminal can swallow it), at 60 % of the width and 25 % of the height: right of
+# the side bar, above the terminal panel; then ⌘1, "focus first editor group", for a click that
+# landed elsewhere. Nothing is typed or selected to check it: the editor's read-back after the
+# keys shows where they went.
 vscode_focus_editor() {
   stopped && return 1
   guarded Code "$VSCODE_TITLE" 'tell application "System Events" to tell process "Code"
@@ -1539,16 +1510,9 @@ vscode_focus_editor() {
   end tell' >/dev/null || return 1
   # Fixed: the focus change shows nowhere readable (VS Code is an Electron page).
   sleep 0.5
-  vscode_editor_has_focus && return 0
-  stopped && return 1
-  log_warn "VS Code: sau cú bấm chuột focus chưa ở trình soạn thảo trống, thử ⌘1"
   guarded Code "$VSCODE_TITLE" 'tell application "System Events" to keystroke "1" using {command down}' >/dev/null || return 1
-  sleep 0.5  # Fixed: time for VS Code to move the focus; checked on the next line
-  vscode_editor_has_focus && return 0
-  stopped && return 1
-  log_error "Dừng: focus không vào trình soạn thảo trống sau khi bấm chuột và ⌘1 (⌘A ⌘C còn chép được chữ); không gõ gì thêm."
-  stop_run front "focus không vào trình soạn thảo trống của VS Code sau khi bấm chuột và ⌘1"
-  return 1
+  sleep 0.5  # Fixed: time for VS Code to move the focus
+  return 0
 }
 
 # vscodeswitch prints the terminal's line; the editor's text goes to VSCODE_EDITOR_TEXT.
@@ -1592,14 +1556,6 @@ WS_PROC_FILE="$WORK/ws.proc"           # the process name, for cleanup (a subshe
 WS_TITLES_FILE="$WORK/ws.titles"       # the window titles (file names) this run opened
 WS_START_MARK="$WORK/ws.start"         # temporary folders newer than this are this run's
 WS_BACKUP="$WORK/ws-backup"            # options/ of the IDE's settings folder, before the run
-# The marker typed before any test key: no Telex rule touches it, the space commits marked text.
-WS_MARKER="qkpb "
-WS_MARKER_OSA='tell application "System Events"
-    repeat with c in {"q", "k", "p", "b", " "}
-      keystroke c
-      delay 0.1
-    end repeat
-  end tell'
 
 # The IDE's settings folder, from product-info.json (dataDirectoryName); status 1 if unknown.
 ws_settings_dir() {
@@ -1684,38 +1640,6 @@ ws_open_file() {
   stop_run front "cửa sổ WebStorm của lượt này (\"$title\") không thành cửa sổ nhận phím sau 120 giây; cửa sổ nhận phím: \"${fw:-không đọc được}\" (một hộp thoại?)"
   return 1
 }
-# The marker in the editor (the file's editor must have the focus): types it, reads it back with
-# ⌘A ⌘C, deletes it. Tried again for 15 s: the editor may still be loading. Anything else on
-# the clipboard than the marker (the project tree copies file names) is a different focus: stop.
-ws_editor_marker() { # window title
-  local title="$1" i got
-  for i in {1..5}; do
-    stopped && return 1
-    guarded "$WS_PROC" "$title" "$WS_MARKER_OSA" >/dev/null || return 1
-    # Fixed: lets the editor apply the keys before they are read back.
-    sleep 0.5
-    got="$(copy_all "$WS_PROC" "$title")" || return 1
-    if [[ "$got" == "$WS_MARKER" ]]; then
-      guarded "$WS_PROC" "$title" 'tell application "System Events"
-        keystroke "a" using {command down}
-        delay 0.1
-        key code 51
-        delay 0.2
-      end tell' >/dev/null || return 1
-      return 0
-    fi
-    if [[ -n "$got" ]]; then
-      log_error "Dừng: ⌘A ⌘C sau chuỗi đánh dấu \"$WS_MARKER\" chép ra \"${got%%$'\n'*}\", không phải chuỗi đó: focus không ở trình soạn thảo của file thử; không gõ gì thêm."
-      stop_run front "focus không ở trình soạn thảo của WebStorm: ⌘A ⌘C chép ra \"${got%%$'\n'*}\" thay vì chuỗi đánh dấu"
-      return 1
-    fi
-    # Fixed: nothing to observe while the project loads.
-    sleep 2.5
-  done
-  log_error "Dừng: chuỗi đánh dấu \"$WS_MARKER\" không tới trình soạn thảo của WebStorm sau 15 giây; không gõ gì thêm."
-  stop_run front "chuỗi đánh dấu \"$WS_MARKER\" không tới trình soạn thảo của WebStorm (IDE chưa nạp xong, hoặc phím vào chỗ khác)"
-  return 1
-}
 # Closes this run's window (by its title) with its close button, no key; says so if it stays.
 ws_close_window() { # window title
   local i
@@ -1762,7 +1686,8 @@ ws_cleanup() {
 
 run_webstorm() {
   local title="$WS_EDITOR_FILE"
-  if ws_open_file "$title" && select_dau && ws_editor_marker "$title"; then
+  # Fixed: the editor takes the keyboard focus a moment after the window shows; nothing common to poll.
+  if ws_open_file "$title" && sleep 2 && select_dau; then
     if type_keys "$WS_PROC" "$title"; then
       shot_window "$WS_PROC" webstorm
       copy_all "$WS_PROC" "$title"
@@ -1779,24 +1704,22 @@ run_webstorm() {
   return 0
 }
 
-# The terminal half: the editor must take the marker first (the IDE is up and answers keys), then
+# The terminal half: the file opened (the IDE is up), then
 # ⌥F12 opens the Terminal tool window and the cell is pasted, as vscode_start_cell does it.
 ws_terminal_part() {
   local title="$WS_TERM_FILE" engine
-  rm -f "$VSCODE_RAW" "$VSCODE_LINE" "$VSCODE_STARTED" "$VSCODE_MARKER_FILE" "$VSCODE_READY" "$VSCODE_PHASES"
+  rm -f "$VSCODE_RAW" "$VSCODE_LINE" "$VSCODE_STARTED" "$VSCODE_READY" "$VSCODE_PHASES"
   vscode_cell > "$VSCODE_CELL"
   ws_open_file "$title" || return 1
   engine="$(ws_engine_line)"
   log_detail "$engine" >&2
   [[ -n "$SAVE_DIR" ]] && print -r -- "$engine" > "$SAVE_DIR/webstormterm.engine"
-  select_dau || return 1
-  ws_editor_marker "$title" || return 1
   # ⌥F12 is "Terminal" in the macOS keymaps (the user's keymap inherits it and does not change it).
   guarded "$WS_PROC" "$title" 'tell application "System Events" to key code 111 using {option down}' >/dev/null || return 1
   # Fixed: the terminal's shell starts after the tool window shows (as in vscode_start_cell).
   sleep 3
   shot_window "$WS_PROC" webstormterm-1-before-paste
-  print -rn -- " /bin/zsh -f ${(qq)VSCODE_CELL} ${(qq)VSCODE_RAW} ${(qq)VSCODE_LINE} ${(qq)VSCODE_STARTED} ${(qq)VSCODE_MARKER_FILE} ${(qq)VSCODE_READY}" | pbcopy
+  print -rn -- " /bin/zsh -f ${(qq)VSCODE_CELL} ${(qq)VSCODE_RAW} ${(qq)VSCODE_LINE} ${(qq)VSCODE_STARTED} ${(qq)VSCODE_READY}" | pbcopy
   guarded "$WS_PROC" "$title" 'tell application "System Events" to keystroke "v" using {command down}' >/dev/null || return 1
   # Fixed: lets the terminal take the paste before Return; nothing to read.
   sleep 0.3
@@ -1809,12 +1732,6 @@ ws_terminal_part() {
     return 1
   fi
   select_dau || return 1
-  guarded "$WS_PROC" "$title" "$WS_MARKER_OSA" >/dev/null || return 1
-  if ! wait_until -i 0.2 5 vscode_marker_back; then
-    log_error "Dừng: chuỗi đánh dấu \"$WS_MARKER\" không tới cell sau 5 giây (cell đọc được: \"$(cat "$VSCODE_MARKER_FILE" 2>/dev/null)\"): phím không vào terminal; không gõ gì thêm."
-    stop_run front "phím không vào terminal của WebStorm: chuỗi đánh dấu \"$WS_MARKER\" không tới cell"
-    return 1
-  fi
   if ! wait_until -i 0.2 5 test -e "$VSCODE_READY"; then
     log_error "Dừng: trình sửa dòng của cell chưa sẵn sàng sau 5 giây; không gõ gì thêm."
     stop_run front "trình sửa dòng của cell trong terminal WebStorm chưa sẵn sàng"
