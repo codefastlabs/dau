@@ -47,6 +47,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 23/11/2026 (người dùng duyệt, cùng thay đổi của D11 "Ô chỉ giữ từ trước con trỏ"): ý hỏi vị trí thêm câu về ô chỉ giữ từ trước con trỏ; ý "Ngoại lệ sau ⌫ chưa áp" tính vị trí chờ theo hệ vị trí đang dùng; "Vì sao" nói vị trí trong chữ ô nhận đang giữ thay cho vị trí tuyệt đối. Bản trước, nguyên văn: "Nếu `selectedRange` đầu tiên trả đúng vị trí Dấu theo dõi cộng số đơn vị ⌫ xoá, nghĩa là app chưa áp ⌫,"; "**Vì sao:** `insertText(_:replacementRange:)` cần vị trí tuyệt đối của từ đang gõ. Chỉ cộng dồn từ một vị trí gốc thì không biết lúc app tự sửa chữ hay con trỏ đi chỗ khác. VS Code đổi gốc toạ độ. Vị trí Dấu tự theo dõi chỉ dùng khi chữ đọc được chứng minh app trả lời chậm (D11, ý "App trả lời chậm")." Bằng chứng: `docs/research/MonacoInput.md` mục 5 và 6, `docs/Compatibility.md` mục 5.4.
 
+- 26/11/2026 (người dùng duyệt): thêm ý "Ngoại lệ gõ đè vùng chọn" và đoạn "Vì sao" của nó; danh sách phím đi thẳng nêu thêm phím gõ đè vùng chọn. Trước đó mọi ký tự engine để nguyên đều do Dấu chèn, kể cả khi ô có vùng chọn. Bằng chứng: `docs/Compatibility.md` mục 5.10.
+
 ### N4. Không tự đổi cài đặt hệ thống
 
 - Tên cũ: "Không tự ý đổi cài đặt hệ thống của người dùng."

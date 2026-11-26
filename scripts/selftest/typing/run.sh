@@ -43,12 +43,13 @@
 #   --delay MS        pause between keys in ms (default 30). 0 sends the whole string in
 #                     one System Events keystroke (about 1 ms per key): a stress test,
 #                     results in docs/Compatibility.md 5.1. Only when --keys holds none of
-#                     ⌫ ← ↩ ⇄ and there is no --jitter; otherwise 0 sends the keys one by
+#                     ⌫ ← ⇱ ↩ ⇄ and there is no --jitter; otherwise 0 sends the keys one by
 #                     one with no pause, as fast as System Events sends them (number in
 #                     docs/Compatibility.md 5.1). 120 is close to normal typing.
-#   --keys "…"        keys to type (default: the sample sentence below). Four marks are
+#   --keys "…"        keys to type (default: the sample sentence below). Five marks are
 #                     not typed as characters: ⌫ sends the Delete key; ← the left arrow
-#                     key; ↩ the Return key (ghostty, the xterm page, vscodeterm,
+#                     key; ⇱ ⇧⌥←, which selects the word before the caret (a key typed next
+#                     overtypes it, N3 "Ngoại lệ gõ đè vùng chọn"); ↩ the Return key (ghostty, the xterm page, vscodeterm,
 #                     vscodeswitch and webstormterm only: nothing runs. In ghostty Return ends the line; in
 #                     the xterm page, the VS Code cells and webstormterm it is recorded as ↩ in the line
 #                     and typing goes on; any other app is an error); ⇄ switches the
@@ -648,7 +649,7 @@ on run argv
   set wp to (item 6 of argv) as integer
   tell application "System Events"
     if (name of first process whose frontmost is true) is not p then error "frontmost changed"
-    if d = 0 and j = 0 and s does not contain "⌫" and s does not contain "←" and s does not contain "↩" and s does not contain "⇄" then
+    if d = 0 and j = 0 and s does not contain "⌫" and s does not contain "←" and s does not contain "⇱" and s does not contain "↩" and s does not contain "⇄" then
       keystroke s
     else
       set i to 0
@@ -662,6 +663,8 @@ on run argv
           key code 51
         else if (c as text) is "←" then
           key code 123
+        else if (c as text) is "⇱" then
+          key code 123 using {shift down, option down}
         else if (c as text) is "↩" then
           key code 36
         else if (c as text) is "⇄" then

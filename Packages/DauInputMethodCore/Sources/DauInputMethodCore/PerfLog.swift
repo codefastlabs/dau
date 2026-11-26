@@ -41,9 +41,8 @@ public struct PerfLog {
         /// Underline mode (D13): setMarkedText with the word, no selectedRange.
         case mark
         /// Underline mode (D13): insertText of the marked word (word end or reset event), or
-        /// of a character typed with no word shown (N3); replacementRange NSNotFound. No
-        /// selectedRange, except right before a word commit while auto underline checks the
-        /// commits (`hidden_ask=1`, `AutoUnderline.beforeWordCommit`).
+        /// of a character typed with no word shown (N3); replacementRange NSNotFound, no
+        /// selectedRange.
         case commit
         /// D20: selectedRange + attributedSubstring read a word before the cursor, the
         /// engine was seeded with it and the key replaced it (one insertText).
@@ -55,6 +54,10 @@ public struct PerfLog {
         /// cursor) found no word to seed, or a plain letter did not join the word read
         /// (D20, "Chữ cái gõ sát chữ có sẵn"); the key was handled as the first of a word.
         case seedNone = "seed_none"
+        /// N3 "Ngoại lệ gõ đè vùng chọn": the D20 ask found a selection and the engine left
+        /// the key unchanged; the key went to the app, which replaces the selection. No
+        /// insertText.
+        case overtype
         /// D20 "Từ hệ thống vừa sửa": a word was read and seeded, and it already is what
         /// the key makes of the word the input method produced last (macOS autocorrect
         /// changed it after the word ended): nothing sent, the key consumed.
@@ -118,9 +121,8 @@ public struct PerfLog {
     ///     a D20 read the numbers of its late-answer check, `InPlaceComposer.TypedWordReadProof.logFields`), and
     ///     for a key that waited for the ⌫ before it (N3) ` bksp=applied|timeout bksp_asks=N
     ///     bksp_wait_ns=N` (the wait is part of `handleNs`), and in in-place mode the held-text
-    ///     fields (`InPlaceComposer.HeldCheck.logFields`), and the hidden-text field's
-    ///     (`HiddenTextKey.logFields`, ` hidden_ask=1` before a checked commit, ` auto_underline=1`
-    ///     while auto underlining); only numbers and fixed words, never text (D8).
+    ///     fields (`InPlaceComposer.HeldCheck.logFields`); only numbers and fixed words, never
+    ///     text (D8).
     public func record(_ kind: Kind, startNs: UInt64, eventNs: UInt64, handleNs: UInt64,
                 selectedRangeNs: Int64, insertTextNs: Int64,
                 readNs: Int64 = -1, extra: String = "", app: String) {

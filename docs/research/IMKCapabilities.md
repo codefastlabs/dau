@@ -140,7 +140,7 @@ Vậy IMK tạo được chuỗi chữ đánh dấu không mang gạch chân. C�
 - Ở WebKit có thể giấu được bằng chuỗi chỉ mang màu chữ. Điều này mới là đọc mã, chưa đo. Bản thử ngày 26/11/2026 không thử bộ này; nó thử `NSColor.clear` cho màu gạch chân và cho nền, và trang thử của Safari vẫn gạch chân với cả hai, trái với đọc mã ([`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.7).
 - Google Docs không giấu được gạch chân bằng thuộc tính nào, vì trang tự vẽ chữ đang soạn (cùng mục).
 - Chữ không gạch chân vẫn là chữ đánh dấu: trang nhận sự kiện soạn chữ (`compositionstart`, `compositionupdate`…), D20 (Thêm dấu cho từ đã gõ) không chạy, Return ngay sau từ đang soạn bị nuốt ở Ghostty (D43 (Ô bỏ qua vùng thay chữ)). Đổi màu không đổi các điều đó.
-- **Đối chiếu:** theo D13 (Gạch chân là đường lui cuối cùng), thay tại chỗ là cách gõ. Gạch chân có khi người dùng bật theo app (D5 (Quy tắc theo ứng dụng)), hoặc ở ô giấu chữ mà Dấu tự nhận ra. Dùng chữ đánh dấu làm cách gõ mặc định ở app nào khác thì vẫn phải sửa D13.
+- **Đối chiếu:** dùng chữ đánh dấu (có hay không gạch chân) làm cách gõ mặc định ở app nào là đổi D13 (Gạch chân là đường lui cuối cùng) và D5 (Quy tắc theo ứng dụng). Theo D13, thay tại chỗ là cách gõ và gạch chân chỉ do người dùng bật. Hướng tự gạch chân ở ô giấu chữ đã làm rồi gỡ (`docs/Decisions.md` mục "Đã cân nhắc và loại bỏ").
 
 ## 4. Từng việc mở
 

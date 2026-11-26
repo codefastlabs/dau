@@ -44,7 +44,6 @@ Bảng này ghi thuật ngữ dùng trong chuỗi giao diện của Dấu (Strin
 | Report a Problem… | Báo lỗi… | Nút này mở sheet báo lỗi (D8 (Không telemetry)). |
 | Included | Gửi kèm | Đây là phần thông tin máy và thông tin Dấu trong sheet báo lỗi. |
 | held text (`HeldText`, `CursorTracker.Coordinates.heldText`) | ô chỉ giữ từ trước con trỏ | Đây là ô chỉ đưa bộ gõ từ ngay trước con trỏ, hoặc một ký tự khi không có từ, như trình soạn thảo Cursor khi chế độ hỗ trợ trình đọc màn hình của Monaco tắt. Từ này chỉ dùng trong tài liệu và mã, không có trên giao diện (D11 (Kiểm tra ngữ cảnh)). |
-| hidden-text field (`HiddenTextDetector`, `AutoUnderline`) | ô giấu chữ | Đây là ô báo vị trí con trỏ nằm trong chính từ Dấu vừa gõ, mà D11 (Kiểm tra ngữ cảnh) không giải thích được, như Google Docs. Dấu tự gạch chân ở ô này (D13 (Gạch chân là đường lui cuối cùng)). Từ này chỉ dùng trong tài liệu và mã, không có trên giao diện. |
 
 ## Từ dễ hiểu hai nghĩa
 

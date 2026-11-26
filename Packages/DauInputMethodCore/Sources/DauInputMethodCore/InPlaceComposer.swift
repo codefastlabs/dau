@@ -69,9 +69,10 @@ public struct InPlaceComposer {
     /// followed caret, not the app's answer, and no answer on time (`replace`).
     private var readProvedLate = false
 
-    /// A key less than this after a ⌫ may wait for the app to apply it (N3 "Ngoại lệ sau ⌫
-    /// chưa áp"). Not tuned by measurement: it only bounds which keys after a ⌫ are armed,
-    /// and only an answer still before the ⌫ makes a key wait.
+    /// A key less than this after a ⌫ or a key over a selection may wait for the app to apply
+    /// it (N3 "Ngoại lệ sau ⌫ chưa áp", "Ngoại lệ gõ đè vùng chọn"). Not tuned by
+    /// measurement: it only bounds which keys are armed, and only an answer from before that
+    /// key makes a key wait.
     static let backspaceWaitWindow: TimeInterval = 0.3
     /// The longest a key waits, its asks included: the p99 bound of D42. A timed
     /// workaround, as IMK has no API that tells whether a key is still queued in the app
@@ -85,9 +86,18 @@ public struct InPlaceComposer {
     /// The previous key was a ⌫ the app deletes itself, deleting text the tracker knows:
     /// where the caret was before it (`CursorTracker.caretBeforeDeletion`).
     private var caretBeforeLastDeletion: Int?
-    /// Set for the current key's first `selectedRange` (`askSelection`): the caret once the
-    /// ⌫ is applied, and before.
-    private var armedBackspaceWait: (appliedCaret: Int, pendingCaret: Int)?
+    /// The previous key overtyped a selection and went to the app (`passOverSelection`).
+    private var overtypeNotApplied: KeyNotApplied?
+    /// Set for the current key's first `selectedRange` (`askSelection`): a key the app may
+    /// not have applied yet.
+    private var armedBackspaceWait: KeyNotApplied?
+
+    /// A key that went to the app: the app's answer while it still holds the key, and once
+    /// it has applied it.
+    struct KeyNotApplied {
+        var pending: NSRange
+        var applied: NSRange
+    }
 
     /// What waiting for a ⌫ did on this key (Debug perf log, tests).
     public struct BackspaceWait: Equatable {
@@ -131,11 +141,6 @@ public struct InPlaceComposer {
         }
     }
     private var keyHeld = HeldCheck()
-
-    /// D13 "Ô giấu chữ": sightings live as long as the controller (`AutoUnderline`), not the
-    /// word or the activation; the controller turns detection on or off.
-    public var hiddenText = HiddenTextDetector()
-    private var keyHiddenText = HiddenTextKey()
 
     /// The last word this composer produced, as it was when a word-ending character typed
     /// here ended it (D20 "Từ hệ thống vừa sửa"). Lives for the next key, plus one ⌫ in
@@ -197,7 +202,6 @@ public struct InPlaceComposer {
         /// Set when this key waited for the ⌫ before it (Debug perf log, tests).
         public internal(set) var backspaceWait: BackspaceWait?
         public internal(set) var held = HeldCheck()
-        public internal(set) var hiddenText = HiddenTextKey()
         #if DEBUG
         /// Set when this key made a D20 read (Debug perf log).
         public internal(set) var typedWordRead: TypedWordRead?
@@ -268,14 +272,6 @@ public struct InPlaceComposer {
 
     /// Forget the word without restoring it (D4) and what precedes the caret.
     public mutating func reset(engine: inout VietEngine) {
-        forgetWord(engine: &engine)
-        hiddenText.wordEnded()
-    }
-
-    /// `reset` for a key that starts over inside the word the user is typing (D11 mismatch):
-    /// that word still ends at the next word-ending character, where a sighting in it asks
-    /// once (`askAtWordEnd`).
-    private mutating func forgetWord(engine: inout VietEngine) {
         engine.reset()
         tracker.invalidate()
         before = .unknown
@@ -283,12 +279,14 @@ public struct InPlaceComposer {
         produced = nil
         undidMarkLetters = nil
         caretBeforeLastDeletion = nil
+        overtypeNotApplied = nil
     }
 
     /// A click (or any non-key event that moves the caret) at `time`.
     public mutating func noteEvent(at time: TimeInterval?) {
         if let time { lastEventTime = time }
         caretBeforeLastDeletion = nil  // the click came between the ⌫ and the next key
+        overtypeNotApplied = nil
     }
 
     /// New activation (or another client): the client may give text again.
@@ -297,6 +295,7 @@ public struct InPlaceComposer {
         lastEventTime = nil
         produced = nil
         caretBeforeLastDeletion = nil
+        overtypeNotApplied = nil
     }
 
     // MARK: - Keys
@@ -322,13 +321,11 @@ public struct InPlaceComposer {
         }
         outcome.backspaceWait = keyWait
         outcome.held = heldAfterKey
-        outcome.hiddenText = keyHiddenText
         return outcome
         #else
         var outcome = handleTracked(route, time: time, engine: &engine, client: client)
         outcome.backspaceWait = keyWait
         outcome.held = heldAfterKey
-        outcome.hiddenText = keyHiddenText
         return outcome
         #endif
     }
@@ -367,7 +364,6 @@ public struct InPlaceComposer {
         lateRead = nil
         readProvedLate = false
         keyHeld = HeldCheck()
-        keyHiddenText = HiddenTextKey()
         tracker.lateness.keyInBurst = !settled
         armBackspaceWait(sinceLast: sinceLast)
         let lastProduced = takeProducedWord(for: route)
@@ -388,7 +384,8 @@ public struct InPlaceComposer {
 
     /// Arms the wait of N3 "Ngoại lệ sau ⌫ chưa áp" when this key came less than
     /// `backspaceWaitWindow` after a ⌫ whose deleted text the tracker still holds at the
-    /// followed caret. The key's first `selectedRange` disarms it.
+    /// followed caret, or after a key over a selection ("Ngoại lệ gõ đè vùng chọn"). The
+    /// key's first `selectedRange` disarms it.
     private mutating func armBackspaceWait(sinceLast: TimeInterval?) {
         keyWait = nil
         armedBackspaceWait = nil
@@ -397,9 +394,14 @@ public struct InPlaceComposer {
         #endif
         if let pending = caretBeforeLastDeletion, let sinceLast, sinceLast >= 0, sinceLast < Self.backspaceWaitWindow,
            let caret = tracker.followed.caret, tracker.caretBeforeDeletion == pending {
-            armedBackspaceWait = (caret, pending)
+            armedBackspaceWait = KeyNotApplied(pending: NSRange(location: pending, length: 0),
+                                               applied: NSRange(location: caret, length: 0))
+        }
+        if let overtype = overtypeNotApplied, let sinceLast, sinceLast >= 0, sinceLast < Self.backspaceWaitWindow {
+            armedBackspaceWait = overtype
         }
         caretBeforeLastDeletion = nil
+        overtypeNotApplied = nil
     }
 
     /// Hands the produced word to this key, its last one; a character right after the one ⌫
@@ -438,7 +440,6 @@ public struct InPlaceComposer {
             tracker.endWord()
             before = .unknown
             checkedLockedWord = false
-            hiddenText.wordEnded()
         }
         if !wasComposing, let lastProduced, !lastProduced.backspaced {
             // The one ⌫ over the character that ended the produced word.
@@ -551,14 +552,15 @@ public struct InPlaceComposer {
         let action = engine.handle(scalar)
         switch action {
         case .passThrough:
-            if let wordBefore, !engine.isComposing, hiddenText.asksAtWordEnd {
-                askAtWordEnd(wordBefore, client: client)
+            if let selection, Self.isOvertyped(selection) {
+                result = passOverSelection(scalar, selection: selection)
+            } else {
+                result = Outcome(consumed: typeCharacter(scalar, client: client))
+                tracker.typedAtCaret(String(Character(scalar)))
             }
-            result = Outcome(consumed: typeCharacter(scalar, client: client))
-            tracker.typedAtCaret(String(Character(scalar)))
         case .replace(let deleteCount, let insert):
             result = replace(deleteCount: deleteCount, insert: insert, selection: selection, client: client,
-                             word: wordBefore, watchesHiddenText: true)
+                             word: wordBefore)
             if result.kind == .mismatch, settled, !readUnavailable, let seen = result.attempt?.selection,
                let resynced = resync(scalar, at: seen, attempt: result.attempt, engine: &engine, client: client) {
                 return resynced
@@ -581,7 +583,7 @@ public struct InPlaceComposer {
     private mutating func resync(_ scalar: Unicode.Scalar, at seen: NSRange, attempt: Attempt?,
                                  engine: inout VietEngine, client: some InPlaceClient) -> Outcome? {
         let earlier = lateRead?.location == seen.location ? lateRead : nil
-        forgetWord(engine: &engine)
+        reset(engine: &engine)
         // A read that gave nothing usable is not made again for this key.
         if earlier == nil || earlier?.text != nil,
            var resynced = Self.asResync(seedWord(scalar, selection: seen, engine: &engine, client: client,
@@ -600,12 +602,33 @@ public struct InPlaceComposer {
         return outcome
     }
 
+    /// The key's answer is a selection the key replaces (N3 "Ngoại lệ gõ đè vùng chọn").
+    static func isOvertyped(_ selection: NSRange) -> Bool {
+        selection.location != NSNotFound && selection.location >= 0
+            && selection.length != NSNotFound && selection.length > 0
+    }
+
+    /// N3 "Ngoại lệ gõ đè vùng chọn": a key the engine leaves unchanged over a selection goes
+    /// to the app, which replaces the selection itself. Google Docs in Safari leaves the
+    /// input method's `insertText` selected there, so the next key would overtype it. The
+    /// next key waits for this one as after a ⌫ (`askSelection`). The caret is followed from
+    /// the selection's start, which the late-app proof (D11) needs.
+    private mutating func passOverSelection(_ scalar: Unicode.Scalar, selection: NSRange) -> Outcome {
+        let typed = String(Character(scalar))
+        tracker.anchor(at: selection.location)
+        tracker.typedAtCaret(typed)
+        overtypeNotApplied = KeyNotApplied(
+            pending: selection,
+            applied: NSRange(location: selection.location + typed.utf16.count, length: 0))
+        return Outcome(consumed: false, kind: .overtype)
+    }
+
     /// D11: the app's text is not what the engine thinks and nothing was sent for this key,
     /// so the key starts over alone. The caret is forgotten, so the tracker records nothing.
     /// Returns whether the key is consumed.
     private mutating func typeAlone(_ scalar: Unicode.Scalar, engine: inout VietEngine,
                                     client: some InPlaceClient) -> Bool {
-        forgetWord(engine: &engine)
+        reset(engine: &engine)
         switch engine.handle(scalar) {
         case .passThrough:
             return typeCharacter(scalar, client: client)
@@ -613,7 +636,7 @@ public struct InPlaceComposer {
             insertAtCursor(insert, client: client)
             return true
         case .replace:
-            forgetWord(engine: &engine)
+            reset(engine: &engine)
             return typeCharacter(scalar, client: client)
         }
     }
@@ -627,7 +650,6 @@ public struct InPlaceComposer {
         if failed { tracker.invalidate() } else { tracker.endWord() }
         before = failed ? .unknown : .noWord
         checkedLockedWord = false
-        hiddenText.wordEnded()
         if !failed, tracked, undidMarkLetters == nil, let wordBefore,
            let word = Self.producedWord(wordBefore, ending: scalar, action: action, engineBefore: engineBefore) {
             produced = ProducedWord(word: word)
@@ -1109,7 +1131,7 @@ public struct InPlaceComposer {
         var answer = Self.selectedRange(of: client)
         guard let wait = armedBackspaceWait else { return answer }
         armedBackspaceWait = nil
-        let pending = NSRange(location: wait.pendingCaret, length: 0)
+        let pending = wait.pending
         guard answer == pending else { return answer }
         // The limit counts the time of the asks too, from the client's clock.
         let start = client.waitClock
@@ -1121,18 +1143,17 @@ public struct InPlaceComposer {
             if answer != pending { break }
         }
         keyWait = BackspaceWait(asks: asks, waited: client.waitClock - start,
-                                applied: answer == NSRange(location: wait.appliedCaret, length: 0))
+                                applied: answer == wait.applied)
         return answer
     }
 
     /// Applies `.replace` with exactly one `insertText` (N3), asking `selectedRange` unless
     /// this key already did (`selection`). `appending`: one more scalar after `insert`
     /// (Backspace, `replaceBeforeDelete`). `word`: the engine's word before this key, when
-    /// the answer may be checked for a late app (`replaceIfLate`). `watchesHiddenText`: a
-    /// character key, whose answer may be a sighting of a hidden-text field (D13).
+    /// the answer may be checked for a late app (`replaceIfLate`).
     private mutating func replace(deleteCount: Int, insert: TextBuffer, appending extra: Unicode.Scalar? = nil,
                                   selection known: NSRange?, client: some InPlaceClient,
-                                  word: [Unicode.Scalar]? = nil, watchesHiddenText: Bool = false) -> Outcome {
+                                  word: [Unicode.Scalar]? = nil) -> Outcome {
         if deleteCount == 0 {
             insertAtCursor(insert, client: client)
             return Outcome(consumed: true, kind: .insert)
@@ -1140,26 +1161,11 @@ public struct InPlaceComposer {
         // Engine letters are BMP scalars, so deleteCount scalars are deleteCount UTF-16
         // units, also for a word seeded from decomposed text.
         let selection = known ?? askSelection(client: client)
-        var insideWord = false
-        if watchesHiddenText, let word { insideWord = liesInsideTypedWord(selection, word: word, client: client) }
-        let outcome = replace(deleteCount: deleteCount, text: insert.description, appending: extra,
-                              selection: selection, client: client, word: word)
-        if insideWord, !explainsAnswer(outcome), let word {
-            hiddenText.sight(inWordOf: word.count)
-            keyHiddenText.sighted = true
-        }
-        return outcome
-    }
-
-    /// `replace` once the key's answer is known.
-    private mutating func replace(deleteCount: Int, text insert: String, appending extra: Unicode.Scalar?,
-                                  selection: NSRange, client: some InPlaceClient,
-                                  word: [Unicode.Scalar]?) -> Outcome {
         if !readProvedLate, let followed = tracker.followed.caret, selection == NSRange(location: followed, length: 0) {
             tracker.answeredOnTime()
             if tracker.coordinates == .heldText { keyHeld.answer = .now }
         }
-        var text = insert
+        var text = insert.description
         if let extra { text.unicodeScalars.append(extra) }
         var attempt = Attempt(deleteCount: deleteCount, selection: selection, predictedCaret: tracker.predictedCaret,
                               followedCaret: tracker.followed.caret, inHeldText: tracker.coordinates == .heldText,
@@ -1274,53 +1280,6 @@ public struct InPlaceComposer {
                                  attempt: attempt, client: client)
     }
 
-    // MARK: - D13 "Ô giấu chữ"
-
-    /// The answer of a replacing key lies inside the word Dấu just typed. Without a followed
-    /// caret, the unit the client gives right before the answer must also be the word's last
-    /// one: one read (N3 "Ngoại lệ ô giấu chữ"). Before anything is sent, as the replacement
-    /// changes that unit.
-    private mutating func liesInsideTypedWord(_ answer: NSRange, word: [Unicode.Scalar],
-                                              client: some InPlaceClient) -> Bool {
-        guard hiddenText.isOn, HiddenTextDetector.liesInside(answer, wordUnits: word.count) else { return false }
-        guard tracker.followed.caret == nil else { return true }
-        keyHiddenText.read = true
-        guard let last = word.last?.utf16.first else { return false }
-        return readUnit(before: answer.location, client: client) == last
-    }
-
-    /// D11 accounts for the answer: the late-answer proof held, or the answer fits held text.
-    /// A `late_guess` is not a proof.
-    private func explainsAnswer(_ outcome: Outcome) -> Bool {
-        if outcome.kind == .late { return true }
-        guard let answer = keyHeld.answer else { return false }
-        return answer != HeldCheck.Answer.none
-    }
-
-    /// The `selectedRange` asked once at the character that ends a word with a sighting
-    /// (N3 "Ngoại lệ ô giấu chữ"), before the character goes in.
-    private mutating func askAtWordEnd(_ word: [Unicode.Scalar], client: some InPlaceClient) {
-        keyHiddenText.asked = true
-        let units = max(word.count, hiddenText.sightedWordUnits)
-        if HiddenTextDetector.liesInside(askSelection(client: client), wordUnits: units) {
-            hiddenText.sight(inWordOf: units)
-            keyHiddenText.sighted = true
-        }
-    }
-
-    /// One UTF-16 unit before `location`; nil when the client gives none (counted like any
-    /// failed read, `failedReadLimit`) or something else.
-    private mutating func readUnit(before location: Int, client: some InPlaceClient) -> UInt16? {
-        guard !readUnavailable, location >= 1 else { return nil }
-        guard let text = client.text(in: NSRange(location: location - 1, length: 1)) else {
-            readFailed()
-            return nil
-        }
-        readGaveText()
-        let units = Array(text.utf16)
-        return units.count == 1 ? units[0] : nil
-    }
-
     private func mismatch(_ attempt: Attempt) -> Outcome {
         var result = Outcome(consumed: false, kind: .mismatch)
         result.attempt = attempt
@@ -1391,8 +1350,9 @@ public struct InPlaceComposer {
         trailingWord(String(decoding: units, as: UTF16.self).precomposedStringWithCanonicalMapping)
     }
 
-    /// A character the engine leaves as typed, inserted at the caret by the input method,
-    /// never left to the app (N3, "Vì sao Dấu tự chèn ký tự"). Returns whether the key is
+    /// A character the engine leaves as typed, inserted at the caret by the input method
+    /// (N3, "Vì sao Dấu tự chèn ký tự"); only a key over a selection goes to the app
+    /// (`passOverSelection`). Returns whether the key is
     /// consumed; the caller records the edit in `tracker`.
     private mutating func typeCharacter(_ scalar: Unicode.Scalar, client: some InPlaceClient) -> Bool {
         #if DEBUG

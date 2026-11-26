@@ -312,17 +312,16 @@ struct MarkedComposerTests {
         }
     }
 
-    @Test("the app's rule: Underline for a rule with underline or a Debug-forced bundle ID, No underline for a rule without, detection otherwise (D13)")
+    @Test("underline is on for a rule with underline, or a Debug-forced bundle ID")
     func underlineMode() {
         var settings = DauSettings.defaults
         settings.upsert(AppRule(bundleID: "com.google.Chrome", underline: true))
         settings.upsert(AppRule(bundleID: "com.apple.Safari", underline: false))
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "com.google.Chrome", debugForced: []) == .underline)
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "com.apple.Safari", debugForced: []) == .noUnderline)
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "com.apple.TextEdit", debugForced: []) == .detect)
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "com.apple.TextEdit", debugForced: ["com.apple.TextEdit"]) == .underline)
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "com.apple.Safari", debugForced: ["com.apple.Safari"]) == .underline)
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "?", debugForced: ["?"]) == .detect)
-        #expect(UnderlineMode.rule(settings: settings, bundleID: "", debugForced: [""]) == .detect)
+        #expect(UnderlineMode.isOn(settings: settings, bundleID: "com.google.Chrome", debugForced: []))
+        #expect(!UnderlineMode.isOn(settings: settings, bundleID: "com.apple.Safari", debugForced: []))
+        #expect(!UnderlineMode.isOn(settings: settings, bundleID: "com.apple.TextEdit", debugForced: []))
+        #expect(UnderlineMode.isOn(settings: settings, bundleID: "com.apple.TextEdit", debugForced: ["com.apple.TextEdit"]))
+        #expect(!UnderlineMode.isOn(settings: settings, bundleID: "?", debugForced: ["?"]))
+        #expect(!UnderlineMode.isOn(settings: settings, bundleID: "", debugForced: [""]))
     }
 }

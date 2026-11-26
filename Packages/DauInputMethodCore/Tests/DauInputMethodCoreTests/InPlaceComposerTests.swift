@@ -27,7 +27,8 @@ private final class FakeDocument: InPlaceClient {
     var noAccess = false
     /// Answer `text(in:)` with this instead (odd client, D18).
     var oddText: String?
-    /// Length of the selection ending at the cursor that `selectedRange` reports.
+    /// Length of the selection ending at the cursor that `selectedRange` reports; text
+    /// inserted at the caret replaces it.
     var selectionLength = 0
 
     var lag: TimeInterval = 0
@@ -38,7 +39,7 @@ private final class FakeDocument: InPlaceClient {
     /// `interpretKeyEvents:` unless there is marked text).
     var deletesConsumedBackspace = false
     private var lastEdit: TimeInterval = -.infinity
-    private var previous: (text: String, cursor: Int) = ("", 0)
+    private var previous: (text: String, cursor: Int, selectionLength: Int) = ("", 0, 0)
     /// Current time of the scripted session.
     var now: TimeInterval = 0
 
@@ -54,7 +55,7 @@ private final class FakeDocument: InPlaceClient {
     var waitClock: TimeInterval { now }
 
     private func edit(_ body: () -> Void) {
-        if !stale { previous = (text, cursor) }
+        if !stale { previous = (text, cursor, selectionLength) }
         body()
         lastEdit = now
     }
@@ -62,8 +63,8 @@ private final class FakeDocument: InPlaceClient {
     func selectedRange() -> NSRange {
         calls.append(.selectedRange)
         if noAccess { return NSRange(location: NSNotFound, length: NSNotFound) }
-        let end = stale && !staleText ? previous.cursor : cursor
-        return NSRange(location: end - selectionLength, length: selectionLength)
+        let (end, length) = stale && !staleText ? (previous.cursor, previous.selectionLength) : (cursor, selectionLength)
+        return NSRange(location: end - length, length: length)
     }
 
     func text(in range: NSRange) -> String? {
@@ -79,7 +80,7 @@ private final class FakeDocument: InPlaceClient {
     func insertText(_ string: String, replacementRange: NSRange) {
         let range: NSRange
         if replacementRange.location == NSNotFound {
-            range = NSRange(location: cursor, length: 0)
+            range = NSRange(location: cursor - selectionLength, length: selectionLength)
             calls.append(.insert(string, nil))
         } else {
             range = replacementRange
@@ -90,6 +91,7 @@ private final class FakeDocument: InPlaceClient {
             ns.replaceCharacters(in: range, with: string)
             text = ns as String
             cursor = range.location + string.utf16.count
+            selectionLength = 0
         }
     }
 
@@ -517,13 +519,14 @@ struct InPlaceComposerTests {
         #expect(s.overCalls == 0)
     }
 
-    @Test("a selection: no read, the key replaces it as the app does")
+    @Test("a selection: no read, the key goes to the app, which replaces it (N3)")
     func selection() {
         var s = Session("hoc")
         s.doc.selectionLength = 3
         s.type("j")
-        #expect(s.doc.calls == [.selectedRange, .insert("j", nil)])
-        #expect(s.kinds == [.seedNone])
+        #expect(s.doc.calls == [.selectedRange])
+        #expect(s.kinds == [.overtype])
+        #expect(s.doc.text == "j")
     }
 
     // MARK: D18, odd clients
@@ -1001,13 +1004,14 @@ struct InPlaceComposerLetterTests {
         #expect(s.kinds[3] == .seedNone)
     }
 
-    @Test("a selection: no seed, the letter replaces it as the app does")
+    @Test("a selection: no seed, the letter goes to the app, which replaces it (N3)")
     func selection() {
         var s = Session("q")
         s.doc.selectionLength = 1
         s.type("u")
-        #expect(s.doc.calls == [.selectedRange, .insert("u", nil)])
-        #expect(s.kinds == [.seedNone])
+        #expect(s.doc.calls == [.selectedRange])
+        #expect(s.kinds == [.overtype])
+        #expect(s.doc.text == "u")
     }
 
     @Test("no document access → no read; two keys in a row without it, then no read until activation (D18, D20)")
@@ -1533,5 +1537,103 @@ struct BackspaceThenMarkTests {
         s.type("khuyeens cao ⌫s")
         #expect(s.doc.text == "Hello khuyến cáo")
         #expect(s.overCalls == 0)
+    }
+}
+
+/// N3 "Ngoại lệ gõ đè vùng chọn": a key the engine leaves unchanged over a selection the D20
+/// ask found goes to the app; the next key waits for it as after a ⌫.
+@Suite("InPlaceComposer: a key over a selection (N3)")
+struct OvertypeTests {
+    private static func selected(_ text: String, interval: TimeInterval = 0.12) -> Session {
+        var s = Session(text)
+        s.interval = interval
+        s.doc.selectionLength = text.utf16.count
+        return s
+    }
+
+    @Test("the word typed over a selection comes out whole; only the first key goes to the app")
+    func wordOverSelection() {
+        var s = Self.selected("Tiêu đề")
+        s.type("vieetj ")
+        #expect(s.doc.text == "việt ")
+        #expect(s.kinds.first == .overtype)
+        #expect(s.consumed == [false, true, true, true, true, true, true])
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("the key after the overtype asks one selectedRange; an app on time makes it wait no more")
+    func nextKeyAsksOnce() {
+        var s = Self.selected("abc")
+        s.type("qk")
+        #expect(s.doc.text == "qk")
+        #expect(s.selectionCounts == [1, 1])
+        #expect(s.waits.allSatisfy { $0 == nil })
+    }
+
+    @Test("an app that still holds the key: the next key waits until it is applied, then goes on")
+    func nextKeyWaitsForApp() {
+        var s = Self.selected("abc", interval: 0.01)
+        s.doc.lag = 0.02
+        s.type("qk")
+        #expect((s.waits.last??.asks ?? 0) > 0)
+        #expect(s.waits.last??.applied == true)
+        #expect(s.doc.text == "qk")
+        #expect(s.overCalls == 0)
+    }
+
+    @Test("a key later than the wait window asks nothing", arguments: [0.3, 0.5])
+    func noAskAfterWindow(interval: TimeInterval) {
+        var s = Self.selected("abc", interval: interval)
+        s.type("qk")
+        #expect(s.doc.text == "qk")
+        #expect(s.selectionCounts == [1, 0])
+    }
+
+    @Test("the caret is followed from the selection's start, the overtyped key and the word after it")
+    func caretFollowed() {
+        var s = Self.selected("Tiêu đề")
+        s.type("H")
+        #expect(s.composer.tracker.followed.caret == 1)
+        s.type("ocj ")
+        #expect(s.doc.text == "Học ")
+        #expect(s.composer.tracker.followed.caret == 4)
+        #expect(s.composer.tracker.followed.typedBeforeCaret == Array("Học ".utf16))
+    }
+
+    @Test("a click between the overtype and the next key: no wait")
+    func clickClearsWait() {
+        var s = Self.selected("abc", interval: 0.01)
+        s.type("q")
+        s.composer.noteEvent(at: s.doc.now + 0.005)
+        s.type("k")
+        #expect(s.selectionCounts == [1, 0])
+    }
+
+    @Test("D20 off: the selection is not asked, so Dấu types the key itself")
+    func addMarksOff() {
+        var settings = DauSettings.defaults
+        settings.addMarksToTypedWords = false
+        var s = Session("abc", settings: settings)
+        s.doc.selectionLength = 3
+        s.type("q")
+        #expect(s.doc.calls == [.insert("q", nil)])
+        #expect(s.consumed == [true])
+    }
+
+    @Test("a key the engine changes over a selection (Telex w → ư) is still sent by Dấu")
+    func changedKeyStaysWithDau() {
+        var s = Self.selected("abc")
+        s.type("w")
+        #expect(s.consumed == [true])
+        #expect(!s.kinds.contains(.overtype))
+        #expect(s.doc.text == "ư")
+    }
+
+    @Test("no selection: the key is typed by Dấu as before")
+    func noSelection() {
+        var s = Session("abc ")
+        s.type("q")
+        #expect(s.consumed == [true])
+        #expect(!s.kinds.contains(.overtype))
     }
 }

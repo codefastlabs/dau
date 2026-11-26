@@ -1582,23 +1582,6 @@
         }
       }
     },
-    "In fields that don’t allow replacing text in place, such as Google Docs, Dấu underlines on its own. The “No Underline” rule turns this off in that app." : {
-      "comment" : "Description under the App rules section title (D13 hidden-text fields). “No Underline” = the app rule option of that name.",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "In fields that don’t allow replacing text in place, such as Google Docs, Dấu underlines on its own. The “No Underline” rule turns this off in that app."
-          }
-        },
-        "vi" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Ở ô không cho thay chữ tại chỗ, như Google Docs, Dấu tự gạch chân. Quy tắc “Không gạch chân” tắt việc này ở ứng dụng đó."
-          }
-        }
-      }
-    },
     "In progress" : {
       "comment" : "VoiceOver value of the current onboarding step.",
       "localizations" : {
@@ -2143,19 +2126,19 @@
         }
       }
     },
-    "Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule or in fields Dấu underlines on its own, such as Google Docs." : {
-      "comment" : "Subtitle of the add-marks toggle. “Underline” = the app rule option of that name. Fields Dấu underlines on its own = hidden-text fields (D13).",
+    "Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule." : {
+      "comment" : "Subtitle of the add-marks toggle. “Underline” = the app rule option of that name.",
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule or in fields Dấu underlines on its own, such as Google Docs."
+            "value" : "Put the cursor right after a word, then type a mark key. Not available in apps with an “Underline” rule."
           }
         },
         "vi" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Đặt con trỏ ngay sau từ rồi gõ phím dấu. Không áp dụng ở ứng dụng có quy tắc “Có gạch chân” và ở ô Dấu tự gạch chân, như Google Docs."
+            "value" : "Đặt con trỏ ngay sau từ rồi gõ phím dấu. Không áp dụng ở ứng dụng có quy tắc “Có gạch chân”."
           }
         }
       }

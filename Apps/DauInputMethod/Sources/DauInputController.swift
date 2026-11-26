@@ -46,12 +46,8 @@ final class DauInputController: IMKInputController {
     private var clientApp = "?"
     private let perf = PerfLog()
     /// Underline mode (D13) for the current client: the word is marked text, committed
-    /// at its end. From the app's rule, read at activation and on settings changes, never
-    /// per key, or from a hidden-text field this controller found (`autoUnderline`).
-    private var underline: Bool { autoUnderline.underlines }
-    /// D13 "Ô giấu chữ": kept for the controller's life, across activations, as Chrome
-    /// gives each tab its own controller.
-    private var autoUnderline = AutoUnderline()
+    /// at its end. Decided at activation and on settings changes, never per key.
+    private var underline = false
     private var composer = MarkedComposer()
     /// The client the marked text was sent to, so a reset that arrives with another
     /// client (or none) still commits it where it is shown.
@@ -130,11 +126,7 @@ final class DauInputController: IMKInputController {
         } else {
             let outcome = inPlace.handle(route, time: event.timestamp, engine: &engine, client: timed)
             result = KeyResult(consumed: outcome.consumed, kind: outcome.kind)
-            if let change = autoUnderline.afterInPlaceKey(detector: inPlace.hiddenText, wordOpen: engine.isComposing) {
-                switchAutoUnderline(change)
-            }
             #if DEBUG
-            result.hiddenText = outcome.hiddenText
             result.diag = outcome.attempt.map(ReplaceDiag.init)
             result.typedWordRead = outcome.typedWordRead
             result.typedWordReadProof = outcome.typedWordReadProof
@@ -176,25 +168,14 @@ final class DauInputController: IMKInputController {
         var waitNs: Int64 = -1
         /// Held text: where positions count from, what the answer showed (in-place mode).
         var held: InPlaceComposer.HeldCheck?
-        /// D13 "Ô giấu chữ": the detector's calls and sighting (in-place mode).
-        var hiddenText: HiddenTextKey?
-        /// D13 "Ô giấu chữ": the commit asked `selectedRange` while auto-underlining.
-        var autoUnderlineAsked = false
         #endif
     }
 
     /// Underline mode (D13): at most one `setMarkedText` or `insertText` per key, both
-    /// with replacementRange NSNotFound, and no D20 read (see Architecture.md). See
-    /// `MarkedComposer`. `selectedRange` only right before a word commit while auto
-    /// underline checks the commits (`AutoUnderline.beforeWordCommit`, N3 "Ngoại lệ ô giấu chữ").
+    /// with replacementRange NSNotFound; never `selectedRange` (N3), and no D20 read
+    /// (see Architecture.md). See `MarkedComposer`.
     private func processMarked(_ route: KeyRoute, client: TimedClient) -> KeyResult {
-        let wasChecking = autoUnderline.checksCommits
-        var check = autoUnderline
-        var asked = false
-        let outcome = composer.handle(route, engine: &engine, client: client) {
-            asked = check.beforeWordCommit(client: client)
-        }
-        autoUnderline = check
+        let outcome = composer.handle(route, engine: &engine, client: client)
         markedClient = composer.isComposing ? (client.client as AnyObject) : nil
         var result = KeyResult(consumed: outcome.consumed)
         switch outcome.call {
@@ -205,30 +186,7 @@ final class DauInputController: IMKInputController {
         case .insertText:
             result.kind = .commit
         }
-        #if DEBUG
-        result.autoUnderlineAsked = asked
-        #endif
-        if let change = autoUnderline.afterMarkedKey(outcome) { switchAutoUnderline(change) }
-        if wasChecking, !autoUnderline.checksCommits, autoUnderline.isOn {
-            perf.note("auto-underline-checks-done", app: clientApp)
-        }
         return result
-    }
-
-    /// D13 "Ô giấu chữ": the mode changes between words (the engine holds no word), so
-    /// only the in-place state from before is dropped.
-    private func switchAutoUnderline(_ change: AutoUnderline.Change) {
-        inPlace.hiddenText.forget()
-        inPlace.hiddenText.isOn = autoUnderline.detects
-        inPlace.reset(engine: &engine)
-        switch change {
-        case .on:
-            perf.note("auto-underline-on", app: clientApp)
-        case .off(.caretFollowsCommits):
-            perf.note("auto-underline-off-follows", app: clientApp)
-        case .off(.rule):
-            perf.note("auto-underline-off-rule", app: clientApp)
-        }
     }
 
     /// `start`: `PerfLog.now()` when `handle` began; `eventTime`: the event's `timestamp`.
@@ -250,9 +208,6 @@ final class DauInputController: IMKInputController {
                 extra += " bksp=\(wait.applied ? "applied" : "timeout") bksp_asks=\(wait.asks) bksp_wait_ns=\(result.waitNs)"
             }
             extra += result.held?.logFields ?? ""
-            extra += result.hiddenText?.logFields ?? ""
-            if result.autoUnderlineAsked { extra += " hidden_ask=1" }
-            if autoUnderline.isOn { extra += " auto_underline=1" }
         }
         #endif
         perf.record(result.kind,
@@ -274,7 +229,6 @@ final class DauInputController: IMKInputController {
     @discardableResult
     private func resetComposition(client: Any? = nil) -> Bool {
         inPlace.reset(engine: &engine)
-        autoUnderline.textMovedUnseen()
         guard composer.isComposing else {
             composer.abandon(engine: &engine) // resets the engine; no text to keep
             return false
@@ -483,18 +437,15 @@ final class DauInputController: IMKInputController {
     /// Applies new settings to this controller. A change of engine options in the middle
     /// of a word drops the word first (`EngineSettings.apply`).
     private func apply(_ new: DauSettings) {
-        let rule = UnderlineMode.rule(settings: new, bundleID: clientApp,
-                                      debugForced: Self.debugForcedUnderline())
-        var withRule = autoUnderline
-        _ = withRule.setRule(rule)
-        if withRule.underlines != underline || new.engineOptions != engine.options {
+        let newUnderline = UnderlineMode.isOn(settings: new, bundleID: clientApp,
+                                              debugForced: Self.debugForcedUnderline())
+        if newUnderline != underline || new.engineOptions != engine.options {
             // D4: a settings change ends the word without restoring it; a marked word is
             // committed as shown before the engine is reset or the mode switches.
             resetComposition(client: client() as Any?)
         }
         settings = new
-        if let change = autoUnderline.setRule(rule) { switchAutoUnderline(change) }
-        inPlace.hiddenText.isOn = autoUnderline.detects
+        underline = newUnderline
         if EngineSettings.apply(new, to: &engine) {
             inPlace.reset(engine: &engine)
             perf.note("options-changed", app: clientApp)

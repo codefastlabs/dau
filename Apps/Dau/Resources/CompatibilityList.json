@@ -286,7 +286,7 @@
       "measured": true,
       "inPlaceCorrect": false,
       "measuredMacOS": "27",
-      "note": "Chrome and Safari. Measured (docs/Compatibility.md 5.10): in-place wrong, the page reports the cursor at (1, 0); Dấu underlines this field on its own (D13), so text is right after the first one or two words of each new tab (26/11/2026)."
+      "note": "In Chrome. Measured (docs/Compatibility.md 5.10): in-place wrong, the page reports the cursor at (1, 0)."
     }
   ]
 }
