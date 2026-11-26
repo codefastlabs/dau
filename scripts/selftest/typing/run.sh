@@ -122,7 +122,8 @@
 #                       defaults write -g DauDebugForceUnderline -array com.google.Chrome
 #                       defaults delete -g DauDebugForceUnderline
 #   --shot            with --save: a picture of the app's window right after the keys, before
-#                     the last word is committed (ghostty, ghosttyvim, xterm), to DIR/<app>.png.
+#                     the last word is committed (ghostty, ghosttyvim, xterm, safari, chrome, gdocs,
+#                     gdocssafari, wordweb), to DIR/<app>.png.
 #
 # For each app: opens a new, empty window, selects the Dấu input source (which must be
 # enabled already; nothing is enabled or disabled, N4), types, reads the text back,
@@ -821,6 +822,7 @@ focus_test_field() { # process
 run_safari() {
   open_test_page Safari Safari
   focus_test_field Safari; select_dau; type_keys Safari "$FOCUS_TITLE"
+  shot_window Safari safari
   copy_all Safari "$FOCUS_TITLE"
   close_test_tab Safari
 }
@@ -828,6 +830,7 @@ run_safari() {
 run_chrome() {
   open_test_page "Google Chrome" "Google Chrome"
   focus_test_field "Google Chrome"; select_dau; type_keys "Google Chrome" "$FOCUS_TITLE"
+  shot_window "Google Chrome" chrome
   copy_all "Google Chrome" "$FOCUS_TITLE"
   close_test_tab "Google Chrome"
 }
@@ -942,6 +945,7 @@ run_webdoc() { # gdocs | gdocssafari | wordweb
   webdoc_click_body "$title" || return 0
   select_dau
   type_keys "$WD_PROC" "$title"
+  shot_window "$WD_PROC" "$1"
   local text
   text="$(copy_all "$WD_PROC" "$title")"
   if [[ -z "$text" ]]; then

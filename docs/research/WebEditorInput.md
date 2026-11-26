@@ -4,7 +4,7 @@ Google Docs trong Chrome và Safari làm Dấu sai chữ: mọi lần thay hai, 
 
 Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc thấy trong mã nguồn của dự án đó, tả bằng lời của file này (không chép mã, D10 (Engine tự viết)). "Tác giả ghi" là điều chú thích, tài liệu hay trả lời issue của dự án nói, chưa ai kiểm lại. "Suy luận, cần kiểm chứng" là ý của file này. Không chạy mã của dự án nào.
 
-## Hiện trạng (22/11/2026)
+## Hiện trạng (26/11/2026)
 
 ### Bảng tóm tắt
 
@@ -45,7 +45,7 @@ Cách ghi: mỗi khẳng định ghi nguồn. "Đọc mã" là điều đọc th
   - Không tìm được nguồn đáng tin nói chuyển lại tiếng Nhật chạy hay không trong Google Docs.
   - Công cụ nhập liệu dựng sẵn của Google Docs chỉ hiện với ngôn ngữ không dùng chữ Latin, theo trang trợ giúp.
 - **Chế độ chữ nổi (⌘⌥H) của Google Docs:** không tìm thấy nguồn nào nói nó đổi chữ mà bộ gõ đọc được. Nguồn gần nhất: người dùng Squirrel (bộ gõ tiếng Trung, IMK) báo rằng bật "screen magnifier support" trong Cài đặt hỗ trợ tiếp cận của Google Docs sửa vị trí khung chọn chữ. Vậy các tuỳ chọn hỗ trợ tiếp cận của Google Docs có đổi ô nhập ẩn, ít nhất về vị trí; về chữ thì chưa ai nói (mục 9). Chỉ đo mới trả lời được.
-- **Gạch chân "trong suốt" không có trong Chrome (đọc mã Chromium, mục 8).** GoTiengViet (isthaison) gửi chữ đánh dấu với kiểu gạch chân "không" để giấu gạch chân. Chromium vẫn vẽ gạch chân mảnh khi có thuộc tính gạch chân, bất kể giá trị của nó. Không có thuộc tính nào thì Blink tự thêm gạch chân mặc định cho trang thường. Riêng Google Docs tự vẽ chữ đang soạn: tác giả VietTelex ghi là có gạch chân.
+- **Không giấu được gạch chân của chữ đang soạn trong Google Docs (bản thử Debug, đọc mã Chromium và WebKit, mục 10.7).** Bản thử gửi chữ đánh dấu với năm bộ thuộc tính khác nhau: chuỗi trơn, kiểu gạch chân 0, gạch chân màu `NSColor.clear`, chuỗi có thuộc tính rỗng và chỉ có nền `NSColor.clear`. Google Docs vẫn gạch chân chữ đang soạn với cả năm bộ, trên cả Chrome và Safari, kể cả hai bộ mà theo mã Chromium thì trang không nhận đoạn gạch chân nào. Vậy Google Docs tự vẽ gạch chân, và bộ gõ không đổi được điều đó qua thuộc tính. GoTiengViet (isthaison) dùng kiểu gạch chân 0 để giấu gạch chân, nhưng cách đó không có tác dụng ở cả hai trình duyệt.
 
 ### Ý cho cách sửa của Dấu (suy luận, cần kiểm chứng)
 
@@ -143,7 +143,7 @@ Không thấy xử lý riêng cho Google Docs hay trình duyệt trong các bộ
 - KeyIn (https://github.com/tuoitrevohoc/KeyIn, commit `876b024`): `native/main.m` gửi chữ đánh dấu kèm vùng thay, chốt bằng `insertText`.
 - VietIME (https://github.com/truongtv91/VietIME, commit `702a087`): chữ đánh dấu, chốt bằng `insertText` không có vùng thay.
 - InputKey (https://github.com/vuminhquang/InputKey, commit `489a742`, bản IMK trong `Implementations/macOS/InputMethodKit`): chữ đánh dấu, chốt bằng `insertText` không có vùng thay.
-- GoTiengViet của isthaison (https://github.com/isthaison/gotiengviet, commit `06ae35d`, bản macOS ghi là bản xem trước): chữ đánh dấu với kiểu gạch chân "không". Chú thích trong mã nói cách này bỏ được gạch chân ở mọi app, kể cả trình duyệt. Đọc mã Chromium thì trình duyệt Chromium vẫn vẽ gạch chân mảnh (mục 8).
+- GoTiengViet của isthaison (https://github.com/isthaison/gotiengviet, commit `06ae35d`, bản macOS ghi là bản xem trước): chữ đánh dấu với kiểu gạch chân "không". Chú thích trong mã nói cách này bỏ được gạch chân ở mọi app, kể cả trình duyệt. Đọc mã thì Chrome và Safari vẫn vẽ gạch chân cho kiểu đó (mục 8 và 10.7).
 - Đã thử tìm nhưng không có: kho `manhpham90vn/xkey` (bộ gõ Rust có IMK, theo kết quả tìm kiếm) không clone được, kho không tồn tại.
 
 ## 6. Telex của Apple
@@ -295,6 +295,55 @@ Các thí nghiệm làm trên bản Debug và ghi riêng nhãn "bản thử" (ý
   - Đo: máy M3 Max, Chrome 157.0.8103.79, Safari 27.2, câu không có ⌫, 80 ± 30 ms một phím; mỗi trình duyệt một lượt chỉ đọc và một lượt gửi thẳng. Số và chữ ra ở [`docs/Compatibility.md`](../Compatibility.md) mục 5.10.
   - Kết luận: trước con trỏ chỉ có một ký tự ở cả hai trình duyệt, nên đọc rộng không cho thấy thêm chữ của từ. Gửi thẳng vùng rộng làm hỏng tab ở Chrome và chỉ thay một ký tự ở Safari. Đường này đã đóng.
 
+### 10.7 Chữ đánh dấu không gạch chân
+
+Câu hỏi: bộ gõ gửi chữ đánh dấu bằng `setMarkedText` với thuộc tính nào thì trình duyệt vẽ chữ đang soạn như chữ đã chốt, không có gạch chân. Nếu làm được, Google Docs sẽ gõ bằng chữ đánh dấu mà người dùng vẫn thấy như thay tại chỗ.
+
+Kết luận: không làm được ở Google Docs. Bản thử dưới đây cho thấy Google Docs gạch chân chữ đang soạn với mọi bộ thuộc tính đã thử, trên cả Chrome và Safari. Ở trang thường, cả hai trình duyệt cũng vẫn gạch chân với mọi bộ, trái với vài dự đoán từ đọc mã.
+
+**Bản thử (26/11/2026, máy M1 Pro, macOS 27.2.1, Chrome 157.0.8103.79, Safari 27.2).** Bản Debug có thêm mã thử trong `TimedClient.setMarkedText`, không giữ lại. Mã thử chọn bộ thuộc tính theo một khoá `defaults` toàn cục. Lệnh mỗi ô: `scripts/selftest/typing/run.sh --underline --shot --save <dir> --delay 80 --jitter 30 --word-pause 250 --keys 'Hoom nay minhf hojc tieengs Vieetj voiws banj'`, câu không có dấu cách cuối để từ cuối còn đang soạn lúc chụp. Mỗi ô một lượt cho mỗi bộ thuộc tính; kết quả đọc bằng mắt trên ảnh chụp.
+
+| Bộ thuộc tính | Google Docs, Chrome | Google Docs, Safari | Trang thử, Chrome | Trang thử, Safari |
+|---|---|---|---|---|
+| Chuỗi trơn | gạch chân, tô nền xanh | gạch chân | gạch chân | gạch chân xanh |
+| Kiểu gạch chân 0 | gạch chân | gạch chân | gạch chân | gạch chân xanh |
+| `NSUnderlineStyle.single`, màu `NSColor.clear` | gạch chân | gạch chân | gạch chân | gạch chân xanh |
+| Thuộc tính rỗng | gạch chân | gạch chân | gạch chân | gạch chân xanh |
+| Chỉ nền `NSColor.clear` | gạch chân | gạch chân | gạch chân | gạch chân xanh |
+
+- Chữ ra đúng ở mọi lượt Safari. Ở Chrome, ⌘A ⌘C của script không chép ra chữ khi từ cuối còn đang soạn, với cả chuỗi trơn; ảnh chụp cho thấy chữ đúng.
+- Trang thử của Safari vẫn gạch chân với `NSColor.clear` và với nền trong suốt, trong khi đọc mã WebKit dự đoán không có gạch chân. Có thể IMK đổi hay bỏ thuộc tính trước khi chuỗi tới app; chưa rõ, và không cần làm rõ cho Google Docs. Lý do: Google Docs nhận chữ qua phần tử ẩn hay EditContext rồi tự vẽ, nên dù thuộc tính tới được trình duyệt thì gạch chân trên trang vẫn do Google Docs quyết định.
+
+Phần đọc mã dưới đây giải thích từng trình duyệt làm gì với thuộc tính. Mã đọc ngày 26/11/2026:
+- Chromium nhánh `main`, commit `6aecf94a` (26/11/2026): `content/app_shim_remote_cocoa/render_widget_host_view_cocoa.mm`, `skia/ext/skia_utils_mac.mm`, `ui/base/ime/ime_text_span.h`, `third_party/blink/renderer/core/editing/ime/input_method_controller.cc`, `edit_context.cc`, `ime_text_span.cc`, `core/editing/markers/styleable_marker.cc`, `core/paint/styleable_marker_painter.cc`, `core/layout/layout_theme.h`, `platform/graphics/color.h`.
+- WebKit nhánh `main`, commit `0658390e` (25/11/2026): `Source/WebKit/UIProcess/mac/WebViewImpl.mm`, `Source/WebCore/editing/CompositionUnderline.h`, `CompositionHighlight.h`, `Editor.cpp`, `Source/WebCore/rendering/paint/TextBoxPainter.cpp`, `Source/WTF/wtf/PlatformHave.h`.
+
+Chưa đối chiếu với đúng Chrome 157 và Safari 27.2 Dấu đã đo. Mọi dự đoán về Google Docs dưới đây là suy luận, cần đo.
+
+**Chrome, trang thường (Blink tự vẽ chữ đang soạn):**
+- `setMarkedText` của `RenderWidgetHostViewCocoa` phân hai nhánh. Chuỗi trơn (`NSString`) thành một đoạn gạch chân mảnh, liền, phủ cả chuỗi, không ghi màu gạch chân. Chuỗi có thuộc tính đi qua hàm `ExtractUnderlines`.
+- `ExtractUnderlines` chỉ đọc hai thuộc tính. Đoạn nào có `NSUnderlineStyleAttributeName` thì thành một đoạn gạch chân; đoạn không có thì bỏ qua. Màu lấy từ `NSUnderlineColorAttributeName`, đổi sang không gian màu device RGB, giữ cả độ trong suốt; không có màu thì là đen. Kiểu gạch chân lớn hơn "single" thành nét dày, mọi giá trị khác thành nét mảnh, kể cả 0 ("không"). Nét luôn là nét liền: hàm không bao giờ sinh kiểu "không" hay độ dày "không". `NSBackgroundColorAttributeName` không được đọc và cũng không có trong `validAttributesForMarkedText` của view.
+- Chuỗi có thuộc tính mà không đoạn nào có kiểu gạch chân thì danh sách rỗng. Khi đó `InputMethodController::SetComposition` của Blink tự thêm một đoạn mặc định: gạch chân mảnh, màu trong suốt, nền vàng nhạt (`LayoutTheme::PlatformDefaultCompositionBackgroundColor`). Điều này khớp lời tác giả Phím Việt rằng chuỗi trơn làm Chrome tô nền (mục 3), nếu IMK gói chuỗi trơn thành chuỗi có thuộc tính rỗng trước khi tới Chrome (suy luận, cần kiểm chứng).
+- Blink vẽ theo `StyleableMarker` và `StyleableMarkerPainter`. Màu gạch chân bằng đúng màu trong suốt chuẩn (đen, alpha 0) nghĩa là "dùng màu chữ", nên đoạn mặc định và chuỗi trơn đều có gạch chân màu chữ. `NSColor.clear` đổi sang device RGB cũng ra đen alpha 0, nên **gạch chân màu trong suốt vẫn hiện, màu chữ**. Một màu alpha 0 nhưng khác đen (ví dụ trắng alpha 0) không bằng màu trong suốt chuẩn, nên Blink vẽ nó với alpha 0, tức không thấy. Ngoại lệ là khi trang ở chế độ tối: hàm vẽ thay mọi màu gạch chân bằng màu chữ.
+- Kết luận cho trang thường của Chrome: chỉ có kiểu gạch chân khác 0 kèm màu alpha 0 khác đen là giấu được nét, và chỉ ở trang sáng (đọc mã, chưa đo).
+
+**Chrome, trang dùng EditContext (Google Docs):**
+- Trang dùng EditContext thì Blink không vẽ chữ đang soạn. `EditContext::DispatchTextFormatEvent` gửi cho trang sự kiện `textformatupdate`, mỗi đoạn chỉ mang vị trí, kiểu và độ dày gạch chân. Màu bị bỏ. Đoạn mặc định của Blink ở trên không áp cho EditContext, nên danh sách rỗng thì trang nhận sự kiện không có đoạn nào.
+- Vì `ExtractUnderlines` luôn sinh nét liền, cứ có `NSUnderlineStyleAttributeName` (bất kể giá trị hay màu) thì Google Docs nhận "gạch liền, mảnh" hoặc "gạch liền, dày". Cách duy nhất để không báo gạch chân là chuỗi có thuộc tính nhưng không có kiểu gạch chân.
+- Google Docs có vẽ gạch chân theo `textformatupdate` không hay luôn tự vẽ gạch chân cho chữ đang soạn: không tìm được nguồn. Chỉ có lời tác giả VietTelex rằng Google Docs gạch chân chữ đánh dấu (mục 1), mà bộ gõ đó gửi kiểu gạch chân. Chỉ đo mới trả lời được.
+
+**Safari (WebKit):**
+- `WebViewImpl::setMarkedText` cũng phân hai nhánh. Chuỗi trơn thành một gạch chân màu chữ, nét mảnh.
+- Trên macOS, WebKit bật `HAVE(REDESIGNED_TEXT_CURSOR)` và `HAVE(INLINE_PREDICTIONS)`. Khi đó chuỗi có thuộc tính đi một trong hai chế độ, chọn theo đoạn đầu tiên có thuộc tính liên quan (`shouldUseHighlightsForMarkedText`). Có `NSUnderlineStyleAttributeName` hay `NSUnderlineColorAttributeName` thì là chế độ gạch chân. Chỉ có `NSBackgroundColorAttributeName` hay `NSForegroundColorAttributeName` thì là chế độ tô (`CompositionHighlight`), không có gạch chân nào.
+- Chế độ gạch chân (`compositionUnderlines`): đoạn có màu gạch chân đúng bằng `NSColor.clear` (so bằng `isEqual:`) bị bỏ. Mọi đoạn còn lại gộp thành một gạch chân màu cho trước. Khi mọi đoạn đều bị bỏ, hàm chạy tiếp vòng đọc cũ và tạo gạch chân màu cho trước, chính là màu trong suốt. Lúc vẽ, `TextBoxPainter::fillCompositionUnderline` theo giao diện con trỏ mới bỏ qua gạch chân có màu không nhìn thấy. Giao diện cũ thì vẽ nét bằng màu trong suốt. Cả hai đều không thấy. Màu nào khác `NSColor.clear`, kể cả trắng alpha 0, đều thành gạch chân màu nhấn của hệ thống trong giao diện mới, vì nhánh đó bỏ màu cho trước và chỉ kiểm màu có nhìn thấy không. Kiểu gạch chân 0 không có màu cũng thành gạch chân thấy được.
+- Chế độ tô: nền của đoạn vẽ bằng `NSBackgroundColorAttributeName`. Màu `NSColor.clear` thì không thấy nền, và không có gạch chân. Chuỗi có thuộc tính mà không thuộc tính nào kể trên thì không có gạch chân lẫn đoạn tô, và `TextBoxPainter` tô cả chữ đang soạn bằng màu nền mặc định (`CompositionHighlight::defaultCompositionFillColor`).
+- Google Docs trong Safari nhận chữ qua một phần tử ẩn (mục 10.3, suy luận) và tự vẽ chữ. Sự kiện `compositionupdate` của DOM chỉ mang chữ, không mang kiểu. Vậy thuộc tính của bộ gõ chỉ đổi cách WebKit vẽ trong phần tử ẩn mà người dùng không thấy; Google Docs vẽ gạch chân hay không là việc của riêng nó (suy luận, cần kiểm chứng).
+
+**IMK ở giữa:**
+- Theo tài liệu Apple, `mark(forStyle:at:)` của `IMKInputController` trả từ điển thuộc tính để đánh dấu một đoạn. Hàm mặc định lấy `compositionAttributes(at:)` rồi thêm gạch chân và màu gạch chân theo kiểu (`kTSMHiliteSelectedRawText`, `kTSMHiliteConvertedText`, `kTSMHiliteSelectedConvertedText`) và thêm khoá `markedClauseSegment`. Vậy muốn không có gạch chân thì bộ gõ tự dựng từ điển, không gọi hàm này.
+- Tài liệu `NSTextInputClient.setMarkedText` ghi chuỗi có thể là `NSString` hay `NSAttributedString`. Với `NSString`, ô nhận phải tự vẽ chữ đang soạn cho khác biệt.
+- IMK có đổi chuỗi trơn thành chuỗi có thuộc tính hay lọc thuộc tính theo `validAttributesForMarkedText` của ô nhận khi chuyển sang tiến trình của app không: Apple không ghi. Mục Chrome ở trên cho một dấu hiệu gián tiếp (suy luận, cần kiểm chứng). `NSColor.clear` sau khi qua ranh giới tiến trình có còn `isEqual:` với `NSColor.clear` của WebKit không cũng chưa kiểm.
+
 ## 11. Bộ gõ IMK cho tiếng khác
 
 Câu hỏi: có bộ gõ IMK nào cho tiếng khác làm như Dấu (sửa chữ đã xuất bằng `insertText` có vùng thay, không dùng chữ đánh dấu) mà gõ đúng trong Google Docs không. Mã đọc ngày 18/11/2026, chỉ đọc, không chạy.
@@ -383,6 +432,8 @@ Chromium, chuẩn web, Google:
 - Chromium, `render_frame_impl.cc` (`SyncSelectionIfRequired`): https://chromium.googlesource.com/chromium/src/+/main/content/renderer/render_frame_impl.cc
 - Blink, `edit_context.cc`: https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/editing/ime/edit_context.cc
 - Blink, `runtime_enabled_features.json5`: https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/platform/runtime_enabled_features.json5
+- Blink, vẽ gạch chân của chữ đang soạn (mục 10.7): https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/paint/styleable_marker_painter.cc ; https://chromium.googlesource.com/chromium/src/+/main/third_party/blink/renderer/core/editing/markers/styleable_marker.cc ; `ImeTextSpan`: https://chromium.googlesource.com/chromium/src/+/main/ui/base/ime/ime_text_span.h ; đổi màu `NSColor`: https://chromium.googlesource.com/chromium/src/+/main/skia/ext/skia_utils_mac.mm
+- WebKit (mục 10.7): https://github.com/WebKit/WebKit/blob/main/Source/WebKit/UIProcess/mac/WebViewImpl.mm ; https://github.com/WebKit/WebKit/blob/main/Source/WebCore/rendering/paint/TextBoxPainter.cpp ; https://github.com/WebKit/WebKit/blob/main/Source/WebCore/editing/CompositionUnderline.h ; https://github.com/WebKit/WebKit/blob/main/Source/WebCore/editing/CompositionHighlight.h
 - W3C edit-context issue #151 (Google Docs dùng EditContext vô hình): https://github.com/w3c/edit-context/issues/151
 - W3C edit-context issue #156 (lấy chữ theo yêu cầu): https://github.com/w3c/edit-context/issues/156 ; issue #107: https://github.com/w3c/edit-context/issues/107
 - Intent to Prototype: EditContext On-Demand Text & Selection Updates (20/10/2026): http://www.mail-archive.com/blink-dev@chromium.org/msg17807.html
@@ -398,3 +449,4 @@ Apple (`NSTextInputClient`; `selectedRange` tính từ đầu kho chữ của ô
 - https://developer.apple.com/documentation/appkit/nstextinputclient/attributedsubstring(forproposedrange:actualrange:)
 - https://developer.apple.com/documentation/appkit/nstextinputclient/inserttext(_:replacementrange:)
 - https://developer.apple.com/documentation/appkit/nstextinputclient/setmarkedtext(_:selectedrange:replacementrange:)
+- `IMKInputController.mark(forStyle:at:)`: https://developer.apple.com/documentation/inputmethodkit/imkinputcontroller/mark(forstyle:at:)

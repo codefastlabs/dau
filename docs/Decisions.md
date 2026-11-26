@@ -812,6 +812,13 @@ Mục này ghi các cách làm đã bị loại; các tính năng không làm n�
 - Nhúng engine UniKey qua C++ interop.
 - Chạy engine OpenKey làm đáp án cho test (oracle).
 - Tách engine ra giấy phép MIT hay MPL riêng.
+- Các cách cho Google Docs gõ được, bị loại ngày 26/11/2026. Hướng giữ lại là Dấu tự nhận ra ô giấu chữ và gạch chân riêng ô đó, người dùng không phải chọn gì. Nguyên nhân Google Docs sai chữ ở [`docs/research/WebEditorInput.md`](research/WebEditorInput.md).
+  - Danh sách trang theo URL: Dấu phải đọc URL qua Accessibility, nên cần quyền Trợ năng (N4).
+  - Input mode "Tiếng Việt (gạch chân)" thứ hai: người dùng phải tự bật mode và tự chọn mode ở từng tab mới, và D2 chỉ cho một input mode.
+  - Quy tắc theo app ba trạng thái (Tự động, Thay tại chỗ, Gạch chân): một quy tắc theo app không tách được Google Docs với các tab khác trong cùng trình duyệt, và người dùng phải hiểu thêm một lựa chọn.
+  - Sửa thay tại chỗ ngay trong Google Docs: mọi đường trong tầm bộ gõ đã thử và không được (mục 10.5 và 10.6 của file trên).
+  - Gạch chân cho mọi app như Telex của Apple: mọi app mất D20.
+  - Gạch chân vô hình (chữ đánh dấu kèm thuộc tính để trình duyệt không vẽ gạch chân): Google Docs tự vẽ gạch chân cho chữ đang soạn, với mọi bộ thuộc tính đã thử trên Chrome và Safari (mục 10.7 của file trên).
 
 ## Câu hỏi mở
 

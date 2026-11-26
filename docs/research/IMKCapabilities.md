@@ -132,12 +132,13 @@ Vậy IMK tạo được chuỗi chữ đánh dấu không mang gạch chân. C�
 | Chỉ có màu chữ (ví dụ màu chữ thường của hệ thống) | đi đường "tô sáng": không gạch chân, không tô nền, chữ vẽ bằng màu đã cho (`shouldUseHighlightsForMarkedText`, `compositionHighlights`) | màu chữ không nằm trong `validAttributesForMarkedText`; chuỗi không có đoạn gạch chân nên như dòng trên |
 
 - AppKit (`NSTextView`): header chỉ nói chuỗi trơn dùng `markedTextAttributes`. Chuỗi có thuộc tính thì vẽ theo thuộc tính đó, nên không gạch chân: [Suy luận], chưa đo.
-- Trang tự vẽ (Google Docs) vẽ theo cách của nó ([`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 8).
+- Trang tự vẽ (Google Docs) vẽ theo cách của nó. Bản thử ngày 26/11/2026 cho thấy Google Docs gạch chân chữ đang soạn với cả năm bộ thuộc tính đã thử, trên cả Chrome và Safari ([`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.7).
 
 ### 3.3 Kết luận
 
 - Không có cách nào giấu gạch chân ở Chromium (Chrome, Edge, VS Code, Cursor, mọi app Electron). Khớp với điều [`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 8 đã ghi; mục này thêm hai chi tiết: màu gạch chân trong suốt cũng không giấu được và màu chữ không được nhận.
-- Ở WebKit giấu được, bằng chuỗi chỉ mang màu chữ. Đọc mã, chưa đo.
+- Ở WebKit có thể giấu được bằng chuỗi chỉ mang màu chữ. Điều này mới là đọc mã, chưa đo. Bản thử ngày 26/11/2026 không thử bộ này; nó thử `NSColor.clear` cho màu gạch chân và cho nền, và trang thử của Safari vẫn gạch chân với cả hai, trái với đọc mã ([`docs/research/WebEditorInput.md`](WebEditorInput.md) mục 10.7).
+- Google Docs không giấu được gạch chân bằng thuộc tính nào, vì trang tự vẽ chữ đang soạn (cùng mục).
 - Chữ không gạch chân vẫn là chữ đánh dấu: trang nhận sự kiện soạn chữ (`compositionstart`, `compositionupdate`…), D20 (Thêm dấu cho từ đã gõ) không chạy, Return ngay sau từ đang soạn bị nuốt ở Ghostty (D43 (Ô bỏ qua vùng thay chữ)). Đổi màu không đổi các điều đó.
 - **Đối chiếu:** dùng chữ đánh dấu (có hay không gạch chân) làm cách gõ mặc định ở app nào là đổi D13 (Gạch chân là đường lui cuối cùng) và D5 (Quy tắc theo ứng dụng). Theo D13, thay tại chỗ là cách gõ và gạch chân chỉ do người dùng bật. Hướng này không được đề xuất.
 
