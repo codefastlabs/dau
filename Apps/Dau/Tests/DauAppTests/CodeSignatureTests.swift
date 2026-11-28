@@ -1,5 +1,6 @@
 import Foundation
 import Testing
+import Security
 @testable import Dau
 
 // D37: the installed input method must meet a code requirement (Apple-issued certificate,
@@ -26,13 +27,13 @@ private func adHocBinary(identifier: String) throws -> (url: URL, folder: URL) {
 @Suite("Code signature requirement (D37)")
 struct CodeSignatureTests {
     @Test func requirementNamesIdentifierTeamAndApple() {
-        let text = CodeSignature.requirementText(identifier: "com.codefastlabs.dau.inputmethod.Dau", teamID: "M58DANM3ZP")
+        let text = CodeSignature.requirementText(identifier: "com.codefastlabs.dau.inputmethod.Dau", teamIDs: ["M58DANM3ZP"])
         #expect(text == "anchor apple generic and identifier \"com.codefastlabs.dau.inputmethod.Dau\" and certificate leaf[subject.OU] = \"M58DANM3ZP\"")
     }
 
     @Test(arguments: [("", "TEAM"), ("com.x", ""), ("com.x\" or true", "TEAM"), ("com.x", "TE AM"), ("com.x", "T\"")])
     func requirementRefusesValuesItCannotQuote(identifier: String, team: String) {
-        #expect(CodeSignature.requirementText(identifier: identifier, teamID: team) == nil)
+        #expect(CodeSignature.requirementText(identifier: identifier, teamIDs: [team]) == nil)
     }
 
     @Test func noRequirementIsNeverValid() throws {
@@ -47,7 +48,7 @@ struct CodeSignatureTests {
         let identifier = "com.codefastlabs.dau.inputmethod.Dau"
         let tool = try adHocBinary(identifier: identifier)
         defer { try? FileManager.default.removeItem(at: tool.folder) }
-        let requirement = CodeSignature.requirementText(identifier: identifier, teamID: "M58DANM3ZP")
+        let requirement = CodeSignature.requirementText(identifier: identifier, teamIDs: ["M58DANM3ZP"])
         #expect(!CodeSignature.isValid(tool.url, requirement: requirement))
     }
 
@@ -67,5 +68,72 @@ struct CodeSignatureTests {
         let url = folder.appendingPathComponent("plain")
         try Data("not code".utf8).write(to: url)
         #expect(!CodeSignature.isValid(url, requirement: "identifier \"x\""))
+    }
+}
+
+/// D37, "Danh tính phát hành trước": a host signed by another team than the Personal Team
+/// that signed earlier releases takes an input method of that Personal Team for an older
+/// build of itself; any other team still gets the banner.
+@Suite("Signing teams of the input method (D37)")
+struct InputMethodSigningTeamsTests {
+    static let personalTeam = "M58DANM3ZP"
+    static let developerIDTeam = "ABCDE12345"
+
+    @Test func previousReleaseTeamIsThePersonalTeam() {
+        #expect(InputMethodSigningTeams.previousReleaseTeamID == "M58DANM3ZP")
+    }
+
+    @Test("installed input method trusted or not, by host team and installed team", arguments: [
+        ("ABCDE12345", "M58DANM3ZP", true),
+        ("ABCDE12345", "ABCDE12345", true),
+        ("ABCDE12345", "ZZZZZ99999", false),
+        ("M58DANM3ZP", "M58DANM3ZP", true),
+        ("M58DANM3ZP", "ABCDE12345", false),
+        ("M58DANM3ZP", "ZZZZZ99999", false),
+    ])
+    func installedTrust(host: String, installedBy team: String, trusted: Bool) {
+        #expect(InputMethodSigningTeams(hostTeamID: host).installed.contains(team) == trusted)
+    }
+
+    @Test("the staged copy is the embedded one: the host's team only, whatever the host", arguments: ["ABCDE12345", "M58DANM3ZP"])
+    func stagedIsHostOnly(host: String) {
+        #expect(InputMethodSigningTeams(hostTeamID: host).staged == [host])
+    }
+
+    @Test func hostOnPersonalTeamChangesNothing() {
+        #expect(InputMethodSigningTeams(hostTeamID: Self.personalTeam).installed == [Self.personalTeam])
+    }
+
+    @Test func requirementOfTwoTeamsTakesEitherLeaf() throws {
+        let identifier = "com.codefastlabs.dau.inputmethod.Dau"
+        let teams = InputMethodSigningTeams(hostTeamID: Self.developerIDTeam).installed
+        let text = try #require(CodeSignature.requirementText(identifier: identifier, teamIDs: teams))
+        #expect(text == "anchor apple generic and identifier \"\(identifier)\" and "
+                + "(certificate leaf[subject.OU] = \"ABCDE12345\" or certificate leaf[subject.OU] = \"M58DANM3ZP\")")
+        var requirement: SecRequirement?
+        #expect(SecRequirementCreateWithString(text as CFString, [], &requirement) == errSecSuccess)
+    }
+
+    @Test func requirementRefusesNoTeamOrOneTeamItCannotQuote() {
+        #expect(CodeSignature.requirementText(identifier: "com.x", teamIDs: []) == nil)
+        #expect(CodeSignature.requirementText(identifier: "com.x", teamIDs: ["TEAM", "T\" or true"]) == nil)
+    }
+
+    /// An invalid signature (ad hoc, no team) meets neither team.
+    @Test func adHocSignatureFailsTheTwoTeamRequirement() throws {
+        let identifier = "com.codefastlabs.dau.inputmethod.Dau"
+        let tool = try adHocBinary(identifier: identifier)
+        defer { try? FileManager.default.removeItem(at: tool.folder) }
+        let teams = InputMethodSigningTeams(hostTeamID: Self.developerIDTeam).installed
+        #expect(!CodeSignature.isValid(tool.url, requirement: CodeSignature.requirementText(identifier: identifier, teamIDs: teams)))
+    }
+
+    /// Control for the grouping the two-team requirement relies on: the "and" before the
+    /// parentheses holds for every branch of the "or".
+    @Test func parenthesizedOrBindsUnderAnd() throws {
+        let tool = try adHocBinary(identifier: "test.dau.adhoc")
+        defer { try? FileManager.default.removeItem(at: tool.folder) }
+        #expect(CodeSignature.isValid(tool.url, requirement: "identifier \"test.dau.adhoc\" and (identifier \"x\" or identifier \"test.dau.adhoc\")"))
+        #expect(!CodeSignature.isValid(tool.url, requirement: "identifier \"x\" and (identifier \"y\" or identifier \"test.dau.adhoc\")"))
     }
 }

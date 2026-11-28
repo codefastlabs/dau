@@ -53,8 +53,10 @@ protocol InputMethodFiles {
     var isInstalled: Bool { get }
     /// The installed copy's Info.plist, read fresh from disk (no Bundle cache).
     var installed: InputMethodBundleInfo? { get }
-    /// False when an installed copy is there but its signature is invalid or not by this
-    /// app's team: replaced or modified after install. True when nothing is installed.
+    /// False when an installed copy is there but its signature is invalid or by a team
+    /// other than this app's and the previous release identity's
+    /// (`InputMethodSigningTeams.installed`): replaced or modified after install. True when
+    /// nothing is installed.
     var installedIsGenuine: Bool { get }
     /// The installed copy's code directory hash equals the embedded one's at every
     /// architecture (D37). False when either cannot be read.
@@ -329,8 +331,8 @@ final class SystemInputMethodInstaller: InputMethodInstaller {
             // install, which needs the user (and a logout), not a silent swap.
             return .skipped("bundle ID \(installed.bundleID)")
         }
-        // D37: a copy with a wrong signature or another team is never replaced silently;
-        // the "Reinstall" banner shows and the user decides.
+        // D37: a copy with a wrong signature or another team (`InputMethodSigningTeams`) is
+        // never replaced silently; the "Reinstall" banner shows and the user decides.
         guard files.installedIsGenuine else {
             installLogger.error("event=reconcile-bad-signature")
             return .badSignature
@@ -487,7 +489,10 @@ struct InputMethodBundleFiles: InputMethodFiles {
     let directory: URL
     /// Signature check of the staged copy (default: `CodeSignature.isValidAndSameTeam`, a code
     /// requirement: Apple-issued certificate, this app's team, the input method's identifier).
-    var verify: (URL) -> Bool = CodeSignature.isValidAndSameTeam
+    var verifyStaged: (URL) -> Bool = CodeSignature.isValidAndSameTeam
+    /// Signature check of the installed copy (default: `CodeSignature.isDauInputMethod`, the
+    /// same requirement, which also takes the previous release identity, D37).
+    var verifyInstalled: (URL) -> Bool = CodeSignature.isDauInputMethod
     /// The code directory hashes of a bundle, every architecture; nil when unreadable.
     var codeHashes: (URL) -> CodeHashes? = CodeSignature.codeHashes
     /// Default: the user's Trash (`FileManager.trashItem`).
@@ -510,7 +515,7 @@ struct InputMethodBundleFiles: InputMethodFiles {
     var isInstalled: Bool {
         (try? installedURL.checkResourceIsReachable()) == true
     }
-    var installedIsGenuine: Bool { !isInstalled || verify(installedURL) }
+    var installedIsGenuine: Bool { !isInstalled || verifyInstalled(installedURL) }
     var installedMatchesEmbedded: Bool {
         guard let installed = codeHashes(installedURL), let embedded = codeHashes(embeddedURL) else { return false }
         return CodeSignature.sameCode(installed, embedded)
@@ -555,7 +560,7 @@ struct InputMethodBundleFiles: InputMethodFiles {
         defer { try? fm.removeItem(at: staging) }
         try fm.copyItem(at: embeddedURL, to: staging)
         Quarantine.clear(staging)
-        guard verify(staging) else { throw InputMethodInstallerError.invalidSignature }
+        guard verifyStaged(staging) else { throw InputMethodInstallerError.invalidSignature }
         // One atomic swap: the running process never sees half a bundle. The old bundle
         // ends up at `staging` and is removed by the defer above. The rename itself says
         // whether the destination is there (ENOENT), so nothing can slip in between a
@@ -596,6 +601,24 @@ enum Quarantine {
     }
 }
 
+/// The signing teams whose input method is Dấu's own, for a host app of `hostTeamID` (D37).
+struct InputMethodSigningTeams: Equatable, Sendable {
+    /// The Personal Team that signed releases before the switch to Developer ID (D6). A
+    /// host of another team takes an input method of this team for an older build of
+    /// itself (D37, "Danh tính phát hành trước").
+    static let previousReleaseTeamID = "M58DANM3ZP"
+
+    let hostTeamID: String
+
+    /// The copy the app stages is its own embedded input method: the host's team only.
+    var staged: [String] { [hostTeamID] }
+
+    /// An installed input method may also be the previous release identity's.
+    var installed: [String] {
+        hostTeamID == Self.previousReleaseTeamID ? [hostTeamID] : [hostTeamID, Self.previousReleaseTeamID]
+    }
+}
+
 /// Code signature checks of the input method before it is installed.
 enum CodeSignature {
     /// Valid signature (all architectures, nested code) that chains to Apple, signed by
@@ -603,22 +626,35 @@ enum CodeSignature {
     /// comparison of two Team IDs: two ad-hoc signatures both have no Team ID, and a team's
     /// other code (another app of the same team) has another identifier.
     static func isValidAndSameTeam(_ url: URL) -> Bool {
-        guard let ours = hostTeamID(),
+        isValid(url, signedByOneOf: \.staged)
+    }
+
+    /// The same requirement, with the teams of `InputMethodSigningTeams.installed`: the
+    /// check of the input method already in ~/Library/Input Methods.
+    static func isDauInputMethod(_ url: URL) -> Bool {
+        isValid(url, signedByOneOf: \.installed)
+    }
+
+    private static func isValid(_ url: URL, signedByOneOf teams: (InputMethodSigningTeams) -> [String]) -> Bool {
+        guard let host = hostTeamID(),
               let identifier = InputMethodBundleFiles.info(at: InputMethodBundleFiles.standardEmbeddedURL)?.bundleID else {
             installLogger.error("event=signature-no-host-identity")
             return false
         }
-        return isValid(url, requirement: requirementText(identifier: identifier, teamID: ours))
+        return isValid(url, requirement: requirementText(identifier: identifier,
+                                                         teamIDs: teams(InputMethodSigningTeams(hostTeamID: host))))
     }
 
-    /// The requirement the installed input method must meet: Apple-issued certificate
-    /// (Developer ID or Apple Development), leaf certificate of `teamID`, `identifier`.
-    /// nil when either value cannot be quoted safely.
-    static func requirementText(identifier: String, teamID: String) -> String? {
+    /// The requirement an input method must meet: Apple-issued certificate (Developer ID
+    /// or Apple Development), leaf certificate of one of `teamIDs`, `identifier`. nil when
+    /// there is no team or a value cannot be quoted safely.
+    static func requirementText(identifier: String, teamIDs: [String]) -> String? {
         let allowed = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-_")
-        guard !identifier.isEmpty, !teamID.isEmpty,
-              identifier.allSatisfy(allowed.contains), teamID.allSatisfy(allowed.contains) else { return nil }
-        return "anchor apple generic and identifier \"\(identifier)\" and certificate leaf[subject.OU] = \"\(teamID)\""
+        func quotable(_ value: String) -> Bool { !value.isEmpty && value.allSatisfy(allowed.contains) }
+        guard quotable(identifier), !teamIDs.isEmpty, teamIDs.allSatisfy(quotable) else { return nil }
+        let leaves = teamIDs.map { "certificate leaf[subject.OU] = \"\($0)\"" }
+        let team = leaves.count == 1 ? leaves[0] : "(" + leaves.joined(separator: " or ") + ")"
+        return "anchor apple generic and identifier \"\(identifier)\" and \(team)"
     }
 
     /// Whether the bundle at `url` is signed with get-task-allow: a Debug build (D8: Release
@@ -655,7 +691,7 @@ enum CodeSignature {
     /// The code directory hash (cdhash) of every architecture slice of the bundle at
     /// `url` (D37). nil when the bundle, its executable or one slice's signature cannot be
     /// read (not signed): nothing is claimed about such a bundle. The hash is read, the
-    /// signature is not validated here (`isValidAndSameTeam` does that).
+    /// signature is not validated here (`isValidAndSameTeam` and `isDauInputMethod` do that).
     static func codeHashes(of url: URL) -> CodeHashes? {
         guard let slices = MachOSlices.read(bundle: url), !slices.isEmpty else { return nil }
         var hashes: CodeHashes = [:]
@@ -809,11 +845,13 @@ struct ApplicationsOwnerCopy: OwnerCopyCheck {
 
 /// The App Group data (settings and app rules, `SettingsStore`).
 enum SharedData {
-    /// Deletes the App Group suite and tells listeners. True on success.
+    /// Deletes the App Group suite and the app's copy of it (`SettingsBackup`), then
+    /// tells listeners. True on success.
     @MainActor
     static func delete() -> Bool {
         guard let suite = SettingsStore.appGroupIdentifier(),
               let store = SettingsStore.appGroup() else { return false }
+        SettingsBackup(defaults: .standard, groupIdentifier: suite).remove()
         store.defaults.removePersistentDomain(forName: suite)
         store.postChange()
         return store.defaults.data(forKey: SettingsStore.settingsKey) == nil

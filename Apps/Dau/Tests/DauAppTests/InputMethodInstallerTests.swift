@@ -803,7 +803,7 @@ struct InputMethodInstallerTests {
         var verified: [URL] = []
         var trashed: [URL] = []
         var files = InputMethodBundleFiles(embeddedURL: embedded, directory: dir)
-        files.verify = { verified.append($0); return true }
+        files.verifyStaged = { verified.append($0); return true }
         files.trash = { trashed.append($0); try fm.removeItem(at: $0) }
 
         #expect(!files.isInstalled)
@@ -824,7 +824,7 @@ struct InputMethodInstallerTests {
         #expect(verified.count == 2 && verified.allSatisfy { $0.lastPathComponent.hasPrefix(".DauInputMethod-staging-") })
 
         // A bad signature leaves the installed bundle as it was.
-        files.verify = { _ in false }
+        files.verifyStaged = { _ in false }
         #expect(throws: InputMethodInstallerError.invalidSignature) { try files.installEmbedded() }
         #expect(files.installed?.version == "2")
         #expect(try fm.contentsOfDirectory(atPath: dir.path) == ["DauInputMethod.app"])
@@ -858,7 +858,7 @@ struct InputMethodInstallerTests {
         let dir = root.appendingPathComponent("Input Methods")
         var files = InputMethodBundleFiles(embeddedURL: embedded, directory: dir)
         var staged = 0
-        files.verify = { _ in staged += 1; return true }
+        files.verifyStaged = { _ in staged += 1; return true }
 
         // Nothing installed: nothing staged, the folder is not even made.
         #expect(try files.replaceInstalledWithEmbedded() == false)
@@ -876,7 +876,7 @@ struct InputMethodInstallerTests {
         try makeBundle(files.installedURL, version: "1")
         let installedURL = files.installedURL
         var stagedNames: [String] = []
-        files.verify = { url in
+        files.verifyStaged = { url in
             stagedNames.append(url.lastPathComponent)
             try? fm.removeItem(at: installedURL)
             return true
@@ -891,6 +891,29 @@ struct InputMethodInstallerTests {
         try files.installEmbedded()
         #expect(files.installed?.version == "2")
         #expect(try fm.contentsOfDirectory(atPath: dir.path) == ["DauInputMethod.app"])
+    }
+
+    @Test("files: the installed copy is checked with the installed teams' check, the staged copy with the host team's (D37, previous release identity)")
+    func filesCheckInstalledAndStagedApart() throws {
+        let fm = FileManager.default
+        let root = fm.temporaryDirectory.appendingPathComponent("dau-installer-\(UUID().uuidString)")
+        defer { try? fm.removeItem(at: root) }
+        let embedded = root.appendingPathComponent("App/DauInputMethod.app")
+        let contents = embedded.appendingPathComponent("Contents")
+        try fm.createDirectory(at: contents.appendingPathComponent("MacOS"), withIntermediateDirectories: true)
+        try PropertyListSerialization.data(fromPropertyList: ["CFBundleIdentifier": imID], format: .xml, options: 0)
+            .write(to: contents.appendingPathComponent("Info.plist"))
+        var files = InputMethodBundleFiles(embeddedURL: embedded, directory: root.appendingPathComponent("Input Methods"))
+        var installedChecks: [URL] = [], stagedChecks: [URL] = []
+        files.verifyInstalled = { installedChecks.append($0); return true }
+        files.verifyStaged = { stagedChecks.append($0); return true }
+
+        try files.installEmbedded()
+        #expect(installedChecks.isEmpty)
+        #expect(stagedChecks.count == 1)
+        #expect(files.installedIsGenuine)
+        #expect(installedChecks.map(\.path) == [files.installedURL.path])
+        #expect(stagedChecks.count == 1)
     }
 }
 

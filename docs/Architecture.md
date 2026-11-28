@@ -95,6 +95,11 @@ Các phím còn đi thẳng tới app (trả `false`) chỉ gồm ⌫ (bước 3
   - `SettingsStore` lưu toàn bộ cài đặt thành một JSON dưới khoá `settings` trong UserDefaults suite = App Group (`DauAppGroupIdentifier` trong Info.plist, giá trị `$(TeamIdentifierPrefix)$(BUNDLE_ID_PREFIX).shared`).
   - Sau mỗi lần lưu, nó phát thông báo Darwin `<suite>.settingsDidChange`. `synchronize()` của suite này trả false dù ghi thành công, nên Dấu không dùng giá trị đó làm dấu hiệu lỗi.
   - `observeChanges` giúp bộ gõ áp dụng thay đổi ngay. Ai cũng phát được thông báo này, nên bộ gõ gộp các thông báo đến dồn thành một lần đọc (`ChangeCoalescer`, sau `ChangeCoalescer.delay`).
+- `SettingsBackup` giữ bản sao cài đặt khi App Group đổi theo Team ID (D24 (Tên và định danh), D7 (Cập nhật và loại bản dựng), ý "Chuyển danh tính ký"):
+  - App chủ giữ bản sao mọi khoá Dấu ghi trong suite App Group (`SettingsStore.storedKeys`) trong UserDefaults riêng của nó, theo bundle ID, kèm định danh của group đã chép. `SettingsModel` làm mới bản sao mỗi lần đọc và lưu cài đặt. Group chưa có cài đặt thì bản sao giữ nguyên.
+  - Lúc mở, `SettingsModel.appGroup` gọi `SettingsBackup.carryOver` trước khi đọc cài đặt. Hàm này chép bản sao vào group hiện tại một lần, phát thông báo đổi cài đặt và ghi nhật ký, chỉ khi group chưa có cài đặt của Dấu và bản sao lấy từ một group khác (`SettingsCarryOver.decide`). Group đã có cài đặt thì không bao giờ bị ghi đè.
+  - App chủ không đọc thẳng container của group cũ, vì từ macOS 15 việc đọc container group của team khác có thể làm macOS hiện hộp thoại xin quyền.
+  - Bộ gõ chạy sandbox nên không giữ bản sao; nó chỉ đọc group của chính nó.
 - `CompatibilityList` (D7 (Cập nhật và loại bản dựng), D13) là danh sách app mang nhãn "Đề xuất".
   - Mỗi mục có các bundle ID của một app, tên, cờ `suggestUnderline` và ghi chú cho người bảo trì; ghi chú không hiện lên giao diện (N5 (Chỉ hứa điều đã kiểm chứng)). Cả danh sách có một `version`.
   - Giải mã dễ dãi (D18). Khoá lạ bị bỏ qua. Mục hỏng hoặc không có bundle ID bị bỏ mà không làm mất các mục khác. File hỏng thành danh sách rỗng.
@@ -357,7 +362,7 @@ Phần này nằm ở `InputMethodInstaller.swift` và làm theo `docs/research/
 **Cài và thay** chỉ chạy ở bản chủ, từ bước 2 của onboarding, từ nút "Cài lại" và từ `reconcile`:
 
 1. App chép `Contents/Library/Input Methods/DauInputMethod.app` vào một thư mục tạm ẩn, không có đuôi `.app`, nằm cùng thư mục đích (`.DauInputMethod-staging-<uuid>`), rồi gỡ `com.apple.quarantine`.
-2. App kiểm chữ ký của bản tạm (`CodeSignature.isValidAndSameTeam`).
+2. App kiểm chữ ký của bản tạm (`CodeSignature.isValidAndSameTeam`). Bản tạm là bản nhúng, nên chỉ Team ID của app chủ đạt.
 3. App đổi chỗ bản tạm vào `DauInputMethod.app` bằng một lần `renamex_np(RENAME_SWAP)`. Nếu đích không có (`ENOENT`), `InputMethodFiles.installEmbedded` chuyển bản tạm vào bằng `RENAME_EXCL`, còn `InputMethodFiles.replaceInstalledWithEmbedded` (đường thay) không cài, xoá bản tạm và trả về sai.
 4. App xoá bản cũ, dừng tiến trình cũ nếu nó đang chạy (mục "Thoát theo yêu cầu của app chủ"), rồi gọi `TISRegisterInputSource`. App không bật và không chọn nguồn nào.
 
@@ -372,7 +377,7 @@ Phần này nằm ở `InputMethodInstaller.swift` và làm theo `docs/research/
 
 Vòng chờ kiểm việc huỷ task ở mỗi lượt: `OnboardingFlow` giữ task của `enable()`. "Thử lại" huỷ task đó. Mã trả về của TIS không bao giờ coi là bằng chứng. App không tắt được Dấu, vì `TISDisableInputSource` gọi từ app bị macOS chặn (`docs/research/InputMethodInstall.md` mục 5.2). Trạng thái "đã bật" (`status()`, `InputSourceStatus.query`) là mục lưu, không phải cờ enabled của TIS (D37).
 
-**Kiểm bộ gõ đã cài:** mỗi lần mở app và mỗi lần app lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isValidAndSameTeam`, yêu cầu mã ở D37); chỉ bản chủ mới hỏi. Nếu không đạt, `TamperedBanner` hiện banner "Cài lại". Bấm nút đó thì app cài lại bản nhúng. Cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp màn hình: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật. Lượt `reconcile` lúc mở app không chạy.
+**Kiểm bộ gõ đã cài:** mỗi lần mở app và mỗi lần app lên trước, `InputMethodActions.checkInstalled` hỏi `installedIsGenuine` (`CodeSignature.isDauInputMethod`, yêu cầu mã ở D37); chỉ bản chủ mới hỏi. Yêu cầu này nhận Team ID trong `InputMethodSigningTeams.installed`. Khi app chủ mang Team ID khác `InputMethodSigningTeams.previousReleaseTeamID`, danh sách đó có thêm Team ID này, nên bộ gõ của danh tính phát hành trước đạt và `reconcile` thay nó như một bản cũ cùng Team ID (D37, ý "Danh tính phát hành trước"). Nếu không đạt, `TamperedBanner` hiện banner "Cài lại". Bấm nút đó thì app cài lại bản nhúng. Cờ Debug `--tampered` (`DebugCapture.tampered`) ghim banner để chụp màn hình: `InputMethodActions.forceTampered` làm `checkInstalled` không đọc bộ gõ thật. Lượt `reconcile` lúc mở app không chạy.
 
 **Giữ bộ gõ đã cài trùng bản nhúng:** lúc app mở, `InputMethodActions.startLaunchReconcile` gọi `SystemInputMethodInstaller.reconcile` và gọi `checkInstalled` khi xong. `reconcile` xét các trường hợp theo thứ tự sau và trả `ReconcileOutcome`:
 
@@ -395,7 +400,7 @@ Vòng chờ kiểm việc huỷ task ở mỗi lượt: `OnboardingFlow` giữ t
 | 3 | `replaced` | Bộ gõ đã thay bằng bản nhúng. |
 | 4 | `not-installed` | Bộ gõ chưa được cài hoặc vừa bị gỡ trong lúc lệnh chạy; lệnh không làm gì. |
 | 5 | `not-owner-copy` | Bản đang chạy không phải bản chủ; lệnh không làm gì. |
-| 6 | `bad-signature` | Bộ gõ đã cài sai chữ ký hoặc khác Team ID; lệnh không thay. |
+| 6 | `bad-signature` | Bộ gõ đã cài sai chữ ký hoặc mang Team ID ngoài `InputMethodSigningTeams.installed`; lệnh không thay. |
 | 7 | `skipped` | Bản đã cài khác bundle ID hoặc không đọc được; lệnh không thay. |
 
 Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/install-app.sh` gọi lệnh này từ bản vừa đặt vào `/Applications`, nên script không tự chép bộ gõ. Với script, mã 0 và 3 là đạt; mã 4 không phải lỗi, vì lần cài đầu đi qua nút "Bật Dấu"; mã khác làm script thoát với mã khác 0.
@@ -404,7 +409,7 @@ Mã 2 để trống cho dòng lệnh sai, như các lệnh Debug. `scripts/dev/i
 
 1. `prepareUninstall` mở thẳng danh sách Input Sources (`SystemSettings.openInputSources`, URL `…Keyboard-Settings.extension?InputSources`; trên macOS 27.2 sheet Edit… đã mở sẵn). Bước này không chọn bàn phím nào và không tắt gì. Sheet đọc lại `InputMethodStatus.selected` khi hiện, khi cửa sổ sheet thành key lại và khi nguồn đang chọn đổi, để hiện hoặc ẩn câu nhắc rằng nút "–" có thể bị mờ.
 2. `waitUntilRemovedFromInputSources` thăm dò mục lưu của Dấu (`storedEnabledIDs`) cho tới khi nó rỗng và có thể huỷ được. Trong lúc đó `UninstallRemoveSheet` hiện trên cửa sổ Cài đặt.
-3. `finishUninstall` chỉ chạy khi mục lưu đã rỗng; nếu không, kết quả là `stillListed`. Bước này chuyển `~/Library/Input Methods/DauInputMethod.app` vào Thùng rác rồi dừng bộ gõ. Nếu người dùng đã tick ô, nó xoá suite App Group (`removePersistentDomain`) và phát thông báo đổi cài đặt. Bước này xoá bộ đệm của System Settings (`SystemSettingsControl.clearKeyboardCache`) nhưng không đụng tới bộ đệm của các app khác, rồi đọc lại hệ thống để báo kết quả.
+3. `finishUninstall` chỉ chạy khi mục lưu đã rỗng; nếu không, kết quả là `stillListed`. Bước này chuyển `~/Library/Input Methods/DauInputMethod.app` vào Thùng rác rồi dừng bộ gõ. Nếu người dùng đã tick ô, nó xoá suite App Group (`removePersistentDomain`) cùng bản sao của app chủ (`SettingsBackup.remove`) rồi phát thông báo đổi cài đặt. Bước này xoá bộ đệm của System Settings (`SystemSettingsControl.clearKeyboardCache`) nhưng không đụng tới bộ đệm của các app khác, rồi đọc lại hệ thống để báo kết quả.
 
 Sau ba bước đó, `InputMethodActions.uninstall` chuyển chính Dấu.app (`Bundle.main.bundleURL`) vào Thùng rác bằng `FileManager.trashItem`. Hàm dựng sẵn cả hai dạng alert kết quả (`UninstallAlert.done`) trước khi chuyển, vì app đã vào Thùng rác thì `Bundle.main` không còn tìm thấy bảng chuỗi. Nếu không chuyển được, nút của alert mở Finder chọn sẵn app (`NSWorkspace.activateFileViewerSelecting`). Cả hai trường hợp đều kết thúc bằng việc app thoát.
 

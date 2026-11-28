@@ -101,7 +101,7 @@ Artboard: [OnboardingEnableFailed](canvas/OnboardingEnableFailed.png).
 
 Artboard: [OnboardingEnableError](canvas/OnboardingEnableError.png).
 
-- Một màn "Chưa cài được Dấu" dùng cho hai trường hợp, với hai cách xử lý. Trường hợp thứ nhất là lỗi khi chép, khi kiểm chữ ký hay khi đăng ký. Trường hợp thứ hai là bộ gõ đã cài bị thay: chữ ký không hợp lệ, không do Apple cấp, khác Team ID với app hoặc sai định danh bộ gõ (D37).
+- Một màn "Chưa cài được Dấu" dùng cho hai trường hợp, với hai cách xử lý. Trường hợp thứ nhất là lỗi khi chép, khi kiểm chữ ký hay khi đăng ký. Trường hợp thứ hai là bộ gõ đã cài bị thay: chữ ký không hợp lệ, không do Apple cấp, khác Team ID với app (trừ bộ gõ của danh tính phát hành trước, mà bản chủ thay như bản cũ của chính nó) hoặc sai định danh bộ gõ (D37).
 - Với trường hợp bộ gõ bị thay, màn này thay cho màn "Trước khi bấm" khi bản đang chạy là bản chủ và bộ gõ đã cài nhưng chưa bật. Bản không phải bản chủ không kiểm chữ ký. Nếu Dấu đã bật thì bước 2 vẫn là "Đã bật". Banner của cửa sổ Cài đặt lo việc này. Dấu kiểm lại mỗi khi cửa sổ được kích hoạt; nếu phát hiện trong lúc đang chờ Allow thì Dấu huỷ lần chờ.
 - Dòng "Chi tiết" là mô tả thật của lỗi. Người dùng chọn được để chép.
 - "Cài lại" làm cùng một việc cho mọi nguyên nhân (chép lỗi, đăng ký lỗi, bộ gõ bị thay): nó chép lại bản nhúng của app rồi đăng ký, nhưng không bật. Nếu cài xong và chữ ký đúng, màn "Trước khi bấm" hiện ra. Dấu chỉ bật khi người dùng bấm "Bật Dấu". Nếu vẫn còn lỗi thì màn này vẫn hiện, với "Chi tiết" mới. Bản không phải bản chủ không chép (D37), nên với bản đó "Cài lại" chỉ đăng ký và bật lại bộ gõ đã cài.

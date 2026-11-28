@@ -234,7 +234,7 @@ struct CodeHashTests {
         #expect(CodeSignature.codeHashes(of: root.appendingPathComponent("missing.app")) == nil)
 
         var files = InputMethodBundleFiles(embeddedURL: embedded, directory: root.appendingPathComponent("Input Methods"))
-        files.verify = { _ in true }   // ad-hoc signed: the team check is not what this test is about
+        files.verifyStaged = { _ in true }   // ad-hoc signed: the team check is not what this test is about
         #expect(!files.installedMatchesEmbedded)   // nothing installed
         try files.installEmbedded()
         #expect(files.installedMatchesEmbedded)

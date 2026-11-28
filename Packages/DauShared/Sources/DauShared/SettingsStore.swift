@@ -16,6 +16,8 @@ public struct SettingsStore: @unchecked Sendable {
     public static let appGroupInfoKey = "DauAppGroupIdentifier"
     /// UserDefaults key holding the JSON-encoded `DauSettings`.
     public static let settingsKey = "settings"
+    /// Every key Dấu writes in the suite: what `SettingsBackup` copies and carries over.
+    public static let storedKeys = [settingsKey]
 
     public let defaults: UserDefaults
     /// Darwin notification posted after every `save`. Observers must re-read with
@@ -59,6 +61,16 @@ public struct SettingsStore: @unchecked Sendable {
             return .defaults
         }
         return settings
+    }
+
+    /// The values of `storedKeys` present in the suite, as stored; empty when Dấu has
+    /// stored nothing there.
+    public var storedValues: [String: Any] {
+        var values: [String: Any] = [:]
+        for key in SettingsStore.storedKeys {
+            if let value = defaults.object(forKey: key) { values[key] = value }
+        }
+        return values
     }
 
     /// Saves `settings` and posts `changeNotificationName`.
