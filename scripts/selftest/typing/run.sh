@@ -2234,8 +2234,8 @@ run_obsidian() {
 # steps check the window title, the one thing it always reports. Seen in Notion
 # 7.44.1, English UI:
 # - ⌘N shows a menu (New page, New chat, …); "1" picks New page, which opens in a new tab of
-#   the front window, titled "New page", in Private, the focus in its title. A title that
-#   stays the old one means the menu did not come (Notion still loading): stop.
+#   the front window, titled "New page", in Private, the focus in its title. From a titled page,
+#   a title that stays the old one means the menu did not come (Notion still loading): stop.
 # - The title is pasted (the input source must not touch it), Return moves the caret into
 #   the empty body, and the window title becomes the page's.
 # - The page menu is the "•••" pop-up button "Actions" 24 pt from the window's right edge,
@@ -2249,14 +2249,20 @@ notion_paste() { # text: pasted into Notion's focus through the clipboard (resto
 }
 notion_title_is() { front_ok Notion "$1"; }
 notion_front_title() { osascript -e 'tell application "System Events" to tell process "Notion" to get name of window 1' 2>/dev/null; }
-# The page menu's "Move to Trash" in the language Notion shows; told apart by the name of
-# Notion's File menu, the only text checked here in each language (Notion 7.43, macOS 27).
-notion_trash_label() {
-  case "$(osascript -e 'tell application "System Events" to tell process "Notion" to get name of menu bar item 3 of menu bar 1' 2>/dev/null)" in
-    Tệp) print -r -- "Chuyển vào Thùng rác" ;;
-    *) print -r -- "Move to Trash" ;;
+# The language Notion shows, told apart by the name of its File menu, the only text checked
+# in each language (Notion 7.43, macOS 27); prints the page menu's "Move to Trash" and the
+# title of a page that has none yet.
+notion_ui_text() { # trash | untitled
+  local vi=0
+  [[ "$(osascript -e 'tell application "System Events" to tell process "Notion" to get name of menu bar item 3 of menu bar 1' 2>/dev/null)" == "Tệp" ]] && vi=1
+  case "$1:$vi" in
+    trash:1) print -r -- "Chuyển vào Thùng rác" ;;
+    trash:0) print -r -- "Move to Trash" ;;
+    untitled:1) print -r -- "Trang mới" ;;
+    untitled:0) print -r -- "New page" ;;
   esac
 }
+notion_trash_label() { notion_ui_text trash; }
 # The window on the main display, inside it, for the run: the page menu's "•••" sits at the
 # window's top right, and a window wider than the display or on another display puts it
 # where the click cannot reach. NOTION_FRAME keeps the frame to put back.
@@ -2308,26 +2314,39 @@ notion_trash() { # title the page has now
   fi
 }
 run_notion() {
-  local before
+  local before untitled
   open -a Notion
   wait_until -i 0.5 30 front_ok Notion ""
   notion_fit_window
   before="$(notion_front_title)"
+  untitled="$(notion_ui_text untitled)"
   guarded Notion "" 'tell application "System Events"
     keystroke "n" using {command down}
     delay 1
     keystroke "1"
-  end tell' >/dev/null || { notion_restore_window; return 0; }
-  # A new page: the window title changes from the page in front before. Its name follows
-  # Notion's language ("New page", "Trang mới"), so only the change is checked.
+  end tell' >/dev/null || {
+    # Notion lost the front after ⌘N may have run: a page that is new is in front.
+    [[ "$(notion_front_title)" == "$untitled" && "$before" != "$untitled" ]] && notion_trash "$untitled"
+    notion_restore_window
+    return 0
+  }
+  # A new page is titled "Untitled" in Notion's language ("New page", "Trang mới"). From a
+  # page with another title the change shows it. From an untitled page the title does not
+  # change (the window title is the one thing the tree always reports, and the tab count is
+  # not in it), so ⌘N is taken as done and the next step decides: the title pasted into the
+  # focused field must become the window's, or the page is moved to Trash.
   local page=""
-  notion_new_page() { page="$(notion_front_title)"; [[ -n "$page" && "$page" != "$before" ]]; }
+  notion_new_page() {
+    page="$(notion_front_title)"
+    [[ -n "$page" && ( "$page" != "$before" || "$page" == "$untitled" ) ]]
+  }
   if ! wait_until 5 notion_new_page; then
     log_error "Dừng: Notion chưa mở trang mới (cửa sổ vẫn là \"$before\"); có thể Notion còn đang tải — không gõ gì"
     stop_run front "Notion chưa mở trang mới"
     notion_restore_window
     return 0
   fi
+  [[ "$page" == "$untitled" ]] && sleep 1  # Fixed: a title that stays untitled gives no signal that the new tab drew
   sleep 0.5  # Fixed: the title field takes keys once the page is drawn; nothing to read
   notion_paste "$SELFTEST_TITLE"
   sleep 0.5
