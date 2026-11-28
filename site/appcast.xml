@@ -5,5 +5,14 @@
         <link>https://dau.codefastlabs.com/appcast.xml</link>
         <description>Bản cập nhật của Dấu, bộ gõ tiếng Việt cho macOS.</description>
         <language>vi</language>
+        <item>
+            <title>0.0.1</title>
+            <pubDate>Sat, 28 Nov 2026 03:21:05 +0000</pubDate>
+            <sparkle:channel>beta</sparkle:channel>
+            <sparkle:version>7490</sparkle:version>
+            <sparkle:shortVersionString>0.0.1</sparkle:shortVersionString>
+            <sparkle:minimumSystemVersion>14.0</sparkle:minimumSystemVersion>
+            <enclosure url="https://github.com/codefastlabs/dau/releases/download/v0.0.1-beta.1/Dau-0.0.1-beta.1.dmg" length="5938146" type="application/octet-stream" sparkle:edSignature="kVMfZbo1vIv/wFJeOYpNun7NqTKeFJij8YsnPKK3bqTdItYUlNT4Cl8Wj8Y7P5waayO9u+uRnAyTZOym+DgjAw=="/>
+        </item>
     </channel>
 </rss>
