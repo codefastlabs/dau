@@ -16,7 +16,7 @@ Bảng này ghi thuật ngữ dùng trong chuỗi giao diện của Dấu (Strin
 | input source | nguồn đầu vào | Đây là khái niệm của macOS; cách gọi theo D38. |
 | Input menu | menu nguồn đầu vào | Đây là menu nguồn đầu vào trên thanh menu. |
 | input method | bộ gõ | Đây là phần mềm gõ (Dấu, OpenKey…). Cụm "bộ gõ Dấu" chỉ tiến trình bộ gõ, khác với app Dấu. |
-| official build | bản phát hành | Đây là bản do CI dựng, ký Developer ID và công bố. Từ này thuộc trục "ai dựng và ký" của D7 (Cập nhật và loại bản dựng) và D25 (Nhận diện). |
+| official build | bản phát hành | Đây là bản do CI dựng, ký bằng danh tính phát hành của D6 (Phát hành) và công bố. Từ này thuộc trục "ai dựng và ký" của D7 (Cập nhật và loại bản dựng) và D25 (Nhận diện). |
 | development build | bản phát triển | Đây là mọi bản không do CI ký: Debug, Release tự dựng và bản fork (D7). |
 | Debug / Release | bản Debug / bản Release | Đây là cấu hình build của Xcode. Tên giữ nguyên (D7). |
 | Beta channel / Stable channel | kênh Beta / kênh Chính thức | Người dùng chọn kênh ở trang Cập nhật & hỗ trợ (D7). |

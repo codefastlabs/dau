@@ -97,6 +97,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 18/11/2026 (người dùng chốt, theo D7 cùng ngày): cask và nút "Tải về" trên trang web theo giai đoạn như kênh mặc định. Bản trước, nguyên văn: "khi chỉ có một kênh (D7 (Cập nhật và loại bản dựng)), cask trỏ vào bản mới nhất đã công bố, kể cả beta; khi có kênh Beta, cask chỉ trỏ vào bản ổn định."
 
+- 28/11/2026 (chủ dự án chốt trong chat): beta đầu tiên ra trước khi có Developer ID, ký Personal Team và không notarize; bản chính thức đầu tiên chờ một beta ký Developer ID. Bản trước, nguyên văn: "Bản phát hành là DMG ký Developer ID và notarize, đăng trên GitHub Releases."; mục lục: "Dấu phát hành theo GPLv3 dưới dạng DMG đã ký và notarize."
+
 ### D7. Cập nhật và loại bản dựng
 
 - Tên cũ: "Cập nhật".
@@ -111,6 +113,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 17/11/2026 (người dùng đồng ý đề xuất của phiên chính): thêm "Hệ quả đã chấp nhận" về ⌘Q giữa lúc cài (Sparkle cài lúc thoát mà không mở lại Dấu); app-ui-dev phát hiện khi đọc `SPUUserDriver.h` lúc nối Sparkle. Phương án đã loại: thêm mã ép mở lại Dấu sau khi cài.
 
 - 18/11/2026 (người dùng chốt trong chat): hai kênh Beta và Chính thức từ beta đầu tiên, người dùng chọn trong app; kênh mặc định theo giai đoạn lúc cài, tức chưa có bản chính thức thì Beta, đã có thì Chính thức, sau đó chỉ người dùng đổi; lựa chọn Chính thức hiện nhưng tắt khi appcast chưa có bản chính thức. Đổi từ ngữ cho ba trục loại bản: "bản chính thức" (bản CI ký) thành "bản phát hành", "bản ổn định" thành "bản chính thức", "bản thử đầu" thành "beta đầu tiên". Phương án đã loại: giữ một kênh tới khi có tín hiệu cần kênh Beta; nhịp phát hành cố định. Bản trước, nguyên văn: "Sparkle 2 nằm trong app chủ, appcast ký EdDSA, một kênh. Kênh Beta và phát hành theo đợt để sau bản thử đầu."; "Khi có kênh Beta, người dùng bật kênh đó trong app; không có cask Homebrew riêng cho Beta (D6 (Phát hành))."; "Kênh: một kênh; Ổn định/Beta khi có kênh Beta, chỉ ở bản chính thức."; các câu khác: lịch sử git của `docs/Decisions.md` (commit này).
+
+- 28/11/2026 (chủ dự án chốt, cùng D6): bản phát hành định nghĩa theo quy trình dựng và danh tính phát hành của D6; thêm ý "Chuyển danh tính ký". Bản trước, nguyên văn: "Theo người ký, **bản phát hành** là bản ký Developer ID của codefastlabs, đã notarize và chỉ dựng bằng quy trình phát hành trên CI. Mọi bản khác (ký Personal Team, bản người khác tự build hay bản fork) là **bản phát triển**."; "Bản phát triển không bao giờ bị Sparkle thay bằng một bản khác Team ID."
 
 ### D8. Không telemetry
 
@@ -249,6 +253,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 11/11/2026 (sổ viết lại): Team ID dẫn D7 thay cho "ký Developer ID ở M7"; tên cask "chọn sau khi tra" thành "chưa chọn"; thêm luật "mọi bản phải ký bằng một Team ID" từ câu hỏi đã trả lời "App Group với bản ký ad-hoc".
 - 17/11/2026 (người dùng chốt, cùng D6): tên cask `dau`, trong tap `codefastlabs/homebrew-tap`. Bản trước: "Tên cask Homebrew: chưa chọn (câu hỏi mở "Tên Dấu")."
 
+- 28/11/2026 (cùng D6): bản phát hành dùng Personal Team tới khi chuyển sang Developer ID; thêm ý App Group đổi theo Team ID. Bản trước, nguyên văn: "Bản phát triển dùng Personal Team `M58DANM3ZP`, còn bản phát hành ký Developer ID (D7 (Cập nhật và loại bản dựng))."
+
 ### D25. Nhận diện
 
 - 05/11/2026: "Biểu tượng theo loại bản (người dùng chốt 05/11/2026, các loại bản ở D7)".
@@ -261,6 +267,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 18/11/2026 (người dùng chốt, sau phản biện của phiên chính): bản phát hành ghi số build trong ngoặc thay cho commit, khớp cửa sổ cập nhật của Sparkle; bản phát triển giữ commit; báo lỗi điền sẵn ghi cả số build và commit. Phương án đã loại: chỉ ghi số hiển thị (cửa sổ Sparkle vẫn hiện số build); ghi chữ "Beta" cạnh số phiên bản bằng cách đọc appcast (chữ phụ thuộc mạng). Bản trước, nguyên văn: "Kênh Beta dùng biểu tượng chuẩn. Số hiển thị không có chữ beta (D7); mỗi beta phân biệt bằng commit trong ngoặc ("Dấu 1.3.0 (a1b2c3d)") ở trang Cập nhật & hỗ trợ và trong báo lỗi điền sẵn (D8 (Không telemetry))."; D7: "Trong app, các beta phân biệt bằng commit trong ngoặc sau số hiển thị (D25 (Nhận diện))."
 
 - 18/11/2026 (người dùng chốt): bỏ dòng "Bản phát triển" ở trang Cập nhật & hỗ trợ của bản phát triển; biểu tượng và commit trong ngoặc đã phân biệt loại bản. Bản trước, nguyên văn: "…vì người đọc là người phát triển, và ghi "Bản phát triển" dưới tên và phiên bản ở trang Cập nhật & hỗ trợ; chỉ bản Debug…"; "biểu tượng và dòng "Bản phát triển" đã phân biệt"; ở "Vì sao": "Không ghi "Release": đặt cạnh "Bản phát triển" thì đọc thành hai từ đối nhau (phát triển / phát hành)."
+
+- 28/11/2026 (cùng D6): bằng chứng bản phát hành. Bản trước, nguyên văn: "Bằng chứng là chữ ký Developer ID."
 
 ### D26. Gõ đúp phím dấu
 
@@ -339,6 +347,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 - 16/11/2026: tên cũ "Cài đặt bộ gõ".
 
 - 17/11/2026 (người dùng duyệt, sau kiểm toán số đo; luật không đổi): ca Telegram ghi hai quan sát hợp lệ (menu, ⌃⌥Space). Bản trước, nguyên văn: "Telegram dựng bộ đệm lúc chưa có Dấu thì không chọn được Dấu, gõ vẫn ra bộ gõ khác."
+
+- 28/11/2026 (cùng D6): thêm ý "Danh tính phát hành trước" để bản cập nhật đầu tiên ký Developer ID không hiện banner "Cài lại"; câu về banner nói rõ chỉ khi khác Team ID. Bản trước, nguyên văn: "Người chuyển từ bản phát triển sang bản phát hành (khác Team ID) thấy banner một lần."
 
 ### D38. Chữ trên giao diện
 

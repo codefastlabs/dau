@@ -30,13 +30,12 @@ Kế hoạch của các mốc này nằm ở [`docs/history/Plans.md`](history/P
 Mục tiêu của M7 là đưa beta đầu tiên (tag `v0.1.0-beta.1`, D7 (Cập nhật và loại bản dựng)) tới tay người dùng qua DMG, Sparkle và Homebrew. Kế hoạch theo từng bước và việc của từng bên nằm ở [`docs/Progress.md`](Progress.md), mục "Kế hoạch M7". Phần đã xong và phần còn lại cũng ghi ở mục đó, nên danh sách dưới đây không đánh dấu từng dòng.
 
 - Trước khi phát hành, phiên làm việc chạy bài đo của D42. Trong cùng lượt đó, phiên ghi bộ nhớ (RSS) của tiến trình bộ gõ bản Release cạnh số của bản Debug, vì D42 ghi chênh lệch này là chưa đo.
-- Bản phát hành ký Developer ID, notarize và đóng thành DMG.
+- Beta đầu tiên ký Personal Team, không notarize và đóng thành DMG (D6 (Phát hành)). Trang bản phát hành trên GitHub và trang tải về ghi cách mở qua Gatekeeper bằng đúng nhãn đã đo.
 - Sparkle 2 dùng chữ ký EdDSA, appcast và loại bản theo D7. Có hai kênh, Beta và Chính thức:
   - Công tắc chọn kênh nằm ở trang Cập nhật & hỗ trợ. Artboard phải có trước.
   - Kênh mặc định theo giai đoạn lúc cài.
   - Mục beta trong appcast gắn kênh `beta`; quảng bá một bản là bỏ thẻ kênh của nó.
   - Cài bản mới xong, app gọi `SystemInputMethodInstaller.reconcile` để bộ gõ đã cài được thay bằng bản nhúng trong Dấu.app mới.
-- Trước khi notarize, phiên làm việc rà entitlement của bộ gõ và giữ `temporary-exception.mach-register.global-name`. Lần rà gần nhất là ngày 17/11/2026, ghi ở [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md), mục "Kết nối của IMKServer và sandbox".
 - GitHub Actions chạy test ở mỗi lần đẩy mã, build bản phát hành từ tag và chạy cả test hiệu năng của engine (`PerformanceTests`).
 - Homebrew cask `dau` có `auto_updates true` và nằm trong tap riêng `codefastlabs/homebrew-tap` (D6 (Phát hành)).
 - Báo lỗi dùng URL issue điền sẵn (D8 (Không telemetry)). Hàng "Ứng dụng gõ sai chữ" trong `UpdatesSupportView` làm theo artboard "Cập nhật & hỗ trợ".
@@ -47,7 +46,7 @@ Mục tiêu của M7 là đưa beta đầu tiên (tag `v0.1.0-beta.1`, D7 (Cập
 - `.gitignore` và `project.yml` sửa như sau. `project.yml` ghim phiên bản Sparkle chính xác, vì `Package.resolved` bị git bỏ qua. `.gitignore` thêm `*.p8`, `*.pem`, `*.key`, `*.p12`, `*.xcarchive`.
 - Biểu tượng thật dựng bằng Icon Composer để thay biểu tượng tạm ([`docs/Brand.md`](Brand.md), mục "Hiện trạng").
 - Phiên làm việc xuất các file nhận diện mà beta đầu tiên cần theo [`docs/Brand.md`](Brand.md): biểu tượng app, biểu tượng bản phát triển, ảnh template thanh menu, ảnh xem trước GitHub và nền DMG. Favicon, ảnh Open Graph và thẻ meta đi cùng website (M8).
-- M7 trả lời hai câu hỏi mở của [`docs/Decisions.md`](Decisions.md). Câu thứ nhất là hộp thoại App Group với bản ký Developer ID. Câu thứ hai là hộp thoại và việc đăng xuất khi bật bộ gõ với bản ký Developer ID mang quarantine.
+- M7 đo Gatekeeper, App Group và hộp thoại bật bộ gõ với bản phát hành ký Personal Team cài từ DMG mang quarantine. Hai câu hỏi mở về bản ký Developer ID chuyển sang mục "Chuyển sang Developer ID" bên dưới.
 - Trước khi phát hành, một người phải kiểm các điều sau:
   - VoiceOver và Tab ("Điều hướng bàn phím") đi được qua cửa sổ Cài đặt.
   - VoiceOver đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn. Theo D17 (Trợ năng), hệ thống có đọc, nhưng tên đọc ra chưa được xác nhận.
@@ -55,7 +54,17 @@ Mục tiêu của M7 là đưa beta đầu tiên (tag `v0.1.0-beta.1`, D7 (Cập
   - Khi máy để tiếng Anh hẳn, menu app và tên "Dấu" trong Finder hiện đúng.
   - Các sheet hiện đúng ở chế độ tối.
   - Danh sách "+" của System Settings có Dấu; điều này kiểm bằng mắt.
-- M7 xong khi bản `v0.1.0-beta.1` có trên GitHub Releases, cài được từ DMG và bằng `brew install --cask codefastlabs/tap/dau`, Sparkle cập nhật được từ một bản phát hành trước đó và chọn được kênh, đồng thời kiểm toán ĐẠT.
+- Đường chuyển sang Developer ID có thiết kế và test offline trước beta đầu tiên (D7, ý "Chuyển danh tính ký"): app chủ mang cài đặt sang App Group mới, bản chủ thay bộ gõ của danh tính trước mà không hiện banner (D37 (Cài bộ gõ)), và kết luận đọc tài liệu Sparkle về việc đổi danh tính ký.
+- M7 xong khi bản `v0.1.0-beta.1` có trên GitHub Releases, cài được từ DMG và bằng `brew install --cask codefastlabs/tap/dau`, Sparkle cập nhật được giữa hai bản thử và chọn được kênh, `dau.codefastlabs.com` phát appcast và cho tải DMG, tài liệu, canvas và trang không còn hứa notarize, đồng thời kiểm toán ĐẠT.
+
+### Chuyển sang Developer ID
+
+Việc này làm sau beta đầu tiên và phải xong trước bản chính thức đầu tiên (D6):
+- codefastlabs đăng ký Apple Developer Program, tạo chứng chỉ Developer ID Application và khoá App Store Connect API cho notarize, rồi nạp vào secret của GitHub ([`docs/Releasing.md`](Releasing.md), mục "Việc của người dùng").
+- Trước khi notarize, phiên làm việc rà entitlement của bộ gõ và giữ `temporary-exception.mach-register.global-name`. Lần rà gần nhất là ngày 17/11/2026, ghi ở [`docs/research/IMKAPINotes.md`](research/IMKAPINotes.md), mục "Kết nối của IMKServer và sandbox".
+- Beta đầu tiên ký Developer ID phải cập nhật được qua Sparkle từ một bản ký Personal Team trên máy thật, giữ cài đặt và không hiện banner "Cài lại". Lượt đó cũng đo việc app chủ của team mới thay bộ gõ của team cũ có bị bảo vệ App Management chặn không; nếu bị chặn thì bản Personal Team cuối cần khai `NSUpdateSecurityPolicy` cho Team ID mới ([`docs/research/ReleaseSigning.md`](research/ReleaseSigning.md)).
+- Lượt chuyển trả lời ba câu hỏi mở của [`docs/Decisions.md`](Decisions.md): hộp thoại App Group với bản ký Developer ID, hộp thoại và việc đăng xuất khi bật bộ gõ với bản ký Developer ID mang quarantine, và trạng thái bật của bộ gõ khi chữ ký đổi Team ID.
+- Trang tải về và trang bản phát hành bỏ hướng dẫn Gatekeeper cho bản mới khi bản đó đã notarize.
 
 ### Sau beta đầu tiên
 

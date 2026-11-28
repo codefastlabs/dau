@@ -4,16 +4,16 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 
 ## Trạng thái hiện tại
 
-M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. M7 (Phát hành) đang làm từ 17/11/2026, theo mục "Kế hoạch M7" bên dưới. M8 (Website) làm song song từ 24/11/2026, trong lúc M7 chờ bước 0.
+M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. M7 (Phát hành) đang làm từ 17/11/2026, theo mục "Kế hoạch M7" bên dưới: beta đầu tiên `v0.1.0-beta.1` ký Personal Team và không notarize (D6 (Phát hành), chủ dự án chốt 28/11/2026). M8 (Website) làm song song từ 24/11/2026 và lên `dau.codefastlabs.com` cùng beta đầu tiên.
 
-Chờ người dùng:
-- Bước 0 của kế hoạch M7: đăng ký Apple Developer Program trước tiên (việc lâu nhất).
+Chờ chủ dự án:
+- Bước 3 của kế hoạch M7: chứng chỉ `.p12`, khoá EdDSA của Sparkle, Vercel và DNS.
 
 Việc tiếp theo:
-- Bước 2 của kế hoạch M7, khi bước 0 xong (bước 1 xong 17/11).
-- M8 làm trước, không chờ bước 0 của M7 (người dùng chọn 24/11). Trang trong `site/` đã dựng và lên `main` ngày 24/11 theo D45 (Trang web) và `docs/research/WebsiteStack.md`; ba workflow Site, Test và CodeQL xanh trên commit cuối. Việc còn lại ở mục "Kế hoạch M8" bên dưới: lên tên miền cùng beta đầu tiên, các ô chờ bản phát hành và M7, đo lại bốn ứng dụng.
-- Không chờ bước 0: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
-- Không chờ bước 0: chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor, Safari sau ⇧⌥←), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình, xin giờ một lần.
+- Bước 2 của kế hoạch M7 (đường ký Personal Team trong script và CI, đường chuyển sang Developer ID), không chờ bước 3.
+- Bước 4 trở đi chờ bước 3.
+- Không chờ: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
+- Không chờ: chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor, Safari sau ⇧⌥←), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình.
 
 Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chưa rõ ảnh hưởng, chưa kiểm, giao diện, để sau). API IMK nào giúp được từng việc và phép đo rẻ nhất: [`docs/research/IMKCapabilities.md`](research/IMKCapabilities.md) mục "Hiện trạng" và mục 4.
 1. Google Docs (Chrome, Safari): thay tại chỗ sai vì trang luôn báo con trỏ ở `(1, 0)` (`docs/Compatibility.md` mục 5.10). Mọi hướng đã xét đều đã loại, kể cả tự gạch chân (gỡ ngày 26/11 vì Dấu tự đổi cách gõ mà người dùng không chọn); danh sách và lý do ở `docs/Decisions.md` mục "Đã cân nhắc và loại bỏ". Đây là giới hạn đã biết; chưa có bước kế cho tới khi có hướng mới không trái các nguyên tắc.
@@ -23,7 +23,7 @@ Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chư
 5. Gỡ dần mô hình app trong test (`LateDocument`: bộ đệm Chromium, ảnh chụp kiểu Firefox) theo luật "Tính offline trước, không dựng mô hình app" ở `CLAUDE.md`: mỗi lần sửa phần mã liên quan, test dựa trên mô hình được thay bằng test đơn vị logic của Dấu cộng lượt đo app thật. `Origin.word` đã gỡ cùng bản sửa Cursor.
 6. Sau khi cài lại bộ gõ, app đang có ô nhập không gửi `activateServer` cho tiến trình bộ gõ mới: phím vẫn được xử lý nhưng bộ gõ không biết app (`app=?` trong log), nên quy tắc theo app (D5) và log theo app không áp tới lần kích hoạt sau (17/11, 2/2 lần ngay sau `scripts/dev/install-app.sh`, Safari và Chrome). Ảnh hưởng khi Sparkle cập nhật: chưa đo.
 7. Bộ đệm nguồn đầu vào của các app: tiến trình trong thư mục cache được hệ thống bảo vệ (WebKit, Shortcuts) không xoá được, ảnh hưởng chưa đo; gỡ cài đặt chưa xoá bộ đệm của các app (`docs/research/InputMethodInstall.md` mục 10.7).
-8. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ. `scripts/selftest/app-group.sh --install` chưa chạy lại kể từ khi gộp script cài 10/11. Chưa kiểm cờ `--tampered` trên cửa sổ thật; VoiceOver ở Bước 3 mục 4.
+8. Chưa chạy qua script: nhánh "đã trùng sẵn" và các nhánh lỗi của việc thay bộ gõ. `scripts/selftest/app-group.sh --install` chưa chạy lại kể từ khi gộp script cài 10/11. Chưa kiểm cờ `--tampered` trên cửa sổ thật; VoiceOver ở bước 4 của kế hoạch M7.
 9. Chưa có artboard: tên các nguồn tiếng Việt khác trong ghi chú của D14 (Onboarding) vẫn theo tiếng Việt của app (`LayoutNames` chỉ có bàn phím).
 10. Ma trận tương thích còn lại, làm sau beta đầu tiên: `docs/Roadmap.md` mục "Tồn đọng chưa gắn mốc", danh sách ở `docs/Compatibility.md` mục 7.
 
@@ -45,64 +45,74 @@ Việc mở, xếp theo ảnh hưởng tới chữ gõ ra (sai chữ, rồi chư
 
 ## Kế hoạch M7
 
-Việc cần người dùng gom vào bước 0 (tài khoản, khoá, duyệt artboard) và bước 3 (một lượt chạy chiếm màn hình); phần còn lại phiên chính và subagent làm. Thứ tự: bước 1 bắt đầu ngay, không chờ gì; bước 2 chờ bước 0 (mục 1–3), 1a và bước 1f; bước 3 chờ bước 2 và 1b–1d; bước 4 chờ bước 3.
+Beta đầu tiên `v0.1.0-beta.1` ra trước khi có Developer ID: ký bằng chứng chỉ Apple Development của Personal Team `M58DANM3ZP`, không notarize, và đi trọn đường beta (GitHub Releases, appcast, Sparkle, cask Homebrew) (D6 (Phát hành), chủ dự án chốt 28/11/2026). Chủ dự án đã đồng ý cho mọi việc công bố trong kế hoạch này: hai bản thử 0.0.1, beta đầu tiên, appcast, cask và triển khai trang. Developer ID là việc sau beta (`docs/Roadmap.md`, mục "Chuyển sang Developer ID").
 
-### Bước 0 — Người dùng (làm một lần, song song với bước 1)
+Đã xong trước 28/11: Sparkle, trang Cập nhật & hỗ trợ và báo lỗi, biểu tượng, nền DMG, script phát hành ở chế độ không ký, GitHub Actions và `docs/Releasing.md` (17/11); hai kênh Beta và Chính thức (18/11, phần chạy thật ở bước 4). Chi tiết ở commit message và `docs/history/LogM7.md`.
 
-1. Đăng ký Apple Developer Program (99 USD/năm). Đăng ký tổ chức nếu codefastlabs là pháp nhân (cần mã D-U-N-S, có thể mất vài ngày): Gatekeeper hiện "codefastlabs", khớp D7. Không phải pháp nhân thì đăng ký cá nhân, khi đó phiên chính sửa câu "của codefastlabs" ở D7. Báo Team ID khi có.
-2. Khi có tài khoản: làm theo `docs/Releasing.md` (release-eng viết ở 1a). Các bước gồm tạo chứng chỉ Developer ID Application và khoá App Store Connect API cho notarize, sinh khoá EdDSA của Sparkle bằng một lệnh, rồi nạp cả ba vào secret của GitHub Actions. Phiên chính không cầm khoá.
-3. Vercel: nối repo với project của `dau.codefastlabs.com` theo `docs/Releasing.md`, bước "Vercel" (Root Directory `site`, có bước build của trang).
-4. Duyệt artboard (1e): xong 17/11.
+Thứ tự: bước 2 không chờ gì. Bước 4 chờ bước 2 và 3. Bước 5 và 6 chờ bước 4. Bước 7 chờ bước 5 và 6. Bước 8 và 9 chờ bước 7.
 
-### Bước 1 — Không cần ký: xong 17/11
+### Bước 1 — Quyết định và tài liệu: xong 28/11
 
-Sparkle (chỉ bản phát hành kiểm tra cập nhật), trang Cập nhật & hỗ trợ và báo lỗi, biểu tượng Icon Composer, nền DMG, script phát hành chạy được ở chế độ không ký, GitHub Actions, `docs/Releasing.md`; entitlement của bộ gõ giữ nguyên (`docs/research/IMKAPINotes.md`). Chi tiết: commit message ngày 17/11, `docs/Releasing.md`, `docs/history/LogM7.md`.
+D6, D7, D24, D25 và D37 sửa theo quyết định mới; `docs/Roadmap.md` và `docs/Releasing.md` sửa theo.
 
-### Bước 1f — Hai kênh Beta và Chính thức (không cần ký): xong 18/11, trừ phần chạy thật ở bước 2
+### Bước 2 — Đường ký Personal Team trong script và CI
 
-Theo D7, ý "Kênh"; vòng phát hành: `docs/Releasing.md` mục "Kịch bản phát hành". Không chờ bước 0.
+1. `scripts/release/build-release.sh` ký bằng Apple Development của Personal Team với `DAU_OFFICIAL=YES` (biểu tượng chuẩn, `SUFeedURL`, `SUPublicEDKey`) và ký EdDSA cho appcast; không notarize, không staple, không ký DMG bằng Developer ID. `check-build.sh` kiểm `codesign` và Team ID, không đòi `spctl` và `stapler` ở đường này. `release.yml` dùng secret của chứng chỉ Personal Team; `check-release-gate.sh` và `check-appcast.sh` giữ nguyên.
+2. Đường chuyển sang Developer ID (D7, ý "Chuyển danh tính ký"): app chủ mang cài đặt sang App Group mới khi Team ID đổi; bản chủ thay bộ gõ của danh tính phát hành trước mà không hiện banner (D37); cả hai có test offline. Kết luận đọc tài liệu Sparkle 2.10.1 về việc đổi danh tính ký ghi vào `docs/research/`.
+3. Test xanh; `scripts/check-l10n/check.sh` khi đổi chuỗi.
 
-1. Artboard trang Cập nhật & hỗ trợ: chọn kênh Beta / Chính thức, số build trong dòng phiên bản trên mọi artboard Cài đặt và báo lỗi, bỏ dòng "Bản phát triển" (D25); Chính thức tắt kèm dòng giải thích khi appcast chưa có bản chính thức; `docs/UI.md`. Người dùng duyệt artboard trước khi viết mã.
-2. App chủ (app-ui-dev): đọc tài liệu Sparkle 2.10.1 trước (delegate có đọc được các mục của appcast đã tải không, thứ tự gọi so với lúc hỏi kênh); lưu kênh, ghi kênh mặc định ở lần tải appcast thành công đầu tiên, trả kênh cho Sparkle qua delegate; chuỗi trong String Catalog (D41); test với appcast giả cho cả hai giai đoạn và cho việc đổi kênh. Cùng lượt: dòng phiên bản của bản phát hành ghi số build, báo lỗi điền sẵn ghi số build và commit (D25), sửa test của `AppVersion`. Bỏ dòng "Development build" ở trang Cập nhật & hỗ trợ của bản phát triển (D25) và chuỗi của nó trong String Catalog.
-3. Script phát hành (release-eng, song song với 2): mục beta mới gắn `<sparkle:channel>beta</sparkle:channel>`; quảng bá bỏ thẻ đó khỏi mục của beta cuối; kiểm cả hai trong `check-appcast.sh` hay `check-build.sh`; `docs/Releasing.md`.
+### Bước 3 — Việc của chủ dự án
 
-Xong khi: test và `scripts/check-l10n/check.sh` đạt; chạy thật ở bước 2 (hai tag thử, bản thứ hai cập nhật được ở kênh Beta).
+Phiên chính soạn sẵn từng lệnh và nhãn bấm rồi hỏi một lần. Phiên chính không cầm khoá.
+1. Xuất chứng chỉ Apple Development của Personal Team ra `.p12` và nạp vào secret của GitHub (`docs/Releasing.md`, mục "Việc của người dùng").
+2. Sinh khoá EdDSA của Sparkle và nạp vào secret.
+3. Vercel: đăng nhập, nối repo với project (Root Directory `site`), trỏ DNS của `dau.codefastlabs.com` về Vercel. Nếu chủ dự án đăng nhập Vercel CLI trên máy thì phiên chính tự cấu hình phần còn lại.
 
-### Bước 2 — Bản thử trên CI (sau bước 0)
+### Bước 4 — Hai bản thử trên CI và một lượt chạy chiếm màn hình
 
-- Workflow Test: xong 17/11, chạy trên runner `xcode-27` ở mỗi lần push lên `main`, đạt.
-- Tag thử `v0.0.1-beta.1` rồi `v0.0.1-beta.2` (số hiển thị "0.0.1", nhỏ hơn beta đầu tiên; tag thứ hai trên commit sau commit appcast của bản thứ nhất) dựng hai bản phát hành số build khác nhau và công bố lên appcast (chưa có người dùng nên không ảnh hưởng ai): việc công bố cần người dùng đồng ý ở bước này, trước khi đẩy tag; beta đầu tiên thì người dùng đồng ý ở bước 4. Kiểm DMG không cần màn hình: `codesign`, `spctl`, `stapler`, biểu tượng, `nm`, dSYM (`scripts/release/check-build.sh`). Những phần chưa chạy thật lần nào: `docs/Releasing.md` mục "Còn phải thấy chạy thật".
+Tag `v0.0.1-beta.1`, rồi tag `v0.0.1-beta.2` trên commit sau commit appcast của bản thứ nhất (số hiển thị "0.0.1", nhỏ hơn beta đầu tiên). Công bố cả hai. Kiểm DMG không cần màn hình bằng `scripts/release/check-build.sh`. Lỗi lộ ra thì sửa trước khi đi tiếp, rồi cập nhật mục "Còn phải thấy chạy thật" của `docs/Releasing.md`.
 
-### Bước 3 — Một lượt chạy chiếm màn hình (người dùng ngồi cùng ở mục 4)
+Lượt chạy chiếm màn hình:
+1. Cài bản thử thứ nhất từ DMG còn quarantine và ghi đúng nhãn Gatekeeper ở cả hai ngôn ngữ. Kiểm App Group: đổi cài đặt trong app chủ, bộ gõ phải nhận được. Hộp thoại bật bộ gõ, onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
+2. Sparkle cập nhật lên bản thử thứ hai: kiểm câu dưới công tắc "Tự động kiểm tra bản mới" (kiểm tra khi mở Dấu, hỏi trước khi cài, D7); cài xong Sparkle mở lại Dấu và bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`); gõ ngay ở một app đang mở để đo Việc mở 6 khi Sparkle cập nhật (`app=?` trong log hay không).
+3. Kiểm cần người, chủ dự án ngồi cùng: VoiceOver và Tab qua cửa sổ Cài đặt, VoiceOver đọc tên nguồn, máy để tiếng Anh hẳn. Phiên chính chụp và xem: biểu tượng thanh menu trên nền sáng và tối, các sheet ở chế độ tối, danh sách "+" của System Settings, nhãn biểu tượng trong cửa sổ DMG ở chế độ tối và vị trí biểu tượng so với mũi tên nền.
+4. Báo lỗi và trang Cập nhật & hỗ trợ (bản Debug, ma trận `scripts/selftest/settings-window/run.sh` và `docs/UIChecks.md`): hàng báo lỗi, sheet báo lỗi (độ rộng control bốn lựa chọn, Tab, Esc/Return, VoiceOver đọc ô gợi ý, chế độ tối); mở Dấu bằng "Cài đặt Dấu…" khi đang ở Chrome thì ô "Ứng dụng" chọn Chrome; "Mở trên GitHub" ra form điền sẵn.
+5. Đo lại các ô đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), bản Debug, khoảng 7–10 giây mỗi ô `typing/run.sh`: một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11); đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`, thêm lần bật "Automatically switch to a document's input source" rồi đổi cửa sổ.
+6. Đo lại Mail, Notes, Telegram và Edge cho danh sách trên trang (kế hoạch M8 mục 3).
+7. "Thêm dấu cho từ đã gõ" (D20) ở Notion bằng `scripts/selftest/typing/typed-word-docs.sh` (script chưa có ô cho Notion). Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
+8. Dọn: gỡ bản thử, rồi `scripts/dev/install-app.sh --no-build`.
 
-Thời lượng: mục 1, 5, 6, 8 khoảng 15–20 phút, cộng từng mục từ số đã đo (`heavy.sh --dry-run`; các lần chạy `settings-window/run.sh`, `typing/run.sh`, `install-app.sh` trong `docs/history/LogM6.md`). Mục 2, 3, 4 và phần Notion của mục 7 chưa có số đo; mỗi ô `gdocs`, `wordweb` mất 22–39 giây (17/11).
+Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7; câu thay cho "[Phím tắt hệ thống]" khi không đọc được phím tắt chuyển nguồn (trang Cách gõ); nhãn trợ năng của sidebar và onboarding theo artboard hay theo hệ thống như mã hiện nay; "Enter" hay "Return" trong câu tiếng Việt về kết thúc từ. Rồi sửa mã và chụp lại `docs/canvas/`.
 
-1. D42: `scripts/selftest/load/heavy.sh` với bản Debug; RSS tiến trình bộ gõ bản Release cạnh bản Debug, xong 22/11 (nhật ký).
-2. Cài bản thử thứ nhất từ DMG (mang quarantine): Gatekeeper, hộp thoại App Group và hộp thoại bật bộ gõ với bản Developer ID (hai câu hỏi mở), onboarding, gõ thử bằng `scripts/selftest/typing/run.sh`.
-3. Sparkle cập nhật lên bản thử thứ hai: kiểm câu dưới công tắc "Tự động kiểm tra bản mới" (kiểm tra khi mở Dấu, hỏi trước khi cài, D7); cài xong Sparkle mở lại Dấu và bộ gõ đã cài được thay (`scripts/dev/dau-version.sh`); gõ ngay ở một app đang mở để đo Việc mở 5 khi Sparkle cập nhật (`app=?` trong log hay không).
-4. Kiểm cần người: VoiceOver và Tab qua cửa sổ Cài đặt, VoiceOver đọc tên nguồn, máy để tiếng Anh hẳn (người dùng đổi ngôn ngữ hệ thống). Phiên chính chụp và xem: biểu tượng thanh menu trên nền sáng và tối, các sheet ở chế độ tối, danh sách "+" của System Settings, nhãn biểu tượng trong cửa sổ DMG ở chế độ tối và vị trí biểu tượng so với mũi tên nền. Theo báo cáo trên diễn đàn, Finder vẽ nhãn kiểu sáng khi thư mục có ảnh nền, nhưng điều này chưa đo.
-5. Báo lỗi và trang Cập nhật & hỗ trợ (bản Debug, ma trận `scripts/selftest/settings-window/run.sh` và `docs/UIChecks.md`): hàng báo lỗi, sheet báo lỗi (độ rộng control bốn lựa chọn, Tab, Esc/Return, VoiceOver đọc ô gợi ý, chế độ tối); mở Dấu bằng "Cài đặt Dấu…" khi đang ở Chrome thì ô "Ứng dụng" chọn Chrome; "Mở trên GitHub" ra form điền sẵn (cần mẫu issue đã lên nhánh mặc định).
-6. Phần còn lại của việc đo lại các ô đã đo trước khi script chuyển nguồn bằng phím tắt hệ thống (`0bf8d3f`, 10/11), theo kiểm toán ngày 17/11; Edge, Firefox, VS Code, Safari, Terminal đã đo lại 17/11 (`docs/history/LogM7.md`). Khoảng 3–4 phút (7–10 giây mỗi ô `typing/run.sh`), bản Debug, chuyển nguồn bằng phím tắt và xác nhận trong ô gõ:
-   - Một ô Telex của Apple ở Chrome, trang rảnh và trang bận (câu về Apple ở D11).
-   - Đếm dòng `activate` và `source-changed-reset` khi chuyển nguồn bằng phím tắt, bằng menu và bằng `⇄`. Đo thêm khi bật "Automatically switch to a document's input source" rồi đổi cửa sổ. Kết quả cho biết bộ nghe `InputSourceChange` có đường chuyển thật nào cần đến không.
-7. "Thêm dấu cho từ đã gõ" (D20) trên web editor trong Chrome, bằng `scripts/selftest/typing/typed-word-docs.sh` (script tự tạo tài liệu mới trong tài khoản đã đăng nhập ở trình duyệt). Word trên web và Google Docs: xong 17/11 (`docs/Compatibility.md` mục 5.10; Google Docs sai, ở Việc mở). Còn Notion: script chưa có ô cho Notion. Kết quả thay ô chờ "[Kết quả kiểm chứng trên Google Docs, Notion…]" trong câu gợi ý của D20 (N5).
-8. Dọn: gỡ bản thử, cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --no-build`).
+### Bước 5 — Trước tag beta
 
-Sau lượt chạy, một lần duyệt canvas: câu gợi ý của D20 theo số đo ở mục 7; câu thay cho "[Phím tắt hệ thống]" khi không đọc được phím tắt chuyển nguồn (trang Cách gõ); nhãn trợ năng của sidebar và onboarding theo artboard ("Mục cài đặt", "Tìm trong cài đặt", "Cách bật Dấu"…) hay theo hệ thống như mã hiện nay; "Enter" hay "Return" trong câu tiếng Việt về kết thúc từ; và các ô trên artboard trang tải về đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Ảnh chụp `docs/canvas/` của các artboard đã sửa ở bước 1f (kênh, số build, từ ngữ) sinh lại khi người dùng duyệt. Rồi sửa mã và chụp lại `docs/canvas/`.
+Chạy D42 `scripts/selftest/load/heavy.sh` trên đúng commit sẽ tag, ghi `site/src/data/Measurements.json` (`heavyLoad`, `engineTests`, `sparkleVersion`) theo `docs/Releasing.md`, đường beta bước 2. `main` phải xanh.
 
-### Bước 4 — Phát hành và đóng mốc
+### Bước 6 — Trang web
 
-- Tag `v0.1.0-beta.1`; CI dựng bản nháp. Người dùng đồng ý một lần cho cả ba việc công bố: phát hành trên GitHub, cập nhật appcast, tạo repo `codefastlabs/homebrew-tap` với cask `dau`.
-- Kiểm `brew install --cask codefastlabs/tap/dau` trên máy, rồi cài lại bản dùng hằng ngày (`scripts/dev/install-app.sh --no-build`).
-- Gỡ hai bản thử 0.0.1 (chỉ máy này từng cài): xoá mục của chúng khỏi `site/appcast.xml` trước, rồi xoá hai bản phát hành và tag trên GitHub; cùng lần đồng ý công bố ở trên.
-- Kiểm toán, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
+Theo kế hoạch M8 mục 2 bên dưới.
+
+### Bước 7 — Phát hành `v0.1.0-beta.1`
+
+Tag; CI dựng bản nháp; kiểm DMG, `summary.txt` và `check-build.sh`. Publish: trang bản phát hành ghi rõ bản chưa notarize, cách mở qua Gatekeeper và việc bản sau sẽ tự cập nhật. Chép `appcast.xml` và `Checksums.json` vào `site/`, commit cùng phần dữ liệu trang rồi push, theo thứ tự của `docs/Releasing.md` (appcast chỉ lên sau khi DMG đã công bố). Rồi kiểm triển khai (kế hoạch M8 mục 2).
+
+### Bước 8 — Cask Homebrew
+
+Tạo `codefastlabs/homebrew-tap` với cask `dau`. Kiểm Homebrew bản hiện tại xử lý app chưa notarize thế nào; câu trên trang và trong cask phải đúng theo kết quả đó. Chạy `brew install --cask codefastlabs/tap/dau`, rồi cài lại bản dùng hằng ngày.
+
+### Bước 9 — Gỡ bản thử và đóng phần beta
+
+Gỡ mục 0.0.1 khỏi `site/appcast.xml` trước; đợi `scripts/release/check-site-appcast.sh` đạt rồi mới xoá hai bản phát hành và tag 0.0.1. Kiểm toán theo phạm vi diff, tóm tắt, chuyển nhật ký và kế hoạch M7 sang `docs/history/`.
 
 ## Kế hoạch M8
 
 1. Dựng `site/`, dữ liệu lúc build, kiểm đầu ra, CI, hook `pre-push`, checksum trong script phát hành, test engine cho ví dụ trên trang, các lượt sửa theo artboard người dùng duyệt (hero, thẻ số đo, quyền riêng tư, hoạt ảnh từng phím, VietQR, GitHub Sponsors): xong và push 24/11.
-2. Lên tên miền cùng beta đầu tiên (bước 4 của kế hoạch M7): người dùng nối project Vercel theo `docs/Releasing.md`, bước "Vercel"; sau lần triển khai đầu, chạy `scripts/release/check-site-appcast.sh` và kiểm `/en`, chuyển hướng 308, header bảo mật trên tên miền (`docs/research/WebsiteStack.md` mục 3).
-3. Các ô `[…]` còn lại đều chờ bản phát hành hoặc M7, theo nguồn ở `docs/research/WebsiteStack.md` mục "Dữ liệu lúc build": phiên bản, ngày, dung lượng và SHA-256 khi có bản phát hành; ký số, notarize và cách dựng bản kiểm chứng được khi có tài khoản Apple Developer. Mục "Đo được" hiện khi bước bài tải nặng của `docs/Releasing.md` ghi `Measurements.json` cho bản đang cho tải.
-4. Danh sách 15 ứng dụng đã kiểm chứng gõ đúng trên trang dựa một phần vào số đo có trước khi Dấu tự chèn ký tự (N3, 22/11): Mail và Notes đo 30/10, Telegram và Edge đo 17/11. Đo lại bốn ô này ở lượt chạy chiếm màn hình kế tiếp (bước 3 của kế hoạch M7) rồi sửa `docs/Compatibility.md` và `CompatibilityList.json` nếu kết quả khác.
+2. Lên `dau.codefastlabs.com` cùng beta đầu tiên (web-dev dựng, release-eng triển khai):
+   - Canvas trước: artboard trang tải về và trang "Dấu khác các bộ gõ khác thế nào" theo cách ký mới, bỏ mọi câu hứa notarize, hướng dẫn mở qua Gatekeeper bằng đúng nhãn đo ở bước 4 của kế hoạch M7, dòng beta, và các ô đang hứa quá số đo (ô "đo ở M6", ô "kiểm chứng ở M7", câu "đã kiểm chứng ở…" trong mục Hỏi đáp). Chụp lại `docs/canvas/`, rồi sửa mã trong `site/`. Bản tiếng Anh và tiếng Việt cùng ý.
+   - Dữ liệu: điền các ô `[…]` theo nguồn ở `docs/research/WebsiteStack.md` mục "Dữ liệu lúc build": phiên bản, ngày, dung lượng, SHA-256 (`Checksums.json`), mục "Đo được" (`Measurements.json`) và danh sách app đã kiểm chứng.
+   - Kiểm cục bộ: mọi script trong `site/package.json` (`typecheck`, `lint`, `format:check`, `test`, `build` kể cả `VerifyOutput`, và `dev` với curl `/`, `/en`, `appcast.xml` rồi tắt server); Lighthouse theo `lighthouserc.json` nếu workflow Site có bước đó; hook `pre-push` đạt.
+   - Kiểm trên tên miền sau bước Công bố: `scripts/release/check-site-appcast.sh` đạt; `/en` chạy, chuyển hướng 308 và header bảo mật đúng (`docs/research/WebsiteStack.md` mục 3); nút tải về trỏ đúng DMG trên GitHub và SHA-256 trên trang khớp DMG; job `deployment_status` của `site.yml` xanh.
+3. Danh sách 15 ứng dụng đã kiểm chứng gõ đúng trên trang dựa một phần vào số đo có trước khi Dấu tự chèn ký tự (N3, 22/11): Mail và Notes đo 30/10, Telegram và Edge đo 17/11. Bốn ô này đo lại ở bước 4 của kế hoạch M7, rồi sửa `docs/Compatibility.md` và `CompatibilityList.json` nếu kết quả khác.
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LogM5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LogBetweenM5AndM6.md`, M6 ở `docs/history/LogM6.md`. M7: phần trước ngày áp luật nhật ký (17/11) ở `docs/history/LogM7.md`; đóng M7 thì nối phần dưới vào cuối file đó.

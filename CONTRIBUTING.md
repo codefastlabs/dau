@@ -53,7 +53,7 @@ Bộ gõ và app chủ dùng chung phần cài đặt qua một App Group. macOS
 
 Để gõ hằng ngày, bạn hãy dùng bản Release. Script chỉ build bản Release từ một commit, nên khi cây làm việc còn thay đổi chưa commit thì script dừng. Lệnh `scripts/dev/install-app.sh --debug` cài bản Debug của cây làm việc, kể cả thay đổi chưa commit. Đây là bản duy nhất ghi nhật ký theo từng phím để đo (D8 (Không telemetry)); cách đo nằm ở [`docs/Compatibility.md`](docs/Compatibility.md), mục 4. Đo xong, lệnh `scripts/dev/install-app.sh --no-build` cài lại bản Release đã build mà không build lại.
 
-Bản bạn tự dựng là **bản phát triển** (D7 (Cập nhật và loại bản dựng)), không phải bản phát hành. Bản phát hành chỉ do quy trình phát hành tạo ra và ký bằng Developer ID. Quy trình đó nằm ở `scripts/release/` và `.github/workflows/release.yml`, nhưng chưa chạy với chữ ký thật (xem `docs/Releasing.md`).
+Bản bạn tự dựng là **bản phát triển** (D7 (Cập nhật và loại bản dựng)), không phải bản phát hành. Bản phát hành chỉ do quy trình phát hành tạo ra, ký bằng danh tính phát hành của D6 (Phát hành). Quy trình đó nằm ở `scripts/release/` và `.github/workflows/release.yml`, nhưng chưa chạy với chữ ký thật (xem `docs/Releasing.md`).
 
 Nếu gặp lỗi ký, lỗi App Group hay chứng chỉ bị thu hồi, bạn hãy xem [`docs/Troubleshooting.md`](docs/Troubleshooting.md).
 
