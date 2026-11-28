@@ -9,8 +9,9 @@
 # Builds are signed "Apple Development" with automatic signing: the App Group needs a real
 # Team ID, macOS rejects it for ad-hoc signed builds (D24, Tên và định danh). No provisioning
 # profile is needed: a Team-ID-prefixed App Group is allowed on macOS without one.
-# Developer ID signing and notarization: CI overrides these via xcodebuild settings
-# (scripts/release/build-release.sh).
+# Release signing: CI overrides these via xcodebuild settings (scripts/release/build-release.sh):
+# manual signing with the Apple Development identity of the Personal Team (D6), or Developer ID
+# once there is one. Release has no com.apple.security.get-task-allow (see CODE_SIGN_INJECT_BASE_ENTITLEMENTS).
 
 name: Dau
 

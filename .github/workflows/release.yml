@@ -9,9 +9,11 @@
 #   the last beta on the same commit and makes a DRAFT release from them, same binary, same
 #   notarization ticket; the appcast.xml asset is the published appcast with the channel tag
 #   removed from that beta's item, no new item (D7).
-# With the secrets below the build is signed with Developer ID, notarized and the appcast is
-# signed; without them it builds a development build (D7), unsigned and not for users, and
-# makes NO release: the *-dev-unsigned.dmg is only an artifact of the run (7 days),
+# With the signing secrets the build is signed (D6): with the Personal Team's Apple Development
+# certificate and not notarized while the notary secrets are absent, with Developer ID and
+# notarized once they are set; the appcast is signed either way. Without the secrets it builds a
+# development build (D7), unsigned and not for users, and makes NO release: the
+# *-dev-unsigned.dmg is only an artifact of the run (7 days),
 # so nothing unsigned ever sits in the Releases list, one click from public.
 name: Release
 
@@ -27,7 +29,7 @@ permissions:
 
 env:
   # Whether the certificate secret is set (a boolean, not the secret): `if:` cannot read secrets.
-  DAU_HAS_DEVELOPER_ID: ${{ secrets.DAU_DEVELOPER_ID_P12 != '' }}
+  DAU_HAS_SIGNING_CERTIFICATE: ${{ secrets.DAU_SIGNING_P12 != '' }}
 
 # Secrets live only in the env of the two steps that use them, never workflow-wide: other
 # steps run third-party code (Homebrew formulae, actions).
@@ -58,19 +60,19 @@ jobs:
       - name: Install XcodeGen
         run: brew install xcodegen
 
-      - name: Import the Developer ID certificate
-        if: env.DAU_HAS_DEVELOPER_ID == 'true'
+      - name: Import the signing certificate
+        if: env.DAU_HAS_SIGNING_CERTIFICATE == 'true'
         env:
-          DAU_DEVELOPER_ID_P12: ${{ secrets.DAU_DEVELOPER_ID_P12 }}
-          DAU_DEVELOPER_ID_P12_PASSWORD: ${{ secrets.DAU_DEVELOPER_ID_P12_PASSWORD }}
+          DAU_SIGNING_P12: ${{ secrets.DAU_SIGNING_P12 }}
+          DAU_SIGNING_P12_PASSWORD: ${{ secrets.DAU_SIGNING_P12_PASSWORD }}
         run: |
           keychain="$RUNNER_TEMP/dau-release.keychain-db"
           password="$(uuidgen)"
           security create-keychain -p "$password" "$keychain"
           security set-keychain-settings -lut 21600 "$keychain"
           security unlock-keychain -p "$password" "$keychain"
-          printf '%s' "$DAU_DEVELOPER_ID_P12" | base64 --decode > "$RUNNER_TEMP/dau-cert.p12"
-          security import "$RUNNER_TEMP/dau-cert.p12" -k "$keychain" -P "$DAU_DEVELOPER_ID_P12_PASSWORD" \
+          printf '%s' "$DAU_SIGNING_P12" | base64 --decode > "$RUNNER_TEMP/dau-cert.p12"
+          security import "$RUNNER_TEMP/dau-cert.p12" -k "$keychain" -P "$DAU_SIGNING_P12_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
           rm -f "$RUNNER_TEMP/dau-cert.p12"
           security set-key-partition-list -S apple-tool:,apple: -s -k "$password" "$keychain" >/dev/null
@@ -86,6 +88,7 @@ jobs:
           DAU_TEAM_ID: ${{ secrets.DAU_TEAM_ID }}
           DAU_SPARKLE_PUBLIC_KEY: ${{ secrets.DAU_SPARKLE_PUBLIC_KEY }}
           DAU_SPARKLE_PRIVATE_KEY: ${{ secrets.DAU_SPARKLE_PRIVATE_KEY }}
+          # The notary secrets are empty until the switch to Developer ID; the script treats empty as unset.
           DAU_NOTARY_KEY: ${{ secrets.DAU_NOTARY_KEY }}
           DAU_NOTARY_KEY_ID: ${{ secrets.DAU_NOTARY_KEY_ID }}
           DAU_NOTARY_ISSUER_ID: ${{ secrets.DAU_NOTARY_ISSUER_ID }}
@@ -109,7 +112,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          flags=(--draft --title "Dấu ${{ steps.build.outputs.label }}" --generate-notes)
+          # The notes (bilingual, built from scripts/release/release-notes-template.md) come first, the generated changelog after.
+          flags=(--draft --title "Dấu ${{ steps.build.outputs.label }}" --notes-file "${{ steps.build.outputs.notes }}" --generate-notes)
           case "$GITHUB_REF_NAME" in *-beta.*) flags+=(--prerelease) ;; esac
           files=("${{ steps.build.outputs.dmg }}" "${{ steps.build.outputs.dsyms }}" "${{ steps.build.outputs.checksums }}")
           # The updated appcast and Checksums.json are release assets, not published: docs/Releasing.md.

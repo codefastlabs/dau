@@ -6,6 +6,8 @@
 #
 #   dau_signing_identities        the usable "Apple Development" identities, one
 #                                 find-identity line each ("N) <SHA-1> "<name>"")
+#   dau_team_signing_identity T   SHA-1 of the usable "Apple Development" identity of Team T, matched on the
+#                                 certificate's Organizational Unit; status 1 when there is none
 #   dau_require_signing_identity  stop early when the keychain has no usable
 #                                 "Apple Development" identity (revoked, expired, missing)
 #   dau_marketing_version         X.Y.Z of the nearest vX.Y.Z[-beta.N] tag on HEAD; empty with no tag
@@ -46,6 +48,30 @@ dau_require_signing_identity() {
     "     -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData.noindex \\" \
     "     -allowProvisioningUpdates build"
   return 1
+}
+
+dau_team_signing_identity() {
+  local team="$1" valid line hash="" pem="" subject matches=()
+  valid=$(dau_signing_identities | awk '{print $2}')
+  [[ -n $valid ]] || return 1
+  # The parentheses in an "Apple Development" name are the certificate's user ID, not the
+  # Team ID: the team is the Organizational Unit of the certificate subject.
+  while IFS= read -r line; do
+    case $line in
+      "SHA-1 hash: "*) hash=${line#SHA-1 hash: } ;;
+      "-----BEGIN CERTIFICATE-----") pem="$line"$'\n' ;;
+      "-----END CERTIFICATE-----")
+        pem+="$line"
+        subject=$(print -r -- "$pem" | /usr/bin/openssl x509 -noout -subject -nameopt multiline 2>/dev/null)
+        if [[ $subject == *"organizationalUnitName"*"= $team"$'\n'* && -n ${(M)${(f)valid}:#$hash} ]]; then
+          matches+=$hash
+        fi
+        pem="" ;;
+      *) [[ -z $pem ]] || pem+="$line"$'\n' ;;
+    esac
+  done < <(security find-certificate -a -Z -c "Apple Development" -p 2>/dev/null)
+  (( ${#matches} )) || return 1
+  print -r -- $matches[1]
 }
 
 dau_marketing_version() { # X.Y.Z of the nearest vX.Y.Z[-beta.N] tag reachable from HEAD; empty with no tag

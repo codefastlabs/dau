@@ -2,7 +2,7 @@
 
 Tài liệu này tả cách một bản Dấu ra đời, từ tag git tới DMG, bản cập nhật Sparkle và Homebrew. Các quyết định liên quan là D6 (Phát hành), D7 (Cập nhật và loại bản dựng) và D25 (Nhận diện). Kế hoạch mốc nằm ở [`docs/Progress.md`](Progress.md), mục "Kế hoạch M7".
 
-Bản phát hành có một danh tính ký tại mỗi thời điểm (D6). Hiện nay đó là chứng chỉ Apple Development của Personal Team `M58DANM3ZP`, và bản phát hành không notarize. Khi codefastlabs có tài khoản Apple Developer Program, bản phát hành chuyển sang ký Developer ID và notarize (mục "Chuyển sang Developer ID"). Cả hai đường dùng chung script và workflow; script chọn đường theo secret có mặt.
+Bản phát hành có một danh tính ký tại mỗi thời điểm (D6). Hiện nay đó là chứng chỉ Apple Development của Personal Team `M58DANM3ZP`, và bản phát hành không notarize. Khi codefastlabs có tài khoản Apple Developer Program, bản phát hành chuyển sang ký Developer ID và notarize (mục "Chuyển sang Developer ID"). Cả hai đường dùng chung script và workflow; script chọn đường theo secret có mặt (mục "Chế độ ký").
 
 ```mermaid
 flowchart TD
@@ -51,9 +51,10 @@ Các kịch bản sau có thể chen vào vòng đó:
 
 | Thành phần | Ở đâu |
 |---|---|
-| Script dựng một bản beta (archive, ký, DMG, appcast; với Developer ID thêm xuất, notarize, staple) | `scripts/release/build-release.sh` |
+| Script dựng một bản beta (archive, ký, DMG, appcast, ghi chú bản phát hành; với Developer ID thêm xuất, notarize, staple) | `scripts/release/build-release.sh` |
+| Mẫu ghi chú của bản nháp, song ngữ Anh và Việt; phần Gatekeeper chỉ có khi bản không notarize | `scripts/release/release-notes-template.md` |
 | Script quảng bá beta cuối thành bản chính thức (sao tài sản, bỏ thẻ kênh beta khỏi appcast, không dựng) | `scripts/release/promote-release.sh` |
-| Kiểm một bản build (biểu tượng, ký hiệu, khoá Sparkle, bộ gõ, chữ ký) | `scripts/release/check-build.sh` |
+| Kiểm một bản build (biểu tượng, ký hiệu, khoá Sparkle, bộ gõ, chữ ký của app, bộ gõ và mã Sparkle) | `scripts/release/check-build.sh` |
 | Kiểm điều kiện của một tag: commit nằm trong `origin/main`, workflow Test đã đạt (dùng chung cho dựng và quảng bá) | `scripts/release/check-release-gate.sh` |
 | Kiểm appcast: nền có mục của beta mới nhất đã công bố; mục beta mới mang thẻ `beta`; appcast quảng bá chỉ khác bản trước ở thẻ đó | `scripts/release/check-appcast.sh` |
 | Tự kiểm offline phần đọc và sửa appcast cùng phần hợp nhất `Checksums.json` (không mạng, không khoá), dùng thư viện `scripts/lib/appcast.sh` và `scripts/lib/checksums.sh` | `scripts/release/test-appcast.sh` |
@@ -185,14 +186,14 @@ flowchart TD
    Mỗi beta cần một commit mới. Script từ chối tag beta đặt lên commit đã có tag beta khác, vì cùng commit thì cùng số build.
 
    **Tag đã công bố không bao giờ được dựng lại:** bản ký từ chối một tag đã có bản phát hành không phải bản nháp. Nếu CI hỏng trước khi công bố, hãy xoá bản nháp (và tag) trên GitHub rồi tag lên một commit mới. Tag còn bản nháp cũng bị từ chối, để không dựng đè lên bản nháp đó.
-4. Workflow Release dựng bản ký, rồi tạo một **bản nháp** pre-release trên GitHub Releases (tiêu đề "Dấu 0.1.0 beta 1") kèm DMG, dSYM, `Checksums.json` và `appcast.xml`. `Checksums.json` là file `site/src/data/Checksums.json` của `origin/main` cộng một dòng `"<sparkle:version>": "<SHA-256 của DMG>"` cho bản mới; trang web đọc file này để hiện SHA-256 của DMG, vì appcast chỉ có chữ ký EdDSA. Appcast là appcast của `origin/main` cộng mục của bản mới; nó không lấy file ở commit có tag, vì mục của bản trước chỉ đưa vào file trên `main` ở bước Công bố. Bản ký từ chối dựng nếu appcast đó thiếu beta mới nhất đã công bố trên GitHub (`check-appcast.sh`), nên phải công bố xong bản trước (bước 5) rồi mới tag bản sau. Ở bước này chưa công bố gì, nên người dùng chưa thấy gì. Nếu thiếu secret, workflow dựng bản không ký (xem bên dưới) và chỉ lưu DMG cùng `Checksums.json` thành artifact của lần chạy (7 ngày), không tạo bản nháp.
+4. Workflow Release dựng bản ký, rồi tạo một **bản nháp** pre-release trên GitHub Releases (tiêu đề "Dấu 0.1.0 beta 1") kèm DMG, dSYM, `Checksums.json` và `appcast.xml`, với ghi chú song ngữ từ mẫu `release-notes-template.md`. `Checksums.json` là file `site/src/data/Checksums.json` của `origin/main` cộng một dòng `"<sparkle:version>": "<SHA-256 của DMG>"` cho bản mới; trang web đọc file này để hiện SHA-256 của DMG, vì appcast chỉ có chữ ký EdDSA. Appcast là appcast của `origin/main` cộng mục của bản mới; nó không lấy file ở commit có tag, vì mục của bản trước chỉ đưa vào file trên `main` ở bước Công bố. Bản ký từ chối dựng nếu appcast đó thiếu beta mới nhất đã công bố trên GitHub (`check-appcast.sh`), nên phải công bố xong bản trước (bước 5) rồi mới tag bản sau. Ở bước này chưa công bố gì, nên người dùng chưa thấy gì. Nếu thiếu secret, workflow dựng bản không ký (xem bên dưới) và chỉ lưu DMG cùng `Checksums.json` thành artifact của lần chạy (7 ngày), không tạo bản nháp.
 5. Kiểm bản nháp. Log của workflow in từng bước đã làm hay bị bỏ qua, kèm `summary.txt`. Hãy thử mở DMG đã tải về.
 6. **Công bố.** Bấm Publish release trên GitHub, rồi chép `appcast.xml` từ tài sản của bản đó vào `site/appcast.xml` và `Checksums.json` vào `site/src/data/Checksums.json`, commit cả hai file cùng nhau và đẩy lên `main` để Vercel dựng và xuất bản. Hook `pre-push` build trang trước khi lần đẩy này đi. Phải làm theo đúng thứ tự này, vì nếu appcast lên trước thì Sparkle sẽ trỏ vào một địa chỉ DMG chưa có. Cask Homebrew nằm ở `codefastlabs/homebrew-tap` và theo D6 (Phát hành).
 7. **Kiểm trang đã phát appcast.** Đợi Vercel báo triển khai production của commit vừa đẩy xong, rồi chạy `scripts/release/check-site-appcast.sh` (mặc định so với `origin/main`; `git fetch origin main` trước). Script tải `https://dau.codefastlabs.com/appcast.xml`, so từng byte với `site/appcast.xml` rồi kiểm header `Cache-Control` có `max-age=0` và `must-revalidate`. Script lỗi thì Sparkle chưa thấy bản mới hoặc bản dựng đã đổi appcast: xem log triển khai trên Vercel, đừng báo bản đã ra. Job `deployment_status` của `site.yml` chạy cùng script này sau mỗi lần triển khai production, kể cả những lần không do bước Công bố, nên một commit làm trang lệch appcast cũng bị báo.
 
 ### Đường chính thức (quảng bá beta cuối)
 
-Bản chính thức là tệp nhị phân của bản beta cuối, giữ nguyên và không dựng lại (như bản ứng viên của Apple): cùng DMG, cùng chữ ký, cùng vé notarize và cùng `CFBundleVersion`. Nếu muốn sửa gì sau beta cuối, hãy phát thêm một beta, chứ không sửa rồi tag bản chính thức.
+Bản chính thức là tệp nhị phân của bản beta cuối, giữ nguyên và không dựng lại (như bản ứng viên của Apple): cùng DMG, cùng chữ ký, cùng vé notarize và cùng `CFBundleVersion`. Nếu muốn sửa gì sau beta cuối, hãy phát thêm một beta, chứ không sửa rồi tag bản chính thức. Chỉ beta ký Developer ID và đã notarize mới quảng bá được (D6): `promote-release.sh` từ chối beta ký Apple Development, kể cả khi chạy `--dry-run`.
 
 1. Beta cuối đã được công bố (bước 5 ở trên), nên item của nó đã nằm trong `site/appcast.xml` cho mọi người. Vì vậy bản chính thức **không thêm item** vào appcast (cùng `sparkle:version`), mà chỉ bỏ thẻ kênh `beta` khỏi item đó (D7). Mọi item beta mang `<sparkle:channel>beta</sparkle:channel>`; `build-release.sh` gắn thẻ này bằng tuỳ chọn `--channel beta` của `generate_appcast`. Item không có thẻ là bản chính thức. Kênh nào cũng thấy nó. Chữ ký EdDSA (`sparkle:edSignature` trên `<enclosure>`) phủ DMG chứ không phủ thẻ kênh, nên bỏ thẻ thì không cần ký lại.
 2. Tag **đúng commit của tag beta cuối** rồi đẩy tag:
@@ -274,9 +275,21 @@ Dấu đã cài chạy không cần mạng (N2, D8) và không có bản quyền
 
 [^devid]: Apple, Developer ID: https://developer.apple.com/support/developer-id/
 
+## Chế độ ký
+
+`build-release.sh` chọn chế độ theo các biến môi trường (biến rỗng tính là không đặt):
+
+| Chế độ | Biến cần có | Việc làm khác nhau |
+|---|---|---|
+| Không ký | không biến nào, hoặc `--unsigned` | Bản phát triển (mục dưới). |
+| Ký Personal Team | `DAU_TEAM_ID`, `DAU_SPARKLE_PUBLIC_KEY`, `DAU_SPARKLE_PRIVATE_KEY` | Archive ký thủ công bằng chứng chỉ Apple Development của Team (tìm theo Organizational Unit của chứng chỉ, bỏ chứng chỉ đã thu hồi), hardened runtime, `--timestamp`. Dau.app lấy thẳng từ archive, không xuất. Xcode để mã lồng trong Sparkle với chữ ký ad hoc của Sparkle, nên script ký lại từ trong ra ngoài (mã lồng, framework, app) để mọi thành phần cùng Team ID; hardened runtime chỉ nạp Sparkle khi hai bên cùng Team. DMG ký cùng chứng chỉ. Không notarize, không staple. |
+| Ký Developer ID | ba biến trên cùng `DAU_NOTARY_KEY`, `DAU_NOTARY_KEY_ID`, `DAU_NOTARY_ISSUER_ID` | Xuất archive bằng `-exportArchive` phương thức `developer-id`, notarize và staple app, ký, notarize và staple DMG, kiểm thêm `spctl` và `stapler validate`. |
+
+Cả hai chế độ ký đặt `DAU_OFFICIAL=YES`, `SUFeedURL` và `SUPublicEDKey`, chạy các điều kiện trước khi dựng, ký appcast bằng EdDSA và ghi `Checksums.json`. Có một phần của bộ biến (ví dụ một biến notarize) thì script dừng. Bản nháp trên GitHub có ghi chú song ngữ làm từ `release-notes-template.md`; ghi chú của bản không notarize có thêm đoạn hướng dẫn mở qua Gatekeeper lần đầu, hiện còn ô trống `[Gatekeeper labels — measured at M7 step 4]` cho tới khi nhãn được đo (N5).
+
 ## Chế độ không ký
 
-Khi không có secret nào (hoặc khi dùng `--unsigned`), script vẫn chạy trọn từ archive tới DMG và báo bước nào bị bỏ qua: xuất Developer ID, notarize, staple, ký DMG, ký bản cập nhật và appcast. Bản này dựng như bản phát triển (D7, D25) và dùng để kiểm quy trình, không phát cho người dùng:
+Khi không có secret nào (hoặc khi dùng `--unsigned`), script vẫn chạy trọn từ archive tới DMG và báo bước nào bị bỏ qua: ký app, xuất Developer ID, notarize, staple, ký DMG, ký bản cập nhật và appcast. Bản này dựng như bản phát triển (D7, D25) và dùng để kiểm quy trình, không phát cho người dùng:
 
 - `DAU_OFFICIAL=NO`, nên bản này dùng biểu tượng bản phát triển và không có `SUFeedURL`, `SUPublicEDKey`; vì vậy Sparkle không khởi động.
 - App ký tạm (ad hoc) và không có Team ID, nên App Group bị từ chối (D24).
@@ -300,14 +313,24 @@ Bố cục (kích thước cửa sổ, vị trí biểu tượng, nền) nằm t
 - Với bản chính thức (`--signed`), `CFBundleIconName` của Dấu.app và của bộ gõ phải là `AppIcon` (D25). App chủ phải có `SUFeedURL` cùng `SUPublicEDKey`.
 - Với bản không ký, biểu tượng phải là `AppIconDev`. App không có hai khoá đó.
 - Ở cả hai loại, hai binary phải là universal và đã lược ký hiệu cục bộ (`nm`), dSYM của cả hai phải có trong archive, bộ gõ không có khoá `SU…`, `SUEnableSystemProfiling` là false (D8) và bộ gõ không link Sparkle và không có quyền mạng (N2).
-- Bản ký còn kiểm bằng `codesign`: chữ ký hợp lệ ở mọi kiến trúc và Team ID của chứng chỉ lá là `DAU_TEAM_ID`. Bản ký Developer ID kiểm thêm bằng `spctl` và `stapler validate`; bản ký Personal Team không notarize nên không qua hai bước đó.
+- Bản ký (`--signed --team <Team ID>`) còn kiểm bằng `codesign` trên Dau.app, bộ gõ và mọi mã lồng trong Sparkle.framework (Updater.app, Downloader.xpc, Installer.xpc, Autoupdate): chữ ký hợp lệ ở từng kiến trúc (`--deep --strict`), chứng chỉ lá thuộc Team ID đã cho, hardened runtime bật, có dấu thời gian bảo mật và không có `get-task-allow` (D8). Chữ ký của app phải là Apple Development, hoặc Developer ID nếu có `--developer-id`.
+- Chỉ bản Developer ID kiểm thêm bằng `spctl` và `stapler validate`; bản ký Personal Team không notarize nên không qua hai bước đó. Script quảng bá đọc chữ ký của DMG và từ chối beta ký Apple Development (mục "Đường chính thức").
+- Xcode không đưa `get-task-allow` vào archive Release của Dấu khi ký bằng chứng chỉ Apple Development, nhờ `CODE_SIGN_INJECT_BASE_ENTITLEMENTS: NO` trong `project.yml` (đã đo trên archive của Dau.app và bộ gõ). Nếu có lần nào nó quay lại, `check-build.sh` báo lỗi.
 
 ## Còn phải thấy chạy thật
 
-Phần ký, notarize, staple, `layout-dmg.sh` và `generate_appcast` ký thật cần tài khoản hoặc Finder, nên chưa chạy ở máy phát triển; chế độ không ký thì đã chạy trọn tới DMG. Lần đầu thấy các phần đó chạy là bước 4 của kế hoạch M7 (hai tag thử), rồi sửa script theo log của lần đó. Notarize và staple chạy lần đầu khi chuyển sang Developer ID.
+Đã chạy trên máy phát triển: chế độ không ký trọn tới DMG; archive ký Personal Team với các tham số ký mà script dùng, rồi ký lại mã Sparkle và app, rồi `check-build.sh --signed` đạt (chứng chỉ lá, hardened runtime, dấu thời gian, không `get-task-allow` ở app, bộ gõ và mã Sparkle); ký và kiểm một DMG thử bằng chứng chỉ đó. Archive thử dùng khoá công khai giả, nên chưa có gì về khoá EdDSA thật.
 
-Đường quảng bá (`promote-release.sh`) cũng chưa chạy thật. Script này cần một bản beta đã công bố trên GitHub (bước 4 của kế hoạch M7) để `gh release download`, để kiểm `codesign` / `stapler` / `spctl` trên tệp đã đổi tên và để tạo bản nháp. Lần đầu thấy nó chạy sẽ là lúc quảng bá beta cuối của 0.1.0: khi đó chạy `--dry-run` trước, rồi sửa script hay tài liệu này theo log. Đổi tên DMG không làm hỏng chữ ký hay vé notarize mới chỉ là suy luận từ cách hai thứ này gắn vào nội dung tệp; `--dry-run` sẽ là lần kiểm thật. Phần bỏ thẻ kênh khỏi appcast đã chạy offline (`scripts/release/test-appcast.sh` và `generate_appcast --channel beta` thử trên một archive giả: chỉ mục mới mang thẻ, mục cũ giữ nguyên). Chữ ký EdDSA nằm trên `<enclosure>`. Sparkle chỉ ký cả appcast khi app đặt `SURequireSignedFeed`; Dấu không đặt khoá này. Hai script từ chối appcast có khối chữ ký đó. Phần này chưa được thử với appcast và khoá thật. Cũng chưa thử Sparkle trong Dấu đọc thẻ kênh (bước 1f mục 2, bước 2).
+Chỉ thấy được trên CI, ở bước 4 của kế hoạch M7 (hai tag thử), rồi sửa script theo log của lần đó:
+- Nhập chứng chỉ `.p12` Apple Development vào keychain tạm của runner và việc runner thấy nó là danh tính dùng được (cần chuỗi chứng chỉ tới Apple WWDR trong keychain).
+- Toàn bộ `build-release.sh` ở chế độ ký Personal Team, kể cả các điều kiện (`check-release-gate.sh`, `check-appcast.sh`, việc từ chối tag đã có bản phát hành, cần quyền `actions: read` và `GH_TOKEN` của workflow).
+- `layout-dmg.sh` (cần Finder) và `generate_appcast` ký bằng khoá thật. Chữ ký EdDSA nằm trên `<enclosure>`. Sparkle chỉ ký cả appcast khi app đặt `SURequireSignedFeed`; Dấu không đặt khoá này và hai script từ chối appcast có khối chữ ký đó.
+- Bản nháp kèm ghi chú: `gh release create` ghép `--notes-file` với `--generate-notes` đúng như mong đợi.
+- Sparkle trong Dấu đọc thẻ kênh (bước 1f mục 2, bước 2) và cập nhật qua bản ký Personal Team, mã Sparkle đã ký lại vẫn chạy được trên máy thật.
+- `check-site-appcast.sh` với trang thật (hai nhánh của nó đã chạy với một máy chủ cục bộ).
 
-Phần `Checksums.json` đã chạy trong chế độ không ký (một lượt `build-release.sh --unsigned`: file ra đúng một dòng khớp `shasum -a 256` của DMG) và phần hợp nhất đã kiểm offline bằng `test-appcast.sh`. Đường ký (tài sản của bản nháp, bước Công bố copy file) và đường quảng bá (`promote-release.sh` kiểm SHA-256 của DMG đã đổi tên) chưa chạy thật; lần đầu là hai tag thử của M7. `scripts/release/check-site-appcast.sh` chưa chạy với trang thật vì trang chưa triển khai; hai nhánh của nó (đạt và `Cache-Control` sai) đã chạy với một máy chủ cục bộ.
+Đường quảng bá (`promote-release.sh`) chưa chạy thật. Script này cần một bản beta đã công bố trên GitHub để `gh release download`, để kiểm chữ ký trên tệp đã đổi tên và để tạo bản nháp. Lần đầu thấy nó chạy sẽ là lúc quảng bá beta cuối của 0.1.0: khi đó chạy `--dry-run` trước, rồi sửa script hay tài liệu này theo log. Đổi tên DMG không làm hỏng chữ ký hay vé notarize mới chỉ là suy luận từ cách hai thứ này gắn vào nội dung tệp. Phần bỏ thẻ kênh khỏi appcast đã chạy offline (`scripts/release/test-appcast.sh` và `generate_appcast --channel beta` thử trên một archive giả).
 
-Các kiểm điều kiện (`check-release-gate.sh`, `check-appcast.sh`, việc từ chối tag đã có bản phát hành) cũng chưa chạy trên CI với bản ký thật. Phần đọc kết quả workflow Test và danh sách bản phát hành bằng `gh` cần quyền `actions: read` và `GH_TOKEN` của workflow. Lần chạy đầu ở bước 2 (M7) sẽ là lần kiểm thật.
+Notarize và staple chạy lần đầu khi chuyển sang Developer ID.
+
+Phần `Checksums.json` đã chạy trong chế độ không ký (file ra đúng một dòng khớp `shasum -a 256` của DMG) và phần hợp nhất đã kiểm offline bằng `test-appcast.sh`. Đường ký (tài sản của bản nháp) và đường quảng bá (kiểm SHA-256 của DMG đã đổi tên) chưa chạy thật.

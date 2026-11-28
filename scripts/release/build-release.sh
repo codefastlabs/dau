@@ -1,8 +1,10 @@
 #!/bin/zsh
-# Builds a beta of the official Dấu release: archive, Developer ID export, notarize, staple, DMG, appcast (D7).
+# Builds a beta of the official Dấu release: archive, signature, DMG, appcast (D6, D7); with Developer ID also export, notarize, staple.
 # Side effects: builds; with --layout: takes the screen
 # One path from source to DMG, the same on CI and on a development Mac. Without the signing
 # secrets it still runs to the DMG ("unsigned" build) and says which steps it skipped.
+# The release signs with one identity at a time (D6): the Personal Team's Apple Development
+# certificate (not notarized) until the notary variables below are set, then Developer ID.
 #
 # A stable tag (vX.Y.Z) is NOT built: the stable release is the binary of the last beta,
 # unchanged and not rebuilt (D7), so it has no build to run and nothing to sign. This script
@@ -29,21 +31,26 @@
 #                     of commits in HEAD (git rev-list --count). It grows with history and is the
 #                     same on every machine. One number per build, so a new beta needs a new commit:
 #                     the script refuses a beta tag on a commit that already has another beta tag.
-#     --unsigned      do not sign with Developer ID even when the secrets are there.
+#     --unsigned      do not sign as an official build even when the secrets are there.
 #     --layout        lay the DMG window out with Finder (layout-dmg.sh, takes the screen): CI only.
 #     --out           output directory (default build/release; wiped first, must be inside build/).
 #
-# Mode: "signed" when every variable below is set, "unsigned" when none is (or --unsigned);
-# a part of them is an error, so a mistyped secret never ships an unsigned build by accident.
-#   DAU_TEAM_ID                 Team ID of the Developer ID certificate
+# Mode, from the variables below (an empty variable counts as unset):
+#   unsigned          none is set (or --unsigned).
+#   signed, Personal  the first three are set, no notary variable: Apple Development certificate of the
+#                     team, taken from the archive, DMG signed, not notarized (D6).
+#   signed, Developer ID  all six are set: exported with Developer ID, notarized and stapled.
+# Any other set is an error, so a mistyped secret never ships a build signed differently from the plan.
+#   DAU_TEAM_ID                 Team ID of the signing certificate
 #   DAU_SPARKLE_PUBLIC_KEY      public EdDSA key (from Sparkle's generate_keys), goes into Info.plist
 #   DAU_SPARKLE_PRIVATE_KEY     private EdDSA key, base64 as exported by `generate_keys -x`; read from the
 #                               environment and passed to generate_appcast on stdin: never written to disk or logged
 #   DAU_NOTARY_KEY              App Store Connect API key (the .p8 text)
 #   DAU_NOTARY_KEY_ID           its key ID
 #   DAU_NOTARY_ISSUER_ID        its issuer ID
-# The Developer ID Application certificate with its private key must be in a keychain on the
-# search list (the CI workflow imports it from DAU_DEVELOPER_ID_P12).
+# The certificate with its private key (Apple Development, or Developer ID Application for the
+# Developer ID mode) must be in a keychain on the search list (the CI workflow imports it from
+# DAU_SIGNING_P12). The Apple Development one is matched on the Organizational Unit of its subject.
 # The notary key is written to a 0600 file in $TMPDIR for notarytool, which only takes a path,
 # and deleted when the script ends.
 #
@@ -52,7 +59,8 @@
 # signing. It is for checking the pipeline, not for giving to users. With no Team ID the App
 # Group is refused, so the input method and the app cannot share settings: it does not run
 # like a real build. The DMG is named *-dev-unsigned.dmg and no appcast is made.
-# Skipped there: Developer ID signature, notarize, staple, DMG signature, appcast.
+# Skipped there: signature, notarize, staple, DMG signature, appcast.
+# Signed Personal mode skips only the export, notarize and staple.
 #
 # Output in --out: Dau-<version>.dmg (signed) or Dau-<version>-dev-unsigned.dmg,
 # Dau-<version>.dSYMs.zip, Checksums.json (origin/main's site/src/data/Checksums.json, "{}" when absent, plus
@@ -60,8 +68,9 @@
 # (signed only: the site/appcast.xml of origin/main with this release added as a NEW item tagged
 # <sparkle:channel>beta</sparkle:channel> (generate_appcast --channel beta; D7: an item without the tag
 # is a stable release every channel sees); publishing it is a
-# separate act, docs/Releasing.md), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
-# checksums, appcast, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
+# separate act, docs/Releasing.md), release-notes.md (signed only: release-notes-template.md, without
+# the Gatekeeper part when notarized), summary.txt; with $GITHUB_OUTPUT set also dmg, dsyms,
+# checksums, appcast, notes, display (X.Y.Z), label ("X.Y.Z beta N") and signed.
 # Exit status: 0 done; 1 a step or a check failed; 2 bad usage.
 
 set -euo pipefail
@@ -113,13 +122,18 @@ version_args=(CURRENT_PROJECT_VERSION=$build_number)
 [[ -n $display ]] && version_args+=("MARKETING_VERSION=$display")
 
 # --- mode --------------------------------------------------------------------
-signing_vars=(DAU_TEAM_ID DAU_SPARKLE_PUBLIC_KEY DAU_SPARKLE_PRIVATE_KEY DAU_NOTARY_KEY DAU_NOTARY_KEY_ID DAU_NOTARY_ISSUER_ID)
-set_vars=() missing_vars=()
-for v in $signing_vars; do if [[ -n ${(P)v-} ]]; then set_vars+=$v; else missing_vars+=$v; fi; done
-signed=0
-if (( ! force_unsigned && ${#set_vars} > 0 )); then
-  (( ${#missing_vars} == 0 )) || log_die "Có ${(j:, :)set_vars} nhưng thiếu ${(j:, :)missing_vars}: cấu hình dở dang. Đặt đủ hoặc dùng --unsigned."
+core_vars=(DAU_TEAM_ID DAU_SPARKLE_PUBLIC_KEY DAU_SPARKLE_PRIVATE_KEY)
+notary_vars=(DAU_NOTARY_KEY DAU_NOTARY_KEY_ID DAU_NOTARY_ISSUER_ID)
+set_core=() missing_core=() set_notary=() missing_notary=()
+for v in $core_vars; do if [[ -n ${(P)v-} ]]; then set_core+=$v; else missing_core+=$v; fi; done
+for v in $notary_vars; do if [[ -n ${(P)v-} ]]; then set_notary+=$v; else missing_notary+=$v; fi; done
+signed=0 developer_id=0
+if (( ! force_unsigned && ${#set_core} + ${#set_notary} > 0 )); then
+  (( ${#missing_core} == 0 )) || log_die "Có ${(j:, :)set_core} ${(j:, :)set_notary} nhưng thiếu ${(j:, :)missing_core}: cấu hình dở dang. Đặt đủ hoặc dùng --unsigned."
+  (( ${#set_notary} == 0 || ${#missing_notary} == 0 )) \
+    || log_die "Có ${(j:, :)set_notary} nhưng thiếu ${(j:, :)missing_notary}: notarize cần đủ ba biến. Đặt đủ, bỏ cả ba (ký Personal Team, không notarize) hoặc dùng --unsigned."
   signed=1
+  (( ${#set_notary} )) && developer_id=1
 fi
 if (( signed )) && [[ -z $display ]]; then
   log_die 2 "Bản ký cần --tag vX.Y.Z-beta.N: tag đặt số phiên bản và địa chỉ tải trong appcast."
@@ -153,16 +167,20 @@ if (( signed )); then
       "Dùng --build-number với số nằm trong khoảng trống chưa dùng giữa hai mốc (docs/Releasing.md, \"Số build\")."
   fi
 fi
-dev_id=""
-if (( signed )); then
+signing_id=""
+if (( developer_id )); then
   # find-identity lists a revoked certificate too (CSSMERR_*): drop those, match the Team ID.
-  dev_id=$(security find-identity -v -p codesigning | grep "Developer ID Application" | grep "($DAU_TEAM_ID)" | grep -v CSSMERR | head -1 | awk '{print $2}') || true
-  [[ -n $dev_id ]] || log_die "Không thấy chứng chỉ \"Developer ID Application\" của Team $DAU_TEAM_ID (còn hạn) trong keychain."
+  signing_id=$(security find-identity -v -p codesigning | grep "Developer ID Application" | grep "($DAU_TEAM_ID)" | grep -v CSSMERR | head -1 | awk '{print $2}') || true
+  [[ -n $signing_id ]] || log_die "Không thấy chứng chỉ \"Developer ID Application\" của Team $DAU_TEAM_ID (còn hạn) trong keychain."
+elif (( signed )); then
+  signing_id=$(dau_team_signing_identity "$DAU_TEAM_ID") \
+    || log_die "Không thấy chứng chỉ \"Apple Development\" của Team $DAU_TEAM_ID (còn hạn, chưa bị thu hồi) trong keychain."
 fi
 
 skipped=()
 log_step "Phát hành Dấu ${display:-(phiên bản trong project.yml)}, số build $build_number"
-if (( signed )); then log_detail "chế độ: ký Developer ID (Team $DAU_TEAM_ID), notarize, appcast"
+if (( developer_id )); then log_detail "chế độ: ký Developer ID (Team $DAU_TEAM_ID), notarize, appcast"
+elif (( signed )); then log_detail "chế độ: ký Apple Development của Personal Team $DAU_TEAM_ID, không notarize, appcast"
 else log_warn "Chế độ KHÔNG KÝ: dựng như bản phát triển (D7), để kiểm quy trình; không phát cho người dùng, không lên appcast."; fi
 
 # --- archive -----------------------------------------------------------------
@@ -174,7 +192,8 @@ log_step "Sinh Dau.xcodeproj"
 
 if (( signed )); then
   official=YES
-  sign_args=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=Developer ID Application" DEVELOPMENT_TEAM=$DAU_TEAM_ID OTHER_CODE_SIGN_FLAGS=--timestamp)
+  # The archive is signed with the exact identity (SHA-1): two certificates can share a name.
+  sign_args=(CODE_SIGN_STYLE=Manual "CODE_SIGN_IDENTITY=$signing_id" DEVELOPMENT_TEAM=$DAU_TEAM_ID OTHER_CODE_SIGN_FLAGS=--timestamp)
   sparkle_args=(DAU_SPARKLE_PUBLIC_KEY=$DAU_SPARKLE_PUBLIC_KEY DAU_SPARKLE_FEED_URL=$official_feed)
 else
   # A development build (D7): no feed and no key, so project.yml leaves them out of Info.plist.
@@ -193,7 +212,9 @@ app=$archive/Products/Applications/Dau.app
 [[ -d $app ]] || log_die "Archive không có Dau.app."
 
 # --- export (Developer ID) ---------------------------------------------------
-if (( signed )); then
+# The Personal Team build is taken from the archive: Xcode already signed it with the Apple
+# Development identity, and -exportArchive has no method for that certificate that keeps it.
+if (( developer_id )); then
   log_step "Xuất bản ký Developer ID"
   cat > "$out/ExportOptions.plist" <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
@@ -210,7 +231,25 @@ PLIST
   app=$out/export/Dau.app
   [[ -d $app ]] || log_die "Xuất archive không ra Dau.app."
 else
-  skipped+=("xuất và ký Developer ID (app ký tạm ad hoc)")
+  (( signed )) && skipped+=("xuất Developer ID (app lấy từ archive, ký Apple Development)") \
+    || skipped+=("xuất và ký Developer ID (app ký tạm ad hoc)")
+fi
+
+# --- re-sign Sparkle (Personal Team) -------------------------------------------
+# Xcode signs Sparkle.framework but leaves the code nested in it with the signature Sparkle ships
+# (ad hoc); -exportArchive would re-sign it. Under the hardened runtime the app only loads
+# Sparkle when both carry one Team ID, so the nested code is signed inside-out here, then the
+# app again, because its seal covers the framework. The entitlements of each item are kept.
+resign_sparkle() { # app identity
+  local app=$1 identity=$2 framework item
+  framework=$app/Contents/Frameworks/Sparkle.framework
+  for item in $framework/Versions/B/XPCServices/*.xpc(N) $framework/Versions/B/Autoupdate $framework/Versions/B/Updater.app $framework "$app"; do
+    codesign --force --sign "$identity" --timestamp --options runtime --preserve-metadata=entitlements "$item"
+  done
+}
+if (( signed && ! developer_id )); then
+  log_step "Ký lại mã của Sparkle và app bằng Apple Development"
+  resign_sparkle "$app" "$signing_id"
 fi
 
 # --- notarize ----------------------------------------------------------------
@@ -232,7 +271,7 @@ notarize() { # file: submit, wait, fail unless Accepted (the log of a rejection 
     log_die "Apple không chấp nhận ${file:t} (notarize, trạng thái '${nstatus}')."
   fi
 }
-if (( signed )); then
+if (( developer_id )); then
   notary_key_file=$(mktemp "${TMPDIR:-/tmp}/dau-notary.XXXXXX")
   chmod 600 "$notary_key_file"
   print -r -- "$DAU_NOTARY_KEY" > "$notary_key_file"
@@ -248,7 +287,8 @@ fi
 
 # --- check the app -----------------------------------------------------------
 check=("$DAU_ROOT/scripts/release/check-build.sh" "$app" --archive "$archive")
-(( signed )) && check+=(--feed "$official_feed" --signed)
+(( signed )) && check+=(--feed "$official_feed" --signed --team "$DAU_TEAM_ID")
+(( developer_id )) && check+=(--developer-id)
 DAU_SPARKLE_PUBLIC_KEY=${DAU_SPARKLE_PUBLIC_KEY-} "${check[@]}" || log_die "Bản build không đạt kiểm tra."
 
 # --- DMG ---------------------------------------------------------------------
@@ -291,12 +331,17 @@ fi
 hdiutil convert "$rw" -format ULFO -o "$dmg" >/dev/null
 command rm -rf "$rw" "$staging"
 
-if (( signed )); then
+if (( developer_id )); then
   log_step "Ký và notarize DMG"
-  codesign --force --sign "$dev_id" --timestamp "$dmg"
+  codesign --force --sign "$signing_id" --timestamp "$dmg"
   notarize "$dmg"
   xcrun stapler staple "$dmg" >/dev/null
   log_ok "DMG đã ký, notarize và staple"
+elif (( signed )); then
+  log_step "Ký DMG"
+  codesign --force --sign "$signing_id" --timestamp "$dmg"
+  log_ok "DMG đã ký (Apple Development, không notarize)"
+  skipped+=("notarize và staple")
 else
   skipped+=("ký, notarize và staple DMG")
 fi
@@ -317,9 +362,15 @@ if [[ $laid_out == yes ]]; then
   [[ -f $mnt/.DS_Store ]] && log_ok "DMG có bố cục (.DS_Store)" || log_die "DMG thiếu .DS_Store dù đã sắp xếp."
 fi
 dmg_check=("$DAU_ROOT/scripts/release/check-build.sh" "$mnt/Dau.app")
-(( signed )) && dmg_check+=(--feed "$official_feed" --signed)
+(( signed )) && dmg_check+=(--feed "$official_feed" --signed --team "$DAU_TEAM_ID")
+(( developer_id )) && dmg_check+=(--developer-id)
 DAU_SPARKLE_PUBLIC_KEY=${DAU_SPARKLE_PUBLIC_KEY-} "${dmg_check[@]}" || log_die "App trong DMG không đạt kiểm tra."
 if (( signed )); then
+  codesign --verify --strict "$dmg" || log_die "Chữ ký DMG không hợp lệ."
+  [[ $(codesign -dvv "$dmg" 2>&1) == *"TeamIdentifier=$DAU_TEAM_ID"$'\n'* ]] || log_die "DMG không ký bằng Team $DAU_TEAM_ID."
+  log_ok "DMG: chữ ký hợp lệ, Team $DAU_TEAM_ID"
+fi
+if (( developer_id )); then
   spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg" \
     || log_die "spctl từ chối DMG."
   xcrun stapler validate "$dmg" >/dev/null || log_die "DMG chưa có vé notarize."
@@ -363,6 +414,21 @@ else
   skipped+=("ký bản cập nhật và sinh appcast")
 fi
 
+# --- release notes ------------------------------------------------------------
+notes=""
+if (( signed )); then
+  notes=$out/release-notes.md
+  # Drops the template comment and the marker lines; the part between the markers only without notarization.
+  awk -v notarized=$developer_id '
+    /^<!-- Template/ {comment=1}
+    comment {if (/-->/) comment=0; next}
+    /<!-- gatekeeper:begin -->/ {part=1; next}
+    /<!-- gatekeeper:end -->/ {part=0; next}
+    !(part && notarized) {print}
+  ' "$DAU_ROOT/scripts/release/release-notes-template.md" > "$notes"
+  log_ok "Ghi chú bản phát hành: ${notes#$DAU_ROOT/}"
+fi
+
 # --- checksums ----------------------------------------------------------------
 # Same flow as the appcast: start from origin/main's file (not the one at the tagged commit, which
 # can lack the previous release), add this build. The key is sparkle:version, the build number.
@@ -379,7 +445,7 @@ log_ok "Checksums.json: build $build_number = ${dmg_sha256[1,16]}… (${dmg_name
 
 # --- summary -----------------------------------------------------------------
 {
-  print -r -- "Dấu ${label:-${display:-dev}} (hiển thị ${display:-dev}, build $build_number), chế độ: $([[ $signed == 1 ]] && print ký || print không ký)"
+  print -r -- "Dấu ${label:-${display:-dev}} (hiển thị ${display:-dev}, build $build_number), chế độ: $( (( developer_id )) && print "ký Developer ID, notarize" || { (( signed )) && print "ký Apple Development (Personal Team), không notarize" || print "không ký" } )"
   print -r -- "DMG: $dmg_name"
   print -r -- "SHA-256 của DMG: $dmg_sha256"
   print -r -- "Bố cục cửa sổ DMG: $laid_out"
@@ -387,7 +453,7 @@ log_ok "Checksums.json: build $build_number = ${dmg_sha256[1,16]}… (${dmg_name
 } > "$out/summary.txt"
 if [[ -n ${GITHUB_OUTPUT-} ]]; then
   {
-    print -r -- "dmg=$dmg"; print -r -- "dsyms=$dsyms"; print -r -- "checksums=$checksums"; print -r -- "appcast=$appcast"
+    print -r -- "dmg=$dmg"; print -r -- "dsyms=$dsyms"; print -r -- "checksums=$checksums"; print -r -- "appcast=$appcast"; print -r -- "notes=$notes"
     print -r -- "display=${display:-dev}"; print -r -- "label=${label:-${display:-dev}}"; print -r -- "signed=$signed"
   } >> "$GITHUB_OUTPUT"
 fi

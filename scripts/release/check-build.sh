@@ -3,14 +3,19 @@
 # Side effects: none
 #
 # Usage:
-#   scripts/release/check-build.sh APP [--feed URL] [--archive XCARCHIVE] [--signed]
+#   scripts/release/check-build.sh APP [--feed URL] [--archive XCARCHIVE] [--signed --team TEAM] [--developer-id]
 #     APP        the Dau.app to check (from an archive, an export or a mounted DMG).
 #     --feed     the SUFeedURL the official build must carry (D7); required with --signed,
 #                not allowed without it (an unsigned build is a development build: no feed).
 #     --archive  also check that the archive holds the dSYMs of the app and the input method.
-#     --signed   the build is the official one: check its icon and Sparkle keys, the Developer ID
-#                signature, Gatekeeper (spctl) and the stapled notarization ticket (stapler validate).
-#                Without it the build is a development build (build-release.sh --unsigned).
+#     --signed   the build is the official one: check its icon and Sparkle keys and the signature of
+#                the app, the input method and every nested bundle of Sparkle: valid at every
+#                architecture, certificate of TEAM, hardened runtime, secure timestamp, no
+#                get-task-allow. Without it the build is a development build (build-release.sh --unsigned).
+#     --team     the Team ID the leaf certificate must carry; required with --signed.
+#     --developer-id  the signature is Developer ID, so also check Gatekeeper (spctl) and the stapled
+#                notarization ticket (stapler validate). Without it the signature must be Apple
+#                Development (the Personal Team build, not notarized; D6).
 # Env: DAU_SPARKLE_PUBLIC_KEY, when set, must equal the SUPublicEDKey in the build (--signed).
 # Exit status: 0 every check passed; 1 at least one failed; 2 bad usage.
 #
@@ -26,24 +31,55 @@
 set -uo pipefail
 source "${${(%):-%x}:A:h:h}/lib/build.sh"
 
-app="" feed="" archive="" signed=0
+app="" feed="" archive="" signed=0 team="" developer_id=0
 while (( $# )); do
   case $1 in
     --feed)    feed=${2-}; shift 2 || log_die 2 "--feed cần một URL" ;;
     --archive) archive=${2-}; shift 2 || log_die 2 "--archive cần một đường dẫn" ;;
     --signed)  signed=1; shift ;;
+    --team)    team=${2-}; shift 2 || log_die 2 "--team cần một Team ID" ;;
+    --developer-id) developer_id=1; shift ;;
     -h|--help) log_usage "${(%):-%x}"; exit 0 ;;
     -*)        log_die 2 "Tuỳ chọn lạ: $1" ;;
     *)         [[ -z $app ]] || log_die 2 "Chỉ một APP"; app=$1; shift ;;
   esac
 done
 [[ -d $app ]] || log_die 2 "Cần APP (xem --help)."
-if (( signed )); then [[ -n $feed ]] || log_die 2 "--signed cần --feed (xem --help)."
-else [[ -z $feed ]] || log_die 2 "--feed chỉ dùng với --signed: bản không ký là bản phát triển, không có feed."; fi
+if (( signed )); then
+  [[ -n $feed ]] || log_die 2 "--signed cần --feed (xem --help)."
+  [[ -n $team ]] || log_die 2 "--signed cần --team (xem --help)."
+else
+  [[ -z $feed ]] || log_die 2 "--feed chỉ dùng với --signed: bản không ký là bản phát triển, không có feed."
+  (( ! developer_id )) && [[ -z $team ]] || log_die 2 "--team và --developer-id chỉ dùng với --signed."
+fi
 
 fails=0
 fail() { log_error "$1"; fails=$(( fails + 1 )); }
 plist() { /usr/libexec/PlistBuddy -c "Print :$2" "$1/Contents/Info.plist" 2>/dev/null; }
+
+# Signature of one code item of an official build: valid at every architecture, leaf certificate
+# of $team, hardened runtime, secure timestamp (a plain `Signed Time` line is not one), no get-task-allow.
+check_signature() {
+  local code=$1 name=${1:t} info executable archs arch ok=1 certs leaf_team entitlements
+  info=$(codesign -dvv "$code" 2>&1)
+  executable=${${(M)${(f)info}:#Executable=*}[1]#Executable=}
+  archs=$(lipo -archs "$executable" 2>/dev/null)
+  [[ -n $archs ]] || { fail "$name: không đọc được kiến trúc"; ok=0; }
+  for arch in ${=archs}; do
+    codesign --verify --deep --strict --architecture "$arch" "$code" 2>/dev/null || { fail "$name: chữ ký không hợp lệ ở kiến trúc $arch"; ok=0; }
+  done
+  [[ $info == *"flags="*runtime* ]] || { fail "$name: hardened runtime tắt"; ok=0; }
+  [[ $info == *$'\n'Timestamp=* ]] || { fail "$name: không có dấu thời gian bảo mật (--timestamp)"; ok=0; }
+  certs=$(mktemp -d "${TMPDIR:-/tmp}/dau-certs.XXXXXX")
+  codesign -d --extract-certificates="$certs/c" "$code" >/dev/null 2>&1
+  leaf_team=$(/usr/bin/openssl x509 -inform der -in "$certs/c0" -noout -subject -nameopt multiline 2>/dev/null | awk -F" = " '/organizationalUnitName/ {print $2}')
+  command rm -rf "$certs"
+  [[ $leaf_team == "$team" ]] || { fail "$name: chứng chỉ lá thuộc Team '${leaf_team}', cần $team"; ok=0; }
+  entitlements=$(codesign -d --entitlements - --xml "$code" 2>/dev/null)
+  [[ $entitlements != *get-task-allow* ]] || { fail "$name: có get-task-allow (D8)"; ok=0; }
+  (( ok )) && log_ok "$name: chữ ký hợp lệ ($archs), Team $team, hardened runtime, dấu thời gian, không get-task-allow"
+  return 0
+}
 
 im="$app/Contents/Library/Input Methods/DauInputMethod.app"
 app_bin="$app/Contents/MacOS/Dau"
@@ -101,12 +137,16 @@ if [[ -n $archive ]]; then
     else fail "Archive thiếu dSYM của $d"; fi
   done
 fi
-
 if (( signed )); then
+  signed_code=("$app" "$im" "$app/Contents/Frameworks/Sparkle.framework")
+  signed_code+=("$app"/Contents/Frameworks/Sparkle.framework/Versions/B/**/*.(app|xpc)(N^@) "$app"/Contents/Frameworks/Sparkle.framework/Versions/B/Autoupdate(N))
+  for code in $signed_code; do check_signature "$code"; done
+  want_authority="Apple Development:"; (( developer_id )) && want_authority="Developer ID Application:"
   auth=$(codesign -dvv "$app" 2>&1)
-  if [[ $auth == *"Authority=Developer ID Application"* ]]; then log_ok "Ký bằng Developer ID Application"
-  else fail "Không ký bằng Developer ID Application"; fi
-  if [[ $auth == *flags=*runtime* ]]; then log_ok "Hardened runtime bật"; else fail "Hardened runtime tắt"; fi
+  if [[ $auth == *"Authority=$want_authority"* ]]; then log_ok "Ký bằng $want_authority"
+  else fail "Không ký bằng $want_authority"; fi
+fi
+if (( developer_id )); then
   if spctl --assess --type execute --verbose=2 "$app" >/dev/null 2>&1; then log_ok "spctl chấp nhận app"
   else fail "spctl từ chối app"; fi
   if xcrun stapler validate "$app" >/dev/null 2>&1; then log_ok "Vé notarize đã đính kèm app (stapler validate)"
