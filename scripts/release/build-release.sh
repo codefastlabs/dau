@@ -282,7 +282,7 @@ if (( developer_id )); then
   xcrun stapler staple "$app" >/dev/null
   log_ok "Dau.app đã notarize và staple"
 else
-  skipped+=("notarize và staple")
+  skipped+=("notarize và staple Dau.app")
 fi
 
 # --- check the app -----------------------------------------------------------
@@ -341,7 +341,7 @@ elif (( signed )); then
   log_step "Ký DMG"
   codesign --force --sign "$signing_id" --timestamp "$dmg"
   log_ok "DMG đã ký (Apple Development, không notarize)"
-  skipped+=("notarize và staple")
+  skipped+=("notarize và staple DMG")
 else
   skipped+=("ký, notarize và staple DMG")
 fi
