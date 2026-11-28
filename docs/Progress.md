@@ -7,11 +7,10 @@ Nhật ký điều phối, để phiên sau (hoặc sau khi ngữ cảnh bị n�
 M6 (Hiệu năng dưới tải) đóng 16/11/2026, kiểm toán ĐẠT. M7 (Phát hành) đang làm từ 17/11/2026, theo mục "Kế hoạch M7" bên dưới: beta đầu tiên `v0.1.0-beta.1` ký Personal Team và không notarize (D6 (Phát hành), chủ dự án chốt 28/11/2026). M8 (Website) làm song song từ 24/11/2026 và lên `dau.codefastlabs.com` cùng beta đầu tiên.
 
 Chờ chủ dự án:
-- Bước 3 của kế hoạch M7: chứng chỉ `.p12`, khoá EdDSA của Sparkle, Vercel và DNS.
+- Duyệt canvas ở bước 6 của kế hoạch M7 (trang tải về và các ô của lần duyệt sau bước 4).
 
 Việc tiếp theo:
-- Bước 2 của kế hoạch M7 (đường ký Personal Team trong script và CI, đường chuyển sang Developer ID), không chờ bước 3.
-- Bước 4 trở đi chờ bước 3.
+- Bước 5 và 6 của kế hoạch M7 (bước 1–4 xong 28/11).
 - Không chờ: tài liệu chính và tài liệu tra cứu đã viết lại theo D44 (Văn xuôi tiếng Việt) ngày 22/11; còn `docs/research/` và `docs/history/`.
 - Không chờ: chẩn đoán các lỗi gõ sai chữ còn lại ở Việc mở (WebStorm, Cursor, Safari sau ⇧⌥←), chuẩn bị offline rồi gộp vào một lượt chạy chiếm màn hình.
 
@@ -55,20 +54,20 @@ Thứ tự: bước 2 không chờ gì. Bước 4 chờ bước 2 và 3. Bước
 
 D6, D7, D24, D25 và D37 sửa theo quyết định mới; `docs/Roadmap.md` và `docs/Releasing.md` sửa theo.
 
-### Bước 2 — Đường ký Personal Team trong script và CI
+### Bước 2 — Đường ký Personal Team trong script và CI: xong 28/11
 
 1. `scripts/release/build-release.sh` ký bằng Apple Development của Personal Team với `DAU_OFFICIAL=YES` (biểu tượng chuẩn, `SUFeedURL`, `SUPublicEDKey`) và ký EdDSA cho appcast; không notarize, không staple, không ký DMG bằng Developer ID. `check-build.sh` kiểm `codesign` và Team ID, không đòi `spctl` và `stapler` ở đường này. `release.yml` dùng secret của chứng chỉ Personal Team; `check-release-gate.sh` và `check-appcast.sh` giữ nguyên.
 2. Đường chuyển sang Developer ID (D7, ý "Chuyển danh tính ký"): app chủ mang cài đặt sang App Group mới khi Team ID đổi; bản chủ thay bộ gõ của danh tính phát hành trước mà không hiện banner (D37); cả hai có test offline. Kết luận đọc tài liệu Sparkle 2.10.1 về việc đổi danh tính ký ghi vào `docs/research/`.
 3. Test xanh; `scripts/check-l10n/check.sh` khi đổi chuỗi.
 
-### Bước 3 — Việc của chủ dự án
+### Bước 3 — Việc của chủ dự án: xong 28/11
 
 Phiên chính soạn sẵn từng lệnh và nhãn bấm rồi hỏi một lần. Phiên chính không cầm khoá.
 1. Xuất chứng chỉ Apple Development của Personal Team ra `.p12` và nạp vào secret của GitHub (`docs/Releasing.md`, mục "Việc của người dùng").
 2. Sinh khoá EdDSA của Sparkle và nạp vào secret.
 3. Vercel: đăng nhập, nối repo với project (Root Directory `site`), trỏ DNS của `dau.codefastlabs.com` về Vercel. Nếu chủ dự án đăng nhập Vercel CLI trên máy thì phiên chính tự cấu hình phần còn lại.
 
-### Bước 4 — Hai bản thử trên CI và một lượt chạy chiếm màn hình
+### Bước 4 — Hai bản thử trên CI và một lượt chạy chiếm màn hình: xong 28/11, trừ ô đếm `activate` (mục 5, nhật ký)
 
 Tag `v0.0.1-beta.1`, rồi tag `v0.0.1-beta.2` trên commit sau commit appcast của bản thứ nhất (số hiển thị "0.0.1", nhỏ hơn beta đầu tiên). Công bố cả hai. Kiểm DMG không cần màn hình bằng `scripts/release/check-build.sh`. Lỗi lộ ra thì sửa trước khi đi tiếp, rồi cập nhật mục "Còn phải thấy chạy thật" của `docs/Releasing.md`.
 
@@ -112,12 +111,17 @@ Gỡ mục 0.0.1 khỏi `site/appcast.xml` trước; đợi `scripts/release/che
    - Dữ liệu: điền các ô `[…]` theo nguồn ở `docs/research/WebsiteStack.md` mục "Dữ liệu lúc build": phiên bản, ngày, dung lượng, SHA-256 (`Checksums.json`), mục "Đo được" (`Measurements.json`) và danh sách app đã kiểm chứng.
    - Kiểm cục bộ: mọi script trong `site/package.json` (`typecheck`, `lint`, `format:check`, `test`, `build` kể cả `VerifyOutput`, và `dev` với curl `/`, `/en`, `appcast.xml` rồi tắt server); Lighthouse theo `lighthouserc.json` nếu workflow Site có bước đó; hook `pre-push` đạt.
    - Kiểm trên tên miền sau bước Công bố: `scripts/release/check-site-appcast.sh` đạt; `/en` chạy, chuyển hướng 308 và header bảo mật đúng (`docs/research/WebsiteStack.md` mục 3); nút tải về trỏ đúng DMG trên GitHub và SHA-256 trên trang khớp DMG; job `deployment_status` của `site.yml` xanh.
-3. Danh sách 15 ứng dụng đã kiểm chứng gõ đúng trên trang dựa một phần vào số đo có trước khi Dấu tự chèn ký tự (N3, 22/11): Mail và Notes đo 30/10, Telegram và Edge đo 17/11. Bốn ô này đo lại ở bước 4 của kế hoạch M7, rồi sửa `docs/Compatibility.md` và `CompatibilityList.json` nếu kết quả khác.
+3. Đo lại Mail, Notes, Telegram và Edge sau N3: xong 28/11, cả bốn đúng, danh sách không đổi (`docs/Compatibility.md`).
 
 ## Nhật ký
 Nhật ký M0–M4 ở `docs/history/LogM0ToM4.md` (kèm bảng số đo M1–M3), M5 ở `docs/history/LogM5.md`, 05–08/11 (giữa M5 và M6) ở `docs/history/LogBetweenM5AndM6.md`, M6 ở `docs/history/LogM6.md`. M7: phần trước ngày áp luật nhật ký (17/11) ở `docs/history/LogM7.md`; đóng M7 thì nối phần dưới vào cuối file đó.
 
 (ngày — việc — kết quả — nơi chứa số, commit; điều gì được ghi: [`CLAUDE.md`](../CLAUDE.md), mục "Nguồn chuẩn")
+
+- 28/11 — hai bản thử trên CI, ký Personal Team: `v0.0.1-beta.1` (build 7490, `e85f3f0`) và `v0.0.1-beta.2` (build 7510, `9aa9bc5`) dựng đạt ngay lần đầu, `check-build.sh --signed --team M58DANM3ZP` đạt trên app trong DMG, appcast giữ mục cũ và thêm mục mới, SHA-256 khớp `Checksums.json`; công bố cả hai, `check-site-appcast.sh` đạt sau mỗi lần. DMG ký Apple Development bị Gatekeeper chặn lúc mở; sửa ở `bba5aa3` (DMG không ký), chi tiết `docs/research/ReleaseSigning.md` mục 3.3.
+- 28/11 — lượt chạy chiếm màn hình bước 4 (máy M3 Max, macOS 27.2.1, ngôn ngữ ưu tiên en-VN rồi vi-VN; Dấu đặt riêng tiếng Việt, tạm bỏ khi xem bản tiếng Anh). Điều kiện: `clean-dau.sh --yes` không xoá được container của bộ gõ và App Group (thiếu Full Disk Access), nên App Group giữ cài đặt cũ; cài từ ảnh đĩa không ký mang quarantine của Safari, vì DMG đã ký bị chặn. Kết quả: Gatekeeper và xác thực (Touch ID) theo `docs/research/ReleaseSigning.md` mục 3.3; onboarding bật Dấu không cần đăng xuất; App Group đạt (chọn VNI trong app chủ, `typing/run.sh` Chrome và Safari ra "Việt Nam tươi đẹp"); Sparkle cập nhật 7490 → 7510 qua "Kiểm tra bản mới…", bộ gõ được thay (cdhash đổi, build 7510), câu mẫu đạt ở Chrome và Safari ngay sau đó; VoiceOver (D17) và Tab qua trang Updates & Support đạt (mọi control, tên đúng); chế độ tối: sheet báo lỗi và cửa sổ DMG đúng, biểu tượng "V" cùng màu biểu tượng hệ thống (hình nền tối, chưa thấy thanh menu nền sáng); ma trận `settings-window/run.sh` với bản Debug `bba5aa3` đạt (235 + 15 + 28 hàng cửa sổ thật, 326 hàng ảnh), 45 giây; Mail, Notes, Telegram, Edge 158 đạt (`docs/Compatibility.md`); D20 ở Notion đạt 3/3 lượt hợp lệ ở 80 ± 30 ms, đối chứng Chrome đạt; Telex của Apple ở Chrome ra cùng chữ khi trang rảnh (1/1) và trang bận 80:100 (3/3), Dấu trang bận đạt (D11). Việc mở 6 (lần gõ đầu sau Sparkle) không đo được với bản Release (D8). Ô đếm `activate` và `source-changed-reset` theo đường chuyển nguồn bỏ ở lượt này: lần thử trong thanh địa chỉ Safari không ghi dòng nào, chưa chắc phím vào ô; đường menu và ⇄ cần script riêng, và kết quả không đổi beta. Dọn: bản Release `a1e4eb7` cài lại, cài đặt và thiết lập ngôn ngữ của Dấu trả lại, Edge giữ lại theo ý chủ dự án.
+- 28/11 — quan sát chưa rõ: sau `clean-dau.sh --yes`, miền `com.codefastlabs.dau` quay lại với nội dung trước khi xoá (vị trí cửa sổ, `AppleLanguages`). Thử `rm` trên một miền giả thì `cfprefsd` nhận ra file đã xoá, nên giả thuyết "cfprefsd ghi lại bản trong bộ nhớ" chưa đứng; chưa sửa script.
+- 28/11 — lỗi của phép đo: Safari báo ô nhập của trang thử chưa có focus 2 lần liên tiếp rồi đạt; ô Notion dừng khi trang phía trước chưa có tên (Notion tiếng Việt, tiêu đề "Trang mới"), sửa ở `a1e4eb7`.
 
 - 17/11 — đo engine bản Release (`swift test -c release --filter Performance`, máy M3 Max): Telex 0,13 µs mỗi phím, VNI 0,12 µs. Một lần gọi `selectedRange` vào app tốn 230–622 µs p50 (số đo 29–30/10, `docs/Compatibility.md` mục 5), nên thời gian mỗi phím nằm ở số lời gọi vào app (N3), không ở engine; không thêm cổng tốc độ cho engine trên CI.
 - 17/11 — D20 trên web editor (máy M3 Max, Chrome 157.0.8103.79, bộ gõ Release `0b1a42d`): `scripts/selftest/typing/typed-word-docs.sh --gdocs <link> --wordweb <link>`, tài liệu trống của người dùng — Word trên web đúng 6/6, Google Docs sai 3/3 cả chữ gõ liền; số và chữ đọc lại ở `docs/Compatibility.md` mục 5.10.

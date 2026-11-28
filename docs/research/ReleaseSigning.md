@@ -18,7 +18,7 @@ Mỗi khẳng định mang một nhãn nguồn:
 - **Homebrew 7.0.16 luôn gắn quarantine** lên tệp cask tải về và lên mọi tệp giải nén từ đó. Tuỳ chọn `--no-quarantine` không còn: Homebrew 5.0.0 bỏ dùng nó, 5.1.0 tắt nó và 6.0.0 xoá nó. Lúc cài, `brew` không kiểm Gatekeeper, không từ chối và không cảnh báo app chưa notarize. Chỉ lệnh `brew audit` của tap chính thức mới kiểm Gatekeeper [Mã Homebrew].
 - **Chính sách Gatekeeper của Homebrew chỉ áp cho `homebrew/cask`.** Từ tháng 9/2026, cask của tap đó không qua Gatekeeper sẽ bị tắt. Tap riêng `codefastlabs/homebrew-tap` không chịu luật này. Khi cask chuyển vào `homebrew/cask` (D6), app phải ký Developer ID và notarize [Mã Homebrew; brew.sh].
 - **Cask nên báo bước Gatekeeper bằng `caveats` dạng chuỗi.** Homebrew không có caveat dựng sẵn cho trường hợp này. Không dùng `deprecate!` hay `disable!` với lý do `:fails_gatekeeper_check`, vì hai stanza đó dành cho việc ngừng phát một cask [Mã Homebrew].
-- **Gatekeeper từ macOS 15:** người dùng không còn mở được app chưa notarize bằng Control-click rồi chọn Open. Họ phải mở app một lần, vào System Settings › Privacy & Security, bấm "Open Anyway" trong vòng khoảng một giờ, xác nhận rồi nhập mật khẩu [Apple]. Chuỗi tiếng Anh và tiếng Việt của từng bước nằm ở mục 3.2 [đọc từ tệp, chưa thấy trên màn hình].
+- **Gatekeeper từ macOS 15:** người dùng không còn mở được app chưa notarize bằng Control-click rồi chọn Open. Họ phải mở app một lần, vào System Settings › Privacy & Security, bấm "Open Anyway" trong vòng khoảng một giờ, xác nhận rồi nhập mật khẩu [Apple]. Chuỗi tiếng Anh và tiếng Việt của từng bước nằm ở mục 3.2 [đọc từ tệp]; bản tiếng Anh của các hộp thoại đã thấy trên màn hình ở mục 3.3. DMG ký mà không notarize bị chặn ngay lúc mở, nên đường Personal Team không ký DMG.
 - **macOS có riêng một bộ chuỗi cho app ký bằng tài khoản miễn phí** ("… is for personal testing purposes by …", tức "dùng cho các mục đích thử nghiệm cá nhân"). Bản Personal Team của Dấu sẽ hiện bộ chuỗi này hay bộ chuỗi chung "“Dấu” Not Opened" thì phải thấy trên màn hình mới biết [suy luận, cần kiểm chứng].
 - **Bảo vệ thư mục App Group (macOS 15 trở lên):** app đọc thư mục group của một team khác làm macOS hỏi người dùng, kể cả khi app không sandbox. Không có cách nào tránh câu hỏi đó. Quyền người dùng cho chỉ giữ tới khi tiến trình thoát [Apple DTS]. Vì vậy bản ký Developer ID (team mới) không nên đọc `~/Library/Group Containers/M58DANM3ZP.com.codefastlabs.dau.shared`. Thiết kế chép cài đặt sang defaults riêng của app chủ khi còn ký Personal Team, rồi bản mới đọc từ đó, tránh được câu hỏi này.
 - **Rủi ro mới cho D37:** từ macOS 13, macOS chặn một app sửa app của team khác nếu app bị sửa không khai `NSUpdateSecurityPolicy` cho phép [Apple]. Sau khi chuyển, app chủ ký Developer ID thay bộ gõ ký Personal Team trong `~/Library/Input Methods`. Apple nói về luật này cho app đã notarize, còn bộ gõ Personal Team thì không notarize. Lần thay đó có bị chặn hay hỏi quyền App Management không thì chưa rõ [suy luận, cần kiểm chứng] (mục 5).
@@ -104,7 +104,7 @@ Vì vậy hướng dẫn cho người dùng không được nhắc `--no-quarant
 
 ### 3.2 Chuỗi trên máy này
 
-Mọi chuỗi dưới đây **đọc từ tệp, chưa thấy trên màn hình**. Máy chạy macOS 27.2.1 (26B131). Các tệp `.loctable` là plist nhị phân chứa mọi ngôn ngữ; lệnh đọc là `plutil -convert json -o - <tệp>`, rồi lấy khoá trong `.en` và `.vi`. `%@` thứ nhất là tên app, `%@` thứ hai (nếu có) là tên trên chứng chỉ.
+Mọi chuỗi dưới đây **đọc từ tệp**; chuỗi nào đã thấy trên màn hình ghi ở mục 3.3. Máy chạy macOS 27.2.1 (26B131). Các tệp `.loctable` là plist nhị phân chứa mọi ngôn ngữ; lệnh đọc là `plutil -convert json -o - <tệp>`, rồi lấy khoá trong `.en` và `.vi`. `%@` thứ nhất là tên app, `%@` thứ hai (nếu có) là tên trên chứng chỉ.
 
 Hộp thoại chặn lần mở đầu nằm ở `/System/Library/CoreServices/CoreServicesUIAgent.app/Contents/Resources/`. Tệp không cho biết hộp thoại ghép khoá nào với khoá nào, nên dưới đây là hai bộ ứng viên.
 
@@ -154,9 +154,18 @@ Hộp thoại xác nhận sau khi bấm "Open Anyway" và lời xin mật khẩu
 
 Nút xác nhận là "Open Anyway" hay "Open" thì tệp không cho biết. Trang hỗ trợ của Apple viết "click Open".
 
-### 3.3 Cần thấy trên màn hình
+### 3.3 Đã thấy trên màn hình (28/11/2026, macOS 27.2.1, máy M3 Max, macOS để tiếng Anh)
 
-Lượt chạy chiếm màn hình của kế hoạch M7 bước 4, ý 1, cài bản thử thứ nhất từ DMG còn quarantine ở cả hai ngôn ngữ. Lượt đó trả lời bốn câu hỏi. Thứ nhất là hộp thoại chặn dùng bộ chuỗi nào. Thứ hai là trang Privacy & Security hiện câu nào và nút nào. Thứ ba là hộp thoại xác nhận có nút gì. Thứ tư là bước xác thực hỏi mật khẩu hay Touch ID. Nên cài thêm một lần bằng `brew install --cask` để xem quarantine do Homebrew gắn có cho cùng luồng không.
+Lượt chạy ở bước 4 của kế hoạch M7 cài bản thử `v0.0.1-beta.1` từ DMG tải bằng Safari (quarantine `0083;…;Safari;…`).
+
+- **DMG ký Apple Development mà không notarize bị chặn ngay lúc mở ổ đĩa.** Hộp thoại là bộ chung: "“Dau-0.0.1-beta.1.dmg” Not Opened", "Apple could not verify “Dau-0.0.1-beta.1.dmg” is free of malware that may harm your Mac or compromise your privacy.", nút "Move to Trash" và "Done". Cùng ảnh đĩa chuyển sang dạng không ký (`hdiutil convert -format ULFO`), mang cùng quarantine, mở ngay không hộp thoại nào. Vì vậy đường Personal Team không ký DMG (`docs/Releasing.md`).
+- **Mở Dấu.app lần đầu:** hộp thoại dùng bộ chung, không dùng bộ `…_UNTRUSTED_FREE_DEV`: "“Dấu” Not Opened", "Apple could not verify “Dấu” is free of malware that may harm your Mac or compromise your privacy.", nút "Move to Trash" và "Done".
+- **Hộp thoại xác nhận** sau khi bấm "Open Anyway" trong Privacy & Security: "Open “Dấu”?", câu trong bảng trên (`Q_DETAIL_CASPIAN_ALLOW_UNVERIFIED`), ba nút "Move to Trash", "Open Anyway" và "Done".
+- **Xác thực:** "You are attempting to open an app that may cause harm to your Mac or compromise your privacy", "Touch ID or enter an administrator’s name and password to continue with Privacy & Security.", nút "Use Password…" và "Cancel". Touch ID dùng được.
+- Câu báo chặn và nút trong trang Privacy & Security chưa chụp được; bảng trên là chuỗi đọc từ tệp. Bản tiếng Việt của mọi hộp thoại chưa thấy trên màn hình; chuỗi tiếng Việt trong bảng là của chính macOS.
+- **App Translocation:** chép Dấu.app từ ổ DMG sang Applications bằng lệnh `duplicate` của Finder qua AppleScript thì app vẫn chạy qua App Translocation, và Sparkle từ chối cập nhật ("Không thể cập nhật Dấu nếu ứng dụng đang chạy từ vị trí mà nó đã được tải xuống…"). Kéo thả bằng tay trong Finder thì app chạy thẳng từ `/Applications` và Sparkle cập nhật được. Script tự động cài từ DMG phải kéo thả thật hoặc gỡ quarantine, không dùng `duplicate`.
+- **Sparkle sau khi cập nhật:** bản mới chạy từ `/Applications`, không còn quarantine, không có hộp thoại Gatekeeper nào (mục 1.4 đúng với lượt chạy này).
+- Chưa thử cài bằng `brew install --cask`; việc này ở bước 8 của kế hoạch M7.
 
 ## 4. Bảo vệ thư mục App Group (macOS 15 trở lên)
 

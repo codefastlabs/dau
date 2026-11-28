@@ -348,7 +348,8 @@ Kiểu gõ mặc định là Telex. Vị trí dấu thanh mặc định là ki�
 ### D17. Trợ năng
 
 - Chuyển Việt/Anh là chuyển nguồn đầu vào của hệ thống, nên VoiceOver tự đọc tên nguồn (N1 (Không làm lại việc hệ thống đã có)). Dấu không tự thông báo thêm.
-- Lượt kiểm bằng VoiceOver cho thấy hệ thống có đọc khi chuyển nguồn (`docs/history/LogM0ToM4.md`). VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" hay không vẫn là câu hỏi mở.
+- Trên macOS 27.2.1 để tiếng Anh, VoiceOver đọc đúng tên "Dấu – Vietnamese" khi người dùng chọn Dấu trong menu nguồn đầu vào (28/11/2026). Với macOS để tiếng Việt, tên "Dấu – Tiếng Việt" chưa nghe thử.
+- Khi VoiceOver bật, phím tắt ⌃⌥Space không chuyển nguồn, vì ⌃⌥ là phím bổ trợ của VoiceOver. Người dùng VoiceOver chuyển nguồn bằng menu nguồn đầu vào, đường mà onboarding cũng chỉ.
 - Nếu hệ thống không đọc thì quyết định này được xét lại.
 
 **Vì sao:** để VoiceOver không đọc hai lần.
@@ -843,7 +844,7 @@ Mục này chỉ giữ câu chưa có trả lời. Khi một câu đã được 
 - **Hộp thoại App Group với bản ký Developer ID** (D24): bản có Team ID Personal Team không có hộp thoại, còn bản Developer ID chưa kiểm.
 - **Bộ gõ đã bật khi chữ ký đổi Team ID** (D6, D37): chưa biết macOS có giữ trạng thái bật và chọn của nguồn khi bộ gõ đã bật được thay bằng bản ký Team ID khác hay không. Cũng chưa biết macOS có chặn hay hỏi quyền khi app chủ của team mới thay bộ gõ ký bởi team cũ (bảo vệ App Management từ macOS 13; [`docs/research/ReleaseSigning.md`](research/ReleaseSigning.md)). Hai câu này chỉ đo được ở beta đầu tiên ký Developer ID.
 - **Bộ gõ trong mục ngôn ngữ riêng từng ứng dụng** (D41): chưa biết danh sách "+" của System Settings › General › Language & Region › Applications có chọn được bộ gõ Dấu (`~/Library/Input Methods`) không, và chọn rồi thì menu bộ gõ ("Cài đặt Dấu…", tên kiểu gõ) có đổi theo không.
-- **VoiceOver đọc tên nguồn** (D17): chưa biết VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" khi chuyển nguồn không.
+- **VoiceOver đọc tên nguồn tiếng Việt** (D17): trên macOS để tiếng Anh, VoiceOver đọc đúng "Dấu – Vietnamese". Chưa biết VoiceOver có đọc đúng "Dấu – Tiếng Việt" khi macOS để tiếng Việt không.
 - **Độ ổn định của "Thêm dấu cho từ đã gõ"** (D20) trên các web editor (Google Docs, Notion…) chưa được biết.
 - **Từ tiếng Anh gõ nhầm rồi ⌫ trong từ** (D32 (Backspace), D4): sau ⌫, mốc khôi phục là chữ đang hiện, mà chữ đang hiện của từ tiếng Anh là chữ Telex dở, nên từ đó có thể không được khôi phục ("with" gõ thừa một chữ rồi ⌫ ra "ưith"; 93/380 từ trong danh sách đo). Câu hỏi là giữ D32 như hiện nay hay đổi mốc khôi phục sau ⌫ cho phần chữ đã chèn nguyên (phương án c); xem [`docs/research/EditingTypedText.md`](research/EditingTypedText.md), K3 và mục 4.2.
 - **Tên "Dấu"** (D24): việc tra nhãn hiệu (Cục Sở hữu trí tuệ VN) chưa làm. Một bộ gõ macOS khác có tên gần giống là DauKey (`emizuki/daukey`, GPLv3, repo tạo 23/10/2026, chưa có cask). Định danh không trùng, chỉ tên đọc lên gần nhau.

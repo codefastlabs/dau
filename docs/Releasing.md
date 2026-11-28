@@ -285,7 +285,7 @@ Dấu đã cài chạy không cần mạng (N2, D8) và không có bản quyền
 | Ký Personal Team | `DAU_TEAM_ID`, `DAU_SPARKLE_PUBLIC_KEY`, `DAU_SPARKLE_PRIVATE_KEY` | Archive ký thủ công bằng chứng chỉ Apple Development của Team (tìm theo Organizational Unit của chứng chỉ, bỏ chứng chỉ đã thu hồi), hardened runtime, `--timestamp`. Dau.app lấy thẳng từ archive, không xuất. Xcode để mã lồng trong Sparkle với chữ ký ad hoc của Sparkle, nên script ký lại từ trong ra ngoài (mã lồng, framework, app) để mọi thành phần cùng Team ID; hardened runtime chỉ nạp Sparkle khi hai bên cùng Team. DMG không ký: một DMG ký mà không notarize bị Gatekeeper chặn thêm một lần trước khi mở được (đo ngày 28/11/2026, macOS 27.2.1; mục "Còn phải thấy chạy thật"), còn app bên trong vẫn ký. Không notarize, không staple. |
 | Ký Developer ID | ba biến trên cùng `DAU_NOTARY_KEY`, `DAU_NOTARY_KEY_ID`, `DAU_NOTARY_ISSUER_ID` | Xuất archive bằng `-exportArchive` phương thức `developer-id`, notarize và staple app, ký, notarize và staple DMG, kiểm thêm `spctl` và `stapler validate`. |
 
-Cả hai chế độ ký đặt `DAU_OFFICIAL=YES`, `SUFeedURL` và `SUPublicEDKey`, chạy các điều kiện trước khi dựng, ký appcast bằng EdDSA và ghi `Checksums.json`. Có một phần của bộ biến (ví dụ một biến notarize) thì script dừng. Bản nháp trên GitHub có ghi chú song ngữ làm từ `release-notes-template.md`; ghi chú của bản không notarize có thêm đoạn hướng dẫn mở qua Gatekeeper lần đầu, hiện còn ô trống `[Gatekeeper labels — measured at M7 step 4]` cho tới khi nhãn được đo (N5).
+Cả hai chế độ ký đặt `DAU_OFFICIAL=YES`, `SUFeedURL` và `SUPublicEDKey`, chạy các điều kiện trước khi dựng, ký appcast bằng EdDSA và ghi `Checksums.json`. Có một phần của bộ biến (ví dụ một biến notarize) thì script dừng. Bản nháp trên GitHub có ghi chú song ngữ làm từ `release-notes-template.md`; ghi chú của bản không notarize có thêm đoạn hướng dẫn mở qua Gatekeeper lần đầu, bằng nhãn đã đo ([`docs/research/ReleaseSigning.md`](research/ReleaseSigning.md) mục 3.2 và 3.3, N5).
 
 ## Chế độ không ký
 
@@ -319,20 +319,13 @@ Bố cục (kích thước cửa sổ, vị trí biểu tượng, nền) nằm t
 
 ## Còn phải thấy chạy thật
 
-Đã chạy trên máy phát triển: chế độ không ký trọn tới DMG; archive ký Personal Team với các tham số ký mà script dùng, rồi ký lại mã Sparkle và app, rồi `check-build.sh --signed` đạt (chứng chỉ lá, hardened runtime, dấu thời gian, không `get-task-allow` ở app, bộ gõ và mã Sparkle). Archive thử dùng khoá công khai giả, nên chưa có gì về khoá EdDSA thật.
+Đã chạy thật (28/11/2026, hai bản thử `v0.0.1-beta.1` và `v0.0.1-beta.2` trên CI, cài và cập nhật trên máy M3 Max, macOS 27.2.1):
+- Nhập `.p12` Apple Development vào keychain tạm của runner, toàn bộ `build-release.sh` ở chế độ ký Personal Team cùng các điều kiện (`check-release-gate.sh`, `check-appcast.sh`, kiểm tag đã có bản phát hành), `layout-dmg.sh`, `generate_appcast` ký bằng khoá thật, `Checksums.json` của đường ký, bản nháp kèm ghi chú song ngữ.
+- Sparkle trong bản phát hành đọc appcast, ghi kênh Beta, cập nhật 7490 → 7510; mã Sparkle đã ký lại chạy được; bản chủ thay bộ gõ sau khi Sparkle mở lại Dấu.
+- `check-site-appcast.sh` với trang thật trên `dau.codefastlabs.com`.
+- DMG ký Apple Development mà không notarize bị Gatekeeper chặn trước khi mở; ảnh đĩa không ký mang cùng quarantine thì mở ngay. Vì vậy bản Personal Team không ký DMG (`docs/research/ReleaseSigning.md` mục 3.3).
 
-Đã đo trên máy thật (28/11/2026, macOS 27.2.1, DMG của `v0.0.1-beta.1` tải bằng Safari nên mang quarantine): DMG ký Apple Development mà không notarize bị Gatekeeper chặn trước khi mở, với hộp thoại báo Apple không xác minh được DMG không có mã độc và hai nút "Move to Trash" và "Done". Cùng ảnh đĩa chuyển bằng `hdiutil convert -format ULFO` (không ký) với cùng thuộc tính quarantine thì mở ngay, không hộp thoại. Vì vậy bản Personal Team không ký DMG.
-
-Chỉ thấy được trên CI, ở bước 4 của kế hoạch M7 (hai tag thử), rồi sửa script theo log của lần đó:
-- Nhập chứng chỉ `.p12` Apple Development vào keychain tạm của runner và việc runner thấy nó là danh tính dùng được (cần chuỗi chứng chỉ tới Apple WWDR trong keychain).
-- Toàn bộ `build-release.sh` ở chế độ ký Personal Team, kể cả các điều kiện (`check-release-gate.sh`, `check-appcast.sh`, việc từ chối tag đã có bản phát hành, cần quyền `actions: read` và `GH_TOKEN` của workflow).
-- `layout-dmg.sh` (cần Finder) và `generate_appcast` ký bằng khoá thật. Chữ ký EdDSA nằm trên `<enclosure>`. Sparkle chỉ ký cả appcast khi app đặt `SURequireSignedFeed`; Dấu không đặt khoá này và hai script từ chối appcast có khối chữ ký đó.
-- Bản nháp kèm ghi chú: `gh release create` ghép `--notes-file` với `--generate-notes` đúng như mong đợi.
-- Sparkle trong Dấu đọc thẻ kênh (bước 1f mục 2, bước 2) và cập nhật qua bản ký Personal Team, mã Sparkle đã ký lại vẫn chạy được trên máy thật.
-- `check-site-appcast.sh` với trang thật (hai nhánh của nó đã chạy với một máy chủ cục bộ).
-
-Đường quảng bá (`promote-release.sh`) chưa chạy thật. Script này cần một bản beta đã công bố trên GitHub để `gh release download`, để kiểm chữ ký trên tệp đã đổi tên và để tạo bản nháp. Lần đầu thấy nó chạy sẽ là lúc quảng bá beta cuối của 0.1.0: khi đó chạy `--dry-run` trước, rồi sửa script hay tài liệu này theo log. Đổi tên DMG không làm hỏng chữ ký hay vé notarize mới chỉ là suy luận từ cách hai thứ này gắn vào nội dung tệp. Phần bỏ thẻ kênh khỏi appcast đã chạy offline (`scripts/release/test-appcast.sh` và `generate_appcast --channel beta` thử trên một archive giả).
-
-Notarize và staple chạy lần đầu khi chuyển sang Developer ID.
-
-Phần `Checksums.json` đã chạy trong chế độ không ký (file ra đúng một dòng khớp `shasum -a 256` của DMG) và phần hợp nhất đã kiểm offline bằng `test-appcast.sh`. Đường ký (tài sản của bản nháp) và đường quảng bá (kiểm SHA-256 của DMG đã đổi tên) chưa chạy thật.
+Chưa chạy thật:
+- Đường DMG không ký trên CI (sau bản sửa nói trên). Lần đầu là beta đầu tiên `v0.1.0-beta.1`.
+- Đường quảng bá (`promote-release.sh`). Script này cần một bản beta đã công bố trên GitHub để `gh release download`, để kiểm chữ ký trên tệp đã đổi tên và để tạo bản nháp. Lần đầu thấy nó chạy sẽ là lúc quảng bá beta cuối ký Developer ID: khi đó chạy `--dry-run` trước, rồi sửa script hay tài liệu này theo log. Đổi tên DMG không làm hỏng chữ ký hay vé notarize mới chỉ là suy luận từ cách hai thứ này gắn vào nội dung tệp. Phần bỏ thẻ kênh khỏi appcast đã chạy offline (`scripts/release/test-appcast.sh` và `generate_appcast --channel beta` thử trên một archive giả).
+- Notarize và staple, lần đầu khi chuyển sang Developer ID.

@@ -12,7 +12,7 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 22/11/2026, sau khi Dấ
 |---|---|---|---|
 | Safari, TextEdit | Đúng ở 30 ms (29–30/10/2026) và ở 120 ms (Backspace, thêm dấu). Từ khi Dấu tự chèn ký tự (N3, 22/11/2026, máy M3 Max), Safari 27.2 đúng khi gửi cả chuỗi một lần (3/3), khi trang bận ở nhịp người gõ nhanh (3/3), ở ô mũi tên khi trang bận (3/3) và ở ca ⌫ rồi phím dấu ngay sau khi trang bận (3/3 ở hai ô, nhờ ngoại lệ chờ ⌫ chưa áp của N3). Xem mục 5.1. | Đúng, kể cả khi gửi cả chuỗi một lần (2/2, 22/11/2026). | không |
 | Chrome | Đúng ở 5–20 ms (10/11/2026, máy M3 Max) và trong trình soạn thảo TipTap (9/9, 12/11/2026). Từ khi Dấu tự chèn ký tự (N3, 22/11/2026, máy M3 Max, Chrome 157), khi trang bận ở nhịp người gõ nhanh Dấu đúng 3/3, rồi 5/6 với ngoại lệ chờ ⌫. Sau bản sửa phép chứng minh app chậm (22/11/2026, Chrome 158), Dấu đúng 9/9 khi trang bận ở nhịp người gõ nhanh và 9/9 khi trang bận ở 10 ms (trước đó sai 5/5). Xem mục 5.2. | Đúng ở 0 ms. | không |
-| Edge | Đúng ở 5–20 ms và khi trang bận (10/11/2026, máy M1; 17/11/2026, Edge 157.0.4341.60). | Đúng ở 0 ms. | không |
+| Edge | Đúng ở 5–20 ms và khi trang bận (10/11/2026, máy M1; 17/11/2026, Edge 157.0.4341.60). Đo lại sau khi Dấu tự chèn ký tự (N3): đúng ở 5 ms, 20 ms và 20 ms khi trang bận (28/11/2026, máy M3 Max, Edge 158.0.4370.45, bản phát hành 0.0.1 (7510)). | Đúng ở 0 ms. | không |
 | Firefox | Đúng ở 5–20 ms (10/11/2026, máy M3 Max) và khi trang bận (10/11/2026, máy M1; 17/11/2026, Firefox 160.0; 22/11/2026, máy M3 Max, Firefox 160.0.1, sau khi Dấu tự chèn ký tự, 2/2 ở 10 ms và nhịp người gõ nhanh). | Đúng ở 0 ms. | không |
 | VS Code | Đúng ở 5–20 ms: 14/15 lượt (10/11/2026, VS Code 1.145.2) và 2/2 lượt (17/11/2026, VS Code 1.146.0, mỗi lượt sau một ô Telex của Apple), máy M1 (mục 5.3). Đúng 15/15 tới khoảng 8,5 ms một phím và khi gửi cả chuỗi một lần (18/11/2026, máy M1 Pro, mục 5.1). | Đúng ở 0 ms. | không |
 | Cursor (3.31.15) | Khung agent (⌘L) và ô nhập Agents đúng ở 5 ms. Trình soạn thảo đúng khi trả vị trí từ đầu văn bản. Khi ô chỉ giữ từ trước con trỏ, câu `edit` đúng 3/3 ở 10 ms và 9/10 ở 5 ms, lượt sai thiếu dấu một từ đầu văn bản (mục 5.4, 23/11/2026). | chưa đo | không |
@@ -25,9 +25,9 @@ Dưới tải nặng (`scripts/selftest/load/heavy.sh`, 22/11/2026, sau khi Dấ
 | Xcode | Đúng ở 30 ms trên tệp văn bản, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
 | WebStorm, trình soạn thảo | Chữ tiếng Việt đúng ở 80 ms. Từ tiếng Anh không được khôi phục (D4); đây là lỗi của Dấu, chưa sửa (mục 5.9). | Đúng ở 80 ms. | không |
 | WebStorm, terminal | Sai (D43; mục 6.8). | Đúng ở 80 ms. | không: bật cho cả app thì mọi ô mất D20 |
-| Notes | Đúng ở 30 ms (30/10/2026). | chưa đo | không |
-| Mail | Đúng ở 30 ms (30/10/2026). Số đo ngày 11/11 (120 ms) và 12/11/2026 (30 ms) chỉ nói về tự sửa chính tả của macOS (mục 6.1). | chưa đo | không |
-| Telegram | Đúng ở 5 và 30 ms (chuỗi chuẩn) và ở 100 ± 30 ms (chuỗi `edit`), ngày 17/11/2026 (mục 5.8). | chưa đo | không |
+| Notes | Đúng ở 30 ms (30/10/2026; đo lại sau N3 ngày 28/11/2026, máy M3 Max, bản phát hành 0.0.1 (7510): đúng). | chưa đo | không |
+| Mail | Đúng ở 30 ms (30/10/2026; đo lại sau N3 ngày 28/11/2026, máy M3 Max, bản phát hành 0.0.1 (7510): đúng). Số đo ngày 11/11 (120 ms) và 12/11/2026 (30 ms) chỉ nói về tự sửa chính tả của macOS (mục 6.1). | chưa đo | không |
+| Telegram | Đúng ở 5 và 30 ms (chuỗi chuẩn) và ở 100 ± 30 ms (chuỗi `edit`), ngày 17/11/2026 (mục 5.8). Đo lại sau N3: đúng ở 5 và 30 ms với chuỗi chuẩn (28/11/2026, máy M3 Max, bản phát hành 0.0.1 (7510)). | chưa đo | không |
 | Antigravity | Ô nhắn tin đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
 | Obsidian | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11). | chưa đo | không |
 | Notion | Đúng ở 30 ms, kể cả ⌫ và thêm dấu cho từ đã gõ (23/11/2026, mục 5.11); câu thêm dấu cho từ đã gõ ở 80 ± 30 ms đúng 3/3 (26/11/2026, máy M1 Pro, Notion 7.43.2). | chưa đo | không |
@@ -66,7 +66,7 @@ Cột "Máy này" tra trong `/Applications`, `~/Applications`, `/System/Applicat
 | Trình duyệt | Safari | `com.apple.Safari` | có (27.2) | WebKit | đã đo, mục 5.1 (lúc đo: 27.2 ngày 17/11/2026; các lượt trước: không rõ) |
 | Trình duyệt | Chrome | `com.google.Chrome` | có (157.0.8103.79) | Chromium | đã đo, mục 5.2 (lúc đo: 157 ngày 17/11/2026; các lượt trước: không rõ) |
 | Trình duyệt | Firefox | `org.mozilla.firefox` (Nightly: `org.mozilla.nightly`) | có (160.0; Nightly 162.0a1) | Gecko | đã đo, mục 5.2 (lúc đo: 160.0 ngày 17/11/2026; các lượt trước: không rõ) |
-| Trình duyệt | Edge | `com.microsoft.edgemac` | có (157.0.4341.60) | Chromium (`Microsoft Edge Framework`) | đã đo, mục 5.2 (lúc đo: 157.0.4341.60 ngày 17/11/2026; các lượt trước: không rõ) |
+| Trình duyệt | Edge | `com.microsoft.edgemac` | có (158.0.4370.45) | Chromium (`Microsoft Edge Framework`) | đã đo, mục 5.2 (lúc đo: 158.0.4370.45 ngày 28/11/2026; trước đó 157.0.4341.60 ngày 17/11/2026) |
 | Trình duyệt | Arc | `company.thebrowser.Browser` | không | Chromium (suy luận) | như Chrome |
 | Trình duyệt | Brave | `com.brave.Browser` | không | Chromium (suy luận) | như Chrome |
 | Soạn mã | VS Code | `com.microsoft.VSCode` | có (1.146.0) | Electron | đã đo, mục 5.3 (lúc đo: 1.146.0 ngày 17/11/2026; 1.145.2 ngày 10/11/2026) |

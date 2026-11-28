@@ -212,6 +212,8 @@ Lưu trữ cách từng nguyên tắc và quyết định trong `docs/Decisions.
 
 - 11/11/2026 (sổ viết lại): "đọc đúng tên 'Dấu – Tiếng Việt' chưa xác nhận, kiểm ở M7 (phát hành)" chuyển thành câu hỏi mở.
 
+- 28/11/2026 (đo ở bước 4 kế hoạch M7, chủ dự án nghe cùng): VoiceOver đọc đúng "Dấu – Vietnamese" trên macOS để tiếng Anh; câu hỏi mở thu lại về macOS để tiếng Việt; thêm ý ⌃⌥Space trùng phím bổ trợ của VoiceOver. Bản trước, nguyên văn: "Lượt kiểm bằng VoiceOver cho thấy hệ thống có đọc khi chuyển nguồn (`docs/history/LogM0ToM4.md`). VoiceOver có đọc đúng tên "Dấu – Tiếng Việt" hay không vẫn là câu hỏi mở."
+
 ### D18. Phòng thủ với IMK
 
 - 11/11/2026: thêm kiểm biên số do app trả, hoãn lời gọi lồng, thông báo từ tiến trình khác chỉ là gợi ý và test fuzz bắt buộc (người dùng duyệt), vì rà soát bảo mật tìm ra hai đường crash do tràn số.
