@@ -28,7 +28,7 @@ Mỗi khẳng định ghi rõ nguồn của nó: **đo** (điều kiện ở m�
 | 7 | Rủi ro | Ghim phiên bản chính xác, gộp cập nhật hằng tuần, tự kiểm đầu ra build và so appcast trên tên miền với `origin/main`. |
 | 8 | Repo, dữ liệu | Trang nằm trong repo của Dấu, ở `site/`. Mọi số và lời hứa trên trang đọc lúc build từ file dữ liệu trong repo. Ô chưa có nguồn giữ dạng `[…]`. |
 
-**Việc cần tài khoản của người dùng.** Toàn bộ nằm trong bước nối project Vercel của [`docs/Releasing.md`](../Releasing.md), bước "Vercel": Root Directory, Corepack, Deployment Checks và Web Analytics. Lý do của từng việc nằm ở mục 3 và mục 5.
+**Việc cần tài khoản của người dùng.** Toàn bộ nằm trong bước nối project Vercel của [`docs/Releasing.md`](../Releasing.md), bước "Vercel": Root Directory, Deployment Checks và Web Analytics. Lý do của từng việc nằm ở mục 3 và mục 5.
 
 ## Điều kiện đo
 
@@ -156,8 +156,8 @@ Phần cấu hình đọc từ tài liệu Vercel. Content-Type của `.xml`, c�
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
-  "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm build",
+  "installCommand": "npx --yes \"pnpm@$(node -p 'require(\"./package.json\").packageManager.slice(5)')\" install --frozen-lockfile",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/client",
   "trailingSlash": false,
   "cleanUrls": true,
@@ -308,7 +308,8 @@ Preload không đổi LCP (đo), nên không thêm. Vite đặt file phông vào
   7. Job so byte appcast sau triển khai (mục 3), chạy theo `deployment_status`.
 - **`test.yml` không thêm `paths-ignore`.** `check-release-gate.sh` đòi workflow Test đạt trên đúng commit mang tag. Nếu Test bỏ qua commit chỉ đổi `site/`, một tag đặt lên commit đó không có kết quả Test nào và bản phát hành bị từ chối.
 - **Ghim Node và pnpm.** `package.json` có `"engines": { "node": "26.x" }` và `"packageManager": "pnpm@12.21.0"`.
-  - Vercel: theo tài liệu Vercel, `engines.node` ghi đè phiên bản Node của project; Node 26.x có sẵn. Vercel hỗ trợ pnpm 12. Muốn Vercel dùng đúng bản trong `packageManager` thì phải bật Corepack bằng biến `ENABLE_EXPERIMENTAL_COREPACK=1`; nếu không, Vercel chọn bản pnpm theo `lockfileVersion` (bản thử ghi `9.0`).
+  - Vercel, Node: theo tài liệu Vercel, `engines.node` ghi đè phiên bản Node của project, và 26.x là phiên bản mặc định đang có (cùng 24.x và 22.x). Project đặt Node 26.x (`vercel api /v9/projects/dau`), nên Node không phải nguyên nhân lỗi build đầu tiên. `npm run build` chạy xong trên Node 26.1.0 ở máy phát triển.
+  - Vercel, pnpm: Vercel chọn bản pnpm theo `lockfileVersion`, mà `9.0` ứng với pnpm 9 hoặc 10, không đọc được lockfile hai tài liệu của pnpm 12 (lỗi `ERR_PNPM_BROKEN_LOCKFILE` ở lần build đầu). Corepack không dùng được ở đây: theo tài liệu Vercel, `packageManager` phải nằm trong `package.json` ở gốc repo, còn `package.json` của Dấu nằm ở `site/` (log lần build đầu ghi `package.json is missing "packageManager"`), và Corepack là tính năng thử nghiệm của Node. Vì vậy `installCommand` gọi `npx pnpm@<phiên bản>` với phiên bản đọc từ `packageManager`, giữ phiên bản pnpm ở một chỗ. `buildCommand` là `npm run build` để không phụ thuộc pnpm mà Vercel chọn.
   - GitHub Actions: `actions/setup-node` đọc `engines.node` qua `node-version-file`, còn `pnpm/action-setup` đọc `packageManager` khi không có `version`.
 - **Lint: oxlint 1.95.0.** Cấu hình `.oxlintrc.json` bật plugin `react`, `typescript` và `jsx-a11y`. File này có `ignorePatterns: ["src/routeTree.gen.ts"]`. `--deny-warnings` biến cảnh báo thành lỗi (đo: một `<img>` thiếu `alt` làm lệnh thoát mã 1).
 - **Format: oxfmt 0.80.0.** Cấu hình `.oxfmtrc.json` có `ignorePatterns: ["src/routeTree.gen.ts", "src/data/*.json"]` (file dữ liệu do script phát hành và người viết test ghi, không theo định dạng của oxfmt) và `sortTailwindcss: { "stylesheet": "./src/Styles.css" }`.
@@ -454,7 +455,7 @@ site/
 - Fontsource, metadata của Be Vietnam Pro: https://api.fontsource.org/v1/fonts/be-vietnam-pro
 - `subset-font`: https://www.npmjs.com/package/subset-font
 - Vercel, cấu hình `vercel.json`: https://vercel.com/docs/project-configuration/vercel-json
-- Vercel, Configuring a Build (Root Directory, Corepack): https://vercel.com/docs/builds/configure-a-build
+- Vercel, Configuring a Build (Root Directory, Corepack, gốc repo của packageManager): https://vercel.com/docs/builds/configure-a-build
 - Vercel, Package Managers: https://vercel.com/docs/package-managers
 - Vercel, Supported Node.js versions: https://vercel.com/docs/functions/runtimes/node-js/node-js-versions
 - Vercel, TanStack Start on Vercel: https://vercel.com/docs/frameworks/full-stack/tanstack-start
