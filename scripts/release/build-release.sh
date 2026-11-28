@@ -38,7 +38,7 @@
 # Mode, from the variables below (an empty variable counts as unset):
 #   unsigned          none is set (or --unsigned).
 #   signed, Personal  the first three are set, no notary variable: Apple Development certificate of the
-#                     team, taken from the archive, DMG signed, not notarized (D6).
+#                     team, taken from the archive; the DMG is left unsigned and not notarized (D6).
 #   signed, Developer ID  all six are set: exported with Developer ID, notarized and stapled.
 # Any other set is an error, so a mistyped secret never ships a build signed differently from the plan.
 #   DAU_TEAM_ID                 Team ID of the signing certificate
@@ -60,7 +60,7 @@
 # Group is refused, so the input method and the app cannot share settings: it does not run
 # like a real build. The DMG is named *-dev-unsigned.dmg and no appcast is made.
 # Skipped there: signature, notarize, staple, DMG signature, appcast.
-# Signed Personal mode skips only the export, notarize and staple.
+# Signed Personal mode skips only the export, the DMG signature, notarize and staple.
 #
 # Output in --out: Dau-<version>.dmg (signed) or Dau-<version>-dev-unsigned.dmg,
 # Dau-<version>.dSYMs.zip, Checksums.json (origin/main's site/src/data/Checksums.json, "{}" when absent, plus
@@ -338,10 +338,9 @@ if (( developer_id )); then
   xcrun stapler staple "$dmg" >/dev/null
   log_ok "DMG đã ký, notarize và staple"
 elif (( signed )); then
-  log_step "Ký DMG"
-  codesign --force --sign "$signing_id" --timestamp "$dmg"
-  log_ok "DMG đã ký (Apple Development, không notarize)"
-  skipped+=("notarize và staple DMG")
+  # A DMG signed but not notarized gets its own Gatekeeper block before it mounts; the same
+  # image unsigned mounts at once (docs/Releasing.md, "Chế độ ký"). The app inside is signed.
+  skipped+=("ký, notarize và staple DMG (DMG ký mà không notarize bị Gatekeeper chặn thêm một lần; app bên trong vẫn ký)")
 else
   skipped+=("ký, notarize và staple DMG")
 fi
@@ -365,12 +364,14 @@ dmg_check=("$DAU_ROOT/scripts/release/check-build.sh" "$mnt/Dau.app")
 (( signed )) && dmg_check+=(--feed "$official_feed" --signed --team "$DAU_TEAM_ID")
 (( developer_id )) && dmg_check+=(--developer-id)
 DAU_SPARKLE_PUBLIC_KEY=${DAU_SPARKLE_PUBLIC_KEY-} "${dmg_check[@]}" || log_die "App trong DMG không đạt kiểm tra."
-if (( signed )); then
+if (( signed && ! developer_id )); then
+  [[ $(codesign -dvv "$dmg" 2>&1) == *"not signed at all"* ]] || log_die "DMG của bản Personal Team phải không ký (Gatekeeper chặn DMG ký mà không notarize)."
+  log_ok "DMG không ký, đúng với bản không notarize"
+fi
+if (( developer_id )); then
   codesign --verify --strict "$dmg" || log_die "Chữ ký DMG không hợp lệ."
   [[ $(codesign -dvv "$dmg" 2>&1) == *"TeamIdentifier=$DAU_TEAM_ID"$'\n'* ]] || log_die "DMG không ký bằng Team $DAU_TEAM_ID."
   log_ok "DMG: chữ ký hợp lệ, Team $DAU_TEAM_ID"
-fi
-if (( developer_id )); then
   spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg" \
     || log_die "spctl từ chối DMG."
   xcrun stapler validate "$dmg" >/dev/null || log_die "DMG chưa có vé notarize."

@@ -4,7 +4,8 @@
 # The stable release is the binary of the last beta, unchanged and not rebuilt (like an Apple
 # release candidate): same DMG, same signature, same stapled notarization ticket, same CFBundleVersion. Only the file name changes (Dau-X.Y.Z-beta.N.dmg -> Dau-X.Y.Z.dmg),
 # which the DMG signature and the ticket do not cover (they are over the contents, checked below
-# with codesign, stapler and spctl on the renamed file). Only a Developer ID, notarized beta can be
+# with codesign, stapler and spctl on the renamed file; the signature type is read from the Dau.app inside,
+# because the DMG of a Personal Team beta is not signed). Only a Developer ID, notarized beta can be
 # promoted: a beta signed Apple Development (D6) is refused, also with --dry-run. The appcast gets NO new item: the
 # beta's item is already there with the same sparkle:version. What changes is its channel tag:
 # every beta item carries <sparkle:channel>beta</sparkle:channel> (build-release.sh), and an item
@@ -81,24 +82,24 @@ mv "$src_dmg[1]" "$dmg"; mv "$src_dsyms[1]" "$dsyms"
 log_ok "Đã tải ${beta} và đổi tên: ${dmg:t}, ${dsyms:t}"
 
 # --- check: the renamed file is still the signed beta ---------------------
-codesign --verify --strict "$dmg" || log_die "Chữ ký DMG không hợp lệ."
-dmg_info=$(codesign -dvv "$dmg" 2>&1)
-if [[ $dmg_info == *"Authority=Developer ID Application"* ]]; then
-  xcrun stapler validate "$dmg" >/dev/null || log_die "DMG chưa có vé notarize."
-  spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg" || log_die "spctl từ chối DMG."
-  signature_note="vé notarize và spctl đạt"
-elif [[ $dmg_info == *"Authority=Apple Development:"* ]]; then
-  log_die "$beta ký bằng Apple Development, không notarize: bản chính thức chỉ quảng bá từ một beta ký Developer ID và đã notarize (D6). Chuyển sang Developer ID rồi phát thêm một beta (docs/Releasing.md, \"Chuyển sang Developer ID\")."
-else
-  log_die "DMG không ký bằng Developer ID Application."
-fi
 mnt=$(mktemp -d "${TMPDIR:-/tmp}/dau-mnt.XXXXXX")
 detach() { hdiutil detach "$mnt" -quiet 2>/dev/null || hdiutil detach "$mnt" -force -quiet 2>/dev/null || true; rmdir "$mnt" 2>/dev/null || true; }
 trap detach EXIT
 hdiutil attach "$dmg" -nobrowse -readonly -mountpoint "$mnt" >/dev/null 2>&1 || log_die "Không mở được DMG."
 shown=$(/usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" "$mnt/Dau.app/Contents/Info.plist")
 [[ $shown == $version ]] || log_die "Dau.app trong DMG hiển thị '$shown', cần '$version'."
-log_ok "Chữ ký đạt ($signature_note); Dau.app hiển thị $shown"
+# The signature is read from the app: the DMG of a Personal Team beta is not signed (build-release.sh).
+app_info=$(codesign -dvv "$mnt/Dau.app" 2>&1)
+if [[ $app_info == *"Authority=Developer ID Application"* ]]; then
+  codesign --verify --strict "$dmg" || log_die "Chữ ký DMG không hợp lệ."
+  xcrun stapler validate "$dmg" >/dev/null || log_die "DMG chưa có vé notarize."
+  spctl --assess --type open --context context:primary-signature --verbose=2 "$dmg" || log_die "spctl từ chối DMG."
+elif [[ $app_info == *"Authority=Apple Development:"* ]]; then
+  log_die "$beta ký bằng Apple Development, không notarize: bản chính thức chỉ quảng bá từ một beta ký Developer ID và đã notarize (D6). Chuyển sang Developer ID rồi phát thêm một beta (docs/Releasing.md, \"Chuyển sang Developer ID\")."
+else
+  log_die "Dau.app trong DMG không ký bằng Developer ID Application."
+fi
+log_ok "Chữ ký Developer ID, vé notarize và spctl đạt; Dau.app hiển thị $shown"
 detach; trap - EXIT
 
 # --- the promoted appcast ----------------------------------------------------------------
